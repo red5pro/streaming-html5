@@ -1,0 +1,29 @@
+{
+  "parser": "babel-eslint",
+  "env": {
+    "browser": true,
+    "node": true,
+    "es6": true
+  },
+  "ecmaFeatures": {
+    "jsx": true
+  },
+  "rules": {
+    "semi": 2,
+    "curly": true,
+    "quotes": "single",
+    "eqeqeq": true,
+    "wrap-iife": true,
+    "no-unused-expressions": true,
+    "no-unused-vars": true,
+    "no-underscore-dangle": false,
+    "new-cap": true,
+    "camelcase": false,
+    "space-infix-ops": false,
+    "boss": true
+  },
+  "globals": {
+
+  },
+  "extends": "eslint:recommended"
+}
