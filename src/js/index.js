@@ -1,11 +1,12 @@
 import React from 'react'
 import {render} from 'react-dom'
-// import ReactDOM from 'react-dom'
-// const render = ReactDOM.render
 
-class App extends React.Component {
+import testbed from "../resource/testbed.json"
+let json = JSON.stringify(testbed, null, 2)
+
+class App extends React.Component { // eslint-disable-line no-unused-vars
   render () {
-    return <p> Hello React!</p>
+    return <p>{json}</p>
   }
 }
 
