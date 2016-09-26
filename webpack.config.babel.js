@@ -8,15 +8,20 @@ const banner = `
 `;
 
 export default {
-  entry: ['babel-polyfill', path.join(process.cwd(), 'src', 'js', 'index.js')],
+  entry: ['babel-polyfill',
+          path.join(process.cwd(), 'src', 'js', 'index.js'),
+          path.join(process.cwd(), 'src', 'index.html')],
   output: {
     library: 'red5protestbed',
     libraryTarget: 'umd',
-    path: path.join(process.cwd(), 'build', 'script'),
-    filename: 'red5pro-testbed.js'
+    path: path.join(process.cwd(), 'build'),
+    filename: 'script/red5pro-testbed.js'
   },
   devtool: "#inline-source-map",
-  externals: [],
+  externals: {
+    "react": "React",
+    "react-dom": "ReactDOM"
+  },
   module: {
     loaders: [
       // babel loader, testing for files that have a .js extension
@@ -28,10 +33,15 @@ export default {
         query: {
           compact: false // because I want readable output
         }
+      },
+      {
+        test: /\.html$/,
+        loader: "file?name=[name].[ext]"
       }
     ]
   },
   plugins: [
-    new webpack.BannerPlugin(banner)
+    new webpack.BannerPlugin(banner),
+    new webpack.IgnorePlugin(/react/, /react-dom/)
   ]
 };
