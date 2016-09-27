@@ -20,7 +20,8 @@ export default {
   devtool: "#inline-source-map",
   externals: {
     "react": "React",
-    "react-dom": "ReactDOM"
+    "react-dom": "ReactDOM",
+    "react-redux": "ReactRedux"
   },
   module: {
     loaders: [
@@ -46,6 +47,6 @@ export default {
   },
   plugins: [
     new webpack.BannerPlugin(banner),
-    new webpack.IgnorePlugin(/react/, /react-dom/)
+    new webpack.IgnorePlugin(/react/, /react-(redux|dom)/)
   ]
 };

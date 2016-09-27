@@ -1,7 +1,25 @@
 {
+  "settings": {
+    "host": "162.242.210.105",
+    "port": 8554,
+    "stream1": "stream1",
+    "stream2": "stream2",
+    "context": "live",
+    "cameraWidth": 854,
+    "cameraHeight": 480,
+    "videoOn": true,
+    "audioOn": true,
+    "buffer": 0.5,
+    "bitrate": 1000
+  },
   "tests": [
-    {
-      "name": "Home"
-    }
+      {
+        "name": "Home",
+        "module": "Home"
+      },
+      {
+        "name": "Publish",
+        "module": "PublishTest"
+      }
   ]
 }
