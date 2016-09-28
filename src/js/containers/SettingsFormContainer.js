@@ -1,5 +1,5 @@
 import { connect } from 'react-redux'
-import { changeView } from '../actions'
+import { changeView, changeSetting } from '../actions'
 import SettingsForm from '../components/SettingsForm'
 
 const mapStateToProps = (state) => {
@@ -12,6 +12,9 @@ const mapDispatchToProps = (dispatch) => {
   return {
     onBackClick: () => {
       dispatch(changeView('list'))
+    },
+    onFieldChange: (key, value) => {
+      dispatch(changeSetting(key, value))
     }
   }
 }
