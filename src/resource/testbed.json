@@ -15,7 +15,7 @@
   "tests": [
       {
         "name": "Home",
-        "module": "Home"
+        "module": "SettingsForm"
       },
       {
         "name": "Publish",

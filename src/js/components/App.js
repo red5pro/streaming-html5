@@ -1,8 +1,8 @@
-import TestListContainer from '../containers/TestListContainer'  // eslint-disable-line no-unused-vars
+import { Children } from 'react'
 
-const App = () => (
+const App = ({ page }) => (
   <div>
-    <TestListContainer />
+    {Children.only(page)}
   </div>
 )
 

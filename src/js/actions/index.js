@@ -1,5 +1,5 @@
-export const SETTINGS_UPDATE = 'UPDATE'
-export const VIEW_SET = 'SET'
+export const SETTINGS_UPDATE = 'SETTINGS_UPDATE'
+export const VIEW_CHANGE = 'VIEW_CHANGE'
 
 export const changeSetting = (key, value) => ({
   type: SETTINGS_UPDATE,
@@ -8,6 +8,7 @@ export const changeSetting = (key, value) => ({
 })
 
 export const changeView = (name) => ({
-  type: VIEW_SET,
+  type: VIEW_CHANGE,
   filter: name
 })
+

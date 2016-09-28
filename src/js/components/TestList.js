@@ -1,7 +1,7 @@
 import { PropTypes } from 'react'
 import TestListItem from './TestListItem' // eslint-disable-line no-unused-vars
 
-const TestList = ({tests, onTestListItemClick}) => (
+const TestList = ({ tests, onTestListItemClick }) => (
   <ul>
     {tests.map(test =>
       <TestListItem
