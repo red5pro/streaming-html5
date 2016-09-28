@@ -4,8 +4,7 @@ import BackLink from './BackLink' // eslint-disable-line no-unused-vars
 
 class SettingsForm extends React.Component {
 
-  componentWillUnmount() {
-    console.log('Umount')
+  componentWillUnmount () {
     const settings = this.props.settings
     for (const key in settings) {
       const _ref = this['_' + key]
@@ -13,6 +12,13 @@ class SettingsForm extends React.Component {
         this.props.onFieldChange(key, _ref.value)
      }
     }
+  }
+
+  swapStreamNames () {
+    const value1 = this._stream1.value
+    const value2 = this._stream2.value
+    this._stream1.value = value2
+    this._stream2.value = value1
   }
 
   render () {
@@ -27,6 +33,9 @@ class SettingsForm extends React.Component {
         <p>
           <label for="stream1-field">Stream1 Name:</label>
           <input ref={(c) => this._stream1 = c} name="stream1-field" defaultValue={this.props.settings.stream1}></input>
+        </p>
+        <p>
+          <span onClick={this.swapStreamNames.bind(this)}>Swap Stream Names</span>
         </p>
         <p>
           <label for="stream2-field">Stream2 Name:</label>
