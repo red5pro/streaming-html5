@@ -23,7 +23,8 @@ export default {
   externals: {
     'react': 'React',
     'react-dom': 'ReactDOM',
-    'react-redux': 'ReactRedux'
+    'react-redux': 'ReactRedux',
+    'red5pro-sdk': 'red5prosdk'
   },
   module: {
     loaders: [
@@ -49,7 +50,7 @@ export default {
   },
   plugins: [
     new webpack.BannerPlugin(banner),
-    new webpack.IgnorePlugin(/react/, /react-(redux|dom)/),
+    new webpack.IgnorePlugin(/react/, /react-(redux|dom)/, 'red5pro-sdk'),
     new CopyWebpackPlugin([
       {
         from: 'src/lib',
