@@ -7,6 +7,7 @@ import { createSelector } from 'reselect'
 import TestListContainer from '../containers/TestListContainer' // eslint-disable-line no-unused-vars
 import SettingsFormContainer from '../containers/SettingsFormContainer' // eslint-disable-line no-unused-vars
 import PublisherTestContainer from '../containers/test/PublisherTestContainer' // eslint-disable-line no-unused-vars
+import SubscriberTestContainer from '../containers/test/SubscriberTestContainer' // eslint-disable-line no-unused-vars
 
 const getViewFilter = (state) => state.viewFilter
 
@@ -19,6 +20,8 @@ export const getCurrentPage = createSelector(
         return <SettingsFormContainer />
       case 'publish':
         return <PublisherTestContainer />
+      case 'subscribe':
+        return <SubscriberTestContainer />
       default:
         return <TestListContainer />
     }

@@ -4,54 +4,6 @@ import React from 'react'
 import { PropTypes } from 'react'
 import BackLink from '../BackLink' // eslint-disable-line no-unused-vars
 
-/*
-  var iceServers = [{urls: 'stun:stun2.l.google.com:19302'}];
-
-  // Create a new instance of the WebRTC publisher.
-  var publisher = new red5prosdk.RTCPublisher();
-
-  // Create a view instance based on video element id.
-  var view = new red5prosdk.Publisher('red5pro-publisher');
-
-  // Access user media.
-  navigator.getUserMedia({
-    audio: true,
-    video: true
-  }, function(media) {
-
-    // Upon access of user media,
-    // 1. Attach the stream to the publisher.
-    // 2. Show the stream as preview in view instance.
-    publisher.attachStream(media);
-    view.preview(media);
-
-  }, function(error) {
-    console.error(error);
-  });
-
-  view.attachPublisher(publisher);
-
-  // Initialize
-  publisher.init({
-      protocol: 'ws',
-      host: '10.0.0.1',
-      port: 8081,
-      app: 'live',
-      context: 'room1',
-      streamName: 'mystream',
-      streamType: 'webrtc',
-      iceServers: iceServers
-    })
-    .then(function() {
-      // Invoke the publish action
-      return publisher.publish();
-    })
-    .catch(function(error) {
-      // A fault occurred while trying to initialize and publish the stream.
-      console.error(error);
-      });
-*/
-
 class PublisherTest extends React.Component {
 
   getInitialState () {
@@ -97,6 +49,7 @@ class PublisherTest extends React.Component {
     const publisher = this.state.publisher
     const view = this.state.view
     view.attachPublisher(publisher);
+
     // Initialize
     publisher.init({
       protocol: 'ws',
@@ -126,6 +79,25 @@ class PublisherTest extends React.Component {
       .catch(() => {
         console.error('[PublishTest] :: Error - Could not start publishing session.')
       })
+  }
+
+  componentWillUnmount () {
+    const comp = this
+    const publisher = comp.state.publisher
+    if (publisher) {
+      publisher.unpublish()
+        .then(() => {
+          comp.setState(state => {
+            state.publisher = undefined
+            state.viewer = undefined
+            return state
+          })
+        })
+        .catch(error => {
+          const jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
+          console.error(`[PublishTest] :: Unmount Error = ${jsonError}`)
+        })
+    }
   }
 
   render () {

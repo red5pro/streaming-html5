@@ -22,6 +22,10 @@
       {
         "name": "Publish",
         "module": "PublishTest"
+      },
+      {
+        "name": "Subscribe",
+        "module": "SubscribeTest"
       }
   ]
 }
