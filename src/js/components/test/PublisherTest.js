@@ -110,9 +110,11 @@ class PublisherTest extends React.Component {
     return (
       <div>
         <BackLink onClick={this.props.onBackClick} />
-        <h1>Publisher Test</h1>
-        <h2>stream: {this.props.settings.stream1}</h2>
-        <div ref={c => this._videoContainer = c} id="video-container">
+        <h1 className="centered">Publisher Test</h1>
+        <h2 className="centered"><em>stream</em>: {this.props.settings.stream1}</h2>
+        <div ref={c => this._videoContainer = c}
+          id="video-container"
+          className="centered">
           <video ref={c => this._red5ProPublisher = c}
             id="red5pro-publisher"
             style={videoStyle}

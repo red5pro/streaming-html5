@@ -1,3 +1,23 @@
+html {
+  font-family: Helvetica, Arial, _sans;
+  font-size: 100%;
+}
+
+h1 {
+  font-size: 3rem;
+  margin: 1rem 0;
+}
+
+h2 {
+  font-size: 2rem;
+  margin: 1.4rem 0;
+}
+
+.centered {
+  width: 100%;
+  text-align: center;
+}
+
 #back-link-container {
   cursor: pointer;
   width: 100%;
