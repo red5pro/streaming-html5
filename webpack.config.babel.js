@@ -53,8 +53,16 @@ export default {
     new webpack.IgnorePlugin(/react/, /react-(redux|dom)/, 'red5pro-sdk'),
     new CopyWebpackPlugin([
       {
-        from: 'src/lib',
+        from: 'static/lib',
         to: 'lib'
+      },
+      {
+        from: 'static/css',
+        to: 'css'
+      },
+      {
+        from: 'static/favicon.ico',
+        to: ''
       }
     ])
   ]

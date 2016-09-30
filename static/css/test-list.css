@@ -1,0 +1,13 @@
+#test-list {
+  width: 100%;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+#test-list > li {
+  padding: 20px;
+  cursor: pointer;
+  border-bottom: 1px #AAA solid
+}
+

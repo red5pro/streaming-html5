@@ -12,7 +12,8 @@
     "videoOn": true,
     "audioOn": true,
     "buffer": 0.5,
-    "bitrate": 1000
+    "bitrate": 1000,
+    "useFailover": true
   },
   "tests": [
       {

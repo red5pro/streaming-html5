@@ -1,7 +1,9 @@
 import { PropTypes } from 'react'
 
 const BackLink = ({ onClick }) => (
-  <li onClick={onClick}>Return to Menu</li>
+  <div id="back-link-container">
+    <a id="back-link" onClick={onClick}>Return to Menu</a>
+  </div>
 )
 
 BackLink.propTypes = {
