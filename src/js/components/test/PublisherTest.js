@@ -86,10 +86,12 @@ class PublisherTest extends React.Component {
     const publisher = comp.state.publisher
     if (publisher) {
       publisher.unpublish()
-        .then(() => {
+      .then(() => {
+          comp.state.view.view.src = ''
+          comp.state.publisher.setView(undefined)
           comp.setState(state => {
             state.publisher = undefined
-            state.viewer = undefined
+            state.view = undefined
             return state
           })
         })

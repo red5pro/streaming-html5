@@ -1,8 +1,8 @@
 import { PropTypes } from 'react'
 
 const BackLink = ({ onClick }) => (
-  <div id="back-link-container">
-    <a id="back-link" onClick={onClick}>Return to Menu</a>
+  <div id="back-link-container" onClick={onClick}>
+    <a id="back-link">Return to Menu</a>
   </div>
 )
 
