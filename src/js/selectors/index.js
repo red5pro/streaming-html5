@@ -11,6 +11,7 @@ import SubscriberTestContainer from '../containers/test/SubscriberTestContainer'
 import PublisherFailoverTestContainer from '../containers/test/PublisherFailoverTestContainer' // eslint-disable-line no-unused-vars
 import SubscriberFailoverTestContainer from '../containers/test/SubscriberFailoverTestContainer' // eslint-disable-line no-unused-vars
 import PublisherAudioOnlyTestContainer from '../containers/test/PublisherAudioOnlyTestContainer' // eslint-disable-line no-unused-vars
+import PublisherCameraSourceTestContainer from '../containers/test/PublisherCameraSourceTestContainer' // eslint-disable-line no-unused-vars
 
 const getViewFilter = (state) => state.viewFilter
 
@@ -31,6 +32,8 @@ export const getCurrentPage = createSelector(
         return <SubscriberFailoverTestContainer />
       case 'publish - audio mode':
         return <PublisherAudioOnlyTestContainer />
+      case 'publish - camera source':
+        return <PublisherCameraSourceTestContainer />
       default:
         return <TestListContainer />
     }

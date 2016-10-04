@@ -19,31 +19,29 @@
   },
   "tests": [
       {
-        "name": "Home",
-        "module": "SettingsForm"
+        "name": "Home"
       },
       {
-        "name": "Publish",
-        "module": "PublishTest"
+        "name": "Publish"
       },
       {
         "name": "Publish - Failover",
-        "describe": "Demonstrates failover of browser support for publishing.",
-        "module": "PublishFailoverTest"
+        "description": "Demonstrates failover of browser support for publishing."
       },
       {
         "name": "Publish - Audio Mode",
-        "description": "Demonstrates Audio-Only broadcast for publishing.",
-        "module": "PublishAudioOnlyTest"
+        "description": "Demonstrates Audio-Only broadcast for publishing."
       },
       {
-        "name": "Subscribe",
-        "module": "SubscribeTest"
+        "name": "Publish - Camera Source",
+        "description": "Demonstrates selection of camera source for publishing."
+      },
+      {
+        "name": "Subscribe"
       },
       {
         "name": "Subscribe - Failover",
-        "description": "Demonstrates failover of browser support for subscribing.",
-        "module": "SubscribeFailoverTest"
+        "description": "Demonstrates failover of browser support for subscribing."
       }
   ]
 }
