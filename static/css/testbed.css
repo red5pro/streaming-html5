@@ -28,6 +28,30 @@ h2 {
   background-color: #eee;
 }
 
+.settings-field {
+  margin: 1rem;
+}
+
+.settings-label {
+  width: 50%;
+  display: inline-block;
+  margin-right: 1rem;
+  text-align: right;
+}
+
+.settings-field > input {
+  height: 1.5rem;
+  font-size: 1rem;
+  padding-left: 0.8rem;
+}
+
+.swap-streams-link {
+  color: #00a9ff;
+  cursor: pointer;
+  margin-left: 50%;
+  padding-left: 1rem;
+}
+
 #back-link-container {
   cursor: pointer;
   width: 100%;
@@ -53,5 +77,23 @@ h2 {
   padding: 20px;
   cursor: pointer;
   border-bottom: 1px #AAA solid
+}
+
+@media (max-width:440px) {
+  .settings-field > input {
+    width: 90%;
+  }
+  .settings-label {
+    width: 100%;
+    text-align: left;
+    margin-left: 0.3rem;
+    margin-bottom: 0.6rem;
+  }
+  .swap-streams-link {
+    width: 100%;
+    text-align: left;
+    margin: 0;
+    padding-left: 1.3rem;
+  }
 }
 

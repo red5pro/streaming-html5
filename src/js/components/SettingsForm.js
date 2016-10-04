@@ -25,20 +25,20 @@ class SettingsForm extends React.Component {
     return (
       <div>
         <BackLink onClick={this.props.onBackClick} />
-        <h1>Settings</h1>
-        <p>
-          <label for="host-field">host:</label>
+        <h1 className="centered">Settings</h1>
+        <p className="settings-field">
+          <label className="settings-label" for="host-field">Host:</label>
           <input ref={(c) => this._host = c} name="host-field" defaultValue={this.props.settings.host}></input>
         </p>
-        <p>
-          <label for="stream1-field">Stream1 Name:</label>
+        <p className="settings-field">
+          <label className="settings-label" for="stream1-field">Stream1 Name:</label>
           <input ref={(c) => this._stream1 = c} name="stream1-field" defaultValue={this.props.settings.stream1}></input>
         </p>
-        <p>
+        <p className="settings-field swap-streams-link">
           <span onClick={this.swapStreamNames.bind(this)}>Swap Stream Names</span>
         </p>
-        <p>
-          <label for="stream2-field">Stream2 Name:</label>
+        <p className="settings-field">
+          <label className="settings-label" for="stream2-field">Stream2 Name:</label>
           <input ref={(c) => this._stream2 = c} name="stream2-field" defaultValue={this.props.settings.stream2}></input>
         </p>
       </div>
