@@ -9,6 +9,7 @@ import SettingsFormContainer from '../containers/SettingsFormContainer' // eslin
 import PublisherTestContainer from '../containers/test/PublisherTestContainer' // eslint-disable-line no-unused-vars
 import SubscriberTestContainer from '../containers/test/SubscriberTestContainer' // eslint-disable-line no-unused-vars
 import PublisherFailoverTestContainer from '../containers/test/PublisherFailoverTestContainer' // eslint-disable-line no-unused-vars
+import SubscriberFailoverTestContainer from '../containers/test/SubscriberFailoverTestContainer' // eslint-disable-line no-unused-vars
 
 const getViewFilter = (state) => state.viewFilter
 
@@ -25,6 +26,8 @@ export const getCurrentPage = createSelector(
         return <SubscriberTestContainer />
       case 'publish - failover':
         return <PublisherFailoverTestContainer />
+      case 'subscribe - failover':
+        return <SubscriberFailoverTestContainer />
       default:
         return <TestListContainer />
     }

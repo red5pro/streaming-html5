@@ -4,7 +4,7 @@ import React from 'react'
 import { PropTypes } from 'react'
 import BackLink from '../BackLink' // eslint-disable-line no-unused-vars
 
-class SubscriberTest extends React.Component {
+class SubscriberFailoverTest extends React.Component {
 
   getInitialState () {
     return {
@@ -16,20 +16,22 @@ class SubscriberTest extends React.Component {
   subscribe () {
     const comp = this
     const view = new red5prosdk.PlaybackView('red5pro-subscriber')
-    const subscriber = new red5prosdk.RTCSubscriber()
+    const subscriber = new red5prosdk.Red5ProSubscriber()
     const statusField = this._statusField
     const iceServers = [{urls: 'stun:stun2.l.google.com:19302'}]
+    const subscribeOrder = this.props.settings.subscriberFailoverOrder.split(',').map(item => {
+        return item.trim()
+      })
 
     const origAttachStream = view.attachStream.bind(view)
     view.attachStream = (stream, autoplay) => {
-      statusField.innerText = 'STATUS: Subscribed. They\'re Live!'
+      const type = comp.state.subscriber.getType()
+      statusField.innerText = `STATUS: ${type} Subscribed. They're Live!`
       origAttachStream(stream, autoplay)
       view.attachStream = origAttachStream
     }
 
-    statusField.innerText = 'STATUS: Establishing connection...'
-    view.attachSubscriber(subscriber)
-    subscriber.init({
+    const rtcConfig = {
       protocol: 'ws',
       host: this.props.settings.host,
       port: this.props.settings.rtcport,
@@ -42,22 +44,54 @@ class SubscriberTest extends React.Component {
         video: 256,
         data: 30 * 1000 * 1000
       }
-    })
-    .then(player => {
-      comp.setState(state => {
-        state.view = view
-        state.subscriber = subscriber
+    }
+    const rtmpConfig = {
+      protocol: 'rtmp',
+      host: this.props.settings.host,
+      port: this.props.settings.rtmpport,
+      app: this.props.settings.context,
+      streamName: this.props.settings.stream1,
+      mimeType: 'rtmp/flv',
+      useVideoJS: false,
+      swf: 'lib/red5pro/red5pro-subscriber.swf'
+    }
+    const hlsConfig = {
+      protocol: 'http',
+      host: this.props.settings.host,
+      port: this.props.settings.hlsport,
+      app: this.props.settings.context,
+      streamName: this.props.settings.stream1,
+      mimeType: 'application/x-mpegURL',
+      swf: 'lib/red5pro/red5pro-video-js.swf'
+    }
+
+    statusField.innerText = 'STATUS: Establishing connection...'
+    view.attachSubscriber(subscriber)
+
+    subscriber
+      .setPlaybackOrder(subscribeOrder)
+      .init({
+        rtc: rtcConfig,
+        rtmp: rtmpConfig,
+        hls: hlsConfig
       })
-      statusField.innerText = 'STATUS: Negotating connection...'
-      return player.play()
-    })
-    .then(() => {
-      statusField.innerText = 'STATUS: Requesting stream for playback...'
-    })
-    .catch(error => {
-      const jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
-      console.error(`[SubscriberTest] :: Error - ${jsonError}`)
-    })
+      .then(player => {
+        comp.setState(state => {
+          state.view = view
+          state.subscriber = player
+        })
+        const type = player.getType()
+        statusField.innerText = `STATUS: Negotating ${type} connection...`
+        return player.play()
+      })
+      .then(() => {
+        const type = comp.state.subscriber.getType()
+        statusField.innerText = `STATUS: Requesting ${type} stream for playback...`
+      })
+      .catch(error => {
+        const jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
+        console.error(`[SubscriberTest] :: Error - ${jsonError}`)
+      })
 
   }
 
@@ -89,7 +123,8 @@ class SubscriberTest extends React.Component {
   render () {
     const videoStyle = {
       'width': '100%',
-      'max-width': '640px'
+      'max-width': '640px',
+      'height': '300px'
     }
     return (
       <div>
@@ -98,10 +133,10 @@ class SubscriberTest extends React.Component {
         <hr />
         <h2 className="centered"><em>stream</em>: {this.props.settings.stream1}</h2>
         <p className="centered subscriber-status-field" ref={c => this._statusField = c}>STATUS: On Hold.</p>
-        <div ref={c => this._videoContainer = c}
+        <div className="centered" ref={c => this._videoContainer = c}
           id="video-container"
           className="centered">
-          <video ref={c => this._red5ProSubscriber = c}
+          <video className="video-js vjs-default-skin" ref={c => this._red5ProSubscriber = c}
             id="red5pro-subscriber"
             style={videoStyle}
             controls autoplay></video>
@@ -112,10 +147,10 @@ class SubscriberTest extends React.Component {
 
 }
 
-SubscriberTest.propTypes = {
+SubscriberFailoverTest.propTypes = {
   settings: PropTypes.object.isRequired,
   onBackClick: PropTypes.func.isRequired
 }
 
-export default SubscriberTest
+export default SubscriberFailoverTest
 

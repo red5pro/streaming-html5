@@ -1,6 +1,6 @@
 import { connect } from 'react-redux'
 import { changeView } from '../../actions'
-import PublisherTest from '../../components/test/PublisherTest'
+import SubscriberFailoverTest from '../../components/test/SubscriberFailoverTest'
 
 const mapStateToProps = (state) => {
   return {
@@ -15,10 +15,10 @@ const mapDispatchToProps = (dispatch) => {
     }
   }
 }
-const PublisherTestContainer = connect(
+const SubscriberFailoverTestContainer = connect(
   mapStateToProps,
   mapDispatchToProps
-)(PublisherTest)
+)(SubscriberFailoverTest)
 
-export default PublisherTestContainer
+export default SubscriberFailoverTestContainer
 

@@ -21,3 +21,4 @@ const PublisherFailoverTestContainer = connect(
 )(PublisherFailoverTest)
 
 export default PublisherFailoverTestContainer
+
