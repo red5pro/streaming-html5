@@ -32,6 +32,11 @@
         "module": "PublishFailoverTest"
       },
       {
+        "name": "Publish - Audio Mode",
+        "description": "Demonstrates Audio-Only broadcast for publishing.",
+        "module": "PublishAudioOnlyTest"
+      },
+      {
         "name": "Subscribe",
         "module": "SubscribeTest"
       },
