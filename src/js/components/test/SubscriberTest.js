@@ -52,6 +52,27 @@ class SubscriberTest extends React.Component {
     this.subscribe()
   }
 
+  componentWillUnmount() {
+    const comp = this;
+    const view = comp.state.view;
+    const subscriber = comp.state.subscriber;
+    if (subscriber) {
+      subscriber.stop()
+        .then(() => {
+          view.view.src = ''
+          subscriber.setView(undefined)
+          comp.setState(state => {
+            state.view = undefined
+            state.subscriber = undefined
+          })
+        })
+        .catch(error => {
+          const jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
+          console.error(`[SubscriberTest] :: Unmount Error = ${jsonError}`)
+        })
+    }
+  }
+
   render () {
     const videoStyle = {
       'width': '100%',
