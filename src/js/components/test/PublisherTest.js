@@ -48,8 +48,10 @@ class PublisherTest extends React.Component {
     const iceServers = [{urls: 'stun:stun2.l.google.com:19302'}]
     const publisher = this.state.publisher
     const view = this.state.view
+    const statusField = this._statusField
     view.attachPublisher(publisher);
 
+    statusField.innerText = 'STATUS: Establishing connection...'
     // Initialize
     publisher.init({
       protocol: 'ws',
@@ -62,11 +64,16 @@ class PublisherTest extends React.Component {
     })
     .then(() => {
       // Invoke the publish action
+      statusField.innerText = 'STATUS: Starting publish session...'
       return publisher.publish()
+    })
+    .then(() => {
+      statusField.innerText = 'STATUS: Publishing started. You\'re Live!'
     })
     .catch(error => {
       // A fault occurred while trying to initialize and publish the stream.
       const jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
+      statusField.innerText = `ERROR: ${jsonError}`
       console.error(`[PublisherTest] :: Error - ${jsonError}`)
     })
 
@@ -112,14 +119,16 @@ class PublisherTest extends React.Component {
       <div>
         <BackLink onClick={this.props.onBackClick} />
         <h1 className="centered">Publisher Test</h1>
+        <hr />
         <h2 className="centered"><em>stream</em>: {this.props.settings.stream1}</h2>
+        <p className="centered publish-status-field" ref={c => this._statusField = c}>STATUS: On Hold.</p>
         <div ref={c => this._videoContainer = c}
           id="video-container"
           className="centered">
           <video ref={c => this._red5ProPublisher = c}
             id="red5pro-publisher"
             style={videoStyle}
-            controls autoplay></video>
+            controls autoplay disabled></video>
         </div>
       </div>
     )
