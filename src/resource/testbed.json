@@ -13,7 +13,8 @@
     "audioOn": true,
     "buffer": 0.5,
     "bitrate": 1000,
-    "useFailover": true
+    "publisherFailoverOrder": "rtc,rtmp",
+    "subscriberFailoverOrder": "rtc,rtmp,hls"
   },
   "tests": [
       {
@@ -23,6 +24,11 @@
       {
         "name": "Publish",
         "module": "PublishTest"
+      },
+      {
+        "name": "Publish - Failover",
+        "describe": "Demonstrates failover of browser support for publishing.",
+        "module": "PublishFailoverTest"
       },
       {
         "name": "Subscribe",
