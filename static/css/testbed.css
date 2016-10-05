@@ -45,11 +45,27 @@ h2 {
   padding-left: 0.8rem;
 }
 
+.settings-field > select {
+  height: 1.5rem;
+  font-size: 1rem;
+  padding-left: 0.8rem;
+}
+
 .swap-streams-link {
   color: #00a9ff;
   cursor: pointer;
   margin-left: 50%;
   padding-left: 1rem;
+}
+
+.instructions-block {
+  margin: 1rem;
+  background-color: #eee;
+  border: 1px #ccc solid;
+}
+
+.instructions-block > p {
+  margin: 0.75rem;
 }
 
 #back-link-container {
@@ -81,6 +97,9 @@ h2 {
 
 @media (max-width:440px) {
   .settings-field > input {
+    width: 90%;
+  }
+  .settings-field > select {
     width: 90%;
   }
   .settings-label {
