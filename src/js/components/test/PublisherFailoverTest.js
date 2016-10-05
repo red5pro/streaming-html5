@@ -6,16 +6,17 @@ import BackLink from '../BackLink' // eslint-disable-line no-unused-vars
 
 class PublisherFailoverTest extends React.Component {
 
-  getInitialState () {
-    return {
+  constructor (props) {
+    super(props)
+    this.state = {
       view: undefined,
-      publisher: undefined
+      publisher: undefined,
+      status: 'On hold.'
     }
   }
 
   preview () {
     const comp = this
-    const statusField = comp._statusField
 
     return new Promise((resolve, reject) => {
 
@@ -54,7 +55,9 @@ class PublisherFailoverTest extends React.Component {
 
         // Invoke the publish action
         const type = selectedPublisher.getType()
-        statusField.innerText = `STATUS: Starting publish session with ${type}...`
+        comp.setState(state => {
+          state.status = `Starting publish session with ${type}...`
+        })
 
         if (type.toLowerCase() === publisher.publishTypes.RTC) {
           navigator.getUserMedia({
@@ -94,23 +97,59 @@ class PublisherFailoverTest extends React.Component {
   }
 
   publish () {
+    const comp = this
     const publisher = this.state.publisher
-    const statusField = this._statusField
 
     const type = publisher.getType()
-    statusField.innerText = `STATUS: Establishing connection with ${type} publisher...`
+    comp.setState(state => {
+      state.status = `Establishing connection with ${type} publisher...`
+    })
     // Initialize
     publisher.publish()
     .then(() => {
-      statusField.innerText = `STATUS: ${type} publishing started. You're Live!`
+      comp.setState(state => {
+        state.status = `${type} publishing started. You're Live!`
+      })
     })
     .catch(error => {
       // A fault occurred while trying to initialize and publish the stream.
       const jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
-      statusField.innerText = `ERROR: ${jsonError}`
+      comp.setState(state => {
+        state.status = `ERROR: ${jsonError}`
+      })
       console.error(`[PublisherTest] :: Error - ${jsonError}`)
     })
 
+  }
+
+  unpublish () {
+    const comp = this
+    return new Promise((resolve, reject) => {
+      const view = comp.state.view
+      const publisher = comp.state.publisher
+      if (publisher) {
+        publisher.unpublish()
+          .then(() => {
+            view.view.src = ''
+            publisher.setView(undefined)
+            comp.setState(state => {
+              state.publisher = undefined
+              state.view = undefined
+              state.selectedCamera = undefined
+              return state
+            })
+            resolve()
+          })
+          .catch(error => {
+            const jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
+            console.error(`[PublishTest] :: Unmount Error = ${jsonError}`)
+            reject(error)
+          })
+      }
+      else {
+        resolve()
+      }
+    })
   }
 
   componentDidMount () {
@@ -123,25 +162,7 @@ class PublisherFailoverTest extends React.Component {
   }
 
   componentWillUnmount () {
-    const comp = this
-    const view = comp.state.view
-    const publisher = comp.state.publisher
-    if (publisher) {
-      publisher.unpublish()
-      .then(() => {
-          view.view.src = ''
-          publisher.setView(undefined)
-          comp.setState(state => {
-            state.publisher = undefined
-            state.view = undefined
-            return state
-          })
-        })
-        .catch(error => {
-          const jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
-          console.error(`[PublishTest] :: Unmount Error = ${jsonError}`)
-        })
-    }
+    this.unpublish()
   }
 
   render () {
@@ -155,7 +176,7 @@ class PublisherFailoverTest extends React.Component {
         <h1 className="centered">Publisher Test</h1>
         <hr />
         <h2 className="centered"><em>stream</em>: {this.props.settings.stream1}</h2>
-        <p className="centered publish-status-field" ref={c => this._statusField = c}>STATUS: On Hold.</p>
+        <p className="centered publish-status-field">STATUS: {this.state.status}</p>
         <div ref={c => this._videoContainer = c}
           id="video-container"
           className="centered">

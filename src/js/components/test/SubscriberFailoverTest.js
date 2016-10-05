@@ -6,10 +6,12 @@ import BackLink from '../BackLink' // eslint-disable-line no-unused-vars
 
 class SubscriberFailoverTest extends React.Component {
 
-  getInitialState () {
-    return {
+  constructor (props) {
+    super(props)
+    this.state = {
       view: undefined,
-      subscriber: undefined
+      subscriber: undefined,
+      status: 'On hold.'
     }
   }
 
@@ -17,7 +19,6 @@ class SubscriberFailoverTest extends React.Component {
     const comp = this
     const view = new red5prosdk.PlaybackView('red5pro-subscriber')
     const subscriber = new red5prosdk.Red5ProSubscriber()
-    const statusField = this._statusField
     const iceServers = [{urls: 'stun:stun2.l.google.com:19302'}]
     const subscribeOrder = this.props.settings.subscriberFailoverOrder.split(',').map(item => {
         return item.trim()
@@ -26,7 +27,9 @@ class SubscriberFailoverTest extends React.Component {
     const origAttachStream = view.attachStream.bind(view)
     view.attachStream = (stream, autoplay) => {
       const type = comp.state.subscriber.getType()
-      statusField.innerText = `STATUS: ${type} Subscribed. They're Live!`
+      comp.setState(state => {
+        state.status = `${type} Subscribed. They're Live!`
+      })
       origAttachStream(stream, autoplay)
       view.attachStream = origAttachStream
     }
@@ -65,7 +68,9 @@ class SubscriberFailoverTest extends React.Component {
       swf: 'lib/red5pro/red5pro-video-js.swf'
     }
 
-    statusField.innerText = 'STATUS: Establishing connection...'
+    comp.setState(state => {
+      state.status = 'Establishing connection...'
+    })
     view.attachSubscriber(subscriber)
 
     subscriber
@@ -81,15 +86,22 @@ class SubscriberFailoverTest extends React.Component {
           state.subscriber = player
         })
         const type = player.getType()
-        statusField.innerText = `STATUS: Negotating ${type} connection...`
+        comp.setState(state => {
+          state.status = `Negotating ${type} connection...`
+        })
         return player.play()
       })
       .then(() => {
         const type = comp.state.subscriber.getType()
-        statusField.innerText = `STATUS: Requesting ${type} stream for playback...`
+        comp.setState(state => {
+          state.status = `Requesting ${type} stream for playback...`
+        })
       })
       .catch(error => {
         const jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
+        comp.setState(state => {
+          state.status = `Error: ${jsonError}`
+        })
         console.error(`[SubscriberTest] :: Error - ${jsonError}`)
       })
 
@@ -132,7 +144,7 @@ class SubscriberFailoverTest extends React.Component {
         <h1 className="centered">Subscriber Test</h1>
         <hr />
         <h2 className="centered"><em>stream</em>: {this.props.settings.stream1}</h2>
-        <p className="centered subscriber-status-field" ref={c => this._statusField = c}>STATUS: On Hold.</p>
+        <p className="centered subscriber-status-field">STATUS: {this.state.status}</p>
         <div className="centered" ref={c => this._videoContainer = c}
           id="video-container"
           className="centered">

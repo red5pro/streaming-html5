@@ -6,10 +6,12 @@ import BackLink from '../BackLink' // eslint-disable-line no-unused-vars
 
 class PublisherAudioOnlyTest extends React.Component {
 
-  getInitialState () {
-    return {
+  constructor (props) {
+    super(props)
+    this.state = {
       view: undefined,
-      publisher: undefined
+      publisher: undefined,
+      status: 'On hold.'
     }
   }
 
@@ -45,13 +47,16 @@ class PublisherAudioOnlyTest extends React.Component {
   }
 
   publish () {
+    const comp = this
     const iceServers = [{urls: 'stun:stun2.l.google.com:19302'}]
     const publisher = this.state.publisher
     const view = this.state.view
-    const statusField = this._statusField
     view.attachPublisher(publisher);
 
-    statusField.innerText = 'STATUS: Establishing connection...'
+    comp.setState(state => {
+      state.status = 'Establishing connection...'
+    })
+
     // Initialize
     publisher.init({
       protocol: 'ws',
@@ -64,19 +69,55 @@ class PublisherAudioOnlyTest extends React.Component {
     })
     .then(() => {
       // Invoke the publish action
-      statusField.innerText = 'STATUS: Starting publish session...'
+      comp.setState(state => {
+        state.status = 'Starting publish session...'
+      })
       return publisher.publish()
     })
     .then(() => {
-      statusField.innerText = 'STATUS: Publishing started. You\'re Live!'
+      comp.setState(state => {
+        state.status = 'Publishing started. You\'re Live!'
+      })
     })
     .catch(error => {
       // A fault occurred while trying to initialize and publish the stream.
       const jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
-      statusField.innerText = `ERROR: ${jsonError}`
-      console.error(`[PublisherAudioOnlyTest] :: Error - ${jsonError}`)
+      comp.setState(state => {
+        state.status = `ERROR: ${jsonError}`
+      })
+      console.error(`[PublisherCameraSourceTest] :: Error - ${jsonError}`)
     })
 
+  }
+
+  unpublish () {
+    const comp = this
+    return new Promise((resolve, reject) => {
+      const view = comp.state.view
+      const publisher = comp.state.publisher
+      if (publisher) {
+        publisher.unpublish()
+          .then(() => {
+            view.view.src = ''
+            publisher.setView(undefined)
+            comp.setState(state => {
+              state.publisher = undefined
+              state.view = undefined
+              state.selectedCamera = undefined
+              return state
+            })
+            resolve()
+          })
+          .catch(error => {
+            const jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
+            console.error(`[PublishTest] :: Unmount Error = ${jsonError}`)
+            reject(error)
+          })
+      }
+      else {
+        resolve()
+      }
+    })
   }
 
   componentDidMount () {
@@ -89,25 +130,7 @@ class PublisherAudioOnlyTest extends React.Component {
   }
 
   componentWillUnmount () {
-    const comp = this
-    const view = comp.state.view
-    const publisher = comp.state.publisher
-    if (publisher) {
-      publisher.unpublish()
-      .then(() => {
-          view.view.src = ''
-          publisher.setView(undefined)
-          comp.setState(state => {
-            state.publisher = undefined
-            state.view = undefined
-            return state
-          })
-        })
-        .catch(error => {
-          const jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
-          console.error(`[PublishTest] :: Unmount Error = ${jsonError}`)
-        })
-    }
+    this.unpublish()
   }
 
   render () {
@@ -122,7 +145,7 @@ class PublisherAudioOnlyTest extends React.Component {
         <h1 className="centered">Publisher Test</h1>
         <hr />
         <h2 className="centered"><em>stream</em>: {this.props.settings.stream1}</h2>
-        <p className="centered publish-status-field" ref={c => this._statusField = c}>STATUS: On Hold.</p>
+        <p className="centered publish-status-field">STATUS: {this.state.status}</p>
         <div ref={c => this._videoContainer = c}
           id="video-container"
           className="centered">
