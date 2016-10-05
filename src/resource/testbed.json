@@ -37,6 +37,10 @@
         "description": "Demonstrates selection of camera source for publishing."
       },
       {
+        "name": "Publish - Camera Swap",
+        "description": "Demonstrates swap of camera in front to rear where supported on device browser."
+      },
+      {
         "name": "Subscribe"
       },
       {

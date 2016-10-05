@@ -28,6 +28,8 @@ export const getCurrentPage = createSelector(
         return TestContainer(tests.PublisherAudioOnlyTest)
       case 'publish - camera source':
         return TestContainer(tests.PublisherCameraSourceTest)
+      case 'publish - camera swap':
+        return TestContainer(tests.PublisherCameraSwapTest)
       case 'settings':
       case 'home':
         return <SettingsFormContainer />
