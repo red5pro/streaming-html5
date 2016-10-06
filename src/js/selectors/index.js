@@ -32,6 +32,10 @@ export const getCurrentPage = createSelector(
         return TestContainer(tests.PublisherCameraSourceTest)
       case 'publish - camera swap':
         return TestContainer(tests.PublisherCameraSwapTest)
+      case 'publish - filters':
+        return TestContainer(tests.PublisherFiltersTest)
+      case 'publish - image capture':
+        return TestContainer(tests.PublisherImageCaptureTest)
       case 'settings':
       case 'home':
         return <SettingsFormContainer />

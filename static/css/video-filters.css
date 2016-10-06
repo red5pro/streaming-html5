@@ -1,0 +1,23 @@
+/*
+ * https://www.sitepoint.com/using-the-media-capture-api/
+ */
+.grayscale {
+    -webkit-filter: grayscale(1);
+    -moz-filter: grayscale(1);
+    -ms-filter: grayscale(1);
+    filter: grayscale(1);
+}
+
+.sepia {
+    -webkit-filter: sepia(1);
+    -moz-filter: sepia(1);
+    -ms-filter: sepia(1);
+    filter: sepia(1);
+}
+
+.blur {
+    -webkit-filter: blur(3px);
+    -moz-filter: blur(3px);
+    -ms-filter: blur(3px);
+    filter: blur(3px);
+}

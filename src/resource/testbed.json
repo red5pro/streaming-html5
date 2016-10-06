@@ -45,6 +45,10 @@
         "description": "Demonstrates swap of camera in front to rear where supported on device browser."
       },
       {
+        "name": "Publish - Image Capture",
+        "description": "Demonstrates capturaing an image of live video."
+      },
+      {
         "name": "Subscribe"
       },
       {
