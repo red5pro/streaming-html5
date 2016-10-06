@@ -25,6 +25,10 @@
         "name": "Publish"
       },
       {
+        "name": "Publish - 1080p",
+        "description": "Demonstration of assigning 1080p resolution to publishing."
+      },
+      {
         "name": "Publish - Failover",
         "description": "Demonstrates failover of browser support for publishing."
       },

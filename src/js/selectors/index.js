@@ -20,6 +20,8 @@ export const getCurrentPage = createSelector(
         return TestContainer(tests.PublisherTest)
       case 'subscribe':
         return TestContainer(tests.SubscriberTest)
+      case 'publish - 1080p':
+        return TestContainer(tests.Publisher1080pTest)
       case 'publish - failover':
         return TestContainer(tests.PublisherFailoverTest)
       case 'subscribe - failover':
