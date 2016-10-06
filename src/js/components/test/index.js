@@ -6,6 +6,7 @@ export { default as PublisherCameraSwapTest } from './PublisherCameraSwapTest'
 export { default as PublisherFiltersTest } from './PublisherFiltersTest'
 export { default as PublisherFailoverTest } from './PublisherFailoverTest'
 export { default as PublisherImageCaptureTest } from './PublisherImageCaptureTest'
+export { default as PublisherStreamManagerTest } from './PublisherStreamManagerTest'
 export { default as SubscriberTest } from './SubscriberTest'
 export { default as SubscriberFailoverTest } from './SubscriberFailoverTest'
 

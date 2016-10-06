@@ -4,7 +4,7 @@ import React from 'react'
 import { PropTypes } from 'react'
 import BackLink from '../BackLink' // eslint-disable-line no-unused-vars
 
-class PublisherFailoverTest extends React.Component {
+class PublisherStreamManagerTest extends React.Component {
 
   constructor (props) {
     super(props)
@@ -15,100 +15,98 @@ class PublisherFailoverTest extends React.Component {
     }
   }
 
-  preview () {
-    const comp = this
-
+  requestOrigin () {
+    const host = this.props.settings.host
+    const context = this.props.settings.context
+    const streamName = this.props.settings.stream1
+    const url = `http://${host}:5080/streammanager/api/1.0/event/${context}/${streamName}?action=broadcast`
+    this.setState(state => {
+      state.status = `Requesting Origin from ${url}...`
+    })
     return new Promise((resolve, reject) => {
-
-      const publisher = new red5prosdk.Red5ProPublisher()
-      const view = new red5prosdk.PublisherView('red5pro-publisher')
-      view.attachPublisher(publisher);
-
-      const iceServers = this.props.settings.iceServers
-      const rtcConfig = {
-        protocol: 'ws',
-        host: this.props.settings.host,
-        port: this.props.settings.rtcport,
-        app: this.props.settings.context,
-        streamName: this.props.settings.stream1,
-        streamType: 'webrtc',
-        iceServers: iceServers
-      }
-      const rtmpConfig = {
-        protocol: 'rtmp',
-        host: this.props.settings.host,
-        port: this.props.settings.rtmpport,
-        app: this.props.settings.context,
-        streamName: this.props.settings.stream1,
-        swf: 'lib/red5pro/red5pro-publisher.swf'
-      }
-      const publishOrder = this.props.settings.publisherFailoverOrder.split(',').map(item => {
-        return item.trim()
-      })
-
-      publisher.setPublishOrder(publishOrder)
-      .init({
-        rtc: rtcConfig,
-        rtmp: rtmpConfig
-      })
-      .then((selectedPublisher) => {
-
-        // Invoke the publish action
-        const type = selectedPublisher.getType()
-        comp.setState(state => {
-          state.status = `Starting publish session with ${type}...`
+      fetch(url)
+        .then(res => {
+          if(res.headers.get("content-type") &&
+            res.headers.get("content-type").toLowerCase().indexOf("application/json") >= 0) {
+              return res.json()
+          }
+          else {
+            throw new TypeError('Could not properly parse response.')
+          }
         })
-
-        if (type.toLowerCase() === publisher.publishTypes.RTC) {
-          navigator.getUserMedia({
-            audio: !comp.props.settings.audioOn ? false : true,
-            video: !comp.props.settings.videoOn ? false : true
-          }, media => {
-
-            // Upon access of user media,
-            // 1. Attach the stream to the publisher.
-            // 2. Show the stream as preview in view instance.
-            selectedPublisher.attachStream(media)
-            view.preview(media, true)
-
-            comp.setState(state => {
-              state.publisher = selectedPublisher
-              state.view = view
-              return state
-            })
-            resolve()
-          }, error => {
-            console.error(`[PublisherFailoverTest] :: Error - ${error}`)
-            reject(error)
-          })
-        }
-        else {
-          comp.setState(state => {
-            state.publisher = selectedPublisher
-            state.view = view
-            return state
-          })
-          selectedPublisher ? resolve() : reject('Could not find publisher.')
-        }
-        // End if/clause for publisher type.
-      })
-      // End Promise declaration.
+        .then(json => {
+          resolve(json.serverAddress)
+        })
+        .catch(error => {
+          const jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
+          console.error(`[PublisherStreamManagerTest] :: Error - Could not request Origin IP from Stream Manager. ${jsonError}`)
+          reject(error)
+        })
     })
   }
 
-  publish () {
+  preview () {
     const comp = this
-    const publisher = this.state.publisher
+    return new Promise((resolve, reject) => {
+      const publisher = new red5prosdk.RTCPublisher()
+      const view = new red5prosdk.PublisherView('red5pro-publisher')
+      navigator.getUserMedia({
+        audio: !comp.props.settings.audioOn ? false : true,
+        video: !comp.props.settings.videoOn ? false : true
+      }, media => {
 
-    const type = publisher.getType()
-    comp.setState(state => {
-      state.status = `Establishing connection with ${type} publisher...`
+        // Upon access of user media,
+        // 1. Attach the stream to the publisher.
+        // 2. Show the stream as preview in view instance.
+        publisher.attachStream(media)
+        view.preview(media, true)
+
+        comp.setState(state => {
+          state.publisher = publisher
+          state.view = view
+          return state
+        })
+
+        resolve()
+
+      }, error => {
+        console.error(`[PublisherStreamManagerTest] :: Error - ${error}`)
+        reject(error)
+      })
     })
+  }
+
+  publish (serverHost) {
+    const comp = this
+    const iceServers = this.props.settings.iceServers
+    const publisher = this.state.publisher
+    const view = this.state.view
+    view.attachPublisher(publisher);
+
+    comp.setState(state => {
+      state.status = `Establishing connection on ${serverHost}...`
+    })
+
     // Initialize
-    publisher.publish()
+    publisher.init({
+      protocol: 'ws',
+      host: serverHost,
+      port: this.props.settings.rtcport,
+      app: this.props.settings.context,
+      streamName: this.props.settings.stream1,
+      streamType: 'webrtc',
+      iceServers: iceServers
+    })
+    .then(() => {
+      // Invoke the publish action
+      comp.setState(state => {
+        state.status = 'Starting publish session...'
+      })
+      return publisher.publish()
+    })
     .then(() => {
       comp.setState(state => {
-        state.status = `${type} publishing started. You're Live!`
+        state.status = 'Publishing started. You\'re Live!'
       })
     })
     .catch(error => {
@@ -117,7 +115,7 @@ class PublisherFailoverTest extends React.Component {
       comp.setState(state => {
         state.status = `ERROR: ${jsonError}`
       })
-      console.error(`[PublisherFailoverTest] :: Error - ${jsonError}`)
+      console.error(`[PublisherStreamManagerTest] :: Error - ${jsonError}`)
     })
 
   }
@@ -153,10 +151,16 @@ class PublisherFailoverTest extends React.Component {
   }
 
   componentDidMount () {
+    const comp = this
     const pub = this.publish.bind(this)
+    const getOrigin = this.requestOrigin.bind(this)
     this.preview()
+      .then(getOrigin)
       .then(pub)
       .catch(() => {
+        comp.setState(state => {
+          state.status = 'Error - Could not start publishing session.'
+        })
         console.error('[PublishTest] :: Error - Could not start publishing session.')
       })
   }
@@ -191,9 +195,10 @@ class PublisherFailoverTest extends React.Component {
 
 }
 
-PublisherFailoverTest.propTypes = {
+PublisherStreamManagerTest.propTypes = {
   settings: PropTypes.object.isRequired,
   onBackClick: PropTypes.func.isRequired
 }
 
-export default PublisherFailoverTest
+export default PublisherStreamManagerTest
+

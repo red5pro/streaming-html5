@@ -15,7 +15,12 @@
     "buffer": 0.5,
     "bitrate": 1000,
     "publisherFailoverOrder": "rtc,rtmp",
-    "subscriberFailoverOrder": "rtc,rtmp,hls"
+    "subscriberFailoverOrder": "rtc,rtmp,hls",
+    "iceServers": [
+      {
+        "urls": "stun:stun2.l.google.com:19302"
+      }
+    ]
   },
   "tests": [
       {
@@ -46,7 +51,11 @@
       },
       {
         "name": "Publish - Image Capture",
-        "description": "Demonstrates capturaing an image of live video."
+        "description": "Demonstrates capturing an image of live video."
+      },
+      {
+        "name": "Publish - Stream Manager",
+        "description": "Demonstrates accessing target origin for broadcast using Stream Manager."
       },
       {
         "name": "Subscribe"

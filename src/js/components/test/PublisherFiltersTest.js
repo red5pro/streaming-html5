@@ -6,7 +6,7 @@ import BackLink from '../BackLink' // eslint-disable-line no-unused-vars
 
 const FILTER_SELECT = 'Select filter...'
 
-class PublisherTest extends React.Component {
+class PublisherFiltersTest extends React.Component {
 
   constructor (props) {
     super(props)
@@ -44,7 +44,7 @@ class PublisherTest extends React.Component {
         resolve()
 
       }, error => {
-        console.error(`[PublisherTest] :: Error - ${error}`)
+        console.error(`[PublisherFiltersTest] :: Error - ${error}`)
         reject(error)
       })
     })
@@ -52,7 +52,7 @@ class PublisherTest extends React.Component {
 
   publish () {
     const comp = this
-    const iceServers = [{urls: 'stun:stun2.l.google.com:19302'}]
+    const iceServers = this.props.settings.iceServers
     const publisher = this.state.publisher
     const view = this.state.view
     view.attachPublisher(publisher);
@@ -89,7 +89,7 @@ class PublisherTest extends React.Component {
       comp.setState(state => {
         state.status = `ERROR: ${jsonError}`
       })
-      console.error(`[PublisherTest] :: Error - ${jsonError}`)
+      console.error(`[PublisherFiltersTest] :: Error - ${jsonError}`)
     })
 
   }
@@ -193,9 +193,10 @@ class PublisherTest extends React.Component {
 
 }
 
-PublisherTest.propTypes = {
+PublisherFiltersTest.propTypes = {
   settings: PropTypes.object.isRequired,
   onBackClick: PropTypes.func.isRequired
 }
 
-export default PublisherTest
+export default PublisherFiltersTest
+

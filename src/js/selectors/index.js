@@ -36,6 +36,8 @@ export const getCurrentPage = createSelector(
         return TestContainer(tests.PublisherFiltersTest)
       case 'publish - image capture':
         return TestContainer(tests.PublisherImageCaptureTest)
+      case 'publish - stream manager':
+        return TestContainer(tests.PublisherStreamManagerTest)
       case 'settings':
       case 'home':
         return <SettingsFormContainer />

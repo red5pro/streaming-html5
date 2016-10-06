@@ -4,7 +4,7 @@ import React from 'react'
 import { PropTypes } from 'react'
 import BackLink from '../BackLink' // eslint-disable-line no-unused-vars
 
-class PublisherTest extends React.Component {
+class PublisherImageCaptureTest extends React.Component {
 
   constructor (props) {
     super(props)
@@ -40,7 +40,7 @@ class PublisherTest extends React.Component {
         resolve()
 
       }, error => {
-        console.error(`[PublisherTest] :: Error - ${error}`)
+        console.error(`[PublisherImageCaptureTest] :: Error - ${error}`)
         reject(error)
       })
     })
@@ -48,7 +48,7 @@ class PublisherTest extends React.Component {
 
   publish () {
     const comp = this
-    const iceServers = [{urls: 'stun:stun2.l.google.com:19302'}]
+    const iceServers = this.props.settings.iceServers
     const publisher = this.state.publisher
     const view = this.state.view
     view.attachPublisher(publisher);
@@ -85,7 +85,7 @@ class PublisherTest extends React.Component {
       comp.setState(state => {
         state.status = `ERROR: ${jsonError}`
       })
-      console.error(`[PublisherTest] :: Error - ${jsonError}`)
+      console.error(`[PublisherImageCaptureTest] :: Error - ${jsonError}`)
     })
 
   }
@@ -185,9 +185,10 @@ class PublisherTest extends React.Component {
 
 }
 
-PublisherTest.propTypes = {
+PublisherImageCaptureTest.propTypes = {
   settings: PropTypes.object.isRequired,
   onBackClick: PropTypes.func.isRequired
 }
 
-export default PublisherTest
+export default PublisherImageCaptureTest
+

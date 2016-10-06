@@ -51,7 +51,7 @@ class Publisher1080pTest extends React.Component {
 
   publish () {
     const comp = this
-    const iceServers = [{urls: 'stun:stun2.l.google.com:19302'}]
+    const iceServers = this.props.settings.iceServers
     const publisher = this.state.publisher
     const view = this.state.view
     view.attachPublisher(publisher);
