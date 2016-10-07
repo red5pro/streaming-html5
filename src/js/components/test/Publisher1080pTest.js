@@ -144,7 +144,7 @@ class Publisher1080pTest extends React.Component {
     return (
       <div>
         <BackLink onClick={this.props.onBackClick} />
-        <h1 className="centered">Publisher Test</h1>
+        <h1 className="centered">Publisher 1080p Test</h1>
         <hr />
         <h2 className="centered"><em>stream</em>: {this.props.settings.stream1}</h2>
         <p className="centered publish-status-field">STATUS: {this.state.status}</p>

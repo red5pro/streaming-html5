@@ -161,7 +161,7 @@ class PublisherStreamManagerTest extends React.Component {
         comp.setState(state => {
           state.status = 'Error - Could not start publishing session.'
         })
-        console.error('[PublishTest] :: Error - Could not start publishing session.')
+        console.error('[PublishStreamManagerTest] :: Error - Could not start publishing session.')
       })
   }
 
@@ -177,7 +177,7 @@ class PublisherStreamManagerTest extends React.Component {
     return (
       <div>
         <BackLink onClick={this.props.onBackClick} />
-        <h1 className="centered">Publisher Test</h1>
+        <h1 className="centered">Publisher StreamManager Test</h1>
         <hr />
         <h2 className="centered"><em>stream</em>: {this.props.settings.stream1}</h2>
         <p className="centered publish-status-field">STATUS: {this.state.status}</p>
