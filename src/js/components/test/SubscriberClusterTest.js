@@ -25,8 +25,13 @@ class SubscriberClusterTest extends React.Component {
       fetch(url)
       .then(res => {
         if (res.headers.get("content-type") &&
-            res.headers.get("content-type").toLowerCase().indexOf("application/json") >= 0) {
-          return res.text()
+            res.headers.get("content-type").toLowerCase().indexOf("text/plain") >= 0) {
+          res.text().then(value => {
+            resolve(value.substring(0, value.indexOf(':')))
+          })
+        }
+        else {
+          reject(res)
         }
       })
       .catch(error => {
@@ -46,14 +51,14 @@ class SubscriberClusterTest extends React.Component {
     const origAttachStream = view.attachStream.bind(view)
     view.attachStream = (stream, autoplay) => {
       comp.setState(state => {
-        state.status = 'Subscribed. They\'re Live!'
+        state.status = `Subscribed on ${serverAddress}. They're Live!`
       })
       origAttachStream(stream, autoplay)
       view.attachStream = origAttachStream
     }
 
     comp.setState(state => {
-      state.status = 'Establishing connection...'
+      state.status = `Establishing connection to ${serverAddress}...`
     })
     view.attachSubscriber(subscriber)
     subscriber.init({
@@ -82,7 +87,7 @@ class SubscriberClusterTest extends React.Component {
     })
     .then(() => {
       comp.setState(state => {
-        state.status = 'Requesting stream for playback...'
+        state.status = `Requesting stream for playback on ${serverAddress}...`
       })
     })
     .catch(error => {
@@ -94,7 +99,7 @@ class SubscriberClusterTest extends React.Component {
 
   componentDidMount () {
     const comp = this
-    const sub = this.subscriber.bind(this)
+    const sub = this.subscribe.bind(this)
     this.requestEdge()
       .then(sub)
       .catch(error => {
