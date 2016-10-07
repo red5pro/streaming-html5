@@ -26,6 +26,12 @@ code {
   font-size: 1.2em;
 }
 
+.version-field {
+  text-align: right;
+  font-size: 0.75rem;
+  padding: 0.4rem;
+ }
+
 .centered {
   width: 100%;
   text-align: center;

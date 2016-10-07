@@ -51,6 +51,9 @@ export default {
   plugins: [
     new webpack.BannerPlugin(banner),
     new webpack.IgnorePlugin(/react/, /react-(redux|dom)/, 'red5pro-sdk'),
+    new webpack.DefinePlugin({
+      "TESTBED_VERSION": JSON.stringify(pkg.version)
+    }),
     new CopyWebpackPlugin([
       {
         from: 'static/lib',
