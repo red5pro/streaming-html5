@@ -71,6 +71,10 @@
       {
         "name": "Subscribe - Cluster",
         "description": "Demonstrates accessing Edge IP from Cluster for subscription."
+      },
+      {
+        "name": "Subscribe - Image Capture",
+        "description": "Demonstrates capturing image from subscription."
       }
   ]
 }

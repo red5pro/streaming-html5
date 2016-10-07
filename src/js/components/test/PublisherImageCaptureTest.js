@@ -11,7 +11,8 @@ class PublisherImageCaptureTest extends React.Component {
     this.state = {
       view: undefined,
       publisher: undefined,
-      status: 'On hold.'
+      status: 'On hold.',
+      captureFilled: false
     }
   }
 
@@ -142,23 +143,38 @@ class PublisherImageCaptureTest extends React.Component {
   clearCanvas () {
     const video = this._red5ProPublisher
     const canvas = this._captureCanvas
-    const context = canvas.getContext('2d');
-    context.fillStyle = "#aaaaaa";
-    context.fillRect(0, 0, video.offsetWidth, video.offsetHeight);
+    const context = canvas.getContext('2d')
+    context.fillStyle = "#aaaaaa"
+    context.fillRect(0, 0, video.offsetWidth, video.offsetHeight)
+    this.setState(state => {
+      state.captureFilled = false
+    })
   }
 
   drawOnCanvas (targetElement) {
     const canvas = this._captureCanvas
-    const context = canvas.getContext('2d');
+    const context = canvas.getContext('2d')
     canvas.width = targetElement.offsetWidth
     canvas.height = targetElement.offsetHeight
     context.drawImage(targetElement, 0, 0, targetElement.offsetWidth, targetElement.offsetHeight)
+    this.setState(state => {
+      state.captureFilled = true
+    })
   }
 
   render () {
     const videoStyle = {
       'width': '100%',
       'max-width': '640px'
+    }
+    const visible = this.state.captureFilled ? 'hidden' : 'visible'
+    const captureTextStyle = {
+      'visibility': visible,
+      'position': 'absolute',
+      'padding': '1rem',
+      'color': '#333333',
+      'width': '100%',
+      'text-align': 'center'
     }
     return (
       <div>
@@ -177,6 +193,7 @@ class PublisherImageCaptureTest extends React.Component {
             controls autoplay disabled></video>
         </div>
         <div className="centered">
+          <p style={captureTextStyle}><span>Click video to capture image.</span><br/><span>Your Image will appear here.</span></p>
           <canvas ref={c => this._captureCanvas = c}></canvas>
         </div>
       </div>

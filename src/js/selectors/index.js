@@ -42,6 +42,8 @@ export const getCurrentPage = createSelector(
         return TestContainer(tests.SubscriberAudioOnlyTest)
       case 'subscribe - cluster':
         return TestContainer(tests.SubscriberClusterTest)
+      case 'subscribe - image capture':
+        return TestContainer(tests.SubscriberImageCaptureTest)
       case 'settings':
       case 'home':
         return <SettingsFormContainer />

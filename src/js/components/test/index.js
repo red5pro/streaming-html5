@@ -11,4 +11,5 @@ export { default as SubscriberTest } from './SubscriberTest'
 export { default as SubscriberFailoverTest } from './SubscriberFailoverTest'
 export { default as SubscriberAudioOnlyTest } from './SubscriberAudioOnlyTest'
 export { default as SubscriberClusterTest } from './SubscriberClusterTest'
+export { default as SubscriberImageCaptureTest } from './SubscriberImageCaptureTest'
 
