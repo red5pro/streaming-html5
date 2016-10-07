@@ -30,12 +30,12 @@
         "name": "Publish"
       },
       {
-        "name": "Publish - 1080p",
-        "description": "Demonstration of assigning 1080p resolution to publishing."
-      },
-      {
         "name": "Publish - Failover",
         "description": "Demonstrates failover of browser support for publishing."
+      },
+      {
+        "name": "Publish - 1080p",
+        "description": "Demonstration of assigning 1080p resolution to publishing."
       },
       {
         "name": "Publish - Audio Mode",
@@ -63,6 +63,14 @@
       {
         "name": "Subscribe - Failover",
         "description": "Demonstrates failover of browser support for subscribing."
+      },
+      {
+        "name": "Subscribe - Audio Only",
+        "description": "Demonstrates Audio-Only subscription."
+      },
+      {
+        "name": "Subscribe - Cluster",
+        "description": "Demonstrates accessing Edge IP from Cluster for subscription."
       }
   ]
 }

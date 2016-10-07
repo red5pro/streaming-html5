@@ -18,14 +18,10 @@ export const getCurrentPage = createSelector(
     switch(viewFilter.toLowerCase()) {
       case 'publish':
         return TestContainer(tests.PublisherTest)
-      case 'subscribe':
-        return TestContainer(tests.SubscriberTest)
       case 'publish - 1080p':
         return TestContainer(tests.Publisher1080pTest)
       case 'publish - failover':
         return TestContainer(tests.PublisherFailoverTest)
-      case 'subscribe - failover':
-        return TestContainer(tests.SubscriberFailoverTest)
       case 'publish - audio mode':
         return TestContainer(tests.PublisherAudioOnlyTest)
       case 'publish - camera source':
@@ -38,6 +34,14 @@ export const getCurrentPage = createSelector(
         return TestContainer(tests.PublisherImageCaptureTest)
       case 'publish - stream manager':
         return TestContainer(tests.PublisherStreamManagerTest)
+      case 'subscribe':
+        return TestContainer(tests.SubscriberTest)
+      case 'subscribe - failover':
+        return TestContainer(tests.SubscriberFailoverTest)
+      case 'subscribe - audio only':
+        return TestContainer(tests.SubscriberAudioOnlyTest)
+      case 'subscribe - cluster':
+        return TestContainer(tests.SubscriberClusterTest)
       case 'settings':
       case 'home':
         return <SettingsFormContainer />

@@ -26,7 +26,7 @@ class PublisherStreamManagerTest extends React.Component {
     return new Promise((resolve, reject) => {
       fetch(url)
         .then(res => {
-          if(res.headers.get("content-type") &&
+          if (res.headers.get("content-type") &&
             res.headers.get("content-type").toLowerCase().indexOf("application/json") >= 0) {
               return res.json()
           }
