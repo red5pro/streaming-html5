@@ -7,8 +7,9 @@ import { createSelector } from 'reselect'
 import TestListContainer from '../containers/TestListContainer' // eslint-disable-line no-unused-vars
 import SettingsFormContainer from '../containers/SettingsFormContainer' // eslint-disable-line no-unused-vars
 
-import TestContainer from '../containers/test/TestContainer'
 import * as tests from '../components/test'
+import TestContainer from '../containers/test/TestContainer'
+import PublisherSettingsOverrideContainer from '../containers/test/PublisherSettingsOverrideContainer'
 
 const getViewFilter = (state) => state.viewFilter
 
@@ -19,11 +20,19 @@ export const getCurrentPage = createSelector(
       case 'publish':
         return TestContainer(tests.PublisherTest)
       case 'publish - 1080p':
-        return TestContainer(tests.Publisher1080pTest)
+        return PublisherSettingsOverrideContainer(tests.Publisher1080pTest, {
+          video: {
+            width: 1920,
+            height: 1080
+          }
+        })
       case 'publish - failover':
         return TestContainer(tests.PublisherFailoverTest)
       case 'publish - audio mode':
-        return TestContainer(tests.PublisherAudioOnlyTest)
+        return PublisherSettingsOverrideContainer(tests.PublisherAudioOnlyTest, {
+          audio: true,
+          video: false
+        })
       case 'publish - camera source':
         return TestContainer(tests.PublisherCameraSourceTest)
       case 'publish - camera swap':

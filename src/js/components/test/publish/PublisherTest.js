@@ -36,6 +36,7 @@ class PublisherTest extends React.Component {
 
   publisherEstablished (publisher, publisherView) {
     console.log(`publisher: ${publisher}, ${publisherView}`)
+    //    this.watchStats(publisher.getConnection())
   }
 
   render () {
@@ -53,7 +54,7 @@ class PublisherTest extends React.Component {
         <Red5ProPublisher className="centered" style={videoStyle}
           configuration={this.props.settings}
           streamName={this.props.settings.stream1}
-          showControls={false}
+          showControls={true}
           onPublisherEstablished={this.publisherEstablished.bind(this)}
           />
       </div>

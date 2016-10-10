@@ -1,7 +1,6 @@
-/* global red5prosdk */
 import React from 'react'
-// import red5prosdk from 'red5pro-sdk'
 import { PropTypes } from 'react'
+import Red5ProPublisher from '../../Red5ProPublisher' // eslint-disable-line no-unused-vars
 import BackLink from '../../BackLink' // eslint-disable-line no-unused-vars
 
 const SELECT_DEFAULT = 'Select a camera...'
@@ -11,8 +10,6 @@ class PublisherCameraSourceTest extends React.Component {
   constructor (props) {
     super(props)
     this.state = {
-      view: undefined,
-      publisher: undefined,
       cameras: [{
         label: SELECT_DEFAULT
       }],
@@ -33,140 +30,28 @@ class PublisherCameraSourceTest extends React.Component {
         }].concat(videoCameras)
         comp.setState(state => {
           state.cameras = cameras
+          return state
         })
       })
   }
 
   preview (mediaDeviceId) {
-    const comp = this
-    const createPromise = new Promise((resolve, reject) => {
-      const publisher = new red5prosdk.RTCPublisher()
-      const view = new red5prosdk.PublisherView('red5pro-publisher')
-      const gmd = navigator.mediaDevice || navigator
-      gmd.getUserMedia({
-        audio: !comp.props.settings.audioOn ? false : true,
-        video: {
-          optional: [{
-            sourceId: mediaDeviceId
-          }]
-        }
-      }, media => {
+    const publisher = this._red5ProPublisher
+    const pub = publisher.publish.bind(publisher)
 
-        // Upon access of user media,
-        // 1. Attach the stream to the publisher.
-        // 2. Show the stream as preview in view instance.
-        publisher.attachStream(media)
-        view.preview(media, true)
-
-        comp.setState(state => {
-          state.publisher = publisher
-          state.view = view
-          state.selectedCamera = mediaDeviceId
-          return state
-        })
-
-        resolve()
-
-      }, error => {
-        console.error(`[PublisherCameraSourceTest] :: Error - ${error}`)
-        reject(error)
-      })
+    this.setState(state => {
+      state.selectedCamera = mediaDeviceId
+      return state
     })
 
-    if (this.state.publisher) {
-      return this.state.publisher.unpublish()
-    }
-    return createPromise
-  }
-
-  publish () {
-    const comp = this
-    const iceServers = this.props.settings.iceServers
-    const publisher = this.state.publisher
-    const view = this.state.view
-    view.attachPublisher(publisher);
-
-    comp.setState(state => {
-      state.status = 'Establishing connection...'
-    })
-
-    // Initialize
-    publisher.init({
-      protocol: 'ws',
-      host: this.props.settings.host,
-      port: this.props.settings.rtcport,
-      app: this.props.settings.context,
-      streamName: this.props.settings.stream1,
-      streamType: 'webrtc',
-      iceServers: iceServers
-    })
-    .then(() => {
-      // Invoke the publish action
-      comp.setState(state => {
-        state.status = 'Starting publish session...'
-      })
-      return publisher.publish()
-    })
-    .then(() => {
-      comp.setState(state => {
-        state.status = 'Publishing started. You\'re Live!'
-      })
-    })
-    .catch(error => {
-      // A fault occurred while trying to initialize and publish the stream.
-      const jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
-      comp.setState(state => {
-        state.status = `ERROR: ${jsonError}`
-      })
-      console.error(`[PublisherCameraSourceTest] :: Error - ${jsonError}`)
-    })
-
-  }
-
-  unpublish () {
-    const comp = this
-    return new Promise((resolve, reject) => {
-      const view = comp.state.view
-      const publisher = comp.state.publisher
-      if (publisher) {
-        publisher.unpublish()
-          .then(() => {
-            view.view.src = ''
-            publisher.setView(undefined)
-            comp.setState(state => {
-              state.publisher = undefined
-              state.view = undefined
-              state.selectedCamera = undefined
-              return state
-            })
-            resolve()
-          })
-          .catch(error => {
-            const jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
-            console.error(`[PublishTest] :: Unmount Error = ${jsonError}`)
-            reject(error)
-          })
-      }
-      else {
-        resolve()
-      }
-    })
+    publisher.preview().then(pub)
   }
 
   onCameraSelect () {
-    const comp = this
-    const cameraSelected = comp._cameraSelect.value
-    if (comp.state.selectedCamera !== cameraSelected &&
+    const cameraSelected = this._cameraSelect.value
+    if (this.state.selectedCamera !== cameraSelected &&
       (cameraSelected && cameraSelected !== SELECT_DEFAULT)) {
-      const pub = comp.publish.bind(comp)
-      comp.unpublish()
-        .then(() => {
-          return comp.preview(cameraSelected)
-        })
-        .then(pub)
-        .catch(() => {
-          console.error('[PublishTest] :: Error - Could not start publishing session.')
-        })
+      this.preview(cameraSelected)
     }
   }
 
@@ -174,8 +59,8 @@ class PublisherCameraSourceTest extends React.Component {
     this.waitForSelect()
   }
 
-  componentWillUnmount () {
-    this.unpublish()
+  publisherEstablished (publisher, view) {
+    console.log(`publisher: ${publisher}, ${view}`)
   }
 
   render () {
@@ -212,14 +97,17 @@ class PublisherCameraSourceTest extends React.Component {
           </p>
         </div>
         <p className="centered publish-status-field">STATUS: {this.state.status}</p>
-        <div ref={c => this._videoContainer = c}
-          id="video-container"
-          className="centered">
-          <video ref={c => this._red5ProPublisher = c}
-            id="red5pro-publisher"
-            style={videoStyle}
-            controls autoplay disabled></video>
-        </div>
+        <Red5ProPublisher
+          className="centered"
+          style={videoStyle}
+          configuration={this.props.settings}
+          streamName={this.props.settings.stream1}
+          autoPublish={false}
+          showControls={true}
+          targetCamera={this.state.selectedCamera}
+          onPublisherEstablished={this.publisherEstablished.bind(this)}
+          ref={c => this._red5ProPublisher = c}
+          />
       </div>
     )
   }
