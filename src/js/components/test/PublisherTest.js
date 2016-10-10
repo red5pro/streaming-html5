@@ -6,6 +6,8 @@ import BackLink from '../BackLink' // eslint-disable-line no-unused-vars
 
 class PublisherTest extends React.Component {
 
+  _watchStatsInterval
+
   constructor (props) {
     super(props)
     this.state = {
@@ -13,6 +15,20 @@ class PublisherTest extends React.Component {
       publisher: undefined,
       status: 'On hold.'
     }
+  }
+
+  watchStats (connection) {
+    this._watchStatsInterval = window.setInterval(() => {
+        connection.getStats(null).then(res => {
+          Object.keys(res).forEach(key => {
+            console.log(JSON.stringify(res[key], null, 2))
+          })
+        })
+      }, 1000)
+  }
+
+  unwatchStats () {
+    window.clearInterval(this._watchStatsInterval)
   }
 
   preview () {
@@ -78,6 +94,7 @@ class PublisherTest extends React.Component {
       comp.setState(state => {
         state.status = 'Publishing started. You\'re Live!'
       })
+      //      comp.watchStats(publisher.getPeerConnection())
     })
     .catch(error => {
       // A fault occurred while trying to initialize and publish the stream.
@@ -130,6 +147,7 @@ class PublisherTest extends React.Component {
   }
 
   componentWillUnmount () {
+    this.unwatchStats()
     this.unpublish()
   }
 

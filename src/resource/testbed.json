@@ -69,12 +69,16 @@
         "description": "Demonstrates Audio-Only subscription."
       },
       {
+        "name": "Subscribe - Image Capture",
+        "description": "Demonstrates capturing image from subscription."
+      },
+      {
         "name": "Subscribe - Cluster",
         "description": "Demonstrates accessing Edge IP from Cluster for subscription."
       },
       {
-        "name": "Subscribe - Image Capture",
-        "description": "Demonstrates capturing image from subscription."
+        "name": "Subscribe - Stream Manager",
+        "description": "Demonstrates accessing Edge IP from Stream Manager API for subscription."
       }
   ]
 }
