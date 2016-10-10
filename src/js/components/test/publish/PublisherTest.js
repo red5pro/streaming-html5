@@ -34,6 +34,10 @@ class PublisherTest extends React.Component {
   componentWillUnmount () {
   }
 
+  publisherEstablished (publisher, publisherView) {
+    console.log(`publisher: ${publisher}, ${publisherView}`)
+  }
+
   render () {
     const videoStyle = {
       'width': '100%',
@@ -50,6 +54,7 @@ class PublisherTest extends React.Component {
           configuration={this.props.settings}
           streamName={this.props.settings.stream1}
           showControls={false}
+          onPublisherEstablished={this.publisherEstablished.bind(this)}
           />
       </div>
     )

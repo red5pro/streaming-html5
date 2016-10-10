@@ -62,8 +62,7 @@ class Red5ProPublisher extends React.Component {
           state.view = view
           return state
         })
-
-        resolve()
+        resolve(publisher, view)
 
       }, error => {
 
@@ -86,8 +85,9 @@ class Red5ProPublisher extends React.Component {
 
     // Initialize
     publisher.init(config)
-      .then(() => {
+      .then((pub, view) => {
         // Invoke the publish action
+        comp.props.onPublisherEstablished(pub, view)
         return publisher.publish()
       })
       .then(() => {
@@ -118,6 +118,7 @@ class Red5ProPublisher extends React.Component {
               return state
             })
             comp.onUnpublishSuccess()
+            comp.props.onPublisherEstablished(undefined)
             resolve()
 
           })
@@ -141,11 +142,13 @@ class Red5ProPublisher extends React.Component {
   componentDidMount () {
     const comp = this
     const pub = this.publish.bind(this)
-    this.preview()
-      .then(pub)
-      .catch(() => {
-        comp.onPublishFail('[PublishTest] :: Error - Could not start publishing session.')
-      })
+    let p = this.preview()
+    if (this.props.autoPublish) {
+      p = p.then(pub)
+    }
+    p.catch(() => {
+      comp.onPublishFail('[PublishTest] :: Error - Could not start publishing session.')
+    })
   }
 
   componentWillUnmount () {
@@ -167,12 +170,15 @@ class Red5ProPublisher extends React.Component {
 }
 
 Red5ProPublisher.propTypes = {
+  autoPublish: PropTypes.boolean,
   showControls: PropTypes.boolean,
   streamName: PropTypes.string.isRequired,
-  configuration: PropTypes.object.isRequired
+  configuration: PropTypes.object.isRequired,
+  onPublisherEstablished: PropTypes.func
 }
 
 Red5ProPublisher.defaultProps = {
+  autoPublish: true,
   showControls: true,
   streamName: undefined,
   configuration: defaultConfiguration
