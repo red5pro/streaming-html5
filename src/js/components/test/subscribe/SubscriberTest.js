@@ -2,9 +2,9 @@
 import React from 'react'
 // import red5prosdk from 'red5pro-sdk'
 import { PropTypes } from 'react'
-import BackLink from '../BackLink' // eslint-disable-line no-unused-vars
+import BackLink from '../../BackLink' // eslint-disable-line no-unused-vars
 
-class SubscriberAudioOnlyTest extends React.Component {
+class SubscriberTest extends React.Component {
 
   constructor (props) {
     super(props)
@@ -65,7 +65,7 @@ class SubscriberAudioOnlyTest extends React.Component {
     })
     .catch(error => {
       const jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
-      console.error(`[SubscriberAudioOnlyTest] :: Error - ${jsonError}`)
+      console.error(`[SubscriberTest] :: Error - ${jsonError}`)
     })
 
   }
@@ -90,7 +90,7 @@ class SubscriberAudioOnlyTest extends React.Component {
         })
         .catch(error => {
           const jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
-          console.error(`[SubscriberAudioOnlyTest] :: Unmount Error = ${jsonError}`)
+          console.error(`[SubscriberTest] :: Unmount Error = ${jsonError}`)
         })
     }
   }
@@ -103,17 +103,17 @@ class SubscriberAudioOnlyTest extends React.Component {
     return (
       <div>
         <BackLink onClick={this.props.onBackClick} />
-        <h1 className="centered">Subscriber Audio Only Test</h1>
+        <h1 className="centered">Subscriber Test</h1>
         <hr />
         <h2 className="centered"><em>stream</em>: {this.props.settings.stream1}</h2>
         <p className="centered subscriber-status-field">STATUS: {this.state.status}</p>
         <div ref={c => this._videoContainer = c}
           id="video-container"
           className="centered">
-          <audio ref={c => this._red5ProSubscriber = c}
+          <video ref={c => this._red5ProSubscriber = c}
             id="red5pro-subscriber"
             style={videoStyle}
-            controls autoplay></audio>
+            controls autoplay></video>
         </div>
       </div>
     )
@@ -121,10 +121,10 @@ class SubscriberAudioOnlyTest extends React.Component {
 
 }
 
-SubscriberAudioOnlyTest.propTypes = {
+SubscriberTest.propTypes = {
   settings: PropTypes.object.isRequired,
   onBackClick: PropTypes.func.isRequired
 }
 
-export default SubscriberAudioOnlyTest
+export default SubscriberTest
 

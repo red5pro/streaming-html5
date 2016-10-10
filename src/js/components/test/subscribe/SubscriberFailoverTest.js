@@ -2,7 +2,7 @@
 import React from 'react'
 // import red5prosdk from 'red5pro-sdk'
 import { PropTypes } from 'react'
-import BackLink from '../BackLink' // eslint-disable-line no-unused-vars
+import BackLink from '../../BackLink' // eslint-disable-line no-unused-vars
 
 class SubscriberFailoverTest extends React.Component {
 

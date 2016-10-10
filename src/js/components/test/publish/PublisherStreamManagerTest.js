@@ -2,21 +2,47 @@
 import React from 'react'
 // import red5prosdk from 'red5pro-sdk'
 import { PropTypes } from 'react'
-import BackLink from '../BackLink' // eslint-disable-line no-unused-vars
+import BackLink from '../../BackLink' // eslint-disable-line no-unused-vars
 
-const FILTER_SELECT = 'Select filter...'
-
-class PublisherFiltersTest extends React.Component {
+class PublisherStreamManagerTest extends React.Component {
 
   constructor (props) {
     super(props)
     this.state = {
       view: undefined,
       publisher: undefined,
-      status: 'On hold.',
-      filters: [FILTER_SELECT, 'grayscale', 'sepia', 'blur'],
-      videoClassList: ''
+      status: 'On hold.'
     }
+  }
+
+  requestOrigin () {
+    const host = this.props.settings.host
+    const context = this.props.settings.context
+    const streamName = this.props.settings.stream1
+    const url = `http://${host}:5080/streammanager/api/1.0/event/${context}/${streamName}?action=broadcast`
+    this.setState(state => {
+      state.status = `Requesting Origin from ${url}...`
+    })
+    return new Promise((resolve, reject) => {
+      fetch(url)
+        .then(res => {
+          if (res.headers.get("content-type") &&
+            res.headers.get("content-type").toLowerCase().indexOf("application/json") >= 0) {
+              return res.json()
+          }
+          else {
+            throw new TypeError('Could not properly parse response.')
+          }
+        })
+        .then(json => {
+          resolve(json.serverAddress)
+        })
+        .catch(error => {
+          const jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
+          console.error(`[PublisherStreamManagerTest] :: Error - Could not request Origin IP from Stream Manager. ${jsonError}`)
+          reject(error)
+        })
+    })
   }
 
   preview () {
@@ -44,13 +70,13 @@ class PublisherFiltersTest extends React.Component {
         resolve()
 
       }, error => {
-        console.error(`[PublisherFiltersTest] :: Error - ${error}`)
+        console.error(`[PublisherStreamManagerTest] :: Error - ${error}`)
         reject(error)
       })
     })
   }
 
-  publish () {
+  publish (serverHost) {
     const comp = this
     const iceServers = this.props.settings.iceServers
     const publisher = this.state.publisher
@@ -58,13 +84,13 @@ class PublisherFiltersTest extends React.Component {
     view.attachPublisher(publisher);
 
     comp.setState(state => {
-      state.status = 'Establishing connection...'
+      state.status = `Establishing connection on ${serverHost}...`
     })
 
     // Initialize
     publisher.init({
       protocol: 'ws',
-      host: this.props.settings.host,
+      host: serverHost,
       port: this.props.settings.rtcport,
       app: this.props.settings.context,
       streamName: this.props.settings.stream1,
@@ -89,7 +115,7 @@ class PublisherFiltersTest extends React.Component {
       comp.setState(state => {
         state.status = `ERROR: ${jsonError}`
       })
-      console.error(`[PublisherFiltersTest] :: Error - ${jsonError}`)
+      console.error(`[PublisherStreamManagerTest] :: Error - ${jsonError}`)
     })
 
   }
@@ -125,11 +151,17 @@ class PublisherFiltersTest extends React.Component {
   }
 
   componentDidMount () {
+    const comp = this
     const pub = this.publish.bind(this)
+    const getOrigin = this.requestOrigin.bind(this)
     this.preview()
+      .then(getOrigin)
       .then(pub)
       .catch(() => {
-        console.error('[PublishTest] :: Error - Could not start publishing session.')
+        comp.setState(state => {
+          state.status = 'Error - Could not start publishing session.'
+        })
+        console.error('[PublishStreamManagerTest] :: Error - Could not start publishing session.')
       })
   }
 
@@ -137,46 +169,17 @@ class PublisherFiltersTest extends React.Component {
     this.unpublish()
   }
 
-  onFilterSelect () {
-    const selectedFilter = this._filterSelect.value
-    let classList = selectedFilter === FILTER_SELECT ? '' : selectedFilter
-    this.setState(state => {
-      state.videoClassList = classList
-    })
-  }
-
   render () {
     const videoStyle = {
       'width': '100%',
       'max-width': '640px'
     }
-    const labelStyle = {
-      'margin-right': '0.5rem'
-    }
-    const filterSelectField = {
-      'background-color': '#ffffff',
-      'padding': '0.8rem'
-    }
-    const videoClassList = this.state.videoClassList
     return (
       <div>
         <BackLink onClick={this.props.onBackClick} />
-        <h1 className="centered">Publisher Filters Test</h1>
+        <h1 className="centered">Publisher StreamManager Test</h1>
         <hr />
         <h2 className="centered"><em>stream</em>: {this.props.settings.stream1}</h2>
-        <div className="instructions-block">
-          <p>To begin this test, once streaming has started, select a filter to apply:</p>
-          <p style={filterSelectField}>
-            <label for="filter-select" style={labelStyle}>Camera Filter:</label>
-            <select ref={c => this._filterSelect = c}
-              id="filter-select"
-              onChange={this.onFilterSelect.bind(this)}>
-              {this.state.filters.map(filter =>
-                <option value={filter}>{filter}</option>
-              )}
-            </select>
-          </p>
-        </div>
         <p className="centered publish-status-field">STATUS: {this.state.status}</p>
         <div ref={c => this._videoContainer = c}
           id="video-container"
@@ -184,7 +187,6 @@ class PublisherFiltersTest extends React.Component {
           <video ref={c => this._red5ProPublisher = c}
             id="red5pro-publisher"
             style={videoStyle}
-            className={videoClassList}
             controls autoplay disabled></video>
         </div>
       </div>
@@ -193,10 +195,10 @@ class PublisherFiltersTest extends React.Component {
 
 }
 
-PublisherFiltersTest.propTypes = {
+PublisherStreamManagerTest.propTypes = {
   settings: PropTypes.object.isRequired,
   onBackClick: PropTypes.func.isRequired
 }
 
-export default PublisherFiltersTest
+export default PublisherStreamManagerTest
 

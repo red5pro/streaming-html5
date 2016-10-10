@@ -2,16 +2,20 @@
 import React from 'react'
 // import red5prosdk from 'red5pro-sdk'
 import { PropTypes } from 'react'
-import BackLink from '../BackLink' // eslint-disable-line no-unused-vars
+import BackLink from '../../BackLink' // eslint-disable-line no-unused-vars
 
-class Publisher1080pTest extends React.Component {
+const FILTER_SELECT = 'Select filter...'
+
+class PublisherFiltersTest extends React.Component {
 
   constructor (props) {
     super(props)
     this.state = {
       view: undefined,
       publisher: undefined,
-      status: 'On hold.'
+      status: 'On hold.',
+      filters: [FILTER_SELECT, 'grayscale', 'sepia', 'blur'],
+      videoClassList: ''
     }
   }
 
@@ -22,10 +26,7 @@ class Publisher1080pTest extends React.Component {
       const view = new red5prosdk.PublisherView('red5pro-publisher')
       navigator.getUserMedia({
         audio: !comp.props.settings.audioOn ? false : true,
-        video: {
-          width: 1920,
-          height: 1080
-        }
+        video: !comp.props.settings.videoOn ? false : true
       }, media => {
 
         // Upon access of user media,
@@ -43,7 +44,7 @@ class Publisher1080pTest extends React.Component {
         resolve()
 
       }, error => {
-        console.error(`[Publisher1080pTest] :: Error - ${error}`)
+        console.error(`[PublisherFiltersTest] :: Error - ${error}`)
         reject(error)
       })
     })
@@ -88,7 +89,7 @@ class Publisher1080pTest extends React.Component {
       comp.setState(state => {
         state.status = `ERROR: ${jsonError}`
       })
-      console.error(`[Publisher1080pTest] :: Error - ${jsonError}`)
+      console.error(`[PublisherFiltersTest] :: Error - ${jsonError}`)
     })
 
   }
@@ -136,17 +137,46 @@ class Publisher1080pTest extends React.Component {
     this.unpublish()
   }
 
+  onFilterSelect () {
+    const selectedFilter = this._filterSelect.value
+    let classList = selectedFilter === FILTER_SELECT ? '' : selectedFilter
+    this.setState(state => {
+      state.videoClassList = classList
+    })
+  }
+
   render () {
     const videoStyle = {
       'width': '100%',
       'max-width': '640px'
     }
+    const labelStyle = {
+      'margin-right': '0.5rem'
+    }
+    const filterSelectField = {
+      'background-color': '#ffffff',
+      'padding': '0.8rem'
+    }
+    const videoClassList = this.state.videoClassList
     return (
       <div>
         <BackLink onClick={this.props.onBackClick} />
-        <h1 className="centered">Publisher 1080p Test</h1>
+        <h1 className="centered">Publisher Filters Test</h1>
         <hr />
         <h2 className="centered"><em>stream</em>: {this.props.settings.stream1}</h2>
+        <div className="instructions-block">
+          <p>To begin this test, once streaming has started, select a filter to apply:</p>
+          <p style={filterSelectField}>
+            <label for="filter-select" style={labelStyle}>Camera Filter:</label>
+            <select ref={c => this._filterSelect = c}
+              id="filter-select"
+              onChange={this.onFilterSelect.bind(this)}>
+              {this.state.filters.map(filter =>
+                <option value={filter}>{filter}</option>
+              )}
+            </select>
+          </p>
+        </div>
         <p className="centered publish-status-field">STATUS: {this.state.status}</p>
         <div ref={c => this._videoContainer = c}
           id="video-container"
@@ -154,6 +184,7 @@ class Publisher1080pTest extends React.Component {
           <video ref={c => this._red5ProPublisher = c}
             id="red5pro-publisher"
             style={videoStyle}
+            className={videoClassList}
             controls autoplay disabled></video>
         </div>
       </div>
@@ -162,9 +193,10 @@ class Publisher1080pTest extends React.Component {
 
 }
 
-Publisher1080pTest.propTypes = {
+PublisherFiltersTest.propTypes = {
   settings: PropTypes.object.isRequired,
   onBackClick: PropTypes.func.isRequired
 }
 
-export default Publisher1080pTest
+export default PublisherFiltersTest
+

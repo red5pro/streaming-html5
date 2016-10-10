@@ -2,9 +2,9 @@
 import React from 'react'
 // import red5prosdk from 'red5pro-sdk'
 import { PropTypes } from 'react'
-import BackLink from '../BackLink' // eslint-disable-line no-unused-vars
+import BackLink from '../../BackLink' // eslint-disable-line no-unused-vars
 
-class SubscriberTest extends React.Component {
+class SubscriberClusterTest extends React.Component {
 
   constructor (props) {
     super(props)
@@ -15,7 +15,34 @@ class SubscriberTest extends React.Component {
     }
   }
 
-  subscribe () {
+  requestEdge () {
+    const host = this.props.settings.host
+    const url = `http://${host}:5080/cluster`
+    this.setState(state => {
+      state.status = `Requesting Edge from ${url}...`
+    })
+    return new Promise((resolve, reject) => {
+      fetch(url)
+      .then(res => {
+        if (res.headers.get("content-type") &&
+            res.headers.get("content-type").toLowerCase().indexOf("text/plain") >= 0) {
+          res.text().then(value => {
+            resolve(value.substring(0, value.indexOf(':')))
+          })
+        }
+        else {
+          reject(res)
+        }
+      })
+      .catch(error => {
+        const jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
+        console.error(`[SubscriberClusterTest] :: Error - Could not requst Edge IP. ${jsonError}`)
+        reject(error)
+      })
+    })
+  }
+
+  subscribe (serverAddress) {
     const comp = this
     const view = new red5prosdk.PlaybackView('red5pro-subscriber')
     const subscriber = new red5prosdk.RTCSubscriber()
@@ -24,19 +51,19 @@ class SubscriberTest extends React.Component {
     const origAttachStream = view.attachStream.bind(view)
     view.attachStream = (stream, autoplay) => {
       comp.setState(state => {
-        state.status = 'Subscribed. They\'re Live!'
+        state.status = `Subscribed on ${serverAddress}. They're Live!`
       })
       origAttachStream(stream, autoplay)
       view.attachStream = origAttachStream
     }
 
     comp.setState(state => {
-      state.status = 'Establishing connection...'
+      state.status = `Establishing connection to ${serverAddress}...`
     })
     view.attachSubscriber(subscriber)
     subscriber.init({
       protocol: 'ws',
-      host: this.props.settings.host,
+      host: serverAddress,
       port: this.props.settings.rtcport,
       app: this.props.settings.context,
       subscriptionId: 'subscriber-' + Math.floor(Math.random() * 0x10000).toString(16),
@@ -60,18 +87,28 @@ class SubscriberTest extends React.Component {
     })
     .then(() => {
       comp.setState(state => {
-        state.status = 'Requesting stream for playback...'
+        state.status = `Requesting stream for playback on ${serverAddress}...`
       })
     })
     .catch(error => {
       const jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
-      console.error(`[SubscriberTest] :: Error - ${jsonError}`)
+      console.error(`[SubscriberClusterTest] :: Error - ${jsonError}`)
     })
 
   }
 
   componentDidMount () {
-    this.subscribe()
+    const comp = this
+    const sub = this.subscribe.bind(this)
+    this.requestEdge()
+      .then(sub)
+      .catch(error => {
+        comp.setState(state => {
+          state.status = 'Could not start a subscription session.'
+        })
+        const jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
+        console.error(`[SubscriberClusterTest] :: Error - ${jsonError}`)
+      })
   }
 
   componentWillUnmount() {
@@ -90,7 +127,7 @@ class SubscriberTest extends React.Component {
         })
         .catch(error => {
           const jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
-          console.error(`[SubscriberTest] :: Unmount Error = ${jsonError}`)
+          console.error(`[SubscriberClusterTest] :: Unmount Error = ${jsonError}`)
         })
     }
   }
@@ -103,7 +140,7 @@ class SubscriberTest extends React.Component {
     return (
       <div>
         <BackLink onClick={this.props.onBackClick} />
-        <h1 className="centered">Subscriber Test</h1>
+        <h1 className="centered">Subscriber Cluster Test</h1>
         <hr />
         <h2 className="centered"><em>stream</em>: {this.props.settings.stream1}</h2>
         <p className="centered subscriber-status-field">STATUS: {this.state.status}</p>
@@ -121,10 +158,10 @@ class SubscriberTest extends React.Component {
 
 }
 
-SubscriberTest.propTypes = {
+SubscriberClusterTest.propTypes = {
   settings: PropTypes.object.isRequired,
   onBackClick: PropTypes.func.isRequired
 }
 
-export default SubscriberTest
+export default SubscriberClusterTest
 

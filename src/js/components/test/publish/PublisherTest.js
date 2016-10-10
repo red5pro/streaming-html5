@@ -2,9 +2,11 @@
 import React from 'react'
 // import red5prosdk from 'red5pro-sdk'
 import { PropTypes } from 'react'
-import BackLink from '../BackLink' // eslint-disable-line no-unused-vars
+import BackLink from '../../BackLink' // eslint-disable-line no-unused-vars
 
-class PublisherStreamManagerTest extends React.Component {
+class PublisherTest extends React.Component {
+
+  _watchStatsInterval
 
   constructor (props) {
     super(props)
@@ -15,34 +17,18 @@ class PublisherStreamManagerTest extends React.Component {
     }
   }
 
-  requestOrigin () {
-    const host = this.props.settings.host
-    const context = this.props.settings.context
-    const streamName = this.props.settings.stream1
-    const url = `http://${host}:5080/streammanager/api/1.0/event/${context}/${streamName}?action=broadcast`
-    this.setState(state => {
-      state.status = `Requesting Origin from ${url}...`
-    })
-    return new Promise((resolve, reject) => {
-      fetch(url)
-        .then(res => {
-          if (res.headers.get("content-type") &&
-            res.headers.get("content-type").toLowerCase().indexOf("application/json") >= 0) {
-              return res.json()
-          }
-          else {
-            throw new TypeError('Could not properly parse response.')
-          }
+  watchStats (connection) {
+    this._watchStatsInterval = window.setInterval(() => {
+        connection.getStats(null).then(res => {
+          Object.keys(res).forEach(key => {
+            console.log(JSON.stringify(res[key], null, 2))
+          })
         })
-        .then(json => {
-          resolve(json.serverAddress)
-        })
-        .catch(error => {
-          const jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
-          console.error(`[PublisherStreamManagerTest] :: Error - Could not request Origin IP from Stream Manager. ${jsonError}`)
-          reject(error)
-        })
-    })
+      }, 1000)
+  }
+
+  unwatchStats () {
+    window.clearInterval(this._watchStatsInterval)
   }
 
   preview () {
@@ -70,13 +56,13 @@ class PublisherStreamManagerTest extends React.Component {
         resolve()
 
       }, error => {
-        console.error(`[PublisherStreamManagerTest] :: Error - ${error}`)
+        console.error(`[PublisherTest] :: Error - ${error}`)
         reject(error)
       })
     })
   }
 
-  publish (serverHost) {
+  publish () {
     const comp = this
     const iceServers = this.props.settings.iceServers
     const publisher = this.state.publisher
@@ -84,13 +70,13 @@ class PublisherStreamManagerTest extends React.Component {
     view.attachPublisher(publisher);
 
     comp.setState(state => {
-      state.status = `Establishing connection on ${serverHost}...`
+      state.status = 'Establishing connection...'
     })
 
     // Initialize
     publisher.init({
       protocol: 'ws',
-      host: serverHost,
+      host: this.props.settings.host,
       port: this.props.settings.rtcport,
       app: this.props.settings.context,
       streamName: this.props.settings.stream1,
@@ -108,6 +94,7 @@ class PublisherStreamManagerTest extends React.Component {
       comp.setState(state => {
         state.status = 'Publishing started. You\'re Live!'
       })
+      //      comp.watchStats(publisher.getPeerConnection())
     })
     .catch(error => {
       // A fault occurred while trying to initialize and publish the stream.
@@ -115,7 +102,7 @@ class PublisherStreamManagerTest extends React.Component {
       comp.setState(state => {
         state.status = `ERROR: ${jsonError}`
       })
-      console.error(`[PublisherStreamManagerTest] :: Error - ${jsonError}`)
+      console.error(`[PublisherTest] :: Error - ${jsonError}`)
     })
 
   }
@@ -151,21 +138,16 @@ class PublisherStreamManagerTest extends React.Component {
   }
 
   componentDidMount () {
-    const comp = this
     const pub = this.publish.bind(this)
-    const getOrigin = this.requestOrigin.bind(this)
     this.preview()
-      .then(getOrigin)
       .then(pub)
       .catch(() => {
-        comp.setState(state => {
-          state.status = 'Error - Could not start publishing session.'
-        })
-        console.error('[PublishStreamManagerTest] :: Error - Could not start publishing session.')
+        console.error('[PublishTest] :: Error - Could not start publishing session.')
       })
   }
 
   componentWillUnmount () {
+    this.unwatchStats()
     this.unpublish()
   }
 
@@ -177,7 +159,7 @@ class PublisherStreamManagerTest extends React.Component {
     return (
       <div>
         <BackLink onClick={this.props.onBackClick} />
-        <h1 className="centered">Publisher StreamManager Test</h1>
+        <h1 className="centered">Publisher Test</h1>
         <hr />
         <h2 className="centered"><em>stream</em>: {this.props.settings.stream1}</h2>
         <p className="centered publish-status-field">STATUS: {this.state.status}</p>
@@ -195,10 +177,10 @@ class PublisherStreamManagerTest extends React.Component {
 
 }
 
-PublisherStreamManagerTest.propTypes = {
+PublisherTest.propTypes = {
   settings: PropTypes.object.isRequired,
   onBackClick: PropTypes.func.isRequired
 }
 
-export default PublisherStreamManagerTest
+export default PublisherTest
 

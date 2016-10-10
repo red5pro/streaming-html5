@@ -2,49 +2,21 @@
 import React from 'react'
 // import red5prosdk from 'red5pro-sdk'
 import { PropTypes } from 'react'
-import BackLink from '../BackLink' // eslint-disable-line no-unused-vars
+import BackLink from '../../BackLink' // eslint-disable-line no-unused-vars
 
-class SubscriberStreamManagerTest extends React.Component {
+class SubscriberImageCaptureTest extends React.Component {
 
   constructor (props) {
     super(props)
     this.state = {
       view: undefined,
       subscriber: undefined,
-      status: 'On Hold.'
+      status: 'On Hold.',
+      captureFilled: false
     }
   }
 
-  requestEdge () {
-    const host = this.props.settings.host
-    const context = this.props.settings.context
-    const streamName = this.props.settings.stream1
-    const url = `http://${host}:5080/streammanager/api/1.0/event/${context}/${streamName}?action=subscribe`
-    this.setState(state => {
-      state.status = `Requesting Edge from ${url}...`
-    })
-    return new Promise((resolve, reject) => {
-      fetch(url)
-        .then(res => {
-          if (res.headers.get("content-type") &&
-            res.headers.get("content-type").toLowerCase().indexOf("application/json") >= 0) {
-              return res.json()
-          }
-          else {
-            throw new TypeError('Could not properly parse response.')
-          }
-        })
-        .then(json => {
-          resolve(json.serverAddress)
-        })
-        .catch(error => {
-          const jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
-          console.error(`[SubscriberStreamManagerTest] :: Error - Could not request Edge IP from Stream Manager. ${jsonError}`)
-          reject(error)
-        })
-    })
-  }
-  subscribe (serverHost) {
+  subscribe () {
     const comp = this
     const view = new red5prosdk.PlaybackView('red5pro-subscriber')
     const subscriber = new red5prosdk.RTCSubscriber()
@@ -60,12 +32,12 @@ class SubscriberStreamManagerTest extends React.Component {
     }
 
     comp.setState(state => {
-      state.status = `Establishing connection on ${serverHost}...`
+      state.status = 'Establishing connection...'
     })
     view.attachSubscriber(subscriber)
     subscriber.init({
       protocol: 'ws',
-      host: serverHost,
+      host: this.props.settings.host,
       port: this.props.settings.rtcport,
       app: this.props.settings.context,
       subscriptionId: 'subscriber-' + Math.floor(Math.random() * 0x10000).toString(16),
@@ -94,22 +66,14 @@ class SubscriberStreamManagerTest extends React.Component {
     })
     .catch(error => {
       const jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
-      console.error(`[SubscriberStreamManagerTest] :: Error - ${jsonError}`)
+      console.error(`[SubscriberImageCaptureTest] :: Error - ${jsonError}`)
     })
 
   }
 
   componentDidMount () {
-    const comp = this
-    const sub = this.subscribe.bind(this)
-    this.requestEdge()
-      .then(sub)
-      .catch(() => {
-        comp.setState(state => {
-          state.status = 'Error - Could not start subscribing session.'
-        })
-        console.error('[SubscriberStreamManagerTest] :: Error - Could not start subscribing session.')
-      })
+    this.clearCanvas()
+    this.subscribe()
   }
 
   componentWillUnmount() {
@@ -128,9 +92,36 @@ class SubscriberStreamManagerTest extends React.Component {
         })
         .catch(error => {
           const jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
-          console.error(`[SubscriberStreamManagerTest] :: Unmount Error = ${jsonError}`)
+          console.error(`[SubscriberImageCaptureTest] :: Unmount Error = ${jsonError}`)
         })
     }
+  }
+
+  onVideoImageCapture () {
+    this.clearCanvas()
+    this.drawOnCanvas(this._red5ProSubscriber)
+  }
+
+  clearCanvas () {
+    const video = this._red5ProSubscriber
+    const canvas = this._captureCanvas
+    const context = canvas.getContext('2d')
+    context.fillStyle = "#aaaaaa"
+    context.fillRect(0, 0, video.offsetWidth, video.offsetHeight)
+    this.setState(state => {
+      state.captureFilled = false
+    })
+  }
+
+  drawOnCanvas (targetElement) {
+    const canvas = this._captureCanvas
+    const context = canvas.getContext('2d')
+    canvas.width = targetElement.offsetWidth
+    canvas.height = targetElement.offsetHeight
+    context.drawImage(targetElement, 0, 0, targetElement.offsetWidth, targetElement.offsetHeight)
+    this.setState(state => {
+      state.captureFilled = true
+    })
   }
 
   render () {
@@ -138,10 +129,19 @@ class SubscriberStreamManagerTest extends React.Component {
       'width': '100%',
       'max-width': '640px'
     }
+    const visible = this.state.captureFilled ? 'hidden' : 'visible'
+    const captureTextStyle = {
+      'visibility': visible,
+      'position': 'absolute',
+      'padding': '1rem',
+      'color': '#333333',
+      'width': '100%',
+      'text-align': 'center'
+    }
     return (
       <div>
         <BackLink onClick={this.props.onBackClick} />
-        <h1 className="centered">Subscriber StreamManager Test</h1>
+        <h1 className="centered">Subscriber Image Capture Test</h1>
         <hr />
         <h2 className="centered"><em>stream</em>: {this.props.settings.stream1}</h2>
         <p className="centered subscriber-status-field">STATUS: {this.state.status}</p>
@@ -151,7 +151,12 @@ class SubscriberStreamManagerTest extends React.Component {
           <video ref={c => this._red5ProSubscriber = c}
             id="red5pro-subscriber"
             style={videoStyle}
+            onClick={this.onVideoImageCapture.bind(this)}
             controls autoplay></video>
+        </div>
+        <div className="centered">
+          <p style={captureTextStyle}><span>Click video to capture image.</span><br/><span>Your Image will appear here.</span></p>
+          <canvas ref={c => this._captureCanvas = c}></canvas>
         </div>
       </div>
     )
@@ -159,10 +164,10 @@ class SubscriberStreamManagerTest extends React.Component {
 
 }
 
-SubscriberStreamManagerTest.propTypes = {
+SubscriberImageCaptureTest.propTypes = {
   settings: PropTypes.object.isRequired,
   onBackClick: PropTypes.func.isRequired
 }
 
-export default SubscriberStreamManagerTest
+export default SubscriberImageCaptureTest
 

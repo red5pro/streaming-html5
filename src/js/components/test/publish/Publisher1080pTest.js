@@ -2,53 +2,29 @@
 import React from 'react'
 // import red5prosdk from 'red5pro-sdk'
 import { PropTypes } from 'react'
-import BackLink from '../BackLink' // eslint-disable-line no-unused-vars
+import BackLink from '../../BackLink' // eslint-disable-line no-unused-vars
 
-const SELECT_DEFAULT = 'Select a camera...'
-
-class PublisherCameraSourceTest extends React.Component {
+class Publisher1080pTest extends React.Component {
 
   constructor (props) {
     super(props)
     this.state = {
       view: undefined,
       publisher: undefined,
-      cameras: [{
-        label: SELECT_DEFAULT
-      }],
-      selectedCamera: undefined,
       status: 'On hold.'
     }
   }
 
-  waitForSelect () {
+  preview () {
     const comp = this
-    navigator.mediaDevices.enumerateDevices()
-      .then(devices => {
-        let videoCameras = devices.filter(item => {
-          return item.kind === 'videoinput'
-        })
-        const cameras = [{
-          label: SELECT_DEFAULT
-        }].concat(videoCameras)
-        comp.setState(state => {
-          state.cameras = cameras
-        })
-      })
-  }
-
-  preview (mediaDeviceId) {
-    const comp = this
-    const createPromise = new Promise((resolve, reject) => {
+    return new Promise((resolve, reject) => {
       const publisher = new red5prosdk.RTCPublisher()
       const view = new red5prosdk.PublisherView('red5pro-publisher')
-      const gmd = navigator.mediaDevice || navigator
-      gmd.getUserMedia({
+      navigator.getUserMedia({
         audio: !comp.props.settings.audioOn ? false : true,
         video: {
-          optional: [{
-            sourceId: mediaDeviceId
-          }]
+          width: 1920,
+          height: 1080
         }
       }, media => {
 
@@ -61,22 +37,16 @@ class PublisherCameraSourceTest extends React.Component {
         comp.setState(state => {
           state.publisher = publisher
           state.view = view
-          state.selectedCamera = mediaDeviceId
           return state
         })
 
         resolve()
 
       }, error => {
-        console.error(`[PublisherCameraSourceTest] :: Error - ${error}`)
+        console.error(`[Publisher1080pTest] :: Error - ${error}`)
         reject(error)
       })
     })
-
-    if (this.state.publisher) {
-      return this.state.publisher.unpublish()
-    }
-    return createPromise
   }
 
   publish () {
@@ -118,7 +88,7 @@ class PublisherCameraSourceTest extends React.Component {
       comp.setState(state => {
         state.status = `ERROR: ${jsonError}`
       })
-      console.error(`[PublisherCameraSourceTest] :: Error - ${jsonError}`)
+      console.error(`[Publisher1080pTest] :: Error - ${jsonError}`)
     })
 
   }
@@ -153,25 +123,13 @@ class PublisherCameraSourceTest extends React.Component {
     })
   }
 
-  onCameraSelect () {
-    const comp = this
-    const cameraSelected = comp._cameraSelect.value
-    if (comp.state.selectedCamera !== cameraSelected &&
-      (cameraSelected && cameraSelected !== SELECT_DEFAULT)) {
-      const pub = comp.publish.bind(comp)
-      comp.unpublish()
-        .then(() => {
-          return comp.preview(cameraSelected)
-        })
-        .then(pub)
-        .catch(() => {
-          console.error('[PublishTest] :: Error - Could not start publishing session.')
-        })
-    }
-  }
-
   componentDidMount () {
-    this.waitForSelect()
+    const pub = this.publish.bind(this)
+    this.preview()
+      .then(pub)
+      .catch(() => {
+        console.error('[PublishTest] :: Error - Could not start publishing session.')
+      })
   }
 
   componentWillUnmount () {
@@ -183,34 +141,12 @@ class PublisherCameraSourceTest extends React.Component {
       'width': '100%',
       'max-width': '640px'
     }
-    const labelStyle = {
-      'margin-right': '0.5rem'
-    }
-    const cameraSelectField = {
-      'background-color': '#ffffff',
-      'padding': '0.8rem'
-    }
     return (
       <div>
         <BackLink onClick={this.props.onBackClick} />
-        <h1 className="centered">Publisher Camera Source Test</h1>
+        <h1 className="centered">Publisher 1080p Test</h1>
         <hr />
         <h2 className="centered"><em>stream</em>: {this.props.settings.stream1}</h2>
-        <div className="instructions-block">
-          <p>To begin this test, first select a camera from the following selections:</p>
-          <p style={cameraSelectField}>
-            <label for="camera-select" style={labelStyle}>Camera Source:</label>
-            <select ref={c => this._cameraSelect = c}
-              id="camera-select"
-              onChange={this.onCameraSelect.bind(this)}>
-              {this.state.cameras.map(camera =>
-                (this.state.selectedCamera === camera.deviceId)
-                  ? <option value={camera.deviceId} selected>{camera.label}</option>
-                  : <option value={camera.deviceId}>{camera.label}</option>
-              )}
-            </select>
-          </p>
-        </div>
         <p className="centered publish-status-field">STATUS: {this.state.status}</p>
         <div ref={c => this._videoContainer = c}
           id="video-container"
@@ -226,9 +162,9 @@ class PublisherCameraSourceTest extends React.Component {
 
 }
 
-PublisherCameraSourceTest.propTypes = {
+Publisher1080pTest.propTypes = {
   settings: PropTypes.object.isRequired,
   onBackClick: PropTypes.func.isRequired
 }
 
-export default PublisherCameraSourceTest
+export default Publisher1080pTest

@@ -2,21 +2,16 @@
 import React from 'react'
 // import red5prosdk from 'red5pro-sdk'
 import { PropTypes } from 'react'
-import BackLink from '../BackLink' // eslint-disable-line no-unused-vars
+import BackLink from '../../BackLink' // eslint-disable-line no-unused-vars
 
-const FACING_MODE_FRONT = 'user'
-const FACING_MODE_REAR = 'environment'
-
-class PublisherCameraSwapTest extends React.Component {
+class PublisherAudioOnlyTest extends React.Component {
 
   constructor (props) {
     super(props)
     this.state = {
       view: undefined,
       publisher: undefined,
-      facingModeFront: true,
-      status: 'On hold.',
-      supported: false
+      status: 'On hold.'
     }
   }
 
@@ -26,10 +21,8 @@ class PublisherCameraSwapTest extends React.Component {
       const publisher = new red5prosdk.RTCPublisher()
       const view = new red5prosdk.PublisherView('red5pro-publisher')
       navigator.getUserMedia({
-        audio: !comp.props.settings.audioOn ? false : true,
-        video: {
-          facingMode: comp.state.facingModeFront ? FACING_MODE_FRONT : FACING_MODE_REAR
-        }
+        audio: true,
+        video: false
       }, media => {
 
         // Upon access of user media,
@@ -47,7 +40,7 @@ class PublisherCameraSwapTest extends React.Component {
         resolve()
 
       }, error => {
-        console.error(`[PublisherCameraSwapTest] :: Error - ${error}`)
+        console.error(`[PublisherAudioOnlyTest] :: Error - ${error}`)
         reject(error)
       })
     })
@@ -82,9 +75,8 @@ class PublisherCameraSwapTest extends React.Component {
       return publisher.publish()
     })
     .then(() => {
-      const facingMode = comp.state.facingModeFront ? FACING_MODE_FRONT : FACING_MODE_REAR
       comp.setState(state => {
-        state.status = `Publishing started. You\'re Live! FacingMode=${facingMode}`
+        state.status = 'Publishing started. You\'re Live!'
       })
     })
     .catch(error => {
@@ -93,7 +85,7 @@ class PublisherCameraSwapTest extends React.Component {
       comp.setState(state => {
         state.status = `ERROR: ${jsonError}`
       })
-      console.error(`[PublisherCameraSwapTest] :: Error - ${jsonError}`)
+      console.error(`[PublisherCameraSourceTest] :: Error - ${jsonError}`)
     })
 
   }
@@ -129,10 +121,6 @@ class PublisherCameraSwapTest extends React.Component {
   }
 
   componentDidMount () {
-    this.setState(state => {
-      state.supported = navigator.mediaDevices.getSupportedConstraints()["facingMode"]
-    })
-
     const pub = this.publish.bind(this)
     this.preview()
       .then(pub)
@@ -145,45 +133,22 @@ class PublisherCameraSwapTest extends React.Component {
     this.unpublish()
   }
 
-  onCameraSwapRequest () {
-    const comp = this
-    const pub = this.publish.bind(this)
-    const prev = this.preview.bind(this)
-
-    this.setState(state => {
-      state.facingModeFront = !state.facingModeFront
-    })
-
-    this.unpublish()
-      .then(prev)
-      .then(pub)
-      .catch(() => {
-        comp.setState(state => {
-          state.status = 'Error: Could not start publishing session swap camera.'
-        })
-        console.error('[PublishCameraTest] :: Error - Could not start publishing session on camera swap.')
-      })
-  }
-
   render () {
     const videoStyle = {
       'width': '100%',
-      'max-width': '640px'
+      'max-width': '640px',
+      'height': '40px'
     }
-    const hintClass = ['hint-block', this.state.supported ? '' : 'hint-alert'].join(' ')
-    const supportedStr = this.state.supported ? 'supports' : 'does not support'
     return (
       <div>
         <BackLink onClick={this.props.onBackClick} />
-        <h1 className="centered">Publisher Camera Swap Test</h1>
+        <h1 className="centered">Publisher Audio Only Test</h1>
         <hr />
         <h2 className="centered"><em>stream</em>: {this.props.settings.stream1}</h2>
-        <p className={hintClass}><em>The browser you are using </em><strong>{supportedStr}</strong><em> the </em><code>facingMode</code><em> video constraint require for this test.</em></p>
         <p className="centered publish-status-field">STATUS: {this.state.status}</p>
         <div ref={c => this._videoContainer = c}
           id="video-container"
-          className="centered"
-          onClick={this.onCameraSwapRequest.bind(this)}>
+          className="centered">
           <video ref={c => this._red5ProPublisher = c}
             id="red5pro-publisher"
             style={videoStyle}
@@ -195,9 +160,9 @@ class PublisherCameraSwapTest extends React.Component {
 
 }
 
-PublisherCameraSwapTest.propTypes = {
+PublisherAudioOnlyTest.propTypes = {
   settings: PropTypes.object.isRequired,
   onBackClick: PropTypes.func.isRequired
 }
 
-export default PublisherCameraSwapTest
+export default PublisherAudioOnlyTest

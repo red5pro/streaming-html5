@@ -17,7 +17,7 @@ export default (targetTest) => {
     }
   }
 
-  const TestContainer = connect(
+  const TestContainer = connect( // eslint-disable-line no-unused-vars
     mapStateToProps,
     mapDispatchToProps
   )(targetTest)
