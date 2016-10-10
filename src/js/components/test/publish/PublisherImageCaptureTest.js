@@ -1,7 +1,6 @@
-/* global red5prosdk */
 import React from 'react'
-// import red5prosdk from 'red5pro-sdk'
 import { PropTypes } from 'react'
+import Red5ProPublisher from '../../Red5ProPublisher' // eslint-disable-line no-unused-vars
 import BackLink from '../../BackLink' // eslint-disable-line no-unused-vars
 
 class PublisherImageCaptureTest extends React.Component {
@@ -9,143 +8,22 @@ class PublisherImageCaptureTest extends React.Component {
   constructor (props) {
     super(props)
     this.state = {
-      view: undefined,
-      publisher: undefined,
       status: 'On hold.',
       captureFilled: false
     }
   }
 
-  preview () {
-    const comp = this
-    return new Promise((resolve, reject) => {
-      const publisher = new red5prosdk.RTCPublisher()
-      const view = new red5prosdk.PublisherView('red5pro-publisher')
-      navigator.getUserMedia({
-        audio: !comp.props.settings.audioOn ? false : true,
-        video: !comp.props.settings.videoOn ? false : true
-      }, media => {
-
-        // Upon access of user media,
-        // 1. Attach the stream to the publisher.
-        // 2. Show the stream as preview in view instance.
-        publisher.attachStream(media)
-        view.preview(media, true)
-
-        comp.setState(state => {
-          state.publisher = publisher
-          state.view = view
-          return state
-        })
-
-        resolve()
-
-      }, error => {
-        console.error(`[PublisherImageCaptureTest] :: Error - ${error}`)
-        reject(error)
-      })
-    })
-  }
-
-  publish () {
-    const comp = this
-    const iceServers = this.props.settings.iceServers
-    const publisher = this.state.publisher
-    const view = this.state.view
-    view.attachPublisher(publisher);
-
-    comp.setState(state => {
-      state.status = 'Establishing connection...'
-    })
-
-    // Initialize
-    publisher.init({
-      protocol: 'ws',
-      host: this.props.settings.host,
-      port: this.props.settings.rtcport,
-      app: this.props.settings.context,
-      streamName: this.props.settings.stream1,
-      streamType: 'webrtc',
-      iceServers: iceServers
-    })
-    .then(() => {
-      // Invoke the publish action
-      comp.setState(state => {
-        state.status = 'Starting publish session...'
-      })
-      return publisher.publish()
-    })
-    .then(() => {
-      comp.setState(state => {
-        state.status = 'Publishing started. You\'re Live!'
-      })
-    })
-    .catch(error => {
-      // A fault occurred while trying to initialize and publish the stream.
-      const jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
-      comp.setState(state => {
-        state.status = `ERROR: ${jsonError}`
-      })
-      console.error(`[PublisherImageCaptureTest] :: Error - ${jsonError}`)
-    })
-
-  }
-
-  unpublish () {
-    const comp = this
-    return new Promise((resolve, reject) => {
-      const view = comp.state.view
-      const publisher = comp.state.publisher
-      if (publisher) {
-        publisher.unpublish()
-          .then(() => {
-            view.view.src = ''
-            publisher.setView(undefined)
-            comp.setState(state => {
-              state.publisher = undefined
-              state.view = undefined
-              state.selectedCamera = undefined
-              return state
-            })
-            resolve()
-          })
-          .catch(error => {
-            const jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
-            console.error(`[PublishTest] :: Unmount Error = ${jsonError}`)
-            reject(error)
-          })
-      }
-      else {
-        resolve()
-      }
-    })
-  }
-
-  componentDidMount () {
-    const pub = this.publish.bind(this)
-    this.preview()
-      .then(pub)
-      .catch(() => {
-        console.error('[PublishTest] :: Error - Could not start publishing session.')
-      })
-    this.clearCanvas()
-  }
-
-  componentWillUnmount () {
-    this.unpublish()
-  }
-
   onVideoImageCapture () {
-    this.clearCanvas()
-    this.drawOnCanvas(this._red5ProPublisher)
+    const videoElement = document.getElementById('red5pro-publisher-video')
+    this.clearCanvas(videoElement)
+    this.drawOnCanvas(videoElement)
   }
 
-  clearCanvas () {
-    const video = this._red5ProPublisher
+  clearCanvas (targetElement) {
     const canvas = this._captureCanvas
     const context = canvas.getContext('2d')
     context.fillStyle = "#aaaaaa"
-    context.fillRect(0, 0, video.offsetWidth, video.offsetHeight)
+    context.fillRect(0, 0, targetElement.offsetWidth, targetElement.offsetHeight)
     this.setState(state => {
       state.captureFilled = false
     })
@@ -160,6 +38,14 @@ class PublisherImageCaptureTest extends React.Component {
     this.setState(state => {
       state.captureFilled = true
     })
+  }
+
+  publisherEstablished (publisher, view) {
+    console.log(`publisher: ${publisher}, ${view}`)
+  }
+
+  componentDidMount () {
+    this.clearCanvas(document.getElementById('red5pro-publisher-video'))
   }
 
   render () {
@@ -183,14 +69,16 @@ class PublisherImageCaptureTest extends React.Component {
         <hr />
         <h2 className="centered"><em>stream</em>: {this.props.settings.stream1}</h2>
         <p className="centered publish-status-field">STATUS: {this.state.status}</p>
-        <div ref={c => this._videoContainer = c}
-          id="video-container"
-          className="centered">
-          <video ref={c => this._red5ProPublisher = c}
-            id="red5pro-publisher"
+        <div onClick={this.onVideoImageCapture.bind(this)}>
+          <Red5ProPublisher
+            className="centered"
             style={videoStyle}
-            onClick={this.onVideoImageCapture.bind(this)}
-            controls autoplay disabled></video>
+            showControls={true}
+            configuration={this.props.settings}
+            streamName={this.props.settings.stream1}
+            onPublisherEstablished={this.publisherEstablished.bind(this)}
+            ref={c => this._red5ProPublisher = c}
+            />
         </div>
         <div className="centered">
           <p style={captureTextStyle}><span>Click video to capture image.</span><br/><span>Your Image will appear here.</span></p>

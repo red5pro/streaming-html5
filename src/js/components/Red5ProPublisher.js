@@ -170,6 +170,14 @@ class Red5ProPublisher extends React.Component {
     if (nextProps.autoPublish && !this.props.autoPublish) {
       this.tryPublish(nextProps.autoPublish)
     }
+    else if (nextProps.userMedia !== this.props.userMedia) {
+      const pub = this.tryPublish.bind(this)
+      const auto = this.props.autoPublish
+      this.unpublish()
+        .then(() => {
+          pub(auto)
+        })
+    }
   }
 
   render () {
