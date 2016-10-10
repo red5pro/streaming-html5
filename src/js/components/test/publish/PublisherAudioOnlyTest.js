@@ -3,6 +3,11 @@ import { PropTypes } from 'react'
 import Red5ProPublisher from '../../Red5ProPublisher' // eslint-disable-line no-unused-vars
 import BackLink from '../../BackLink' // eslint-disable-line no-unused-vars
 
+const USER_MEDIA_SETTING = {
+  audio: true,
+  video: false
+}
+
 class PublisherAudioOnlyTest extends React.Component {
 
   constructor (props) {
@@ -31,6 +36,7 @@ class PublisherAudioOnlyTest extends React.Component {
         <p className="centered publish-status-field">STATUS: {this.state.status}</p>
         <Red5ProPublisher className="centered" style={videoStyle}
           configuration={this.props.settings}
+          userMedia={USER_MEDIA_SETTING}
           streamName={this.props.settings.stream1}
           showControls={true}
           onPublisherEstablished={this.publisherEstablished.bind(this)}

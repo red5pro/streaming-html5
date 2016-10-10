@@ -14,6 +14,7 @@ class PublisherCameraSourceTest extends React.Component {
         label: SELECT_DEFAULT
       }],
       selectedCamera: undefined,
+      publishAllowed: false,
       status: 'On hold.'
     }
   }
@@ -36,15 +37,11 @@ class PublisherCameraSourceTest extends React.Component {
   }
 
   preview (mediaDeviceId) {
-    const publisher = this._red5ProPublisher
-    const pub = publisher.publish.bind(publisher)
-
     this.setState(state => {
       state.selectedCamera = mediaDeviceId
+      state.publishAllowed = true
       return state
     })
-
-    publisher.preview().then(pub)
   }
 
   onCameraSelect () {
@@ -75,6 +72,14 @@ class PublisherCameraSourceTest extends React.Component {
       'background-color': '#ffffff',
       'padding': '0.8rem'
     }
+    const canPublish = this.state.publishAllowed
+    const userMedia = {
+      video: {
+        optional: [{
+          sourceId: this.state.selectedCamera
+        }]
+      }
+    }
     return (
       <div>
         <BackLink onClick={this.props.onBackClick} />
@@ -100,11 +105,11 @@ class PublisherCameraSourceTest extends React.Component {
         <Red5ProPublisher
           className="centered"
           style={videoStyle}
+          autoPublish={canPublish}
+          showControls={true}
+          userMedia={userMedia}
           configuration={this.props.settings}
           streamName={this.props.settings.stream1}
-          autoPublish={false}
-          showControls={true}
-          targetCamera={this.state.selectedCamera}
           onPublisherEstablished={this.publisherEstablished.bind(this)}
           ref={c => this._red5ProPublisher = c}
           />

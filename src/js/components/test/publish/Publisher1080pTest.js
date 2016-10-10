@@ -2,6 +2,12 @@ import React from 'react'
 import { PropTypes } from 'react'
 import Red5ProPublisher from '../../Red5ProPublisher' // eslint-disable-line no-unused-vars
 import BackLink from '../../BackLink' // eslint-disable-line no-unused-vars
+const USER_MEDIA_SETTING = {
+  video: {
+    width: 1920,
+    height: 1080
+  }
+}
 
 class Publisher1080pTest extends React.Component {
 
@@ -31,6 +37,7 @@ class Publisher1080pTest extends React.Component {
         <p className="centered publish-status-field">STATUS: {this.state.status}</p>
         <Red5ProPublisher className="centered" style={videoStyle}
           configuration={this.props.settings}
+          userMedia={USER_MEDIA_SETTING}
           streamName={this.props.settings.stream1}
           showControls={true}
           onPublisherEstablished={this.publisherEstablished.bind(this)}

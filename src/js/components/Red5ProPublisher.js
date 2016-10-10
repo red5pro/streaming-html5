@@ -41,16 +41,7 @@ class Red5ProPublisher extends React.Component {
       audio: !this.props.configuration.audio || defaultConfiguration.audioOn,
       video: !this.props.configuration.video || defaultConfiguration.videoOn
     }
-
-    let definedMedia = {}
-    if (this.props.targetCamera) {
-      definedMedia.video = {
-        optional: [{
-          sourceId: this.props.targetCamera
-        }]
-      }
-    }
-
+    const definedMedia = this.props.userMedia || {}
     return Object.assign(defaultMedia, definedMedia)
   }
 
@@ -157,18 +148,28 @@ class Red5ProPublisher extends React.Component {
     })
   }
 
-  componentDidMount () {
+  tryPublish (auto) {
     const comp = this
     const pub = this.publish.bind(this)
-    if (this.props.autoPublish) {
+    if (auto) {
       this.preview().then(pub).catch(() => {
         comp.onPublishFail('[PublishTest] :: Error - Could not start publishing session.')
       })
     }
   }
 
+  componentDidMount () {
+    this.tryPublish(this.props.autoPublish)
+  }
+
   componentWillUnmount () {
     this.unpublish()
+  }
+
+  componentWillReceiveProps (nextProps) {
+    if (nextProps.autoPublish && !this.props.autoPublish) {
+      this.tryPublish(nextProps.autoPublish)
+    }
   }
 
   render () {
@@ -188,8 +189,8 @@ class Red5ProPublisher extends React.Component {
 Red5ProPublisher.propTypes = {
   autoPublish: PropTypes.boolean,
   showControls: PropTypes.boolean,
+  userMedia: PropTypes.object,
   streamName: PropTypes.string.isRequired,
-  targetCamera: PropTypes.string,
   configuration: PropTypes.object.isRequired,
   onPublisherEstablished: PropTypes.func
 }
@@ -197,8 +198,8 @@ Red5ProPublisher.propTypes = {
 Red5ProPublisher.defaultProps = {
   autoPublish: true,
   showControls: true,
+  userMedia: undefined,
   streamName: undefined,
-  targetCamera: undefined,
   configuration: defaultConfiguration
 }
 
