@@ -57,14 +57,10 @@ class PublisherCameraSourceTest extends React.Component {
   }
 
   publisherEstablished (publisher, view) {
-    console.log(`publisher: ${publisher}, ${view}`)
+    console.log(`[PublisherCameraSourceTest] publisher: ${publisher}, ${view}`)
   }
 
   render () {
-    const videoStyle = {
-      'width': '100%',
-      'max-width': '640px'
-    }
     const labelStyle = {
       'margin-right': '0.5rem'
     }
@@ -104,7 +100,7 @@ class PublisherCameraSourceTest extends React.Component {
         <p className="centered publish-status-field">STATUS: {this.state.status}</p>
         <Red5ProPublisher
           className="centered"
-          style={videoStyle}
+          mediaClassName="video-element"
           autoPublish={canPublish}
           showControls={true}
           userMedia={userMedia}

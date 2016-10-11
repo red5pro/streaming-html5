@@ -13,14 +13,10 @@ class SubscriberAudioOnlyTest extends React.Component {
   }
 
   subscriberEstablished (subscriber, view) {
-    console.log(`subscriber: ${subscriber}, ${view}`)
+    console.log(`[SubscriberAudioOnlyTest] subscriber: ${subscriber}, ${view}`)
   }
 
   render () {
-    const videoStyle = {
-      'width': '100%',
-      'max-width': '640px'
-    }
     return (
       <div>
         <BackLink onClick={this.props.onBackClick} />
@@ -28,13 +24,16 @@ class SubscriberAudioOnlyTest extends React.Component {
         <hr />
         <h2 className="centered"><em>stream</em>: {this.props.settings.stream1}</h2>
         <p className="centered subscriber-status-field">STATUS: {this.state.status}</p>
-        <Red5ProSubscriber className="centered" style={videoStyle}
+        <Red5ProSubscriber
+          className="centered"
+          mediaClassName="video-element"
           configuration={this.props.settings}
           streamName={this.props.settings.stream1}
           autoPlay={true}
           audioOnly={true}
           showControls={true}
           onSubscriberEstablished={this.subscriberEstablished.bind(this)}
+          ref={c => this._red5ProSubscriber = c}
         />
       </div>
     )

@@ -13,15 +13,11 @@ class PublisherCameraSwapTest extends React.Component {
     this.state = {
       facingModeFront: true,
       status: 'On hold.',
-      supported: false
+      supported: navigator.mediaDevices.getSupportedConstraints()["facingMode"]
     }
   }
 
   componentDidMount () {
-    this.setState(state => {
-      state.supported = navigator.mediaDevices.getSupportedConstraints()["facingMode"]
-      return state
-    })
   }
 
   componentWillUnmount () {
@@ -35,14 +31,10 @@ class PublisherCameraSwapTest extends React.Component {
   }
 
   publisherEstablished (publisher, view) {
-    console.log(`publisher: ${publisher}, ${view}`)
+    console.log(`[PublisherCameraSwapTest] publisher: ${publisher}, ${view}`)
   }
 
   render () {
-    const videoStyle = {
-      'width': '100%',
-      'max-width': '640px'
-    }
     const hintClass = ['hint-block', this.state.supported ? '' : 'hint-alert'].join(' ')
     const supportedStr = this.state.supported ? 'supports' : 'does not support'
     const userMedia = {
@@ -61,7 +53,7 @@ class PublisherCameraSwapTest extends React.Component {
         <div onClick={this.onCameraSwapRequest.bind(this)}>
           <Red5ProPublisher
             className="centered"
-            style={videoStyle}
+            mediaClassName="video-element"
             showControls={true}
             userMedia={userMedia}
             configuration={this.props.settings}
@@ -82,3 +74,4 @@ PublisherCameraSwapTest.propTypes = {
 }
 
 export default PublisherCameraSwapTest
+

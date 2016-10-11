@@ -24,13 +24,13 @@ class PublisherFailoverTest extends React.Component {
       const view = new red5prosdk.PublisherView('red5pro-publisher')
       view.attachPublisher(publisher);
 
-      const rtcConfig = Object.assign(this.props.settings, {
+      const rtcConfig = Object.assign({}, this.props.settings, {
         protocol: 'ws',
         port: this.props.settings.rtcport,
         streamName: this.props.settings.stream1,
         streamType: 'webrtc'
       })
-      const rtmpConfig = Object.assign(this.props.settings, {
+      const rtmpConfig = Object.assign({}, this.props.settings, {
         protocol: 'rtmp',
         port: this.props.settings.rtmpport,
         streamName: this.props.settings.stream1,
@@ -141,7 +141,7 @@ class PublisherFailoverTest extends React.Component {
           })
           .catch(error => {
             const jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
-            console.error(`[PublishTest] :: Unmount Error = ${jsonError}`)
+            console.error(`[PublishFailoverTest] :: Unmount Error = ${jsonError}`)
             reject(error)
           })
       }
@@ -155,8 +155,8 @@ class PublisherFailoverTest extends React.Component {
     const pub = this.publish.bind(this)
     this.preview()
       .then(pub)
-      .catch(() => {
-        console.error('[PublishTest] :: Error - Could not start publishing session.')
+      .catch(error => {
+        console.error(`[PublishFailoverTest] :: Error - Could not start publishing session: ${error}`)
       })
   }
 
@@ -165,10 +165,6 @@ class PublisherFailoverTest extends React.Component {
   }
 
   render () {
-    const videoStyle = {
-      'width': '100%',
-      'max-width': '640px'
-    }
     return (
       <div>
         <BackLink onClick={this.props.onBackClick} />
@@ -181,7 +177,7 @@ class PublisherFailoverTest extends React.Component {
           className="centered">
           <video ref={c => this._red5ProPublisher = c}
             id="red5pro-publisher"
-            style={videoStyle}
+            className="video-element"
             controls autoplay disabled></video>
         </div>
       </div>

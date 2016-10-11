@@ -18,15 +18,10 @@ class PublisherAudioOnlyTest extends React.Component {
   }
 
   publisherEstablished (publisher, publisherView) {
-    console.log(`publisher: ${publisher}, ${publisherView}`)
+    console.log(`[PublisherAudioOnlyTest] publisher: ${publisher}, ${publisherView}`)
   }
 
   render () {
-    const videoStyle = {
-      'width': '100%',
-      'max-width': '640px',
-      'height': '40px'
-    }
     return (
       <div>
         <BackLink onClick={this.props.onBackClick} />
@@ -34,7 +29,9 @@ class PublisherAudioOnlyTest extends React.Component {
         <hr />
         <h2 className="centered"><em>stream</em>: {this.props.settings.stream1}</h2>
         <p className="centered publish-status-field">STATUS: {this.state.status}</p>
-        <Red5ProPublisher className="centered" style={videoStyle}
+        <Red5ProPublisher
+          className="centered"
+          mediaClassName="video-element audio-only-element"
           configuration={this.props.settings}
           userMedia={USER_MEDIA_SETTING}
           streamName={this.props.settings.stream1}

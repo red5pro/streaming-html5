@@ -35,15 +35,11 @@ class PublisherTest extends React.Component {
   }
 
   publisherEstablished (publisher, publisherView) {
-    console.log(`publisher: ${publisher}, ${publisherView}`)
+    console.log(`[PublisherTest] publisher: ${publisher}, ${publisherView}`)
     //    this.watchStats(publisher.getConnection())
   }
 
   render () {
-    const videoStyle = {
-      'width': '100%',
-      'max-width': '640px'
-    }
     return (
       <div>
         <BackLink onClick={this.props.onBackClick} />
@@ -51,7 +47,9 @@ class PublisherTest extends React.Component {
         <hr />
         <h2 className="centered"><em>stream</em>: {this.props.settings.stream1}</h2>
         <p className="centered publish-status-field">STATUS: {this.state.status}</p>
-        <Red5ProPublisher className="centered" style={videoStyle}
+        <Red5ProPublisher
+          className="centered"
+          mediaClassName="video-element"
           configuration={this.props.settings}
           streamName={this.props.settings.stream1}
           showControls={true}

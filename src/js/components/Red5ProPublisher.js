@@ -18,19 +18,20 @@ class Red5ProPublisher extends React.Component {
     super(props)
     this.state = {
       view: undefined,
-      publisher: undefined
+      publisher: undefined,
+      instanceId: Math.floor(Math.random() * 0x10000).toString(16)
     }
   }
 
   onPublishFail (message) {
-    console.error(message)
+    console.error(`[Red5ProPublisher] :: ${message}`)
   }
 
   onPublishSuccess () {
   }
 
   onUnpublishFail (message) {
-    console.error(message)
+    console.error(`[Red5ProPublisher] :: ${message}`)
   }
 
   onUnpublishSuccess () {
@@ -55,9 +56,13 @@ class Red5ProPublisher extends React.Component {
     const comp = this
     const gUM = this.getUserMediaConfiguration.bind(this)
     return new Promise((resolve, reject) => {
+      const elementId = ['red5pro-publisher-video', this.state.instanceId].join('-')
       const publisher = new red5prosdk.RTCPublisher()
-      const view = new red5prosdk.PublisherView('red5pro-publisher-video')
+      const view = new red5prosdk.PublisherView(elementId)
       const gmd = navigator.mediaDevice || navigator
+
+      console.log('[Red5ProPublisher] gUM:: ' + JSON.stringify(gUM(), null, 2))
+
       gmd.getUserMedia(gUM(), media => {
 
         // Upon access of user media,
@@ -75,7 +80,7 @@ class Red5ProPublisher extends React.Component {
 
       }, error => {
 
-        comp.onPublishFail(`[PublisherTest] :: Error - ${error}`)
+        comp.onPublishFail(`Error - ${error}`)
         reject(error)
 
       })
@@ -88,9 +93,12 @@ class Red5ProPublisher extends React.Component {
     const view = this.state.view
     view.attachPublisher(publisher);
 
-    const config = Object.assign(defaultConfiguration, this.props.configuration)
+    const config = Object.assign({}, defaultConfiguration, this.props.configuration)
     config.port = config.rtcport || config.port
-    config.streamName = this.props.streamName || this.config.streamName
+    config.host = this.props.host || config.host
+    config.streamName = this.props.streamName || config.streamName
+
+    console.log('[Red5ProPublisher] config:: ' + JSON.stringify(config, null, 2))
 
     // Initialize
     publisher.init(config)
@@ -105,7 +113,7 @@ class Red5ProPublisher extends React.Component {
       .catch(error => {
         // A fault occurred while trying to initialize and publish the stream.
         const jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
-        comp.onPublishFail(`[PublisherTest] :: Error - ${jsonError}`)
+        comp.onPublishFail(`Error - ${jsonError}`)
       })
 
   }
@@ -134,7 +142,7 @@ class Red5ProPublisher extends React.Component {
           .catch(error => {
 
             const jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
-            comp.onUnpublishFailed(`[PublishTest] :: Unmount Error = ${jsonError}`)
+            comp.onUnpublishFailed(`Unmount Error = ${jsonError}`)
             reject(error)
 
           })
@@ -152,9 +160,10 @@ class Red5ProPublisher extends React.Component {
     const comp = this
     const pub = this.publish.bind(this)
     if (auto) {
-      this.preview().then(pub).catch(() => {
-        comp.onPublishFail('[PublishTest] :: Error - Could not start publishing session.')
-      })
+      this.preview()
+        .then(pub).catch(() => {
+          comp.onPublishFail('Error - Could not start publishing session.')
+        })
     }
   }
 
@@ -166,11 +175,8 @@ class Red5ProPublisher extends React.Component {
     this.unpublish()
   }
 
-  componentWillReceiveProps (nextProps) {
-    if (nextProps.autoPublish && !this.props.autoPublish) {
-      this.tryPublish(nextProps.autoPublish)
-    }
-    else if (nextProps.userMedia !== this.props.userMedia) {
+  componentDidUpdate (prevProps) {
+    if (prevProps.userMedia !== this.props.userMedia) {
       const pub = this.tryPublish.bind(this)
       const auto = this.props.autoPublish
       this.unpublish()
@@ -180,13 +186,28 @@ class Red5ProPublisher extends React.Component {
     }
   }
 
+  getPublisherElement () {
+    return this._red5ProPublisher
+  }
+
   render () {
+    const elementId = ['red5pro-publisher-video', this.state.instanceId].join('-')
+    let classNames = ['red5pro-publisher-video-container']
+    if (this.props.className) {
+      classNames = classNames.concat(this.props.className)
+    }
+    let mediaClassNames = []
+    if (this.props.mediaClassName) {
+      mediaClassNames = mediaClassNames.concat(this.props.mediaClassName)
+    }
     return (
       <div ref={c => this._videoContainer = c}
-        id="red5pro-publisher-video-container">
+        style={this.props.style}
+        className={classNames.join(' ')}>
         <video ref={c => this._red5ProPublisher = c}
-          id="red5pro-publisher-video"
-          controls={this.props.showControls}>
+          id={elementId}
+          controls={this.props.showControls}
+          className={mediaClassNames.join(' ')}>
         </video>
       </div>
     )
@@ -197,6 +218,7 @@ class Red5ProPublisher extends React.Component {
 Red5ProPublisher.propTypes = {
   autoPublish: PropTypes.boolean,
   showControls: PropTypes.boolean,
+  host: PropTypes.string,
   userMedia: PropTypes.object,
   streamName: PropTypes.string.isRequired,
   configuration: PropTypes.object.isRequired,
@@ -206,6 +228,7 @@ Red5ProPublisher.propTypes = {
 Red5ProPublisher.defaultProps = {
   autoPublish: true,
   showControls: true,
+  host: undefined,
   userMedia: undefined,
   streamName: undefined,
   configuration: defaultConfiguration

@@ -62,7 +62,7 @@ class PublisherFiltersTest extends React.Component {
     })
 
     // Initialize
-    publisher.init(Object.assign(this.props.settings, {
+    publisher.init(Object.assign({}, this.props.settings, {
       protocol: 'ws',
       port: this.props.settings.rtcport,
       streamName: this.props.settings.stream1,
@@ -114,7 +114,7 @@ class PublisherFiltersTest extends React.Component {
           })
           .catch(error => {
             const jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
-            console.error(`[PublishTest] :: Unmount Error = ${jsonError}`)
+            console.error(`[PublisherFiltersTest] :: Unmount Error = ${jsonError}`)
             reject(error)
           })
       }
@@ -129,7 +129,7 @@ class PublisherFiltersTest extends React.Component {
     this.preview()
       .then(pub)
       .catch(() => {
-        console.error('[PublishTest] :: Error - Could not start publishing session.')
+        console.error('[PublisherFilterTest] :: Error - Could not start publishing session.')
       })
   }
 
@@ -147,10 +147,6 @@ class PublisherFiltersTest extends React.Component {
   }
 
   render () {
-    const videoStyle = {
-      'width': '100%',
-      'max-width': '640px'
-    }
     const labelStyle = {
       'margin-right': '0.5rem'
     }
@@ -158,7 +154,7 @@ class PublisherFiltersTest extends React.Component {
       'background-color': '#ffffff',
       'padding': '0.8rem'
     }
-    const videoClassList = this.state.videoClassList
+    const videoClassList = this.state.videoClassList.concat(['video-element'])
     return (
       <div>
         <BackLink onClick={this.props.onBackClick} />
@@ -184,7 +180,6 @@ class PublisherFiltersTest extends React.Component {
           className="centered">
           <video ref={c => this._red5ProPublisher = c}
             id="red5pro-publisher"
-            style={videoStyle}
             className={videoClassList}
             controls autoplay disabled></video>
         </div>

@@ -14,7 +14,7 @@ class PublisherImageCaptureTest extends React.Component {
   }
 
   onVideoImageCapture () {
-    const videoElement = document.getElementById('red5pro-publisher-video')
+    const videoElement = this._red5ProPublisher.getPublisherElement()
     this.clearCanvas(videoElement)
     this.drawOnCanvas(videoElement)
   }
@@ -43,18 +43,14 @@ class PublisherImageCaptureTest extends React.Component {
   }
 
   publisherEstablished (publisher, view) {
-    console.log(`publisher: ${publisher}, ${view}`)
+    console.log(`[PublisherImageCaptureTest] publisher: ${publisher}, ${view}`)
   }
 
   componentDidMount () {
-    this.clearCanvas(document.getElementById('red5pro-publisher-video'))
+    this.clearCanvas(this._red5ProPublisher.getPublisherElement())
   }
 
   render () {
-    const videoStyle = {
-      'width': '100%',
-      'max-width': '640px'
-    }
     const visible = this.state.captureFilled ? 'hidden' : 'visible'
     const captureTextStyle = {
       'visibility': visible,
@@ -74,7 +70,7 @@ class PublisherImageCaptureTest extends React.Component {
         <div onClick={this.onVideoImageCapture.bind(this)}>
           <Red5ProPublisher
             className="centered"
-            style={videoStyle}
+            mediaClassName="video-element"
             showControls={true}
             configuration={this.props.settings}
             streamName={this.props.settings.stream1}

@@ -1,7 +1,6 @@
-/* global red5prosdk */
 import React from 'react'
-// import red5prosdk from 'red5pro-sdk'
 import { PropTypes } from 'react'
+import Red5ProSubscriber from '../../Red5ProSubscriber' // eslint-disable-line no-unused-vars
 import BackLink from '../../BackLink' // eslint-disable-line no-unused-vars
 
 class SubscriberStreamManagerTest extends React.Component {
@@ -9,8 +8,7 @@ class SubscriberStreamManagerTest extends React.Component {
   constructor (props) {
     super(props)
     this.state = {
-      view: undefined,
-      subscriber: undefined,
+      targetHost: undefined,
       status: 'On Hold.'
     }
   }
@@ -45,71 +43,16 @@ class SubscriberStreamManagerTest extends React.Component {
         })
     })
   }
-  subscribe (serverHost) {
-    const comp = this
-    const view = new red5prosdk.PlaybackView('red5pro-subscriber')
-    const subscriber = new red5prosdk.RTCSubscriber()
-    const iceServers = [{urls: 'stun:stun2.l.google.com:19302'}]
-
-    const origAttachStream = view.attachStream.bind(view)
-    view.attachStream = (stream, autoplay) => {
-      comp.setState(state => {
-        state.status = 'Subscribed. They\'re Live!'
-        return state
-      })
-      origAttachStream(stream, autoplay)
-      view.attachStream = origAttachStream
-    }
-
-    comp.setState(state => {
-      state.status = `Establishing connection on ${serverHost}...`
-      return state
-    })
-    view.attachSubscriber(subscriber)
-    subscriber.init({
-      protocol: 'ws',
-      host: serverHost,
-      port: this.props.settings.rtcport,
-      app: this.props.settings.app,
-      subscriptionId: 'subscriber-' + Math.floor(Math.random() * 0x10000).toString(16),
-      streamName: this.props.settings.stream1,
-      iceServers: iceServers,
-      bandwidth: {
-        audio: 50,
-        video: 256,
-        data: 30 * 1000 * 1000
-      }
-    })
-    .then(player => {
-      comp.setState(state => {
-        state.view = view
-        state.subscriber = subscriber
-        return state
-      })
-      comp.setState(state => {
-        state.status = 'Negotating connection...'
-        return state
-      })
-      return player.play()
-    })
-    .then(() => {
-      comp.setState(state => {
-        state.status = 'Requesting stream for playback...'
-        return state
-      })
-    })
-    .catch(error => {
-      const jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
-      console.error(`[SubscriberStreamManagerTest] :: Error - ${jsonError}`)
-    })
-
-  }
 
   componentDidMount () {
     const comp = this
-    const sub = this.subscribe.bind(this)
     this.requestEdge()
-      .then(sub)
+      .then(host => {
+        comp.setState(state => {
+          state.targetHost = host
+          return state
+        })
+      })
       .catch(() => {
         comp.setState(state => {
           state.status = 'Error - Could not start subscribing session.'
@@ -119,33 +62,12 @@ class SubscriberStreamManagerTest extends React.Component {
       })
   }
 
-  componentWillUnmount() {
-    const comp = this;
-    const view = comp.state.view;
-    const subscriber = comp.state.subscriber;
-    if (subscriber) {
-      subscriber.stop()
-        .then(() => {
-          view.view.src = ''
-          subscriber.setView(undefined)
-          comp.setState(state => {
-            state.view = undefined
-            state.subscriber = undefined
-            return state
-          })
-        })
-        .catch(error => {
-          const jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
-          console.error(`[SubscriberStreamManagerTest] :: Unmount Error = ${jsonError}`)
-        })
-    }
+  subscriberEstablished (subscriber, view) {
+    console.log(`[SubscriberStreamManagerTest] subscriber: ${subscriber}, ${view}`)
   }
 
   render () {
-    const videoStyle = {
-      'width': '100%',
-      'max-width': '640px'
-    }
+    const canSubscribe = this.state.targetHost != undefined
     return (
       <div>
         <BackLink onClick={this.props.onBackClick} />
@@ -153,14 +75,18 @@ class SubscriberStreamManagerTest extends React.Component {
         <hr />
         <h2 className="centered"><em>stream</em>: {this.props.settings.stream1}</h2>
         <p className="centered subscriber-status-field">STATUS: {this.state.status}</p>
-        <div ref={c => this._videoContainer = c}
-          id="video-container"
-          className="centered">
-          <video ref={c => this._red5ProSubscriber = c}
-            id="red5pro-subscriber"
-            style={videoStyle}
-            controls autoplay></video>
-        </div>
+        <Red5ProSubscriber
+          className="centered"
+          mediaClassName="video-element"
+          configuration={this.props.settings}
+          streamName={this.props.settings.stream1}
+          host={this.state.targetHost}
+          autoSubscribe={canSubscribe}
+          autoPlay={true}
+          showControls={true}
+          onSubscriberEstablished={this.subscriberEstablished.bind(this)}
+          ref={c => this._red5ProSubscriber = c}
+        />
       </div>
     )
   }

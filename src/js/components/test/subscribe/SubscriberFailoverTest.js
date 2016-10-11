@@ -39,6 +39,7 @@ class SubscriberFailoverTest extends React.Component {
       protocol: 'ws',
       host: this.props.settings.host,
       port: this.props.settings.rtcport,
+      app: this.props.settings.app,
       subscriptionId: 'subscriber-' + Math.floor(Math.random() * 0x10000).toString(16),
       streamName: this.props.settings.stream1,
       iceServers: iceServers,
@@ -48,25 +49,21 @@ class SubscriberFailoverTest extends React.Component {
         data: 30 * 1000 * 1000
       }
     }
-    const rtmpConfig = {
+    const rtmpConfig = Object.assign({}, this.props.settings, {
       protocol: 'rtmp',
-      host: this.props.settings.host,
       port: this.props.settings.rtmpport,
-      app: this.props.settings.app,
       streamName: this.props.settings.stream1,
       mimeType: 'rtmp/flv',
       useVideoJS: false,
       swf: 'lib/red5pro/red5pro-subscriber.swf'
-    }
-    const hlsConfig = {
+    })
+    const hlsConfig = Object.assign({}, this.props.settings, {
       protocol: 'http',
-      host: this.props.settings.host,
       port: this.props.settings.hlsport,
-      app: this.props.settings.app,
       streamName: this.props.settings.stream1,
       mimeType: 'application/x-mpegURL',
       swf: 'lib/red5pro/red5pro-video-js.swf'
-    }
+    })
 
     comp.setState(state => {
       state.status = 'Establishing connection...'
@@ -107,7 +104,7 @@ class SubscriberFailoverTest extends React.Component {
           state.status = `Error: ${jsonError}`
           return state
         })
-        console.error(`[SubscriberTest] :: Error - ${jsonError}`)
+        console.error(`[SubscriberFailoverTest] :: Error - ${jsonError}`)
       })
 
   }
@@ -133,17 +130,12 @@ class SubscriberFailoverTest extends React.Component {
         })
         .catch(error => {
           const jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
-          console.error(`[SubscriberTest] :: Unmount Error = ${jsonError}`)
+          console.error(`[SubscriberFailoverTest] :: Unmount Error = ${jsonError}`)
         })
     }
   }
 
   render () {
-    const videoStyle = {
-      'width': '100%',
-      'max-width': '640px',
-      'height': '300px'
-    }
     return (
       <div>
         <BackLink onClick={this.props.onBackClick} />
@@ -156,7 +148,7 @@ class SubscriberFailoverTest extends React.Component {
           className="centered">
           <video className="video-js vjs-default-skin" ref={c => this._red5ProSubscriber = c}
             id="red5pro-subscriber"
-            style={videoStyle}
+            className="video-element"
             controls autoplay></video>
         </div>
       </div>
