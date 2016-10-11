@@ -65,7 +65,7 @@ class SubscriberClusterTest extends React.Component {
       protocol: 'ws',
       host: serverAddress,
       port: this.props.settings.rtcport,
-      app: this.props.settings.context,
+      app: this.props.settings.app,
       subscriptionId: 'subscriber-' + Math.floor(Math.random() * 0x10000).toString(16),
       streamName: this.props.settings.stream1,
       iceServers: iceServers,

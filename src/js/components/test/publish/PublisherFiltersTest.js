@@ -66,7 +66,7 @@ class PublisherFiltersTest extends React.Component {
       protocol: 'ws',
       host: this.props.settings.host,
       port: this.props.settings.rtcport,
-      app: this.props.settings.context,
+      app: this.props.settings.app,
       streamName: this.props.settings.stream1,
       streamType: 'webrtc',
       iceServers: iceServers

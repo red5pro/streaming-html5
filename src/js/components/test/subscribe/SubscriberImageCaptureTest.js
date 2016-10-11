@@ -39,7 +39,7 @@ class SubscriberImageCaptureTest extends React.Component {
       protocol: 'ws',
       host: this.props.settings.host,
       port: this.props.settings.rtcport,
-      app: this.props.settings.context,
+      app: this.props.settings.app,
       subscriptionId: 'subscriber-' + Math.floor(Math.random() * 0x10000).toString(16),
       streamName: this.props.settings.stream1,
       iceServers: iceServers,

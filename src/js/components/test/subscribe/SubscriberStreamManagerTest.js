@@ -17,9 +17,9 @@ class SubscriberStreamManagerTest extends React.Component {
 
   requestEdge () {
     const host = this.props.settings.host
-    const context = this.props.settings.context
+    const app = this.props.settings.app
     const streamName = this.props.settings.stream1
-    const url = `http://${host}:5080/streammanager/api/1.0/event/${context}/${streamName}?action=subscribe`
+    const url = `http://${host}:5080/streammanager/api/1.0/event/${app}/${streamName}?action=subscribe`
     this.setState(state => {
       state.status = `Requesting Edge from ${url}...`
     })
@@ -67,7 +67,7 @@ class SubscriberStreamManagerTest extends React.Component {
       protocol: 'ws',
       host: serverHost,
       port: this.props.settings.rtcport,
-      app: this.props.settings.context,
+      app: this.props.settings.app,
       subscriptionId: 'subscriber-' + Math.floor(Math.random() * 0x10000).toString(16),
       streamName: this.props.settings.stream1,
       iceServers: iceServers,

@@ -17,9 +17,9 @@ class PublisherStreamManagerTest extends React.Component {
 
   requestOrigin () {
     const host = this.props.settings.host
-    const context = this.props.settings.context
+    const app = this.props.settings.app
     const streamName = this.props.settings.stream1
-    const url = `http://${host}:5080/streammanager/api/1.0/event/${context}/${streamName}?action=broadcast`
+    const url = `http://${host}:5080/streammanager/api/1.0/event/${app}/${streamName}?action=broadcast`
     this.setState(state => {
       state.status = `Requesting Origin from ${url}...`
     })
@@ -92,7 +92,7 @@ class PublisherStreamManagerTest extends React.Component {
       protocol: 'ws',
       host: serverHost,
       port: this.props.settings.rtcport,
-      app: this.props.settings.context,
+      app: this.props.settings.app,
       streamName: this.props.settings.stream1,
       streamType: 'webrtc',
       iceServers: iceServers
