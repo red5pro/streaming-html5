@@ -111,14 +111,25 @@ class Red5ProSubscriber extends React.Component {
   }
 
   render () {
-    return (
-      <div ref={c => this._videoContainer = c}
-        id="red5pro-subscriber-video-container">
+    const children = this.props.audioOnly
+      ? (
+        <audio ref={c => this._red5ProSubscriber = c}
+          id="red5pro-subscriber-video"
+          controls={this.props.showControls}
+          autoplay={this.props.autoPlay}>
+        </audio>
+      )
+      : (
         <video ref={c => this._red5ProSubscriber = c}
           id="red5pro-subscriber-video"
           controls={this.props.showControls}
           autoplay={this.props.autoPlay}>
         </video>
+      )
+    return (
+      <div ref={c => this._videoContainer = c}
+        id="red5pro-subscriber-video-container">
+        {children}
       </div>
     )
   }
@@ -128,6 +139,7 @@ class Red5ProSubscriber extends React.Component {
 Red5ProSubscriber.propTypes = {
   autoPlay: PropTypes.boolean,
   showControls: PropTypes.boolean,
+  audioOnly: PropTypes.boolean,
   streamName: PropTypes.string.isRequired,
   settings: PropTypes.object.isRequired,
   onBackClick: PropTypes.func.isRequired,
@@ -137,6 +149,7 @@ Red5ProSubscriber.propTypes = {
 Red5ProSubscriber.defaultProps = {
   autoPlay: true,
   showControls: true,
+  audioOnly: false,
   streamName: undefined,
   consfiguration: defaultConfiguration
 }

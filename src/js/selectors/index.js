@@ -10,6 +10,7 @@ import SettingsFormContainer from '../containers/SettingsFormContainer' // eslin
 import * as tests from '../components/test'
 import TestContainer from '../containers/test/TestContainer'
 import PublisherSettingsOverrideContainer from '../containers/test/PublisherSettingsOverrideContainer' // eslint-disable-line no-unused-vars
+import SubscriberSettingsOverrideContainer from '../containers/test/SubscriberSettingsOverrideContainer' // eslint-disable-line no-unused-vars
 
 const getViewFilter = (state) => state.viewFilter
 
