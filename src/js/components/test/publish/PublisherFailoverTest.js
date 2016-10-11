@@ -60,9 +60,10 @@ class PublisherFailoverTest extends React.Component {
         })
 
         if (type.toLowerCase() === publisher.publishTypes.RTC) {
-          navigator.getUserMedia({
-            audio: !comp.props.settings.audioOn ? false : true,
-            video: !comp.props.settings.videoOn ? false : true
+          const gmd = navigator.mediaDevice || navigator
+          gmd.getUserMedia({
+            audio: !comp.props.settings.audio ? false : true,
+            video: !comp.props.settings.video ? false : true
           }, media => {
 
             // Upon access of user media,
