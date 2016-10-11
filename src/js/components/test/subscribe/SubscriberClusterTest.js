@@ -20,6 +20,7 @@ class SubscriberClusterTest extends React.Component {
     const url = `http://${host}:5080/cluster`
     this.setState(state => {
       state.status = `Requesting Edge from ${url}...`
+      return state
     })
     return new Promise((resolve, reject) => {
       fetch(url)
@@ -52,6 +53,7 @@ class SubscriberClusterTest extends React.Component {
     view.attachStream = (stream, autoplay) => {
       comp.setState(state => {
         state.status = `Subscribed on ${serverAddress}. They're Live!`
+        return state
       })
       origAttachStream(stream, autoplay)
       view.attachStream = origAttachStream
@@ -59,6 +61,7 @@ class SubscriberClusterTest extends React.Component {
 
     comp.setState(state => {
       state.status = `Establishing connection to ${serverAddress}...`
+      return state
     })
     view.attachSubscriber(subscriber)
     subscriber.init({
@@ -79,15 +82,18 @@ class SubscriberClusterTest extends React.Component {
       comp.setState(state => {
         state.view = view
         state.subscriber = subscriber
+        return state
       })
       comp.setState(state => {
         state.status = 'Negotating connection...'
+        return state
       })
       return player.play()
     })
     .then(() => {
       comp.setState(state => {
         state.status = `Requesting stream for playback on ${serverAddress}...`
+        return state
       })
     })
     .catch(error => {
@@ -105,6 +111,7 @@ class SubscriberClusterTest extends React.Component {
       .catch(error => {
         comp.setState(state => {
           state.status = 'Could not start a subscription session.'
+          return state
         })
         const jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
         console.error(`[SubscriberClusterTest] :: Error - ${jsonError}`)
@@ -123,6 +130,7 @@ class SubscriberClusterTest extends React.Component {
           comp.setState(state => {
             state.view = undefined
             state.subscriber = undefined
+            return state
           })
         })
         .catch(error => {

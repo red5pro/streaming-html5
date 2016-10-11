@@ -26,6 +26,7 @@ class PublisherImageCaptureTest extends React.Component {
     context.fillRect(0, 0, targetElement.offsetWidth, targetElement.offsetHeight)
     this.setState(state => {
       state.captureFilled = false
+      return state
     })
   }
 
@@ -37,6 +38,7 @@ class PublisherImageCaptureTest extends React.Component {
     context.drawImage(targetElement, 0, 0, targetElement.offsetWidth, targetElement.offsetHeight)
     this.setState(state => {
       state.captureFilled = true
+      return state
     })
   }
 

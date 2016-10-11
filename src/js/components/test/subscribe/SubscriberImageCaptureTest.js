@@ -26,6 +26,7 @@ class SubscriberImageCaptureTest extends React.Component {
     view.attachStream = (stream, autoplay) => {
       comp.setState(state => {
         state.status = 'Subscribed. They\'re Live!'
+        return state
       })
       origAttachStream(stream, autoplay)
       view.attachStream = origAttachStream
@@ -33,6 +34,7 @@ class SubscriberImageCaptureTest extends React.Component {
 
     comp.setState(state => {
       state.status = 'Establishing connection...'
+      return state
     })
     view.attachSubscriber(subscriber)
     subscriber.init({
@@ -53,15 +55,18 @@ class SubscriberImageCaptureTest extends React.Component {
       comp.setState(state => {
         state.view = view
         state.subscriber = subscriber
+        return state
       })
       comp.setState(state => {
         state.status = 'Negotating connection...'
+        return state
       })
       return player.play()
     })
     .then(() => {
       comp.setState(state => {
         state.status = 'Requesting stream for playback...'
+        return state
       })
     })
     .catch(error => {
@@ -88,6 +93,7 @@ class SubscriberImageCaptureTest extends React.Component {
           comp.setState(state => {
             state.view = undefined
             state.subscriber = undefined
+            return state
           })
         })
         .catch(error => {
@@ -110,6 +116,7 @@ class SubscriberImageCaptureTest extends React.Component {
     context.fillRect(0, 0, video.offsetWidth, video.offsetHeight)
     this.setState(state => {
       state.captureFilled = false
+      return state
     })
   }
 
@@ -121,6 +128,7 @@ class SubscriberImageCaptureTest extends React.Component {
     context.drawImage(targetElement, 0, 0, targetElement.offsetWidth, targetElement.offsetHeight)
     this.setState(state => {
       state.captureFilled = true
+      return state
     })
   }
 

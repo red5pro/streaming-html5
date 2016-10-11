@@ -25,8 +25,8 @@ class PublisherFiltersTest extends React.Component {
       const publisher = new red5prosdk.RTCPublisher()
       const view = new red5prosdk.PublisherView('red5pro-publisher')
       navigator.getUserMedia({
-        audio: !comp.props.settings.audioOn ? false : true,
-        video: !comp.props.settings.videoOn ? false : true
+        audio: !comp.props.settings.audio ? false : true,
+        video: !comp.props.settings.video ? false : true
       }, media => {
 
         // Upon access of user media,
@@ -52,35 +52,34 @@ class PublisherFiltersTest extends React.Component {
 
   publish () {
     const comp = this
-    const iceServers = this.props.settings.iceServers
     const publisher = this.state.publisher
     const view = this.state.view
     view.attachPublisher(publisher);
 
     comp.setState(state => {
       state.status = 'Establishing connection...'
+      return state
     })
 
     // Initialize
-    publisher.init({
+    publisher.init(Object.assign(this.props.settings, {
       protocol: 'ws',
-      host: this.props.settings.host,
       port: this.props.settings.rtcport,
-      app: this.props.settings.app,
       streamName: this.props.settings.stream1,
-      streamType: 'webrtc',
-      iceServers: iceServers
-    })
+      streamType: 'webrtc'
+    }))
     .then(() => {
       // Invoke the publish action
       comp.setState(state => {
         state.status = 'Starting publish session...'
+        return state
       })
       return publisher.publish()
     })
     .then(() => {
       comp.setState(state => {
         state.status = 'Publishing started. You\'re Live!'
+        return state
       })
     })
     .catch(error => {
@@ -88,6 +87,7 @@ class PublisherFiltersTest extends React.Component {
       const jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
       comp.setState(state => {
         state.status = `ERROR: ${jsonError}`
+        return state
       })
       console.error(`[PublisherFiltersTest] :: Error - ${jsonError}`)
     })
@@ -142,6 +142,7 @@ class PublisherFiltersTest extends React.Component {
     let classList = selectedFilter === FILTER_SELECT ? '' : selectedFilter
     this.setState(state => {
       state.videoClassList = classList
+      return state
     })
   }
 

@@ -29,6 +29,7 @@ class SubscriberFailoverTest extends React.Component {
       const type = comp.state.subscriber.getType()
       comp.setState(state => {
         state.status = `${type} Subscribed. They're Live!`
+        return state
       })
       origAttachStream(stream, autoplay)
       view.attachStream = origAttachStream
@@ -69,6 +70,7 @@ class SubscriberFailoverTest extends React.Component {
 
     comp.setState(state => {
       state.status = 'Establishing connection...'
+      return state
     })
     view.attachSubscriber(subscriber)
 
@@ -83,10 +85,12 @@ class SubscriberFailoverTest extends React.Component {
         comp.setState(state => {
           state.view = view
           state.subscriber = player
+          return state
         })
         const type = player.getType()
         comp.setState(state => {
           state.status = `Negotating ${type} connection...`
+          return state
         })
         return player.play()
       })
@@ -94,12 +98,14 @@ class SubscriberFailoverTest extends React.Component {
         const type = comp.state.subscriber.getType()
         comp.setState(state => {
           state.status = `Requesting ${type} stream for playback...`
+          return state
         })
       })
       .catch(error => {
         const jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
         comp.setState(state => {
           state.status = `Error: ${jsonError}`
+          return state
         })
         console.error(`[SubscriberTest] :: Error - ${jsonError}`)
       })
@@ -122,6 +128,7 @@ class SubscriberFailoverTest extends React.Component {
           comp.setState(state => {
             state.view = undefined
             state.subscriber = undefined
+            return state
           })
         })
         .catch(error => {

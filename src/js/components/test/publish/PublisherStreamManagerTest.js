@@ -22,6 +22,7 @@ class PublisherStreamManagerTest extends React.Component {
     const url = `http://${host}:5080/streammanager/api/1.0/event/${app}/${streamName}?action=broadcast`
     this.setState(state => {
       state.status = `Requesting Origin from ${url}...`
+      return state
     })
     return new Promise((resolve, reject) => {
       fetch(url)
@@ -51,8 +52,8 @@ class PublisherStreamManagerTest extends React.Component {
       const publisher = new red5prosdk.RTCPublisher()
       const view = new red5prosdk.PublisherView('red5pro-publisher')
       navigator.getUserMedia({
-        audio: !comp.props.settings.audioOn ? false : true,
-        video: !comp.props.settings.videoOn ? false : true
+        audio: !comp.props.settings.audio ? false : true,
+        video: !comp.props.settings.video ? false : true
       }, media => {
 
         // Upon access of user media,
@@ -78,35 +79,35 @@ class PublisherStreamManagerTest extends React.Component {
 
   publish (serverHost) {
     const comp = this
-    const iceServers = this.props.settings.iceServers
     const publisher = this.state.publisher
     const view = this.state.view
     view.attachPublisher(publisher);
 
     comp.setState(state => {
       state.status = `Establishing connection on ${serverHost}...`
+      return state
     })
 
     // Initialize
-    publisher.init({
+    publisher.init(Object.assign(this.props.settings, {
       protocol: 'ws',
       host: serverHost,
       port: this.props.settings.rtcport,
-      app: this.props.settings.app,
       streamName: this.props.settings.stream1,
-      streamType: 'webrtc',
-      iceServers: iceServers
-    })
+      streamType: 'webrtc'
+    }))
     .then(() => {
       // Invoke the publish action
       comp.setState(state => {
         state.status = 'Starting publish session...'
+        return state
       })
       return publisher.publish()
     })
     .then(() => {
       comp.setState(state => {
         state.status = 'Publishing started. You\'re Live!'
+        return state
       })
     })
     .catch(error => {
@@ -114,6 +115,7 @@ class PublisherStreamManagerTest extends React.Component {
       const jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
       comp.setState(state => {
         state.status = `ERROR: ${jsonError}`
+        return state
       })
       console.error(`[PublisherStreamManagerTest] :: Error - ${jsonError}`)
     })
@@ -160,6 +162,7 @@ class PublisherStreamManagerTest extends React.Component {
       .catch(() => {
         comp.setState(state => {
           state.status = 'Error - Could not start publishing session.'
+          return state
         })
         console.error('[PublishStreamManagerTest] :: Error - Could not start publishing session.')
       })

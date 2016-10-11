@@ -22,6 +22,7 @@ class SubscriberStreamManagerTest extends React.Component {
     const url = `http://${host}:5080/streammanager/api/1.0/event/${app}/${streamName}?action=subscribe`
     this.setState(state => {
       state.status = `Requesting Edge from ${url}...`
+      return state
     })
     return new Promise((resolve, reject) => {
       fetch(url)
@@ -54,6 +55,7 @@ class SubscriberStreamManagerTest extends React.Component {
     view.attachStream = (stream, autoplay) => {
       comp.setState(state => {
         state.status = 'Subscribed. They\'re Live!'
+        return state
       })
       origAttachStream(stream, autoplay)
       view.attachStream = origAttachStream
@@ -61,6 +63,7 @@ class SubscriberStreamManagerTest extends React.Component {
 
     comp.setState(state => {
       state.status = `Establishing connection on ${serverHost}...`
+      return state
     })
     view.attachSubscriber(subscriber)
     subscriber.init({
@@ -81,15 +84,18 @@ class SubscriberStreamManagerTest extends React.Component {
       comp.setState(state => {
         state.view = view
         state.subscriber = subscriber
+        return state
       })
       comp.setState(state => {
         state.status = 'Negotating connection...'
+        return state
       })
       return player.play()
     })
     .then(() => {
       comp.setState(state => {
         state.status = 'Requesting stream for playback...'
+        return state
       })
     })
     .catch(error => {
@@ -107,6 +113,7 @@ class SubscriberStreamManagerTest extends React.Component {
       .catch(() => {
         comp.setState(state => {
           state.status = 'Error - Could not start subscribing session.'
+          return state
         })
         console.error('[SubscriberStreamManagerTest] :: Error - Could not start subscribing session.')
       })
@@ -124,6 +131,7 @@ class SubscriberStreamManagerTest extends React.Component {
           comp.setState(state => {
             state.view = undefined
             state.subscriber = undefined
+            return state
           })
         })
         .catch(error => {
