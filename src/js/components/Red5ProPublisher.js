@@ -61,6 +61,15 @@ class Red5ProPublisher extends React.Component {
       const view = new red5prosdk.PublisherView(elementId)
       const gmd = navigator.mediaDevice || navigator
 
+      if (this.props.onPublisherEvent) {
+        publisher.on('*', this.props.onPublisherEvent)
+      }
+      else {
+        publisher.on('*', event => {
+          console.log(`[Red5ProPublisher] :: PublisherEvent - ${event.type}`)
+        })
+      }
+
       console.log('[Red5ProPublisher] gUM:: ' + JSON.stringify(gUM(), null, 2))
 
       gmd.getUserMedia(gUM(), media => {
@@ -222,7 +231,8 @@ Red5ProPublisher.propTypes = {
   userMedia: PropTypes.object,
   streamName: PropTypes.string.isRequired,
   configuration: PropTypes.object.isRequired,
-  onPublisherEstablished: PropTypes.func
+  onPublisherEstablished: PropTypes.func,
+  onPublisherEvent: PropTypes.func
 }
 
 Red5ProPublisher.defaultProps = {

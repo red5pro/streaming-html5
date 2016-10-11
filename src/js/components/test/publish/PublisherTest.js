@@ -1,4 +1,6 @@
+/* global red5prosdk */
 import React from 'react'
+// import red5prosdk from 'red5pro-sdk'
 import { PropTypes } from 'react'
 import Red5ProPublisher from '../../Red5ProPublisher' // eslint-disable-line no-unused-vars
 import BackLink from '../../BackLink' // eslint-disable-line no-unused-vars
@@ -28,10 +30,35 @@ class PublisherTest extends React.Component {
     window.clearInterval(this._watchStatsInterval)
   }
 
-  componentDidMount () {
+  componentWillUnmount () {
+    this.unwatchStats()
   }
 
-  componentWillUnmount () {
+  handlePublisherEvent (event) {
+    console.log(`[PublisherTest] event: ${event.type}`)
+    const pubTypes = red5prosdk.PublisherEventTypes
+    let status = this.state.status
+    switch (event.type) {
+      case pubTypes.CONNECT_SUCCESS:
+        status = 'Connection established...'
+        break
+      case pubTypes.CONNECT_FAILURE:
+        status = 'Error - Could not establish connection.'
+        break
+      case pubTypes.PUBLISH_START:
+        status = 'Started publishing session.'
+        break
+      case pubTypes.PUBLISH_FAIL:
+        status = 'Error - Could not start a publishing session.'
+        break
+      case pubTypes.PUBLISH_INVALID_NAME:
+        status = 'Error - Stream name already in use.'
+        break
+    }
+    this.setState(state => {
+      state.status = status
+      return state
+    })
   }
 
   publisherEstablished (publisher, publisherView) {
@@ -54,6 +81,7 @@ class PublisherTest extends React.Component {
           streamName={this.props.settings.stream1}
           showControls={true}
           onPublisherEstablished={this.publisherEstablished.bind(this)}
+          onPublisherEvent={this.handlePublisherEvent.bind(this)}
           />
       </div>
     )

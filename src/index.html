@@ -22,5 +22,10 @@
     </div>
     <script src="lib/red5pro/red5pro-sdk.js"></script>
     <script src="script/red5pro-testbed.js"></script>
+    <script>
+      (function(window, red5pro) {
+        red5pro.setLogLevel(red5pro.LogLevels.WARN);
+      })(this, window.red5prosdk);
+    </script>
   </body>
 </html>
