@@ -7,8 +7,10 @@ import { createSelector } from 'reselect'
 import TestListContainer from '../containers/TestListContainer' // eslint-disable-line no-unused-vars
 import SettingsFormContainer from '../containers/SettingsFormContainer' // eslint-disable-line no-unused-vars
 
-import TestContainer from '../containers/test/TestContainer'
 import * as tests from '../components/test'
+import TestContainer from '../containers/test/TestContainer'
+import PublisherSettingsOverrideContainer from '../containers/test/PublisherSettingsOverrideContainer' // eslint-disable-line no-unused-vars
+import SubscriberSettingsOverrideContainer from '../containers/test/SubscriberSettingsOverrideContainer' // eslint-disable-line no-unused-vars
 
 const getViewFilter = (state) => state.viewFilter
 

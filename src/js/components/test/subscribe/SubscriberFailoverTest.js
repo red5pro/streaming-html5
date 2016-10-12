@@ -29,6 +29,7 @@ class SubscriberFailoverTest extends React.Component {
       const type = comp.state.subscriber.getType()
       comp.setState(state => {
         state.status = `${type} Subscribed. They're Live!`
+        return state
       })
       origAttachStream(stream, autoplay)
       view.attachStream = origAttachStream
@@ -38,7 +39,7 @@ class SubscriberFailoverTest extends React.Component {
       protocol: 'ws',
       host: this.props.settings.host,
       port: this.props.settings.rtcport,
-      app: this.props.settings.context,
+      app: this.props.settings.app,
       subscriptionId: 'subscriber-' + Math.floor(Math.random() * 0x10000).toString(16),
       streamName: this.props.settings.stream1,
       iceServers: iceServers,
@@ -48,28 +49,25 @@ class SubscriberFailoverTest extends React.Component {
         data: 30 * 1000 * 1000
       }
     }
-    const rtmpConfig = {
+    const rtmpConfig = Object.assign({}, this.props.settings, {
       protocol: 'rtmp',
-      host: this.props.settings.host,
       port: this.props.settings.rtmpport,
-      app: this.props.settings.context,
       streamName: this.props.settings.stream1,
       mimeType: 'rtmp/flv',
       useVideoJS: false,
       swf: 'lib/red5pro/red5pro-subscriber.swf'
-    }
-    const hlsConfig = {
+    })
+    const hlsConfig = Object.assign({}, this.props.settings, {
       protocol: 'http',
-      host: this.props.settings.host,
       port: this.props.settings.hlsport,
-      app: this.props.settings.context,
       streamName: this.props.settings.stream1,
       mimeType: 'application/x-mpegURL',
       swf: 'lib/red5pro/red5pro-video-js.swf'
-    }
+    })
 
     comp.setState(state => {
       state.status = 'Establishing connection...'
+      return state
     })
     view.attachSubscriber(subscriber)
 
@@ -84,10 +82,12 @@ class SubscriberFailoverTest extends React.Component {
         comp.setState(state => {
           state.view = view
           state.subscriber = player
+          return state
         })
         const type = player.getType()
         comp.setState(state => {
           state.status = `Negotating ${type} connection...`
+          return state
         })
         return player.play()
       })
@@ -95,14 +95,16 @@ class SubscriberFailoverTest extends React.Component {
         const type = comp.state.subscriber.getType()
         comp.setState(state => {
           state.status = `Requesting ${type} stream for playback...`
+          return state
         })
       })
       .catch(error => {
         const jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
         comp.setState(state => {
           state.status = `Error: ${jsonError}`
+          return state
         })
-        console.error(`[SubscriberTest] :: Error - ${jsonError}`)
+        console.error(`[SubscriberFailoverTest] :: Error - ${jsonError}`)
       })
 
   }
@@ -123,21 +125,17 @@ class SubscriberFailoverTest extends React.Component {
           comp.setState(state => {
             state.view = undefined
             state.subscriber = undefined
+            return state
           })
         })
         .catch(error => {
           const jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
-          console.error(`[SubscriberTest] :: Unmount Error = ${jsonError}`)
+          console.error(`[SubscriberFailoverTest] :: Unmount Error = ${jsonError}`)
         })
     }
   }
 
   render () {
-    const videoStyle = {
-      'width': '100%',
-      'max-width': '640px',
-      'height': '300px'
-    }
     return (
       <div>
         <BackLink onClick={this.props.onBackClick} />
@@ -150,7 +148,7 @@ class SubscriberFailoverTest extends React.Component {
           className="centered">
           <video className="video-js vjs-default-skin" ref={c => this._red5ProSubscriber = c}
             id="red5pro-subscriber"
-            style={videoStyle}
+            className="video-element"
             controls autoplay></video>
         </div>
       </div>

@@ -23,7 +23,12 @@ strong {
 
 code {
   font-family: monospace;
-  font-size: 1.2em;
+  font-size: 1.2rem;
+}
+
+.loading-text {
+  padding: 2rem;
+  font-size: 1.2rem;
 }
 
 .version-field {
@@ -97,6 +102,15 @@ code {
 .hint-alert {
   background-color: #ad4949;
   color: #fff;
+}
+
+.video-element {
+  width: 100%;
+  max-width: 640px;
+}
+
+.audio-only-element {
+  height: 40px;
 }
 
 #back-link-container {

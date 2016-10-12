@@ -11,7 +11,7 @@ const store = createStore(reducer, {
   viewFilter: 'Home'
 })
 
-console.log('[index]:\r\n' + JSON.stringify(store.getState(), null, 2))
+// console.log('[index]:\r\n' + JSON.stringify(store.getState(), null, 2))
 
 render(
   <Provider store={store}>

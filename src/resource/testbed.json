@@ -7,11 +7,11 @@
     "hlsport": 5080,
     "stream1": "stream1",
     "stream2": "stream2",
-    "context": "live",
+    "app": "live",
     "cameraWidth": 854,
     "cameraHeight": 480,
-    "videoOn": true,
-    "audioOn": true,
+    "video": true,
+    "audio": true,
     "buffer": 0.5,
     "bitrate": 1000,
     "publisherFailoverOrder": "rtc,rtmp",
@@ -20,7 +20,8 @@
       {
         "urls": "stun:stun2.l.google.com:19302"
       }
-    ]
+    ],
+    "verboseLogging": "on"
   },
   "tests": [
       {

@@ -7,7 +7,7 @@
     <script src="https://unpkg.com/react@15.3.2/dist/react.min.js"></script>
     <script src="https://unpkg.com/react-dom@15.3.2/dist/react-dom.min.js"></script>
     <script src="https://unpkg.com/react-redux@4.4.5/dist/react-redux.min.js"></script>
-    <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
+    <script src="lib/webrtc/adapter.js"></script>
     <script src="lib/videojs/video.min.js"></script>
     <script src="lib/videojs/videojs-media-sources.min.js"></script>
     <script src="lib/videojs/videojs.hls.min.js"></script>
@@ -17,8 +17,15 @@
     <link rel="stylesheet" href="css/video-filters.css">
   </head>
   <body>
-    <div id="app">Loading...</div>
+    <div id="app">
+      <p class="loading-text">Loading...</p>
+    </div>
     <script src="lib/red5pro/red5pro-sdk.js"></script>
     <script src="script/red5pro-testbed.js"></script>
+    <script>
+      (function(window, red5pro) {
+        red5pro.setLogLevel(red5pro.LogLevels.WARN);
+      })(this, window.red5prosdk);
+    </script>
   </body>
 </html>

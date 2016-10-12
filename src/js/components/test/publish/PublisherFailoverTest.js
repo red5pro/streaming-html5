@@ -24,24 +24,18 @@ class PublisherFailoverTest extends React.Component {
       const view = new red5prosdk.PublisherView('red5pro-publisher')
       view.attachPublisher(publisher);
 
-      const iceServers = this.props.settings.iceServers
-      const rtcConfig = {
+      const rtcConfig = Object.assign({}, this.props.settings, {
         protocol: 'ws',
-        host: this.props.settings.host,
         port: this.props.settings.rtcport,
-        app: this.props.settings.context,
         streamName: this.props.settings.stream1,
-        streamType: 'webrtc',
-        iceServers: iceServers
-      }
-      const rtmpConfig = {
+        streamType: 'webrtc'
+      })
+      const rtmpConfig = Object.assign({}, this.props.settings, {
         protocol: 'rtmp',
-        host: this.props.settings.host,
         port: this.props.settings.rtmpport,
-        app: this.props.settings.context,
         streamName: this.props.settings.stream1,
         swf: 'lib/red5pro/red5pro-publisher.swf'
-      }
+      })
       const publishOrder = this.props.settings.publisherFailoverOrder.split(',').map(item => {
         return item.trim()
       })
@@ -57,12 +51,14 @@ class PublisherFailoverTest extends React.Component {
         const type = selectedPublisher.getType()
         comp.setState(state => {
           state.status = `Starting publish session with ${type}...`
+          return state
         })
 
         if (type.toLowerCase() === publisher.publishTypes.RTC) {
-          navigator.getUserMedia({
-            audio: !comp.props.settings.audioOn ? false : true,
-            video: !comp.props.settings.videoOn ? false : true
+          const gmd = navigator.mediaDevice || navigator
+          gmd.getUserMedia({
+            audio: !comp.props.settings.audio ? false : true,
+            video: !comp.props.settings.video ? false : true
           }, media => {
 
             // Upon access of user media,
@@ -103,12 +99,14 @@ class PublisherFailoverTest extends React.Component {
     const type = publisher.getType()
     comp.setState(state => {
       state.status = `Establishing connection with ${type} publisher...`
+      return state
     })
     // Initialize
     publisher.publish()
     .then(() => {
       comp.setState(state => {
         state.status = `${type} publishing started. You're Live!`
+        return state
       })
     })
     .catch(error => {
@@ -116,6 +114,7 @@ class PublisherFailoverTest extends React.Component {
       const jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
       comp.setState(state => {
         state.status = `ERROR: ${jsonError}`
+        return state
       })
       console.error(`[PublisherFailoverTest] :: Error - ${jsonError}`)
     })
@@ -142,7 +141,7 @@ class PublisherFailoverTest extends React.Component {
           })
           .catch(error => {
             const jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
-            console.error(`[PublishTest] :: Unmount Error = ${jsonError}`)
+            console.error(`[PublishFailoverTest] :: Unmount Error = ${jsonError}`)
             reject(error)
           })
       }
@@ -156,8 +155,8 @@ class PublisherFailoverTest extends React.Component {
     const pub = this.publish.bind(this)
     this.preview()
       .then(pub)
-      .catch(() => {
-        console.error('[PublishTest] :: Error - Could not start publishing session.')
+      .catch(error => {
+        console.error(`[PublishFailoverTest] :: Error - Could not start publishing session: ${error}`)
       })
   }
 
@@ -166,10 +165,6 @@ class PublisherFailoverTest extends React.Component {
   }
 
   render () {
-    const videoStyle = {
-      'width': '100%',
-      'max-width': '640px'
-    }
     return (
       <div>
         <BackLink onClick={this.props.onBackClick} />
@@ -182,7 +177,7 @@ class PublisherFailoverTest extends React.Component {
           className="centered">
           <video ref={c => this._red5ProPublisher = c}
             id="red5pro-publisher"
-            style={videoStyle}
+            className="video-element"
             controls autoplay disabled></video>
         </div>
       </div>
