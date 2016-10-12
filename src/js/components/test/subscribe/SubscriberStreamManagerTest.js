@@ -1,6 +1,7 @@
 import React from 'react'
 import { PropTypes } from 'react'
 import Red5ProSubscriber from '../../Red5ProSubscriber' // eslint-disable-line no-unused-vars
+import SubscriberStatus from '../SubscriberStatus' // eslint-disable-line no-unused-vars
 import BackLink from '../../BackLink' // eslint-disable-line no-unused-vars
 
 class SubscriberStreamManagerTest extends React.Component {
@@ -9,7 +10,7 @@ class SubscriberStreamManagerTest extends React.Component {
     super(props)
     this.state = {
       targetHost: undefined,
-      status: 'On Hold.'
+      statusEvent: undefined
     }
   }
 
@@ -62,6 +63,13 @@ class SubscriberStreamManagerTest extends React.Component {
       })
   }
 
+  handleSubscriberEvent (event) {
+    this.setState(state => {
+      state.statusEvent = event
+      return state
+    })
+  }
+
   subscriberEstablished (subscriber, view) {
     console.log(`[SubscriberStreamManagerTest] subscriber: ${subscriber}, ${view}`)
   }
@@ -74,7 +82,7 @@ class SubscriberStreamManagerTest extends React.Component {
         <h1 className="centered">Subscriber StreamManager Test</h1>
         <hr />
         <h2 className="centered"><em>stream</em>: {this.props.settings.stream1}</h2>
-        <p className="centered subscriber-status-field">STATUS: {this.state.status}</p>
+        <SubscriberStatus event={this.state.statusEvent} />
         <Red5ProSubscriber
           className="centered"
           mediaClassName="video-element"
@@ -85,6 +93,7 @@ class SubscriberStreamManagerTest extends React.Component {
           autoPlay={true}
           showControls={true}
           onSubscriberEstablished={this.subscriberEstablished.bind(this)}
+          onSubscriberEvent={this.handleSubscriberEvent.bind(this)}
           ref={c => this._red5ProSubscriber = c}
         />
       </div>

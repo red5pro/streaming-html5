@@ -2,6 +2,7 @@
 import React from 'react'
 // import red5prosdk from 'red5pro-sdk'
 import { PropTypes } from 'react'
+import SubscriberStatus from '../SubscriberStatus' // eslint-disable-line no-unused-vars
 import BackLink from '../../BackLink' // eslint-disable-line no-unused-vars
 
 class SubscriberFailoverTest extends React.Component {
@@ -11,7 +12,7 @@ class SubscriberFailoverTest extends React.Component {
     this.state = {
       view: undefined,
       subscriber: undefined,
-      status: 'On hold.'
+      statusEvent: undefined
     }
   }
 
@@ -26,11 +27,6 @@ class SubscriberFailoverTest extends React.Component {
 
     const origAttachStream = view.attachStream.bind(view)
     view.attachStream = (stream, autoplay) => {
-      const type = comp.state.subscriber.getType()
-      comp.setState(state => {
-        state.status = `${type} Subscribed. They're Live!`
-        return state
-      })
       origAttachStream(stream, autoplay)
       view.attachStream = origAttachStream
     }
@@ -65,10 +61,6 @@ class SubscriberFailoverTest extends React.Component {
       swf: 'lib/red5pro/red5pro-video-js.swf'
     })
 
-    comp.setState(state => {
-      state.status = 'Establishing connection...'
-      return state
-    })
     view.attachSubscriber(subscriber)
 
     subscriber
@@ -84,26 +76,12 @@ class SubscriberFailoverTest extends React.Component {
           state.subscriber = player
           return state
         })
-        const type = player.getType()
-        comp.setState(state => {
-          state.status = `Negotating ${type} connection...`
-          return state
-        })
         return player.play()
       })
       .then(() => {
-        const type = comp.state.subscriber.getType()
-        comp.setState(state => {
-          state.status = `Requesting ${type} stream for playback...`
-          return state
-        })
       })
       .catch(error => {
         const jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
-        comp.setState(state => {
-          state.status = `Error: ${jsonError}`
-          return state
-        })
         console.error(`[SubscriberFailoverTest] :: Error - ${jsonError}`)
       })
 
@@ -142,7 +120,7 @@ class SubscriberFailoverTest extends React.Component {
         <h1 className="centered">Subscriber Failover Test</h1>
         <hr />
         <h2 className="centered"><em>stream</em>: {this.props.settings.stream1}</h2>
-        <p className="centered subscriber-status-field">STATUS: {this.state.status}</p>
+        <SubscriberStatus event={this.state.statusEvent} />
         <div className="centered" ref={c => this._videoContainer = c}
           id="video-container"
           className="centered">

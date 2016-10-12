@@ -1,6 +1,7 @@
 import React from 'react'
 import { PropTypes } from 'react'
 import Red5ProSubscriber from '../../Red5ProSubscriber' // eslint-disable-line no-unused-vars
+import SubscriberStatus from '../SubscriberStatus' // eslint-disable-line no-unused-vars
 import BackLink from '../../BackLink' // eslint-disable-line no-unused-vars
 
 class SubscriberImageCaptureTest extends React.Component {
@@ -8,8 +9,8 @@ class SubscriberImageCaptureTest extends React.Component {
   constructor (props) {
     super(props)
     this.state = {
-      status: 'On Hold.',
-      captureFilled: false
+      captureFilled: false,
+      statusEvent: undefined
     }
   }
 
@@ -42,6 +43,13 @@ class SubscriberImageCaptureTest extends React.Component {
     })
   }
 
+  handleSubscriberEvent (event) {
+    this.setState(state => {
+      state.statusEvent = event
+      return state
+    })
+  }
+
   subscriberEstablished (subscriber, view) {
     console.log(`[SubscriberImageCaptureTest] subscriber: ${subscriber}, ${view}`)
   }
@@ -66,7 +74,7 @@ class SubscriberImageCaptureTest extends React.Component {
         <h1 className="centered">Subscriber Image Capture Test</h1>
         <hr />
         <h2 className="centered"><em>stream</em>: {this.props.settings.stream1}</h2>
-        <p className="centered subscriber-status-field">STATUS: {this.state.status}</p>
+        <SubscriberStatus event={this.state.statusEvent} />
         <div onClick={this.onVideoImageCapture.bind(this)}>
           <Red5ProSubscriber
             className="centered"
@@ -77,6 +85,7 @@ class SubscriberImageCaptureTest extends React.Component {
             autoPlay={true}
             showControls={true}
             onSubscriberEstablished={this.subscriberEstablished.bind(this)}
+            onSubscriberEvent={this.handleSubscriberEvent.bind(this)}
             ref={c => this._red5ProSubscriber = c}
           />
         </div>
