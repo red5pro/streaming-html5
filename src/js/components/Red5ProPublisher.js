@@ -111,7 +111,7 @@ class Red5ProPublisher extends React.Component {
 
     // Initialize
     publisher.init(config)
-      .then((pub, view) => {
+      .then((pub) => {
         // Invoke the publish action
         comp.notifyPublisherEstablished(pub, view)
         return publisher.publish()

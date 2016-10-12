@@ -37,6 +37,7 @@ class PublisherTest extends React.Component {
   handlePublisherEvent (event) {
     console.log(`[PublisherTest] event: ${event.type}`)
     const pubTypes = red5prosdk.PublisherEventTypes
+    const rtcTypes = red5prosdk.RTCPublisherEventTypes
     let status = this.state.status
     switch (event.type) {
       case pubTypes.CONNECT_SUCCESS:
@@ -53,6 +54,21 @@ class PublisherTest extends React.Component {
         break
       case pubTypes.PUBLISH_INVALID_NAME:
         status = 'Error - Stream name already in use.'
+        break
+      case rtcTypes.MEDIA_STREAM_AVAILABLE:
+        status = 'Stream available...'
+        break
+      case rtcTypes.PEER_CONNECTION_AVAILABLE:
+        status = 'Peer Connection available...'
+        break
+      case rtcTypes.OFFER_START:
+        status = 'Begin offer...'
+        break
+      case rtcTypes.OFFER_END:
+        status = 'Offer accepted...'
+        break
+      case rtcTypes.ICE_TRICKLE_COMPLETE:
+        status = 'Negotation complete. Waiting Publish Start...'
         break
     }
     this.setState(state => {
