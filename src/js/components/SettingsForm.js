@@ -22,6 +22,10 @@ class SettingsForm extends React.Component {
   }
 
   render () {
+    const isVerboseLogging = this.props.settings.verboseLogging
+    const checkStyle = {
+      'vertical-align': 'middle'
+    }
     return (
       <div>
         <BackLink onClick={this.props.onBackClick} />
@@ -40,6 +44,18 @@ class SettingsForm extends React.Component {
         <p className="settings-field">
           <label className="settings-label" for="stream2-field">Stream2 Name:</label>
           <input ref={(c) => this._stream2 = c} name="stream2-field" defaultValue={this.props.settings.stream2}></input>
+        </p>
+        <hr/>
+        <p className="settings-field">
+          <label className="settings-label" for="logging-field">Verbose R5 Logging:</label>
+          {isVerboseLogging
+            ? (
+            <input type="checkbox" ref={(c) => this._verboseLogging = c} name="logging-field" value="on" style={checkStyle} checked></input>
+            )
+            : (
+            <input type="checkbox" ref={(c) => this._verboseLogging = c} name="logging-field" value="off" style={checkStyle}></input>
+            )
+          }
         </p>
       </div>
     )

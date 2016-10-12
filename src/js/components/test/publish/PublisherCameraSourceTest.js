@@ -1,6 +1,7 @@
 import React from 'react'
 import { PropTypes } from 'react'
 import Red5ProPublisher from '../../Red5ProPublisher' // eslint-disable-line no-unused-vars
+import PublisherStatus from '../PublisherStatus' // eslint-disable-line no-unused-vars
 import BackLink from '../../BackLink' // eslint-disable-line no-unused-vars
 
 const SELECT_DEFAULT = 'Select a camera...'
@@ -15,7 +16,7 @@ class PublisherCameraSourceTest extends React.Component {
       }],
       selectedCamera: undefined,
       publishAllowed: false,
-      status: 'On hold.'
+      statusEvent: undefined
     }
   }
 
@@ -54,6 +55,13 @@ class PublisherCameraSourceTest extends React.Component {
 
   componentDidMount () {
     this.waitForSelect()
+  }
+
+  handlePublisherEvent (event) {
+    this.setState(state => {
+      state.statusEvent = event
+      return state
+    })
   }
 
   publisherEstablished (publisher, view) {
@@ -97,7 +105,7 @@ class PublisherCameraSourceTest extends React.Component {
             </select>
           </p>
         </div>
-        <p className="centered publish-status-field">STATUS: {this.state.status}</p>
+        <PublisherStatus event={this.state.statusEvent} />
         <Red5ProPublisher
           className="centered"
           mediaClassName="video-element"
@@ -107,6 +115,7 @@ class PublisherCameraSourceTest extends React.Component {
           configuration={this.props.settings}
           streamName={this.props.settings.stream1}
           onPublisherEstablished={this.publisherEstablished.bind(this)}
+          onPublisherEvent={this.handlePublisherEvent.bind(this)}
           ref={c => this._red5ProPublisher = c}
           />
       </div>

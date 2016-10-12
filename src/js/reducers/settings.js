@@ -1,3 +1,5 @@
+/* global red5prosdk */
+// import red5prosdk from 'red5pro-sdk'
 import { SETTINGS_UPDATE } from '../actions'
 
 export const settings = (state = {}, action) => {

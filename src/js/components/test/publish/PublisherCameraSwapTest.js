@@ -1,6 +1,7 @@
 import React from 'react'
 import { PropTypes } from 'react'
 import Red5ProPublisher from '../../Red5ProPublisher' // eslint-disable-line no-unused-vars
+import PublisherStatus from '../PublisherStatus' // eslint-disable-line no-unused-vars
 import BackLink from '../../BackLink' // eslint-disable-line no-unused-vars
 
 const FACING_MODE_FRONT = 'user'
@@ -12,8 +13,8 @@ class PublisherCameraSwapTest extends React.Component {
     super(props)
     this.state = {
       facingModeFront: true,
-      status: 'On hold.',
-      supported: navigator.mediaDevices.getSupportedConstraints()["facingMode"]
+      supported: navigator.mediaDevices.getSupportedConstraints()["facingMode"],
+      statusEvent: undefined
     }
   }
 
@@ -26,6 +27,13 @@ class PublisherCameraSwapTest extends React.Component {
   onCameraSwapRequest () {
     this.setState(state => {
       state.facingModeFront = !state.facingModeFront
+      return state
+    })
+  }
+
+  handlePublisherEvent (event) {
+    this.setState(state => {
+      state.statusEvent = event
       return state
     })
   }
@@ -49,7 +57,7 @@ class PublisherCameraSwapTest extends React.Component {
         <hr />
         <h2 className="centered"><em>stream</em>: {this.props.settings.stream1}</h2>
         <p className={hintClass}><em>The browser you are using </em><strong>{supportedStr}</strong><em> the </em><code>facingMode</code><em> video constraint require for this test.</em></p>
-        <p className="centered publish-status-field">STATUS: {this.state.status}</p>
+        <PublisherStatus event={this.state.statusEvent} />
         <div onClick={this.onCameraSwapRequest.bind(this)}>
           <Red5ProPublisher
             className="centered"
@@ -59,6 +67,7 @@ class PublisherCameraSwapTest extends React.Component {
             configuration={this.props.settings}
             streamName={this.props.settings.stream1}
             onPublisherEstablished={this.publisherEstablished.bind(this)}
+            onPublisherEvent={this.handlePublisherEvent.bind(this)}
             ref={c => this._red5ProPublisher = c}
             />
         </div>

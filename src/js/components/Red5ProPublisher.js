@@ -2,6 +2,7 @@
 import React from 'react'
 // import red5prosdk from 'red5pro-sdk'
 import { PropTypes } from 'react'
+import isEqual from 'lodash/isEqual'
 
 const defaultConfiguration = {
   protocol: 'ws',
@@ -185,7 +186,10 @@ class Red5ProPublisher extends React.Component {
   }
 
   componentDidUpdate (prevProps) {
-    if (prevProps.userMedia !== this.props.userMedia) {
+    const p = this.props
+    const pUM = p.userMedia
+    const prevUM = prevProps.userMedia
+    if (!isEqual(prevUM, pUM)) {
       const pub = this.tryPublish.bind(this)
       const auto = this.props.autoPublish
       this.unpublish()

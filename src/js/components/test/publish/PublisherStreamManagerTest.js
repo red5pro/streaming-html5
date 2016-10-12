@@ -1,6 +1,7 @@
 import React from 'react'
 import { PropTypes } from 'react'
 import Red5ProPublisher from '../../Red5ProPublisher' // eslint-disable-line no-unused-vars
+import PublisherStatus from '../PublisherStatus' // eslint-disable-line no-unused-vars
 import BackLink from '../../BackLink' // eslint-disable-line no-unused-vars
 
 class PublisherStreamManagerTest extends React.Component {
@@ -9,7 +10,7 @@ class PublisherStreamManagerTest extends React.Component {
     super(props)
     this.state = {
       targetHost: undefined,
-      status: 'On hold.'
+      statusEvent: undefined
     }
   }
 
@@ -63,6 +64,13 @@ class PublisherStreamManagerTest extends React.Component {
       })
   }
 
+  handlePublisherEvent (event) {
+    this.setState(state => {
+      state.statusEvent = event
+      return state
+    })
+  }
+
   publisherEstablished (publisher, view) {
     console.log(`[PublisherStreamManagerTest] publisher: ${publisher}, ${view}`)
   }
@@ -75,7 +83,7 @@ class PublisherStreamManagerTest extends React.Component {
         <h1 className="centered">Publisher StreamManager Test</h1>
         <hr />
         <h2 className="centered"><em>stream</em>: {this.props.settings.stream1}</h2>
-        <p className="centered publish-status-field">STATUS: {this.state.status}</p>
+        <PublisherStatus event={this.state.statusEvent} />
         <Red5ProPublisher
           className="centered"
           mediaClassName="video-element"
@@ -85,6 +93,7 @@ class PublisherStreamManagerTest extends React.Component {
           showControls={true}
           autoPublish={canPublish}
           onPublisherEstablished={this.publisherEstablished.bind(this)}
+          onPublisherEvent={this.handlePublisherEvent.bind(this)}
           />
       </div>
     )

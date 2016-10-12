@@ -1,6 +1,7 @@
 import React from 'react'
 import { PropTypes } from 'react'
 import Red5ProPublisher from '../../Red5ProPublisher' // eslint-disable-line no-unused-vars
+import PublisherStatus from '../PublisherStatus' // eslint-disable-line no-unused-vars
 import BackLink from '../../BackLink' // eslint-disable-line no-unused-vars
 
 const USER_MEDIA_SETTING = {
@@ -15,8 +16,15 @@ class Publisher1080pTest extends React.Component {
   constructor (props) {
     super(props)
     this.state = {
-     status: 'On hold.'
+      statusEvent: undefined
     }
+  }
+
+  handlePublisherEvent (event) {
+    this.setState(state => {
+      state.statusEvent = event
+      return state
+    })
   }
 
   publisherEstablished (publisher, publisherView) {
@@ -30,7 +38,7 @@ class Publisher1080pTest extends React.Component {
         <h1 className="centered">Publisher 1080p Test</h1>
         <hr />
         <h2 className="centered"><em>stream</em>: {this.props.settings.stream1}</h2>
-        <p className="centered publish-status-field">STATUS: {this.state.status}</p>
+        <PublisherStatus event={this.state.statusEvent} />
         <Red5ProPublisher
           className="centered"
           mediaClassName="video-element"
@@ -39,6 +47,7 @@ class Publisher1080pTest extends React.Component {
           streamName={this.props.settings.stream1}
           showControls={true}
           onPublisherEstablished={this.publisherEstablished.bind(this)}
+          onPublisherEvent={this.handlePublisherEvent.bind(this)}
           />
       </div>
     )
