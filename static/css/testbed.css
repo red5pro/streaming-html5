@@ -1,0 +1,163 @@
+html {
+  font-family: Helvetica, Arial, _sans;
+  font-size: 100%;
+}
+
+h1 {
+  font-size: 3rem;
+  margin: 1rem 0;
+}
+
+h2 {
+  font-size: 2rem;
+  margin: 1.4rem 0;
+}
+
+em {
+  font-style: italic;
+}
+
+strong {
+  font-weight: bold;
+}
+
+code {
+  font-family: monospace;
+  font-size: 1.2rem;
+}
+
+.loading-text {
+  padding: 2rem;
+  font-size: 1.2rem;
+}
+
+.version-field {
+  text-align: right;
+  font-size: 0.75rem;
+  padding: 0.4rem;
+ }
+
+.centered {
+  width: 100%;
+  text-align: center;
+}
+
+.publish-status-field {
+  padding: 0.8rem;
+  background-color: #eee;
+}
+
+.subscriber-status-field {
+  padding: 0.8rem;
+  background-color: #eee;
+}
+
+.settings-field {
+  margin: 1rem;
+}
+
+.settings-label {
+  width: 50%;
+  display: inline-block;
+  margin-right: 1rem;
+  text-align: right;
+}
+
+.settings-field > input {
+  height: 1.5rem;
+  font-size: 1rem;
+  padding-left: 0.8rem;
+}
+
+.settings-field > select {
+  height: 1.5rem;
+  font-size: 1rem;
+  padding-left: 0.8rem;
+}
+
+.swap-streams-link {
+  color: #00a9ff;
+  cursor: pointer;
+  margin-left: 50%;
+  padding-left: 1rem;
+}
+
+.instructions-block {
+  margin: 1rem;
+  background-color: #eee;
+  border: 1px #ccc solid;
+}
+
+.instructions-block > p {
+  margin: 0.75rem;
+}
+
+.hint-block {
+  font-size: 0.8rem;
+  background-color: #ddd;
+  text-align: center;
+  padding: 1rem;
+}
+
+.hint-alert {
+  background-color: #ad4949;
+  color: #fff;
+}
+
+.video-element {
+  width: 100%;
+  max-width: 640px;
+}
+
+.audio-only-element {
+  height: 40px;
+}
+
+#back-link-container {
+  cursor: pointer;
+  width: 100%;
+  text-align: center;
+  border-bottom: 1px #ccc solid;
+  background-color: #eee;
+}
+
+#back-link {
+  padding-left: 12px;
+  line-height: 60px;
+  color: #00a9ff;
+}
+
+#test-list {
+  width: 100%;
+  list-style: none;
+  margin: 0;
+  padding: 0 0 2rem 0;
+}
+
+#test-list > li {
+  padding: 20px;
+  cursor: pointer;
+  border-bottom: 1px #AAA solid
+}
+
+@media (max-width:440px) {
+  .settings-field > input {
+    width: 90%;
+  }
+  .settings-field > select {
+    width: 90%;
+  }
+  .settings-label {
+    width: 100%;
+    text-align: left;
+    margin-left: 0.3rem;
+    margin-bottom: 0.6rem;
+  }
+  .swap-streams-link {
+    width: 100%;
+    text-align: left;
+    margin: 0;
+    padding-left: 1.3rem;
+  }
+}
+
