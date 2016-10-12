@@ -72,7 +72,6 @@ class Red5ProPublisher extends React.Component {
       }
 
       console.log('[Red5ProPublisher] gUM:: ' + JSON.stringify(gUM(), null, 2))
-
       gmd.getUserMedia(gUM(), media => {
 
         // Upon access of user media,
@@ -139,6 +138,7 @@ class Red5ProPublisher extends React.Component {
 
             view.view.src = ''
             publisher.setView(undefined)
+            publisher.off('*', comp.props.onPublisherevent)
             comp.setState(state => {
               state.publisher = undefined
               state.view = undefined
@@ -185,7 +185,7 @@ class Red5ProPublisher extends React.Component {
     const publisher = this.state.publisher
     this.unpublish()
     if (publisher && this.props.onPublisherEvent) {
-      publisher.on('*', this.props.onPublisherEvent)
+      publisher.off('*', this.props.onPublisherEvent)
     }
   }
 

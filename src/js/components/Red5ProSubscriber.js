@@ -49,13 +49,21 @@ class Red5ProSubscriber extends React.Component {
     const comp = this
     const view = new red5prosdk.PlaybackView(['red5pro-subscriber-video', this.state.instanceId].join('-'))
     const subscriber = new red5prosdk.RTCSubscriber()
-
     const origAttachStream = view.attachStream.bind(view)
     view.attachStream = (stream, autoplay) => {
       origAttachStream(stream, autoplay)
       view.attachStream = origAttachStream
     }
     view.attachSubscriber(subscriber)
+
+    if (this.props.onSubscriberEvent) {
+      subscriber.on('*', this.props.onSubscriberEvent)
+    }
+    else {
+      subscriber.on('*', event => {
+        console.log(`[Red5ProSubscriber] :: SubscriberEvent - ${event.type}`)
+      })
+    }
 
     const config = Object.assign({}, defaultConfiguration, this.props.configuration)
     config.port = config.rtcport || config.port
@@ -94,6 +102,7 @@ class Red5ProSubscriber extends React.Component {
           .then(() => {
             view.view.src = ''
             subscriber.setView(undefined)
+            subscriber.off('*', comp.props.onSubscriberEvent)
             comp.setState(state => {
               state.view = undefined
               state.subscriber = undefined
@@ -124,7 +133,11 @@ class Red5ProSubscriber extends React.Component {
   }
 
   componentWillUnmount() {
+    const subscriber = this.state.subscriber
     this.unsubscribe()
+    if (subscriber && this.props.onSubscriberEvent) {
+      subscriber.off('*', this.props.onSubscriberEvent)
+    }
   }
 
   componentDidUpdate (prevProps) {
@@ -193,7 +206,8 @@ Red5ProSubscriber.propTypes = {
   streamName: PropTypes.string.isRequired,
   configuration: PropTypes.object.isRequired,
   onBackClick: PropTypes.func.isRequired,
-  onSubscriberEstablished: PropTypes.func
+  onSubscriberEstablished: PropTypes.func,
+  onSubscriberEvent: PropTypes.func
 }
 
 Red5ProSubscriber.defaultProps = {
