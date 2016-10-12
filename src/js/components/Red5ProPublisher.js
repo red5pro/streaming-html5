@@ -182,7 +182,11 @@ class Red5ProPublisher extends React.Component {
   }
 
   componentWillUnmount () {
+    const publisher = this.state.publisher
     this.unpublish()
+    if (publisher && this.props.onPublisherEvent) {
+      publisher.on('*', this.props.onPublisherEvent)
+    }
   }
 
   componentDidUpdate (prevProps) {

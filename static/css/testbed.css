@@ -52,6 +52,12 @@ code {
   background-color: #eee;
 }
 
+.failover-detected-field {
+  padding: 1rem;
+  background-color: darkgrey;
+  color: white;
+}
+
 .settings-field {
   margin: 1rem;
 }
