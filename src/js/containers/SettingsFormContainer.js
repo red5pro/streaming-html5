@@ -1,10 +1,11 @@
 import { connect } from 'react-redux'
-import { changeView, changeSetting } from '../actions'
+import { changeView, changeSetting, changeLogLevel } from '../actions'
 import SettingsForm from '../components/SettingsForm'
 
 const mapStateToProps = (state) => {
   return {
-    settings: state.settings
+    settings: state.settings,
+    logLevel: state.logLevel
   }
 }
 
@@ -15,6 +16,9 @@ const mapDispatchToProps = (dispatch) => {
     },
     onFieldChange: (key, value) => {
       dispatch(changeSetting(key, value))
+    },
+    onLogLevelChange: (level) => {
+      dispatch(changeLogLevel(level))
     }
   }
 }

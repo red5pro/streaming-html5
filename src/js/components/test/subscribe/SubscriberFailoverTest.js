@@ -2,53 +2,51 @@
 import React from 'react'
 // import red5prosdk from 'red5pro-sdk'
 import { PropTypes } from 'react'
+import autoBind from 'react-class/autoBind'
+import SubscriberStatus from '../SubscriberStatus' // eslint-disable-line no-unused-vars
 import BackLink from '../../BackLink' // eslint-disable-line no-unused-vars
 
 class SubscriberFailoverTest extends React.Component {
 
   constructor (props) {
     super(props)
+    autoBind(this)
     this.state = {
       view: undefined,
       subscriber: undefined,
-      status: 'On hold.'
+      statusEvent: undefined
     }
+    this._subscriberEntry = undefined
   }
 
   subscribe () {
     const comp = this
     const view = new red5prosdk.PlaybackView('red5pro-subscriber')
     const subscriber = new red5prosdk.Red5ProSubscriber()
-    const iceServers = [{urls: 'stun:stun2.l.google.com:19302'}]
     const subscribeOrder = this.props.settings.subscriberFailoverOrder.split(',').map(item => {
         return item.trim()
-      })
+    })
+
+    this._subscriberEntry = subscriber
+    this._subscriberEntry.on('*', this.handleSubscriberEvent)
 
     const origAttachStream = view.attachStream.bind(view)
     view.attachStream = (stream, autoplay) => {
-      const type = comp.state.subscriber.getType()
-      comp.setState(state => {
-        state.status = `${type} Subscribed. They're Live!`
-        return state
-      })
       origAttachStream(stream, autoplay)
       view.attachStream = origAttachStream
     }
 
-    const rtcConfig = {
+    const rtcConfig = Object.assign({}, this.props.settings, {
       protocol: 'ws',
-      host: this.props.settings.host,
       port: this.props.settings.rtcport,
-      app: this.props.settings.app,
       subscriptionId: 'subscriber-' + Math.floor(Math.random() * 0x10000).toString(16),
       streamName: this.props.settings.stream1,
-      iceServers: iceServers,
       bandwidth: {
         audio: 50,
         video: 256,
         data: 30 * 1000 * 1000
       }
-    }
+    })
     const rtmpConfig = Object.assign({}, this.props.settings, {
       protocol: 'rtmp',
       port: this.props.settings.rtmpport,
@@ -65,10 +63,6 @@ class SubscriberFailoverTest extends React.Component {
       swf: 'lib/red5pro/red5pro-video-js.swf'
     })
 
-    comp.setState(state => {
-      state.status = 'Establishing connection...'
-      return state
-    })
     view.attachSubscriber(subscriber)
 
     subscriber
@@ -84,36 +78,18 @@ class SubscriberFailoverTest extends React.Component {
           state.subscriber = player
           return state
         })
-        const type = player.getType()
-        comp.setState(state => {
-          state.status = `Negotating ${type} connection...`
-          return state
-        })
         return player.play()
       })
       .then(() => {
-        const type = comp.state.subscriber.getType()
-        comp.setState(state => {
-          state.status = `Requesting ${type} stream for playback...`
-          return state
-        })
       })
       .catch(error => {
         const jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
-        comp.setState(state => {
-          state.status = `Error: ${jsonError}`
-          return state
-        })
         console.error(`[SubscriberFailoverTest] :: Error - ${jsonError}`)
       })
 
   }
 
-  componentDidMount () {
-    this.subscribe()
-  }
-
-  componentWillUnmount() {
+  unsubscribe () {
     const comp = this;
     const view = comp.state.view;
     const subscriber = comp.state.subscriber;
@@ -135,6 +111,25 @@ class SubscriberFailoverTest extends React.Component {
     }
   }
 
+  componentDidMount () {
+    this.subscribe()
+  }
+
+  componentWillUnmount() {
+    this.unsubscribe()
+    if (this._subscriberEntry) {
+      this._subscriberEntry.off('*', this.handleSubscriberEvent)
+      this._subscriberEntry = undefined
+    }
+  }
+
+  handleSubscriberEvent (event) {
+    this.setState(state => {
+      state.statusEvent = event
+      return state
+    })
+  }
+
   render () {
     return (
       <div>
@@ -142,7 +137,7 @@ class SubscriberFailoverTest extends React.Component {
         <h1 className="centered">Subscriber Failover Test</h1>
         <hr />
         <h2 className="centered"><em>stream</em>: {this.props.settings.stream1}</h2>
-        <p className="centered subscriber-status-field">STATUS: {this.state.status}</p>
+        <SubscriberStatus event={this.state.statusEvent} />
         <div className="centered" ref={c => this._videoContainer = c}
           id="video-container"
           className="centered">
