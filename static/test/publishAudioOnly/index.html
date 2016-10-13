@@ -202,18 +202,18 @@
                 .then(function () {
                   view.view.src = '';
                   publisher.setView(undefined);
-                  publisher.off('*', onPublisherevent);
+                  publisher.off('*', onPublisherEvent);
                   onUnpublishSuccess();
                   resolve();
                 })
                 .catch(function (error) {
                   var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
-                  onUnpublishFailed('Unmount Error ' + jsonError);
+                  onUnpublishFail('Unmount Error ' + jsonError);
                   reject(error);
                 });
             }
             else {
-              comp.onUnpublishSuccess();
+              onUnpublishSuccess();
               resolve();
             }
           });
