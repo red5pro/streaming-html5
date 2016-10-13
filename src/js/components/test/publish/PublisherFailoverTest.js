@@ -2,17 +2,22 @@
 import React from 'react'
 // import red5prosdk from 'red5pro-sdk'
 import { PropTypes } from 'react'
+import autoBind from 'react-class/autoBind'
+import PublisherStatus from '../PublisherStatus' // eslint-disable-line no-unused-vars
 import BackLink from '../../BackLink' // eslint-disable-line no-unused-vars
 
 class PublisherFailoverTest extends React.Component {
 
   constructor (props) {
     super(props)
+    autoBind(this)
     this.state = {
       view: undefined,
       publisher: undefined,
-      status: 'On hold.'
+      selectedPublisherType: undefined,
+      statusEvent: undefined
     }
+    this._publisherEntry = undefined
   }
 
   preview () {
@@ -22,7 +27,11 @@ class PublisherFailoverTest extends React.Component {
 
       const publisher = new red5prosdk.Red5ProPublisher()
       const view = new red5prosdk.PublisherView('red5pro-publisher')
-      view.attachPublisher(publisher);
+      view.attachPublisher(publisher)
+
+      // Establish event handling.
+      this._publisherEntry = publisher
+      this._publisherEntry.on('*', this.handlePublisherEvent)
 
       const rtcConfig = Object.assign({}, this.props.settings, {
         protocol: 'ws',
@@ -41,84 +50,65 @@ class PublisherFailoverTest extends React.Component {
       })
 
       publisher.setPublishOrder(publishOrder)
-      .init({
-        rtc: rtcConfig,
-        rtmp: rtmpConfig
-      })
-      .then((selectedPublisher) => {
-
-        // Invoke the publish action
-        const type = selectedPublisher.getType()
-        comp.setState(state => {
-          state.status = `Starting publish session with ${type}...`
-          return state
+        .init({
+          rtc: rtcConfig,
+          rtmp: rtmpConfig
         })
+        .then((selectedPublisher) => {
+          // Invoke the publish action
+          const type = selectedPublisher ? selectedPublisher.getType() : undefined
+          if (type.toLowerCase() === publisher.publishTypes.RTC) {
+            const gmd = navigator.mediaDevice || navigator
+            gmd.getUserMedia({
+              audio: !comp.props.settings.audio ? false : true,
+              video: !comp.props.settings.video ? false : true
+            }, media => {
 
-        if (type.toLowerCase() === publisher.publishTypes.RTC) {
-          const gmd = navigator.mediaDevice || navigator
-          gmd.getUserMedia({
-            audio: !comp.props.settings.audio ? false : true,
-            video: !comp.props.settings.video ? false : true
-          }, media => {
+              // Upon access of user media,
+              // 1. Attach the stream to the publisher.
+              // 2. Show the stream as preview in view instance.
+              selectedPublisher.attachStream(media)
+              view.preview(media, true)
 
-            // Upon access of user media,
-            // 1. Attach the stream to the publisher.
-            // 2. Show the stream as preview in view instance.
-            selectedPublisher.attachStream(media)
-            view.preview(media, true)
-
+              comp.setState(state => {
+                state.publisher = selectedPublisher
+                state.view = view
+                state.selectedPublisherType = type
+                return state
+              })
+              resolve()
+            }, error => {
+              console.error(`[PublisherFailoverTest] :: Error - ${error}`)
+              reject(error)
+            })
+          }
+          else {
             comp.setState(state => {
               state.publisher = selectedPublisher
               state.view = view
+              state.selectedPublisherType = type
               return state
             })
-            resolve()
-          }, error => {
-            console.error(`[PublisherFailoverTest] :: Error - ${error}`)
-            reject(error)
-          })
-        }
-        else {
-          comp.setState(state => {
-            state.publisher = selectedPublisher
-            state.view = view
-            return state
-          })
-          selectedPublisher ? resolve() : reject('Could not find publisher.')
-        }
-        // End if/clause for publisher type.
+            selectedPublisher ? resolve() : reject('Could not find publisher.')
+          }
+          // End if/clause for publisher type.
+        })
+        // End Promise declaration.
       })
-      // End Promise declaration.
-    })
   }
 
   publish () {
-    const comp = this
     const publisher = this.state.publisher
-
-    const type = publisher.getType()
-    comp.setState(state => {
-      state.status = `Establishing connection with ${type} publisher...`
-      return state
-    })
     // Initialize
     publisher.publish()
-    .then(() => {
-      comp.setState(state => {
-        state.status = `${type} publishing started. You're Live!`
-        return state
+      .then(() => {
+        console.log('[PublisherFailoverTest] :: Publishing.')
       })
-    })
-    .catch(error => {
-      // A fault occurred while trying to initialize and publish the stream.
-      const jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
-      comp.setState(state => {
-        state.status = `ERROR: ${jsonError}`
-        return state
+      .catch(error => {
+        // A fault occurred while trying to initialize and publish the stream.
+        const jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
+        console.error(`[PublisherFailoverTest] :: Error - ${jsonError}`)
       })
-      console.error(`[PublisherFailoverTest] :: Error - ${jsonError}`)
-    })
-
   }
 
   unpublish () {
@@ -162,6 +152,17 @@ class PublisherFailoverTest extends React.Component {
 
   componentWillUnmount () {
     this.unpublish()
+    if (this._publisherEntry) {
+      this._publisherEntry.off('*', this.handlePublisherEvent)
+      this._publisherEntry = undefined
+    }
+  }
+
+  handlePublisherEvent (event) {
+    this.setState(state => {
+      state.statusEvent = event
+      return state
+    })
   }
 
   render () {
@@ -171,7 +172,8 @@ class PublisherFailoverTest extends React.Component {
         <h1 className="centered">Publisher Failover Test</h1>
         <hr />
         <h2 className="centered"><em>stream</em>: {this.props.settings.stream1}</h2>
-        <p className="centered publish-status-field">STATUS: {this.state.status}</p>
+        <p className="centered failover-detected-field">Detected Supported Publisher: {this.state.selectedPublisherType}</p>
+        <PublisherStatus event={this.state.statusEvent} />
         <div ref={c => this._videoContainer = c}
           id="video-container"
           className="centered">
@@ -192,3 +194,4 @@ PublisherFailoverTest.propTypes = {
 }
 
 export default PublisherFailoverTest
+

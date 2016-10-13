@@ -63,7 +63,7 @@ class PublisherStatus extends React.Component {
 
   render () {
     return (
-      <p className="centered publish-status-field">STATUS: {this.state.status}</p>
+      <p className="centered status-field">STATUS: {this.state.status}</p>
     )
   }
 

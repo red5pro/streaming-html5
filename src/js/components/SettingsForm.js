@@ -1,5 +1,7 @@
+/* global red5prosdk */
 import React from 'react'
 import { PropTypes } from 'react'
+// import red5prosdk from 'red5pro-sdk'
 import BackLink from './BackLink' // eslint-disable-line no-unused-vars
 
 class SettingsForm extends React.Component {
@@ -21,11 +23,18 @@ class SettingsForm extends React.Component {
     this._stream2.value = value1
   }
 
+  changeLogLevel () {
+    const check = this._verboseLogging
+    const isVerbose = check.checked
+    this.props.onLogLevelChange(isVerbose ? 'debug' : 'warn')
+  }
+
   render () {
-    const isVerboseLogging = this.props.settings.verboseLogging
     const checkStyle = {
       'vertical-align': 'middle'
     }
+    const isLogVerbose = this.props.logLevel === 'debug'
+    red5prosdk.setLogLevel(this.props.logLevel)
     return (
       <div>
         <BackLink onClick={this.props.onBackClick} />
@@ -48,12 +57,21 @@ class SettingsForm extends React.Component {
         <hr/>
         <p className="settings-field">
           <label className="settings-label" for="logging-field">Verbose R5 Logging:</label>
-          {isVerboseLogging
+          {isLogVerbose
             ? (
-            <input type="checkbox" ref={(c) => this._verboseLogging = c} name="logging-field" value="on" style={checkStyle} checked></input>
+            <input type="checkbox"
+              ref={(c) => this._verboseLogging = c}
+              name="logging-field"
+              value="on" style={checkStyle}
+              checked
+              onClick={this.changeLogLevel.bind(this)}></input>
             )
             : (
-            <input type="checkbox" ref={(c) => this._verboseLogging = c} name="logging-field" value="off" style={checkStyle}></input>
+            <input type="checkbox"
+              ref={(c) => this._verboseLogging = c}
+              name="logging-field"
+              value="off" style={checkStyle}
+              onClick={this.changeLogLevel.bind(this)}></input>
             )
           }
         </p>
@@ -65,8 +83,10 @@ class SettingsForm extends React.Component {
 
 SettingsForm.propTypes = {
   settings: PropTypes.object.isRequired,
+  logLevel: PropTypes.string.isRequired,
   onFieldChange: PropTypes.func.isRequired,
-  onBackClick: PropTypes.func.isRequired
+  onBackClick: PropTypes.func.isRequired,
+  onLogLevelChange: PropTypes.func.isRequired
 }
 
 export default SettingsForm
