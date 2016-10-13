@@ -52,6 +52,8 @@
           return {}
         })();
 
+        console.log('Settings:\r\n' + JSON.stringify(configuration, null, 2));
+
         function seal (config) {
           sessionStorage.setItem('r5proTestBed', JSON.stringify(config));
         }
