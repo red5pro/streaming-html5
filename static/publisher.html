@@ -91,9 +91,7 @@
           app: 'live',
           streamType: 'webrtc',
           audioOn: true,
-          videoOn: true,
-          cameraWidth: 854,
-          cameraHeight: 480
+          videoOn: true
         };
 
         function updateStatusFromEvent (event, field) {
@@ -194,7 +192,7 @@
         function publish () {
           var publisher = targetPublisher;
           var view = targetView;
-          var config = Object.assign({}, defaultConfiguration, configuration);
+          var config = Object.assign({}, configuration, defaultConfiguration);
           config.streamName = config.stream1;
           console.log('[Red5ProPublisher] config:: ' + JSON.stringify(config, null, 2));
 
