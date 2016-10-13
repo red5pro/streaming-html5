@@ -8,7 +8,8 @@ import testbed from "../resource/testbed.json"
 
 const store = createStore(reducer, {
   ...testbed,
-  viewFilter: 'Home'
+  viewFilter: 'Home',
+  logLevel: 'debug'
 })
 
 // console.log('[index]:\r\n' + JSON.stringify(store.getState(), null, 2))

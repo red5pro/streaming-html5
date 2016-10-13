@@ -21,7 +21,7 @@
         "urls": "stun:stun2.l.google.com:19302"
       }
     ],
-    "verboseLogging": "on"
+    "verboseLogging": true
   },
   "tests": [
       {
