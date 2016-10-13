@@ -23,7 +23,12 @@ strong {
 
 code {
   font-family: monospace;
-  font-size: 1.2em;
+  font-size: 1.2rem;
+}
+
+.loading-text {
+  padding: 2rem;
+  font-size: 1.2rem;
 }
 
 .version-field {
@@ -37,7 +42,7 @@ code {
   text-align: center;
 }
 
-.publish-status-field {
+.status-field {
   padding: 0.8rem;
   background-color: #eee;
 }
@@ -45,6 +50,12 @@ code {
 .subscriber-status-field {
   padding: 0.8rem;
   background-color: #eee;
+}
+
+.failover-detected-field {
+  padding: 1rem;
+  background-color: darkgrey;
+  color: white;
 }
 
 .settings-field {
@@ -99,6 +110,15 @@ code {
   color: #fff;
 }
 
+.video-element {
+  width: 100%;
+  max-width: 640px;
+}
+
+.audio-only-element {
+  height: 40px;
+}
+
 #back-link-container {
   cursor: pointer;
   width: 100%;
@@ -117,7 +137,7 @@ code {
   width: 100%;
   list-style: none;
   margin: 0;
-  padding: 0;
+  padding: 0 0 2rem 0;
 }
 
 #test-list > li {
