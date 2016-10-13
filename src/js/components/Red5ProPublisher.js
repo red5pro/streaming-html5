@@ -138,7 +138,7 @@ class Red5ProPublisher extends React.Component {
 
             view.view.src = ''
             publisher.setView(undefined)
-            publisher.off('*', comp.props.onPublisherevent)
+            publisher.off('*', comp.props.onPublisherEvent)
             comp.setState(state => {
               state.publisher = undefined
               state.view = undefined
