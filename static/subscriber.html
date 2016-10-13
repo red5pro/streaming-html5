@@ -11,72 +11,10 @@
     <link rel="stylesheet" href="lib/videojs/video-js.min.css">
     <link rel="stylesheet" href="css/reset.css">
     <link rel="stylesheet" href="css/testbed.css">
-    <style>
-      .hidden {
-        display: none;
-      }
-    </style>
+    <script src="script/testbed-config.js"></script>
   </head>
   <body>
-    <script>
-      // Defining/accessing testbed configuration.
-      (function () {
-          var config = localStorage.getItem('r5proTestBed');
-          var json;
-          function assignStorage () {
-            json = {
-                "host": "localhost",
-                "port": 8081,
-                "stream1": "stream1",
-                "stream2": "stream2",
-                "app": "live",
-                "cameraWidth": 854,
-                "cameraHeight": 480,
-                "video": true,
-                "audio": true,
-                "buffer": 0.5,
-                "bitrate": 1000,
-                "iceServers": [
-                  {
-                    "urls": "stun:stun2.l.google.com:19302"
-                  }
-                ]
-              };
-            localStorage.setItem('r5proTestBed', JSON.stringify(json));
-          }
-          if (config) {
-            try {
-              json = JSON.parse(config);
-            }
-            catch (e) {
-              assignStorage();
-            }
-          }
-          else {
-            assignStorage();
-          }
-          return json;
-        })();
-    </script>
     <div id="app">
-        <div id="back-link-container"><p id="back-link">Settings</p></div>
-        <div id="settings-container" class="hidden">
-          <h1 class="centered">Settings</h1>
-          <p class="settings-field">
-            <label class="settings-label">Host:</label>
-            <input name="host-field" value="localhost">
-          </p>
-          <p class="settings-field">
-            <label class="settings-label">Stream1 Name:</label>
-            <input name="stream1-field" value="stream1">
-          </p>
-          <p class="settings-field swap-streams-link"><span>Swap Stream Names</span></p>
-          <p class="settings-field">
-            <label class="settings-label">Stream2 Name:</label>
-            <input name="stream2-field" value="stream2">
-          </p>
-          <hr />
-        </div>
         <h1 class="centered">Subscriber Test</h1>
         <hr />
         <h2 class="centered"><em>stream</em>: <span id="stream-title"></span></h2>
@@ -91,7 +29,18 @@
     <script src="lib/red5pro/red5pro-sdk.js"></script>
     <script>
       (function(window, document, red5pro) {
-        red5pro.setLogLevel(red5pro.LogLevels.WARN);
+        var configuration = (function () {
+          var conf = sessionStorage.getItem('r5proTestBed');
+          try {
+            return JSON.parse(conf);
+          }
+          catch (e) {
+            console.error('Could not read testbed configuration from sessionstorage: ' + e.message);
+          }
+          return {}
+        })();
+
+        red5pro.setLogLevel(configuration.verboseLogging ? red5pro.LogLevels.TRACE : red5pro.LogLevels.WARN);
 
         var targetSubscriber;
         var targetView;
@@ -101,12 +50,12 @@
         var streamTitle = document.getElementById('stream-title');
 
         var configuration = (function () {
-          var conf = localStorage.getItem('r5proTestBed');
+          var conf = sessionStorage.getItem('r5proTestBed');
           try {
             return JSON.parse(conf);
           }
           catch (e) {
-            console.error('Could not read testbed configuration from localstorage: ' + e.message);
+            console.error('Could not read testbed configuration from sessionstorage: ' + e.message);
           }
           return {}
         })();
@@ -264,28 +213,6 @@
         });
 
       })(this, document, window.red5prosdk);
-    </script>
-    <script>
-      (function (window, document, red5pro) {
-
-        var configuration = (function () {
-          var conf = localStorage.getItem('r5proTestBed');
-          try {
-            return JSON.parse(conf);
-          }
-          catch (e) {
-            console.error('Could not read testbed configuration from localstorage: ' + e.message);
-          }
-          return {}
-        })();
-
-        var settingsLink = document.getElementById('back-link-container');
-        var settingsContainer = document.getElementById('settings-container');
-        settingsLink.addEventListener('click', function () {
-          settingsContainer.classList.toggle('hidden');
-        });
-
-       })(this, document, window.red5prosk);
     </script>
   </body>
 </html>
