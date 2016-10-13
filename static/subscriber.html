@@ -168,7 +168,7 @@
 
         // Request to start subscribing using an overlayed configuration from local default and local storage.
         function subscribe () {
-          var config = Object.assign({}, defaultConfiguration, configuration);
+          var config = Object.assign({}, configuration, defaultConfiguration);
           config.streamName = config.stream1;
           console.log('[Red5ProSubscriber] config:: ' + JSON.stringify(config, null, 2));
 
