@@ -13,6 +13,46 @@
     <link rel="stylesheet" href="css/testbed.css">
   </head>
   <body>
+    <script>
+      // Defining/accessing testbed configuration.
+      (function () {
+          var config = localStorage.getItem('r5proTestBed');
+          var json;
+          function assignStorage () {
+            json = {
+                "host": "localhost",
+                "port": 8081,
+                "stream1": "stream1",
+                "stream2": "stream2",
+                "app": "live",
+                "cameraWidth": 854,
+                "cameraHeight": 480,
+                "video": true,
+                "audio": true,
+                "buffer": 0.5,
+                "bitrate": 1000,
+                "iceServers": [
+                  {
+                    "urls": "stun:stun2.l.google.com:19302"
+                  }
+                ]
+              };
+            localStorage.setItem('r5proTestBed', JSON.stringify(json));
+          }
+          if (config) {
+            try {
+              json = JSON.parse(config);
+            }
+            catch (e) {
+              assignStorage();
+            }
+          }
+          else {
+            assignStorage();
+          }
+          return json;
+        })();
+    </script>
     <div id="app">
         <h1 class="centered">Publisher Test</h1>
         <hr />
@@ -35,15 +75,16 @@
         var statusField = document.getElementById('status-field');
         var streamTitle = document.getElementById('stream-title');
 
-        var configuration = {
-          host: 'localhost',
-          streamName: 'stream1',
-          iceServers: [
-            {
-              urls: "stun:stun2.l.google.com:19302"
-            }
-           ]
-        };
+        var configuration = (function () {
+          var conf = localStorage.getItem('r5proTestBed');
+          try {
+            return JSON.parse(conf);
+          }
+          catch (e) {
+            console.error('Could not read testbed configuration from localstorage: ' + e.message);
+          }
+          return {}
+        })();
         var defaultConfiguration = {
           protocol: 'ws',
           port: 8081,
@@ -154,6 +195,7 @@
           var publisher = targetPublisher;
           var view = targetView;
           var config = Object.assign({}, defaultConfiguration, configuration);
+          config.streamName = config.stream1;
           console.log('[Red5ProPublisher] config:: ' + JSON.stringify(config, null, 2));
 
           view.attachPublisher(publisher);
