@@ -5,7 +5,10 @@
   function assignStorage () {
     json = {
       "host": "localhost",
-      "port": 8081,
+      "port": 8554,
+      "rtcport": 8081,
+      "rtmpport": 1935,
+      "hlsport": 5080,
       "stream1": "stream1",
       "stream2": "stream2",
       "app": "live",
@@ -15,6 +18,8 @@
       "audio": true,
       "buffer": 0.5,
       "bitrate": 1000,
+      "publisherFailoverOrder": "rtc,rtmp",
+      "subscriberFailoverOrder": "rtc,rtmp,hls",
       "iceServers": [
         {
           "urls": "stun:stun2.l.google.com:19302"
