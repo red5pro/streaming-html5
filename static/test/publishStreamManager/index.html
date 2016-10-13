@@ -16,12 +16,11 @@
   <body>
     <div id="app">
         <div id="back-link-container" style="text-align: left;"><p id="back-link"><a href="../../settings.html">&lt; Settings</a></p></div>
-        <h1 class="centered">Publisher Camera Swap Test</h1>
+        <h1 class="centered">Publisher Stream Manager Test</h1>
         <hr />
         <h2 class="centered"><em>stream</em>: <span id="stream-title"></span></h2>
-        <p id="support-field" class="hint-alert"><em>The browser you are using </em><strong>does not support</strong><em> the </em><code>facingMode</code><em> video constraint require for this test.</em></p>
         <p id="status-field" class="centered status-field">On hold.</p>
-        <div id="video-container" class="centered">
+        <div class="centered">
           <video id="red5pro-publisher-video" controls class="video-element"></video>
         </div>
     </div>
@@ -44,54 +43,19 @@
 
         red5pro.setLogLevel(configuration.verboseLogging ? red5pro.LogLevels.TRACE : red5pro.LogLevels.WARN);
 
-        // The two acceptable video targets on supported devices.
-        var FACING_MODE_FRONT = 'user';
-        var FACING_MODE_REAR = 'environment';
-
         var targetPublisher;
         var targetView;
         var statusField = document.getElementById('status-field');
         var streamTitle = document.getElementById('stream-title');
-        var supportField = document.getElementById('support-field');
-        var videoContainer = document.getElementById('video-container');
-
-        var isSupported = navigator.mediaDevices.getSupportedConstraints()["facingMode"];
-        if (isSupported) {
-          supportField.innerHTML = '<em>The browser you are using </em><strong>supports</strong><em> the </em><code>facingMode</code><em> video constraint require for this test.</em>';
-          supportField.classList.remove('hint-alert');
-          supportField.classList.add('hint-block');
-          videoContainer.addEventListener('click', function () {
-            userMedia.video.facingMode = userMedia.video.facingMode === FACING_MODE_FRONT
-              ? FACING_MODE_REAR : FACING_MODE_FRONT;
-            resetSession();
-          });
-        }
 
         var defaultConfiguration = {
           protocol: 'ws',
           port: 8081,
           app: 'live',
-          streamType: 'webrtc'
+          streamType: 'webrtc',
         };
-        var userMedia = (function (isSupported) {
-          return isSupported
-            ? {
-              video: {
-                facingMode: FACING_MODE_FRONT
-              }
-            }
-            : {
-              video: true
-            }
-        })(isSupported);
-
-        function shutdownVideoElement () {
-          var videoElement = document.getElementById('red5pro-publisher-video');
-          if (videoElement) {
-            videoElement.pause()
-            videoElement.src = ''
-          }
-        }
+        var userMedia = {
+        };
 
         function updateStatusFromEvent (event, field) {
           var pubTypes = red5prosdk.PublisherEventTypes;
@@ -103,14 +67,12 @@
               break;
             case pubTypes.CONNECT_FAILURE:
               status = 'Error - Could not establish connection.';
-              shutdownVideoElement();
               break;
             case pubTypes.PUBLISH_START:
-              status = 'Started publishing session. Camera (' + (isSupported ? userMedia.video.facingMode : 'default') + ').';
+              status = 'Started publishing session.';
               break;
             case pubTypes.PUBLISH_FAIL:
               status = 'Error - Could not start a publishing session.';
-              shutdownVideoElement();
               break;
             case pubTypes.PUBLISH_INVALID_NAME:
               status = 'Error - Stream name already in use.';
@@ -151,8 +113,35 @@
           console.log('[Red5ProPublisher] Unpublish Complete.');
         }
 
+        function requestOrigin (configuration) {
+          const host = configuration.host;
+          const app = configuration.app;
+          const streamName = configuration.stream1;
+          const url = 'http://' + host + ':5080/streammanager/api/1.0/event/' + app + '/' + streamName + '?action=broadcast';
+            return new Promise(function (resolve, reject) {
+              fetch(url)
+                .then(function (res) {
+                  if (res.headers.get("content-type") &&
+                    res.headers.get("content-type").toLowerCase().indexOf("application/json") >= 0) {
+                      return res.json();
+                  }
+                  else {
+                    throw new TypeError('Could not properly parse response.');
+                  }
+                })
+                .then(function (json) {
+                  resolve(json.serverAddress);
+                })
+                .catch(function (error) {
+                  var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
+                  console.error('[PublisherStreamManagerTest] :: Error - Could not request Origin IP from Stream Manager. ' + jsonError)
+                  reject(error)
+                });
+          });
+        }
+
         function getUserMediaConfiguration () {
-         return Object.assign({}, {
+          return Object.assign({}, {
             audio: configuration.audio,
             video: configuration.video
           }, userMedia);
@@ -245,21 +234,22 @@
           });
         }
 
-        function resetSession () {
-          unpublish()
-            .then(preview)
-            .then(publish)
-            .catch(function (error) {
-              console.error('[Red5ProPublisher] :: Error in publishing - ' + error);
-            });
-        }
-
         // Kick off.
-        preview()
-          .then(publish)
+        requestOrigin(configuration)
+          .then(function (json) {
+            configuration.host = json.serverAddress;
+            preview()
+              .then(publish)
+              .catch(function (error) {
+                console.error('[Red5ProPublisher] :: Error in publishing - ' + error);
+               });
+          })
           .catch(function (error) {
-            console.error('[Red5ProPublisher] :: Error in publishing - ' + error);
-           });
+            console.error('[Red5ProPublisher] :: Error in access of Origin IP: ' + error);
+            updateStatusFromEvent({
+              type: red5prosdk.PublisherEventTypes.CONNECT_FAILURE
+            }, statusField);
+          });
 
         window.addEventListener('beforeunload', function() {
           function clearRefs () {
