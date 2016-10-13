@@ -14,16 +14,20 @@ class SubscriberFailoverTest extends React.Component {
       subscriber: undefined,
       statusEvent: undefined
     }
+    this._subscriberEntry = undefined
+    this._boundSubscriberEventHandler = this.handleSubscriberEvent.bind(this)
   }
 
   subscribe () {
     const comp = this
     const view = new red5prosdk.PlaybackView('red5pro-subscriber')
     const subscriber = new red5prosdk.Red5ProSubscriber()
-    const iceServers = [{urls: 'stun:stun2.l.google.com:19302'}]
     const subscribeOrder = this.props.settings.subscriberFailoverOrder.split(',').map(item => {
         return item.trim()
-      })
+    })
+
+    this._subscriberEntry = subscriber
+    this._subscriberEntry.on('*', this._boundSubscriberEventHandler)
 
     const origAttachStream = view.attachStream.bind(view)
     view.attachStream = (stream, autoplay) => {
@@ -31,20 +35,17 @@ class SubscriberFailoverTest extends React.Component {
       view.attachStream = origAttachStream
     }
 
-    const rtcConfig = {
+    const rtcConfig = Object.assign({}, this.props.settings, {
       protocol: 'ws',
-      host: this.props.settings.host,
       port: this.props.settings.rtcport,
-      app: this.props.settings.app,
       subscriptionId: 'subscriber-' + Math.floor(Math.random() * 0x10000).toString(16),
       streamName: this.props.settings.stream1,
-      iceServers: iceServers,
       bandwidth: {
         audio: 50,
         video: 256,
         data: 30 * 1000 * 1000
       }
-    }
+    })
     const rtmpConfig = Object.assign({}, this.props.settings, {
       protocol: 'rtmp',
       port: this.props.settings.rtmpport,
@@ -87,11 +88,7 @@ class SubscriberFailoverTest extends React.Component {
 
   }
 
-  componentDidMount () {
-    this.subscribe()
-  }
-
-  componentWillUnmount() {
+  unsubscribe () {
     const comp = this;
     const view = comp.state.view;
     const subscriber = comp.state.subscriber;
@@ -111,6 +108,25 @@ class SubscriberFailoverTest extends React.Component {
           console.error(`[SubscriberFailoverTest] :: Unmount Error = ${jsonError}`)
         })
     }
+  }
+
+  componentDidMount () {
+    this.subscribe()
+  }
+
+  componentWillUnmount() {
+    this.unsubscribe()
+    if (this._subscriberEntry) {
+      this._subscriberEntry.off('*', this._boundSubscriberEventHandler)
+      this._subscriberEntry = undefined
+    }
+  }
+
+  handleSubscriberEvent (event) {
+    this.setState(state => {
+      state.statusEvent = event
+      return state
+    })
   }
 
   render () {
