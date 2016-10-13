@@ -2,6 +2,7 @@
 import React from 'react'
 // import red5prosdk from 'red5pro-sdk'
 import { PropTypes } from 'react'
+import autoBind from 'react-class/autoBind'
 import SubscriberStatus from '../SubscriberStatus' // eslint-disable-line no-unused-vars
 import BackLink from '../../BackLink' // eslint-disable-line no-unused-vars
 
@@ -9,13 +10,13 @@ class SubscriberFailoverTest extends React.Component {
 
   constructor (props) {
     super(props)
+    autoBind(this)
     this.state = {
       view: undefined,
       subscriber: undefined,
       statusEvent: undefined
     }
     this._subscriberEntry = undefined
-    this._boundSubscriberEventHandler = this.handleSubscriberEvent.bind(this)
   }
 
   subscribe () {
@@ -27,7 +28,7 @@ class SubscriberFailoverTest extends React.Component {
     })
 
     this._subscriberEntry = subscriber
-    this._subscriberEntry.on('*', this._boundSubscriberEventHandler)
+    this._subscriberEntry.on('*', this.handleSubscriberEvent)
 
     const origAttachStream = view.attachStream.bind(view)
     view.attachStream = (stream, autoplay) => {
@@ -117,7 +118,7 @@ class SubscriberFailoverTest extends React.Component {
   componentWillUnmount() {
     this.unsubscribe()
     if (this._subscriberEntry) {
-      this._subscriberEntry.off('*', this._boundSubscriberEventHandler)
+      this._subscriberEntry.off('*', this.handleSubscriberEvent)
       this._subscriberEntry = undefined
     }
   }

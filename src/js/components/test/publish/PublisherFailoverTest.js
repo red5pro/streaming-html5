@@ -2,6 +2,7 @@
 import React from 'react'
 // import red5prosdk from 'red5pro-sdk'
 import { PropTypes } from 'react'
+import autoBind from 'react-class/autoBind'
 import PublisherStatus from '../PublisherStatus' // eslint-disable-line no-unused-vars
 import BackLink from '../../BackLink' // eslint-disable-line no-unused-vars
 
@@ -9,6 +10,7 @@ class PublisherFailoverTest extends React.Component {
 
   constructor (props) {
     super(props)
+    autoBind(this)
     this.state = {
       view: undefined,
       publisher: undefined,
@@ -16,7 +18,6 @@ class PublisherFailoverTest extends React.Component {
       statusEvent: undefined
     }
     this._publisherEntry = undefined
-    this._boundPublisherEventHandler = this.handlePublisherEvent.bind(this)
   }
 
   preview () {
@@ -30,7 +31,7 @@ class PublisherFailoverTest extends React.Component {
 
       // Establish event handling.
       this._publisherEntry = publisher
-      this._publisherEntry.on('*', this._boundPublisherEventHandler)
+      this._publisherEntry.on('*', this.handlePublisherEvent)
 
       const rtcConfig = Object.assign({}, this.props.settings, {
         protocol: 'ws',
@@ -152,7 +153,7 @@ class PublisherFailoverTest extends React.Component {
   componentWillUnmount () {
     this.unpublish()
     if (this._publisherEntry) {
-      this._publisherEntry.off('*', this._boundPublisherEventHandler)
+      this._publisherEntry.off('*', this.handlePublisherEvent)
       this._publisherEntry = undefined
     }
   }
