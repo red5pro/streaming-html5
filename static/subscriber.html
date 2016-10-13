@@ -13,6 +13,46 @@
     <link rel="stylesheet" href="css/testbed.css">
   </head>
   <body>
+    <script>
+      // Defining/accessing testbed configuration.
+      (function () {
+          var config = localStorage.getItem('r5proTestBed');
+          var json;
+          function assignStorage () {
+            json = {
+                "host": "localhost",
+                "port": 8081,
+                "stream1": "stream1",
+                "stream2": "stream2",
+                "app": "live",
+                "cameraWidth": 854,
+                "cameraHeight": 480,
+                "video": true,
+                "audio": true,
+                "buffer": 0.5,
+                "bitrate": 1000,
+                "iceServers": [
+                  {
+                    "urls": "stun:stun2.l.google.com:19302"
+                  }
+                ]
+              };
+            localStorage.setItem('r5proTestBed', JSON.stringify(json));
+          }
+          if (config) {
+            try {
+              json = JSON.parse(config);
+            }
+            catch (e) {
+              assignStorage();
+            }
+          }
+          else {
+            assignStorage();
+          }
+          return json;
+        })();
+    </script>
     <div id="app">
         <h1 class="centered">Subscriber Test</h1>
         <hr />
@@ -37,16 +77,16 @@
         var statusField = document.getElementById('status-field');
         var streamTitle = document.getElementById('stream-title');
 
-        var configuration = {
-          host: 'localhost',
-          streamName: 'stream1',
-          subscriptionId: 'subscriber-' + instanceId,
-          iceServers: [
-            {
-              urls: "stun:stun2.l.google.com:19302"
-            }
-           ]
-        };
+        var configuration = (function () {
+          var conf = localStorage.getItem('r5proTestBed');
+          try {
+            return JSON.parse(conf);
+          }
+          catch (e) {
+            console.error('Could not read testbed configuration from localstorage: ' + e.message);
+          }
+          return {}
+        })();
         var defaultConfiguration = {
           protocol: 'ws',
           port: 8081,
@@ -58,6 +98,7 @@
           }
         }
 
+        // Displays in status field based on events from subscriber instance.
         function updateStatusFromEvent (event, field) {
           var subTypes = red5prosdk.SubscriberEventTypes;
           var rtcTypes = red5prosdk.RTCSubscriberEventTypes;
@@ -107,6 +148,7 @@
           field.innerText = ['STATUS', status].join(': ');
         }
 
+        // Local lifecycle notifications.
         function onSubscriberEvent (event) {
           console.log('[Red5ProSubsriber] ' + event.type + '.');
           updateStatusFromEvent(event, statusField);
@@ -124,10 +166,13 @@
           console.log('[Red5ProSubsriber] Unsubscribe Complete.');
         }
 
+        // Request to start subscribing using an overlayed configuration from local default and local storage.
         function subscribe () {
-          var config = Object.assign({}, defaultConfiguration, configuration)
-          console.log('[Red5ProSubscriber] config:: ' + JSON.stringify(config, null, 2))
+          var config = Object.assign({}, defaultConfiguration, configuration);
+          config.streamName = config.stream1;
+          console.log('[Red5ProSubscriber] config:: ' + JSON.stringify(config, null, 2));
 
+          // Setup view.
           var view = new red5prosdk.PlaybackView('red5pro-subscriber-video');
           var subscriber = new red5prosdk.RTCSubscriber();
           var origAttachStream = view.attachStream.bind(view);
@@ -141,7 +186,9 @@
           targetSubscriber = subscriber;
           targetView = view;
 
+          // Subscribe to events.
           subscriber.on('*', onSubscriberEvent);
+          // Initiate playback.
           subscriber.init(config)
             .then(function (player) {
               return player.play();
@@ -155,6 +202,7 @@
             });
         }
 
+        // Request to unsubscribe.
         function unsubscribe () {
           return new Promise(function(resolve, reject) {
             var view = targetView
@@ -180,11 +228,10 @@
           });
         }
 
-
-
         // Kick off.
         subscribe();
 
+        // Clean up.
         window.addEventListener('beforeunload', function() {
           function clearRefs () {
             targetSubscriber.off('*', onSubscriberEvent);
