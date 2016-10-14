@@ -12,6 +12,7 @@
       "stream1": "stream1",
       "stream2": "stream2",
       "app": "live",
+      "streamMode": "live",
       "cameraWidth": 854,
       "cameraHeight": 480,
       "video": true,

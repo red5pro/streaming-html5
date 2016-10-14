@@ -34,7 +34,7 @@
         <hr class="paddedHR" />
         <p class="settings-field">
           <label class="settings-label">Verbose R5 Logging:</label>
-          <input type="checkbox" id="logging-field" name="logging-field" value="on" style="vertical-align: middle;">
+          <input type="checkbox" id="logging-field" name="logging-field" style="vertical-align: middle;">
         </p>
       </div>
     </div>
@@ -97,7 +97,7 @@
           hostField.value = config.host;
           stream1Field.value = config.stream1;
           stream2Field.value = config.stream2;
-          loggingField.checked = config.verboseLogging ? "true" : "false"
+          loggingField.checked = config.verboseLogging ? true : false
         }
 
         populate(configuration)
