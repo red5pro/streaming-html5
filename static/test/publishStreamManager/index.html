@@ -236,8 +236,8 @@
 
         // Kick off.
         requestOrigin(configuration)
-          .then(function (json) {
-            configuration.host = json.serverAddress;
+          .then(function (serverAddress) {
+            configuration.host = serverAddress;
             preview()
               .then(publish)
               .catch(function (error) {
