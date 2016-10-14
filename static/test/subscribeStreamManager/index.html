@@ -4,19 +4,19 @@
     <title>Red5 Pro HTML SDK Testbed</title>
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
     <meta content="width=device-width, initial-scale=1, user-scalable=no" name="viewport">
-    <script src="lib/webrtc/adapter.js"></script>
-    <script src="lib/videojs/video.min.js"></script>
-    <script src="lib/videojs/videojs-media-sources.min.js"></script>
-    <script src="lib/videojs/videojs.hls.min.js"></script>
-    <link rel="stylesheet" href="lib/videojs/video-js.min.css">
-    <link rel="stylesheet" href="css/reset.css">
-    <link rel="stylesheet" href="css/testbed.css">
-    <script src="script/testbed-config.js"></script>
+    <script src="../../lib/webrtc/adapter.js"></script>
+    <script src="../../lib/videojs/video.min.js"></script>
+    <script src="../../lib/videojs/videojs-media-sources.min.js"></script>
+    <script src="../../lib/videojs/videojs.hls.min.js"></script>
+    <link rel="stylesheet" href="../../lib/videojs/video-js.min.css">
+    <link rel="stylesheet" href="../../css/reset.css">
+    <link rel="stylesheet" href="../../css/testbed.css">
+    <script src="../../script/testbed-config.js"></script>
   </head>
   <body>
     <div id="app">
-        <div id="back-link-container" style="text-align: left;"><p id="back-link"><a href="settings.html">&lt; Settings</a></p></div>
-        <h1 class="centered">Subscriber Test</h1>
+        <div id="back-link-container" style="text-align: left;"><p id="back-link"><a href="../../settings.html">&lt; Settings</a></p></div>
+        <h1 class="centered">Subscriber Stream Manager Test</h1>
         <hr />
         <h2 class="centered"><em>stream</em>: <span id="stream-title"></span></h2>
         <p id="status-field" class="centered status-field">On hold.</p>
@@ -24,10 +24,10 @@
           <video id="red5pro-subscriber-video" controls class="video-element"></video>
         </div>
     </div>
-    <script src="lib/es6/es6-promise.min.js"></script>
-    <script src="lib/es6/es6-bind.js"></script>
-    <script src="lib/es6/es6-object-assign.js"></script>
-    <script src="lib/red5pro/red5pro-sdk.js"></script>
+    <script src="../../lib/es6/es6-promise.min.js"></script>
+    <script src="../../lib/es6/es6-bind.js"></script>
+    <script src="../../lib/es6/es6-object-assign.js"></script>
+    <script src="../../lib/red5pro/red5pro-sdk.js"></script>
     <script>
       (function(window, document, red5pro) {
         var configuration = (function () {
@@ -61,6 +61,14 @@
           }
         }
 
+        function shutdownVideoElement () {
+          var videoElement = document.getElementById('red5pro-publisher-video');
+          if (videoElement) {
+            videoElement.pause()
+            videoElement.src = ''
+          }
+        }
+
         // Displays in status field based on events from subscriber instance.
         function updateStatusFromEvent (event, field) {
           var subTypes = red5prosdk.SubscriberEventTypes;
@@ -72,12 +80,14 @@
               break;
             case subTypes.CONNECT_FAILURE:
               status = 'Error - Could not establish connection.';
+              shutdownVideoElement();
               break;
             case subTypes.SUBSCRIBE_START:
               status = 'Started subscribing session.';
               break;
             case subTypes.SUBSCRIBE_FAIL:
               status = 'Error - Could not start a subscribing session.';
+              shutdownVideoElement();
               break;
             case subTypes.SUBSCRIBE_INVALID_NAME:
               status = 'Error - Stream name not in use.';
@@ -129,9 +139,37 @@
           console.log('[Red5ProSubsriber] Unsubscribe Complete.');
         }
 
+        function requestEdge (configuration) {
+          const host = configuration.host;
+          const app = configuration.app;
+          const streamName = configuration.stream1;
+          const url = 'http://' + host + ':5080/streammanager/api/1.0/event/' + app + '/' + streamName + '?action=subscribe';
+            return new Promise(function (resolve, reject) {
+              fetch(url)
+                .then(function (res) {
+                  if (res.headers.get("content-type") &&
+                    res.headers.get("content-type").toLowerCase().indexOf("application/json") >= 0) {
+                      return res.json();
+                  }
+                  else {
+                    throw new TypeError('Could not properly parse response.');
+                  }
+                })
+                .then(function (json) {
+                  resolve(json.serverAddress);
+                })
+                .catch(function (error) {
+                  var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
+                  console.error('[SubscribeStreamManagerTest] :: Error - Could not request Edge IP from Stream Manager. ' + jsonError)
+                  reject(error)
+                });
+          });
+        }
+
         // Request to start subscribing using an overlayed configuration from local default and local storage.
-        function subscribe () {
+        function subscribe (host) {
           var config = Object.assign({}, configuration, defaultConfiguration);
+          config.host = host;
           config.streamName = config.stream1;
           console.log('[Red5ProSubscriber] config:: ' + JSON.stringify(config, null, 2));
 
@@ -192,7 +230,12 @@
         }
 
         // Kick off.
-        subscribe();
+        requestEdge(configuration)
+          .then(subscribe)
+          .catch(function (error) {
+            onSubscribeFail(error);
+            console.error('Could not subscriber with Edge IP: ' + error);
+          });
 
         // Clean up.
         window.addEventListener('beforeunload', function() {

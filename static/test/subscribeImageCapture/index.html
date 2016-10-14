@@ -4,30 +4,48 @@
     <title>Red5 Pro HTML SDK Testbed</title>
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
     <meta content="width=device-width, initial-scale=1, user-scalable=no" name="viewport">
-    <script src="lib/webrtc/adapter.js"></script>
-    <script src="lib/videojs/video.min.js"></script>
-    <script src="lib/videojs/videojs-media-sources.min.js"></script>
-    <script src="lib/videojs/videojs.hls.min.js"></script>
-    <link rel="stylesheet" href="lib/videojs/video-js.min.css">
-    <link rel="stylesheet" href="css/reset.css">
-    <link rel="stylesheet" href="css/testbed.css">
-    <script src="script/testbed-config.js"></script>
+    <script src="../../lib/webrtc/adapter.js"></script>
+    <script src="../../lib/videojs/video.min.js"></script>
+    <script src="../../lib/videojs/videojs-media-sources.min.js"></script>
+    <script src="../../lib/videojs/videojs.hls.min.js"></script>
+    <link rel="stylesheet" href="../../lib/videojs/video-js.min.css">
+    <link rel="stylesheet" href="../../css/reset.css">
+    <link rel="stylesheet" href="../../css/testbed.css">
+    <script src="../../script/testbed-config.js"></script>
+    <style>
+      .capture-container {
+        visibility: visible;
+        position: absolute;
+        padding: 1rem;
+        color: #333333;
+        width: 100%;
+        text-align: center;
+      }
+    </style>
   </head>
   <body>
     <div id="app">
-        <div id="back-link-container" style="text-align: left;"><p id="back-link"><a href="settings.html">&lt; Settings</a></p></div>
-        <h1 class="centered">Subscriber Test</h1>
+        <div id="back-link-container" style="text-align: left;"><p id="back-link"><a href="../../settings.html">&lt; Settings</a></p></div>
+        <h1 class="centered">Subscriber Image Capture Test</h1>
         <hr />
         <h2 class="centered"><em>stream</em>: <span id="stream-title"></span></h2>
         <p id="status-field" class="centered status-field">On hold.</p>
-        <div class="centered">
+        <div id="video-container" class="centered">
           <video id="red5pro-subscriber-video" controls class="video-element"></video>
         </div>
+        <div class="centered">
+          <p class="capture-container">
+            <span>Click video to capture image.</span>
+            <br/>
+            <span>Your Image will appear here.</span>
+          </p>
+          <canvas id="capture-canvas"></canvas>
+        </div>
     </div>
-    <script src="lib/es6/es6-promise.min.js"></script>
-    <script src="lib/es6/es6-bind.js"></script>
-    <script src="lib/es6/es6-object-assign.js"></script>
-    <script src="lib/red5pro/red5pro-sdk.js"></script>
+    <script src="../../lib/es6/es6-promise.min.js"></script>
+    <script src="../../lib/es6/es6-bind.js"></script>
+    <script src="../../lib/es6/es6-object-assign.js"></script>
+    <script src="../../lib/red5pro/red5pro-sdk.js"></script>
     <script>
       (function(window, document, red5pro) {
         var configuration = (function () {
@@ -49,6 +67,9 @@
         var instanceId = Math.floor(Math.random() * 0x10000).toString(16);
         var statusField = document.getElementById('status-field');
         var streamTitle = document.getElementById('stream-title');
+        var videoElement = document.getElementById('red5pro-subscriber-video');
+        var canvasElement = document.getElementById('capture-canvas');
+        var captureTarget = document.getElementById('video-container');
 
         var defaultConfiguration = {
           protocol: 'ws',
@@ -58,6 +79,14 @@
             audio: 50,
             video: 256,
             data: 30 * 1000 * 1000
+          }
+        }
+
+        function shutdownVideoElement () {
+          var videoElement = document.getElementById('red5pro-publisher-video');
+          if (videoElement) {
+            videoElement.pause()
+            videoElement.src = ''
           }
         }
 
@@ -72,12 +101,14 @@
               break;
             case subTypes.CONNECT_FAILURE:
               status = 'Error - Could not establish connection.';
+              shutdownVideoElement();
               break;
             case subTypes.SUBSCRIBE_START:
               status = 'Started subscribing session.';
               break;
             case subTypes.SUBSCRIBE_FAIL:
               status = 'Error - Could not start a subscribing session.';
+              shutdownVideoElement();
               break;
             case subTypes.SUBSCRIBE_INVALID_NAME:
               status = 'Error - Stream name not in use.';
@@ -191,8 +222,27 @@
           });
         }
 
+        function clearCanvas (targetElement, canvasElement) {
+          var context = canvasElement.getContext('2d');
+          context.fillStyle = '#a1a1a1';
+          context.fillRect(0, 0, targetElement.offsetWidth, targetElement.offsetHeight);
+        }
+
+        function drawOnCanvas (targetElement, canvasElement) {
+          var context = canvasElement.getContext('2d');
+          canvasElement.width = targetElement.offsetWidth;
+          canvasElement.height = targetElement.offsetHeight;
+          context.drawImage(targetElement, 0, 0, targetElement.offsetWidth, targetElement.offsetHeight);
+        }
+
         // Kick off.
         subscribe();
+
+        captureTarget.addEventListener('click', function () {
+          clearCanvas(videoElement, canvasElement);
+          drawOnCanvas(videoElement, canvasElement);
+        });
+        clearCanvas(videoElement, canvasElement);
 
         // Clean up.
         window.addEventListener('beforeunload', function() {

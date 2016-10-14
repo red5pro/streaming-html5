@@ -4,30 +4,47 @@
     <title>Red5 Pro HTML SDK Testbed</title>
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
     <meta content="width=device-width, initial-scale=1, user-scalable=no" name="viewport">
-    <script src="lib/webrtc/adapter.js"></script>
-    <script src="lib/videojs/video.min.js"></script>
-    <script src="lib/videojs/videojs-media-sources.min.js"></script>
-    <script src="lib/videojs/videojs.hls.min.js"></script>
-    <link rel="stylesheet" href="lib/videojs/video-js.min.css">
-    <link rel="stylesheet" href="css/reset.css">
-    <link rel="stylesheet" href="css/testbed.css">
-    <script src="script/testbed-config.js"></script>
+    <script src="../../lib/webrtc/adapter.js"></script>
+    <script src="../../lib/videojs/video.min.js"></script>
+    <script src="../../lib/videojs/videojs-media-sources.min.js"></script>
+    <script src="../../lib/videojs/videojs.hls.min.js"></script>
+    <link rel="stylesheet" href="../../lib/videojs/video-js.min.css">
+    <link rel="stylesheet" href="../../css/reset.css">
+    <link rel="stylesheet" href="../../css/testbed.css">
+    <script src="../../script/testbed-config.js"></script>
+    <style>
+      .camera-select-field {
+        background-color: #ffffff;
+        padding: 0.8rem;
+      }
+      .label-style {
+        margin-right: 0.5rem;
+      }
+    </style>
   </head>
   <body>
     <div id="app">
-        <div id="back-link-container" style="text-align: left;"><p id="back-link"><a href="settings.html">&lt; Settings</a></p></div>
-        <h1 class="centered">Publisher Test</h1>
+        <div id="back-link-container" style="text-align: left;"><p id="back-link"><a href="../../settings.html">&lt; Settings</a></p></div>
+        <h1 class="centered">Publisher Camera Source Test</h1>
         <hr />
         <h2 class="centered"><em>stream</em>: <span id="stream-title"></span></h2>
+        <div class="instructions-block">
+          <p>To begin this test, first select a camera from the following selections:</p>
+          <p class="camera-select-field">
+            <label for="camera-select" style="label-style">Camera Source:</label>
+            <select id="camera-select"></select>
+          </p>
+        </div>
         <p id="status-field" class="centered status-field">On hold.</p>
         <div class="centered">
           <video id="red5pro-publisher-video" controls class="video-element"></video>
         </div>
     </div>
-    <script src="lib/es6/es6-promise.min.js"></script>
-    <script src="lib/es6/es6-bind.js"></script>
-    <script src="lib/es6/es6-object-assign.js"></script>
-    <script src="lib/red5pro/red5pro-sdk.js"></script>
+    <script src="../../lib/es6/es6-promise.min.js"></script>
+    <script src="../../lib/es6/es6-bind.js"></script>
+    <script src="../../lib/es6/es6-array.js"></script>
+    <script src="../../lib/es6/es6-object-assign.js"></script>
+    <script src="../../lib/red5pro/red5pro-sdk.js"></script>
     <script>
       (function(window, document, red5pro) {
         var configuration = (function () {
@@ -45,16 +62,17 @@
 
         var targetPublisher;
         var targetView;
-
         var statusField = document.getElementById('status-field');
         var streamTitle = document.getElementById('stream-title');
+        var cameraSelect = document.getElementById('camera-select');
 
         var defaultConfiguration = {
           protocol: 'ws',
           port: 8081,
           app: 'live',
-          streamType: 'webrtc'
+          streamType: 'webrtc',
         };
+        var userMedia = {};
 
         function updateStatusFromEvent (event, field) {
           var pubTypes = red5prosdk.PublisherEventTypes;
@@ -113,10 +131,48 @@
         }
 
         function getUserMediaConfiguration () {
-          return {
+          return Object.assign({}, {
             audio: configuration.audio,
             video: configuration.video
-          };
+          }, userMedia);
+        }
+
+        var SELECT_DEFAULT = 'Select a camera...';
+        function onCameraSelect (selection) {
+          if (selection && selection !== SELECT_DEFAULT) {
+            // assign selected camere to defined UserMedia.
+            userMedia.video = {
+              optional: [{
+                sourceId: selection
+              }]
+            };
+            // Kick off.
+            unpublish()
+              .then(preview)
+              .then(publish)
+              .catch(function (error) {
+                console.error('[Red5ProPublisher] :: Error in publishing - ' + error);
+               });
+          }
+        }
+
+        function waitForSelect () {
+          navigator.mediaDevices.enumerateDevices()
+            .then(function (devices) {
+              var videoCameras = devices.filter(function (item) {
+                return item.kind === 'videoinput';
+              })
+              var cameras = [{
+                label: SELECT_DEFAULT
+              }].concat(videoCameras);
+              var options = cameras.map(function (camera) {
+                return '<option value="' + camera.deviceId + '">' + camera.label + '</option>';
+              });
+              cameraSelect.innerHTML = options.join(' ');
+              cameraSelect.addEventListener('change', function () {
+                onCameraSelect(cameraSelect.value);
+              });
+          });
         }
 
         function preview () {
@@ -207,11 +263,7 @@
         }
 
         // Kick off.
-        preview()
-          .then(publish)
-          .catch(function (error) {
-            console.error('[Red5ProPublisher] :: Error in publishing - ' + error);
-           });
+        waitForSelect();
 
         window.addEventListener('beforeunload', function() {
           function clearRefs () {

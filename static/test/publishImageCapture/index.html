@@ -4,30 +4,48 @@
     <title>Red5 Pro HTML SDK Testbed</title>
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
     <meta content="width=device-width, initial-scale=1, user-scalable=no" name="viewport">
-    <script src="lib/webrtc/adapter.js"></script>
-    <script src="lib/videojs/video.min.js"></script>
-    <script src="lib/videojs/videojs-media-sources.min.js"></script>
-    <script src="lib/videojs/videojs.hls.min.js"></script>
-    <link rel="stylesheet" href="lib/videojs/video-js.min.css">
-    <link rel="stylesheet" href="css/reset.css">
-    <link rel="stylesheet" href="css/testbed.css">
-    <script src="script/testbed-config.js"></script>
+    <script src="../../lib/webrtc/adapter.js"></script>
+    <script src="../../lib/videojs/video.min.js"></script>
+    <script src="../../lib/videojs/videojs-media-sources.min.js"></script>
+    <script src="../../lib/videojs/videojs.hls.min.js"></script>
+    <link rel="stylesheet" href="../../lib/videojs/video-js.min.css">
+    <link rel="stylesheet" href="../../css/reset.css">
+    <link rel="stylesheet" href="../../css/testbed.css">
+    <script src="../../script/testbed-config.js"></script>
+    <style>
+      .capture-container {
+        visibility: visible;
+        position: absolute;
+        padding: 1rem;
+        color: #333333;
+        width: 100%;
+        text-align: center;
+      }
+    </style>
   </head>
   <body>
     <div id="app">
-        <div id="back-link-container" style="text-align: left;"><p id="back-link"><a href="settings.html">&lt; Settings</a></p></div>
-        <h1 class="centered">Publisher Test</h1>
+        <div id="back-link-container" style="text-align: left;"><p id="back-link"><a href="../../settings.html">&lt; Settings</a></p></div>
+        <h1 class="centered">Publisher Image Capture Test</h1>
         <hr />
         <h2 class="centered"><em>stream</em>: <span id="stream-title"></span></h2>
         <p id="status-field" class="centered status-field">On hold.</p>
-        <div class="centered">
+        <div id="video-container" class="centered">
           <video id="red5pro-publisher-video" controls class="video-element"></video>
         </div>
+        <div class="centered">
+          <p class="capture-container">
+            <span>Click video to capture image.</span>
+            <br/>
+            <span>Your Image will appear here.</span>
+          </p>
+          <canvas id="capture-canvas"></canvas>
+        </div>
     </div>
-    <script src="lib/es6/es6-promise.min.js"></script>
-    <script src="lib/es6/es6-bind.js"></script>
-    <script src="lib/es6/es6-object-assign.js"></script>
-    <script src="lib/red5pro/red5pro-sdk.js"></script>
+    <script src="../../lib/es6/es6-promise.min.js"></script>
+    <script src="../../lib/es6/es6-bind.js"></script>
+    <script src="../../lib/es6/es6-object-assign.js"></script>
+    <script src="../../lib/red5pro/red5pro-sdk.js"></script>
     <script>
       (function(window, document, red5pro) {
         var configuration = (function () {
@@ -45,15 +63,17 @@
 
         var targetPublisher;
         var targetView;
-
         var statusField = document.getElementById('status-field');
         var streamTitle = document.getElementById('stream-title');
+        var videoElement = document.getElementById('red5pro-publisher-video');
+        var canvasElement = document.getElementById('capture-canvas');
+        var captureTarget = document.getElementById('video-container');
 
         var defaultConfiguration = {
           protocol: 'ws',
           port: 8081,
           app: 'live',
-          streamType: 'webrtc'
+          streamType: 'webrtc',
         };
 
         function updateStatusFromEvent (event, field) {
@@ -113,10 +133,10 @@
         }
 
         function getUserMediaConfiguration () {
-          return {
+          return Object.assign({}, {
             audio: configuration.audio,
             video: configuration.video
-          };
+          });
         }
 
         function preview () {
@@ -206,12 +226,31 @@
           });
         }
 
+        function clearCanvas (targetElement, canvasElement) {
+          var context = canvasElement.getContext('2d');
+          context.fillStyle = '#a1a1a1';
+          context.fillRect(0, 0, targetElement.offsetWidth, targetElement.offsetHeight);
+        }
+
+        function drawOnCanvas (targetElement, canvasElement) {
+          var context = canvasElement.getContext('2d');
+          canvasElement.width = targetElement.offsetWidth;
+          canvasElement.height = targetElement.offsetHeight;
+          context.drawImage(targetElement, 0, 0, targetElement.offsetWidth, targetElement.offsetHeight);
+        }
+
         // Kick off.
         preview()
           .then(publish)
           .catch(function (error) {
             console.error('[Red5ProPublisher] :: Error in publishing - ' + error);
            });
+
+        captureTarget.addEventListener('click', function () {
+          clearCanvas(videoElement, canvasElement);
+          drawOnCanvas(videoElement, canvasElement);
+        });
+        clearCanvas(videoElement, canvasElement);
 
         window.addEventListener('beforeunload', function() {
           function clearRefs () {
