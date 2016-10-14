@@ -159,6 +159,14 @@
 
           return new Promise(function (resolve, reject) {
             var subscriber = new red5prosdk.Red5ProSubscriber();
+            var view = new red5prosdk.PlaybackView('red5pro-subscriber-video');
+            var origAttachStream = view.attachStream.bind(view);
+            view.attachStream = function (stream, autoplay) {
+              origAttachStream(stream, autoplay)
+              view.attachStream = origAttachStream
+            };
+            view.attachSubscriber(subscriber);
+
             subscriber.on('*', onSubscriberEvent);
 
             subscriber.setPlaybackOrder(subscribeOrder)
@@ -170,7 +178,8 @@
               .then(function (selectedSubscriber) {
                 subscriber.off('*', onSubscriberEvent);
                 resolve({
-                  subscriber: selectedSubscriber
+                  subscriber: selectedSubscriber,
+                  view: view
                 });
               })
               .catch(function (error) {
@@ -181,15 +190,7 @@
         }
 
         // Request to start subscribing using an overlayed configuration from local default and local storage.
-        function subscribe (subscriber, streamName) {
-          // Setup view.
-          var view = new red5prosdk.PlaybackView('red5pro-subscriber-video');
-          var origAttachStream = view.attachStream.bind(view);
-          view.attachStream = function (stream, autoplay) {
-            origAttachStream(stream, autoplay)
-            view.attachStream = origAttachStream
-          };
-          view.attachSubscriber(subscriber);
+        function subscribe (subscriber, view, streamName) {
           streamTitle.innerText = streamName;
 
           targetSubscriber = subscriber;
@@ -236,9 +237,10 @@
         determineSubscriber()
           .then(function(payload) {
             var subscriber = payload.subscriber;
+            var view = payload.view
             // Subscribe to events.
             subscriber.on('*', onSubscriberEvent);
-            subscribe(subscriber, configuration.stream1);
+            subscribe(subscriber, view, configuration.stream1);
           })
           .catch(function (error) {
             console.error('[Red5ProSubscriber] :: Error in subscribing - ' + error);
