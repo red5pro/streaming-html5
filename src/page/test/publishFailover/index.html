@@ -1,0 +1,21 @@
+<!doctype html>
+<html>
+  <head>
+    {{> meta title='Publish Failover Test'}}
+    {{> header-scripts}}
+    {{> header-stylesheets}}
+  </head>
+  <body>
+    <div id="app">
+      {{> version }}
+      {{> settings-link}}
+      {{> test-info testTitle='Publish Failover Test'}}
+      {{> status-field-publisher}}
+      <div class="centered">
+        <video id="red5pro-publisher-video" controls class="video-element"></video>
+      </div>
+    </div>
+    {{> body-scripts}}
+    <script src="index.js"></script>
+  </body>
+</html>
