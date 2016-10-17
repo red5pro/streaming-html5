@@ -31,6 +31,7 @@
           <video id="red5pro-subscriber-video" controls class="video-element"></video>
         </div>
     </div>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
     <script src="lib/es6/es6-promise.min.js"></script>
     <script src="lib/es6/es6-bind.js"></script>
     <script src="lib/es6/es6-object-assign.js"></script>
@@ -83,9 +84,7 @@
               break;
             case pubTypes.PUBLISH_START:
               status = 'Started publishing session.';
-              //check the stream list here
-              //temporarilly just call subscribe for now
-              subscribe();
+              beginStreamListCall();
               break;
             case pubTypes.PUBLISH_FAIL:
               status = 'Error - Could not start a publishing session.';
@@ -221,6 +220,37 @@
               resolve();
             }
           });
+        }
+
+        function beginStreamListCall () {
+
+          new Promise((resolve, reject) => {
+            $.getJSON("http://" + configuration.host + ":5080/" + configuration.app + "/streams.jsp")
+              .done((json) => resolve(json))
+              .fail((xhr, status, err) => reject(status + err.message));
+          }).then((val) => recieveList(val),
+                           (err) => listError(err));
+        }
+        function recieveList(listIn){
+          var found = false;
+
+          for (var i = listIn.length - 1; i >= 0; i--) {
+            found = listIn[i].name == configuration.stream2;
+            if(found) break;
+          };
+
+          if(found){
+            subscribe();
+          }
+          else
+            setWaitTime();
+        }
+        function listError(err){
+          console.log( "Error recieved on streamListCall - " + err );
+          setWaitTime();
+        }
+        function setWaitTime(){
+          setTimeout(beginStreamListCall, 5000);
         }
 
         // Displays in status field based on events from subscriber instance.
