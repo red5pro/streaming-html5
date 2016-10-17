@@ -53,7 +53,7 @@ To define the **Host** with the server instance's IP, click the _Host_ field f t
 | **[Publisher Failover](static/test/publishFailover)**
 | *Demonstrates auto-failover of publisher implementation.*<br>i.e., if no WebRTC browser support, Flash Player is utilized.
 |
-| **[1080p](static/test/publisher1080)**
+| **[1080p](static/test/publish1080)**
 | *A high quality publisher.*
 |
 | **[Audio Mode](static/test/publishAudioOnly)**
