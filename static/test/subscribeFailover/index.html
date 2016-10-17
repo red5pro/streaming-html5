@@ -176,6 +176,9 @@
                 hls: hlsConfig
               })
               .then(function (selectedSubscriber) {
+                if (selectedSubscriber.getType().toLowerCase() === subscriber.playbackTypes.HLS.toLowerCase()) {
+                  view.view.classList.add('video-js', 'vjs-default-skin')
+                }
                 subscriber.off('*', onSubscriberEvent);
                 resolve({
                   subscriber: selectedSubscriber,
