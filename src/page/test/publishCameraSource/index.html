@@ -1,0 +1,37 @@
+<!doctype html>
+<html>
+  <head>
+    {{> meta title='Publish Audio-Only Test'}}
+    {{> header-scripts}}
+    {{> header-stylesheets}}
+    <style>
+      .camera-select-field {
+        background-color: #ffffff;
+        padding: 0.8rem;
+      }
+      .label-style {
+        margin-right: 0.5rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      {{> version }}
+      {{> settings-link}}
+      {{> test-info testTitle='Publish Audio-Only Test'}}
+      <div class="instructions-block">
+        <p>To begin this test, first select a camera from the following selections:</p>
+        <p class="camera-select-field">
+          <label for="camera-select" style="label-style">Camera Source:</label>
+          <select id="camera-select"></select>
+        </p>
+      </div>
+      {{> status-field-publisher}}
+      <div class="centered">
+        <video id="red5pro-publisher-video" controls class="video-element"></video>
+      </div>
+    </div>
+    {{> body-scripts}}
+    <script src="index.js"></script>
+  </body>
+</html>

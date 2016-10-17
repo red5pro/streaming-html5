@@ -21,9 +21,13 @@
   },
   "homepage": "https://github.com/infrared5/red5pro-html-sdk-testbed#readme",
   "devDependencies": {
-    "eslint": "^3.8.0"
+    "eslint": "^3.8.0",
+    "gulp": "^3.9.1",
+    "gulp-compile-handlebars": "^0.6.1",
+    "gulp-rename": "^1.2.2"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "gulp build"
   }
 }
