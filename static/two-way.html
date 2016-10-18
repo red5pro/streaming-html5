@@ -15,21 +15,23 @@
   </head>
   <body>
     <div id="app">
-        <div id="back-link-container" style="text-align: left;"><p id="back-link"><a href="settings.html">&lt; Settings</a></p></div>
-        <h1 class="centered">Publisher Test</h1>
-        <hr />
-        <h2 class="centered"><em>stream</em>: <span id="pub-stream-title"></span></h2>
+      <div id="back-link-container" style="text-align: left;"><p id="back-link"><a href="settings.html">&lt; Settings</a></p></div>
+      <h1 class="centered">Two Way Test</h1>
+      <hr />
+      <div style="float:left; width:50%">
+        <h2 class="centered"><em>Publisher Stream</em>: <span id="pub-stream-title"></span></h2>
         <p id="pub-status-field" class="centered status-field">On hold.</p>
         <div class="centered">
           <video id="red5pro-publisher-video" controls class="video-element"></video>
         </div>
-        <h1 class="centered">Subscriber Test</h1>
-        <hr />
-        <h2 class="centered"><em>stream</em>: <span id="sub-stream-title"></span></h2>
+      </div>
+      <div style="float:right; width:50%">
+        <h2 class="centered"><em>Suscriber Stream</em>: <span id="sub-stream-title"></span></h2>
         <p id="sub-status-field" class="centered status-field">On hold.</p>
         <div class="centered">
           <video id="red5pro-subscriber-video" controls class="video-element"></video>
         </div>
+      </div>
     </div>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
     <script src="lib/es6/es6-promise.min.js"></script>
@@ -229,7 +231,7 @@
               .done((json) => resolve(json))
               .fail((xhr, status, err) => reject(status + err.message));
           }).then((val) => recieveList(val),
-                           (err) => listError(err));
+                  (err) => listError(err));
         }
         function recieveList(listIn){
           var found = false;
