@@ -10,20 +10,20 @@
       var subTypes = window.red5prosdk.SubscriberEventTypes;
       var rtcTypes = window.red5prosdk.RTCSubscriberEventTypes;
       var status;
+      var answer;
+      var candidate;
       switch (event.type) {
         case subTypes.CONNECT_SUCCESS:
           status = 'Connection established...';
           break;
         case subTypes.CONNECT_FAILURE:
           status = 'Error - Could not establish connection.';
-          shutdownAudioElement();
           break;
         case subTypes.SUBSCRIBE_START:
           status = 'Started subscribing session.';
           break;
         case subTypes.SUBSCRIBE_FAIL:
           status = 'Error - Could not start a subscribing session.';
-          shutdownAudioElement();
           break;
         case subTypes.SUBSCRIBE_INVALID_NAME:
           status = 'Error - Stream name not in use.';
@@ -54,7 +54,7 @@
           status = 'Negotiation complete. Waiting Subscription Start...';
           break;
     }
-    field.innerText = ['STATUS', status].join(': ');
+    statusField.innerText = ['STATUS', status].join(': ');
   }
 
   window.red5proHandleSubscriberEvent = updateStatusFromEvent;

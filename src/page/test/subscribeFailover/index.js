@@ -17,7 +17,7 @@
   var targetSubscriber;
   var targetView;
 
-  var updateStatusFromEvent = window.red5proHandleSubcriberEvent;
+  var updateStatusFromEvent = window.red5proHandleSubscriberEvent;
   var instanceId = Math.floor(Math.random() * 0x10000).toString(16);
   var streamTitle = document.getElementById('stream-title');
 

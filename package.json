@@ -28,7 +28,6 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "prebuild": "rm -rf build",
     "build": "gulp build"
   }
 }
