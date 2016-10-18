@@ -9,33 +9,26 @@ This example demonstrates recording the published stream to the server.
 
 > These examples use the WebRTC-based Publisher implementation from the Red5 Pro HTML SDK. However, there is failover support to allow for Flash-base publisher on unsupported browsers.
 
-## Running the Example
-Click on the video playback to generate a still image of the video and display it below the video preview.
-
-## Using drawImage
+## Recording
+To record a published stream, modify the `streamMode` configuration attribute provided upon initialization of the Publisher:
 
 ```js
-function clearCanvas (targetElement, canvasElement) {
-  var context = canvasElement.getContext('2d');
-  context.fillStyle = '#a1a1a1';
-  context.fillRect(0, 0, targetElement.offsetWidth, targetElement.offsetHeight);
-}
-
-function drawOnCanvas (targetElement, canvasElement) {
-  var context = canvasElement.getContext('2d');
-  canvasElement.width = targetElement.offsetWidth;
-  canvasElement.height = targetElement.offsetHeight;
-  context.drawImage(targetElement, 0, 0, targetElement.offsetWidth, targetElement.offsetHeight);
-  }
-
-captureTarget.addEventListener('click', function () {
-  clearCanvas(videoElement, canvasElement);
-  drawOnCanvas(videoElement, canvasElement);
-});
+var defaultConfiguration = {
+  protocol: 'ws',
+  port: 8081,
+  app: 'live',
+  streamMode: 'record'
+};
 ```
 
 <sup>
-[index #141](index#L141)
+[index.js #22](index.js#L22)
 </sup>
 
-> More information: [CanvasRenderingContext2D.drawImage from MDN](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/drawImage)
+The following are accepted values for the `streamMode` configuration attribute:
+
+* **live**
+* **record**
+* **append**
+
+The default value is `live`.
