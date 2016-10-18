@@ -1,4 +1,3 @@
-/* global red5prosdk*/
 (function(window, document, red5pro) {
   'use strict';
 
@@ -62,8 +61,8 @@
     return new Promise(function (resolve, reject) {
 
       var elementId = 'red5pro-publisher-video';
-      var publisher = new red5prosdk.RTCPublisher();
-      var view = new red5prosdk.PublisherView(elementId);
+      var publisher = new red5pro.RTCPublisher();
+      var view = new red5pro.PublisherView(elementId);
       var gmd = navigator.mediaDevice || navigator;
 
       publisher.on('*', onPublisherEvent);

@@ -1,4 +1,6 @@
 (function(window, document, red5pro) {
+  'use strict';
+
   var configuration = (function () {
   var conf = sessionStorage.getItem('r5proTestBed');
   try {

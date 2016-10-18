@@ -1,0 +1,21 @@
+<!doctype html>
+<html>
+  <head>
+    {{> meta title='Subscriber Audio-Only Test'}}
+    {{> header-scripts}}
+    {{> header-stylesheets}}
+  </head>
+  <body>
+    <div id="app">
+      {{> version }}
+      {{> settings-link}}
+      {{> test-info testTitle='Subscriber Audio-Only Test'}}
+      {{> status-field-subscriber}}
+      <div class="centered">
+        <audio id="red5pro-subscriber-audio" controls class="video-element"></audio>
+      </div>
+    </div>
+    {{> body-scripts}}
+    <script src="index.js"></script>
+  </body>
+</html>
