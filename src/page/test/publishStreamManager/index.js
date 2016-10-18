@@ -14,7 +14,7 @@
 
   red5pro.setLogLevel(configuration.verboseLogging ? red5pro.LogLevels.TRACE : red5pro.LogLevels.WARN);
 
-  var updateStatusFromEvent = window.red5proHandlePublisherEvent;
+  var updateStatusFromEvent = window.red5proHandlePublisherEvent; // defined in src/template/partial/status-field-publisher.hbs
   var targetPublisher;
   var targetView;
   var streamTitle = document.getElementById('stream-title');
@@ -45,10 +45,10 @@
   }
 
   function requestOrigin (configuration) {
-    const host = configuration.host;
-    const app = configuration.app;
-    const streamName = configuration.stream1;
-    const url = 'http://' + host + ':5080/streammanager/api/1.0/event/' + app + '/' + streamName + '?action=broadcast';
+    var host = configuration.host;
+    var app = configuration.app;
+    var streamName = configuration.stream1;
+    var url = 'http://' + host + ':5080/streammanager/api/1.0/event/' + app + '/' + streamName + '?action=broadcast';
       return new Promise(function (resolve, reject) {
         fetch(url)
           .then(function (res) {
@@ -85,18 +85,20 @@
       var elementId = 'red5pro-publisher-video';
       var publisher = new red5pro.RTCPublisher();
       var view = new red5pro.PublisherView(elementId);
-      var gmd = navigator.mediaDevice || navigator;
+      var nav = navigator.mediaDevice || navigator;
 
       publisher.on('*', onPublisherEvent);
       console.log('[Red5ProPublisher] gUM:: ' + JSON.stringify(gUM(), null, 2));
 
-      gmd.getUserMedia(gUM(), function (media) {
+      nav.getUserMedia(gUM(), function (media) {
 
         // Upon access of user media,
         // 1. Attach the stream to the publisher.
         // 2. Show the stream as preview in view instance.
         publisher.attachStream(media);
         view.preview(media, true);
+        view.attachPublisher(publisher);
+
         targetPublisher = publisher;
         targetView = view;
         resolve();
@@ -112,16 +114,13 @@
 
   function publish () {
     var publisher = targetPublisher;
-    var view = targetView;
     var config = Object.assign({},
                     configuration,
                     defaultConfiguration,
                     getUserMediaConfiguration());
     config.streamName = config.stream1;
-    console.log('[Red5ProPublisher] config:: ' + JSON.stringify(config, null, 2));
-
-    view.attachPublisher(publisher);
     streamTitle.innerText = config.streamName;
+    console.log('[Red5ProPublisher] config:: ' + JSON.stringify(config, null, 2));
 
     // Initialize
     publisher.init(config)
