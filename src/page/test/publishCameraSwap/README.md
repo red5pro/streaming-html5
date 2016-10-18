@@ -1,7 +1,7 @@
 # Publishing with Camera Swap
 This example demonstrates a request for a `MediaStream` with a defined `video` source for the constraint based on the Rear and Front facing cameras of a mobile device and a browser that supports `facingMode` media contraints.
 
-**Please refer to the [Basic Publisher Documentation](../publish/README.md) to leanr more about the basic setup.**
+**Please refer to the [Basic Publisher Documentation](../publish/README.md) to learn more about the basic setup.**
 
 ### Example Code
 - **[index.html](index.html)**

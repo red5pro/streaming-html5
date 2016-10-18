@@ -1,7 +1,7 @@
 # Publishing with User-Selected Camera Source
 This example demonstrates a request for a `MediaStream` with a defined `video` source for the constraint.
 
-**Please refer to the [Basic Publisher Documentation](../publish/README.md) to leanr more about the basic setup.**
+**Please refer to the [Basic Publisher Documentation](../publish/README.md) to learn more about the basic setup.**
 
 ### Example Code
 - **[index.html](index.html)**

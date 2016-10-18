@@ -1,7 +1,7 @@
 # Publishing with Audio Only
 This example demonstrates a request for a `MediaStream` with audio contraints only.
 
-**Please refer to the [Basic Publisher Documentation](../publish/README.md) to leanr more about the basic setup.**
+**Please refer to the [Basic Publisher Documentation](../publish/README.md) to learn more about the basic setup.**
 
 ### Example Code
 - **[index.html](index.html)**
