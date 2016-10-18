@@ -44,56 +44,56 @@ To define the **Host** with the server instance's IP, click the _Host_ field f t
 
 ## Examples
 
-### [Publishing](static/publisher.html)
+### [Publishing](src/page/test/publish)
 
-| **[Publisher](static/publisher.html)**
+| **[Publisher](src/page/test/publish)**
 | :-----
 | *Basic publisher example using WebRTC*
 |
-| **[Publisher Failover](static/test/publishFailover)**
+| **[Publisher Failover](src/page/test/publishFailover)**
 | *Demonstrates auto-failover of publisher implementation.*<br>i.e., if no WebRTC browser support, Flash Player is utilized.
 |
-| **[1080p](static/test/publish1080)**
+| **[1080p](src/page/test/publish1080)**
 | *A high quality publisher.*
 |
-| **[Audio Mode](static/test/publishAudioOnly)**
+| **[Audio Mode](src/page/test/publishAudioOnly)**
 | *Demonstrates an Audio-Only broadcast for publishing.*
 |
-| **[Camera Source](static/test/publishCameraSource)**
+| **[Camera Source](src/page/test/publishCameraSource)**
 | *Demonstrates selecting the desired camera to publish with.*
 |
-| **[Camera Swap](static/test/publishCameraSwap)**
+| **[Camera Swap](src/page/test/publishCameraSwap)**
 | *Demonstrates swapping the front & rear camera of a mobile device.*<br>**MOBILE BROWSER SUPPORT LIMITED**
 |
-| **[Image Capture](static/test/publishImageCapture)**
+| **[Image Capture](src/page/test/publishImageCapture)**
 | *Demonstrates capturing an image of a live video being published.*
 |
-| **[Stream Manager](static/test/publishStreamManager)**
+| **[Stream Manager](src/page/test/publishStreamManager)**
 | *Demonstrates utilizing the Red5 Pro Stream Manager to publish to a cluster's origin.*
 |
-| **[Record](static/test/publishRecord)**
+| **[Record](src/page/test/publishRecord)**
 | *Demonstrates recording a stream to the server for VOD (Video-On-Demand) playback.*
 |
 
-### [Subscribing](static/subscriber.html)
+### [Subscribing](src/page/subscribe)
 
-| **[Subscriber](static/subscriber.html)**
+| **[Subscriber](src/page/subscribe)**
 | :-----
 | *Basic subscriber example using WebRTC.*
 |
-| **[Subscriber Failover](static/test/subscribeFailover)**
+| **[Subscriber Failover](src/page/test/subscribeFailover)**
 | *Demonstrate auto-failover of subscriber implementation.<br>*i.e, if no WebRTC browser support, then first Flash Player is detected, then HLS.
 |
-| **[Subscriber Audio Only](static/test/subscribeAudioOnly)**
+| **[Subscriber Audio Only](src/page/test/subscribeAudioOnly)**
 | *Demonstrates playback of audio-only stream.*
 |
-| **[Subscriber Image Capture](static/test/subscribeImageCapture)**
+| **[Subscriber Image Capture](src/page/test/subscribeImageCapture)**
 | *Demonstrates capturing an image of a live video being consumed.*
 |
-| **[Subscriber Cluster](static/test/subscribeCluster)**
+| **[Subscriber Cluster](src/page/test/subscribeCluster)**
 | *Demonstrates accessing an IP from the Red5 Pro Cluster API to subcribe to a live stream.*
 |
-| **[Subscriber Stream Manager](static/test/subscribeStreamManager)**
+| **[Subscriber Stream Manager](src/page/test/subscribeStreamManager)**
 | *Demonstrates utilizing the Red5 Pro Stream Manager API to access an Edge server IP to subscribe to a live stream.*
 |
 

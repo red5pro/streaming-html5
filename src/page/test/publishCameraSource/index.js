@@ -14,7 +14,7 @@
 
   red5pro.setLogLevel(configuration.verboseLogging ? red5pro.LogLevels.TRACE : red5pro.LogLevels.WARN);
 
-  var updateStatusFromEvent = window.red5proHandlePublisherEvent;
+  var updateStatusFromEvent = window.red5proHandlePublisherEvent; // defined in src/template/partial/status-field-publisher.hbs
   var targetPublisher;
   var targetView;
   var streamTitle = document.getElementById('stream-title');
@@ -53,7 +53,7 @@
 
   var SELECT_DEFAULT = 'Select a camera...';
   function onCameraSelect (selection) {
-    if (selection && selection !== SELECT_DEFAULT) {
+    if (selection && selection !== 'undefined' && selection !== SELECT_DEFAULT) {
       // assign selected camere to defined UserMedia.
       userMedia.video = {
         optional: [{
@@ -96,18 +96,20 @@
       var elementId = 'red5pro-publisher-video';
       var publisher = new red5pro.RTCPublisher();
       var view = new red5pro.PublisherView(elementId);
-      var gmd = navigator.mediaDevice || navigator;
+      var nav = navigator.mediaDevice || navigator;
 
       publisher.on('*', onPublisherEvent);
       console.log('[Red5ProPublisher] gUM:: ' + JSON.stringify(gUM(), null, 2));
 
-      gmd.getUserMedia(gUM(), function (media) {
+      nav.getUserMedia(gUM(), function (media) {
 
         // Upon access of user media,
         // 1. Attach the stream to the publisher.
         // 2. Show the stream as preview in view instance.
         publisher.attachStream(media);
         view.preview(media, true);
+        view.attachPublisher(publisher);
+
         targetPublisher = publisher;
         targetView = view;
         resolve();
@@ -123,16 +125,13 @@
 
   function publish () {
     var publisher = targetPublisher;
-    var view = targetView;
     var config = Object.assign({},
                     configuration,
                     defaultConfiguration,
                     getUserMediaConfiguration());
     config.streamName = config.stream1;
-    console.log('[Red5ProPublisher] config:: ' + JSON.stringify(config, null, 2));
-
-    view.attachPublisher(publisher);
     streamTitle.innerText = config.streamName;
+    console.log('[Red5ProPublisher] config:: ' + JSON.stringify(config, null, 2));
 
     // Initialize
     publisher.init(config)
