@@ -1,5 +1,6 @@
 # Publishing on Red5 Pro
 This is the basic starter example on publishing to a Red5 Pro stream using the Red5 Pro HTML SDK.
+
 ### Example Code
 - **[index.html](index.html)**
 - **[index.js](index.js)**

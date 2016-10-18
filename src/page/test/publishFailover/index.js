@@ -14,7 +14,7 @@
 
   red5pro.setLogLevel(configuration.verboseLogging ? red5pro.LogLevels.TRACE : red5pro.LogLevels.WARN);
 
-  var updateStatusFromEvent = window.red5proHandlePublisherEvent;
+  var updateStatusFromEvent = window.red5proHandlePublisherEvent; // defined in src/template/partial/status-field-publisher.hbs
   var targetPublisher;
   var targetView;
   var streamTitle = document.getElementById('stream-title');
@@ -100,13 +100,13 @@
 
       var elementId = 'red5pro-publisher-video';
       var view = new red5pro.PublisherView(elementId);
-      var gmd = navigator.mediaDevice || navigator;
+      var nav = navigator.mediaDevice || navigator;
 
       view.attachPublisher(publisher);
 
       if (requiresGUM) {
         console.log('[Red5ProPublisher] gUM:: ' + JSON.stringify(gUM(), null, 2));
-        gmd.getUserMedia(gUM(), function (media) {
+        nav.getUserMedia(gUM(), function (media) {
 
           // Upon access of user media,
           // 1. Attach the stream to the publisher.
