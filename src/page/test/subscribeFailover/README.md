@@ -7,7 +7,7 @@ The default failover order is:
 2. RTMP/Flash
 3. HLS
 
-When utilizing the auto-failover mechanism, the SDK - by default - will first test for WebRTC support and if missing will attempt to embed a publisher SWF for the broadcast. If Flash is not supported in the browser, it will finally attempt to playback using HLS.
+When utilizing the auto-failover mechanism, the SDK - by default - will first test for WebRTC support and if missing will attempt to embed a subscriber SWF for the broadcast. If Flash is not supported in the browser, it will finally attempt to playback using HLS.
 
 You can define the desired failover order from using `setPlaybackOrder`.
 

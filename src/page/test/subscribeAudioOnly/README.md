@@ -7,7 +7,7 @@ This example demonstrates playback of a stream with audio only.
 - **[index.html](index.html)**
 - **[index.js](index.js)**
 
-> These examples use the WebRTC-based Publisher implementation from the Red5 Pro HTML SDK. However, there is failover support to allow for Flash-base publisher on unsupported browsers.
+> These examples use the WebRTC-based Subscriber implementation from the Red5 Pro HTML SDK. However, there is failover support to allow for Flash-based subscriber on unsupported browsers.
 
 ## Audio Element
 The `audio` element is used for the assignment of the media stream blob:
