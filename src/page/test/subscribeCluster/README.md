@@ -94,4 +94,9 @@ function requestEdge (configuration) {
 }
 ```
 
+<sup>
+[index.js #69](index.js#L69]
+</sup>
+
 The origin server is returned in plain text with the format `IP:PORT`. As such, we strip the `:PORT` off the end and use the `IP` value as the `host` in the configuration for subscription.
+
