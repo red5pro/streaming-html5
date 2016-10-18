@@ -28,9 +28,6 @@
     window.red5proHandleSubscriberEvent(event);
   };
   var streamTitle = document.getElementById('stream-title');
-  var videoElement = document.getElementById('red5pro-subscriber-video');
-  var canvasElement = document.getElementById('capture-canvas');
-  var captureTarget = document.getElementById('video-container');
 
   var defaultConfiguration = {
     protocol: 'ws',
@@ -131,27 +128,8 @@
     });
   }
 
-  function clearCanvas (targetElement, canvasElement) {
-    var context = canvasElement.getContext('2d');
-    context.fillStyle = '#a1a1a1';
-    context.fillRect(0, 0, targetElement.offsetWidth, targetElement.offsetHeight);
-  }
-
-  function drawOnCanvas (targetElement, canvasElement) {
-    var context = canvasElement.getContext('2d');
-    canvasElement.width = targetElement.offsetWidth;
-    canvasElement.height = targetElement.offsetHeight;
-    context.drawImage(targetElement, 0, 0, targetElement.offsetWidth, targetElement.offsetHeight);
-  }
-
   // Kick off.
   subscribe();
-
-  captureTarget.addEventListener('click', function () {
-    clearCanvas(videoElement, canvasElement);
-    drawOnCanvas(videoElement, canvasElement);
-  });
-  clearCanvas(videoElement, canvasElement);
 
   // Clean up.
   window.addEventListener('beforeunload', function() {

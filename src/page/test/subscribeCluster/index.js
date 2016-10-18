@@ -41,7 +41,7 @@
   }
 
   function shutdownVideoElement () {
-    var videoElement = document.getElementById('red5pro-publisher-video');
+    var videoElement = document.getElementById('red5pro-subscriber-video');
     if (videoElement) {
       videoElement.pause()
       videoElement.src = ''

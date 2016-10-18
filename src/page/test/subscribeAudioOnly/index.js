@@ -41,7 +41,7 @@
   }
 
   function shutdownAudioElement () {
-    var audioElement = document.getElementById('red5pro-publisher-audio');
+    var audioElement = document.getElementById('red5pro-subscriber-audio');
     if (audioElement) {
       audioElement.pause()
       audioElement.src = ''
