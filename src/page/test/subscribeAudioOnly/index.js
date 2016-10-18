@@ -25,7 +25,7 @@
           shutdownAudioElement();
           break;
     }
-    window.red5proHandleSubscriberEvent(event);
+    window.red5proHandleSubscriberEvent(event); // defined in src/template/partial/status-field-subscriber.hbs
   };
   var streamTitle = document.getElementById('stream-title');
 
