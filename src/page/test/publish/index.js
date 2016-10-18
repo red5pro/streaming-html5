@@ -56,43 +56,42 @@
       var elementId = 'red5pro-publisher-video';
       var publisher = new red5pro.RTCPublisher();
       var view = new red5pro.PublisherView(elementId);
-      var gmd = navigator.mediaDevice || navigator;
+      var nav = navigator.mediaDevice || navigator;
 
       publisher.on('*', onPublisherEvent);
       console.log('[Red5ProPublisher] gUM:: ' + JSON.stringify(gUM(), null, 2));
 
-      gmd.getUserMedia(gUM(), function (media) {
+      nav.getUserMedia(gUM(), function (media) {
 
-        // Upon access of user media,
-        // 1. Attach the stream to the publisher.
-        // 2. Show the stream as preview in view instance.
-        publisher.attachStream(media);
-        view.preview(media, true);
-        targetPublisher = publisher;
-        targetView = view;
-        resolve();
+          // Upon access of user media,
+          // 1. Attach the stream to the publisher.
+          // 2. Show the stream as preview in view instance.
+          // 3. Associate publisher & view (optional).
+          publisher.attachStream(media);
+          view.preview(media, true);
+          view.attachPublisher(publisher);
+
+          targetPublisher = publisher;
+          targetView = view;
+          resolve();
 
       }, function(error) {
+          onPublishFail('Error - ' + error);
+          reject(error);
+      });
 
-        onPublishFail('Error - ' + error);
-        reject(error);
-
-      })
     });
   }
 
   function publish () {
     var publisher = targetPublisher;
-    var view = targetView;
     var config = Object.assign({},
                     configuration,
                     defaultConfiguration,
                     getUserMediaConfiguration());
     config.streamName = config.stream1;
-    console.log('[Red5ProPublisher] config:: ' + JSON.stringify(config, null, 2));
-
-    view.attachPublisher(publisher);
     streamTitle.innerText = config.streamName;
+    console.log('[Red5ProPublisher] config:: ' + JSON.stringify(config, null, 2));
 
     // Initialize
     publisher.init(config)
