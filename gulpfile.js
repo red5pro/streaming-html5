@@ -1,13 +1,17 @@
 'use strict';
 var path = require('path');
 var gulp = require('gulp');
+var bump = require('gulp-bump');
 var handlebars = require('gulp-compile-handlebars');
 var mkdir = require('mkdirp');
 
-var version = require(path.join(__dirname, 'package.json')).version;
+var pkg = path.join(__dirname, 'package.json');
+var version = require(pkg).version;
+
+var PROD = (process.env.NODE_ENV === 'production');
 var sourceDirectory = path.join(__dirname, 'src');
 var staticDirectory = path.join(__dirname, 'static');
-var buildDirectory = path.join(__dirname, 'build');
+var buildDirectory = path.join(__dirname, PROD ? 'build': 'dist');
 var partialsDirectory = path.join(sourceDirectory, 'template', 'partial');
 
 var defaultOptions = {
@@ -45,4 +49,14 @@ gulp.task('move-static', ['compile', 'move-scripts'], function (cb) {
 
 gulp.task('build', ['compile', 'move-scripts', 'move-static'], function (cb) {
   cb();
+});
+
+gulp.task('bump-version', function() {
+  var versionType = process.env.BUMP !== undefined ? process.env.BUMP : 'patch';
+  var files = [pkg];
+  gulp.src(files)
+      .pipe(bump({
+        type: versionType
+      }))
+      .pipe(gulp.dest(__dirname));
 });
