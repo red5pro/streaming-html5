@@ -74,6 +74,9 @@ To define the **Host** with the server instance's IP, click the _Host_ field f t
 | **[Record](src/page/test/publishRecord)**
 | *Demonstrates recording a stream to the server for VOD (Video-On-Demand) playback.*
 |
+| **[Two-Way](src/page/test/twoWay)**
+| *Demonstrates simultaneously publishing while subscribing - allowing a conversation. Includes stream detection and auto-connection.*
+|
 
 ### [Subscribing](src/page/subscribe)
 

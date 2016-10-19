@@ -1,15 +1,13 @@
 <!doctype html>
 <html>
   <head>
-    <title>Red5 Pro HTML SDK Testbed</title>
-    <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
-    <meta content="width=device-width, initial-scale=1, user-scalable=no" name="viewport">
-    <link rel="stylesheet" href="css/reset.css">
-    <link rel="stylesheet" href="css/testbed.css">
+    {{> meta title='Red5 Pro HTML SDK Testbed'}}
+    {{> header-stylesheets}}
     <script src="script/testbed-config.js"></script>
   </head>
   <body>
     <div id="app">
+        {{> version }}
         <div id="back-link-container" style="text-align: left;"><p id="back-link"><a href="settings.html">&lt; Settings</a></p></div>
         <h1 class="centered">Red5 Pro HTML Testbed</h1>
         <hr />
@@ -29,7 +27,7 @@
             <li><a href="test/subscribeImageCapture">Subscribe - Image Capture</a></li>
             <li><a href="test/subscribeCluster">Subscribe - Cluster</a></li>
             <li><a href="test/subscribeStreamManager">Subscribe - Stream Manager</a></li>
-            <li><a href="two-way.html">Two-Way!</a></li>
+            <li><a href="test/twoWay">Two-Way</a></li>
           </ul>
     </div>
   </body>

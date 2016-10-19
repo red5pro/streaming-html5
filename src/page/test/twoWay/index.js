@@ -186,15 +186,38 @@
 
   function beginStreamListCall () {
 
-    new Promise((resolve, reject) => {
-      $.getJSON("http://" + configuration.host + ":5080/" + configuration.app + "/streams.jsp")
-        .done((json) => resolve(json))
-        .fail((xhr, status, err) => reject(status + err.message));
-    }).then((val) => recieveList(val),
-            (err) => listError(err));
+    var url = 'http://' + configuration.host + ':5080/' + configuration.app + '/streams.jsp';
+    fetch(url)
+      .then(function (res) {
+        if (res.headers.get('content-type') &&
+            res.headers.get('content-type').toLowerCase().indexOf('application/json') >= 0) {
+          return res.json();
+        }
+        else {
+          return res.text();
+        }
+      })
+      .then(function (jsonOrString) {
+        var json = jsonOrString;
+        if (typeof jsonOnString === 'string') {
+          try {
+            json = JSON.parse(json);
+          }
+          catch(e) {
+            throw new TypeError('Could not properly parse response: ' + e.message);
+          }
+        }
+        recieveList(json);
+      })
+      .catch(function (error) {
+        var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
+        console.error('[Two-Way] :: Error - Could not request Stream List. ' + jsonError);
+        listError(error);
+       });
+
   }
 
-  function recieveList(listIn){
+  function recieveList (listIn) {
     var found = false;
 
     for (var i = listIn.length - 1; i >= 0; i--) {
@@ -202,17 +225,20 @@
       if(found) break;
     }
 
-    if(found){
+    if (found) {
       subscribe();
     }
-    else
+    else {
       setWaitTime();
+    }
   }
-  function listError(err){
+
+  function listError (err) {
     console.log( "Error recieved on streamListCall - " + err );
     setWaitTime();
   }
-  function setWaitTime(){
+
+  function setWaitTime () {
     setTimeout(beginStreamListCall, 5000);
   }
 

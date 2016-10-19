@@ -1,11 +1,8 @@
 <!doctype html>
 <html>
   <head>
-    <title>Red5 Pro HTML SDK Testbed</title>
-    <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
-    <meta content="width=device-width, initial-scale=1, user-scalable=no" name="viewport">
-    <link rel="stylesheet" href="css/reset.css">
-    <link rel="stylesheet" href="css/testbed.css">
+    {{> meta title='Red5 Pro HTML SDK Testbed'}}
+    {{> header-stylesheets}}
     <script src="script/testbed-config.js"></script>
     <style>
       .paddedHR {
@@ -15,6 +12,7 @@
   </head>
   <body>
     <div id="app">
+      {{> version }}
       <div id="back-link-container" style="text-align: left;"><p id="back-link"><a href="testbed-menu.html">&lt; Testbed Menu</a></p></div>
       <div id="settings-container">
         <h1 class="centered">Settings</h1>

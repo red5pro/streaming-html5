@@ -37,11 +37,7 @@ gulp.task('move-scripts', ['compile'], function (cb) {
 
 gulp.task('move-static', ['compile', 'move-scripts'], function (cb) {
 
-  gulp.src([
-    path.join(staticDirectory, '**'),
-    '!' + path.join(staticDirectory, 'test', '**'),
-    '!' + path.join(staticDirectory, 'publisher.html'),
-    '!' + path.join(staticDirectory, 'subscriber.html')])
+  gulp.src(path.join(staticDirectory, '**'))
     .pipe(gulp.dest(buildDirectory))
     .on('end', cb);
 
