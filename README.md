@@ -44,53 +44,59 @@ To define the **Host** with the server instance's IP, click the _Host_ field f t
 
 ## Examples
 
-### [Publishing](src/js/components/test/publish)
+### [Publishing](src/page/test/publish)
 
-| **[Publisher](src/js/components/test/publish/PublisherTest.js)**
+| **[Publisher](src/page/test/publish)**
 | :-----
 | *Basic publisher example using WebRTC*
 |
-| **[Publisher Failover](src/js/components/test/publish/PublisherFailoverTest.js)**
+| **[Publisher Failover](src/page/test/publishFailover)**
 | *Demonstrates auto-failover of publisher implementation.*<br>i.e., if no WebRTC browser support, Flash Player is utilized.
 |
-| **[1080p](src/js/components/test/publish/Publisher1080Test.js)**
+| **[1080p](src/page/test/publish1080)**
 | *A high quality publisher.*
 |
-| **[Audio Mode](src/js/components/test/publish/PublisherAudioOnlyTest.js)**
+| **[Audio Mode](src/page/test/publishAudioOnly)**
 | *Demonstrates an Audio-Only broadcast for publishing.*
 |
-| **[Camera Source](src/js/components/test/publish/PublisherCameraSourceTest.js)**
+| **[Camera Source](src/page/test/publishCameraSource)**
 | *Demonstrates selecting the desired camera to publish with.*
 |
-| **[Camera Swap](src/js/components/test/publish/PublisherCameraSwapTest.js)**
+| **[Camera Swap](src/page/test/publishCameraSwap)**
 | *Demonstrates swapping the front & rear camera of a mobile device.*<br>**MOBILE BROWSER SUPPORT LIMITED**
 |
-| **[Image Capture](src/js/components/test/publish/PublisherImageCaptureTest.js)**
+| **[Image Capture](src/page/test/publishImageCapture)**
 | *Demonstrates capturing an image of a live video being published.*
 |
-| **[Stream Manager](src/js/components/test/publish/PublisherStreamManagerTest.js)**
+| **[Stream Manager](src/page/test/publishStreamManager)**
 | *Demonstrates utilizing the Red5 Pro Stream Manager to publish to a cluster's origin.*
 |
+| **[Record](src/page/test/publishRecord)**
+| *Demonstrates recording a stream to the server for VOD (Video-On-Demand) playback.*
+|
+| **[Two-Way](src/page/test/twoWay)**
+| *Demonstrates simultaneously publishing while subscribing - allowing a conversation. Includes stream detection and auto-connection.*
+|
 
-### [Subscibing](src/js/components/test/subscribe)
+### [Subscribing](src/page/subscribe)
 
-| **[Subscriber](src/js/components/test/subscribe/SubscriberTest.js)**
+| **[Subscriber](src/page/subscribe)**
 | :-----
 | *Basic subscriber example using WebRTC.*
 |
-| **[Subscriber Failover](src/js/components/test/subscribe/SubsciberFailoverTest.js)**
+| **[Subscriber Failover](src/page/test/subscribeFailover)**
 | *Demonstrate auto-failover of subscriber implementation.<br>*i.e, if no WebRTC browser support, then first Flash Player is detected, then HLS.
 |
-| **[Subscriber Audio Only](src/js/components/test/subscribe/SubscriberAudioOnlyTest.js)**
+| **[Subscriber Audio Only](src/page/test/subscribeAudioOnly)**
 | *Demonstrates playback of audio-only stream.*
 |
-| **[Subscriber Image Capture](src/js/components/test/subscribe/SubscriberImageCaptureTest.js)**
+| **[Subscriber Image Capture](src/page/test/subscribeImageCapture)**
 | *Demonstrates capturing an image of a live video being consumed.*
 |
-| **[Subscriber Cluster](src/js/components/test/subscribe/SubscriberClusterTest.js)**
+| **[Subscriber Cluster](src/page/test/subscribeCluster)**
 | *Demonstrates accessing an IP from the Red5 Pro Cluster API to subcribe to a live stream.*
 |
-| **[Subscriber Stream Manager](src/js/component/test/subscribe/SubscriberStreamManagerTest.js)**
+| **[Subscriber Stream Manager](src/page/test/subscribeStreamManager)**
 | *Demonstrates utilizing the Red5 Pro Stream Manager API to access an Edge server IP to subscribe to a live stream.*
 |
 
@@ -99,8 +105,5 @@ To define the **Host** with the server instance's IP, click the _Host_ field f t
 1. For the Subscriber examples, you will need to have a live stream currently being published and named based on the *Stream 1 Name* field of the _Settings_. You can use another device to start streaming using this webapp, or you can also use a web browser to publish via Flash, [http://your_red5_pro_server_ip:5080/live](http://your_red5_pro_server_ip:5080/live).
 2. You can see a list of active streams by navigating to [http://your_red5_pro_server_ip:5080/live/subscribe.jsp](http://your_red5_pro_server_ip:5080/live/subscribe.jsp) (will need to refresh this page after you have started publishing).
 3. You can access the server IP of your Red5 Pro Server install - to be used in the *Host* field of the _Settings_ - by opening [http://your_red5_pro_server_ip:5080/](http://your_red5_pro_server_ip:5080/) and finding the IP printed in the upper-right of the page.
-
-## Contributing
-To learn more about the libraries used in creating the testbed, this repository structure and contirbuting to this project, please visit the [Contributing Documentation](CONTRIBUTING.md)!
 
 [![Analytics](https://ga-beacon.appspot.com/UA-59819838-3/red5pro/streaming-html?pixel)](https://github.com/igrigorik/ga-beacon)

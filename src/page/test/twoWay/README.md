@@ -1,0 +1,85 @@
+# Two Way Video Chat
+This example demonstrates two way communication using Red5 Pro. It also demonstrates using servlet requests on the server.
+
+#### Basic Publisher
+**Please refer to the [Basic Publisher Documentation](../publish/README.md) to learn more about the basic setup of a publisher.**
+
+#### Basic Subscriber
+**Please refer to the [Basic Subscriber Documentation](../subscribe/README.md) to learn more about the basic setup of a subscriber.**
+
+### Example Code
+- **[index.html](index.html)**
+- **[index.js](index.js)**
+
+> These examples use the WebRTC-based Subscriber implementation from the Red5 Pro HTML SDK. However, there is failover support to allow for Flash-based subscriber on unsupported browsers.
+
+### Setup
+Two way communication simply requires setting up a publish stream and a subscribe stream at the same time.  You can test the example with two browser pages.  On the second browser page, use the *Settings* page to swap the names of the stream.
+
+The subscriber portion will automatically connect when the second person begins streaming.
+
+### Getting Live Streams
+To access the list of current streams on the server, use the `streams` servlet.
+
+```js
+function beginStreamListCall () {
+
+  var url = 'http://' + configuration.host + ':5080/' + configuration.app + '/streams.jsp';
+  fetch(url)
+    .then(function (res) {
+      if (res.headers.get('content-type') &&
+          res.headers.get('content-type').toLowerCase().indexOf('application/json') >= 0) {
+        return res.json();
+      }
+      else {
+        return res.text();
+      }
+    })
+    .then(function (jsonOrString) {
+      var json = jsonOrString;
+      if (typeof jsonOnString === 'string') {
+        try {
+          json = JSON.parse(json);
+        }
+        catch(e) {
+          throw new TypeError('Could not properly parse response: ' + e.message);
+        }
+      }
+      recieveList(json);
+    })
+    .catch(function (error) {
+      var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
+      console.error('[Two-Way] :: Error - Could not request Stream List. ' + jsonError);
+      listError(error);
+     });
+
+}
+```
+
+<sup>
+[index #187](index.js#L187)
+</sup>
+
+The service response will be a list of live streams. Parsing the JSON will return an array of objects with the `name` attribute denoting the stream name. If one matching the `stream2` configuration setting is found, it is auto-subscribed to; otherwise, the service call is made again after a certain period of time.
+
+```js
+function recieveList (listIn) {
+
+    var found = false;
+    for (var i = listIn.length - 1; i >= 0; i--) {
+      found = listIn[i].name == configuration.stream2;
+      if(found) break;
+    }
+
+    if (found) {
+      subscribe();
+    }
+    else {
+      setWaitTime();
+    }
+}
+```
+
+<sup>
+[index #220](index.js#L220)
+</sup>
