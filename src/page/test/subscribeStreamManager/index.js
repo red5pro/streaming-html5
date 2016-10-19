@@ -25,7 +25,7 @@
           shutdownVideoElement();
           break;
     }
-    window.red5proHandleSubscriberEvent(event);
+    window.red5proHandleSubscriberEvent(event); // defined in src/template/partial/status-field-subscriber.hbs
   };
   var streamTitle = document.getElementById('stream-title');
 
@@ -67,10 +67,10 @@
   }
 
   function requestEdge (configuration) {
-    const host = configuration.host;
-    const app = configuration.app;
-    const streamName = configuration.stream1;
-    const url = 'http://' + host + ':5080/streammanager/api/1.0/event/' + app + '/' + streamName + '?action=subscribe';
+    var host = configuration.host;
+    var app = configuration.app;
+    var streamName = configuration.stream1;
+    var url = 'http://' + host + ':5080/streammanager/api/1.0/event/' + app + '/' + streamName + '?action=subscribe';
       return new Promise(function (resolve, reject) {
         fetch(url)
           .then(function (res) {
