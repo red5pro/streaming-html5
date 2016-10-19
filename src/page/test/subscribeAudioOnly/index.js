@@ -94,7 +94,8 @@
         return player.play();
       })
       .then(function () {
-        onSubscribeSuccess()
+        onSubscribeSuccess();
+        //        stats(subscriber.getPeerConnection());
       })
       .catch(function (error) {
         var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)

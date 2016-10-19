@@ -31,8 +31,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "clean:build": "rm -rf build",
     "clean:dist": "rm -rf dist",
-    "build": "gulp build",
+    "build": "NODE_ENV=develop gulp build",
     "predist": "npm run clean:dist",
-    "dist": "gulp bump-version && npm run build"
+    "dist": "gulp bump-version && NODE_ENV=production gulp build"
   }
 }
