@@ -4,17 +4,19 @@
     <title>Red5 Pro HTML SDK Testbed</title>
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
     <meta content="width=device-width, initial-scale=1, user-scalable=no" name="viewport">
-    <link rel="stylesheet" href="css/reset.css">
-    <link rel="stylesheet" href="css/testbed.css">
+    <link rel="stylesheet" href="../../lib/videojs/video-js.min.css">
+    <link rel="stylesheet" href="../../css/reset.css">
+    <link rel="stylesheet" href="../../css/testbed.css">
     <script src="script/testbed-config.js"></script>
   </head>
   <body>
     <div id="app">
+        <p class="version-field">Testbed Version: 1.0.0</p>
         <div id="back-link-container" style="text-align: left;"><p id="back-link"><a href="settings.html">&lt; Settings</a></p></div>
-        <h1 class="centered">HTML Testbed</h1>
+        <h1 class="centered">Red5 Pro HTML Testbed</h1>
         <hr />
           <ul id="test-list">
-            <li><a href="publisher.html">Publish</a></li>
+            <li><a href="test/publish">Publish</a></li>
             <li><a href="test/publishFailover">Publish - Failover</a></li>
             <li><a href="test/publish1080">Publish - 1080p</a></li>
             <li><a href="test/publishAudioOnly">Publish - Audio Mode</a></li>
@@ -23,13 +25,13 @@
             <li><a href="test/publishImageCapture">Publish - Image Capture</a></li>
             <li><a href="test/publishStreamManager">Publish - Stream Manager</a></li>
             <li><a href="test/publishRecord">Publish - Record</a></li>
-            <li><a href="subscriber.html">Subscribe</a></li>
+            <li><a href="test/subscribe">Subscribe</a></li>
             <li><a href="test/subscribeFailover">Subscribe - Failover</a></li>
             <li><a href="test/subscribeAudioOnly">Subscribe - Audio Only</a></li>
             <li><a href="test/subscribeImageCapture">Subscribe - Image Capture</a></li>
             <li><a href="test/subscribeCluster">Subscribe - Cluster</a></li>
             <li><a href="test/subscribeStreamManager">Subscribe - Stream Manager</a></li>
-            <li><a href="two-way.html">Two-Way!</a></li>
+            <li><a href="test/twoWay">Two-Way</a></li>
           </ul>
     </div>
   </body>

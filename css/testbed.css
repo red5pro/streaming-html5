@@ -26,6 +26,10 @@ code {
   font-size: 1.2rem;
 }
 
+#app {
+  padding-bottom: 2rem;
+}
+
 .loading-text {
   padding: 2rem;
   font-size: 1.2rem;
@@ -43,7 +47,7 @@ code {
 }
 
 .status-field {
-  padding: 0.8rem;
+  padding: 0.8rem 0;
   background-color: #eee;
 }
 
@@ -119,6 +123,16 @@ code {
   height: 40px;
 }
 
+.float-left {
+  float: left;
+  width: 50%;
+}
+
+.float-right {
+  float: right;
+  width: 50%;
+}
+
 #back-link-container {
   cursor: pointer;
   width: 100%;
@@ -187,6 +201,16 @@ code {
     text-align: left;
     margin: 0;
     padding-left: 1.3rem;
+  }
+}
+
+@media (max-width:745px) {
+  .float-left-two-way {
+    width: 100%;
+  }
+  .float-right-two-way {
+    float: left;
+    width: 100%;
   }
 }
 
