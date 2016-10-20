@@ -65,7 +65,7 @@
       productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
     })
     var hlsConfig = Object.assign({}, config, {
-      protocol: 'http',
+      protocol: window.location.protocol || 'http',
       port: config.hlsport,
       streamName: config.stream1,
       mimeType: 'application/x-mpegURL',
