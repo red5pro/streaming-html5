@@ -75,7 +75,7 @@
    return Object.assign({}, {
       audio: configuration.audio,
       video: configuration.video
-    }, userMedia);
+    }, configuration.video ? userMedia : {});
   }
 
   function preview () {

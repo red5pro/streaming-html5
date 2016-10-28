@@ -25,7 +25,10 @@
     port: 8081,
     app: 'live'
   };
-  var userMedia = {};
+  var userMedia = {
+    audio: configuration.audio,
+    video: configuration.video
+  };
 
   function onPublisherEvent (event) {
     console.log('[Red5ProPublisher] ' + event.type + '.');
@@ -45,14 +48,16 @@
   }
 
   function getUserMediaConfiguration () {
-    return Object.assign({}, {
-      audio: configuration.audio,
-      video: configuration.video
-    }, userMedia);
+    return Object.assign({}, userMedia);
   }
 
   var SELECT_DEFAULT = 'Select a camera...';
   function onCameraSelect (selection) {
+
+    if (!configuration.video) {
+      return;
+    }
+
     if (selection && selection !== 'undefined' && selection !== SELECT_DEFAULT) {
       // assign selected camere to defined UserMedia.
       userMedia.video = {

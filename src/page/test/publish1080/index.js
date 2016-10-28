@@ -26,8 +26,12 @@
   };
   var userMedia = {
     video: {
-      width: 1920,
-      height: 1080
+      width: {
+        exact: 1920
+      },
+      height: {
+        exact: 1080
+      }
     }
   };
 
@@ -53,7 +57,7 @@
     return Object.assign({}, {
       audio: configuration.audio,
       video: configuration.video
-     }, userMedia);
+     }, configuration.video ? userMedia : {});
   }
 
   function preview () {
