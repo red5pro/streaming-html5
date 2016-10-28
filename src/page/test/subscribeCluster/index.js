@@ -67,7 +67,8 @@
   }
 
   function requestEdge (configuration) {
-    var url = 'http://' + configuration.host + ':5080/cluster';
+    var protocol = window.location.protocol || 'https:';
+    var url = protocol + '//' + configuration.host + ':5080/cluster';
     return new Promise((resolve, reject) => {
       fetch(url)
         .then(function (res) {

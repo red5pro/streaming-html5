@@ -11,7 +11,7 @@ var version = require(pkg).version;
 var PROD = (process.env.NODE_ENV === 'production');
 var sourceDirectory = path.join(__dirname, 'src');
 var staticDirectory = path.join(__dirname, 'static');
-var buildDirectory = path.join(__dirname, PROD ? 'build': 'dist');
+var buildDirectory = path.join(__dirname, PROD ? 'dist' : 'build');
 var partialsDirectory = path.join(sourceDirectory, 'template', 'partial');
 
 var defaultOptions = {
