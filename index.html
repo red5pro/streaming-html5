@@ -15,7 +15,7 @@
   </head>
   <body>
     <div id="app">
-      <p class="version-field">Testbed Version: 1.0.2</p>
+      <p class="version-field">Testbed Version: 1.0.3</p>
       <div id="back-link-container" style="text-align: left;"><p id="back-link"><a href="testbed-menu.html">&lt; Testbed Menu</a></p></div>
       <div id="settings-container">
         <h1 class="centered">Settings</h1>
@@ -36,6 +36,14 @@
         <p class="settings-field">
           <label class="settings-label">Verbose R5 Logging:</label>
           <input type="checkbox" id="logging-field" name="logging-field" style="vertical-align: middle;">
+        </p>
+        <p class="settings-field">
+          <label class="settings-label">Video Active:</label>
+          <input type="checkbox" id="video-active-field" name="video-active-field" style="vertical-align: middle;">
+        </p>
+        <p class="settings-field">
+          <label class="settings-label">Audio Active:</label>
+          <input type="checkbox" id="audio-active-field" name="audio-active-field" style="vertical-align: middle;">
         </p>
       </div>
     </div>
@@ -63,6 +71,8 @@
         var stream1Field = document.getElementById('stream1-field');
         var stream2Field = document.getElementById('stream2-field');
         var loggingField = document.getElementById('logging-field');
+        var videoField = document.getElementById('video-active-field');
+        var audioField = document.getElementById('audio-active-field');
         var streamSwapButton = document.getElementById('stream-swap-btn');
 
         hostField.addEventListener('blur', function () {
@@ -85,6 +95,16 @@
           seal(configuration);
         });
 
+        videoField.addEventListener('change', function () {
+          configuration.video = !configuration.video;
+          seal(configuration);
+        });
+
+        audioField.addEventListener('change', function () {
+          configuration.audio = !configuration.audio;
+          seal(configuration);
+        });
+
         streamSwapButton.addEventListener('click', function () {
           var stream1Value = stream1Field.value;
           var stream2Value = stream2Field.value;
@@ -98,7 +118,9 @@
           hostField.value = config.host;
           stream1Field.value = config.stream1;
           stream2Field.value = config.stream2;
-          loggingField.checked = config.verboseLogging ? true : false
+          loggingField.checked = config.verboseLogging ? true : false;
+          videoField.checked = config.video ? true : false;
+          audioField.checked = config.audio ? true : false;
         }
 
         populate(configuration)

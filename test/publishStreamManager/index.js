@@ -24,8 +24,6 @@
     port: 8081,
     app: 'live'
   };
-  var userMedia = {
-  };
 
   function onPublisherEvent (event) {
     console.log('[Red5ProPublisher] ' + event.type + '.');
@@ -76,7 +74,7 @@
     return Object.assign({}, {
       audio: configuration.audio,
       video: configuration.video
-    }, userMedia);
+    });
   }
 
   function preview () {
