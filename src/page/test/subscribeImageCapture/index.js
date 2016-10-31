@@ -31,10 +31,15 @@
   var videoElement = document.getElementById('red5pro-subscriber-video');
   var canvasElement = document.getElementById('capture-canvas');
   var captureTarget = document.getElementById('video-container');
+  var protocol = window.location.protocol;
+  protocol = protocol.substring(0, protocol.lastIndexOf(':'));
+  function getSocketLocationFromProtocol (protocol) {
+    return protocol === 'http' ? {protocol: 'ws', port: 8081} : {protocol: 'wss', port: 8083};
+  }
 
   var defaultConfiguration = {
-    protocol: 'ws',
-    port: 8081,
+    protocol: getSocketLocationFromProtocol(protocol).protocol,
+    port: getSocketLocationFromProtocol(protocol).port,
     app: 'live',
     bandwidth: {
       audio: 50,

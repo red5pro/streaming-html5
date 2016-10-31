@@ -19,12 +19,18 @@
   var targetView;
   var streamTitle = document.getElementById('stream-title');
   var cameraSelect = document.getElementById('camera-select');
+  var protocol = window.location.protocol;
+  protocol = protocol.substring(0, protocol.lastIndexOf(':'));
+  function getSocketLocationFromProtocol (protocol) {
+    return protocol === 'http' ? {protocol: 'ws', port: 8081} : {protocol: 'wss', port: 8083};
+  }
 
   var defaultConfiguration = {
-    protocol: 'ws',
-    port: 8081,
+    protocol: getSocketLocationFromProtocol(protocol).protocol,
+    port: getSocketLocationFromProtocol(protocol).port,
     app: 'live'
   };
+
   var userMedia = {
     audio: configuration.audio,
     video: configuration.video
