@@ -20,6 +20,12 @@
   var updateStatusFromEvent = window.red5proHandleSubscriberEvent; // defined in src/template/partial/status-field-subscriber.hbs
   var instanceId = Math.floor(Math.random() * 0x10000).toString(16);
   var streamTitle = document.getElementById('stream-title');
+  var protocol = window.location.protocol;
+  var port = window.location.port ? window.location.port : 5080;
+  protocol = protocol.substring(0, protocol.lastIndexOf(':'));
+  function getSocketLocationFromProtocol (protocol) {
+    return protocol === 'http' ? {protocol: 'ws', port: 8081} : {protocol: 'wss', port: 8083};
+  }
 
   // Local lifecycle notifications.
   function onSubscriberEvent (event) {
@@ -42,8 +48,8 @@
   function determineSubscriber () {
     var config = Object.assign({}, configuration);
     var rtcConfig = Object.assign({}, config, {
-      protocol: 'ws',
-      port: config.rtcport,
+      protocol: getSocketLocationFromProtocol(protocol).protocol,
+      port: getSocketLocationFromProtocol(protocol).port,
       subscriptionId: 'subscriber-' + instanceId,
       streamName: config.stream1,
       bandwidth: {
@@ -65,8 +71,8 @@
       productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
     })
     var hlsConfig = Object.assign({}, config, {
-      protocol: window.location.protocol || 'http',
-      port: config.hlsport,
+      protocol: protocol,
+      port: port,
       streamName: config.stream1,
       mimeType: 'application/x-mpegURL',
       swf: '../../lib/red5pro/red5pro-video-js.swf',
