@@ -31,10 +31,31 @@
       "streamMode": "live",
       "cameraWidth": 854,
       "cameraHeight": 480,
-      "video": true,
-      "audio": true,
       "buffer": 0.5,
       "bitrate": 1000,
+      "bandwidth": {
+        "audio": 50,
+        "video": 256
+      },
+      "useAudio": true,
+      "useVideo": true,
+      "userMedia": {
+        "audio": true,
+        "video": isMoz ? true : {
+          "width": {
+            "min": 320,
+            "max": 640
+          },
+          "height": {
+            "min": 240,
+            "max": 480
+          },
+          "frameRate": {
+            "min": 8,
+            "max": 24
+          }
+        }
+      },
       "publisherFailoverOrder": "rtc,rtmp",
       "subscriberFailoverOrder": "rtc,rtmp,hls",
       "iceServers": [

@@ -97,8 +97,9 @@
 
   function getUserMediaConfiguration () {
     return {
-      audio: configuration.audio,
-      video: configuration.video
+      audio: configuration.useAudio ? configuration.userMedia.audio : false,
+      video: configuration.useVideo ? configuration.userMedia.video : false,
+      frameRate: configuration.frameRate
     };
   }
 

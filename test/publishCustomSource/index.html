@@ -9,13 +9,14 @@
     <script src="../../lib/videojs/videojs-media-sources.min.js"></script>
     <script src="../../lib/videojs/videojs.hls.min.js"></script>
     <script src="../../script/testbed-config.js"></script>
+    <script src="../../script/red5pro-utils.js"></script>
     <link rel="stylesheet" href="../../lib/videojs/video-js.min.css">
     <link rel="stylesheet" href="../../css/reset.css">
     <link rel="stylesheet" href="../../css/testbed.css">
   </head>
   <body>
     <div id="app">
-      <p class="version-field">Testbed Version: 2.0.2&nbsp;&nbsp;&nbsp;&nbsp;<a href="https://infrared5.github.io/red5pro-html-sdk-testbed/red5pro-html-testbed-latest.zip">download</a></p>
+      <p class="version-field">Testbed Version: 2.0.3&nbsp;&nbsp;&nbsp;&nbsp;<a href="https://infrared5.github.io/red5pro-html-sdk-testbed/red5pro-html-testbed-latest.zip">download</a></p>
       <div id="back-link-container" style="text-align: left;"><p id="back-link"><a href="../../index.html">&lt; Settings</a></p></div>
       <h1 class="centered">Publish Test</h1>
       <hr />
@@ -70,6 +71,7 @@
       
         })(this, document);
       </script>
+      <p id="statistics-field" class="centered status-field"></p>
       <div class="centered">
         <canvas id="red5pro-publisher-video" controls class="video-element" muted></canvas>
       </div>
