@@ -73,10 +73,7 @@ With the `userMedia` updated, a new `MediaStream` can be requested with the sele
 
 ```js
 function getUserMediaConfiguration () {
-  return Object.assign({}, {
-    audio: configuration.audio,
-    video: configuration.video
-   }, userMedia);
+  return Object.assign({}, configuration.userMedia, userMedia);
 }
 
  nav.getUserMedia(getUserMediaConfiguration(), function (media) {

@@ -18,6 +18,7 @@
   var targetPublisher;
   var targetView;
   var streamTitle = document.getElementById('stream-title');
+  var statisticsField = document.getElementById('statistics-field');
   var cameraSelect = document.getElementById('camera-select');
   var protocol = window.location.protocol;
   protocol = protocol.substring(0, protocol.lastIndexOf(':'));
@@ -32,9 +33,14 @@
   };
 
   var userMedia = {
-    audio: configuration.audio,
-    video: configuration.video
+    audio: configuration.useAudio ? configuration.userMedia.audio : false,
+    video: configuration.useVideo ? configuration.userMedia.video : false,
+    frameRate: configuration.frameRate
   };
+
+  function onBitrateUpdate (bitrate, packetsSent) {
+    statisticsField.innerText = 'Bitrate: ' + Math.floor(bitrate) + '. Packets Sent: ' + packetsSent + '.';
+  }
 
   function onPublisherEvent (event) {
     console.log('[Red5ProPublisher] ' + event.type + '.');
@@ -43,8 +49,14 @@
   function onPublishFail (message) {
     console.error('[Red5ProPublisher] Publish Error :: ' + message);
   }
-  function onPublishSuccess () {
+  function onPublishSuccess (publisher) {
     console.log('[Red5ProPublisher] Publish Complete.');
+    try {
+      window.trackBitrate(publisher.getPeerConnection(), onBitrateUpdate);
+    }
+    catch (e) {
+      // no tracking for you!
+    }
   }
   function onUnpublishFail (message) {
     console.error('[Red5ProPublisher] Unpublish Error :: ' + message);
@@ -60,17 +72,20 @@
   var SELECT_DEFAULT = 'Select a camera...';
   function onCameraSelect (selection) {
 
-    if (!configuration.video) {
+    if (!configuration.useVideo) {
       return;
     }
 
     if (selection && selection !== 'undefined' && selection !== SELECT_DEFAULT) {
-      // assign selected camere to defined UserMedia.
-      userMedia.video = {
-        optional: [{
+      // assign selected camera to defined UserMedia.
+      if (userMedia.video && typeof userMedia.video !== 'boolean') {
+        userMedia.video.sourceId = selection
+      }
+      else {
+        userMedia.video = {
           sourceId: selection
-        }]
-      };
+        };
+      }
       // Kick off.
       unpublish()
         .then(preview)
@@ -151,7 +166,7 @@
         return publisher.publish();
       })
       .then(function () {
-        onPublishSuccess();
+        onPublishSuccess(publisher);
       })
       .catch(function (error) {
         // A fault occurred while trying to initialize and publish the stream.
@@ -195,6 +210,7 @@
       targetView = targetPublisher = undefined;
     }
     unpublish().then(clearRefs).catch(clearRefs);
+    window.untrackBitrate();
   });
 
 })(this, document, window.red5prosdk);
