@@ -143,7 +143,7 @@
                     configuration,
                     defaultConfiguration,
                     getUserMediaConfiguration());
-    config.streamName = config.stream1;
+    config.streamName = config.stream1 + '_' + userMedia.video.facingMode;
     streamTitle.innerText = config.streamName;
     console.log('[Red5ProPublisher] config:: ' + JSON.stringify(config, null, 2));
 
