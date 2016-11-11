@@ -76,8 +76,8 @@
     var app = configuration.app;
     var streamName = configuration.stream1;
     var protocol = window.location.protocol || 'https:';
-    var port = protocol === 'https:' ? 80 : 5080;
-    var url = protocol + '//' + host + ':' + port + '/streammanager/api/1.0/event/' + app + '/' + streamName + '?action=subscribe';
+    var baseurl = protocol === 'https:' ? protocol + '//' + host : protocol + '//' + host + ':5080';
+    var url = baseurl + '/streammanager/api/1.0/event/' + app + '/' + streamName + '?action=subscribe';
       return new Promise(function (resolve, reject) {
         fetch(url)
           .then(function (res) {
