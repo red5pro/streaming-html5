@@ -193,7 +193,8 @@
   function beginStreamListCall () {
 
     var protocol = window.location.protocol || 'https:';
-    var url = protocol + '//' + configuration.host + ':5080/' + configuration.app + '/streams.jsp';
+    var port = protocol === 'https:' ? 80 : 5080;
+    var url = protocol + '//' + configuration.host + ':' + port + '/' + configuration.app + '/streams.jsp';
     fetch(url)
       .then(function (res) {
         if (res.headers.get('content-type') &&
