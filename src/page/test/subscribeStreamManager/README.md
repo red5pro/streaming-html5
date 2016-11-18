@@ -6,6 +6,8 @@ With the Stream Manager, our configuration IP will be used similarly for publish
 
 **Please refer to the [Basic Subscriber Documentation](../subscribe/README.md) to learn more about the basic setup.**
 
+> In order to properly run the Stream Manager examples, you will need to configure you server for cluster infrastructure as described in the following documentation: [https://www.red5pro.com/docs/server/autoscale/](https://www.red5pro.com/docs/server/autoscale/).
+
 ### Example Code
 - **[index.html](index.html)**
 - **[index.js](index.js)**

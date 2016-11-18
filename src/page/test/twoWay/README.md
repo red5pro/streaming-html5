@@ -1,6 +1,12 @@
 # Two Way Video Chat
 This example demonstrates two way communication using Red5 Pro. It also demonstrates using servlet requests on the server.
 
+> The Two-Way example requires access to a service that returns a stream listing. You may run into Cross-Origin Resource Sharing (**CORS**) issues if trying to use this example without the proper **CORS** settings provided by the server.
+
+It is recommended to view this example as part of the `webrtcexamples` webapp shipped with the [Red5 Pro Server](https://account.red5pro.com/download).
+
+More information on CORS can be found at: [https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS).
+
 #### Basic Publisher
 **Please refer to the [Basic Publisher Documentation](../publish/README.md) to learn more about the basic setup of a publisher.**
 

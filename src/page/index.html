@@ -15,6 +15,13 @@
     <div id="app">
       {{> version }}
       <div id="back-link-container" style="text-align: left;"><p id="back-link"><a href="testbed-menu.html">&lt; Testbed Menu</a></p></div>
+      <div class="test-notification">
+        <p>If these example pages are served over HTTPS, it is required that the target <code>host</code> is also accessible over HTTPS.</p>
+        <br/>
+        <p>If you are viewing these examples from the <code>webrtcexamples</code> webapp shipped with the Red5 Pro Server, you should not have to worry about Cross Origin Resource Sharing (CORS) issues running from either <code>localhost</code> or on TLS from a remote deploy</p>
+        <br/>
+        <p>Otherwise, if you are viewing these examples from another origin other than the target Red5 Pro Server defined as <code>host</code> please be sure that the required CORS settings are in place to communicate properly. <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS" target="_blank">More info about CORS</a>.</p>
+      </div>
       <div id="settings-container">
         <h1 class="centered">Settings</h1>
         <p class="settings-field">
