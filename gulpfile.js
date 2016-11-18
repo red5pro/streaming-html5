@@ -18,7 +18,7 @@ var defaultOptions = {
   batch: [partialsDirectory]
 }
 
-var webappBuildDirectory = path.join(__dirname, 'dist-webapp', 'htmltestbed');
+var webappBuildDirectory = path.join(__dirname, 'dist-webapp');
 
 mkdir.sync(buildDirectory);
 
