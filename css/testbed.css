@@ -30,10 +30,16 @@ code {
   padding-bottom: 2rem;
 }
 
+.ice-background {
+  background-color: #eef7ff;
+}
+
 .test-notification {
   padding: 20px;
   line-height: 20px;
-  background-color: #eef7ff;
+  margin: 0 auto;
+  max-width: 600px;
+  text-align: justify;
 }
 
 .loading-text {
