@@ -58,7 +58,8 @@
     var app = configuration.app;
     var streamName = configuration.stream1;
     var protocol = window.location.protocol || 'https:';
-    var url = protocol + '//' + host + ':5080/streammanager/api/1.0/event/' + app + '/' + streamName + '?action=broadcast';
+    var baseUrl = protocol === 'https:' ? protocol + '//' + host : protocol + '//' + host + ':5080';
+    var url = baseUrl + '/streammanager/api/1.0/event/' + app + '/' + streamName + '?action=broadcast';
       return new Promise(function (resolve, reject) {
         fetch(url)
           .then(function (res) {
