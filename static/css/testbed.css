@@ -30,6 +30,12 @@ code {
   padding-bottom: 2rem;
 }
 
+.test-notification {
+  padding: 20px;
+  line-height: 20px;
+  background-color: #eef7ff;
+}
+
 .loading-text {
   padding: 2rem;
   font-size: 1.2rem;
