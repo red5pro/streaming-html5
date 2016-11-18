@@ -1,0 +1,7 @@
+{
+  "title": "Red5 Pro HTML SDK Testbed",
+  "webappName": "webrtcexamples",
+  "webappSource": "./",
+  "buildCommand": "npm install && npm run dist:webapp",
+  "webappOutput": "dist-webapp"
+}
