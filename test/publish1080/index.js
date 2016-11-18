@@ -34,10 +34,14 @@
   var userMedia = {
     video: {
       width: {
-        exact: 1920
+        min: 640,
+        ideal: 1280,
+        max: 1920
       },
       height: {
-        exact: 1080
+        min: 480,
+        ideal: 720,
+        max: 1080
       }
     }
   };
