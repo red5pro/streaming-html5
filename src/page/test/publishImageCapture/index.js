@@ -18,6 +18,7 @@
   var targetPublisher;
   var targetView;
   var streamTitle = document.getElementById('stream-title');
+  var statisticsField = document.getElementById('statistics-field');
   var videoElement = document.getElementById('red5pro-publisher-video');
   var canvasElement = document.getElementById('capture-canvas');
   var captureTarget = document.getElementById('video-container');
@@ -33,6 +34,10 @@
     app: 'live'
   };
 
+  function onBitrateUpdate (bitrate, packetsSent) {
+    statisticsField.innerText = 'Bitrate: ' + Math.floor(bitrate) + '. Packets Sent: ' + packetsSent + '.';
+  }
+
   function onPublisherEvent (event) {
     console.log('[Red5ProPublisher] ' + event.type + '.');
     updateStatusFromEvent(event);
@@ -40,8 +45,9 @@
   function onPublishFail (message) {
     console.error('[Red5ProPublisher] Publish Error :: ' + message);
   }
-  function onPublishSuccess () {
+  function onPublishSuccess (publisher) {
     console.log('[Red5ProPublisher] Publish Complete.');
+    window.trackBitrate(publisher.getPeerConnection(), onBitrateUpdate);
   }
   function onUnpublishFail (message) {
     console.error('[Red5ProPublisher] Unpublish Error :: ' + message);
@@ -51,10 +57,11 @@
   }
 
   function getUserMediaConfiguration () {
-    return Object.assign({}, {
-      audio: configuration.audio,
-      video: configuration.video
-    });
+    return {
+      audio: configuration.useAudio ? configuration.userMedia.audio : false,
+      video: configuration.useVideo ? configuration.userMedia.video : false,
+      frameRate: configuration.frameRate
+    };
   }
 
   function preview () {
@@ -108,7 +115,7 @@
         return publisher.publish();
       })
       .then(function () {
-        onPublishSuccess();
+        onPublishSuccess(publisher);
       })
       .catch(function (error) {
         // A fault occurred while trying to initialize and publish the stream.
@@ -175,6 +182,7 @@
       targetView = targetPublisher = undefined;
     }
     unpublish().then(clearRefs).catch(clearRefs);
+    window.untrackBitrate();
   });
 
 })(this, document, window.red5prosdk);

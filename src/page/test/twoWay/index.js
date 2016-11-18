@@ -97,8 +97,9 @@
 
   function getUserMediaConfiguration () {
     return {
-      audio: configuration.audio,
-      video: configuration.video
+      audio: configuration.useAudio ? configuration.userMedia.audio : false,
+      video: configuration.useVideo ? configuration.userMedia.video : false,
+      frameRate: configuration.frameRate
     };
   }
 
@@ -191,8 +192,10 @@
 
   function beginStreamListCall () {
 
+    var host = configuration.host;
     var protocol = window.location.protocol || 'https:';
-    var url = protocol + '//' + configuration.host + ':5080/' + configuration.app + '/streams.jsp';
+    var baseurl = protocol === 'https:' ? protocol + '//' + host : protocol + '//' + host + ':5080';
+    var url = baseurl + '/' + configuration.app + '/streams.jsp';
     fetch(url)
       .then(function (res) {
         if (res.headers.get('content-type') &&

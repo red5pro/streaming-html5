@@ -18,6 +18,7 @@
   var targetPublisher;
   var targetView;
   var streamTitle = document.getElementById('stream-title');
+  var statisticsField = document.getElementById('statistics-field');
   var protocol = window.location.protocol;
   protocol = protocol.substring(0, protocol.lastIndexOf(':'));
   function getSocketLocationFromProtocol (protocol) {
@@ -30,6 +31,10 @@
     app: 'live'
   };
 
+  function onBitrateUpdate (bitrate, packetsSent) {
+    statisticsField.innerText = 'Bitrate: ' + Math.floor(bitrate) + '. Packets Sent: ' + packetsSent + '.';
+  }
+
   function onPublisherEvent (event) {
     console.log('[Red5ProPublisher] ' + event.type + '.');
     updateStatusFromEvent(event);
@@ -37,8 +42,9 @@
   function onPublishFail (message) {
     console.error('[Red5ProPublisher] Publish Error :: ' + message);
   }
-  function onPublishSuccess () {
+  function onPublishSuccess (publisher) {
     console.log('[Red5ProPublisher] Publish Complete.');
+    window.trackBitrate(publisher.getPeerConnection(), onBitrateUpdate);
   }
   function onUnpublishFail (message) {
     console.error('[Red5ProPublisher] Unpublish Error :: ' + message);
@@ -52,7 +58,8 @@
     var app = configuration.app;
     var streamName = configuration.stream1;
     var protocol = window.location.protocol || 'https:';
-    var url = protocol + '//' + host + ':5080/streammanager/api/1.0/event/' + app + '/' + streamName + '?action=broadcast';
+    var baseUrl = protocol === 'https:' ? protocol + '//' + host : protocol + '//' + host + ':5080';
+    var url = baseUrl + '/streammanager/api/1.0/event/' + app + '/' + streamName + '?action=broadcast';
       return new Promise(function (resolve, reject) {
         fetch(url)
           .then(function (res) {
@@ -76,10 +83,11 @@
   }
 
   function getUserMediaConfiguration () {
-    return Object.assign({}, {
-      audio: configuration.audio,
-      video: configuration.video
-    });
+    return {
+      audio: configuration.useAudio ? configuration.userMedia.audio : false,
+      video: configuration.useVideo ? configuration.userMedia.video : false,
+      frameRate: configuration.frameRate
+    };
   }
 
   function preview () {
@@ -133,7 +141,7 @@
         return publisher.publish();
       })
       .then(function () {
-        onPublishSuccess();
+        onPublishSuccess(publisher);
       })
       .catch(function (error) {
         // A fault occurred while trying to initialize and publish the stream.
@@ -191,6 +199,7 @@
       targetView = targetPublisher = undefined;
     }
     unpublish().then(clearRefs).catch(clearRefs);
+    window.untrackBitrate();
   });
 
 })(this, document, window.red5prosdk);

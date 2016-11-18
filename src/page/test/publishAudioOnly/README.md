@@ -23,10 +23,7 @@ var userMedia = {
 };
 
 function getUserMediaConfiguration () {
-  return Object.assign({}, {
-    audio: configuration.audio,
-    video: configuration.video
-   }, userMedia);
+  return Object.assign({}, configuration.userMedia, userMedia);
 }
 
  nav.getUserMedia(getUserMediaConfiguration(), function (media) {

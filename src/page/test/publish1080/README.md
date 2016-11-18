@@ -17,16 +17,13 @@ To define a stream with 1080p constraints for publishing, request the `MediaStre
 ```js
 var userMedia = {
   video: {
-    width: 1920,
-    height: 1080
+    width: {exact: 1920},
+    height: {exact: 1080}
   }
 };
 
 function getUserMediaConfiguration () {
-  return Object.assign({}, {
-    audio: configuration.audio,
-    video: configuration.video
-   }, userMedia);
+  return Object.assign({}, configuration.userMedia, userMedia);
 }
 
  nav.getUserMedia(getUserMediaConfiguration(), function (media) {

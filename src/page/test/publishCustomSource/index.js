@@ -17,6 +17,7 @@
   var updateStatusFromEvent = window.red5proHandlePublisherEvent; // defined in src/template/partial/status-field-publisher.hbs
   var targetPublisher;
   var streamTitle = document.getElementById('stream-title');
+  var statisticsField = document.getElementById('statistics-field');
   var canvasElement = document.getElementById('red5pro-publisher-video');
 
   var protocol = window.location.protocol;
@@ -31,6 +32,10 @@
     app: 'live'
   };
 
+  function onBitrateUpdate (bitrate, packetsSent) {
+    statisticsField.innerText = 'Bitrate: ' + Math.floor(bitrate) + '. Packets Sent: ' + packetsSent + '.';
+  }
+
   function onPublisherEvent (event) {
     console.log('[Red5ProPublisher] ' + event.type + '.');
     updateStatusFromEvent(event);
@@ -38,8 +43,9 @@
   function onPublishFail (message) {
     console.error('[Red5ProPublisher] Publish Error :: ' + message);
   }
-  function onPublishSuccess () {
+  function onPublishSuccess (publisher) {
     console.log('[Red5ProPublisher] Publish Complete.');
+    window.trackBitrate(publisher.getPeerConnection(), onBitrateUpdate);
   }
   function onUnpublishFail (message) {
     console.error('[Red5ProPublisher] Unpublish Error :: ' + message);
@@ -87,7 +93,7 @@
         return publisher.publish();
       })
       .then(function () {
-        onPublishSuccess();
+        onPublishSuccess(publisher);
       })
       .catch(function (error) {
         // A fault occurred while trying to initialize and publish the stream.
@@ -133,6 +139,7 @@
       targetPublisher = undefined;
     }
     unpublish().then(clearRefs).catch(clearRefs);
+    window.untrackBitrate();
   });
 
 })(this, document, window.red5prosdk);

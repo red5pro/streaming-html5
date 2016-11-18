@@ -94,12 +94,12 @@
         });
 
         videoField.addEventListener('change', function () {
-          configuration.video = !configuration.video;
+          configuration.useVideo = !configuration.useVideo;
           seal(configuration);
         });
 
         audioField.addEventListener('change', function () {
-          configuration.audio = !configuration.audio;
+          configuration.useAudio = !configuration.useAudio;
           seal(configuration);
         });
 
@@ -117,8 +117,8 @@
           stream1Field.value = config.stream1;
           stream2Field.value = config.stream2;
           loggingField.checked = config.verboseLogging ? true : false;
-          videoField.checked = config.video ? true : false;
-          audioField.checked = config.audio ? true : false;
+          videoField.checked = config.useVideo ? true : false;
+          audioField.checked = config.useAudio ? true : false;
         }
 
         populate(configuration)
