@@ -18,6 +18,8 @@ var defaultOptions = {
   batch: [partialsDirectory]
 }
 
+var webappBuildDirectory = path.join(__dirname, 'dist-webapp');
+
 mkdir.sync(buildDirectory);
 
 gulp.task('compile', function (cb) {
@@ -49,6 +51,11 @@ gulp.task('move-static', ['compile', 'move-scripts'], function (cb) {
 
 gulp.task('build', ['compile', 'move-scripts', 'move-static'], function (cb) {
   cb();
+});
+
+gulp.task('build:webapp', function (cb) { // eslint-disable-line no-unused-vars
+  buildDirectory = webappBuildDirectory;
+  gulp.start('build');
 });
 
 gulp.task('bump-version', function() {
