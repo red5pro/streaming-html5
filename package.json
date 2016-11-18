@@ -33,6 +33,7 @@
     "clean:dist": "rm -rf dist",
     "build": "NODE_ENV=develop gulp build",
     "predist": "npm run clean:dist",
-    "dist": "gulp bump-version && NODE_ENV=production gulp build"
+    "dist": "gulp bump-version && NODE_ENV=production gulp build",
+    "dist:webapp": "NODE_ENV=production gulp build:webapp"
   }
 }
