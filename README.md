@@ -11,6 +11,8 @@
 # Red5 Pro HTML5 Streaming Testbed
 This repository contains a simple project with a number of examples that can be used for testing and reference for the Red5 Pro HTML SDK.
 
+> These examples are also shipped with the [Red5 Pro Server](https://account.red5pro.com/download) and can be found in the webapp `webrtcexamples`.
+
 ##Requirements
 
 You will need a functional, running Red5 Pro server web- (or locally-) accessible for the client browser (mobile & desktop) to connect to.
@@ -34,6 +36,12 @@ More information about browser compability can be viewed at the [WebRTC Peer Con
 ## Setup
 
 You will need to modify the **Host** field from the _Settings_ page to point to your server instance's IP address.  If you do not, the examples will not function when you build. If you are running the server locally, then your machine and mobile device need to be on the same WiFi network.
+
+### Note on TLS and CORS
+It is important to note that some of these examples - specifically those that involve publishing using WebRTC - require being run on TLS and, thusly, served over HTTPS. If running the examples on `localhost` you should not see an issues, but if your server is deployed remotely you will need to be sure that these examples are served over HTTPS and the proper Cross Origin Resource Sharing (CORS) settings are defined for the server.
+
+* [Read More about Red5 Pro and SSL](https://red5pro.com/docs/server/red5prossl/index.html).
+* [More information on CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS).
 
 ### Instructions
 To define the server instance's IP address, open the testbed webapp in a browser and navigate to the _Settings_ page if not presented upon launch. To access the _Settings_ back, select the **Home** item from the examples list located at the top.
