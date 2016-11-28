@@ -43,7 +43,7 @@ function beginStreamListCall () {
     })
     .then(function (jsonOrString) {
       var json = jsonOrString;
-      if (typeof jsonOnString === 'string') {
+      if (typeof jsonOrString === 'string') {
         try {
           json = JSON.parse(json);
         }
