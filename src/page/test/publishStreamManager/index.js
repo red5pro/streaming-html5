@@ -19,15 +19,17 @@
   var targetView;
   var streamTitle = document.getElementById('stream-title');
   var statisticsField = document.getElementById('statistics-field');
-  var protocol = window.location.protocol;
-  protocol = protocol.substring(0, protocol.lastIndexOf(':'));
-  function getSocketLocationFromProtocol (protocol) {
-    return protocol === 'http' ? {protocol: 'ws', port: 8081} : {protocol: 'wss', port: 8083};
+  var protocol = configuration.protocol;
+  var isSecure = protocol == 'https';
+  function getSocketLocationFromProtocol () {
+    return !isSecure
+      ? {protocol: 'ws', port: configuration.wsport}
+      : {protocol: 'wss', port: configuration.wssport};
   }
 
   var defaultConfiguration = {
-    protocol: getSocketLocationFromProtocol(protocol).protocol,
-    port: getSocketLocationFromProtocol(protocol).port,
+    protocol: getSocketLocationFromProtocol().protocol,
+    port: getSocketLocationFromProtocol().port,
     app: 'live'
   };
 
@@ -57,8 +59,9 @@
     var host = configuration.host;
     var app = configuration.app;
     var streamName = configuration.stream1;
-    var protocol = window.location.protocol || 'https:';
-    var baseUrl = protocol === 'https:' ? protocol + '//' + host : protocol + '//' + host + ':5080';
+    var port = configuration.httpport;
+    var portURI = (port.length > 0 ? ':' + port : '');
+    var baseUrl = isSecure ? protocol + '://' + host : protocol + '://' + host + portURI;
     var url = baseUrl + '/streammanager/api/1.0/event/' + app + '/' + streamName + '?action=broadcast';
       return new Promise(function (resolve, reject) {
         fetch(url)

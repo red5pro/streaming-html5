@@ -26,15 +26,17 @@
   var subStatusField = document.getElementById('sub-status-field');
   var subStreamTitle = document.getElementById('sub-stream-title');
 
-  var protocol = window.location.protocol;
-  protocol = protocol.substring(0, protocol.lastIndexOf(':'));
-  function getSocketLocationFromProtocol (protocol) {
-    return protocol === 'http' ? {protocol: 'ws', port: 8081} : {protocol: 'wss', port: 8083};
+  var protocol = configuration.protocol;
+  var isSecure = protocol === 'https';
+  function getSocketLocationFromProtocol () {
+    return !isSecure
+      ? {protocol: 'ws', port: configuration.wsport}
+      : {protocol: 'wss', port: configuration.wssport};
   }
 
   var defaultConfiguration = {
-    protocol: getSocketLocationFromProtocol(protocol).protocol,
-    port: getSocketLocationFromProtocol(protocol).port,
+    protocol: getSocketLocationFromProtocol().protocol,
+    port: getSocketLocationFromProtocol().port,
     app: 'live'
   };
 
@@ -193,9 +195,10 @@
   function beginStreamListCall () {
 
     var host = configuration.host;
-    var protocol = window.location.protocol || 'https:';
-    var baseurl = protocol === 'https:' ? protocol + '//' + host : protocol + '//' + host + ':5080';
-    var url = baseurl + '/' + configuration.app + '/streams.jsp';
+    var port = configuration.httpport;
+    var portURI = (port.length > 0 ? ':' + port : '');
+    var baseUrl = isSecure ? protocol + '://' + host : protocol + '://' + host + portURI;
+    var url = baseUrl + '/' + configuration.app + '/streams.jsp';
     fetch(url)
       .then(function (res) {
         if (res.headers.get('content-type') &&
