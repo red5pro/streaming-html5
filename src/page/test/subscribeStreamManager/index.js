@@ -28,15 +28,17 @@
     window.red5proHandleSubscriberEvent(event); // defined in src/template/partial/status-field-subscriber.hbs
   };
   var streamTitle = document.getElementById('stream-title');
-  var protocol = window.location.protocol;
-  protocol = protocol.substring(0, protocol.lastIndexOf(':'));
-  function getSocketLocationFromProtocol (protocol) {
-    return protocol === 'http' ? {protocol: 'ws', port: 8081} : {protocol: 'wss', port: 8083};
+  var protocol = configuration.protocol;
+  var isSecure = protocol === 'https';
+  function getSocketLocationFromProtocol () {
+    return !isSecure
+      ? {protocol: 'ws', port: configuration.wsport}
+      : {protocol: 'wss', port: configuration.wssport};
   }
 
   var defaultConfiguration = {
-    protocol: getSocketLocationFromProtocol(protocol).protocol,
-    port: getSocketLocationFromProtocol(protocol).port,
+    protocol: getSocketLocationFromProtocol().protocol,
+    port: getSocketLocationFromProtocol().port,
     app: 'live',
     bandwidth: {
       audio: 50,
@@ -74,10 +76,11 @@
   function requestEdge (configuration) {
     var host = configuration.host;
     var app = configuration.app;
+    var port = configuration.httpport;
+    var portURI = (port.length > 0 ? ':' + port : '');
+    var baseUrl = isSecure ? protocol + '://' + host : protocol + '://' + host + portURI;
     var streamName = configuration.stream1;
-    var protocol = window.location.protocol || 'https:';
-    var baseurl = protocol === 'https:' ? protocol + '//' + host : protocol + '//' + host + ':5080';
-    var url = baseurl + '/streammanager/api/1.0/event/' + app + '/' + streamName + '?action=subscribe';
+    var url = baseUrl + '/streammanager/api/1.0/event/' + app + '/' + streamName + '?action=subscribe';
       return new Promise(function (resolve, reject) {
         fetch(url)
           .then(function (res) {
@@ -104,6 +107,8 @@
   function subscribe (host) {
     var config = Object.assign({}, configuration, defaultConfiguration);
     config.host = host;
+    // Send to non-secure websocket regardless of host.
+    config.port = configuration.wsport;
     config.streamName = config.stream1;
     console.log('[Red5ProSubscriber] config:: ' + JSON.stringify(config, null, 2));
 
