@@ -2,7 +2,7 @@
 (function (window) {
 
   // http://stackoverflow.com/questions/901115/how-can-i-get-query-string-values-in-javascript
-  function getParameterByName(name, url) {
+  function getParameterByName(name, url) { // eslint-disable-line no-unused-vars
     if (!url) {
       url = window.location.href;
     }
@@ -14,17 +14,24 @@
     return decodeURIComponent(results[2].replace(/\+/g, " "));
   }
 
+  var protocol = window.location.protocol;
+  var port = window.location.port;
   var isMoz = !!navigator.mozGetUserMedia;
-  var useRed5ProIce = getParameterByName('ice') === 'red5pro';
   var config = sessionStorage.getItem('r5proTestBed');
   var json;
+  protocol = protocol.substring(0, protocol.lastIndexOf(':'));
   function assignStorage () {
     json = {
+      "protocol": protocol,
       "host": "localhost",
-      "port": 8554,
+      "port": 8554, // rtsp
+      "httpport": port,
       "rtcport": 8081,
       "rtmpport": 1935,
-      "hlsport": 5080,
+      "hlsport": 5443,
+      "hlssport": 443,
+      "wsport": 8081,
+      "wssport": 8083,
       "stream1": "stream1",
       "stream2": "stream2",
       "app": "live",
@@ -73,17 +80,9 @@
           "urls": "stun:stun.services.mozilla.com:3478"
         }
       ],
-      "red5proIce": [
-        {
-          "urls": "stun:50.56.81.179:3478"
-        }
-      ],
       "verboseLogging": true
     };
-    if (useRed5ProIce) {
-      json.iceServers = json.red5proIce;
-    }
-    else if (isMoz) {
+    if (isMoz) {
       json.iceServers = json.mozIce;
     }
     sessionStorage.setItem('r5proTestBed', JSON.stringify(json));
