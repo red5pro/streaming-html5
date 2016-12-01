@@ -1,6 +1,17 @@
 (function(window, document, red5pro) {
   'use strict';
 
+  var serverSettings = (function() {
+    var settings = sessionStorage.getItem('r5proServerSettings');
+    try {
+      return JSON.parse(settings);
+    }
+    catch (e) {
+      console.error('Could not read server settings from sessionstorage: ' + e.message);
+    }
+    return {};
+  })();
+
   var configuration = (function () {
     var conf = sessionStorage.getItem('r5proTestBed');
     try {
@@ -20,12 +31,12 @@
   var updateStatusFromEvent = window.red5proHandleSubscriberEvent; // defined in src/template/partial/status-field-subscriber.hbs
   var instanceId = Math.floor(Math.random() * 0x10000).toString(16);
   var streamTitle = document.getElementById('stream-title');
-  var protocol = configuration.protocol;
+  var protocol = serverSettings.protocol;
   var isSecure = protocol === 'https';
   function getSocketLocationFromProtocol () {
     return !isSecure
-      ? {protocol: 'ws', port: configuration.wsport}
-      : {protocol: 'wss', port: configuration.wssport};
+      ? {protocol: 'ws', port: serverSettings.wsport}
+      : {protocol: 'wss', port: serverSettings.wssport};
   }
 
   // Local lifecycle notifications.
@@ -61,7 +72,7 @@
     })
     var rtmpConfig = Object.assign({}, config, {
       protocol: 'rtmp',
-      port: config.rtmpport,
+      port: serverSettings.rtmpport,
       streamName: config.stream1,
       mimeType: 'rtmp/flv',
       useVideoJS: false,
@@ -73,7 +84,7 @@
     })
     var hlsConfig = Object.assign({}, config, {
       protocol: protocol,
-      port: isSecure ? configuration.hlssport : configuration.hlsport,
+      port: isSecure ? serverSettings.hlssport : serverSettings.hlsport,
       streamName: config.stream1,
       mimeType: 'application/x-mpegURL',
       swf: '../../lib/red5pro/red5pro-video-js.swf',

@@ -1,6 +1,17 @@
 (function(window, document, red5pro) {
   'use strict';
 
+  var serverSettings = (function() {
+    var settings = sessionStorage.getItem('r5proServerSettings');
+    try {
+      return JSON.parse(settings);
+    }
+    catch (e) {
+      console.error('Could not read server settings from sessionstorage: ' + e.message);
+    }
+    return {};
+  })();
+
   var configuration = (function () {
     var conf = sessionStorage.getItem('r5proTestBed');
     try {
@@ -28,12 +39,12 @@
     window.red5proHandleSubscriberEvent(event); // defined in src/template/partial/status-field-subscriber.hbs
   };
   var streamTitle = document.getElementById('stream-title');
-  var protocol = configuration.protocol;
+  var protocol = serverSettings.protocol;
   var isSecure = protocol == 'https';
   function getSocketLocationFromProtocol () {
     return !isSecure
-      ? {protocol: 'ws', port: configuration.wsport}
-      : {protocol: 'wss', port: configuration.wssport};
+      ? {protocol: 'ws', port: serverSettings.wsport}
+      : {protocol: 'wss', port: serverSettings.wssport};
   }
 
   var defaultConfiguration = {
@@ -75,7 +86,7 @@
 
   function requestEdge (configuration) {
     var host = configuration.host;
-    var port = configuration.httpport;
+    var port = serverSettings.httpport;
     var portURI = (port.length > 0 ? ':' + port : '');
     var baseUrl = isSecure ? protocol + '://' + host : protocol + '://' + host + portURI;
     var url = baseUrl + '/cluster';

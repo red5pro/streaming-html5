@@ -1,6 +1,17 @@
 (function(window, document, red5pro) {
   'use strict';
 
+  var serverSettings = (function() {
+    var settings = sessionStorage.getItem('r5proServerSettings');
+    try {
+      return JSON.parse(settings);
+    }
+    catch (e) {
+      console.error('Could not read server settings from sessionstorage: ' + e.message);
+    }
+    return {};
+  })();
+
   var configuration = (function () {
     var conf = sessionStorage.getItem('r5proTestBed');
     try {
@@ -31,12 +42,12 @@
   var videoElement = document.getElementById('red5pro-subscriber-video');
   var canvasElement = document.getElementById('capture-canvas');
   var captureTarget = document.getElementById('video-container');
-  var protocol = configuration.protocol;
+  var protocol = serverSettings.protocol;
   var isSecure = protocol === 'https';
   function getSocketLocationFromProtocol () {
     return !isSecure
-      ? {protocol: 'ws', port: configuration.wsport}
-      : {protocol: 'wss', port: configuration.wssport};
+      ? {protocol: 'ws', port: serverSettings.wsport}
+      : {protocol: 'wss', port: serverSettings.wssport};
   }
 
   var defaultConfiguration = {
