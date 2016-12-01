@@ -1,6 +1,17 @@
 (function(window, document, red5pro) {
   'use strict';
 
+  var serverSettings = (function() {
+    var settings = sessionStorage.getItem('r5proServerSettings');
+    try {
+      return JSON.parse(settings);
+    }
+    catch (e) {
+      console.error('Could not read server settings from sessionstorage: ' + e.message);
+    }
+    return {};
+  })();
+
   var configuration = (function () {
     var conf = sessionStorage.getItem('r5proTestBed');
     try {
@@ -19,12 +30,12 @@
   var targetView;
   var streamTitle = document.getElementById('stream-title');
   var statisticsField = document.getElementById('statistics-field');
-  var protocol = configuration.protocol;
+  var protocol = serverSettings.protocol;
   var isSecure = protocol == 'https';
   function getSocketLocationFromProtocol () {
     return !isSecure
-      ? {protocol: 'ws', port: configuration.wsport}
-      : {protocol: 'wss', port: configuration.wssport};
+      ? {protocol: 'ws', port: serverSettings.wsport}
+      : {protocol: 'wss', port: serverSettings.wssport};
   }
 
   function onBitrateUpdate (bitrate, packetsSent) {
@@ -75,7 +86,7 @@
                    });
     var rtmpConfig = Object.assign({}, config, {
                       protocol: 'rtmp',
-                      port: config.rtmpport,
+                      port: serverSettings.rtmpport,
                       streamName: config.stream1,
                       width: config.cameraWidth,
                       height: config.cameraHeight,

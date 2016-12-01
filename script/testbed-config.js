@@ -16,22 +16,25 @@
 
   var protocol = window.location.protocol;
   var port = window.location.port;
+  protocol = protocol.substring(0, protocol.lastIndexOf(':'));
+
   var isMoz = !!navigator.mozGetUserMedia;
   var config = sessionStorage.getItem('r5proTestBed');
   var json;
-  protocol = protocol.substring(0, protocol.lastIndexOf(':'));
+  var serverSettings = {
+    "protocol": protocol,
+    "httpport": port,
+    "hlsport": 5443,
+    "hlssport": 443,
+    "wsport": 8081,
+    "wssport": 8083,
+    "rtmpport": 1935,
+    "rtmpsport": 1936
+  };
   function assignStorage () {
     json = {
-      "protocol": protocol,
       "host": "localhost",
       "port": 8554, // rtsp
-      "httpport": port,
-      "rtcport": 8081,
-      "rtmpport": 1935,
-      "hlsport": 5443,
-      "hlssport": 443,
-      "wsport": 8081,
-      "wssport": 8083,
       "stream1": "stream1",
       "stream2": "stream2",
       "app": "live",
@@ -87,17 +90,21 @@
     }
     sessionStorage.setItem('r5proTestBed', JSON.stringify(json));
   }
-    if (config) {
-      try {
-        json = JSON.parse(config);
-      }
-      catch (e) {
-        assignStorage();
-      }
+
+  if (config) {
+    try {
+      json = JSON.parse(config);
     }
-    else {
+    catch (e) {
       assignStorage();
     }
+  }
+  else {
+    assignStorage();
+  }
+
+  sessionStorage.setItem('r5proServerSettings', JSON.stringify(serverSettings));
   return json;
+
 })(this);
 
