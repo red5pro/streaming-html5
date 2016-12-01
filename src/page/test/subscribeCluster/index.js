@@ -116,7 +116,8 @@
     var config = Object.assign({}, configuration, defaultConfiguration);
     config.host = host;
     // Force ws, not wss regardless of protocol
-    config.port = configuration.wsport;
+    config.protocol = 'ws';
+    config.port = serverSettings.wsport;
     config.streamName = config.stream1;
     console.log('[Red5ProSubscriber] config:: ' + JSON.stringify(config, null, 2));
 
