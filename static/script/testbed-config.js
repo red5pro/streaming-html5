@@ -42,7 +42,6 @@
       "cameraWidth": 854,
       "cameraHeight": 480,
       "buffer": 0.5,
-      "bitrate": 1000,
       "bandwidth": {
         "audio": 50,
         "video": 256
