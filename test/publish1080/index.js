@@ -41,7 +41,10 @@
   var defaultConfiguration = {
     protocol: getSocketLocationFromProtocol().protocol,
     port: getSocketLocationFromProtocol().port,
-    app: 'live'
+    app: 'live',
+    bandwidth: {
+      video: 2500
+    }
   };
 
   var userMedia = {
@@ -55,6 +58,11 @@
         min: 480,
         ideal: 720,
         max: 1080
+      },
+      frameRate: {
+        min: 25,
+        ideal: 40,
+        max: 60
       }
     }
   };
