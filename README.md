@@ -86,9 +86,9 @@ To define the **Host** with the server instance's IP, click the _Host_ field f t
 | *Demonstrates simultaneously publishing while subscribing - allowing a conversation. Includes stream detection and auto-connection.*
 |
 
-### [Subscribing](src/page/subscribe)
+### [Subscribing](src/page/test/subscribe)
 
-| **[Subscriber](src/page/subscribe)**
+| **[Subscriber](src/page/test/subscribe)**
 | :-----
 | *Basic subscriber example using WebRTC.*
 |
