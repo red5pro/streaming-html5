@@ -119,7 +119,7 @@
     var config = Object.assign({}, configuration, defaultConfiguration);
     config.host = host;
     // Send to non-secure websocket regardless of host.
-    config.port = configuration.wsport;
+    config.port = serverSettings.wsport;
     config.streamName = config.stream1;
     console.log('[Red5ProSubscriber] config:: ' + JSON.stringify(config, null, 2));
 
