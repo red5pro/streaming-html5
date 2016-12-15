@@ -91,7 +91,7 @@
     var portURI = (port.length > 0 ? ':' + port : '');
     var baseUrl = isSecure ? protocol + '://' + host : protocol + '://' + host + portURI;
     var streamName = configuration.stream1;
-    var url = baseUrl + '/streammanager/api/1.0/event/' + app + '/' + streamName + '?action=subscribe';
+    var url = baseUrl + '/streammanager/api/2.0/event/' + app + '/' + streamName + '?action=subscribe';
       return new Promise(function (resolve, reject) {
         fetch(url)
           .then(function (res) {

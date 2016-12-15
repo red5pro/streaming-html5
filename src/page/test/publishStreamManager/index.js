@@ -73,7 +73,7 @@
     var port = serverSettings.httpport;
     var portURI = (port.length > 0 ? ':' + port : '');
     var baseUrl = isSecure ? protocol + '://' + host : protocol + '://' + host + portURI;
-    var url = baseUrl + '/streammanager/api/1.0/event/' + app + '/' + streamName + '?action=broadcast';
+    var url = baseUrl + '/streammanager/api/2.0/event/' + app + '/' + streamName + '?action=broadcast';
       return new Promise(function (resolve, reject) {
         fetch(url)
           .then(function (res) {
