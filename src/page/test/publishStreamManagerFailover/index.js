@@ -57,7 +57,12 @@
   }
   function onPublishSuccess (publisher) {
     console.log('[Red5ProPublisher] Publish Complete.');
-    window.trackBitrate(publisher.getPeerConnection(), onBitrateUpdate);
+    try {
+      window.trackBitrate(publisher.getPeerConnection(), onBitrateUpdate);
+    }
+    catch (e) {
+      //
+    }
   }
   function onUnpublishFail (message) {
     console.error('[Red5ProPublisher] Unpublish Error :: ' + message);
