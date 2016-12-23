@@ -92,7 +92,18 @@
         break;
       case pubTypes.PUBLISH_START:
         status = 'Started publishing session.';
-        beginStreamListCall();
+        var audioCheck = document.getElementById('audioCheck');
+        if(audioCheck.checked){
+          audioCheck.disabled = false
+          audioCheck.onchange = function(){
+            if(!audioCheck.checked){
+              targetPublisher.mute();
+            }
+            else{
+              targetPublisher.unmute();
+            }
+          } 
+        }
         break;
       case pubTypes.PUBLISH_FAIL:
         status = 'Error - Could not start a publishing session.';
