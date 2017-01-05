@@ -56,7 +56,7 @@
                   "<h2 class=\"centered\"><em>Suscriber Stream</em>: <span id=\"FILLNAME-title\"></span></h2>" +
                   "<p id=\"FILLNAME-status\" class=\"centered status-field\">On hold.</p>" +
                   "<div class=\"centered\">" +
-                    "<video id=\"FILLNAME-video\" controls autoplay class=\"video-element\"></video>" +
+                    "<video id=\"FILLNAME-video\" autoplay class=\"video-element\"></video>" +
                   "</div>" +
                 "</div>";
 
@@ -286,12 +286,13 @@
 
   }
 
+  var delayTime = 1000;
   function recieveList (listIn) {
     console.log(listIn + " is " + JSON.stringify(listIn));
     streamsList = [];
 
-    var i;
-    for ( i = listIn.length - 1; i >= 0; i--) {
+    var i, j = 0;
+    for ( i = 0; i < listIn.length; i++ ) {
       var inName = listIn[i].name;
       if( inName == roomName + '-' + chosenName )
         continue;
@@ -299,7 +300,9 @@
       streamsList.push( inName );
       if( inName.indexOf("-") >= 0 && inName.split("-")[0] == roomName){
         if( callList.length == 0 || callList.indexOf(inName) < 0 ){
-          createSubcriber(inName);
+          // callList.push(inScopeName); 
+          setCreateTime(inName, j*delayTime);
+          j++;
         }
       }
     }
@@ -309,16 +312,21 @@
       }
     }
 
-    setWaitTime();
+    setWaitTime( j * delayTime );
   }
 
   function listError (err) {
     console.log( "Error recieved on streamListCall - " + err );
-    setWaitTime();
+    setWaitTime(0);
   }
 
-  function setWaitTime () {
-    setTimeout(beginStreamListCall, 5000);
+  function setWaitTime (plusWait) {
+    setTimeout(beginStreamListCall, 5000 + plusWait);
+  }
+  function setCreateTime (subName, delayTime){
+    setTimeout(function(){
+      createSubcriber(subName);
+    }, delayTime);
   }
 
   function updateStatusFromSubscribeEvent (event, field) {
@@ -391,8 +399,8 @@
   }
 
   function createSubcriber( subscribeName ){
-    console.log("Creating subscriber for: " + subscribeName)
-    callList.push(subscribeName);
+    console.log("Creating subscriber for: " + subscribeName);
+    callList.push( subscribeName );
 
     var addOut = subBlock.replace(/FILLNAME/g, subscribeName);
     document.getElementById("app").innerHTML += addOut;
