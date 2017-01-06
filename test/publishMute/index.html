@@ -1,7 +1,7 @@
 <!doctype html>
 <html>
   <head>
-    <title>Publish Stream Manager Test</title>
+    <title>Publish Test</title>
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
     <meta content="width=device-width, initial-scale=1, user-scalable=no" name="viewport">
     <script src="../../lib/webrtc/adapter.js"></script>
@@ -18,13 +18,7 @@
     <div id="app">
       <p class="version-field">Testbed Version: 2.0.18&nbsp;&nbsp;&nbsp;&nbsp;<a href="https://red5pro.github.io/red5pro-html-sdk-testbed/red5pro-html-testbed-latest.zip">download</a></p>
       <div id="back-link-container" style="text-align: left;"><p id="back-link"><a href="../../index.html">&lt; Settings</a></p></div>
-      <div class="ice-background">
-      <div class="test-notification">
-        <p>In order to properly run the Stream Manager examples, you will need to configure you server for cluster infrastructure as described in the following documentation:</p>
-        <p><a href="https://www.red5pro.com/docs/server/autoscale/" target="_blank">https://www.red5pro.com/docs/server/autoscale/</a></p>
-      </div>
-      </div>
-      <h1 class="centered">Publish Stream Manager Test</h1>
+      <h1 class="centered">Publish Test</h1>
       <hr />
       <h2 class="centered"><em>stream</em>: <span id="stream-title"></span></h2>
       <p id="status-field" class="centered status-field">On hold.</p>
@@ -83,6 +77,9 @@
       <p id="statistics-field" class="centered status-field"></p>
       <div class="centered">
         <video id="red5pro-publisher-video" controls class="video-element" muted></video>
+      </div>
+      <div class="centered">
+        <button id="mute-button">mute</button>
       </div>
     </div>
     <script src="../../lib/es6/es6-promise.min.js"></script>

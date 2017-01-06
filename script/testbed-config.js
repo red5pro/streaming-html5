@@ -41,6 +41,8 @@
       "streamMode": "live",
       "cameraWidth": 854,
       "cameraHeight": 480,
+      "embedWidth": "100%",
+      "embedHeight": 480,
       "buffer": 0.5,
       "bandwidth": {
         "audio": 50,
