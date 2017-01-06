@@ -38,6 +38,7 @@
     }
     window.red5proHandleSubscriberEvent(event); // defined in src/template/partial/status-field-subscriber.hbs
   };
+  var instanceId = Math.floor(Math.random() * 0x10000).toString(16);
   var streamTitle = document.getElementById('stream-title');
   var protocol = serverSettings.protocol;
   var isSecure = protocol === 'https';
@@ -113,26 +114,88 @@
           });
     });
   }
+  function determineSubscriber (host) {
+    var config = Object.assign({}, configuration, defaultConfiguration);
+    var rtcConfig = Object.assign({}, config, {
+      host: host,
+      protocol: getSocketLocationFromProtocol().protocol,
+      port: getSocketLocationFromProtocol().port,
+      subscriptionId: 'subscriber-' + instanceId,
+      streamName: config.stream1,
+      bandwidth: {
+        audio: 50,
+        video: 256,
+        data: 30 * 1000 * 1000
+      }
+    })
+    var rtmpConfig = Object.assign({}, config, {
+      host: host,
+      protocol: 'rtmp',
+      port: serverSettings.rtmpport,
+      streamName: config.stream1,
+      mimeType: 'rtmp/flv',
+      useVideoJS: false,
+      width: config.cameraWidth,
+      height: config.cameraHeight,
+      swf: '../../lib/red5pro/red5pro-subscriber.swf',
+      swfobjectURL: '../../lib/swfobject/swfobject.js',
+      productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
+    })
+    var hlsConfig = Object.assign({}, config, {
+      host: host,
+      protocol: protocol,
+      port: isSecure ? serverSettings.hlssport : serverSettings.hlsport,
+      streamName: config.stream1,
+      mimeType: 'application/x-mpegURL',
+      swf: '../../lib/red5pro/red5pro-video-js.swf',
+      swfobjectURL: '../../lib/swfobject/swfobject.js',
+      productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
+    })
+
+    var subscribeOrder = config.subscriberFailoverOrder.split(',').map(function (item) {
+      return item.trim();
+    });
+
+    return new Promise(function (resolve, reject) {
+      var subscriber = new red5pro.Red5ProSubscriber();
+      var view = new red5pro.PlaybackView('red5pro-subscriber-video');
+      var origAttachStream = view.attachStream.bind(view);
+      view.attachStream = function (stream, autoplay) {
+        origAttachStream(stream, autoplay)
+        view.attachStream = origAttachStream
+      };
+      view.attachSubscriber(subscriber);
+      streamTitle.innerText = config.stream1;
+
+      subscriber.on('*', onSubscriberEvent);
+
+      subscriber.setPlaybackOrder(subscribeOrder)
+        .init({
+          rtc: rtcConfig,
+          rtmp: rtmpConfig,
+          hls: hlsConfig
+        })
+        .then(function (selectedSubscriber) {
+          if (selectedSubscriber.getType().toLowerCase() === subscriber.playbackTypes.HLS.toLowerCase()) {
+            view.view.classList.add('video-js', 'vjs-default-skin')
+          }
+          subscriber.off('*', onSubscriberEvent);
+          resolve({
+            subscriber: selectedSubscriber,
+            view: view
+          });
+        })
+        .catch(function (error) {
+          reject(error);
+        });
+
+    });
+  }
 
   // Request to start subscribing using an overlayed configuration from local default and local storage.
-  function subscribe (host) {
-    var config = Object.assign({}, configuration, defaultConfiguration);
-    config.host = host;
-    // Send to non-secure websocket regardless of host.
-    config.port = serverSettings.wsport;
-    config.streamName = config.stream1;
-    console.log('[Red5ProSubscriber] config:: ' + JSON.stringify(config, null, 2));
-
-    // Setup view.
-    var view = new red5pro.PlaybackView('red5pro-subscriber-video');
-    var subscriber = new red5pro.RTCSubscriber();
-    var origAttachStream = view.attachStream.bind(view);
-    view.attachStream = function (stream, autoplay) {
-      origAttachStream(stream, autoplay)
-      view.attachStream = origAttachStream
-    };
-    view.attachSubscriber(subscriber);
-    streamTitle.innerText = config.streamName;
+  function subscribe (payload) {
+    var subscriber = payload.subscriber;
+    var view = payload.view;
 
     targetSubscriber = subscriber;
     targetView = view;
@@ -140,10 +203,7 @@
     // Subscribe to events.
     subscriber.on('*', onSubscriberEvent);
     // Initiate playback.
-    subscriber.init(config)
-      .then(function (player) {
-        return player.play();
-      })
+    subscriber.play()
       .then(function () {
         onSubscribeSuccess()
       })
@@ -181,6 +241,7 @@
 
   // Kick off.
   requestEdge(configuration)
+    .then(determineSubscriber)
     .then(subscribe)
     .catch(function (error) {
       onSubscribeFail(error);
