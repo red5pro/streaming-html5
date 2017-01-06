@@ -9,6 +9,9 @@
       var pubTypes = window.red5prosdk.PublisherEventTypes;
       var rtcTypes = window.red5prosdk.RTCPublisherEventTypes;
       var status;
+      if (event.type === pubTypes.PUBLISH_METADATA) {
+        return;
+      }
       switch (event.type) {
         case pubTypes.CONNECT_SUCCESS:
           status = 'Connection established...';
