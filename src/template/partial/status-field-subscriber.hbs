@@ -12,6 +12,9 @@
       var status;
       var answer;
       var candidate;
+      if (event.type === subTypes.SUBSCRIBE_METADATA) {
+        return;
+      }
       switch (event.type) {
         case subTypes.CONNECT_SUCCESS:
           status = 'Connection established...';
