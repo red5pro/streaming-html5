@@ -92,6 +92,13 @@
       productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
     })
 
+    if (!config.useVideo) {
+      rtcConfig.videoEncoding = 'NONE';
+    }
+    if (!config.useAudio) {
+      rtcConfig.audioEncoding = 'NONE';
+    }
+
     var subscribeOrder = config.subscriberFailoverOrder.split(',').map(function (item) {
       return item.trim();
     });

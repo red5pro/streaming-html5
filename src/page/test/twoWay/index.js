@@ -339,6 +339,12 @@
   function subscribe () {
     var config = Object.assign({}, configuration, defaultConfiguration);
     config.streamName = config.stream2;
+    if (!config.useVideo) {
+      config.videoEncoding = red5pro.PlaybackVideoEncoder.NONE;
+    }
+    if (!useAudio) {
+      config.audioEncoding = red5pro.PlaybackAudioEncoder.NONE;
+    }
     console.log('[Red5ProSubscriber] config:: ' + JSON.stringify(config, null, 2));
 
     // Setup view.
