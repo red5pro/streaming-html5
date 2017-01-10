@@ -84,7 +84,8 @@
           "urls": "stun:stun.services.mozilla.com:3478"
         }
       ],
-      "verboseLogging": true
+      "verboseLogging": true,
+      "streamManagerAPI": "2.0"
     };
     if (isMoz) {
       json.iceServers = json.mozIce;
