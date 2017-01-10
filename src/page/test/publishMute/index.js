@@ -20,7 +20,7 @@
     catch (e) {
       console.error('Could not read testbed configuration from sessionstorage: ' + e.message);
     }
-    return {}
+    return {};
   })();
 
   red5pro.setLogLevel(configuration.verboseLogging ? red5pro.LogLevels.TRACE : red5pro.LogLevels.WARN);
@@ -30,6 +30,7 @@
   var targetView;
   var streamTitle = document.getElementById('stream-title');
   var statisticsField = document.getElementById('statistics-field');
+  var muteButton = document.getElementById('mute-button');
   var protocol = serverSettings.protocol;
   var isSecure = protocol == 'https';
   function getSocketLocationFromProtocol () {
@@ -42,6 +43,19 @@
     protocol: getSocketLocationFromProtocol().protocol,
     port: getSocketLocationFromProtocol().port,
     app: 'live'
+  };
+
+  function addMuteListener (publisher) {
+    muteButton.addEventListener('click', function () {
+      var wasMuted = muteButton.innerText === 'unmute';
+      muteButton.innerText = wasMuted ? 'mute' : 'unmute';
+      if (wasMuted) {
+        publisher.unmute();
+      }
+      else {
+        publisher.mute();
+      }
+    });
   };
 
   function onBitrateUpdate (bitrate, packetsSent) {
@@ -66,36 +80,6 @@
     console.log('[Red5ProPublisher] Unpublish Complete.');
   }
 
-  function requestOrigin (configuration) {
-    var host = configuration.host;
-    var app = configuration.app;
-    var streamName = configuration.stream1;
-    var port = serverSettings.httpport;
-    var portURI = (port.length > 0 ? ':' + port : '');
-    var baseUrl = isSecure ? protocol + '://' + host : protocol + '://' + host + portURI;
-    var url = baseUrl + '/streammanager/api/2.0/event/' + app + '/' + streamName + '?action=broadcast';
-      return new Promise(function (resolve, reject) {
-        fetch(url)
-          .then(function (res) {
-            if (res.headers.get("content-type") &&
-              res.headers.get("content-type").toLowerCase().indexOf("application/json") >= 0) {
-                return res.json();
-            }
-            else {
-              throw new TypeError('Could not properly parse response.');
-            }
-          })
-          .then(function (json) {
-            resolve(json.serverAddress);
-          })
-          .catch(function (error) {
-            var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
-            console.error('[PublisherStreamManagerTest] :: Error - Could not request Origin IP from Stream Manager. ' + jsonError)
-            reject(error)
-          });
-    });
-  }
-
   function getUserMediaConfiguration () {
     return {
       audio: configuration.useAudio ? configuration.userMedia.audio : false,
@@ -118,23 +102,23 @@
 
       nav.getUserMedia(gUM(), function (media) {
 
-        // Upon access of user media,
-        // 1. Attach the stream to the publisher.
-        // 2. Show the stream as preview in view instance.
-        publisher.attachStream(media);
-        view.preview(media, true);
-        view.attachPublisher(publisher);
+          // Upon access of user media,
+          // 1. Attach the stream to the publisher.
+          // 2. Show the stream as preview in view instance.
+          // 3. Associate publisher & view (optional).
+          publisher.attachStream(media);
+          view.preview(media, true);
+          view.attachPublisher(publisher);
 
-        targetPublisher = publisher;
-        targetView = view;
-        resolve();
+          targetPublisher = publisher;
+          targetView = view;
+          resolve();
 
       }, function(error) {
+          onPublishFail('Error - ' + error);
+          reject(error);
+      });
 
-        onPublishFail('Error - ' + error);
-        reject(error);
-
-      })
     });
   }
 
@@ -150,8 +134,9 @@
 
     // Initialize
     publisher.init(config)
-      .then(function (pub) { // eslint-disable-line no-unused-vars
-        // Invoke the publish action
+    .then(function (pub) { // eslint-disable-line no-unused-vars
+      // Invoke the publish action
+        addMuteListener(pub);
         return publisher.publish();
       })
       .then(function () {
@@ -191,21 +176,11 @@
   }
 
   // Kick off.
-  requestOrigin(configuration)
-    .then(function (serverAddress) {
-      configuration.host = serverAddress;
-      preview()
-        .then(publish)
-        .catch(function (error) {
-          console.error('[Red5ProPublisher] :: Error in publishing - ' + error);
-         });
-    })
+  preview()
+    .then(publish)
     .catch(function (error) {
-      console.error('[Red5ProPublisher] :: Error in access of Origin IP: ' + error);
-      updateStatusFromEvent({
-        type: red5pro.PublisherEventTypes.CONNECT_FAILURE
-      });
-    });
+      console.error('[Red5ProPublisher] :: Error in publishing - ' + error);
+     });
 
   window.addEventListener('beforeunload', function() {
     function clearRefs () {
