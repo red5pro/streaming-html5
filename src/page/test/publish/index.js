@@ -20,7 +20,7 @@
     catch (e) {
       console.error('Could not read testbed configuration from sessionstorage: ' + e.message);
     }
-    return {};
+    return {}
   })();
 
   red5pro.setLogLevel(configuration.verboseLogging ? red5pro.LogLevels.TRACE : red5pro.LogLevels.WARN);
@@ -38,12 +38,6 @@
       : {protocol: 'wss', port: serverSettings.wssport};
   }
 
-  var defaultConfiguration = {
-    protocol: getSocketLocationFromProtocol().protocol,
-    port: getSocketLocationFromProtocol().port,
-    app: 'live'
-  };
-
   function onBitrateUpdate (bitrate, packetsSent) {
     statisticsField.innerText = 'Bitrate: ' + Math.floor(bitrate) + '. Packets Sent: ' + packetsSent + '.';
   }
@@ -57,7 +51,12 @@
   }
   function onPublishSuccess (publisher) {
     console.log('[Red5ProPublisher] Publish Complete.');
-    window.trackBitrate(publisher.getPeerConnection(), onBitrateUpdate);
+    try {
+      window.trackBitrate(publisher.getPeerConnection(), onBitrateUpdate);
+    }
+    catch (e) {
+      // no tracking for you!
+    }
   }
   function onUnpublishFail (message) {
     console.error('[Red5ProPublisher] Unpublish Error :: ' + message);
@@ -74,56 +73,100 @@
     };
   }
 
-  function preview () {
-    var gUM = getUserMediaConfiguration;
+  function determinePublisher () {
+
+    var config = Object.assign({},
+                   configuration,
+                   getUserMediaConfiguration());
+    var rtcConfig = Object.assign({}, config, {
+                      protocol: getSocketLocationFromProtocol().protocol,
+                      port: getSocketLocationFromProtocol().port,
+                      streamName: config.stream1,
+                      streamType: 'webrtc'
+                   });
+    var rtmpConfig = Object.assign({}, config, {
+                      protocol: 'rtmp',
+                      port: serverSettings.rtmpport,
+                      streamName: config.stream1,
+                      width: config.cameraWidth,
+                      height: config.cameraHeight,
+                      swf: '../../lib/red5pro/red5pro-publisher.swf',
+                      swfobjectURL: '../../lib/swfobject/swfobject.js',
+                      productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
+                   });
+    var publishOrder = config.publisherFailoverOrder.split(',').map(function (item) {
+      return item.trim()
+    });
+
     return new Promise(function (resolve, reject) {
 
-      var elementId = 'red5pro-publisher-video';
-      var publisher = new red5pro.RTCPublisher();
-      var view = new red5pro.PublisherView(elementId);
-      var nav = navigator.mediaDevice || navigator;
-
+      var publisher = new red5pro.Red5ProPublisher();
       publisher.on('*', onPublisherEvent);
-      console.log('[Red5ProPublisher] gUM:: ' + JSON.stringify(gUM(), null, 2));
 
-      nav.getUserMedia(gUM(), function (media) {
-
-          // Upon access of user media,
-          // 1. Attach the stream to the publisher.
-          // 2. Show the stream as preview in view instance.
-          // 3. Associate publisher & view (optional).
-          publisher.attachStream(media);
-          view.preview(media, true);
-          view.attachPublisher(publisher);
-
-          targetPublisher = publisher;
-          targetView = view;
-          resolve();
-
-      }, function(error) {
-          onPublishFail('Error - ' + error);
+      publisher.setPublishOrder(publishOrder)
+        .init({
+          rtc: rtcConfig,
+          rtmp: rtmpConfig
+        })
+        .then(function (selectedPublisher) {
+          var type = selectedPublisher ? selectedPublisher.getType() : undefined;
+          var requiresPreview = type.toLowerCase() === publisher.publishTypes.RTC;
+          publisher.off('*', onPublisherEvent);
+          resolve({
+            publisher: selectedPublisher,
+            requiresPreview: requiresPreview
+          });
+        })
+        .catch(function (error) {
           reject(error);
-      });
+        });
 
     });
   }
 
-  function publish () {
-    var publisher = targetPublisher;
-    var config = Object.assign({},
-                    configuration,
-                    defaultConfiguration,
-                    getUserMediaConfiguration());
-    config.streamName = config.stream1;
-    streamTitle.innerText = config.streamName;
-    console.log('[Red5ProPublisher] config:: ' + JSON.stringify(config, null, 2));
+  function preview (publisher, requiresGUM) {
+    var gUM = getUserMediaConfiguration;
+    return new Promise(function (resolve, reject) {
 
+      var elementId = 'red5pro-publisher-video';
+      var view = new red5pro.PublisherView(elementId);
+      var nav = navigator.mediaDevice || navigator;
+
+      view.attachPublisher(publisher);
+
+      if (requiresGUM) {
+        console.log('[Red5ProPublisher] gUM:: ' + JSON.stringify(gUM(), null, 2));
+        nav.getUserMedia(gUM(), function (media) {
+
+          // Upon access of user media,
+          // 1. Attach the stream to the publisher.
+          // 2. Show the stream as preview in view instance.
+          publisher.attachStream(media);
+          view.preview(media, true);
+
+          targetPublisher = publisher;
+          targetView = view;
+          resolve(targetPublisher);
+
+        }, function(error) {
+
+          onPublishFail('Error - ' + error);
+          reject(error);
+
+        })
+      }
+      else {
+        targetPublisher = publisher;
+        targetView = view;
+        resolve(targetPublisher);
+      }
+    });
+  }
+
+  function publish (publisher, streamName) {
+    streamTitle.innerText = streamName;
     // Initialize
-    publisher.init(config)
-    .then(function (pub) { // eslint-disable-line no-unused-vars
-        // Invoke the publish action
-        return publisher.publish();
-      })
+    publisher.publish()
       .then(function () {
         onPublishSuccess(publisher);
       })
@@ -161,8 +204,16 @@
   }
 
   // Kick off.
-  preview()
-    .then(publish)
+  determinePublisher()
+    .then(function (payload) {
+      var requiresPreview = payload.requiresPreview;
+      var publisher = payload.publisher;
+      publisher.on('*', onPublisherEvent);
+      return preview(publisher, requiresPreview);
+    })
+    .then(function (publisher) {
+      publish(publisher, configuration.stream1);
+    })
     .catch(function (error) {
       console.error('[Red5ProPublisher] :: Error in publishing - ' + error);
      });
