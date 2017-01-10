@@ -9,14 +9,16 @@
     <div id="app">
       {{> version }}
       {{> settings-link}}
-      {{> test-info testTitle='Conference Test'}}
+      <h1 class="centered">Conference Test</h1>
       <hr />
-      <div class="float-left-conf">
+      <div>
         <label for="roomTxt">Room - </label><input type="text" id="roomTxt">
         <label for="nameTxt">Name - </label><input type="text" id="nameTxt">
         <label for="videoCheck">Video - </label><input type="checkbox" id="videoCheck" checked>
         <label for="audioCheck">Audio - </label><input type="checkbox" id="audioCheck" checked>
         <input type="submit" value="Connect" id="submitBtn">
+      </div>
+      <div class="float-left-conf">
         <h2 class="centered"><em>Publisher Stream</em>: <span id="pub-stream-title"></span></h2>
         <p id="pub-status-field" class="centered status-field">On hold.</p>
         <div class="centered">

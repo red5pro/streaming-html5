@@ -48,6 +48,7 @@
   var streamsList = [];
   var callList = [];
   var subscribers = [];
+  var failAttemps = [];
   var roomName;
   var chosenName;
   var publishing = false;
@@ -79,6 +80,7 @@
       pubStatusField.innerText = "That name is already in use";
   });
 
+  var pubFieldMessage;
   function updateStatusFromPublishEvent (event, field) {
     var pubTypes = red5pro.PublisherEventTypes;
     var rtcTypes = red5pro.RTCPublisherEventTypes;
@@ -91,6 +93,7 @@
         status = 'Error - Could not establish connection.';
         break;
       case pubTypes.PUBLISH_START:
+      case pubTypes.PUBLISH_COMPLETE:
         status = 'Started publishing session.';
         var audioCheck = document.getElementById('audioCheck');
         if(audioCheck.checked){
@@ -102,7 +105,7 @@
             else{
               targetPublisher.unmute();
             }
-          } 
+          }
         }
         break;
       case pubTypes.PUBLISH_FAIL:
@@ -127,7 +130,12 @@
         status = 'Negotiation complete. Waiting Publish Start...';
         break;
     }
-    field.innerText = ['STATUS', status].join(': ');
+    field.innerText = pubFieldMessage = ['STATUS', status].join(': ');
+    setTimeout(reSetPubField, 25);
+  }
+
+  function reSetPubField(){
+    document.getElementById('pub-status-field').innerText = pubFieldMessage;
   }
 
   function onPublisherEvent (event) {
@@ -194,7 +202,7 @@
                     getUserMediaConfiguration());
     config.cameraWidth = 320
     config.cameraHeight = 240
-    config.bandwith = {audio:20, video:150}
+    config.bandwith = {audio:16, video:192}
     config.streamName = publishName;
     config.useVideo = document.getElementById('videoCheck').checked
     config.useAudio = document.getElementById('audioCheck').checked
@@ -329,9 +337,11 @@
     }, delayTime);
   }
 
-  function updateStatusFromSubscribeEvent (event, field) {
+  function updateStatusFromSubscribeEvent (event, subscribeName) {
+    var field = document.getElementById(subscribeName + '-status');
     var subTypes = red5pro.SubscriberEventTypes;
     var rtcTypes = red5pro.RTCSubscriberEventTypes;
+    var subIndex = callList.indexOf(subscribeName);
     var status;
     var answer;
     var candidate;
@@ -340,16 +350,34 @@
         status = 'Connection established...';
         break;
       case subTypes.CONNECT_FAILURE:
-        status = 'Error - Could not establish connection.';
+        if(failAttemps[subIndex] < 3){
+          failAttemps[subIndex]++;
+          resubscribe(subscribeName);
+          status = 'Retrying';
+        }
+        else{
+          status = 'Error - Could not establish connection.';
+        } 
         break;
+      case subTypes.SUBSCRIBE_METADATA:
       case subTypes.SUBSCRIBE_START:
         status = 'Started subscribing session.';
         break;
       case subTypes.SUBSCRIBE_FAIL:
-        status = 'Error - Could not start a subscribing session.';
+        if(failAttemps[subIndex] < 3){
+          failAttemps[subIndex]++;
+          resubscribe(subscribeName);
+          status = 'Retrying';
+        }
+        else{
+          status = 'Error - Could not start a subscribing session.';
+        }
         break;
       case subTypes.SUBSCRIBE_INVALID_NAME:
         status = 'Error - Stream name not in use.';
+        setTimeout(function(){
+          removeSubscriber(subscribeName);
+        }, 1000);
         break;
       case rtcTypes.OFFER_START:
         status = 'Begin offer...';
@@ -381,9 +409,9 @@
   }
 
   // Local lifecycle notifications.
-  function onSubscriberEvent (event, statusField) {
+  function onSubscriberEvent (event, subscribeName) {
     console.log('[Red5ProSubsriber] ' + event.type + '.');
-    updateStatusFromSubscribeEvent(event, statusField);
+    updateStatusFromSubscribeEvent(event, subscribeName);
   }
   function onSubscribeFail (message) {
     console.error('[Red5ProSubsriber] Subscribe Error :: ' + message);
@@ -401,6 +429,7 @@
   function createSubcriber( subscribeName ){
     console.log("Creating subscriber for: " + subscribeName);
     callList.push( subscribeName );
+    failAttemps.push(0);
 
     var addOut = subBlock.replace(/FILLNAME/g, subscribeName);
     document.getElementById("app").innerHTML += addOut;
@@ -423,7 +452,7 @@
 
     // Subscribe to events.
     subscriber.on('*', function(event){
-      onSubscriberEvent(event, document.getElementById(subscribeName + '-status'));
+      onSubscriberEvent(event, subscribeName);
     });
     // Initiate playback.
     subscriber.init(config)
@@ -438,6 +467,14 @@
         onSubscribeFail('Error - ' + jsonError);
       });
     subscribers.push(subscriber);
+  }
+
+  function resubscribe(subscribeName){
+    removeSubscriber(subscribeName).then(function(){
+      createSubcriber(subscribeName);
+    }).catch(function(){
+      createSubcriber(subscribeName);
+    })
   }
 
   function unsubscribe(){
@@ -458,7 +495,7 @@
             }catch(err){console.log(err);}
             subscriber.setView(undefined)
             subscriber.off('*', function(event){
-              onSubscriberEvent(event, document.getElementById(subscribeName + '-status'));
+              onSubscriberEvent(event, subscribeName);
             });
             onUnsubscribeSuccess();
             resolve();
@@ -466,6 +503,7 @@
             document.getElementById('app').removeChild( document.getElementById(subscribeName) );
             subscribers.splice(callList.indexOf(subscribeName), 1);
             callList.splice(callList.indexOf(subscribeName), 1);
+            failAttemps.splice(callList.indexOf(subscribeName), 1);
           })
           .catch(function (error) {
             var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
