@@ -40,6 +40,7 @@
   };
   var instanceId = Math.floor(Math.random() * 0x10000).toString(16);
   var streamTitle = document.getElementById('stream-title');
+  var addressField = document.getElementById('address-field');
   var protocol = serverSettings.protocol;
   var isSecure = protocol === 'https';
   function getSocketLocationFromProtocol () {
@@ -67,6 +68,10 @@
     }
   }
 
+  function displayServerAddress (serverAddress) {
+    addressField.innerText = 'Origin Address: ' + serverAddress;
+  }
+
   // Local lifecycle notifications.
   function onSubscriberEvent (event) {
     console.log('[Red5ProSubsriber] ' + event.type + '.');
@@ -92,7 +97,8 @@
     var portURI = (port.length > 0 ? ':' + port : '');
     var baseUrl = isSecure ? protocol + '://' + host : protocol + '://' + host + portURI;
     var streamName = configuration.stream1;
-    var url = baseUrl + '/streammanager/api/2.0/event/' + app + '/' + streamName + '?action=subscribe';
+    var apiVersion = configuration.streamManagerAPI || '2.0';
+    var url = baseUrl + '/streammanager/api/' + apiVersion + '/event/' + app + '/' + streamName + '?action=subscribe';
       return new Promise(function (resolve, reject) {
         fetch(url)
           .then(function (res) {
@@ -115,6 +121,7 @@
     });
   }
   function determineSubscriber (host) {
+    displayServerAddress(host);
     var config = Object.assign({}, configuration, defaultConfiguration);
     var rtcConfig = Object.assign({}, config, {
       host: host,
