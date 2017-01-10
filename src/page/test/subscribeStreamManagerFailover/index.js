@@ -49,16 +49,25 @@
       : {protocol: 'wss', port: serverSettings.wssport};
   }
 
-  var defaultConfiguration = {
-    protocol: getSocketLocationFromProtocol().protocol,
-    port: getSocketLocationFromProtocol().port,
-    app: 'live',
-    bandwidth: {
-      audio: 50,
-      video: 256,
-      data: 30 * 1000 * 1000
+  var defaultConfiguration = (function(useVideo, useAudio) {
+    var c = {
+      protocol: getSocketLocationFromProtocol().protocol,
+      port: getSocketLocationFromProtocol().port,
+      app: 'live',
+      bandwidth: {
+        audio: 50,
+        video: 256,
+        data: 30 * 1000 * 1000
+      }
+    };
+    if (!useVideo) {
+      c.videoEncoding = red5pro.PlaybackVideoEncoder.NONE;
     }
-  }
+    if (!useAudio) {
+      c.audioEncoding = red5pro.PlaybackAudioEncoder.NONE;
+    }
+    return c;
+  })(configuration.useVideo, configuration.useAudio);
 
   function shutdownVideoElement () {
     var videoElement = document.getElementById('red5pro-subscriber-video');

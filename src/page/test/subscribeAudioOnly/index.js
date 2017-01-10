@@ -55,7 +55,8 @@
       audio: 50,
       video: 256,
       data: 30 * 1000 * 1000
-    }
+    },
+    videoEncoding: 'NONE'
   }
 
   function shutdownAudioElement () {
