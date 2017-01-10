@@ -30,6 +30,7 @@
   var targetView;
   var streamTitle = document.getElementById('stream-title');
   var statisticsField = document.getElementById('statistics-field');
+  var addressField = document.getElementById('address-field');
   var protocol = serverSettings.protocol;
   var isSecure = protocol == 'https';
   function getSocketLocationFromProtocol () {
@@ -43,6 +44,10 @@
     port: getSocketLocationFromProtocol().port,
     app: 'live'
   };
+
+  function displayServerAddress (serverAddress) {
+    addressField.innerText = 'Origin Address: ' + serverAddress;
+  }
 
   function onBitrateUpdate (bitrate, packetsSent) {
     statisticsField.innerText = 'Bitrate: ' + Math.floor(bitrate) + '. Packets Sent: ' + packetsSent + '.';
@@ -78,7 +83,8 @@
     var port = serverSettings.httpport;
     var portURI = (port.length > 0 ? ':' + port : '');
     var baseUrl = isSecure ? protocol + '://' + host : protocol + '://' + host + portURI;
-    var url = baseUrl + '/streammanager/api/2.0/event/' + app + '/' + streamName + '?action=broadcast';
+    var apiVersion = configuration.streamManagerAPI || '2.0';
+    var url = baseUrl + '/streammanager/api/' + apiVersion + '/event/' + app + '/' + streamName + '?action=broadcast';
       return new Promise(function (resolve, reject) {
         fetch(url)
           .then(function (res) {
@@ -250,6 +256,7 @@
   // Kick off.
   requestOrigin(configuration)
     .then(function (serverAddress) {
+      displayServerAddress(serverAddress);
       configuration.host = serverAddress;
       determinePublisher()
         .then(function (payload) {
