@@ -102,6 +102,7 @@
 
   function publish (publisher, streamName) {
     streamTitle.innerText = streamName;
+    targetPublisher = publisher;
     return new Promise(function (resolve, reject) {
       PublisherBase.publish(publisher, streamName)
         .then(function () {
@@ -139,7 +140,6 @@
     })
     .then(function (payload) {
       var publisher = payload.publisher;
-      targetPublisher = publisher;
       return publish(publisher, configuration.stream1);
     })
     .catch(function (error) {
@@ -156,5 +156,5 @@
     unpublish().then(clearRefs).catch(clearRefs);
     window.untrackBitrate();
   });
-})(this, document, window.red5prosdk, window.R5ProBase.Publisher);
+})(this, document, window.red5prosdk, new window.R5ProBase.Publisher());
 

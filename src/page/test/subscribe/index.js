@@ -1,4 +1,4 @@
-(function(window, document, red5pro) {
+(function(window, document, red5pro, SubscriberBase) {
   'use strict';
 
   var serverSettings = (function() {
@@ -23,14 +23,13 @@
     return {}
   })();
 
-  red5pro.setLogLevel(configuration.verboseLogging ? red5pro.LogLevels.TRACE : red5pro.LogLevels.WARN);
-
   var targetSubscriber;
   var targetView;
 
   var updateStatusFromEvent = window.red5proHandleSubscriberEvent; // defined in src/template/partial/status-field-subscriber.hbs
   var instanceId = Math.floor(Math.random() * 0x10000).toString(16);
   var streamTitle = document.getElementById('stream-title');
+
   var protocol = serverSettings.protocol;
   var isSecure = protocol === 'https';
   function getSocketLocationFromProtocol () {
@@ -41,7 +40,7 @@
 
   // Local lifecycle notifications.
   function onSubscriberEvent (event) {
-    console.log('[Red5ProSubsriber] ' + event.type + '.');
+    console.log('[Red5ProSubscriber] ' + event.type + '.');
     updateStatusFromEvent(event);
   }
   function onSubscribeFail (message) {
@@ -99,43 +98,21 @@
       rtcConfig.audioEncoding = 'NONE';
     }
 
-    var subscribeOrder = config.subscriberFailoverOrder.split(',').map(function (item) {
-      return item.trim();
-    });
+    var subscribeOrder = config.subscriberFailoverOrder
+                          .split(',').map(function (item) {
+                            return item.trim();
+                          });
 
-    return new Promise(function (resolve, reject) {
-      var subscriber = new red5pro.Red5ProSubscriber();
-      var view = new red5pro.PlaybackView('red5pro-subscriber-video');
-      var origAttachStream = view.attachStream.bind(view);
-      view.attachStream = function (stream, autoplay) {
-        origAttachStream(stream, autoplay)
-        view.attachStream = origAttachStream
-      };
-      view.attachSubscriber(subscriber);
+    return SubscriberBase.determineSubscriber({
+              rtc: rtcConfig,
+              rtmp: rtmpConfig,
+              hls: hlsConfig
+            }, subscribeOrder);
+  }
 
-      subscriber.on('*', onSubscriberEvent);
-
-      subscriber.setPlaybackOrder(subscribeOrder)
-        .init({
-          rtc: rtcConfig,
-          rtmp: rtmpConfig,
-          hls: hlsConfig
-        })
-        .then(function (selectedSubscriber) {
-          if (selectedSubscriber.getType().toLowerCase() === subscriber.playbackTypes.HLS.toLowerCase()) {
-            view.view.classList.add('video-js', 'vjs-default-skin')
-          }
-          subscriber.off('*', onSubscriberEvent);
-          resolve({
-            subscriber: selectedSubscriber,
-            view: view
-          });
-        })
-        .catch(function (error) {
-          reject(error);
-        });
-
-    });
+  function view (subscriber) {
+    var elementId = 'red5pro-subscriber-video';
+    return SubscriberBase.view(subscriber, elementId);
   }
 
   // Request to start subscribing using an overlayed configuration from local default and local storage.
@@ -144,16 +121,18 @@
 
     targetSubscriber = subscriber;
     targetView = view;
-
+    if (targetSubscriber.getType().toLowerCase() === 'hls') {
+      targetView.view.classList.add('video-js', 'vjs-default-skin')
+    }
     // Initiate playback.
-    subscriber.play()
-      .then(function () {
-        onSubscribeSuccess()
-      })
-      .catch(function (error) {
-        var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
-        onSubscribeFail('Error - ' + jsonError);
-      });
+    return new Promise(function (resolve, reject) {
+      SubscriberBase.subscribe(subscriber, view)
+        .then(function () {
+          onSubscribeSuccess();
+          resolve();
+        })
+        .catch(reject);
+    });
   }
 
   // Request to unsubscribe.
@@ -161,24 +140,18 @@
     return new Promise(function(resolve, reject) {
       var view = targetView
       var subscriber = targetSubscriber
-      if (subscriber) {
-        subscriber.stop()
-          .then(function () {
-            view.view.src = ''
-            subscriber.setView(undefined)
-            subscriber.off('*', onSubscriberEvent);
-            onUnsubscribeSuccess();
-            resolve();
-          })
-          .catch(function (error) {
-            var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
-            onUnsubscribeFail('Unmount Error = ' + jsonError);
-            reject('Could not unsubscribe: ' + error);
-          });
-      }
-      else {
-        resolve()
-      }
+      SubscriberBase.unsubscribe(subscriber, view)
+        .then(function () {
+          targetSubscriber.off('*', onSubscriberEvent);
+          targetSubscriber = undefined;
+          targetView = undefined;
+          onUnsubscribeSuccess();
+        })
+        .catch(function (error) {
+          var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
+          onUnsubscribeFail(jsonError);
+          reject(error);
+        });
     });
   }
 
@@ -186,14 +159,21 @@
   determineSubscriber()
     .then(function(payload) {
       var subscriber = payload.subscriber;
-      var view = payload.view
       // Subscribe to events.
       subscriber.on('*', onSubscriberEvent);
+      return view(subscriber);
+    })
+    .then(function(payload) {
+      var subscriber = payload.subscriber;
+      var view = payload.view;
       subscribe(subscriber, view, configuration.stream1);
     })
     .catch(function (error) {
-      console.error('[Red5ProSubscriber] :: Error in subscribing - ' + error);
-     });
+      var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
+      console.error('[Red5ProSubscriber] :: Error in subscribing - ' + jsonError);
+      onSubscribeFail(jsonError);
+    });
+
   // Clean up.
   window.addEventListener('beforeunload', function() {
     function clearRefs () {
@@ -203,4 +183,5 @@
     unsubscribe().then(clearRefs).catch(clearRefs);
   });
 
-})(this, document, window.red5prosdk);
+})(this, document, window.red5prosdk, new window.R5ProBase.Subscriber());
+

@@ -135,8 +135,10 @@
     return PublisherBase.preview(publisher, elementId, requiresGUM ? gUM : undefined);
   }
 
-  function publish (publisher, streamName) {
+  function publish (publisher, view, streamName) {
     streamTitle.innerText = streamName;
+    targetPublisher = publisher;
+    targetView = view;
     return new Promise(function (resolve, reject) {
       PublisherBase.publish(publisher, streamName)
         .then(function () {
@@ -175,9 +177,7 @@
       .then(function (payload) {
         var publisher = payload.publisher;
         var view = payload.view;
-        targetPublisher = publisher;
-        targetView = view;
-        return publish(publisher, configuration.stream1);
+        return publish(publisher, view, configuration.stream1);
       })
       .catch(function (error) {
         var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
@@ -206,5 +206,5 @@
     unpublish().then(clearRefs).catch(clearRefs);
     window.untrackBitrate();
   });
-})(this, document, window.red5prosdk, window.R5ProBase.Publisher);
+})(this, document, window.red5prosdk, new window.R5ProBase.Publisher());
 
