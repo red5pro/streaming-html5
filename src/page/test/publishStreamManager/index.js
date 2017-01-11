@@ -1,4 +1,4 @@
-(function(window, document, red5pro) {
+(function(window, document, red5pro, PublisherBase /* see: src/static/script/main.js */) {
   'use strict';
 
   var serverSettings = (function() {
@@ -23,14 +23,14 @@
     return {}
   })();
 
-  red5pro.setLogLevel(configuration.verboseLogging ? red5pro.LogLevels.TRACE : red5pro.LogLevels.WARN);
-
-  var updateStatusFromEvent = window.red5proHandlePublisherEvent; // defined in src/template/partial/status-field-publisher.hbs
   var targetPublisher;
   var targetView;
+
+  var updateStatusFromEvent = window.red5proHandlePublisherEvent; // defined in src/template/partial/status-field-publisher.hbs
   var streamTitle = document.getElementById('stream-title');
   var statisticsField = document.getElementById('statistics-field');
   var addressField = document.getElementById('address-field');
+
   var protocol = serverSettings.protocol;
   var isSecure = protocol == 'https';
   function getSocketLocationFromProtocol () {
@@ -118,8 +118,9 @@
   function determinePublisher () {
 
     var config = Object.assign({},
-                   configuration,
-                   getUserMediaConfiguration());
+                    configuration,
+                    defaultConfiguration,
+                    getUserMediaConfiguration());
     var rtcConfig = Object.assign({}, config, {
                       protocol: getSocketLocationFromProtocol().protocol,
                       port: getSocketLocationFromProtocol().port,
@@ -136,120 +137,51 @@
                       swfobjectURL: '../../lib/swfobject/swfobject.js',
                       productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
                    });
-    var publishOrder = config.publisherFailoverOrder.split(',').map(function (item) {
-      return item.trim()
-    });
+    var publishOrder = config.publisherFailoverOrder
+                            .split(',')
+                            .map(function (item) {
+                              return item.trim()
+                        });
 
-    return new Promise(function (resolve, reject) {
-
-      var publisher = new red5pro.Red5ProPublisher();
-      publisher.on('*', onPublisherEvent);
-
-      publisher.setPublishOrder(publishOrder)
-        .init({
-          rtc: rtcConfig,
-          rtmp: rtmpConfig
-        })
-        .then(function (selectedPublisher) {
-          var type = selectedPublisher ? selectedPublisher.getType() : undefined;
-          var requiresPreview = type.toLowerCase() === publisher.publishTypes.RTC;
-          publisher.off('*', onPublisherEvent);
-          resolve({
-            publisher: selectedPublisher,
-            requiresPreview: requiresPreview
-          });
-        })
-        .catch(function (error) {
-          reject(error);
-        });
-
-    });
+    return PublisherBase.determinePublisher({
+                rtc: rtcConfig,
+                rtmp: rtmpConfig
+              }, publishOrder);
   }
 
   function preview (publisher, requiresGUM) {
-    var gUM = getUserMediaConfiguration;
-    return new Promise(function (resolve, reject) {
-
-      var elementId = 'red5pro-publisher-video';
-      var view = new red5pro.PublisherView(elementId);
-      var nav = navigator.mediaDevice || navigator;
-
-      view.attachPublisher(publisher);
-
-      if (requiresGUM) {
-        console.log('[Red5ProPublisher] gUM:: ' + JSON.stringify(gUM(), null, 2));
-        nav.getUserMedia(gUM(), function (media) {
-
-          // Upon access of user media,
-          // 1. Attach the stream to the publisher.
-          // 2. Show the stream as preview in view instance.
-          publisher.attachStream(media);
-          view.preview(media, true);
-
-          targetPublisher = publisher;
-          targetView = view;
-          resolve(targetPublisher);
-
-        }, function(error) {
-
-          onPublishFail('Error - ' + error);
-          reject(error);
-
-        })
-      }
-      else {
-        targetPublisher = publisher;
-        targetView = view;
-        resolve(targetPublisher);
-      }
-    });
+    var elementId = 'red5pro-publisher-video';
+    var gUM = getUserMediaConfiguration();
+    return PublisherBase.preview(publisher, elementId, requiresGUM ? gUM : undefined);
   }
 
-  function publish () {
-    var publisher = targetPublisher;
-    var config = Object.assign({},
-                    configuration,
-                    defaultConfiguration,
-                    getUserMediaConfiguration());
-    config.streamName = config.stream1;
-    streamTitle.innerText = config.streamName;
-    console.log('[Red5ProPublisher] config:: ' + JSON.stringify(config, null, 2));
-
-    // Initialize
-    publisher.publish()
-      .then(function () {
-        onPublishSuccess(publisher);
-      })
-      .catch(function (error) {
-        // A fault occurred while trying to initialize and publish the stream.
-        var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
-        onPublishFail('Error - ' + jsonError);
-      });
+  function publish (publisher, streamName) {
+    streamTitle.innerText = streamName;
+    return new Promise(function (resolve, reject) {
+      PublisherBase.publish(publisher, streamName)
+       .then(function () {
+          onPublishSuccess(publisher);
+        })
+        .catch(function (error) {
+          reject(error);
+        })
+    });
   }
 
   function unpublish () {
     return new Promise(function (resolve, reject) {
       var view = targetView;
       var publisher = targetPublisher;
-      if (publisher) {
-        publisher.unpublish()
-          .then(function () {
-            view.view.src = '';
-            publisher.setView(undefined);
-            publisher.off('*', onPublisherEvent);
-            onUnpublishSuccess();
-            resolve();
-          })
-          .catch(function (error) {
-            var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
-            onUnpublishFail('Unmount Error ' + jsonError);
-            reject(error);
-          });
-      }
-      else {
-        onUnpublishSuccess();
-        resolve();
-      }
+      PublisherBase.unpublish(publisher, view)
+        .then(function () {
+          onUnpublishSuccess();
+          resolve();
+        })
+        .catch(function (error) {
+          var jsonError = typeof error === 'string' ? error : JSON.stringify(error, 2, null);
+          onUnpublishFail('Unmount Error ' + jsonError);
+          reject(error);
+        });
     });
   }
 
@@ -258,25 +190,28 @@
     .then(function (serverAddress) {
       displayServerAddress(serverAddress);
       configuration.host = serverAddress;
-      determinePublisher()
-        .then(function (payload) {
-          var requiresPreview = payload.requiresPreview;
-          var publisher = payload.publisher;
-          publisher.on('*', onPublisherEvent);
-          return preview(publisher, requiresPreview);
-        })
-        .then(function (publisher) {
-          publish(publisher, configuration.stream1);
-        })
-        .catch(function (error) {
-          console.error('[Red5ProPublisher] :: Error in publishing - ' + error);
-         });
+      return determinePublisher();
+    })
+    .then(function (payload) {
+      var requiresPreview = payload.requiresPreview;
+      var publisher = payload.publisher;
+      publisher.on('*', onPublisherEvent);
+      return preview(publisher, requiresPreview);
+    })
+    .then(function (payload) {
+      var publisher = payload.publisher;
+      var view = payload.view;
+      targetPublisher = publisher;
+      targetView = view;
+      return publish(publisher, configuration.stream1);
     })
     .catch(function (error) {
-      console.error('[Red5ProPublisher] :: Error in access of Origin IP: ' + error);
+      var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
+      console.error('[Red5ProPublisher] :: Error in access of Origin IP: ' + jsonError);
       updateStatusFromEvent({
         type: red5pro.PublisherEventTypes.CONNECT_FAILURE
       });
+      onPublishFail(jsonError);
     });
 
   window.addEventListener('beforeunload', function() {
@@ -287,5 +222,5 @@
     unpublish().then(clearRefs).catch(clearRefs);
     window.untrackBitrate();
   });
+})(this, document, window.red5prosdk, window.R5ProBase.Publisher);
 
-})(this, document, window.red5prosdk);
