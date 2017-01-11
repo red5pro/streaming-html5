@@ -1,4 +1,4 @@
-(function(window, document, red5pro) {
+(function(window, document, red5pro, SubscriberBase) {
   'use strict';
 
   var serverSettings = (function() {
@@ -22,8 +22,6 @@
     }
     return {}
   })();
-
-  red5pro.setLogLevel(configuration.verboseLogging ? red5pro.LogLevels.TRACE : red5pro.LogLevels.WARN);
 
   var targetSubscriber;
   var targetView;
@@ -129,13 +127,14 @@
           });
     });
   }
+
   function determineSubscriber (host) {
     displayServerAddress(host);
     var config = Object.assign({}, configuration, defaultConfiguration);
     var rtcConfig = Object.assign({}, config, {
       host: host,
-      protocol: getSocketLocationFromProtocol().protocol,
-      port: getSocketLocationFromProtocol().port,
+      protocol: 'ws', // cluster is not over secure, at this time
+      port: serverSettings.wsport, // cluster is not over secure, at this time
       subscriptionId: 'subscriber-' + instanceId,
       streamName: config.stream1,
       bandwidth: {
@@ -168,65 +167,47 @@
       productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
     })
 
-    var subscribeOrder = config.subscriberFailoverOrder.split(',').map(function (item) {
-      return item.trim();
-    });
+    if (!config.useVideo) {
+      rtcConfig.videoEncoding = 'NONE';
+    }
+    if (!config.useAudio) {
+      rtcConfig.audioEncoding = 'NONE';
+    }
 
-    return new Promise(function (resolve, reject) {
-      var subscriber = new red5pro.Red5ProSubscriber();
-      var view = new red5pro.PlaybackView('red5pro-subscriber-video');
-      var origAttachStream = view.attachStream.bind(view);
-      view.attachStream = function (stream, autoplay) {
-        origAttachStream(stream, autoplay)
-        view.attachStream = origAttachStream
-      };
-      view.attachSubscriber(subscriber);
-      streamTitle.innerText = config.stream1;
+    var subscribeOrder = config.subscriberFailoverOrder
+                          .split(',').map(function (item) {
+                            return item.trim();
+                          });
 
-      subscriber.on('*', onSubscriberEvent);
+    return SubscriberBase.determineSubscriber({
+              rtc: rtcConfig,
+              rtmp: rtmpConfig,
+              hls: hlsConfig
+            }, subscribeOrder);
+  }
 
-      subscriber.setPlaybackOrder(subscribeOrder)
-        .init({
-          rtc: rtcConfig,
-          rtmp: rtmpConfig,
-          hls: hlsConfig
-        })
-        .then(function (selectedSubscriber) {
-          if (selectedSubscriber.getType().toLowerCase() === subscriber.playbackTypes.HLS.toLowerCase()) {
-            view.view.classList.add('video-js', 'vjs-default-skin')
-          }
-          subscriber.off('*', onSubscriberEvent);
-          resolve({
-            subscriber: selectedSubscriber,
-            view: view
-          });
-        })
-        .catch(function (error) {
-          reject(error);
-        });
-
-    });
+  function view (subscriber) {
+    var elementId = 'red5pro-subscriber-video';
+    return SubscriberBase.view(subscriber, elementId);
   }
 
   // Request to start subscribing using an overlayed configuration from local default and local storage.
-  function subscribe (payload) {
-    var subscriber = payload.subscriber;
-    var view = payload.view;
-
+  function subscribe (subscriber, view, streamName) {
+    streamTitle.innerText = streamName;
     targetSubscriber = subscriber;
     targetView = view;
-
-    // Subscribe to events.
-    subscriber.on('*', onSubscriberEvent);
+    if (targetSubscriber.getType().toLowerCase() === 'hls') {
+      targetView.view.classList.add('video-js', 'vjs-default-skin')
+    }
     // Initiate playback.
-    subscriber.play()
-      .then(function () {
-        onSubscribeSuccess()
-      })
-      .catch(function (error) {
-        var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
-        onSubscribeFail('Error - ' + jsonError);
-      });
+    return new Promise(function (resolve, reject) {
+      SubscriberBase.subscribe(subscriber, view)
+        .then(function () {
+          onSubscribeSuccess();
+          resolve();
+        })
+        .catch(reject);
+    });
   }
 
   // Request to unsubscribe.
@@ -234,34 +215,40 @@
     return new Promise(function(resolve, reject) {
       var view = targetView
       var subscriber = targetSubscriber
-      if (subscriber) {
-        subscriber.stop()
-          .then(function () {
-            view.view.src = ''
-            subscriber.setView(undefined)
-            subscriber.off('*', onSubscriberEvent);
-            onUnsubscribeSuccess();
-            resolve();
-          })
-          .catch(function (error) {
-            var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
-            onUnsubscribeFail('Unmount Error = ' + jsonError);
-            reject('Could not unsubscribe: ' + error);
-          });
-      }
-      else {
-        resolve()
-      }
+      SubscriberBase.unsubscribe(subscriber, view)
+        .then(function () {
+          targetSubscriber.off('*', onSubscriberEvent);
+          targetSubscriber = undefined;
+          targetView = undefined;
+          onUnsubscribeSuccess();
+          resolve();
+        })
+        .catch(function (error) {
+          var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
+          onUnsubscribeFail(jsonError);
+          reject(error);
+        });
     });
   }
 
   // Kick off.
   requestEdge(configuration)
     .then(determineSubscriber)
-    .then(subscribe)
+    .then(function(payload) {
+      var subscriber = payload.subscriber;
+      // Subscribe to events.
+      subscriber.on('*', onSubscriberEvent);
+      return view(subscriber);
+    })
+    .then(function(payload) {
+      var subscriber = payload.subscriber;
+      var view = payload.view;
+      subscribe(subscriber, view, configuration.stream1);
+    })
     .catch(function (error) {
-      onSubscribeFail(error);
-      console.error('Could not subscriber with Edge IP: ' + error);
+      var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
+      console.error('[Red5ProSubscriber] :: Error in subscribing - ' + jsonError);
+      onSubscribeFail(jsonError);
     });
 
   // Clean up.
@@ -273,4 +260,5 @@
     unsubscribe().then(clearRefs).catch(clearRefs);
   });
 
-})(this, document, window.red5prosdk);
+})(this, document, window.red5prosdk, new window.R5ProBase.Subscriber());
+

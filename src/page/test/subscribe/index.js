@@ -118,7 +118,6 @@
   // Request to start subscribing using an overlayed configuration from local default and local storage.
   function subscribe (subscriber, view, streamName) {
     streamTitle.innerText = streamName;
-
     targetSubscriber = subscriber;
     targetView = view;
     if (targetSubscriber.getType().toLowerCase() === 'hls') {
@@ -146,6 +145,7 @@
           targetSubscriber = undefined;
           targetView = undefined;
           onUnsubscribeSuccess();
+          resolve();
         })
         .catch(function (error) {
           var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
