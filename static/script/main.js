@@ -17,6 +17,7 @@
   function Publisher() {}
   Publisher.prototype.determinePublisher = function (configuration, order) {
 
+    console.log('[Red5ProPublisher] config:\n' + JSON.stringify(configuration, null, 2));
     return new Promise(function (resolve, reject) {
       var publisher = new red5pro.Red5ProPublisher();
       publisher.setPublishOrder(order)
@@ -98,6 +99,8 @@
 
   function Subscriber() {}
   Subscriber.prototype.determineSubscriber = function (configuration, order) {
+
+    console.log('[Red5ProSubscriber] config:\n' + JSON.stringify(configuration, null, 2));
 
     return new Promise(function (resolve, reject) {
       var subscriber = new red5pro.Red5ProSubscriber();
