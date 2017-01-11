@@ -84,7 +84,7 @@ function determinePublisher () {
 ```
 
 <sup>
-[index.js #46](index.js#L46)
+[index.js #76](index.js#L76)
 </sup>
 
 The `init` method of the `Red5ProPublisher` returns a `Promise` that will be resolved with the instantiated Publisher implementation based on the publish order and browser support.
@@ -118,7 +118,7 @@ When requesting the `MediaStream` you provide a constraints declaration for the 
 > More information: [Media.getUserMedia from MDN](https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia)
 
 <sup>
-[index.js #109](index.js#L109)
+[index.js #139](index.js#L139)
 </sup>
 
 #### Publishing
@@ -142,7 +142,7 @@ publisher.setPublishOrder(publishOrder)
 ```
 
 <sup>
-[index.js #136](index.js#L136)
+[index.js #106](index.js#L106)
 </sup>
 
 ### View Your Stream
