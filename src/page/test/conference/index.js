@@ -294,7 +294,7 @@
 
   }
 
-  var delayTime = 1000;
+  var delayTime = 500;
   function recieveList (listIn) {
     console.log(listIn + " is " + JSON.stringify(listIn));
     streamsList = [];
@@ -308,7 +308,6 @@
       streamsList.push( inName );
       if( inName.indexOf("-") >= 0 && inName.split("-")[0] == roomName){
         if( callList.length == 0 || callList.indexOf(inName) < 0 ){
-          // callList.push(inScopeName); 
           setCreateTime(inName, j*delayTime);
           j++;
         }
