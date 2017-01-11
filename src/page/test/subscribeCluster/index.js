@@ -120,37 +120,99 @@
     });
   }
 
-  // Request to start subscribing using an overlayed configuration from local default and local storage.
-  function subscribe (host) {
-    var config = Object.assign({}, configuration, defaultConfiguration);
-    config.host = host;
-    // Force ws, not wss regardless of protocol
-    config.protocol = 'ws';
-    config.port = serverSettings.wsport;
-    config.streamName = config.stream1;
-    console.log('[Red5ProSubscriber] config:: ' + JSON.stringify(config, null, 2));
+  function determineSubscriber (host) {
+    var config = Object.assign({}, configuration);
+    var rtcConfig = Object.assign({}, config, {
+      host: host,
+      protocol: 'ws', // cluster is not over secure, at this time
+      port: serverSettings.wsport, // cluster is not over secure, at this time
+      subscriptionId: 'subscriber-' + instanceId,
+      streamName: config.stream1,
+      bandwidth: {
+        audio: 50,
+        video: 256,
+        data: 30 * 1000 * 1000
+      }
+    })
+    var rtmpConfig = Object.assign({}, config, {
+      host: host,
+      protocol: 'rtmp',
+      port: serverSettings.rtmpport,
+      streamName: config.stream1,
+      mimeType: 'rtmp/flv',
+      useVideoJS: false,
+      width: config.cameraWidth,
+      height: config.cameraHeight,
+      swf: '../../lib/red5pro/red5pro-subscriber.swf',
+      swfobjectURL: '../../lib/swfobject/swfobject.js',
+      productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
+    })
+    var hlsConfig = Object.assign({}, config, {
+      host,
+      protocol: protocol,
+      port: isSecure ? serverSettings.hlssport : serverSettings.hlsport,
+      streamName: config.stream1,
+      mimeType: 'application/x-mpegURL',
+      swf: '../../lib/red5pro/red5pro-video-js.swf',
+      swfobjectURL: '../../lib/swfobject/swfobject.js',
+      productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
+    })
 
-    // Setup view.
-    var view = new red5pro.PlaybackView('red5pro-subscriber-video');
-    var subscriber = new red5pro.RTCSubscriber();
-    var origAttachStream = view.attachStream.bind(view);
-    view.attachStream = function (stream, autoplay) {
-      origAttachStream(stream, autoplay)
-      view.attachStream = origAttachStream
-    };
-    view.attachSubscriber(subscriber);
-    streamTitle.innerText = config.streamName;
+    if (!config.useVideo) {
+      rtcConfig.videoEncoding = 'NONE';
+    }
+    if (!config.useAudio) {
+      rtcConfig.audioEncoding = 'NONE';
+    }
+
+    var subscribeOrder = config.subscriberFailoverOrder.split(',').map(function (item) {
+      return item.trim();
+    });
+
+    return new Promise(function (resolve, reject) {
+      var subscriber = new red5pro.Red5ProSubscriber();
+      var view = new red5pro.PlaybackView('red5pro-subscriber-video');
+      var origAttachStream = view.attachStream.bind(view);
+      view.attachStream = function (stream, autoplay) {
+        origAttachStream(stream, autoplay)
+        view.attachStream = origAttachStream
+      };
+      view.attachSubscriber(subscriber);
+
+      subscriber.on('*', onSubscriberEvent);
+
+      subscriber.setPlaybackOrder(subscribeOrder)
+        .init({
+          rtc: rtcConfig,
+          rtmp: rtmpConfig,
+          hls: hlsConfig
+        })
+        .then(function (selectedSubscriber) {
+          if (selectedSubscriber.getType().toLowerCase() === subscriber.playbackTypes.HLS.toLowerCase()) {
+            view.view.classList.add('video-js', 'vjs-default-skin')
+          }
+          subscriber.off('*', onSubscriberEvent);
+          resolve({
+            subscriber: selectedSubscriber,
+            view: view
+          });
+        })
+        .catch(function (error) {
+          reject(error);
+        });
+
+    });
+  }
+
+  // Request to start subscribing using an overlayed configuration from local default and local storage.
+  function subscribe (subscriber, view, streamName) {
+    streamTitle.innerText = streamName;
 
     targetSubscriber = subscriber;
     targetView = view;
 
-    // Subscribe to events.
-    subscriber.on('*', onSubscriberEvent);
     // Initiate playback.
-    subscriber.init(config)
-      .then(function (player) {
-        return player.play();
-      })
+    subscriber.play()
       .then(function () {
         onSubscribeSuccess()
       })
@@ -188,7 +250,14 @@
 
   // Kick off.
   requestEdge(configuration)
-    .then(subscribe)
+    .then(determineSubscriber)
+    .then(function(payload) {
+      var subscriber = payload.subscriber;
+      var view = payload.view
+      // Subscribe to events.
+      subscriber.on('*', onSubscriberEvent);
+      subscribe(subscriber, view, configuration.stream1);
+    })
     .catch(function (error) {
       onSubscribeFail(error);
       console.error('Could not subscriber with Edge IP: ' + error);
