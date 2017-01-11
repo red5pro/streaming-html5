@@ -37,6 +37,7 @@
     window.red5proHandleSubscriberEvent(event); // defined in src/template/partial/status-field-subscriber.hbs
   };
   var streamTitle = document.getElementById('stream-title');
+  var instanceId = Math.floor(Math.random() * 0x10000).toString(16);
   var protocol = serverSettings.protocol;
   var isSecure = protocol == 'https';
   function getSocketLocationFromProtocol () {
@@ -45,17 +46,25 @@
       : {protocol: 'wss', port: serverSettings.wssport};
   }
 
-  var defaultConfiguration = {
-    protocol: getSocketLocationFromProtocol().protocol,
-    port: getSocketLocationFromProtocol().port,
-    app: 'live',
-    bandwidth: {
-      audio: 50,
-      video: 256,
-      data: 30 * 1000 * 1000
-    },
-    videoEncoding: 'NONE'
-  }
+  var defaultConfiguration = (function(useVideo, useAudio) {
+    var c = {
+      protocol: getSocketLocationFromProtocol().protocol,
+      port: getSocketLocationFromProtocol().port,
+      app: 'live',
+      bandwidth: {
+        audio: 50,
+        video: 256,
+        data: 30 * 1000 * 1000
+      }
+    };
+    if (!useVideo) {
+      c.videoEncoding = red5pro.PlaybackVideoEncoder.NONE;
+    }
+    if (!useAudio) {
+      c.audioEncoding = red5pro.PlaybackAudioEncoder.NONE;
+    }
+    return c;
+  })(configuration.useVideo, configuration.useAudio);
 
   function shutdownAudioElement () {
     var audioElement = document.getElementById('red5pro-subscriber-audio');
@@ -86,6 +95,7 @@
   function determineSubscriber () {
     var config = Object.assign({}, configuration, defaultConfiguration);
     config.streamName = config.stream1;
+    config.subscriptionId = instanceId;
     return SubscriberBase.getRTCSubscriber(config);
   }
 
@@ -133,16 +143,16 @@
 
   // Kick off.
   determineSubscriber()
-    .then(function(payload) {
+    .then(function (payload) {
       var subscriber = payload.subscriber;
       // Subscribe to events.
       subscriber.on('*', onSubscriberEvent);
       return view(subscriber);
     })
-    .then(function(payload) {
+    .then(function (payload) {
       var subscriber = payload.subscriber;
       var view = payload.view;
-      subscribe(subscriber, view, configuration.stream1);
+      return subscribe(subscriber, view, configuration.stream1);
     })
     .catch(function (error) {
       var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);

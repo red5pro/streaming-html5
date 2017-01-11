@@ -38,6 +38,26 @@
       : {protocol: 'wss', port: serverSettings.wssport};
   }
 
+  var defaultConfiguration = (function(useVideo, useAudio) {
+    var c = {
+      protocol: getSocketLocationFromProtocol().protocol,
+      port: getSocketLocationFromProtocol().port,
+      app: 'live',
+      bandwidth: {
+        audio: 50,
+        video: 256,
+        data: 30 * 1000 * 1000
+      }
+    };
+    if (!useVideo) {
+      c.videoEncoding = red5pro.PlaybackVideoEncoder.NONE;
+    }
+    if (!useAudio) {
+      c.audioEncoding = red5pro.PlaybackAudioEncoder.NONE;
+    }
+    return c;
+  })(configuration.useVideo, configuration.useAudio);
+
   // Local lifecycle notifications.
   function onSubscriberEvent (event) {
     console.log('[Red5ProSubscriber] ' + event.type + '.');
@@ -57,7 +77,7 @@
   }
 
   function determineSubscriber () {
-    var config = Object.assign({}, configuration);
+    var config = Object.assign({}, configuration, defaultConfiguration);
     var rtcConfig = Object.assign({}, config, {
       protocol: getSocketLocationFromProtocol().protocol,
       port: getSocketLocationFromProtocol().port,
@@ -166,7 +186,7 @@
     .then(function(payload) {
       var subscriber = payload.subscriber;
       var view = payload.view;
-      subscribe(subscriber, view, configuration.stream1);
+      return subscribe(subscriber, view, configuration.stream1);
     })
     .catch(function (error) {
       var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);

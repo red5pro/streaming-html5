@@ -1,4 +1,4 @@
-(function(window, document, red5pro) {
+(function(window, document, red5pro, PublisherBase, SubscriberBase /* see: src/static/script/main.js */) {
   'use strict';
 
   var serverSettings = (function() {
@@ -23,8 +23,6 @@
     return {}
   })();
 
-  red5pro.setLogLevel(configuration.verboseLogging ? red5pro.LogLevels.TRACE : red5pro.LogLevels.WARN);
-
   var targetPublisher;
   var targetPubView;
 
@@ -37,6 +35,7 @@
   var subStatusField = document.getElementById('sub-status-field');
   var subStreamTitle = document.getElementById('sub-stream-title');
 
+  var instanceId = Math.floor(Math.random() * 0x10000).toString(16);
   var protocol = serverSettings.protocol;
   var isSecure = protocol === 'https';
   function getSocketLocationFromProtocol () {
@@ -45,51 +44,28 @@
       : {protocol: 'wss', port: serverSettings.wssport};
   }
 
-  var defaultConfiguration = {
-    protocol: getSocketLocationFromProtocol().protocol,
-    port: getSocketLocationFromProtocol().port,
-    app: 'live'
-  };
-
-  function updateStatusFromPublishEvent (event, field) {
-    var pubTypes = red5pro.PublisherEventTypes;
-    var rtcTypes = red5pro.RTCPublisherEventTypes;
-    var status;
-    switch (event.type) {
-      case pubTypes.CONNECT_SUCCESS:
-        status = 'Connection established...';
-        break;
-      case pubTypes.CONNECT_FAILURE:
-        status = 'Error - Could not establish connection.';
-        break;
-      case pubTypes.PUBLISH_START:
-        status = 'Started publishing session.';
-        beginStreamListCall();
-        break;
-      case pubTypes.PUBLISH_FAIL:
-        status = 'Error - Could not start a publishing session.';
-        break;
-      case pubTypes.PUBLISH_INVALID_NAME:
-        status = 'Error - Stream name already in use.';
-        break;
-      case rtcTypes.MEDIA_STREAM_AVAILABLE:
-        status = 'Stream available...';
-        break;
-      case rtcTypes.PEER_CONNECTION_AVAILABLE:
-        status = 'Peer Connection available...';
-        break;
-      case rtcTypes.OFFER_START:
-        status = 'Begin offer...';
-        break;
-      case rtcTypes.OFFER_END:
-        status = 'Offer accepted...';
-        break;
-      case rtcTypes.ICE_TRICKLE_COMPLETE:
-        status = 'Negotiation complete. Waiting Publish Start...';
-        break;
+  var defaultSubscriberConfiguration = (function(useVideo, useAudio) {
+    var c = {
+      protocol: getSocketLocationFromProtocol().protocol,
+      port: getSocketLocationFromProtocol().port,
+      app: 'live',
+      bandwidth: {
+        audio: 50,
+        video: 256,
+        data: 30 * 1000 * 1000
+      }
+    };
+    if (!useVideo) {
+      c.videoEncoding = red5pro.PlaybackVideoEncoder.NONE;
     }
-    field.innerText = ['STATUS', status].join(': ');
-  }
+    if (!useAudio) {
+      c.audioEncoding = red5pro.PlaybackAudioEncoder.NONE;
+    }
+    return c;
+  })(configuration.useVideo, configuration.useAudio);
+
+  var updateStatusFromPublishEvent = window.red5proHandlePublisherEvent; // defined in src/template/partial/status-field-publisher.hbs
+  var updateStatusFromSubscribeEvent = window.red5proHandleSubscriberEvent; // defined in src/template/partial/status-field-subscriber.hbs
 
   function onPublisherEvent (event) {
     console.log('[Red5ProPublisher] ' + event.type + '.');
@@ -107,6 +83,22 @@
   function onUnpublishSuccess () {
     console.log('[Red5ProPublisher] Unpublish Complete.');
   }
+  function onSubscriberEvent (event) {
+    console.log('[Red5ProSubsriber] ' + event.type + '.');
+    updateStatusFromSubscribeEvent(event, subStatusField);
+  }
+  function onSubscribeFail (message) {
+    console.error('[Red5ProSubsriber] Subscribe Error :: ' + message);
+  }
+  function onSubscribeSuccess () {
+    console.log('[Red5ProSubsriber] Subscribe Complete.');
+  }
+  function onUnsubscribeFail (message) {
+    console.error('[Red5ProSubsriber] Unsubscribe Error :: ' + message);
+  }
+  function onUnsubscribeSuccess () {
+    console.log('[Red5ProSubsriber] Unsubscribe Complete.');
+  }
 
   function getUserMediaConfiguration () {
     return {
@@ -116,90 +108,74 @@
     };
   }
 
-  function preview () {
-    var gUM = getUserMediaConfiguration;
-    return new Promise(function (resolve, reject) {
+  function determinePublisher () {
 
-      var elementId = 'red5pro-publisher-video';
-      var publisher = new red5pro.RTCPublisher();
-      var view = new red5pro.PublisherView(elementId);
-      var gmd = navigator.mediaDevice || navigator;
+    var config = Object.assign({},
+                   configuration,
+                   getUserMediaConfiguration());
+    var rtcConfig = Object.assign({}, config, {
+                      protocol: getSocketLocationFromProtocol().protocol,
+                      port: getSocketLocationFromProtocol().port,
+                      streamName: config.stream1,
+                      streamType: 'webrtc'
+                   });
+    var rtmpConfig = Object.assign({}, config, {
+                      protocol: 'rtmp',
+                      port: serverSettings.rtmpport,
+                      streamName: config.stream1,
+                      width: config.cameraWidth,
+                      height: config.cameraHeight,
+                      swf: '../../lib/red5pro/red5pro-publisher.swf',
+                      swfobjectURL: '../../lib/swfobject/swfobject.js',
+                      productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
+                   });
+    var publishOrder = config.publisherFailoverOrder
+                            .split(',')
+                            .map(function (item) {
+                              return item.trim()
+                        });
 
-      publisher.on('*', onPublisherEvent);
-      console.log('[Red5ProPublisher] gUM:: ' + JSON.stringify(gUM(), null, 2));
-
-      gmd.getUserMedia(gUM(), function (media) {
-
-        // Upon access of user media,
-        // 1. Attach the stream to the publisher.
-        // 2. Show the stream as preview in view instance.
-        publisher.attachStream(media);
-        view.preview(media, true);
-        targetPublisher = publisher;
-        targetPubView = view;
-        resolve();
-
-      }, function(error) {
-
-        onPublishFail('Error - ' + error);
-        reject(error);
-
-      })
-    });
+    return PublisherBase.determinePublisher({
+                rtc: rtcConfig,
+                rtmp: rtmpConfig
+              }, publishOrder);
   }
 
-  function publish () {
-    var publisher = targetPublisher;
-    var view = targetPubView;
-    var config = Object.assign({},
-                    configuration,
-                    defaultConfiguration,
-                    getUserMediaConfiguration());
-    config.streamName = config.stream1;
-    console.log('[Red5ProPublisher] config:: ' + JSON.stringify(config, null, 2));
+  function preview (publisher, requiresGUM) {
+    var elementId = 'red5pro-publisher-video';
+    var gUM = getUserMediaConfiguration();
+    return PublisherBase.preview(publisher, elementId, requiresGUM ? gUM : undefined);
+  }
 
-    view.attachPublisher(publisher);
-    pubStreamTitle.innerText = config.streamName;
-
-    // Initialize
-    publisher.init(config)
-      .then(function (pub) { // eslint-disable-line no-unused-vars
-        // Invoke the publish action
-        return publisher.publish();
-      })
-      .then(function () {
-        onPublishSuccess();
-      })
-      .catch(function (error) {
-        // A fault occurred while trying to initialize and publish the stream.
-        var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
-        onPublishFail('Error - ' + jsonError);
-      });
+  function publish (publisher, view, streamName) {
+    pubStreamTitle.innerText = streamName;
+    targetPublisher = publisher;
+    targetPubView = view;
+    return new Promise(function (resolve, reject) {
+      PublisherBase.publish(publisher, streamName)
+       .then(function () {
+          onPublishSuccess(publisher);
+        })
+        .catch(function (error) {
+          reject(error);
+        })
+    });
   }
 
   function unpublish () {
     return new Promise(function (resolve, reject) {
       var view = targetPubView;
       var publisher = targetPublisher;
-      if (publisher) {
-        publisher.unpublish()
-          .then(function () {
-            view.view.src = '';
-            publisher.setView(undefined);
-            publisher.off('*', onPublisherEvent);
-            onUnpublishSuccess();
-            resolve();
-          })
-          .catch(function (error) {
-            var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
-            onUnpublishFail('Unmount Error ' + jsonError);
-            reject(error);
-          });
-      }
-      else {
-        onUnpublishSuccess();
-        resolve();
-      }
+      PublisherBase.unpublish(publisher, view)
+        .then(function () {
+          onUnpublishSuccess();
+          resolve();
+        })
+        .catch(function (error) {
+          var jsonError = typeof error === 'string' ? error : JSON.stringify(error, 2, null);
+          onUnpublishFail('Unmount Error ' + jsonError);
+          reject(error);
+        });
     });
   }
 
@@ -249,7 +225,7 @@
     }
 
     if (found) {
-      subscribe();
+      startSubscribing();
     }
     else {
       setWaitTime();
@@ -265,116 +241,103 @@
     setTimeout(beginStreamListCall, 5000);
   }
 
-  // Displays in status field based on events from subscriber instance.
-  function updateStatusFromSubscribeEvent (event, field) {
-    var subTypes = red5pro.SubscriberEventTypes;
-    var rtcTypes = red5pro.RTCSubscriberEventTypes;
-    var status;
-    var answer;
-    var candidate;
-    switch (event.type) {
-      case subTypes.CONNECT_SUCCESS:
-        status = 'Connection established...';
-        break;
-      case subTypes.CONNECT_FAILURE:
-        status = 'Error - Could not establish connection.';
-        break;
-      case subTypes.SUBSCRIBE_START:
-        status = 'Started subscribing session.';
-        break;
-      case subTypes.SUBSCRIBE_FAIL:
-        status = 'Error - Could not start a subscribing session.';
-        break;
-      case subTypes.SUBSCRIBE_INVALID_NAME:
-        status = 'Error - Stream name not in use.';
-        break;
-      case rtcTypes.OFFER_START:
-        status = 'Begin offer...';
-        break;
-      case rtcTypes.OFFER_END:
-        status = 'Offer accepted...';
-        break;
-      case rtcTypes.ANSWER_START:
-        status = 'Sending answer...';
-        answer = JSON.stringify(event.data, null, 2);
-        console.log('[SubscriberStatus] ' + event.type + ': ' + answer);
-        break
-      case rtcTypes.ANSWER_END:
-        status = 'Answer received...';
-        break
-      case rtcTypes.CANDIDATE_START:
-        status = 'Sending candidate...';
-        candidate = JSON.stringify(event.data, null, 2);
-        console.log('[SubscriberStatus] ' + event.type + ': ' + candidate);
-        break
-      case rtcTypes.CANDIDATE_END:
-        status = 'Candidate received...';
-        break;
-      case rtcTypes.ICE_TRICKLE_COMPLETE:
-        status = 'Negotiation complete. Waiting Subscription Start...';
-        break;
-    }
-    field.innerText = ['STATUS', status].join(': ');
+  function startSubscribing () {
+    // Kick off.
+    determineSubscriber()
+      .then(function(payload) {
+        var subscriber = payload.subscriber;
+        // Subscribe to events.
+        subscriber.on('*', onSubscriberEvent);
+        return view(subscriber);
+      })
+      .then(function(payload) {
+        var subscriber = payload.subscriber;
+        var view = payload.view;
+        return subscribe(subscriber, view, configuration.stream1);
+      })
+      .catch(function (error) {
+        var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
+        console.error('[Red5ProSubscriber] :: Error in subscribing - ' + jsonError);
+        onSubscribeFail(jsonError);
+      });
   }
 
-  // Local lifecycle notifications.
-  function onSubscriberEvent (event) {
-    console.log('[Red5ProSubsriber] ' + event.type + '.');
-    updateStatusFromSubscribeEvent(event, subStatusField);
+  function determineSubscriber () {
+    var config = Object.assign({}, configuration, defaultSubscriberConfiguration);
+    var rtcConfig = Object.assign({}, config, {
+      protocol: getSocketLocationFromProtocol().protocol,
+      port: getSocketLocationFromProtocol().port,
+      subscriptionId: 'subscriber-' + instanceId,
+      streamName: config.stream2,
+      bandwidth: {
+        audio: 50,
+        video: 256,
+        data: 30 * 1000 * 1000
+      }
+    })
+    var rtmpConfig = Object.assign({}, config, {
+      protocol: 'rtmp',
+      port: serverSettings.rtmpport,
+      streamName: config.stream2,
+      mimeType: 'rtmp/flv',
+      useVideoJS: false,
+      width: config.cameraWidth,
+      height: config.cameraHeight,
+      swf: '../../lib/red5pro/red5pro-subscriber.swf',
+      swfobjectURL: '../../lib/swfobject/swfobject.js',
+      productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
+    })
+    var hlsConfig = Object.assign({}, config, {
+      protocol: protocol,
+      port: isSecure ? serverSettings.hlssport : serverSettings.hlsport,
+      streamName: config.stream2,
+      mimeType: 'application/x-mpegURL',
+      swf: '../../lib/red5pro/red5pro-video-js.swf',
+      swfobjectURL: '../../lib/swfobject/swfobject.js',
+      productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
+    })
+
+    if (!config.useVideo) {
+      rtcConfig.videoEncoding = 'NONE';
+    }
+    if (!config.useAudio) {
+      rtcConfig.audioEncoding = 'NONE';
+    }
+
+    var subscribeOrder = config.subscriberFailoverOrder
+                          .split(',').map(function (item) {
+                            return item.trim();
+                          });
+
+    return SubscriberBase.determineSubscriber({
+              rtc: rtcConfig,
+              rtmp: rtmpConfig,
+              hls: hlsConfig
+            }, subscribeOrder);
   }
-  function onSubscribeFail (message) {
-    console.error('[Red5ProSubsriber] Subscribe Error :: ' + message);
-  }
-  function onSubscribeSuccess () {
-    console.log('[Red5ProSubsriber] Subscribe Complete.');
-  }
-  function onUnsubscribeFail (message) {
-    console.error('[Red5ProSubsriber] Unsubscribe Error :: ' + message);
-  }
-  function onUnsubscribeSuccess () {
-    console.log('[Red5ProSubsriber] Unsubscribe Complete.');
+
+  function view (subscriber) {
+    var elementId = 'red5pro-subscriber-video';
+    return SubscriberBase.view(subscriber, elementId);
   }
 
   // Request to start subscribing using an overlayed configuration from local default and local storage.
-  function subscribe () {
-    var config = Object.assign({}, configuration, defaultConfiguration);
-    config.streamName = config.stream2;
-    if (!config.useVideo) {
-      config.videoEncoding = red5pro.PlaybackVideoEncoder.NONE;
-    }
-    if (!useAudio) {
-      config.audioEncoding = red5pro.PlaybackAudioEncoder.NONE;
-    }
-    console.log('[Red5ProSubscriber] config:: ' + JSON.stringify(config, null, 2));
-
-    // Setup view.
-    var view = new red5pro.PlaybackView('red5pro-subscriber-video');
-    var subscriber = new red5pro.RTCSubscriber();
-    var origAttachStream = view.attachStream.bind(view);
-    view.attachStream = function (stream, autoplay) {
-      origAttachStream(stream, autoplay)
-      view.attachStream = origAttachStream
-    };
-    view.attachSubscriber(subscriber);
-    subStreamTitle.innerText = config.streamName;
-
+  function subscribe (subscriber, view, streamName) {
+    subStreamTitle.innerText = streamName;
     targetSubscriber = subscriber;
     targetSubView = view;
-
-    // Subscribe to events.
-    subscriber.on('*', onSubscriberEvent);
+    if (targetSubscriber.getType().toLowerCase() === 'hls') {
+      targetSubView.view.classList.add('video-js', 'vjs-default-skin')
+    }
     // Initiate playback.
-    subscriber.init(config)
-      .then(function (player) {
-        return player.play();
-      })
-      .then(function () {
-        onSubscribeSuccess()
-      })
-      .catch(function (error) {
-        var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
-        onSubscribeFail('Error - ' + jsonError);
-      });
+    return new Promise(function (resolve, reject) {
+      SubscriberBase.subscribe(subscriber, view)
+        .then(function () {
+          onSubscribeSuccess();
+          resolve();
+        })
+        .catch(reject);
+    });
   }
 
   // Request to unsubscribe.
@@ -382,43 +345,57 @@
     return new Promise(function(resolve, reject) {
       var view = targetSubView
       var subscriber = targetSubscriber
-      if (subscriber) {
-        subscriber.stop()
-          .then(function () {
-            view.view.src = ''
-            subscriber.setView(undefined)
-            subscriber.off('*', onSubscriberEvent);
-            onUnsubscribeSuccess();
-            resolve();
-          })
-          .catch(function (error) {
-            var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
-            onUnsubscribeFail('Unmount Error = ' + jsonError);
-            reject('Could not unsubscribe: ' + error);
-          });
-      }
-      else {
-        resolve()
-      }
+      SubscriberBase.unsubscribe(subscriber, view)
+        .then(function () {
+          targetSubscriber.off('*', onSubscriberEvent);
+          targetSubscriber = undefined;
+          targetSubView = undefined;
+          onUnsubscribeSuccess();
+          resolve();
+        })
+        .catch(function (error) {
+          var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
+          onUnsubscribeFail(jsonError);
+          reject(error);
+        });
     });
   }
 
   // Kick off.
-  preview()
-    .then(publish)
+  determinePublisher()
+    .then(function (payload) {
+      var requiresPreview = payload.requiresPreview;
+      var publisher = payload.publisher;
+      publisher.on('*', onPublisherEvent);
+      return preview(publisher, requiresPreview);
+    })
+    .then(function (payload) {
+      var publisher = payload.publisher;
+      var view = payload.view;
+      return publish(publisher, view, configuration.stream1);
+    })
+    .then(function () {
+      beginStreamListCall();
+    })
     .catch(function (error) {
-      console.error('[Red5ProPublisher] :: Error in publishing - ' + error);
+      var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
+      console.error('[Red5ProPublisher] :: Error in publishing - ' + jsonError);
+      onPublishFail(jsonError);
      });
 
   window.addEventListener('beforeunload', function() {
     function clearRefs () {
-      targetPublisher.off('*', onPublisherEvent);
+      if (targetPublisher) {
+        targetPublisher.off('*', onPublisherEvent);
+      }
+      if (targetSubscriber) {
+        targetSubscriber.off('*', onSubscriberEvent);
+      }
       targetPubView = targetPublisher = undefined;
-      targetSubscriber.off('*', onSubscriberEvent);
       targetSubscriber = targetSubView = undefined;
     }
     unpublish().then(unsubscribe).then(clearRefs).catch(clearRefs);
   });
 
-})(this, document, window.red5prosdk);
+})(this, document, window.red5prosdk, new window.R5ProBase.Publisher(), new window.R5ProBase.Subscriber());
 

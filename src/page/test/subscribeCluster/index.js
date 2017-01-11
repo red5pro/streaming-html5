@@ -229,16 +229,16 @@
   // Kick off.
   requestEdge(configuration)
     .then(determineSubscriber)
-    .then(function(payload) {
+    .then(function (payload) {
       var subscriber = payload.subscriber;
       // Subscribe to events.
       subscriber.on('*', onSubscriberEvent);
       return view(subscriber);
     })
-    .then(function(payload) {
+    .then(function (payload) {
       var subscriber = payload.subscriber;
       var view = payload.view;
-      subscribe(subscriber, view, configuration.stream1);
+      return subscribe(subscriber, view, configuration.stream1);
     })
     .catch(function (error) {
       var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
