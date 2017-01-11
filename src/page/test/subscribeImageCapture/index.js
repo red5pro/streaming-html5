@@ -119,7 +119,7 @@
   }
 
   function view (subscriber) {
-    var elementId = 'red5pro-subscriber-audio';
+    var elementId = 'red5pro-subscriber-video';
     return SubscriberBase.view(subscriber, elementId);
   }
 
