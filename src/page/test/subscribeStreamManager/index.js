@@ -75,8 +75,8 @@
     }
   }
 
-  function displayServerAddress (serverAddress) {
-    addressField.innerText = 'Origin Address: ' + serverAddress;
+  function displayServerAddress (serverAddress, type) {
+    addressField.innerText = type + ' Address: ' + serverAddress;
   }
 
   // Local lifecycle notifications.
@@ -129,7 +129,7 @@
   }
 
   function determineSubscriber (host) {
-    displayServerAddress(host);
+    displayServerAddress('Edge', host);
     var config = Object.assign({}, configuration, defaultConfiguration);
     var rtcConfig = Object.assign({}, config, {
       host: host,
