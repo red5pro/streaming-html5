@@ -155,6 +155,7 @@
       PublisherBase.publish(publisher, streamName)
        .then(function () {
           onPublishSuccess(publisher);
+          resolve();
         })
         .catch(function (error) {
           reject(error);
@@ -253,7 +254,7 @@
       .then(function(payload) {
         var subscriber = payload.subscriber;
         var view = payload.view;
-        return subscribe(subscriber, view, configuration.stream1);
+        return subscribe(subscriber, view, configuration.stream2);
       })
       .catch(function (error) {
         var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
