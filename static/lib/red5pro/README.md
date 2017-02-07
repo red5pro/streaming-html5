@@ -49,7 +49,7 @@ In a browser:
   (function(red5pro) {
 
     var rtcSubscriber = new red5pro.RTCSubscriber();
-    var viewer = new red5pro.Red5ProPlaybackView();
+    var viewer = new red5pro.PlaybackView();
     viewer.attachSubscriber(rtcSubscriber);
 
     rtcSubscriber.init({
@@ -60,7 +60,9 @@ In a browser:
       streamName: 'mystream',
       iceServers: [{urls: 'stun:stun2.l.google.com:19302'}]
     })
-    .then(rtcSubscriber.play)
+    .then(function() {
+      return rtcSubscriber.play();
+    })
     .then(function() {
       console.log('Playing!');
     })
@@ -83,10 +85,10 @@ $ npm install red5pro-sdk
 ```
 
 ```js
-import { RTCSubscriber, Red5ProPlaybackView } from 'red5pro-sdk'
+import { RTCSubscriber, PlaybackView } from 'red5pro-sdk'
 
 const subscriber = new RTCSubscriber()
-const view = new Red5ProPlaybackView()
+const view = new PlaybackView()
 view.attachSubscriber(subscriber)
 
 subscriber.init({
@@ -400,6 +402,24 @@ _It is recommended to include [adapter.js](https://github.com/webrtc/adapter) wh
 | iceServers | The list of ICE servers to use in requesting a Peer Connection. | Required |
 | bandwidth | A configuration object to setup playback. | _Optional_ |
 | autoplay | Flag to autoplay the stream when received upon negotiation. | _Optional. Default: `true`_ |
+| videoEncoding | Specifies target video encoder. | _Optional. Default: Server decides_ |
+| audio Encoding | Specifies target audio encoder. | _Optional. Default: Server decides_ |
+
+##### Video Encoding Configuration
+By not providing the `videoEncoding` attribute in the WebRTC Subscriber configuration, the server will choose the default encoder to use. If you do not wish for the server to default, you can provide the following values for the property:
+
+* `VP8`
+* `H264`
+* `NONE`
+
+##### Audio Encoding Configuration
+By not providing the `audioEncoding` attribute in the WebRTC Subscriber configuration, the server will choose the default encoder to use. If you do not wish for the server to default, you can provide the following values for the property:
+
+* `Opus`
+* `PCMU`
+* `PCMA`
+* `Speex`
+* `NONE`
 
 #### Example
 ```html
@@ -664,7 +684,7 @@ As such, the **init** configuration provided to the library to allow for auto-fa
           // See above documentation for HLS source option requirements
         }
     })
-    .then((player) => {
+    .then(function(player) {
       // `player` has been determined from browser support.
       // Invoke play action
       player.play()

@@ -1,4 +1,4 @@
-#Stream Manager Subscribing
+#Stream Manager Subscribing using Failover
 
 With clustering, we need to determine which Red5 Pro instance the client will use. The other examples used a static configuration IP for streaming endpoints. Basic clustering uses more than one stream endpoint for subscribers. Advanced clustering uses more than one endpoint for publishers also.
 
@@ -11,8 +11,6 @@ With the Stream Manager, our configuration IP will be used similarly for publish
 ### Example Code
 - **[index.html](index.html)**
 - **[index.js](index.js)**
-
-> These examples use the WebRTC-based Publisher implementation from the Red5 Pro HTML SDK. However, there is failover support to allow for Flash-base publisher on unsupported browsers.
 
 ## Setup
 In order to subscribe, you first need to connect to the origin server's Stream Manager. The Stream Manager will know which edges are active and provide the one that you need to subscribe from.

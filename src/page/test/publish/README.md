@@ -1,11 +1,18 @@
-# Publishing on Red5 Pro
-This is the basic starter example on publishing to a Red5 Pro stream using the Red5 Pro HTML SDK.
+# Publish Failover using Red5 Pro
+This is an example of utilizing the failover mechanism of the Red5 Pro HTML SDK to select a publisher based on browser support.
+
+The default failover order is:
+
+1. WebRTC
+2. RTMP/Flash
+
+When utilizing the auto-failover mechanism, the SDK - by default - will first test for WebRTC support and if missing will attempt to embed a publisher SWF for the broadcast.
+
+You can define the desired failover order from using `setPublishOrder`.
 
 ### Example Code
 - **[index.html](index.html)**
 - **[index.js](index.js)**
-
-> These examples use the WebRTC-based Publisher implementation from the Red5 Pro HTML SDK. However, there is failover support to allow for Flash-base publisher on unsupported browsers.
 
 ## How to Publish
 Publishing to a Red5 Pro stream requires a few components to function fully.
@@ -33,20 +40,63 @@ You will need to include the Red5 Pro SDK library on the page. The root of the l
 </html>
 ```
 
-#### Publisher & Viewer
-A Publisher instance - for the purposes of these examples, the `RTCPublisher` implementation - is required to attach a stream and request publishing. Additionally, a `PublisherView` is required to "preview" the stream in the browser:
+#### Publisher Selection
+A Publisher instance is required to attach a stream and request publishing. The SDK can determine browser support and instantiate the proper Publisher implementation based on the desired failover order.
+
+A configuration for each tech implementation must be provided to the `init` invocation:
 
 ```js
-var publisher = new red5pro.RTCPublisher();
-var view = new red5pro.PublisherView('red5pro-publisher-video');
+function determinePublisher () {
+    var config = Object.assign({},
+                   configuration,
+                   getUserMediaConfiguration());
+    var rtcConfig = Object.assign({}, config, {
+                      protocol: 'ws',
+                      port: config.rtcport,
+                      streamName: config.stream1,
+                      streamType: 'webrtc'
+                   });
+    var rtmpConfig = Object.assign({}, config, {
+                      protocol: 'rtmp',
+                      port: config.rtmpport,
+                      streamName: config.stream1,
+                      width: config.cameraWidth,
+                      height: config.cameraHeight,
+                      swf: '../../lib/red5pro/red5pro-publisher.swf',
+                      swfobjectURL: '../../lib/swfobject/swfobject.js',
+                      productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
+                   });
+
+  return new Promise(function (resolve, reject) {
+
+    var publisher = new red5pro.Red5ProPublisher();
+
+    publisher.setPublishOrder(publishOrder)
+      .init({
+        rtc: rtcConfig,
+        rtmp: rtmpConfig
+      })
+      .then(function (selectedPublisher) {
+...
+      });
+  });
+}
 ```
 
 <sup>
-[index.js #57](index.js#L57)
+[index.js #76](index.js#L76)
 </sup>
 
-#### MediaStream
-A `MediaStream` needs to be requested from the browser and provided to the `RTCPublisher` implementation. This is done using the `getUserMedia` method on the `navigator` instance of the page which will return the `MediaStream` on success callback:
+The `init` method of the `Red5ProPublisher` returns a `Promise` that will be resolved with the instantiated Publisher implementation based on the publish order and browser support.
+
+You can determine the selected implementation by invoking `selectedPublisher.getType()`.
+
+> Read more about configurations and their attributes from the [Red5 Pro HTML SDK Documentation](https://github.com/infrared5/red5pro-html-sdk#publisher).
+
+#### RTCPublisher
+If the browser supports WebRTC and the `Red5ProPublisher` has instantiated the `RTCPublisher` based on failover, a `MediaStream` needs to be requested from the browser and provided to the `RTCPublisher` implementation.
+
+This is done using the `getUserMedia` method on the `navigator` instance of the page which will return the `MediaStream` on success callback:
 
 ```js
 var nav = navigator.mediaDevice || navigator;
@@ -54,7 +104,10 @@ nav.getUserMedia({
     audio: true,
     video: true
   }, function (media) {
-...
+
+    selectedPublisher.attachMedia(media);
+    view.preview(media, true);
+
   }, function (error) {
     console.error('Error accessing media: ' + error);
   });
@@ -65,75 +118,20 @@ When requesting the `MediaStream` you provide a constraints declaration for the 
 > More information: [Media.getUserMedia from MDN](https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia)
 
 <sup>
-[index.js #64](index.js#L64)
+[index.js #139](index.js#L139)
 </sup>
-
-#### Preview the Stream
-To preview a `MediaStream` returned from `getUserMedia`, add the stream to the Publisher instance and `PublisherView` which has a reference to a `video` DOM element:
-
-```js
-var nav = navigator.mediaDevice || navigator;
-nav.getUserMedia({
-    audio: true,
-    video: true
-  }, function (media) {
-
-    // Upon access of user media,
-    // 1. Attach the stream to the publisher.
-    // 2. Show the stream as preview in view instance.
-    // 3. Associate publisher & view (optional).
-    publisher.attachStream(media);
-    view.preview(media, true);
-    view.attachPublisher(publisher);
-
-  }, function (error) {
-    console.error('Error accessing media: ' + error);
-  });
-```
-
-<sup>
-[index.js #71](index.js#L71)
-</sup>
-
-#### Configuration & Initialization
-The Publisher instance needs to be initialized with a configuration describing the remote endpoint that it needs to connect and stream to:
-
-```js
-var configuration = {
-  protocol: 'ws',
-  host: 'localhost',
-  port: 8081,
-  app: 'live',
-  streamName: 'stream1',
-  iceServers: [
-    {
-      "urls": "stun:stun2.l.google.com:19302"
-    }
-  ]
-};
-
-publisher.init(configuration)
-  .then(function () {
-...
-  })
-  .catch(function (error) {
-...
-  });
-```
-
-<sup>
-[index.js #88](index.js#L88)
-</sup>
-
-> Read more about configurations and their attributes from the [Red5 Pro HTML SDK Documentation](https://github.com/infrared5/red5pro-html-sdk#publisher).
 
 #### Publishing
-The `init` method of the Publisher instance returns a `Promise` which, when resolved, relays the capability to start a publishing session. Use the resolve of the `Promise` to start a Red5 Pro stream:
+The `init` method of the `Red5ProPublisher` instance returns a `Promise` which, when resolved, relays the Publisher instance determined from the failover. To start a publishing session, call the `publish` method of the Publisher resolved:
 
 ```js
-publisher.init(configuration)
-  .then(function () {
-    return publisher.publish();
+publisher.setPublishOrder(publishOrder)
+  .init({
+    rtc: rtcConfig,
+    rtmp: rtmpConfig
+  })
+  .then(function (selectedPublisher) {
+    return selectedPublisher.publish();
   })
   .then(function () {
     console.log('Successfully started a broadcast session!');
@@ -144,7 +142,7 @@ publisher.init(configuration)
 ```
 
 <sup>
-[index.js #101](index.js#L101)
+[index.js #106](index.js#L106)
 </sup>
 
 ### View Your Stream

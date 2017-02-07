@@ -1,7 +1,7 @@
 <!doctype html>
 <html>
   <head>
-    {{> meta title='Publish Audio-Only Test'}}
+    {{> meta title='WebRTC Publish Mute Test'}}
     {{> header-scripts}}
     {{> header-stylesheets}}
   </head>
@@ -9,11 +9,14 @@
     <div id="app">
       {{> version }}
       {{> settings-link}}
-      {{> test-info testTitle='Publish Audio-Only Test'}}
+      {{> test-info testTitle='WebRTC Publish Mute Test'}}
       {{> status-field-publisher}}
       {{> statistics-field}}
       <div class="centered">
-        <video id="red5pro-publisher-video" controls class="video-element"></video>
+        <video id="red5pro-publisher-video" controls class="video-element" muted></video>
+      </div>
+      <div class="centered">
+        <button id="mute-button">mute</button>
       </div>
     </div>
     {{> body-scripts}}

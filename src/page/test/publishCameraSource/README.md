@@ -1,4 +1,4 @@
-# Publishing with User-Selected Camera Source
+# Publishing with User-Selected Camera Source : WebRTC
 This example demonstrates a request for a `MediaStream` with a defined `video` source for the constraint.
 
 **Please refer to the [Basic Publisher Documentation](../publish/README.md) to learn more about the basic setup.**

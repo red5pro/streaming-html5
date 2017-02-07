@@ -4,6 +4,12 @@
     {{> meta title='Publish Stream Manager Test'}}
     {{> header-scripts}}
     {{> header-stylesheets}}
+    <style>
+      #address-field {
+        padding: 6px;
+        background-color: #ccc;
+      }
+    </style>
   </head>
   <body>
     <div id="app">
@@ -18,6 +24,7 @@
       {{> test-info testTitle='Publish Stream Manager Test'}}
       {{> status-field-publisher}}
       {{> statistics-field}}
+      <div class="centered"><p id="address-field">Origin Address: N/A</p></div>
       <div class="centered">
         <video id="red5pro-publisher-video" controls class="video-element" muted></video>
       </div>

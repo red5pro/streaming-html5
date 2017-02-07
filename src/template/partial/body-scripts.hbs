@@ -4,3 +4,27 @@
 <script src="../../lib/es6/es6-object-assign.js"></script>
 <script src="../../lib/es6/es6-fetch.js"></script>
 <script src="../../lib/red5pro/red5pro-sdk.min.js"></script>
+<script src="../../script/main.js"></script>
+<script>
+  (function(window) {
+    var configuration = (function () {
+      var conf = sessionStorage.getItem('r5proTestBed');
+      try {
+        return JSON.parse(conf);
+      }
+      catch (e) {
+        console.error('Could not read testbed configuration from sessionstorage: ' + e.message);
+      }
+      return {}
+    })();
+
+    if (configuration.verboseLogging) {
+      window.publisherLog = function (message) {
+        console.log('[Red5ProRTMPPublisher:SWF] - ' + message);
+      };
+      window.subscriberLog = function (message) {
+        console.log('[Red5ProRTMPSubscriber:SWF] - ' + message);
+      };
+    }
+  })(this);
+</script>

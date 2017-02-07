@@ -41,6 +41,8 @@
       "streamMode": "live",
       "cameraWidth": 854,
       "cameraHeight": 480,
+      "embedWidth": "100%",
+      "embedHeight": 480,
       "buffer": 0.5,
       "bandwidth": {
         "audio": 50,
@@ -82,7 +84,8 @@
           "urls": "stun:stun.services.mozilla.com:3478"
         }
       ],
-      "verboseLogging": true
+      "verboseLogging": true,
+      "streamManagerAPI": "2.0"
     };
     if (isMoz) {
       json.iceServers = json.mozIce;
