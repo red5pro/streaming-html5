@@ -402,6 +402,24 @@ _It is recommended to include [adapter.js](https://github.com/webrtc/adapter) wh
 | iceServers | The list of ICE servers to use in requesting a Peer Connection. | Required |
 | bandwidth | A configuration object to setup playback. | _Optional_ |
 | autoplay | Flag to autoplay the stream when received upon negotiation. | _Optional. Default: `true`_ |
+| videoEncoding | Specifies target video encoder. | _Optional. Default: Server decides_ |
+| audio Encoding | Specifies target audio encoder. | _Optional. Default: Server decides_ |
+
+##### Video Encoding Configuration
+By not providing the `videoEncoding` attribute in the WebRTC Subscriber configuration, the server will choose the default encoder to use. If you do not wish for the server to default, you can provide the following values for the property:
+
+* `VP8`
+* `H264`
+* `NONE`
+
+##### Audio Encoding Configuration
+By not providing the `audioEncoding` attribute in the WebRTC Subscriber configuration, the server will choose the default encoder to use. If you do not wish for the server to default, you can provide the following values for the property:
+
+* `Opus`
+* `PCMU`
+* `PCMA`
+* `Speex`
+* `NONE`
 
 #### Example
 ```html

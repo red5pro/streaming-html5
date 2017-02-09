@@ -1,4 +1,4 @@
-(function(window, document, red5pro) {
+(function(window, document, red5pro, PublisherBase /* see: src/static/script/main.js */) {
   'use strict';
 
   var serverSettings = (function() {
@@ -23,10 +23,9 @@
     return {}
   })();
 
-  red5pro.setLogLevel(configuration.verboseLogging ? red5pro.LogLevels.TRACE : red5pro.LogLevels.WARN);
+  var targetPublisher;
 
   var updateStatusFromEvent = window.red5proHandlePublisherEvent; // defined in src/template/partial/status-field-publisher.hbs
-  var targetPublisher;
   var streamTitle = document.getElementById('stream-title');
   var statisticsField = document.getElementById('statistics-field');
   var canvasElement = document.getElementById('red5pro-publisher-video');
@@ -67,7 +66,20 @@
     console.log('[Red5ProPublisher] Unpublish Complete.');
   }
 
-  function preview () {
+  function determinePublisher () {
+    var config = Object.assign({},
+                    configuration,
+                    defaultConfiguration);
+    var rtcConfig = Object.assign({}, config, {
+                      protocol: getSocketLocationFromProtocol().protocol,
+                      port: getSocketLocationFromProtocol().port,
+                      streamName: config.stream1,
+                      streamType: 'webrtc'
+                   });
+    return PublisherBase.getRTCPublisher(rtcConfig);
+  }
+
+  function preview (publisher) {
     return new Promise(function (resolve, reject) {
 
       try {
@@ -75,75 +87,65 @@
         context.fillStyle = '#a1a1a1';
         context.fillRect(0, 0, canvasElement.offsetWidth, canvasElement.offsetHeight);
 
-        var publisher = new red5pro.RTCPublisher();
         var media = canvasElement.captureStream();
         publisher.attachStream(media);
-        targetPublisher = publisher;
-        publisher.on('*', onPublisherEvent);
-        resolve();
+        resolve({
+          publisher: publisher
+        });
       }
       catch(e) {
-          onPublishFail('Error - ' + e.message);
           reject(e.message);
       }
 
     });
   }
 
-  function publish () {
-    var publisher = targetPublisher;
-    var config = Object.assign({},
-                    configuration,
-                    defaultConfiguration);
-    config.streamName = config.stream1;
-    streamTitle.innerText = config.streamName;
-    console.log('[Red5ProPublisher] config:: ' + JSON.stringify(config, null, 2));
-
-    // Initialize
-    publisher.init(config)
-    .then(function (pub) { // eslint-disable-line no-unused-vars
-        // Invoke the publish action
-        return publisher.publish();
-      })
-      .then(function () {
-        onPublishSuccess(publisher);
-      })
-      .catch(function (error) {
-        // A fault occurred while trying to initialize and publish the stream.
-        var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
-        onPublishFail('Error - ' + jsonError);
-      });
+  function publish (publisher, streamName) {
+    streamTitle.innerText = streamName;
+    targetPublisher = publisher;
+    return new Promise(function (resolve, reject) {
+      PublisherBase.publish(publisher, streamName)
+        .then(function () {
+          onPublishSuccess(publisher);
+        })
+        .catch(function (error) {
+          reject(error);
+        })
+    });
   }
 
   function unpublish () {
     return new Promise(function (resolve, reject) {
       var publisher = targetPublisher;
-      if (publisher) {
-        publisher.unpublish()
-          .then(function () {
-            publisher.setView(undefined);
-            publisher.off('*', onPublisherEvent);
-            onUnpublishSuccess();
-            resolve();
-          })
-          .catch(function (error) {
-            var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
-            onUnpublishFail('Unmount Error ' + jsonError);
-            reject(error);
-          });
-      }
-      else {
-        onUnpublishSuccess();
-        resolve();
-      }
+      PublisherBase.unpublish(publisher)
+        .then(function () {
+          onUnpublishSuccess();
+          resolve();
+        })
+        .catch(function (error) {
+          var jsonError = typeof error === 'string' ? error : JSON.stringify(error, 2, null);
+          onUnpublishFail('Unmount Error ' + jsonError);
+          reject(error);
+        });
     });
   }
 
   // Kick off.
-  preview()
-    .then(publish)
+  determinePublisher()
+    .then(function (payload) {
+      var requiresPreview = payload.requiresPreview;
+      var publisher = payload.publisher;
+      publisher.on('*', onPublisherEvent);
+      return preview(publisher, requiresPreview);
+    })
+    .then(function (payload) {
+      var publisher = payload.publisher;
+      return publish(publisher, configuration.stream1);
+    })
     .catch(function (error) {
-      console.error('[Red5ProPublisher] :: Error in publishing - ' + error);
+      var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
+      console.error('[Red5ProPublisher] :: Error in publishing - ' + jsonError);
+      onPublishFail(jsonError);
      });
 
   window.addEventListener('beforeunload', function() {
@@ -154,5 +156,5 @@
     unpublish().then(clearRefs).catch(clearRefs);
     window.untrackBitrate();
   });
+})(this, document, window.red5prosdk, new window.R5ProBase.Publisher());
 
-})(this, document, window.red5prosdk);
