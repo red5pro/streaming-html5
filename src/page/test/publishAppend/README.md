@@ -17,7 +17,7 @@ var defaultConfiguration = {
   protocol: 'ws',
   port: 8081,
   app: 'live',
-  streamMode: 'record'
+  streamMode: 'append'
 };
 ```
 
