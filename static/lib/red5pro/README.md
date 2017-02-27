@@ -164,6 +164,7 @@ _It is recommended to include [adapter.js](https://github.com/webrtc/adapter) wh
 | iceServers | The list of ICE servers to use in requesting a Peer Connection. | Required |
 | streamMode | The mode to broadcast; `live`, `record` or `append`. | _Optional. Default: `live`_ |
 | bandwidth | A configuration object to setup bandwidth setting in publisher. | _Optional. Default: `{audio: 56, video: 512}`._ |
+| connectionParams | An object of connection parameters to send to the server upon connection request. | _Optional. Default: `undefined`_ |
 
 #### Example
 ```html
@@ -246,6 +247,7 @@ The **Red5 Pro HTML SDK** supports the following SWF integration:
 | app | The application to locate the stream. | Required |
 | streamName | The stream name to subscribe to. | Required |
 | streamMode | The mode to broadcast; `live`, `record` or `append`. | _Optional. Default: `live`_ |
+| connectionParams | An object of connection parameters to send to the server upon connection request. | _Optional. Default: `undefined`_ |
 | swf | The swf file location to use as the Flash client publisher. | _Optional. Default: `lib/red5pro/red5pro-publisher.swf`_ |
 | width | The width of the video element within the SWF movie. | _Optional. Default: `320`_ |
 | height | The height of the video element within the SWF movie. | _Optional. Default: `240`_ |
@@ -404,6 +406,7 @@ _It is recommended to include [adapter.js](https://github.com/webrtc/adapter) wh
 | autoplay | Flag to autoplay the stream when received upon negotiation. | _Optional. Default: `true`_ |
 | videoEncoding | Specifies target video encoder. | _Optional. Default: Server decides_ |
 | audio Encoding | Specifies target audio encoder. | _Optional. Default: Server decides_ |
+| connectionParams | An object of connection parameters to send to the server upon connection request. | _Optional. Default: `undefined`_ |
 
 ##### Video Encoding Configuration
 By not providing the `videoEncoding` attribute in the WebRTC Subscriber configuration, the server will choose the default encoder to use. If you do not wish for the server to default, you can provide the following values for the property:
@@ -493,6 +496,7 @@ The **Red5 Pro HTML SDK** supports the following SWF integration:
 | app | The application to locate the stream. | Required |
 | streamName | The stream name to subscribe to. | Required |
 | mimeType | The __mimeType__ to assign the source added to the `video` element | _Optional. Default: `rtmp/flv`_ |
+| connectionParams | An object of connection parameters to send to the server upon connection request. | _Optional. Default: `undefined`_ |
 | swf | The swf file location to use as the Flash client playback. | _Optional. Default: `lib/red5pro/red5pro-video-js.swf`_ |
 | width | The width of the video element within the SWF movie. | _Optional. Default: `320`_ |
 | height | The height of the video element within the SWF movie. | _Optional. Default: `240`_ |
