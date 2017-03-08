@@ -1,0 +1,23 @@
+<!doctype html>
+<html>
+  <head>
+    {{> meta title='Publish Remote Call'}}
+    {{> header-scripts}}
+    {{> header-stylesheets}}
+  </head>
+  <body>
+    <div id="app">
+      {{> version }}
+      {{> settings-link}}
+      {{> test-info testTitle='Publish Remote Call'}}
+      {{> status-field-publisher}}
+      {{> statistics-field}}
+      <div id="video-container" class="centered">
+        <video id="red5pro-publisher-video" controls class="video-element" muted></video>
+      </div>
+      <div class="centered status-field"><p>Click or tap on the video to send a message.</p></div>
+    </div>
+    {{> body-scripts}}
+    <script src="index.js"></script>
+  </body>
+</html>
