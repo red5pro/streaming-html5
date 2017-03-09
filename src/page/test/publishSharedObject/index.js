@@ -87,9 +87,14 @@
     so = new SharedObject('sharedChatTest', publisher);
     so.on(red5pro.SharedObjectEventTypes.CONNECT_SUCCESS, function (event) { // eslint-disable-line no-unused-vars
       console.log('[Red5ProPublisher] SharedObject Connect.');
+      so.sendProperty('count', 1);
     });
     so.on(red5pro.SharedObjectEventTypes.CONNECT_FAILURE, function (event) { // eslint-disable-line no-unused-vars
       console.log('[Red5ProPublisher] SharedObject Fail.');
+    });
+    so.on(red5pro.SharedObjectEventTypes.UPDATE, function (event) {
+      console.log('[Red5ProPublisher] SharedObject Update.');
+      console.log(JSON.stringify(event.data, null, 2))
     });
   }
 
