@@ -1,7 +1,7 @@
 <!doctype html>
 <html>
   <head>
-    {{> meta title='Publish Test'}}
+    {{> meta title='Publish Shared Object'}}
     {{> header-scripts}}
     {{> header-stylesheets}}
   </head>
@@ -9,11 +9,17 @@
     <div id="app">
       {{> version }}
       {{> settings-link}}
-      {{> test-info testTitle='Publish Test'}}
+      {{> test-info testTitle='Publish Shared Object'}}
       {{> status-field-publisher}}
       {{> statistics-field}}
       <div class="centered">
         <video id="red5pro-publisher-video" controls class="video-element" muted></video>
+      </div>
+      <div class="centered">
+        <p>
+          <input type="text" id="input-field" />
+          <button id="send-button">send</button>
+        </p>
       </div>
     </div>
     {{> body-scripts}}

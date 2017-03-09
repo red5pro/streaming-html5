@@ -1,6 +1,9 @@
 (function(window, document, red5pro, PublisherBase /* see: src/static/script/main.js */) {
   'use strict';
 
+  var SharedObject = red5pro.Red5ProSharedObject;
+  var so = undefined; // @see onPublishSuccess
+
   var serverSettings = (function() {
     var settings = sessionStorage.getItem('r5proServerSettings');
     try {
@@ -29,6 +32,10 @@
   var updateStatusFromEvent = window.red5proHandlePublisherEvent; // defined in src/template/partial/status-field-publisher.hbs
   var streamTitle = document.getElementById('stream-title');
   var statisticsField = document.getElementById('statistics-field');
+  var sendButton = document.getElementById('send-button');
+  sendButton.addEventListener('click', function () {
+    sendMessageOnSharedObject(document.getElementById('input-field').value);
+  });
 
   var protocol = serverSettings.protocol;
   var isSecure = protocol == 'https';
@@ -51,6 +58,8 @@
   }
   function onPublishSuccess (publisher) {
     console.log('[Red5ProPublisher] Publish Complete.');
+
+    establishSharedObject(publisher);
     try {
       window.trackBitrate(publisher.getPeerConnection(), onBitrateUpdate);
     }
@@ -71,6 +80,24 @@
       video: configuration.useVideo ? configuration.userMedia.video : false,
       frameRate: configuration.frameRate
     };
+  }
+
+  function establishSharedObject (publisher) {
+    // Create new shared object.
+    so = new SharedObject('sharedChatTest', publisher);
+    so.on(red5pro.SharedObjectEventTypes.CONNECT_SUCCESS, function (event) { // eslint-disable-line no-unused-vars
+      console.log('[Red5ProPublisher] SharedObject Connect.');
+    });
+    so.on(red5pro.SharedObjectEventTypes.CONNECT_FAILURE, function (event) { // eslint-disable-line no-unused-vars
+      console.log('[Red5ProPublisher] SharedObject Fail.');
+    });
+  }
+
+  function sendMessageOnSharedObject (message) {
+    so.send('messageTransmit', {
+      user: configuration.stream1,
+      message: message
+    });
   }
 
   function determinePublisher () {
