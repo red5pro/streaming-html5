@@ -135,7 +135,7 @@
     return PublisherBase.determinePublisher({
                 rtc: rtcConfig,
                 rtmp: rtmpConfig
-              }, publishOrder);
+    }, ['rtmp']);//publishOrder);
   }
 
   function preview (publisher, requiresGUM) {

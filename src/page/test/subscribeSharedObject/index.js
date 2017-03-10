@@ -32,7 +32,10 @@
   var updateStatusFromEvent = window.red5proHandleSubscriberEvent; // defined in src/template/partial/status-field-subscriber.hbs
   var instanceId = Math.floor(Math.random() * 0x10000).toString(16);
   var streamTitle = document.getElementById('stream-title');
-
+  var sendButton = document.getElementById('send-button');
+  sendButton.addEventListener('click', function () {
+    sendMessageOnSharedObject(document.getElementById('input-field').value);
+  });
   var protocol = serverSettings.protocol;
   var isSecure = protocol === 'https';
   function getSocketLocationFromProtocol () {
@@ -83,7 +86,23 @@
   function establishSharedObject (subscriber) {
     // Create new shared object.
     so = new SharedObject('sharedChatTest', subscriber);
-    so.on('*', function (event) { // eslint-disable-line no-unused-vars
+    so.on(red5pro.SharedObjectEventTypes.CONNECT_SUCCESS, function (event) { // eslint-disable-line no-unused-vars
+      console.log('[Red5ProSubscriber] SharedObject Connect.');
+      so.sendProperty('count', 1);
+    });
+    so.on(red5pro.SharedObjectEventTypes.CONNECT_FAILURE, function (event) { // eslint-disable-line no-unused-vars
+      console.log('[Red5ProSubscriber] SharedObject Fail.');
+    });
+    so.on(red5pro.SharedObjectEventTypes.UPDATE, function (event) {
+      console.log('[Red5ProSubscriber] SharedObject Update.');
+      console.log(JSON.stringify(event.data, null, 2))
+    });
+  }
+
+  function sendMessageOnSharedObject (message) {
+    so.send('messageTransmit', {
+      user: configuration.stream1,
+      message: message
     });
   }
 
@@ -129,10 +148,10 @@
       rtcConfig.audioEncoding = 'NONE';
     }
 
-    var subscribeOrder = config.subscriberFailoverOrder
+    var subscribeOrder = ['rtmp'];/*config.subscriberFailoverOrder
                           .split(',').map(function (item) {
                             return item.trim();
-                          });
+                            });*/
 
     return SubscriberBase.determineSubscriber({
               rtc: rtcConfig,
