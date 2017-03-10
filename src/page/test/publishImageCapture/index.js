@@ -168,7 +168,9 @@
 
   window.addEventListener('beforeunload', function() {
     function clearRefs () {
-      targetPublisher.off('*', onPublisherEvent);
+      if (targetPublisher) {
+        targetPublisher.off('*', onPublisherEvent);
+      }
       targetView = targetPublisher = undefined;
     }
     unpublish().then(clearRefs).catch(clearRefs);

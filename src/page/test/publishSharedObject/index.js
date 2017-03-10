@@ -135,7 +135,7 @@
     return PublisherBase.determinePublisher({
                 rtc: rtcConfig,
                 rtmp: rtmpConfig
-    }, ['rtmp']);//publishOrder);
+              }, publishOrder);
   }
 
   function preview (publisher, requiresGUM) {
@@ -197,7 +197,9 @@
 
   window.addEventListener('beforeunload', function() {
     function clearRefs () {
-      targetPublisher.off('*', onPublisherEvent);
+      if (targetPublisher) {
+        targetPublisher.off('*', onPublisherEvent);
+      }
       targetView = targetPublisher = undefined;
     }
     unpublish().then(clearRefs).catch(clearRefs);

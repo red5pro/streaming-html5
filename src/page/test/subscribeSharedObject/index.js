@@ -148,10 +148,10 @@
       rtcConfig.audioEncoding = 'NONE';
     }
 
-    var subscribeOrder = ['rtmp'];/*config.subscriberFailoverOrder
+    var subscribeOrder = config.subscriberFailoverOrder
                           .split(',').map(function (item) {
                             return item.trim();
-                            });*/
+                            });
 
     return SubscriberBase.determineSubscriber({
               rtc: rtcConfig,
@@ -227,7 +227,9 @@
   // Clean up.
   window.addEventListener('beforeunload', function() {
     function clearRefs () {
-      targetSubscriber.off('*', onSubscriberEvent);
+      if (targetSubscriber) {
+        targetSubscriber.off('*', onSubscriberEvent);
+      }
       targetSubscriber = targetView = undefined;
     }
     unsubscribe().then(clearRefs).catch(clearRefs);
