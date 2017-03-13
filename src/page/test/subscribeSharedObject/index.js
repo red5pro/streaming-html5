@@ -33,6 +33,7 @@
   var instanceId = Math.floor(Math.random() * 0x10000).toString(16);
   var streamTitle = document.getElementById('stream-title');
   var sendButton = document.getElementById('send-button');
+  var soField = document.getElementById('so-field');
   sendButton.addEventListener('click', function () {
     sendMessageOnSharedObject(document.getElementById('input-field').value);
   });
@@ -83,19 +84,30 @@
     console.log('[Red5ProSubsriber] Unsubscribe Complete.');
   }
 
+  var hasRegistered = false;
+  function appendMessage (message) {
+    soField.value = [message, soField.value].join('\n');
+  }
   function establishSharedObject (subscriber) {
     // Create new shared object.
     so = new SharedObject('sharedChatTest', subscriber);
     so.on(red5pro.SharedObjectEventTypes.CONNECT_SUCCESS, function (event) { // eslint-disable-line no-unused-vars
       console.log('[Red5ProSubscriber] SharedObject Connect.');
-      so.sendProperty('count', 1);
+      appendMessage('Connected.');
     });
     so.on(red5pro.SharedObjectEventTypes.CONNECT_FAILURE, function (event) { // eslint-disable-line no-unused-vars
       console.log('[Red5ProSubscriber] SharedObject Fail.');
     });
     so.on(red5pro.SharedObjectEventTypes.UPDATE, function (event) {
       console.log('[Red5ProSubscriber] SharedObject Update.');
-      console.log(JSON.stringify(event.data, null, 2))
+      console.log(JSON.stringify(event.data, null, 2));
+      if (event.data.hasOwnProperty('count')) {
+        appendMessage('User count is: ' + event.data.count + '.');
+        if (!hasRegistered) {
+          hasRegistered = true;
+          so.sendProperty('count', parseInt(event.data.count) + 1);
+        }
+      }
     });
   }
 

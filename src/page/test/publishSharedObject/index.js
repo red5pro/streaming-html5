@@ -33,6 +33,7 @@
   var streamTitle = document.getElementById('stream-title');
   var statisticsField = document.getElementById('statistics-field');
   var sendButton = document.getElementById('send-button');
+  var soField = document.getElementById('so-field');
   sendButton.addEventListener('click', function () {
     sendMessageOnSharedObject(document.getElementById('input-field').value);
   });
@@ -82,12 +83,16 @@
     };
   }
 
+  var hasRegistered = false;
+  function appendMessage (message) {
+    soField.value = [message, soField.value].join('\n');
+  }
   function establishSharedObject (publisher) {
     // Create new shared object.
     so = new SharedObject('sharedChatTest', publisher);
     so.on(red5pro.SharedObjectEventTypes.CONNECT_SUCCESS, function (event) { // eslint-disable-line no-unused-vars
       console.log('[Red5ProPublisher] SharedObject Connect.');
-      so.sendProperty('count', 1);
+      appendMessage('Connected.');
     });
     so.on(red5pro.SharedObjectEventTypes.CONNECT_FAILURE, function (event) { // eslint-disable-line no-unused-vars
       console.log('[Red5ProPublisher] SharedObject Fail.');
@@ -95,6 +100,13 @@
     so.on(red5pro.SharedObjectEventTypes.UPDATE, function (event) {
       console.log('[Red5ProPublisher] SharedObject Update.');
       console.log(JSON.stringify(event.data, null, 2))
+      if (event.data.hasOwnProperty('count')) {
+        appendMessage('User count is: ' + event.data.count + '.');
+        if (!hasRegistered) {
+          hasRegistered = true;
+          so.sendProperty('count', parseInt(event.data.count) + 1);
+        }
+      }
     });
   }
 
