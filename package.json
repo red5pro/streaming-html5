@@ -1,10 +1,6 @@
 {
   "name": "red5pro-html-sdk-testbed",
-<<<<<<< HEAD
   "version": "3.1.0",
-=======
-  "version": "2.0.21",
->>>>>>> master
   "description": "Testbed examples for Red5 Pro HTML SDK",
   "main": "src/js/index.js",
   "repository": {
