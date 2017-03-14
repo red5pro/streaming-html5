@@ -254,9 +254,7 @@
   // Clean up.
   window.addEventListener('beforeunload', function() {
     function clearRefs () {
-      if (targetSubscriber) {
-        targetSubscriber.off('*', onSubscriberEvent);
-      }
+      targetSubscriber.off('*', onSubscriberEvent);
       targetSubscriber = targetView = undefined;
     }
     unsubscribe().then(clearRefs).catch(clearRefs);

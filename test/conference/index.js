@@ -518,9 +518,7 @@
 
   window.addEventListener('beforeunload', function() {
     function clearRefs () {
-      if (targetPublisher) {
-        targetPublisher.off('*', onPublisherEvent);
-      }
+      targetPublisher.off('*', onPublisherEvent);
       targetPubView = targetPublisher = undefined;
     }
     unpublish().then(unsubscribe).then(clearRefs).catch(clearRefs);
