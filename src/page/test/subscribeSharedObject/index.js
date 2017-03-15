@@ -88,9 +88,16 @@
   function appendMessage (message) {
     soField.value = [message, soField.value].join('\n');
   }
+  // Invoked from METHOD_UPDATE event on Shared Object instance.
+  function messageTransmit (message) { // eslint-disable-line no-unused-vars
+    soField.value = ['User "' + message.user + '": ' + message.message, soField.value].join('\n');
+  }
   function establishSharedObject (subscriber) {
     // Create new shared object.
     so = new SharedObject('sharedChatTest', subscriber);
+    var soCallback = {
+      messageTransmit: messageTransmit
+    };
     so.on(red5pro.SharedObjectEventTypes.CONNECT_SUCCESS, function (event) { // eslint-disable-line no-unused-vars
       console.log('[Red5ProSubscriber] SharedObject Connect.');
       appendMessage('Connected.');
@@ -98,8 +105,8 @@
     so.on(red5pro.SharedObjectEventTypes.CONNECT_FAILURE, function (event) { // eslint-disable-line no-unused-vars
       console.log('[Red5ProSubscriber] SharedObject Fail.');
     });
-    so.on(red5pro.SharedObjectEventTypes.UPDATE, function (event) {
-      console.log('[Red5ProSubscriber] SharedObject Update.');
+    so.on(red5pro.SharedObjectEventTypes.PROPERTY_UPDATE, function (event) {
+      console.log('[Red5ProPublisher] SharedObject Property Update.');
       console.log(JSON.stringify(event.data, null, 2));
       if (event.data.hasOwnProperty('count')) {
         appendMessage('User count is: ' + event.data.count + '.');
@@ -109,11 +116,16 @@
         }
       }
     });
+    so.on(red5pro.SharedObjectEventTypes.METHOD_UPDATE, function (event) {
+      console.log('[Red5ProPublisher] ShaedObject Method Update.');
+      console.log(JSON.stringify(event.data, null, 2));
+      soCallback[event.data.methodName].call(null, event.data.message);
+    });
   }
 
   function sendMessageOnSharedObject (message) {
     so.send('messageTransmit', {
-      user: configuration.stream1,
+      user: [configuration.stream1, 'subscriber'].join(' '),
       message: message
     });
   }

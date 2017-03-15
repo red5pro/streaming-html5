@@ -87,9 +87,16 @@
   function appendMessage (message) {
     soField.value = [message, soField.value].join('\n');
   }
+  // Invoked from METHOD_UPDATE event on Shared Object instance.
+  function messageTransmit (message) { // eslint-disable-line no-unused-vars
+    soField.value = ['User "' + message.user + '": ' + message.message, soField.value].join('\n');
+  }
   function establishSharedObject (publisher) {
     // Create new shared object.
-    so = new SharedObject('sharedChatTest', publisher);
+    so = new SharedObject('sharedChatTest', publisher)
+    var soCallback = {
+      messageTransmit: messageTransmit
+    };
     so.on(red5pro.SharedObjectEventTypes.CONNECT_SUCCESS, function (event) { // eslint-disable-line no-unused-vars
       console.log('[Red5ProPublisher] SharedObject Connect.');
       appendMessage('Connected.');
@@ -97,9 +104,9 @@
     so.on(red5pro.SharedObjectEventTypes.CONNECT_FAILURE, function (event) { // eslint-disable-line no-unused-vars
       console.log('[Red5ProPublisher] SharedObject Fail.');
     });
-    so.on(red5pro.SharedObjectEventTypes.UPDATE, function (event) {
-      console.log('[Red5ProPublisher] SharedObject Update.');
-      console.log(JSON.stringify(event.data, null, 2))
+    so.on(red5pro.SharedObjectEventTypes.PROPERTY_UPDATE, function (event) {
+      console.log('[Red5ProPublisher] SharedObject Property Update.');
+      console.log(JSON.stringify(event.data, null, 2));
       if (event.data.hasOwnProperty('count')) {
         appendMessage('User count is: ' + event.data.count + '.');
         if (!hasRegistered) {
@@ -107,6 +114,11 @@
           so.sendProperty('count', parseInt(event.data.count) + 1);
         }
       }
+    });
+    so.on(red5pro.SharedObjectEventTypes.METHOD_UPDATE, function (event) {
+      console.log('[Red5ProPublisher] ShaedObject Method Update.');
+      console.log(JSON.stringify(event.data, null, 2));
+      soCallback[event.data.methodName].call(null, event.data.message);
     });
   }
 
@@ -204,6 +216,7 @@
     .catch(function (error) {
       var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
       console.error('[Red5ProPublisher] :: Error in publishing - ' + jsonError);
+      console.error(error);
       onPublishFail(jsonError);
      });
 
