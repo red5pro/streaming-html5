@@ -114,9 +114,13 @@
           so.sendProperty('count', parseInt(event.data.count) + 1);
         }
       }
+      else if (!hasRegistered) {
+        hasRegistered = true;
+        so.sendProperty('count', 1);
+      }
     });
     so.on(red5pro.SharedObjectEventTypes.METHOD_UPDATE, function (event) {
-      console.log('[Red5ProPublisher] ShaedObject Method Update.');
+      console.log('[Red5ProPublisher] SharedObject Method Update.');
       console.log(JSON.stringify(event.data, null, 2));
       soCallback[event.data.methodName].call(null, event.data.message);
     });
