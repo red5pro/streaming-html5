@@ -214,6 +214,9 @@
 
   // Request to unsubscribe.
   function unsubscribe () {
+    if (so !== undefined) {
+      so.close();
+    }
     return new Promise(function(resolve, reject) {
       var view = targetView
       var subscriber = targetSubscriber
