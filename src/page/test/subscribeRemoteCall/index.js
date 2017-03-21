@@ -29,6 +29,7 @@
   var updateStatusFromEvent = window.red5proHandleSubscriberEvent; // defined in src/template/partial/status-field-subscriber.hbs
   var instanceId = Math.floor(Math.random() * 0x10000).toString(16);
   var streamTitle = document.getElementById('stream-title');
+  var messageCallout = document.getElementById('message-callout');
 
   var protocol = serverSettings.protocol;
   var isSecure = protocol === 'https';
@@ -193,6 +194,20 @@
       console.error('[Red5ProSubscriber] :: Error in subscribing - ' + jsonError);
       onSubscribeFail(jsonError);
     });
+
+    var dEId = function(id) {
+      return document.getElementById(id);
+    }
+    // Invoked from Publisher.
+    window.whateverFunctionName = function (message) {
+      var msg = JSON.parse(message);
+      var elem = dEId('red5pro-subscriber-video');
+      console.log('[Red5ProSubscriber] :: whateverFunctionName received!');
+      console.log('[Red5ProSubscriber] :: message - ' + JSON.stringify(msg, null, 2));
+      messageCallout.innerText = msg.message;
+      messageCallout.style.left = (elem.offsetX + (elem.clientWidth * msg.touchX)) + 'px';
+      messageCallout.style.top = (elem.offsetY + (elem.clientHeight * msg.touchY)) + 'px';
+    }.bind(this);
 
   // Clean up.
   window.addEventListener('beforeunload', function() {
