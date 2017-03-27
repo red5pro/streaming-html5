@@ -162,6 +162,7 @@
       var subscriber = targetSubscriber
       SubscriberBase.unsubscribe(subscriber, view)
         .then(function () {
+          targetSubscriber.off(red5pro.SubscriberEventTypes.SUBSCRIBE_SEND_INVOKE, sendClientHandler);
           targetSubscriber.off('*', onSubscriberEvent);
           targetSubscriber = undefined;
           targetView = undefined;
@@ -182,6 +183,7 @@
       var subscriber = payload.subscriber;
       // Subscribe to events.
       subscriber.on('*', onSubscriberEvent);
+      subscriber.on(red5pro.SubscriberEventTypes.SUBSCRIBE_SEND_INVOKE, sendClientHandler);
       return view(subscriber);
     })
     .then(function(payload) {
@@ -195,16 +197,19 @@
       onSubscribeFail(jsonError);
     });
 
-    // Invoked from Publisher.
-    window.whateverFunctionName = function (message) {
-      var msg = typeof message === 'string' ? JSON.parse(message) : message;
-      var elem = document.getElementById('red5pro-subscriber-video');
-      console.log('[Red5ProSubscriber] :: whateverFunctionName received!');
-      console.log('[Red5ProSubscriber] :: message - ' + JSON.stringify(msg, null, 2));
-      messageCallout.innerText = msg.message;
-      messageCallout.style.left = (elem.offsetLeft + (elem.clientWidth * msg.touchX)) + 'px';
-      messageCallout.style.top = (elem.offsetTop + (elem.clientHeight * msg.touchY)) + 'px';
-    }.bind(this);
+    // Invoked from Publisher through Subscribe.Send.Invoke event.
+    var sendClientHandler = function (message) {
+      var msg = message.data;
+      var methodName = msg.methodName;
+      if (methodName === 'whateverFunctionName') {
+        var elem = document.getElementById('red5pro-subscriber-video');
+        console.log('[Red5ProSubscriber] :: whateverFunctionName received!');
+        console.log('[Red5ProSubscriber] :: message - ' + JSON.stringify(msg, null, 2));
+        messageCallout.innerText = msg.message;
+        messageCallout.style.left = (elem.offsetLeft + (elem.clientWidth * msg.touchX)) + 'px';
+        messageCallout.style.top = (elem.offsetTop + (elem.clientHeight * msg.touchY)) + 'px';
+      }
+    };
 
   // Clean up.
   window.addEventListener('beforeunload', function() {

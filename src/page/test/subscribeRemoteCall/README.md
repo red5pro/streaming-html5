@@ -1,135 +1,71 @@
-# Subscribe Failover using Red5 Pro
-This is an example of utilizing the failover mechanism of the Red5 Pro HTML SDK to select a subscriber based on browser support.
-
-The default failover order is:
-
-1. WebRTC
-2. RTMP/Flash
-3. HLS
-
-When utilizing the auto-failover mechanism, the SDK - by default - will first test for WebRTC support and if missing will attempt to embed a subscriber SWF for the broadcast. If Flash is not supported in the browser, it will finally attempt to playback using HLS.
-
-You can define the desired failover order from using `setPlaybackOrder`.
+# Publish & Subscribe Remote Call
+This example demonstrates the `send` API of the publisher in the Red5 Pro HTML SDK. Using `send`, a publisher can send a message object to any currently subscribed clients.
 
 ### Example Code
+
+#### Publisher
+- **[index.html](../publishRemoteCall/index.html)**
+- **[index.js](../publishRemoteCall/index.js)**
+
+#### Subscriber
 - **[index.html](index.html)**
 - **[index.js](index.js)**
 
-## How to Subscribe
-Subscribing to a Red5 Pro stream requires a few components to function fully.
+# Running the example
+Two clients are required to run this example: one as a publisher, and the other as a subscriber.
 
-#### Including the SDK
-You will need to include the Red5 Pro SDK library on the page. The root of the library is accessible from `window.red5prosdk`:
+Connect the first client (publisher) with the *Publish - Remote Call* example. On the second lient (subscriber) use the *Subscribe - Remote Call* example.
 
-```html
-<!doctype html>
-<html>
-  <head>
-...
-  </head>
-  <body>
-    <video id="red5pro-subscriber-video"></video>
-...
-    <script src="lib/red5pro/red5pro.min.sdk"></script>
-    <script>
-      (function (window, red5pro) {
-...
-      })(window, window.red5prosdk);
-    </script>
-...
-  </body>
-</html>
+Touch the preview on the publisher screen to display a label on the subscriber screen where the publisher touched.
+
+## Using the `send` API
+Once the stream has connected you are able to dispatch messages to any connected subscribers. Sending the message is a simple call:
+
+```
+send('whateverFunctionName', {
+  message: "The publisher wants your attention",
+  touchX: event.offsetX / elem.clientWidth,
+  touchY: event.offsetY / elem.clientHeight
+});
 ```
 
-#### Subscriber Selection
-A Subscriber instance is required to attach a stream and request subscription. The SDK can determine browser support and instantiate the proper Subscriber implementation based on the desired failover order.
+[index.js #37](index.js#L37)
 
-A configuration for each tech implementation must be provided to the `init` invocation:
+## Method signature
+The method signature for the `send` API is:
 
-```js
-function determineSubscriber () {
-  var config = Object.assign({}, configuration);
-  var rtcConfig = Object.assign({}, config, {
-    protocol: 'ws',
-    port: config.rtcport,
-    subscriptionId: 'subscriber-' + instanceId,
-    streamName: config.stream1,
-    bandwidth: {
-      audio: 50,
-      video: 256,
-      data: 30 * 1000 * 1000
-    }
-  })
-  var rtmpConfig = Object.assign({}, config, {
-    protocol: 'rtmp',
-    port: config.rtmpport,
-    streamName: config.stream1,
-    mimeType: 'rtmp/flv',
-    useVideoJS: false,
-    width: config.cameraWidth,
-    height: config.cameraHeight,
-    swf: '../../lib/red5pro/red5pro-subscriber.swf',
-    swfobjectURL: '../../lib/swfobject/swfobject.js',
-    productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
-  })
-  var hlsConfig = Object.assign({}, config, {
-    protocol: 'http',
-    port: config.hlsport,
-    streamName: config.stream1,
-    mimeType: 'application/x-mpegURL',
-    swf: '../../lib/red5pro/red5pro-video-js.swf',
-    swfobjectURL: '../../lib/swfobject/swfobject.js',
-    productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
-  })
+| Param | Description |
+| --- | --- |
+| methodName | The name of the method associated with the data to be parsed on the subscriber clients. |
+| data | A javascript `Object` describing the message data to send to subscriber clients. |
 
-  return new Promise(function (resolve, reject) {
+If the subscribing client is browser-based, a `Subscriber.Send.Invoke` event is triggered on the subscriber.
 
-    var subscriber = new red5pro.Red5ProSubscriber();
+The `methodName` you provide will be included as the `SubscriberEvent:methodName` of the `Subscriber.Send.Invoke` event if the client is browser-based. For iOS and Android subscribers, it will be invoked on the `R5Stream:client` instance.
 
-    subscriber.setPlaybackOrder(subscribeOrder)
-      .init({
-        rtc: rtcConfig,
-        rtmp: rtmpConfig,
-        hls: hlsConfig
-      })
-      .then(function (selectedSubscriber) {
-...
-      });
-  });
-}
+The structure of `data` can be any javascript `Object`. The data will be serialized and unpacked appropriately on the corresponding clients and given as the first argument when invoking the `methodName`.
+
+> You should *not* send the `data` object as a `String`.
+
+## Receiving the message
+On the browser-based subscriber client, you will need to define the event responder for `Subscriber.Send.Invoke` and handle the event properties to determine the `methodName` being invoked. In using the Red5 Pro HTML SDK:
+
 ```
-
-<sup>
-[index.js #42](index.js#L42)
-</sup>
-
-The `init` method of the `Red5ProSubscriber` returns a `Promise` that will be resolved with the instantiated Subscriber implementation based on the subscriber order and browser support.
-
-You can determine the selected implementation by invoking `selectedSubscriber.getType()`.
-
-> Read more about configurations and their attributes from the [Red5 Pro HTML SDK Documentation](https://github.com/infrared5/red5pro-html-sdk#subscriber).
-
-#### Subscribing
-The `init` method of the `Red5ProSubscriber` instance returns a `Promise` which, when resolved, relays the Subscriber instance determined from the failover. To start a subscribing session, call the `playback` method of the Subscriber resolved:
-
-```js
-subscriber.setPlaybackOrder(subscribeOrder)
-  .init({
-    rtc: rtcConfig,
-    rtmp: rtmpConfig,
-    hls: hlsConfig
-  })
-  .then(function (selectedSubscriber) {
-    return selectedSubscriber.play();
-  })
-  .then(function () {
-    console.log('Successfully started a subscription session!');
-  })
-  .catch(function () {
-    console.error('Could not start a subscription session: ' + error);
-  })
+subscriber.on(red5pro.SubscriberEventTypes.SUBSCRIBE_SEND_INVOKE, sendClientHandler);
 ```
+[index.js #186](index.js#L186)
 
-<sup>
-[index.js #93](index.js#L93)
-</sup>
+```
+var sendClientHandler = function (message) {
+  var msg = message.data;
+  var methodName = msg.methodName;
+  if (methodName === 'whateverFunctionName') {
+    var elem = document.getElementById('red5pro-subscriber-video');
+    messageCallout.innerText = msg.message;
+    messageCallout.style.left = (elem.offsetLeft + (elem.clientWidth * msg.touchX)) + 'px';
+    messageCallout.style.top = (elem.offsetTop + (elem.clientHeight * msg.touchY)) + 'px';
+  }
+};
+```
+[index.js #201](index.js#L201)
+
