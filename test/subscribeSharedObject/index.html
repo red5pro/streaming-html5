@@ -1,7 +1,7 @@
 <!doctype html>
 <html>
   <head>
-    <title>WebRTC Publish Camera Source Test</title>
+    <title>Subscriber Shared Object</title>
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
     <meta content="width=device-width, initial-scale=1, user-scalable=no" name="viewport">
     <script src="../../lib/webrtc/adapter.js"></script>
@@ -13,35 +13,28 @@
     <link rel="stylesheet" href="../../lib/videojs/video-js.min.css">
     <link rel="stylesheet" href="../../css/reset.css">
     <link rel="stylesheet" href="../../css/testbed.css">
-    <style>
-      .camera-select-field {
-        background-color: #ffffff;
-        padding: 0.8rem;
-      }
-      .label-style {
-        margin-right: 0.5rem;
-      }
-    </style>
   </head>
   <body>
     <div id="app">
       <p class="version-field">Testbed Version: 3.2.0&nbsp;&nbsp;&nbsp;&nbsp;<a href="https://red5pro.github.io/red5pro-html-sdk-testbed/red5pro-html-testbed-latest.zip">download</a></p>
       <div id="back-link-container" style="text-align: left;"><p id="back-link"><a href="../../index.html">&lt; Settings</a></p></div>
-      <h1 class="centered">WebRTC Publish Camera Source Test</h1>
+      <h1 class="centered">Subscriber Shared Object</h1>
       <hr />
       <h2 class="centered"><em>stream</em>: <span id="stream-title"></span></h2>
-      <div class="instructions-block">
-        <p>To begin this test, first select a camera from the following selections:</p>
-        <p class="camera-select-field">
-          <label for="camera-select" style="label-style">Camera Source:</label>
-          <select id="camera-select"></select>
-        </p>
-      </div>
       <p id="status-field" class="centered status-field">On hold.</p>
-      <script src="../../script/publisher-status.js"></script>
-      <p id="statistics-field" class="centered status-field"></p>
+      <script src="../../script/subscription-status.js"></script>
       <div class="centered">
-        <video id="red5pro-publisher-video" controls class="video-element" muted></video>
+        <video id="red5pro-subscriber-video" controls class="video-element"></video>
+      </div>
+      <div class="centered status-field">
+        <p>
+          <input type="text" id="input-field" />
+          <button id="send-button">send</button>
+        </p>
+        <hr>
+        <p>
+          <textarea id="so-field" disabled style="width: 50%; min-height: 240px; min-width: 320px"></textarea>
+        </p>
       </div>
     </div>
     <script src="../../lib/es6/es6-promise.min.js"></script>

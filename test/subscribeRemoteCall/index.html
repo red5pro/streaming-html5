@@ -1,7 +1,7 @@
 <!doctype html>
 <html>
   <head>
-    <title>Conference Test</title>
+    <title>Subscriber Remote Call</title>
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
     <meta content="width=device-width, initial-scale=1, user-scalable=no" name="viewport">
     <script src="../../lib/webrtc/adapter.js"></script>
@@ -13,28 +13,27 @@
     <link rel="stylesheet" href="../../lib/videojs/video-js.min.css">
     <link rel="stylesheet" href="../../css/reset.css">
     <link rel="stylesheet" href="../../css/testbed.css">
+    <style>
+      .callout {
+        position: absolute;
+        padding: 3px;
+        background-color: #eeeeee;
+      }
+    </style>
   </head>
   <body>
     <div id="app">
-      <p class="version-field">Testbed Version: 3.1.0&nbsp;&nbsp;&nbsp;&nbsp;<a href="https://red5pro.github.io/red5pro-html-sdk-testbed/red5pro-html-testbed-latest.zip">download</a></p>
+      <p class="version-field">Testbed Version: 3.2.0&nbsp;&nbsp;&nbsp;&nbsp;<a href="https://red5pro.github.io/red5pro-html-sdk-testbed/red5pro-html-testbed-latest.zip">download</a></p>
       <div id="back-link-container" style="text-align: left;"><p id="back-link"><a href="../../index.html">&lt; Settings</a></p></div>
-      <h1 class="centered">Conference Test</h1>
+      <h1 class="centered">Subscriber Remote Call</h1>
       <hr />
-      <div>
-        <label for="roomTxt">Room - </label><input type="text" id="roomTxt">
-        <label for="nameTxt">Name - </label><input type="text" id="nameTxt">
-        <label for="videoCheck">Video - </label><input type="checkbox" id="videoCheck" checked>
-        <label for="audioCheck">Audio - </label><input type="checkbox" id="audioCheck" checked>
-        <input type="submit" value="Connect" id="submitBtn">
+      <h2 class="centered"><em>stream</em>: <span id="stream-title"></span></h2>
+      <p id="status-field" class="centered status-field">On hold.</p>
+      <script src="../../script/subscription-status.js"></script>
+      <div class="centered">
+        <video id="red5pro-subscriber-video" controls class="video-element"></video>
+        <div id="message-callout" class="callout hidden"></div>
       </div>
-      <div class="float-left-conf">
-        <h2 class="centered"><em>Publisher Stream</em>: <span id="pub-stream-title"></span></h2>
-        <p id="pub-status-field" class="centered status-field">On hold.</p>
-        <div class="centered">
-          <video id="red5pro-publisher-video" autoplay muted class="video-element"></video>
-        </div>
-      </div>
-      
     </div>
     <script src="../../lib/es6/es6-promise.min.js"></script>
     <script src="../../lib/es6/es6-bind.js"></script>
