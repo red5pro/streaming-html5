@@ -189,20 +189,16 @@
       var view = payload.view;
       return subscribe(subscriber, view, configuration.stream1);
     })
-    .then(function() {
-      videoElement = document.getElementById('red5pro-subscriber-video');
-    })
     .catch(function (error) {
       var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
       console.error('[Red5ProSubscriber] :: Error in subscribing - ' + jsonError);
       onSubscribeFail(jsonError);
     });
 
-    var videoElement;
     // Invoked from Publisher.
     window.whateverFunctionName = function (message) {
       var msg = typeof message === 'string' ? JSON.parse(message) : message;
-      var elem = videoElement;
+      var elem = document.getElementById('red5pro-subscriber-video');
       console.log('[Red5ProSubscriber] :: whateverFunctionName received!');
       console.log('[Red5ProSubscriber] :: message - ' + JSON.stringify(msg, null, 2));
       messageCallout.innerText = msg.message;
