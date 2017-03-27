@@ -1,135 +1,98 @@
-# Subscribe Failover using Red5 Pro
-This is an example of utilizing the failover mechanism of the Red5 Pro HTML SDK to select a subscriber based on browser support.
-
-The default failover order is:
-
-1. WebRTC
-2. RTMP/Flash
-3. HLS
-
-When utilizing the auto-failover mechanism, the SDK - by default - will first test for WebRTC support and if missing will attempt to embed a subscriber SWF for the broadcast. If Flash is not supported in the browser, it will finally attempt to playback using HLS.
-
-You can define the desired failover order from using `setPlaybackOrder`.
+# Publish & Subscribe Shared Object
+This example demonstrates the use of Remote Shared Objects, which provides a mechanism to share and persist information across mutiple clients in real time, as well as sending messages to all clients that are connected to the object.
 
 ### Example Code
 - **[index.html](index.html)**
 - **[index.js](index.js)**
 
-## How to Subscribe
-Subscribing to a Red5 Pro stream requires a few components to function fully.
+## Setup
+Use of Shared objects requires an active stream - either publishing or subscribing. The content of the stream isn't important to the shared object itself, even a muted audio-only stream will be enough. Also, which stream you are connected to isn't important to which shared object you access, meaning that clients across multiple streams can use the same object, or there could be multiple overlapping objects in the same stream.
 
-#### Including the SDK
-You will need to include the Red5 Pro SDK library on the page. The root of the library is accessible from `window.red5prosdk`:
+To run the test, you will need at least two clients running the `Shared Object` example. This example searches active streams for the stream name set as `stream1`.
 
-```html
-<!doctype html>
-<html>
-  <head>
-...
-  </head>
-  <body>
-    <video id="red5pro-subscriber-video"></video>
-...
-    <script src="lib/red5pro/red5pro.min.sdk"></script>
-    <script>
-      (function (window, red5pro) {
-...
-      })(window, window.red5prosdk);
-    </script>
-...
-  </body>
-</html>
-```
+## Connection
+Shared objects require a successfully started stream to transmit data.
 
-#### Subscriber Selection
-A Subscriber instance is required to attach a stream and request subscription. The SDK can determine browser support and instantiate the proper Subscriber implementation based on the desired failover order.
-
-A configuration for each tech implementation must be provided to the `init` invocation:
+Instantiating a new `Red5ProSharedObject` requires a name and the connection used for your stream. After that it will connect and notify the object set as its client that it has connected successfully.
 
 ```js
-function determineSubscriber () {
-  var config = Object.assign({}, configuration);
-  var rtcConfig = Object.assign({}, config, {
-    protocol: 'ws',
-    port: config.rtcport,
-    subscriptionId: 'subscriber-' + instanceId,
-    streamName: config.stream1,
-    bandwidth: {
-      audio: 50,
-      video: 256,
-      data: 30 * 1000 * 1000
+var so = new red5pro.Red5ProSharedObject('sharedChatTest', publisher);
+so.on(red5pro.SharedObjectEventTypes.PROPERTY_UPDATE, handlePropertyUpdate);
+so.on(red5pro.SharedObjectEventTypes.METHOD_UPDATE, handleMethodUpdate);
+```
+
+[index.js #97](index.js#L97)
+
+> To disconnect from a `SharedObject`, simply call `close` on the instance.
+
+### Events
+The `SharedObject` instance dispatches the following events:
+
+* `Connect.Success`, accessible on SDK root at `SharedObjectEventTypes.CONNECT_SUCCESS`.
+* `Connect.Failure`, accessible on SDK root at `SharedObjectEventTypes.CONNECT_FAILURE`.
+* `SharedObject.PropertyUpdate`, accessible on SDK root at `SharedObjectEventTypes.PROPERTY_UPDATE`.
+* `SharedObject.MethodUpdate`, accessible on SDK root at `SharedObjectEventTypes.METHOD_UPDATE`.
+
+| Name | Description |
+| --- | --- |
+| `Connect.Success` | Successful connection of SharedObject on the publisher or subscriber instance. |
+| `Connect.Failure` | Failure in connection of SharedObject on the publisher or subscriber instance. |
+| `SharedObject.PropertyUpdate` | Update to a peristed property on the remote SharedObject. |
+| `SharedObject.MethodUpdate` | Remote SharedObject invocation of method to be received on connected clients. |
+
+## Persistent Information
+Remote Shared Objects use JSON for transmission, meaning that its structure is primarily up to your discretion. The base object will always be a dictionary with string keys, while values can be strings, numbers, booleans, arrays, or other dictionaries - with the same restriction on sub-objects.
+
+This example simply uses a number to keep a count of how many people are connected to the object. As seen in the `PROPERTY_UPDATE` handler, value can be accessed from the object by name, and set using `setProperty`:
+
+```js
+so.on(red5pro.SharedObjectEventTypes.PROPERTY_UPDATE, function (event) {
+  if (event.data.hasOwnProperty('count')) {
+    appendMessage('User count is: ' + event.data.count + '.');
+    if (!hasRegistered) {
+      hasRegistered = true;
+      so.setProperty('count', parseInt(event.data.count) + 1);
     }
-  })
-  var rtmpConfig = Object.assign({}, config, {
-    protocol: 'rtmp',
-    port: config.rtmpport,
-    streamName: config.stream1,
-    mimeType: 'rtmp/flv',
-    useVideoJS: false,
-    width: config.cameraWidth,
-    height: config.cameraHeight,
-    swf: '../../lib/red5pro/red5pro-subscriber.swf',
-    swfobjectURL: '../../lib/swfobject/swfobject.js',
-    productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
-  })
-  var hlsConfig = Object.assign({}, config, {
-    protocol: 'http',
-    port: config.hlsport,
-    streamName: config.stream1,
-    mimeType: 'application/x-mpegURL',
-    swf: '../../lib/red5pro/red5pro-video-js.swf',
-    swfobjectURL: '../../lib/swfobject/swfobject.js',
-    productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
-  })
+  }
+  else if (!hasRegistered) {
+    hasRegistered = true;
+    so.setProperty('count', 1);
+  }
+});
+```
 
-  return new Promise(function (resolve, reject) {
+[index.js #108](index#L108)
 
-    var subscriber = new red5pro.Red5ProSubscriber();
+## Messages
+The Shared Object interface also allows sending messages to other people watching the object. By sending a Object through the `send` method, that object will be passed to all the listening clients that implement the specified call.
 
-    subscriber.setPlaybackOrder(subscribeOrder)
-      .init({
-        rtc: rtcConfig,
-        rtmp: rtmpConfig,
-        hls: hlsConfig
-      })
-      .then(function (selectedSubscriber) {
-...
-      });
+```js
+function sendMessageOnSharedObject (message) {
+  so.send('messageTransmit', {
+    user: configuration.stream1,
+    message: message
   });
 }
 ```
 
-<sup>
-[index.js #42](index.js#L42)
-</sup>
+[index.js #130](index.js#L130)
 
-The `init` method of the `Red5ProSubscriber` returns a `Promise` that will be resolved with the instantiated Subscriber implementation based on the subscriber order and browser support.
+Like with the parameters of the object, as long as the Object sent parses into JSON, the structure of the object is up to you, and it will reach the other clients in whole as it was sent.
 
-You can determine the selected implementation by invoking `selectedSubscriber.getType()`.
+In this example, we are marking the message object as type `messageTransmit` with data related ot the user sending the message and a message String.
 
-> Read more about configurations and their attributes from the [Red5 Pro HTML SDK Documentation](https://github.com/infrared5/red5pro-html-sdk#subscriber).
-
-#### Subscribing
-The `init` method of the `Red5ProSubscriber` instance returns a `Promise` which, when resolved, relays the Subscriber instance determined from the failover. To start a subscribing session, call the `playback` method of the Subscriber resolved:
+In the event handler for messages, this example then invokes that method name of `messageTransmit` on the callback client:
 
 ```js
-subscriber.setPlaybackOrder(subscribeOrder)
-  .init({
-    rtc: rtcConfig,
-    rtmp: rtmpConfig,
-    hls: hlsConfig
-  })
-  .then(function (selectedSubscriber) {
-    return selectedSubscriber.play();
-  })
-  .then(function () {
-    console.log('Successfully started a subscription session!');
-  })
-  .catch(function () {
-    console.error('Could not start a subscription session: ' + error);
-  })
+// Invoked from METHOD_UPDATE event on Shared Object instance.
+function messageTransmit (message) { // eslint-disable-line no-unused-vars
+  soField.value = ['User "' + message.user + '": ' + message.message, soField.value].join('\n');
+}
+...
+so.on(red5pro.SharedObjectEventTypes.METHOD_UPDATE, function (event) {
+  soCallback[event.data.methodName].call(null, event.data.message);
+});
 ```
 
-<sup>
-[index.js #93](index.js#L93)
-</sup>
+[index.js #123](index.js#L123)
+

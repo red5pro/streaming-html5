@@ -21,7 +21,7 @@ Touch the preview on the publisher screen to display a label on the subscriber s
 ## Using the `send` API
 Once the stream has connected you are able to dispatch messages to any connected subscribers. Sending the message is a simple call:
 
-```
+```js
 send('whateverFunctionName', {
   message: "The publisher wants your attention",
   touchX: event.offsetX / elem.clientWidth,
@@ -50,15 +50,16 @@ The structure of `data` can be any javascript `Object`. The data will be seriali
 ## Receiving the message
 On the browser-based subscriber client, you will need to define the event responder for `Subscriber.Send.Invoke` and handle the event properties to determine the `methodName` being invoked. In using the Red5 Pro HTML SDK:
 
-```
+```js
 subscriber.on(red5pro.SubscriberEventTypes.SUBSCRIBE_SEND_INVOKE, sendClientHandler);
 ```
 [index.js #186](../subscribeRemoteCall/index.js#L186)
 
-```
-var sendClientHandler = function (message) {
-  var msg = message.data;
-  var methodName = msg.methodName;
+```js
+var sendClientHandler = function (event) {
+  var eventData = event.data;
+  var msg = eventData.data;
+  var methodName = eventData.methodName;
   if (methodName === 'whateverFunctionName') {
     var elem = document.getElementById('red5pro-subscriber-video');
     messageCallout.innerText = msg.message;

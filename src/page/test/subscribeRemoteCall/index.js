@@ -198,9 +198,10 @@
     });
 
     // Invoked from Publisher through Subscribe.Send.Invoke event.
-    var sendClientHandler = function (message) {
-      var msg = message.data;
-      var methodName = msg.methodName;
+    var sendClientHandler = function (event) {
+      var eventData = event.data;
+      var msg = eventData.data;
+      var methodName = eventData.methodName;
       if (methodName === 'whateverFunctionName') {
         var elem = document.getElementById('red5pro-subscriber-video');
         console.log('[Red5ProSubscriber] :: whateverFunctionName received!');

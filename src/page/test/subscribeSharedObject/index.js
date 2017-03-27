@@ -112,11 +112,11 @@
         appendMessage('User count is: ' + event.data.count + '.');
         if (!hasRegistered) {
           hasRegistered = true;
-          so.sendProperty('count', parseInt(event.data.count) + 1);
+          so.setProperty('count', parseInt(event.data.count) + 1);
         }
       else if (!hasRegistered) {
           hasRegistered = true;
-          so.sendProperty('count', 1);
+          so.setProperty('count', 1);
         }
       }
     });
