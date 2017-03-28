@@ -41,7 +41,15 @@ gulp.task('move-scripts', ['compile'], function (cb) {
 
 });
 
-gulp.task('move-static', ['compile', 'move-scripts'], function (cb) {
+gulp.task('move-swfs', ['compile', 'move-scripts'], function (cb) {
+
+  gulp.src(path.join(sourceDirectory, 'page', '**', '*.swf'))
+    .pipe(gulp.dest(buildDirectory))
+    .on('end', cb);
+
+});
+
+gulp.task('move-static', ['compile', 'move-scripts', 'move-swfs'], function (cb) {
 
   gulp.src(path.join(staticDirectory, '**'))
     .pipe(gulp.dest(buildDirectory))
