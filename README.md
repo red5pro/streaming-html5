@@ -56,10 +56,7 @@ To define the **Host** with the server instance's IP, click the _Host_ field f t
 
 | **[Publisher](src/page/test/publish)**
 | :-----
-| *Basic publisher example using WebRTC*
-|
-| **[Publisher Failover](src/page/test/publishFailover)**
-| *Demonstrates auto-failover of publisher implementation.*<br>i.e., if no WebRTC browser support, Flash Player is utilized.
+| *Basic publisher example using WebRTC with failover.<br>*i.e, if no WebRTC browser support, then Flash Player if detected.*
 |
 | **[1080p](src/page/test/publish1080)**
 | *A high quality publisher.*
@@ -82,6 +79,12 @@ To define the **Host** with the server instance's IP, click the _Host_ field f t
 | **[Record](src/page/test/publishRecord)**
 | *Demonstrates recording a stream to the server for VOD (Video-On-Demand) playback.*
 |
+| **[Remote Call](src/page/test/publishRemoteCall)**
+| *Demonstrates sending a remote message to all subscribed clients.*
+|
+| **[Shared Object](src/page/test/publishSharedObject)**
+| *Demonstrates using remote Shared Object to send and recieve information between connected clients.*
+|
 | **[Two-Way](src/page/test/twoWay)**
 | *Demonstrates simultaneously publishing while subscribing - allowing a conversation. Includes stream detection and auto-connection.*
 |
@@ -90,22 +93,25 @@ To define the **Host** with the server instance's IP, click the _Host_ field f t
 
 | **[Subscriber](src/page/test/subscribe)**
 | :-----
-| *Basic subscriber example using WebRTC.*
+| *Basic subscriber example with failover.<br>*i.e, if no WebRTC browser support, then first Flash Player is detected, then HLS.*
 |
-| **[Subscriber Failover](src/page/test/subscribeFailover)**
-| *Demonstrate auto-failover of subscriber implementation.<br>*i.e, if no WebRTC browser support, then first Flash Player is detected, then HLS.
-|
-| **[Subscriber Audio Only](src/page/test/subscribeAudioOnly)**
+| **[Audio Only](src/page/test/subscribeAudioOnly)**
 | *Demonstrates playback of audio-only stream.*
 |
-| **[Subscriber Image Capture](src/page/test/subscribeImageCapture)**
+| **[Image Capture](src/page/test/subscribeImageCapture)**
 | *Demonstrates capturing an image of a live video being consumed.*
 |
-| **[Subscriber Cluster](src/page/test/subscribeCluster)**
+| **[Cluster](src/page/test/subscribeCluster)**
 | *Demonstrates accessing an IP from the Red5 Pro Cluster API to subcribe to a live stream.*
 |
-| **[Subscriber Stream Manager](src/page/test/subscribeStreamManager)**
+| **[Stream Manager](src/page/test/subscribeStreamManager)**
 | *Demonstrates utilizing the Red5 Pro Stream Manager API to access an Edge server IP to subscribe to a live stream.*
+|
+| **[Remote Call](src/page/test/subscribeRemoteCall)**
+| *Demonstrates receiving a remote message from broadcaster.*
+|
+| **[Shared Object](src/page/test/subscribeSharedObject)**
+| *Demonstrates using remote Shared Object to send and recieve information between connected clients.*
 |
 
 ## Notes
