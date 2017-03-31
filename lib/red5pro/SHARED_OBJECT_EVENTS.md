@@ -1,5 +1,5 @@
-# Publisher Events
-This document describes the events dispatched from the Publisher of the Red5 Pro HTML SDK.
+# Shared Object Events
+This document describes the events dispatched from the Shared Object of the Red5 Pro HTML SDK.
 
 * [Creation](#creation)
 * [Listening to SharedObject Events](#listening-to-sharedobject-events)
