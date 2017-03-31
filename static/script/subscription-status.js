@@ -15,6 +15,9 @@
         return;
       }
       switch (event.type) {
+        case subTypes.CONNECTION_CLOSED:
+          status = 'Connection closed.';
+          break;
         case subTypes.CONNECT_SUCCESS:
           status = 'Connection established...';
           break;

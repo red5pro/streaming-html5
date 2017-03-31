@@ -12,6 +12,9 @@
         return;
       }
       switch (event.type) {
+        case pubTypes.CONNECTION_CLOSED:
+          status = 'Connection closed.';
+          break;
         case pubTypes.CONNECT_SUCCESS:
           status = 'Connection established...';
           break;
