@@ -14,6 +14,7 @@
       switch (event.type) {
         case pubTypes.CONNECTION_CLOSED:
           status = 'Connection closed.';
+          window.untrackBitrate();
           break;
         case pubTypes.CONNECT_SUCCESS:
           status = 'Connection established...';
