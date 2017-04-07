@@ -1,149 +1,72 @@
-# Publish Failover using Red5 Pro
-This is an example of utilizing the failover mechanism of the Red5 Pro HTML SDK to select a publisher based on browser support.
-
-The default failover order is:
-
-1. WebRTC
-2. RTMP/Flash
-
-When utilizing the auto-failover mechanism, the SDK - by default - will first test for WebRTC support and if missing will attempt to embed a publisher SWF for the broadcast.
-
-You can define the desired failover order from using `setPublishOrder`.
+# Publish & Subscribe Remote Call
+This example demonstrates the `send` API of the publisher in the Red5 Pro HTML SDK. Using `send`, a publisher can send a message object to any currently subscribed clients.
 
 ### Example Code
+
+#### Publisher
 - **[index.html](index.html)**
 - **[index.js](index.js)**
 
-## How to Publish
-Publishing to a Red5 Pro stream requires a few components to function fully.
+#### Subscriber
+- **[index.html](../subscribeRemoteCall/index.html)**
+- **[index.js](../subscribeRemoteCall/index.js)**
 
-#### Including the SDK
-You will need to include the Red5 Pro SDK library on the page. The root of the library is accessible from `window.red5prosdk`:
+# Running the example
+Two clients are required to run this example: one as a publisher, and the other as a subscriber.
 
-```html
-<!doctype html>
-<html>
-  <head>
-...
-  </head>
-  <body>
-    <video id="red5pro-publisher-video"></video>
-...
-    <script src="lib/red5pro/red5pro.min.sdk"></script>
-    <script>
-      (function (window, red5pro) {
-...
-      })(window, window.red5prosdk);
-    </script>
-...
-  </body>
-</html>
-```
+Connect the first client (publisher) with the *Publish - Remote Call* example. On the second lient (subscriber) use the *Subscribe - Remote Call* example.
 
-#### Publisher Selection
-A Publisher instance is required to attach a stream and request publishing. The SDK can determine browser support and instantiate the proper Publisher implementation based on the desired failover order.
+Touch the preview on the publisher screen to display a label on the subscriber screen where the publisher touched.
 
-A configuration for each tech implementation must be provided to the `init` invocation:
+## Using the `send` API
+Once the stream has connected you are able to dispatch messages to any connected subscribers. Sending the message is a simple call:
 
 ```js
-function determinePublisher () {
-    var config = Object.assign({},
-                   configuration,
-                   getUserMediaConfiguration());
-    var rtcConfig = Object.assign({}, config, {
-                      protocol: 'ws',
-                      port: config.rtcport,
-                      streamName: config.stream1,
-                      streamType: 'webrtc'
-                   });
-    var rtmpConfig = Object.assign({}, config, {
-                      protocol: 'rtmp',
-                      port: config.rtmpport,
-                      streamName: config.stream1,
-                      width: config.cameraWidth,
-                      height: config.cameraHeight,
-                      swf: '../../lib/red5pro/red5pro-publisher.swf',
-                      swfobjectURL: '../../lib/swfobject/swfobject.js',
-                      productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
-                   });
-
-  return new Promise(function (resolve, reject) {
-
-    var publisher = new red5pro.Red5ProPublisher();
-
-    publisher.setPublishOrder(publishOrder)
-      .init({
-        rtc: rtcConfig,
-        rtmp: rtmpConfig
-      })
-      .then(function (selectedPublisher) {
-...
-      });
-  });
-}
+send('whateverFunctionName', {
+  message: "The publisher wants your attention",
+  touchX: event.offsetX / elem.clientWidth,
+  touchY: event.offsetY / elem.clientHeight
+});
 ```
 
-<sup>
-[index.js #76](index.js#L76)
-</sup>
+[index.js #37](index.js#L37)
 
-The `init` method of the `Red5ProPublisher` returns a `Promise` that will be resolved with the instantiated Publisher implementation based on the publish order and browser support.
+## Method signature
+The method signature for the `send` API is:
 
-You can determine the selected implementation by invoking `selectedPublisher.getType()`.
+| Param | Description |
+| --- | --- |
+| methodName | The name of the method associated with the data to be parsed on the subscriber clients. |
+| data | A javascript `Object` describing the message data to send to subscriber clients. |
 
-> Read more about configurations and their attributes from the [Red5 Pro HTML SDK Documentation](https://github.com/infrared5/red5pro-html-sdk#publisher).
+If the subscribing client is browser-based, a `Subscriber.Send.Invoke` event is triggered on the subscriber.
 
-#### RTCPublisher
-If the browser supports WebRTC and the `Red5ProPublisher` has instantiated the `RTCPublisher` based on failover, a `MediaStream` needs to be requested from the browser and provided to the `RTCPublisher` implementation.
+The `methodName` you provide will be included as the `SubscriberEvent:methodName` of the `Subscriber.Send.Invoke` event if the client is browser-based. For iOS and Android subscribers, it will be invoked on the `R5Stream:client` instance.
 
-This is done using the `getUserMedia` method on the `navigator` instance of the page which will return the `MediaStream` on success callback:
+The structure of `data` can be any javascript `Object`. The data will be serialized and unpacked appropriately on the corresponding clients and given as the first argument when invoking the `methodName`.
+
+> You should *not* send the `data` object as a `String`.
+
+## Receiving the message
+On the browser-based subscriber client, you will need to define the event responder for `Subscriber.Send.Invoke` and handle the event properties to determine the `methodName` being invoked. In using the Red5 Pro HTML SDK:
 
 ```js
-var nav = navigator.mediaDevice || navigator;
-nav.getUserMedia({
-    audio: true,
-    video: true
-  }, function (media) {
-
-    selectedPublisher.attachMedia(media);
-    view.preview(media, true);
-
-  }, function (error) {
-    console.error('Error accessing media: ' + error);
-  });
+subscriber.on(red5pro.SubscriberEventTypes.SUBSCRIBE_SEND_INVOKE, sendClientHandler);
 ```
-
-When requesting the `MediaStream` you provide a constraints declaration for the audio and video components.
-
-> More information: [Media.getUserMedia from MDN](https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia)
-
-<sup>
-[index.js #139](index.js#L139)
-</sup>
-
-#### Publishing
-The `init` method of the `Red5ProPublisher` instance returns a `Promise` which, when resolved, relays the Publisher instance determined from the failover. To start a publishing session, call the `publish` method of the Publisher resolved:
+[index.js #186](../subscribeRemoteCall/index.js#L186)
 
 ```js
-publisher.setPublishOrder(publishOrder)
-  .init({
-    rtc: rtcConfig,
-    rtmp: rtmpConfig
-  })
-  .then(function (selectedPublisher) {
-    return selectedPublisher.publish();
-  })
-  .then(function () {
-    console.log('Successfully started a broadcast session!');
-  })
-  .catch(function () {
-    console.error('Could not start a broadcast session: ' + error);
-  })
+var sendClientHandler = function (event) {
+  var eventData = event.data;
+  var msg = eventData.data;
+  var methodName = eventData.methodName;
+  if (methodName === 'whateverFunctionName') {
+    var elem = document.getElementById('red5pro-subscriber-video');
+    messageCallout.innerText = msg.message;
+    messageCallout.style.left = (elem.offsetLeft + (elem.clientWidth * msg.touchX)) + 'px';
+    messageCallout.style.top = (elem.offsetTop + (elem.clientHeight * msg.touchY)) + 'px';
+  }
+};
 ```
+[index.js #201](../subscribeRemoteCall/index.js#L201)
 
-<sup>
-[index.js #106](index.js#L106)
-</sup>
-
-### View Your Stream
-After you have started a broadcast session, open a browser window and navigate to your Red5 Pro server (e.g., [http://localhost:5080/live/subscribe.jsp](http://localhost:5080/live/subscribe.jsp) to see a list of streams. Select the stream name used from this example and view in the browser using WebRTC, Flash or HLS playback options.

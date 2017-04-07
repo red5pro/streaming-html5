@@ -1,6 +1,9 @@
 (function(window, document, red5pro, PublisherBase /* see: src/static/script/main.js */) {
   'use strict';
 
+  var SharedObject = red5pro.Red5ProSharedObject;
+  var so = undefined; // @see onPublishSuccess
+
   var serverSettings = (function() {
     var settings = sessionStorage.getItem('r5proServerSettings');
     try {
@@ -29,7 +32,11 @@
   var updateStatusFromEvent = window.red5proHandlePublisherEvent; // defined in src/template/partial/status-field-publisher.hbs
   var streamTitle = document.getElementById('stream-title');
   var statisticsField = document.getElementById('statistics-field');
-  var addressField = document.getElementById('address-field');
+  var sendButton = document.getElementById('send-button');
+  var soField = document.getElementById('so-field');
+  sendButton.addEventListener('click', function () {
+    sendMessageOnSharedObject(document.getElementById('input-field').value);
+  });
 
   var protocol = serverSettings.protocol;
   var isSecure = protocol == 'https';
@@ -37,16 +44,6 @@
     return !isSecure
       ? {protocol: 'ws', port: serverSettings.wsport}
       : {protocol: 'wss', port: serverSettings.wssport};
-  }
-
-  var defaultConfiguration = {
-    protocol: getSocketLocationFromProtocol().protocol,
-    port: getSocketLocationFromProtocol().port,
-    app: 'live'
-  };
-
-  function displayServerAddress (serverAddress) {
-    addressField.innerText = 'Origin Address: ' + serverAddress;
   }
 
   function onBitrateUpdate (bitrate, packetsSent) {
@@ -62,11 +59,13 @@
   }
   function onPublishSuccess (publisher) {
     console.log('[Red5ProPublisher] Publish Complete.');
+
+    establishSharedObject(publisher);
     try {
       window.trackBitrate(publisher.getPeerConnection(), onBitrateUpdate);
     }
     catch (e) {
-      //
+      // no tracking for you!
     }
   }
   function onUnpublishFail (message) {
@@ -74,37 +73,6 @@
   }
   function onUnpublishSuccess () {
     console.log('[Red5ProPublisher] Unpublish Complete.');
-  }
-
-  function requestOrigin (configuration) {
-    var host = configuration.host;
-    var app = configuration.app;
-    var streamName = configuration.stream1;
-    var port = serverSettings.httpport;
-    var portURI = (port.length > 0 ? ':' + port : '');
-    var baseUrl = isSecure ? protocol + '://' + host : protocol + '://' + host + portURI;
-    var apiVersion = configuration.streamManagerAPI || '2.0';
-    var url = baseUrl + '/streammanager/api/' + apiVersion + '/event/' + app + '/' + streamName + '?action=broadcast';
-      return new Promise(function (resolve, reject) {
-        fetch(url)
-          .then(function (res) {
-            if (res.headers.get("content-type") &&
-              res.headers.get("content-type").toLowerCase().indexOf("application/json") >= 0) {
-                return res.json();
-            }
-            else {
-              throw new TypeError('Could not properly parse response.');
-            }
-          })
-          .then(function (json) {
-            resolve(json.serverAddress);
-          })
-          .catch(function (error) {
-            var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
-            console.error('[PublisherStreamManagerTest] :: Error - Could not request Origin IP from Stream Manager. ' + jsonError)
-            reject(error)
-          });
-    });
   }
 
   function getUserMediaConfiguration () {
@@ -115,12 +83,61 @@
     };
   }
 
+  var hasRegistered = false;
+  function appendMessage (message) {
+    soField.value = [message, soField.value].join('\n');
+  }
+  // Invoked from METHOD_UPDATE event on Shared Object instance.
+  function messageTransmit (message) { // eslint-disable-line no-unused-vars
+    soField.value = ['User "' + message.user + '": ' + message.message, soField.value].join('\n');
+  }
+  function establishSharedObject (publisher) {
+    // Create new shared object.
+    so = new SharedObject('sharedChatTest', publisher)
+    var soCallback = {
+      messageTransmit: messageTransmit
+    };
+    so.on(red5pro.SharedObjectEventTypes.CONNECT_SUCCESS, function (event) { // eslint-disable-line no-unused-vars
+      console.log('[Red5ProPublisher] SharedObject Connect.');
+      appendMessage('Connected.');
+    });
+    so.on(red5pro.SharedObjectEventTypes.CONNECT_FAILURE, function (event) { // eslint-disable-line no-unused-vars
+      console.log('[Red5ProPublisher] SharedObject Fail.');
+    });
+    so.on(red5pro.SharedObjectEventTypes.PROPERTY_UPDATE, function (event) {
+      console.log('[Red5ProPublisher] SharedObject Property Update.');
+      console.log(JSON.stringify(event.data, null, 2));
+      if (event.data.hasOwnProperty('count')) {
+        appendMessage('User count is: ' + event.data.count + '.');
+        if (!hasRegistered) {
+          hasRegistered = true;
+          so.setProperty('count', parseInt(event.data.count) + 1);
+        }
+      }
+      else if (!hasRegistered) {
+        hasRegistered = true;
+        so.setProperty('count', 1);
+      }
+    });
+    so.on(red5pro.SharedObjectEventTypes.METHOD_UPDATE, function (event) {
+      console.log('[Red5ProPublisher] SharedObject Method Update.');
+      console.log(JSON.stringify(event.data, null, 2));
+      soCallback[event.data.methodName].call(null, event.data.message);
+    });
+  }
+
+  function sendMessageOnSharedObject (message) {
+    so.send('messageTransmit', {
+      user: configuration.stream1,
+      message: message
+    });
+  }
+
   function determinePublisher () {
 
     var config = Object.assign({},
-                    configuration,
-                    defaultConfiguration,
-                    getUserMediaConfiguration());
+                   configuration,
+                   getUserMediaConfiguration());
     var rtcConfig = Object.assign({}, config, {
                       protocol: getSocketLocationFromProtocol().protocol,
                       port: getSocketLocationFromProtocol().port,
@@ -171,6 +188,9 @@
   }
 
   function unpublish () {
+    if (so !== undefined) {
+      so.close();
+    }
     return new Promise(function (resolve, reject) {
       var view = targetView;
       var publisher = targetPublisher;
@@ -188,12 +208,7 @@
   }
 
   // Kick off.
-  requestOrigin(configuration)
-    .then(function (serverAddress) {
-      displayServerAddress(serverAddress);
-      configuration.host = serverAddress;
-      return determinePublisher();
-    })
+  determinePublisher()
     .then(function (payload) {
       var requiresPreview = payload.requiresPreview;
       var publisher = payload.publisher;
@@ -207,12 +222,10 @@
     })
     .catch(function (error) {
       var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
-      console.error('[Red5ProPublisher] :: Error in access of Origin IP: ' + jsonError);
-      updateStatusFromEvent({
-        type: red5pro.PublisherEventTypes.CONNECT_FAILURE
-      });
+      console.error('[Red5ProPublisher] :: Error in publishing - ' + jsonError);
+      console.error(error);
       onPublishFail(jsonError);
-    });
+     });
 
   window.addEventListener('beforeunload', function() {
     function clearRefs () {
@@ -224,5 +237,6 @@
     unpublish().then(clearRefs).catch(clearRefs);
     window.untrackBitrate();
   });
+
 })(this, document, window.red5prosdk, new window.R5ProBase.Publisher());
 
