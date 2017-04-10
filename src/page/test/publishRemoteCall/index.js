@@ -24,11 +24,23 @@
   })();
 
   var targetPublisher;
+  var targetView;
 
   var updateStatusFromEvent = window.red5proHandlePublisherEvent; // defined in src/template/partial/status-field-publisher.hbs
   var streamTitle = document.getElementById('stream-title');
   var statisticsField = document.getElementById('statistics-field');
-  var canvasElement = document.getElementById('red5pro-publisher-video');
+  var captureTarget = document.getElementById('video-container');
+
+  captureTarget.addEventListener('click', function (event) {
+    var elem = event.currentTarget.children[0];
+    if (targetPublisher !== undefined) {
+      targetPublisher.send("whateverFunctionName", {
+        message: "The publisher wants your attention",
+        touchX: event.offsetX / elem.clientWidth,
+        touchY: event.offsetY / elem.clientHeight
+      });
+    }
+  });
 
   var protocol = serverSettings.protocol;
   var isSecure = protocol == 'https';
@@ -37,12 +49,6 @@
       ? {protocol: 'ws', port: serverSettings.wsport}
       : {protocol: 'wss', port: serverSettings.wssport};
   }
-
-  var defaultConfiguration = {
-    protocol: getSocketLocationFromProtocol().protocol,
-    port: getSocketLocationFromProtocol().port,
-    app: 'live'
-  };
 
   function onBitrateUpdate (bitrate, packetsSent) {
     statisticsField.innerText = 'Bitrate: ' + Math.floor(bitrate) + '. Packets Sent: ' + packetsSent + '.';
@@ -57,7 +63,12 @@
   }
   function onPublishSuccess (publisher) {
     console.log('[Red5ProPublisher] Publish Complete.');
-    window.trackBitrate(publisher.getPeerConnection(), onBitrateUpdate);
+    try {
+      window.trackBitrate(publisher.getPeerConnection(), onBitrateUpdate);
+    }
+    catch (e) {
+      // no tracking for you!
+    }
   }
   function onUnpublishFail (message) {
     console.error('[Red5ProPublisher] Unpublish Error :: ' + message);
@@ -66,46 +77,60 @@
     console.log('[Red5ProPublisher] Unpublish Complete.');
   }
 
+  function getUserMediaConfiguration () {
+    return {
+      audio: configuration.useAudio ? configuration.userMedia.audio : false,
+      video: configuration.useVideo ? configuration.userMedia.video : false,
+      frameRate: configuration.frameRate
+    };
+  }
+
   function determinePublisher () {
+
     var config = Object.assign({},
-                    configuration,
-                    defaultConfiguration);
+                   configuration,
+                   getUserMediaConfiguration());
     var rtcConfig = Object.assign({}, config, {
                       protocol: getSocketLocationFromProtocol().protocol,
                       port: getSocketLocationFromProtocol().port,
                       streamName: config.stream1,
                       streamType: 'webrtc'
                    });
-    return PublisherBase.getRTCPublisher(rtcConfig);
+    var rtmpConfig = Object.assign({}, config, {
+                      protocol: 'rtmp',
+                      port: serverSettings.rtmpport,
+                      streamName: config.stream1,
+                      width: config.cameraWidth,
+                      height: config.cameraHeight,
+                      swf: '../../lib/red5pro/red5pro-publisher.swf',
+                      swfobjectURL: '../../lib/swfobject/swfobject.js',
+                      productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
+                   });
+    var publishOrder = config.publisherFailoverOrder
+                            .split(',')
+                            .map(function (item) {
+                              return item.trim()
+                        });
+
+    return PublisherBase.determinePublisher({
+                rtc: rtcConfig,
+                rtmp: rtmpConfig
+              }, publishOrder);
   }
 
-  function preview (publisher) {
-    return new Promise(function (resolve, reject) {
-
-      try {
-        var context = canvasElement.getContext('2d');
-        context.fillStyle = '#a1a1a1';
-        context.fillRect(0, 0, canvasElement.offsetWidth, canvasElement.offsetHeight);
-
-        var media = canvasElement.captureStream();
-        publisher.attachStream(media);
-        resolve({
-          publisher: publisher
-        });
-      }
-      catch(e) {
-          reject(e.message);
-      }
-
-    });
+  function preview (publisher, requiresGUM) {
+    var elementId = 'red5pro-publisher-video';
+    var gUM = getUserMediaConfiguration();
+    return PublisherBase.preview(publisher, elementId, requiresGUM ? gUM : undefined);
   }
 
-  function publish (publisher, streamName) {
+  function publish (publisher, view, streamName) {
     streamTitle.innerText = streamName;
     targetPublisher = publisher;
+    targetView = view;
     return new Promise(function (resolve, reject) {
       PublisherBase.publish(publisher, streamName)
-        .then(function () {
+       .then(function () {
           onPublishSuccess(publisher);
         })
         .catch(function (error) {
@@ -116,8 +141,9 @@
 
   function unpublish () {
     return new Promise(function (resolve, reject) {
+      var view = targetView;
       var publisher = targetPublisher;
-      PublisherBase.unpublish(publisher)
+      PublisherBase.unpublish(publisher, view)
         .then(function () {
           onUnpublishSuccess();
           resolve();
@@ -140,7 +166,8 @@
     })
     .then(function (payload) {
       var publisher = payload.publisher;
-      return publish(publisher, configuration.stream1);
+      var view = payload.view;
+      return publish(publisher, view, configuration.stream1);
     })
     .catch(function (error) {
       var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
@@ -150,11 +177,14 @@
 
   window.addEventListener('beforeunload', function() {
     function clearRefs () {
-      targetPublisher.off('*', onPublisherEvent);
-      targetPublisher = undefined;
+      if (targetPublisher) {
+        targetPublisher.off('*', onPublisherEvent);
+      }
+      targetView = targetPublisher = undefined;
     }
     unpublish().then(clearRefs).catch(clearRefs);
     window.untrackBitrate();
   });
+
 })(this, document, window.red5prosdk, new window.R5ProBase.Publisher());
 
