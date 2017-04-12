@@ -25,6 +25,13 @@
         .then(function (selectedPublisher) {
           var type = selectedPublisher ? selectedPublisher.getType() : undefined;
           var requiresPreview = type.toLowerCase() === publisher.publishTypes.RTC;
+          /**
+          window.enableReachability('https://www.red5pro.com', function() {
+            window.red5proHandlePublisherEvent({
+              type: window.red5prosdk.PublisherEventTypes.CONNECTION_CLOSED
+            });
+            });
+            */
           resolve({
             publisher: selectedPublisher,
             requiresPreview: requiresPreview
@@ -107,6 +114,13 @@
       subscriber.setPlaybackOrder(order)
         .init(configuration)
         .then(function (selectedSubscriber) {
+          /**
+          window.enableReachability('https://www.red5pro.com', function() {
+            window.red5proHandleSubscriberEvent({
+              type: window.red5prosdk.SubscriberEventTypes.CONNECTION_CLOSED
+            });
+            });
+            */
           resolve({
             subscriber: selectedSubscriber
           });

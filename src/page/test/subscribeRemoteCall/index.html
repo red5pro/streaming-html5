@@ -4,6 +4,13 @@
     {{> meta title='Subscriber Remote Call'}}
     {{> header-scripts}}
     {{> header-stylesheets}}
+    <style>
+      .callout {
+        position: absolute;
+        padding: 3px;
+        background-color: #eeeeee;
+      }
+    </style>
   </head>
   <body>
     <div id="app">
@@ -13,6 +20,7 @@
       {{> status-field-subscriber}}
       <div class="centered">
         <video id="red5pro-subscriber-video" controls class="video-element"></video>
+        <div id="message-callout" class="callout hidden"></div>
       </div>
     </div>
     {{> body-scripts}}
