@@ -92,11 +92,11 @@
     if (selection && selection !== 'undefined' && selection !== SELECT_DEFAULT) {
       // assign selected camera to defined UserMedia.
       if (userMedia.video && typeof userMedia.video !== 'boolean') {
-        userMedia.video.sourceId = selection
+        userMedia.video.deviceId = { exact: selection }
       }
       else {
         userMedia.video = {
-          sourceId: selection
+          deviceId: { exact: selection }
         };
       }
       // Kick off.
@@ -117,14 +117,17 @@
         var cameras = [{
           label: SELECT_DEFAULT
         }].concat(videoCameras);
-        var options = cameras.map(function (camera) {
-          return '<option value="' + camera.deviceId + '">' + camera.label + '</option>';
+        var options = cameras.map(function (camera, index) {
+          return '<option value="' + camera.deviceId + '">' + (camera.label || 'camera ' + index) + '</option>';
         });
         cameraSelect.innerHTML = options.join(' ');
         cameraSelect.addEventListener('change', function () {
           onCameraSelect(cameraSelect.value);
         });
-    });
+      })
+      .catch(function (error) {
+        console.error('Could not access camera devices: ' + error);
+      });
   }
 
   function startPublishSession () {
