@@ -38,7 +38,7 @@
       "stream1": "stream1",
       "stream2": "stream2",
       "app": "live",
-	  "proxy": "streammanager",
+      "proxy": "streammanager",
       "streamMode": "live",
       "cameraWidth": 854,
       "cameraHeight": 480,
