@@ -61,23 +61,26 @@ To define the **Host** with the server instance's IP, click the _Host_ field f t
 | **[1080p](src/page/test/publish1080)**
 | *A high quality publisher.*
 |
-| **[Audio Mode](src/page/test/publishAudioOnly)**
-| *Demonstrates an Audio-Only broadcast for publishing.*
+| **[Authentication](src/page/test/publishAuth)**
+| *Demonstrates authentication with the Simple-Auth-Plugin for publishing.*
 |
 | **[Camera Source](src/page/test/publishCameraSource)**
 | *Demonstrates selecting the desired camera to publish with.*
 |
-| **[Camera Swap](src/page/test/publishCameraSwap)**
-| *Demonstrates swapping the front & rear camera of a mobile device.*<br>**MOBILE BROWSER SUPPORT LIMITED**
-|
 | **[Image Capture](src/page/test/publishImageCapture)**
 | *Demonstrates capturing an image of a live video being published.*
+|
+| **[Mute](src/page/test/publishMute)**
+| *Muting and unmuting audio for a live video being published.*
 |
 | **[Stream Manager](src/page/test/publishStreamManager)**
 | *Demonstrates utilizing the Red5 Pro Stream Manager to publish to a cluster's origin.*
 |
 | **[Record](src/page/test/publishRecord)**
 | *Demonstrates recording a stream to the server for VOD (Video-On-Demand) playback.*
+|
+| **[Append](src/page/test/publishAppend)**
+| *Demonstrates record-append function a stream to the server for VOD (Video-On-Demand) playback.*
 |
 | **[Remote Call](src/page/test/publishRemoteCall)**
 | *Demonstrates sending a remote message to all subscribed clients.*
@@ -97,6 +100,9 @@ To define the **Host** with the server instance's IP, click the _Host_ field f t
 |
 | **[Audio Only](src/page/test/subscribeAudioOnly)**
 | *Demonstrates playback of audio-only stream.*
+|
+| **[Authentication](src/page/test/SubscribeAuth)**
+| *Demonstrates authentication with the Simple-Auth-Plugin for subscribing.*
 |
 | **[Image Capture](src/page/test/subscribeImageCapture)**
 | *Demonstrates capturing an image of a live video being consumed.*

@@ -7,7 +7,7 @@ This is an example of authenticating a Subscription for stream playback.
 - **[index.html](index.html)**
 - **[index.js](index.js)**
 
-> This example requires you to enable the `SimpleAuthentication` Plugin for the `live` webapp. More information: [https://www.red5pro.com/docs/](https://www.red5pro.com/docs/).
+> This example requires you to enable the `SimpleAuthentication` Plugin for the `live` webapp. More information: [Simple Authentication Plugin](https://www.red5pro.com/docs/server/authplugin).
 
 ## Authenticating
 With the username and password known from the Red5 Pro Server `webapps/live/WEB-INF/simple-auth-plugin.credentials` file (if following the basic auth setup of the Red5 Pro Server), those values are provided to the `connectionParams` attribute of the subscriber configuration(s).
