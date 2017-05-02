@@ -147,8 +147,8 @@
     var config = Object.assign({}, configuration, defaultConfiguration);
     var rtcConfig = Object.assign({}, config, {
       host: configuration.host,
-      protocol: 'ws', // cluster is not over secure, at this time
-      port: serverSettings.wsport, // cluster is not over secure, at this time
+      protocol: getSocketLocationFromProtocol().protocol,
+      port: getSocketLocationFromProtocol().port,
       subscriptionId: 'subscriber-' + instanceId,
       streamName: config.stream1,
       bandwidth: {
