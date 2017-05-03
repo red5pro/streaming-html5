@@ -141,8 +141,15 @@
 		  app: targetApp
     };
 	
+	// important logging
 	console.log("Host = " + configuration.host + " | " + "app = " + configuration.app);
-	console.log("Proxy target = " + configuration.connectionParams.host + " | " + "Proxy app = " + configuration.connectionParams.app)
+	console.log("Proxy target = " + configuration.connectionParams.host + " | " + "Proxy app = " + configuration.connectionParams.app)	
+	if(isSecure){
+		console.log("Operating over secure connection | protocol: " + getSocketLocationFromProtocol().protocol + " | port: " +  getSocketLocationFromProtocol().port);
+	}else {
+		console.log("Operating over unsecure connection | protocol: " + getSocketLocationFromProtocol().protocol + " | port: " +  getSocketLocationFromProtocol().port);
+	}
+		
 	
     var config = Object.assign({}, configuration, defaultConfiguration);
     var rtcConfig = Object.assign({}, config, {
@@ -156,7 +163,8 @@
         video: 256,
         data: 30 * 1000 * 1000
       }
-    });
+    });	
+	
 
 
     if (!config.useVideo) {
@@ -170,6 +178,13 @@
                           .split(',').map(function (item) {
                             return item.trim();
                           });
+
+	var i = subscribeOrder.length;
+	while (i--) {
+		if(subscribeOrder[i] != "rtc"){
+			subscribeOrder.splice(i, 1);
+		}
+	}	
 
     return SubscriberBase.determineSubscriber({
               rtc: rtcConfig
