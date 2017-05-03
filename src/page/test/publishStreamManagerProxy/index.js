@@ -134,6 +134,14 @@
                               return item.trim()
                         });
 
+	var i = publishOrder.length;
+	while (i--) {
+		if(publishOrder[i] != "rtc"){
+			publishOrder.splice(i, 1);
+		}
+	}	
+	
+
     return PublisherBase.determinePublisher({
                 rtc: rtcConfig
               }, publishOrder);
@@ -192,7 +200,12 @@
     };
 	
 	console.log("Host = " + configuration.host + " | " + "app = " + configuration.app);
-	console.log("Proxy target = " + configuration.connectionParams.host + " | " + "Proxy app = " + configuration.connectionParams.app)
+	console.log("Proxy target = " + configuration.connectionParams.host + " | " + "Proxy app = " + configuration.connectionParams.app);
+	if(isSecure){
+		console.log("Operating over secure connection | protocol: " + getSocketLocationFromProtocol().protocol + " | port: " +  getSocketLocationFromProtocol().port);
+	}else {
+		console.log("Operating over unsecure connection | protocol: " + getSocketLocationFromProtocol().protocol + " | port: " +  getSocketLocationFromProtocol().port);
+	}
 	
       return determinePublisher();
     })
