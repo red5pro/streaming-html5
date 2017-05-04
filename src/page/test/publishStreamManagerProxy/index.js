@@ -130,7 +130,7 @@
                       port: getSocketLocationFromProtocol().port,
                       streamName: config.stream1,
                       streamType: 'webrtc',
-					  app: configuration.proxy,
+                      app: configuration.proxy,
 					  connectionParams: {
 						host: serverAddress,
 						app: configuration.app
