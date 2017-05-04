@@ -45,8 +45,10 @@
     app: 'live'
   };
 
-  function displayServerAddress (proxyAddress, serverAddress) {
-    addressField.innerText = 'Proxy Address: ' + proxyAddress + " | " + 'Origin Address: ' + serverAddress;
+  function displayServerAddress (serverAddress, proxyAddress) 
+  {
+	proxyAddress = (typeof proxyAddress === 'undefined') ? 'N/A' : proxyAddress;
+    addressField.innerText = ' Proxy Address: ' + proxyAddress + ' | ' + ' Origin Address: ' + serverAddress;
   }
 
   function onBitrateUpdate (bitrate, packetsSent) {
@@ -116,8 +118,9 @@
     };
   }
 
-  function determinePublisher () {
-
+  
+  function determinePublisher (serverAddress) {
+  
     var config = Object.assign({},
                     configuration,
                     defaultConfiguration,
@@ -126,7 +129,23 @@
                       protocol: getSocketLocationFromProtocol().protocol,
                       port: getSocketLocationFromProtocol().port,
                       streamName: config.stream1,
-                      streamType: 'webrtc'
+                      streamType: 'webrtc',
+					  app: configuration.proxy,
+					  connectionParams: {
+						host: serverAddress,
+						app: configuration.app
+					  }
+                   });
+    var rtmpConfig = Object.assign({}, config, {
+                      host: serverAddress,
+                      protocol: 'rtmp',
+                      port: serverSettings.rtmpport,
+                      streamName: config.stream1,
+                      width: config.cameraWidth,
+                      height: config.cameraHeight,
+                      swf: '../../lib/red5pro/red5pro-publisher.swf',
+                      swfobjectURL: '../../lib/swfobject/swfobject.js',
+                      productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
                    });
     var publishOrder = config.publisherFailoverOrder
                             .split(',')
@@ -134,16 +153,9 @@
                               return item.trim()
                         });
 
-	var i = publishOrder.length;
-	while (i--) {
-		if(publishOrder[i] != "rtc"){
-			publishOrder.splice(i, 1);
-		}
-	}	
-	
-
     return PublisherBase.determinePublisher({
-                rtc: rtcConfig
+                rtc: rtcConfig,
+                rtmp: rtmpConfig
               }, publishOrder);
   }
 
@@ -154,6 +166,27 @@
   }
 
   function publish (publisher, view, streamName) {
+	  
+	var config = publisher.getOptions();
+	console.log("Host = " + config.host + " | " + "app = " + config.app);
+	
+	if (publisher.getType().toLowerCase() === 'rtc')
+	{
+		displayServerAddress(config.connectionParams.host, config.host);
+		
+		console.log("Using streammanager proxy for rtc");
+		console.log("Proxy target = " + config.connectionParams.host + " | " + "Proxy app = " + config.connectionParams.app)
+		
+		if(isSecure)
+		console.log("Operating over secure connection | protocol: " + config.protocol + " | port: " +  config.port);
+		else
+		console.log("Operating over unsecure connection | protocol: " + config.protocol + " | port: " +  config.port);
+	}
+	else
+	{
+		displayServerAddress(config.host);
+	}		
+	
     streamTitle.innerText = streamName;
     targetPublisher = publisher;
     targetView = view;
@@ -188,26 +221,7 @@
   // Kick off.
   requestOrigin(configuration)
     .then(function (serverAddress) {
-      displayServerAddress(configuration.host, serverAddress);
-	  
-	  /* Assigning app to 'streammanager' and setting target , app in connectionParams */
-	  var targetApp = configuration.app;
-	  configuration.app = configuration.proxy;
-	  defaultConfiguration.app = configuration.proxy;
-	  configuration.connectionParams = {
-		  host: serverAddress,
-		  app: targetApp
-    };
-	
-	console.log("Host = " + configuration.host + " | " + "app = " + configuration.app);
-	console.log("Proxy target = " + configuration.connectionParams.host + " | " + "Proxy app = " + configuration.connectionParams.app);
-	if(isSecure){
-		console.log("Operating over secure connection | protocol: " + getSocketLocationFromProtocol().protocol + " | port: " +  getSocketLocationFromProtocol().port);
-	}else {
-		console.log("Operating over unsecure connection | protocol: " + getSocketLocationFromProtocol().protocol + " | port: " +  getSocketLocationFromProtocol().port);
-	}
-	
-      return determinePublisher();
+      return determinePublisher(serverAddress);
     })
     .then(function (payload) {
       var requiresPreview = payload.requiresPreview;
