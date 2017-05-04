@@ -75,8 +75,10 @@
     }
   }
 
-  function displayServerAddress (proxyAddress, serverAddress) {
-    addressField.innerText = 'Proxy Address: ' + proxyAddress + " | " + 'Edge Address: ' + serverAddress;
+  function displayServerAddress (serverAddress, proxyAddress) 
+  {
+	proxyAddress = (typeof proxyAddress === 'undefined') ? 'N/A' : proxyAddress;
+    addressField.innerText = ' Proxy Address: ' + proxyAddress + ' | ' + ' Edge Address: ' + serverAddress;
   }
 
   // Local lifecycle notifications.
@@ -128,10 +130,8 @@
     });
   }
 
-  function determineSubscriber (host) {
-	  
-	displayServerAddress(configuration.host, host);
-	var dynamicHost = host;
+  function determineSubscriber (serverAddress) {
+	
     var config = Object.assign({}, configuration, defaultConfiguration);
     var rtcConfig = Object.assign({}, config, {
       host: configuration.host,
@@ -139,7 +139,7 @@
       port: getSocketLocationFromProtocol().port,
 	  app: configuration.proxy,
 	  connectionParams: {
-		host: dynamicHost,
+		host: serverAddress,
 		app: configuration.app
       },
       subscriptionId: 'subscriber-' + instanceId,
@@ -151,7 +151,7 @@
       }
     })
     var rtmpConfig = Object.assign({}, config, {
-      host: host,
+      host: serverAddress,
       protocol: 'rtmp',
       port: serverSettings.rtmpport,
       streamName: config.stream1,
@@ -164,7 +164,7 @@
       productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
     })
     var hlsConfig = Object.assign({}, config, {
-      host: host,
+      host: serverAddress,
       protocol: protocol,
       port: isSecure ? serverSettings.hlssport : serverSettings.hlsport,
       streamName: config.stream1,
@@ -206,6 +206,8 @@
 	
 	if (subscriber.getType().toLowerCase() === 'rtc')
 	{
+		displayServerAddress(config.connectionParams.host, config.host);
+		
 		console.log("Using streammanager proxy for rtc");
 		console.log("Proxy target = " + config.connectionParams.host + " | " + "Proxy app = " + config.connectionParams.app)
 		
@@ -214,6 +216,11 @@
 		else
 		console.log("Operating over unsecure connection | protocol: " + config.protocol + " | port: " +  config.port);
 	}
+	else
+	{
+		displayServerAddress(config.host);
+	}
+	
 	  
     streamTitle.innerText = streamName;
     targetSubscriber = subscriber;
