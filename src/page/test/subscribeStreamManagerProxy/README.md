@@ -73,32 +73,23 @@ The service returns a JSON object. In particular to note is the `serverAddress` 
 }
 ```
 
-Next we connect to the `streammanager` proxy service layer with a request to subscribe to a RTC stream for the target edge server. The connection request specifies the target edge server to proxy to and the application name to which stream will be subscribed from.
+Next we construct the configuration objects for the subscriber per supported protocol. Note that the proxy usage is applicable for `rtc` only. The edge address is set directly as host for `rtmp` or `hls` subscriber configuration, whereas it is passed in through connectionParams for `rtc`.
 
-We ensure that the target application name is set to `streammanager` (proxy app). Then we add the edge address and scope name to connection parameters before making  a subscribe request to streammanager proxy layer.
+Another important to note is that for `rtc` subscriber the target application is the `proxy` - the `streammanager` webapp and not the app that you want to subscribe to. The `rtc` configuration passes the actual target application name in connectionParams as `app`.
 
 ```
-function determineSubscriber (host) {
-    //displayServerAddress('Edge', host)
-	displayServerAddress(configuration.host, host);
-	
-	/* Assigning app to 'streammanager' and setting target , app in connectionParams */
-	  var targetApp = configuration.app;
-	  configuration.app = configuration.proxy;
-	  defaultConfiguration.app = configuration.proxy;
-	  configuration.connectionParams = {
-		  host: host,
-		  app: targetApp
-    };
-	
-	console.log("Host = " + configuration.host + " | " + "app = " + configuration.app);
-	console.log("Proxy target = " + configuration.connectionParams.host + " | " + "Proxy app = " + configuration.connectionParams.app)
+function determineSubscriber (serverAddress) {
 	
     var config = Object.assign({}, configuration, defaultConfiguration);
     var rtcConfig = Object.assign({}, config, {
       host: configuration.host,
-      protocol: 'ws', // cluster is not over secure, at this time
-      port: serverSettings.wsport, // cluster is not over secure, at this time
+      protocol: getSocketLocationFromProtocol().protocol,
+      port: getSocketLocationFromProtocol().port,
+	  app: configuration.proxy,
+	  connectionParams: {
+		host: serverAddress,
+		app: configuration.app
+      },
       subscriptionId: 'subscriber-' + instanceId,
       streamName: config.stream1,
       bandwidth: {
@@ -106,10 +97,52 @@ function determineSubscriber (host) {
         video: 256,
         data: 30 * 1000 * 1000
       }
-    });
+    })
+    var rtmpConfig = Object.assign({}, config, {
+      host: serverAddress,
+      protocol: 'rtmp',
+      port: serverSettings.rtmpport,
+      streamName: config.stream1,
+      mimeType: 'rtmp/flv',
+      useVideoJS: false,
+      width: config.cameraWidth,
+      height: config.cameraHeight,
+      swf: '../../lib/red5pro/red5pro-subscriber.swf',
+      swfobjectURL: '../../lib/swfobject/swfobject.js',
+      productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
+    })
+    var hlsConfig = Object.assign({}, config, {
+      host: serverAddress,
+      protocol: protocol,
+      port: isSecure ? serverSettings.hlssport : serverSettings.hlsport,
+      streamName: config.stream1,
+      mimeType: 'application/x-mpegURL',
+      swf: '../../lib/red5pro/red5pro-video-js.swf',
+      swfobjectURL: '../../lib/swfobject/swfobject.js',
+      productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
+    })
+
+    if (!config.useVideo) {
+      rtcConfig.videoEncoding = 'NONE';
+    }
+    if (!config.useAudio) {
+      rtcConfig.audioEncoding = 'NONE';
+    }
+
+    var subscribeOrder = config.subscriberFailoverOrder
+                          .split(',').map(function (item) {
+                            return item.trim();
+                          });
+
+    return SubscriberBase.determineSubscriber({
+              rtc: rtcConfig,
+              rtmp: rtmpConfig,
+              hls: hlsConfig
+            }, subscribeOrder);
+  }
 ```
 
 <sup>
-[index.js #131](index.js#L131)
+[index.js #133](index.js#L133)
 </sup>
 
