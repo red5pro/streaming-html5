@@ -129,33 +129,19 @@
   }
 
   function determineSubscriber (host) {
-    //displayServerAddress('Edge', host)
+	  
 	displayServerAddress(configuration.host, host);
-	
-	/* Assigning app to 'streammanager' and setting target , app in connectionParams */
-	  var targetApp = configuration.app;
-	  configuration.app = configuration.proxy;
-	  defaultConfiguration.app = configuration.proxy;
-	  configuration.connectionParams = {
-		  host: host,
-		  app: targetApp
-    };
-	
-	// important logging
-	console.log("Host = " + configuration.host + " | " + "app = " + configuration.app);
-	console.log("Proxy target = " + configuration.connectionParams.host + " | " + "Proxy app = " + configuration.connectionParams.app)	
-	if(isSecure){
-		console.log("Operating over secure connection | protocol: " + getSocketLocationFromProtocol().protocol + " | port: " +  getSocketLocationFromProtocol().port);
-	}else {
-		console.log("Operating over unsecure connection | protocol: " + getSocketLocationFromProtocol().protocol + " | port: " +  getSocketLocationFromProtocol().port);
-	}
-		
-	
+	var dynamicHost = host;
     var config = Object.assign({}, configuration, defaultConfiguration);
     var rtcConfig = Object.assign({}, config, {
       host: configuration.host,
       protocol: getSocketLocationFromProtocol().protocol,
       port: getSocketLocationFromProtocol().port,
+	  app: configuration.proxy,
+	  connectionParams: {
+		host: dynamicHost,
+		app: configuration.app
+      },
       subscriptionId: 'subscriber-' + instanceId,
       streamName: config.stream1,
       bandwidth: {
@@ -163,9 +149,30 @@
         video: 256,
         data: 30 * 1000 * 1000
       }
-    });	
-	
-
+    })
+    var rtmpConfig = Object.assign({}, config, {
+      host: host,
+      protocol: 'rtmp',
+      port: serverSettings.rtmpport,
+      streamName: config.stream1,
+      mimeType: 'rtmp/flv',
+      useVideoJS: false,
+      width: config.cameraWidth,
+      height: config.cameraHeight,
+      swf: '../../lib/red5pro/red5pro-subscriber.swf',
+      swfobjectURL: '../../lib/swfobject/swfobject.js',
+      productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
+    })
+    var hlsConfig = Object.assign({}, config, {
+      host: host,
+      protocol: protocol,
+      port: isSecure ? serverSettings.hlssport : serverSettings.hlsport,
+      streamName: config.stream1,
+      mimeType: 'application/x-mpegURL',
+      swf: '../../lib/red5pro/red5pro-video-js.swf',
+      swfobjectURL: '../../lib/swfobject/swfobject.js',
+      productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
+    })
 
     if (!config.useVideo) {
       rtcConfig.videoEncoding = 'NONE';
@@ -179,15 +186,10 @@
                             return item.trim();
                           });
 
-	var i = subscribeOrder.length;
-	while (i--) {
-		if(subscribeOrder[i] != "rtc"){
-			subscribeOrder.splice(i, 1);
-		}
-	}	
-
     return SubscriberBase.determineSubscriber({
-              rtc: rtcConfig
+              rtc: rtcConfig,
+              rtmp: rtmpConfig,
+              hls: hlsConfig
             }, subscribeOrder);
   }
 
@@ -198,6 +200,21 @@
 
   // Request to start subscribing using an overlayed configuration from local default and local storage.
   function subscribe (subscriber, view, streamName) {
+	
+	var config = subscriber.getOptions();
+	console.log("Host = " + config.host + " | " + "app = " + config.app);
+	
+	if (subscriber.getType().toLowerCase() === 'rtc')
+	{
+		console.log("Using streammanager proxy for rtc");
+		console.log("Proxy target = " + config.connectionParams.host + " | " + "Proxy app = " + config.connectionParams.app)
+		
+		if(isSecure)
+		console.log("Operating over secure connection | protocol: " + config.protocol + " | port: " +  config.port);
+		else
+		console.log("Operating over unsecure connection | protocol: " + config.protocol + " | port: " +  config.port);
+	}
+	  
     streamTitle.innerText = streamName;
     targetSubscriber = subscriber;
     targetView = view;
