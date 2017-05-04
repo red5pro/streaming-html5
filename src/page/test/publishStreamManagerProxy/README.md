@@ -74,21 +74,57 @@ The service returns a JSON object. In particular to note is the `serverAddress` 
 }
 ```
 
-Next we connect to the `streammanager` proxy service layer with a request to publish RTC session to the target origin server. The connection request specifies the target origin server to proxy to and the application name to which stream will be published.
 
-We swap the target application name to `streammanager` (proxy app). Then we add the origin address and scope name to connection parameters before sending a publish request to streammanager proxy layer.
+Next we construct the configuration object for the publisher per supported protocol. Note that the `proxy` usage is applicable for `rtc` only. The origin address is set directly as host for `rtmp` publisher where as it is passed in through `connectionParams` for `rtc`.
+
+Another important to note is that for `rtc` publisher the target application is the proxy - the `streammanager` webapp and not the app that you want to publish to. The rtc configuration passes the actual target application name in `connectionParams` as `app`.
+
 
 ```
-/* Assigning app to 'streammanager' and setting target , app in connectionParams */
-	  var targetApp = configuration.app;
-	  configuration.app = configuration.proxy;
-	  defaultConfiguration.app = configuration.proxy;
-	  configuration.connectionParams = {
-		  host: serverAddress,
-		  app: targetApp
-```
+function determinePublisher (serverAddress) {
+  
+    var config = Object.assign({},
+                    configuration,
+                    defaultConfiguration,
+                    getUserMediaConfiguration());
+    var rtcConfig = Object.assign({}, config, {
+                      protocol: getSocketLocationFromProtocol().protocol,
+                      port: getSocketLocationFromProtocol().port,
+                      streamName: config.stream1,
+                      streamType: 'webrtc',
+                      app: configuration.proxy,
+		      connectionParams: {
+				host: serverAddress,
+				app: configuration.app
+			}
+                   });
+    var rtmpConfig = Object.assign({}, config, {
+                      host: serverAddress,
+                      protocol: 'rtmp',
+                      port: serverSettings.rtmpport,
+                      streamName: config.stream1,
+                      width: config.cameraWidth,
+                      height: config.cameraHeight,
+                      swf: '../../lib/red5pro/red5pro-publisher.swf',
+                      swfobjectURL: '../../lib/swfobject/swfobject.js',
+                      productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
+                   });
+    var publishOrder = config.publisherFailoverOrder
+                            .split(',')
+                            .map(function (item) {
+                              return item.trim()
+                        });
 
+    return PublisherBase.determinePublisher({
+                rtc: rtcConfig,
+                rtmp: rtmpConfig
+              }, publishOrder);
+  }
+  
+  ```
+  
 <sup>
-[index.js #185](index.js#L185)
+[index.js #122](index.js#L122)
 </sup>
+
 
