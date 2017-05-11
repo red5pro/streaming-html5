@@ -80,7 +80,11 @@ To define the **Host** with the server instance's IP, click the _Host_ field f t
 
 | **[Stream Manager](src/page/test/publishStreamManager)**
 | :-----
-| *Demonstrates utilizing the Red5 Pro Stream Manager to publish to a cluster's origin.*
+| **Demonstrates utilizing the Red5 Pro Stream Manager API to publish to an autoscaling cluster's origin.*
+
+| **[Stream Manager Proxy](src/page/test/publishStreamManagerProxy)**
+| :-----
+| *Demonstrates utilizing the Red5 Pro Stream Manager as an SSL WebSocket Proxy to publish WebRTC to an autoscaling cluster's origin.*
 
 | **[Record](src/page/test/publishRecord)**
 | :-----
@@ -126,6 +130,10 @@ To define the **Host** with the server instance's IP, click the _Host_ field f t
 | *Demonstrates accessing an IP from the Red5 Pro Cluster API to subcribe to a live stream.*
 
 | **[Stream Manager](src/page/test/subscribeStreamManager)**
+| :-----
+| *Demonstrates utilizing the Red5 Pro Stream Manager API, and acting as SSL WebSocket Proxy, to access an Edge server IP to subscribe to a live stream.*
+
+| **[Stream Manager Proxy](src/page/test/subscribeStreamManagerProxy)**
 | :-----
 | *Demonstrates utilizing the Red5 Pro Stream Manager API to access an Edge server IP to subscribe to a live stream.*
 
