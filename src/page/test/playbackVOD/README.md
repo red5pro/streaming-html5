@@ -1,135 +1,68 @@
-# Subscribe Failover using Red5 Pro
-This is an example of utilizing the failover mechanism of the Red5 Pro HTML SDK to select a subscriber based on browser support.
+# Playback VOD using Red5 Pro
+This is an example of Video On Demand (VOD) playback.
 
-The default failover order is:
+To view the recorded files available for VOD playback, view the listings from your server deploy in the webapp that the recorded stream was recorded to, such as the following:
 
-1. WebRTC
-2. RTMP/Flash
-3. HLS
-
-When utilizing the auto-failover mechanism, the SDK - by default - will first test for WebRTC support and if missing will attempt to embed a subscriber SWF for the broadcast. If Flash is not supported in the browser, it will finally attempt to playback using HLS.
-
-You can define the desired failover order from using `setPlaybackOrder`.
+* [http://localhost:5080/live/mediafiles](../../live/mediafiles)
+* [http://localhost:5080/live/playlists](../../live/playlists)
 
 ### Example Code
 - **[index.html](index.html)**
 - **[index.js](index.js)**
 
-## How to Subscribe
-Subscribing to a Red5 Pro stream requires a few components to function fully.
+## How to Playback
+> Be sure to have previously recorded a broadcast using the [Publish Record Example](../publishRecord).
 
-#### Including the SDK
-You will need to include the Red5 Pro SDK library on the page. The root of the library is accessible from `window.red5prosdk`:
+1. Enter in a filename - including the extension - of a previously recorded broadcast.
+2. Click `playback file`.
 
-```html
-<!doctype html>
-<html>
-  <head>
-...
-  </head>
-  <body>
-    <video id="red5pro-subscriber-video"></video>
-...
-    <script src="lib/red5pro/red5pro.min.sdk"></script>
-    <script>
-      (function (window, red5pro) {
-...
-      })(window, window.red5prosdk);
-    </script>
-...
-  </body>
-</html>
-```
+The playback format - either Flash or HLS - will be determined based on the extension with the following rules:
 
-#### Subscriber Selection
-A Subscriber instance is required to attach a stream and request subscription. The SDK can determine browser support and instantiate the proper Subscriber implementation based on the desired failover order.
+| Extension | Format |
+| --- | --- |
+| `flv` | Flash/RTMP |
+| `mp4` | Flash/RTMP |
+| `m3u8` | HLS |
 
-A configuration for each tech implementation must be provided to the `init` invocation:
+## Specifying a file as playback in a Subscriber
+Playing back a VOD file using the Red5 Pro Subscriber is similar to streaming a live video. Some configuration attributes will be different depending on the playback target.
+
+### Flash/RTMP
+To playback a VOD in the RTMP-based Subscriber:
+
+* Set the `streamName` in the configuration to the filename, with the extension.
+
+With a configuration provided for the RTMP Subscriber:
 
 ```js
-function determineSubscriber () {
-  var config = Object.assign({}, configuration);
-  var rtcConfig = Object.assign({}, config, {
-    protocol: 'ws',
-    port: config.rtcport,
-    subscriptionId: 'subscriber-' + instanceId,
-    streamName: config.stream1,
-    bandwidth: {
-      audio: 50,
-      video: 256,
-      data: 30 * 1000 * 1000
-    }
-  })
-  var rtmpConfig = Object.assign({}, config, {
-    protocol: 'rtmp',
-    port: config.rtmpport,
-    streamName: config.stream1,
-    mimeType: 'rtmp/flv',
-    useVideoJS: false,
-    width: config.cameraWidth,
-    height: config.cameraHeight,
-    swf: '../../lib/red5pro/red5pro-subscriber.swf',
-    swfobjectURL: '../../lib/swfobject/swfobject.js',
-    productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
-  })
-  var hlsConfig = Object.assign({}, config, {
-    protocol: 'http',
-    port: config.hlsport,
-    streamName: config.stream1,
-    mimeType: 'application/x-mpegURL',
-    swf: '../../lib/red5pro/red5pro-video-js.swf',
-    swfobjectURL: '../../lib/swfobject/swfobject.js',
-    productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
-  })
-
-  return new Promise(function (resolve, reject) {
-
-    var subscriber = new red5pro.Red5ProSubscriber();
-
-    subscriber.setPlaybackOrder(subscribeOrder)
-      .init({
-        rtc: rtcConfig,
-        rtmp: rtmpConfig,
-        hls: hlsConfig
-      })
-      .then(function (selectedSubscriber) {
-...
-      });
-  });
+{
+  protocol: 'rtmp',
+  host: 'localhost',
+  port: 1935,
+  app: 'live',
+  streamName: 'thefiletoplay.flv'
 }
 ```
 
-<sup>
-[index.js #42](index.js#L42)
-</sup>
+The Playback engine will connect to the server at `rtmp://localhost:1935/` and attempt to play back the `thefiletoplay.flv` file located in `<red5proserver>/webapps/live/streams`.
 
-The `init` method of the `Red5ProSubscriber` returns a `Promise` that will be resolved with the instantiated Subscriber implementation based on the subscriber order and browser support.
+### HLS
+To playback a VOD in the HLS-based Subscriber:
 
-You can determine the selected implementation by invoking `selectedSubscriber.getType()`.
+* Set the `streamName` in the configuration to the filename, _without_ the extension.
+* Set the `port` in the configuration to that of the one the server is served on.
 
-> Read more about configurations and their attributes from the [Red5 Pro HTML SDK Documentation](https://github.com/infrared5/red5pro-html-sdk#subscriber).
-
-#### Subscribing
-The `init` method of the `Red5ProSubscriber` instance returns a `Promise` which, when resolved, relays the Subscriber instance determined from the failover. To start a subscribing session, call the `playback` method of the Subscriber resolved:
+With a configuration provided for the HLS Subscriber:
 
 ```js
-subscriber.setPlaybackOrder(subscribeOrder)
-  .init({
-    rtc: rtcConfig,
-    rtmp: rtmpConfig,
-    hls: hlsConfig
-  })
-  .then(function (selectedSubscriber) {
-    return selectedSubscriber.play();
-  })
-  .then(function () {
-    console.log('Successfully started a subscription session!');
-  })
-  .catch(function () {
-    console.error('Could not start a subscription session: ' + error);
-  })
+{
+  protocol: 'http',
+  host: 'localhost',
+  port: 5080,
+  app: 'live',
+  streamName: 'thefiletoplay'
+}
 ```
 
-<sup>
-[index.js #93](index.js#L93)
-</sup>
+The Playback engine will connect to the server at `http://localhost:5080/` and attempt to play back the `thefiletoplay.m3u8` file located in `<red5proserver>/webapps/live/streams`.
+
