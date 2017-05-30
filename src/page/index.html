@@ -31,6 +31,10 @@
           <input id="host-field" name="host-field" value="localhost">
         </p>
         <p class="settings-field">
+          <label class="settings-label">WebApp:</label>
+          <input id="app-field" name="app-field" value="live">
+        </p>
+        <p class="settings-field">
           <label class="settings-label">Stream1 Name:</label>
           <input id="stream1-field" name="stream1-field" value="stream1">
         </p>
@@ -75,6 +79,7 @@
         }
 
         var hostField = document.getElementById('host-field');
+        var appField = document.getElementById('app-field');
         var stream1Field = document.getElementById('stream1-field');
         var stream2Field = document.getElementById('stream2-field');
         var loggingField = document.getElementById('logging-field');
@@ -84,6 +89,11 @@
 
         hostField.addEventListener('blur', function () {
           configuration.host = hostField.value;
+          seal(configuration);
+        });
+
+        appField.addEventListener('blur', function () {
+          configuration.app = appField.value;
           seal(configuration);
         });
 
@@ -123,6 +133,7 @@
 
         function populate (config) {
           hostField.value = config.host;
+          appField.value = config.app;
           stream1Field.value = config.stream1;
           stream2Field.value = config.stream2;
           loggingField.checked = config.verboseLogging ? true : false;
