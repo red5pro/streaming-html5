@@ -260,6 +260,11 @@ The **Red5 Pro HTML SDK** supports the following SWF integration:
 | minFlashVersion | Minimum semversion of the target Flash Player. | _Optional. Default: `10.0.0`_ |
 | swfobjectURL | Location of the [swfobject](https://github.com/swfobject/swfobject) dependency library that will be dynamically injected. | _Optional. Default: `lib/swfobject/swfobject.js`_ |
 | productInstallURL | Location of the **playerProductInstall** SWF used by [swfobject](https://github.com/swfobject/swfobject). | _Optional. Default: `lib/swfobject/playerProductInstall.swf`_ |
+| framerate | The FPS of data capture of the Camera. [More Info](http://help.adobe.com/en_US/FlashPlatform/reference/actionscript/3/flash/media/Camera.html#setMode()) | _Optional. Default: `15`_ |
+| bandwidth | The _maximum_ amount of bandwidth in bytes. [More Info](http://help.adobe.com/en_US/FlashPlatform/reference/actionscript/3/flash/media/Camera.html#bandwidth) | _Optional. Default: `50*1000`_ |
+| quality | The picture quality determined by compression applied to each video frame. Values: 1 - 100. [More Info](http://help.adobe.com/en_US/FlashPlatform/reference/actionscript/3/flash/media/Camera.html#quality) | _Optional. Default: `80`_ |
+| profile | The H264 Profile. [More Info](http://help.adobe.com/en_US/FlashPlatform/reference/actionscript/3/flash/media/H264Profile.html) | _Optional. Default: `baseline`_ |
+| level | The H264 Level. [More Info](http://help.adobe.com/en_US/FlashPlatform/reference/actionscript/3/flash/media/H264Level.html) | _Optional. Default: `3.1`_ |
 
 #### Example
 ```html
@@ -270,14 +275,10 @@ The **Red5 Pro HTML SDK** supports the following SWF integration:
   </div>
 </body>
 ...
-<!-- WebRTC Shim -->
-<script src="http://webrtc.github.io/adapter/adapter-latest.js"></script>
 <!-- Exposes `red5prosdk` on the window global. -->
 <script src="lib/red5pro/red5pro-sdk.min.js"></script>
 ...
 <script>
-  var iceServers = [{urls: 'stun:stun2.l.google.com:19302'}];
-
   // Create a new instance of the WebRTC publisher.
   var publisher = new red5prosdk.RTMPPublisher();
 
@@ -302,6 +303,7 @@ The **Red5 Pro HTML SDK** supports the following SWF integration:
       // A fault occurred while trying to initialize and publish the stream.
       console.error(error);
     });
+</script>
 ```
 
 <h3 id="failover-publisher">Auto Failover and Order</h3>
