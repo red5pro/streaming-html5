@@ -86,7 +86,8 @@
         }
       ],
       "verboseLogging": true,
-      "streamManagerAPI": "2.0"
+      "streamManagerAPI": "2.0",
+      rtcpMuxPolicy: "negotiate"
     };
     if (isMoz) {
       json.iceServers = json.mozIce;

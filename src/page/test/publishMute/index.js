@@ -29,7 +29,8 @@
   var updateStatusFromEvent = window.red5proHandlePublisherEvent; // defined in src/template/partial/status-field-publisher.hbs
   var streamTitle = document.getElementById('stream-title');
   var statisticsField = document.getElementById('statistics-field');
-  var muteButton = document.getElementById('mute-button');
+  var muteAudioButton = document.getElementById('mute-audio-button');
+  var muteVideoButton = document.getElementById('mute-video-button');
 
   var protocol = serverSettings.protocol;
   var isSecure = protocol == 'https';
@@ -46,16 +47,27 @@
   };
 
   function addMuteListener (publisher) {
-    muteButton.addEventListener('click', function () {
-      var wasMuted = muteButton.innerText === 'unmute';
-      muteButton.innerText = wasMuted ? 'mute' : 'unmute';
+    muteAudioButton.addEventListener('click', function () {
+      var wasMuted = muteAudioButton.innerText === 'unmute audio';
+      muteAudioButton.innerText = wasMuted ? 'mute audio' : 'unmute audio';
       if (wasMuted) {
-        publisher.unmute();
+        publisher.unmuteAudio();
       }
       else {
-        publisher.mute();
+        publisher.muteAudio();
       }
     });
+    muteVideoButton.addEventListener('click', function () {
+      var wasMuted = muteVideoButton.innerText === 'unmute video';
+      muteVideoButton.innerText = wasMuted ? 'mute video' : 'unmute video';
+      if (wasMuted) {
+        publisher.unmuteVideo();
+      }
+      else {
+        publisher.muteVideo();
+      }
+    });
+
   }
 
   function onBitrateUpdate (bitrate, packetsSent) {
