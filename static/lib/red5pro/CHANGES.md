@@ -1,5 +1,14 @@
 # Changes
 
+## 3.4.1
+
+- readme updates (bustardcelly)
+- offloading subscriber start event to websocket notification. (bustardcelly)
+- Update for API change in browsers. (bustardcelly)
+
+    Though latest adapter.js should handle, adding for legacy and new browsers.
+
+
 ## 3.4.0
 
 
