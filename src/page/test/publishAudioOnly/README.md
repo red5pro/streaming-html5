@@ -17,8 +17,9 @@ Request the `getUserMedia` using the following constraints:
 }
 ```
 
-[index.js#68](index.js#68)
-[main.js#60](../../../static/script/main.js#60)
+[index.js#L68](index.js#L68)
+
+[main.js#L60](../../../../static/script/main.js#L60)
 
 ## audio element
 Use an `audio` HTML element instead of `video`:
@@ -27,4 +28,4 @@ Use an `audio` HTML element instead of `video`:
 <audio id="red5pro-publisher-video" controls class="video-element" muted></audio>
 ```
 
-[index.html#16](index.html#16]
+[index.html#L16](index.html#L16)
