@@ -109,8 +109,8 @@
 
     var config = Object.assign({},
                     configuration,
-                    getUserMediaConfiguration(),
-                    defaultConfiguration);
+                    defaultConfiguration,
+                    {mediaConstraints: getUserMediaConfiguration()});
     var rtcConfig = Object.assign({}, config, {
                       streamName: config.stream1,
                       streamType: 'webrtc'
@@ -137,10 +137,9 @@
               }, publishOrder);
   }
 
-  function preview (publisher, requiresGUM) {
+  function preview (publisher) {
     var elementId = 'red5pro-publisher-video';
-    var gUM = getUserMediaConfiguration();
-    return PublisherBase.preview(publisher, elementId, requiresGUM ? gUM : undefined);
+    return PublisherBase.preview(publisher, elementId);
   }
 
   function publish (publisher, view, streamName) {
@@ -178,10 +177,9 @@
   // Kick off.
   determinePublisher()
     .then(function (payload) {
-      var requiresPreview = payload.requiresPreview;
       var publisher = payload.publisher;
       publisher.on('*', onPublisherEvent);
-      return preview(publisher, requiresPreview);
+      return preview(publisher);
     })
     .then(function (payload) {
       var publisher = payload.publisher;

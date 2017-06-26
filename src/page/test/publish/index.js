@@ -68,8 +68,7 @@
   function getUserMediaConfiguration () {
     return {
       audio: configuration.useAudio ? configuration.userMedia.audio : false,
-      video: configuration.useVideo ? configuration.userMedia.video : false,
-      frameRate: configuration.frameRate
+      video: configuration.useVideo ? configuration.userMedia.video : false
     };
   }
 
@@ -77,7 +76,7 @@
 
     var config = Object.assign({},
                    configuration,
-                   getUserMediaConfiguration());
+                  {mediaConstraints: getUserMediaConfiguration()});
     var rtcConfig = Object.assign({}, config, {
                       protocol: getSocketLocationFromProtocol().protocol,
                       port: getSocketLocationFromProtocol().port,
@@ -106,10 +105,9 @@
               }, publishOrder);
   }
 
-  function preview (publisher, requiresGUM) {
+  function preview (publisher) {
     var elementId = 'red5pro-publisher-video';
-    var gUM = getUserMediaConfiguration();
-    return PublisherBase.preview(publisher, elementId, requiresGUM ? gUM : undefined);
+    return PublisherBase.preview(publisher, elementId);
   }
 
   function publish (publisher, view, streamName) {
@@ -147,10 +145,9 @@
   // Kick off.
   determinePublisher()
     .then(function (payload) {
-      var requiresPreview = payload.requiresPreview;
       var publisher = payload.publisher;
       publisher.on('*', onPublisherEvent);
-      return preview(publisher, requiresPreview);
+      return preview(publisher);
     })
     .then(function (payload) {
       var publisher = payload.publisher;
