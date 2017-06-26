@@ -220,8 +220,8 @@ The Red5 Pro HTML SDK Flash-based Publisher embeds a SWF file - utilizing [swfob
 | host | [x] | *None* | The IP or address that the stream resides on. |
 | streamName | [x] | *None* | The stream name to subscribe to. |
 | connectionParams | [-] | `undefined` | An object of connection parameters to send to the server upon connection request. |
-| embedWidth | [x] | `640px` | The width of the object element for the SWF movie embed. (`px` or `100%`) |
-| embedHeight | [x] | `480px` | The height of the object element for the SWF movie embed. (`px` or `100%`) |
+| embedWidth | [x] | `100%` | The width of the object element for the SWF movie embed. (`Integer` or `"100%"`) |
+| embedHeight | [x] | `100%` | The height of the object element for the SWF movie embed. (`Integer` or `"100%"`) |
 | swf | [x] | `lib/red5pro/red5pro-publisher.swf` | The swf file location to use as the Flash client publisher. |
 | minFlashVersion | [x] | `10.0.0` | Minimum semversion of the target Flash Player. |
 | swfobjectURL | [x] | `lib/swfobject/swfobject.js` | Location of the [swfobject](https://github.com/swfobject/swfobject) dependency library that will be dynamically injected. |
@@ -338,7 +338,7 @@ _index.html_:
   <body>
     <video id="red5pro-publisher" autoplay muted></video>
     <!-- Recommended shim for cross-browser WebRTC support. -->
-    <script src="http://webrtc.github.io/adapter/adapter-latest.js"></script>
+    <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
     <!-- Exposes `red5prosdk` on the window global. -->
     <script src="lib/red5pro/red5pro-sdk.min.js"></script>
     <!-- Example script below. -->

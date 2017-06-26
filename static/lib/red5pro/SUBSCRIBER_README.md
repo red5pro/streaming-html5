@@ -89,7 +89,7 @@ _index.html_:
   <body>
     <video id="red5pro-subscriber" autoplay></video>
     <!-- Recommended shim for cross-browser WebRTC support. -->
-    <script src="http://webrtc.github.io/adapter/adapter-latest.js"></script>
+    <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
     <!-- Exposes `red5prosdk` on the window global. -->
     <script src="lib/red5pro/red5pro-sdk.min.js"></script>
     <!-- Example script below. -->
@@ -159,13 +159,13 @@ The **Red5 Pro HTML SDK** supports the following SWF integration:
 | connectionParams | [-] | `undefined` | An object of connection parameters to send to the server upon connection request. |
 | width | [x] | `640` | The width of the video element within the SWF movie. |
 | height | [x] | `480` | The height of the video element within the SWF movie. |
-| embedWidth | [x] | `640px` | The width of the object element for the SWF movie embed. (`px` or `100%`) |
-| embedHeight | [x] | `480px` | The height of the object element for the SWF movie embed. (`px` or `100%`) |
+| embedWidth | [x] | `100%` | The width of the object element for the SWF movie embed. (`Integer` or `100%`) |
+| embedHeight | [x] | `100%` | The height of the object element for the SWF movie embed. (`Integer` or `100%`) |
 | swf | [x] | `lib/red5pro/red5pro-subscriber.swf` | The swf file location to use as the Flash client subscriber. |
 | minFlashVersion | [x] | `10.0.0` | Minimum semversion of the target Flash Player. |
 | swfobjectURL | [x] | `lib/swfobject/swfobject.js` | Location of the [swfobject](https://github.com/swfobject/swfobject) dependency library that will be dynamically injected. |
 | productInstallURL | [x] | `lib/swfobject/playerProductInstall.swf` | Location of the **playerProductInstall** SWF used by [swfobject](https://github.com/swfobject/swfobject). |
-|| useVideoJS | Flag to utilize the [videojs](https://github.com/videojs) library. | _Optional. Default: `false`_ |
+|| useVideoJS | [-] | `false` | Flag to utilize the [videojs](https://github.com/videojs) library. |
 
 ### Flash Example
 _index.html_
@@ -337,7 +337,7 @@ _index.html_:
     </div>
   </body>
       <!-- WebRTC Shim -->
-      <script src="http://webrtc.github.io/adapter/adapter-latest.js"></script>
+      <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
       <!-- Exposes `red5prosdk` on the window global. -->
       <script src="lib/red5pro/red5pro-sdk.min.js"></script>
       <!-- Example script below. -->
