@@ -111,11 +111,16 @@
       streamName: config.stream1,
       mimeType: 'rtmp/flv',
       useVideoJS: false,
-      width: config.cameraWidth,
-      height: config.cameraHeight,
       swf: '../../lib/red5pro/red5pro-subscriber.swf',
       swfobjectURL: '../../lib/swfobject/swfobject.js',
-      productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
+      productInstallURL: '../../lib/swfobject/playerProductInstall.swf',
+      mediaConstraints: {
+        audio: true,
+        video: {
+          width: config.cameraWidth,
+          height: config.cameraHeight
+        }
+      }
     })
     var hlsConfig = Object.assign({}, config, {
       protocol: protocol,

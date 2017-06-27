@@ -1,5 +1,10 @@
 # Changes
 
+## 3.4.2
+
+- regex on level for rtmp pub setting. (bustardcelly)
+- exposing media settings of the rtmp publisher. (bustardcelly)
+
 ## 3.4.1
 
 - readme updates (bustardcelly)

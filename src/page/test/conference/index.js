@@ -51,7 +51,7 @@
   var failAttemps = [];
   var roomName;
   var chosenName;
-  var publishing = false;
+  var publishing = false; // eslint-disable-line no-unused-vars
 
   var subBlock ="<div class=\"float-left float-left-conf\" id=\"FILLNAME\">" +
                   "<h2 class=\"centered\"><em>Suscriber Stream</em>: <span id=\"FILLNAME-title\"></span></h2>" +
@@ -71,8 +71,8 @@
     var found = false;
     for (var i = streamsList.length - 1; i >= 0; i--) {
       found = streamsList[i] == roomName + "-" + chosenName;
-      if (found) {break};
-    };
+      if (found) {break}
+    }
 
     if(!found)
       publish( roomName + "-" + chosenName );
@@ -158,38 +158,18 @@
   function getUserMediaConfiguration () {
     return {
       audio: configuration.useAudio ? configuration.userMedia.audio : false,
-      video: configuration.useVideo ? configuration.userMedia.video : false,
-      frameRate: configuration.frameRate
+      video: configuration.useVideo ? configuration.userMedia.video : false
     };
   }
 
   function preview () {
-    var gUM = getUserMediaConfiguration;
-    return new Promise(function (resolve, reject) {
+    return new Promise(function (resolve, reject) { // eslint-disable-line no-unused-vars
 
       var elementId = 'red5pro-publisher-video';
       targetPublisher = new red5pro.RTCPublisher();
       targetPubView = new red5pro.PublisherView(elementId);
-      var gmd = navigator.mediaDevice || navigator;
-
       targetPublisher.on('*', onPublisherEvent);
-      console.log('[Red5ProPublisher] gUM:: ' + JSON.stringify(gUM(), null, 2));
-
-      gmd.getUserMedia(gUM(), function (media) {
-
-        // Upon access of user media,
-        // 1. Attach the stream to the publisher.
-        // 2. Show the stream as preview in view instance.
-        targetPublisher.attachStream(media);
-        targetPubView.preview(media, true);
-        resolve();
-
-      }, function(error) {
-
-        onPublishFail('Error - ' + error);
-        reject(error);
-
-      })
+      console.log('[Red5ProPublisher] gUM:: ' + JSON.stringify(getUserMediaConfiguration(), null, 2));
     });
   }
 
@@ -199,7 +179,7 @@
     var config = Object.assign({},
                     configuration,
                     defaultConfiguration,
-                    getUserMediaConfiguration());
+                    {mediaConstraints: getUserMediaConfiguration()});
     config.cameraWidth = 320
     config.cameraHeight = 240
     config.bandwith = {audio:16, video:192}
