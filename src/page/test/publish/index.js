@@ -91,8 +91,11 @@
                       swfobjectURL: '../../lib/swfobject/swfobject.js',
                       productInstallURL: '../../lib/swfobject/playerProductInstall.swf',
                       mediaConstraints: {
-                        width: config.cameraWidth,
-                        height: config.cameraHeight,
+                        audio: true,
+                        video: {
+                          width: config.cameraWidth,
+                          height: config.cameraHeight
+                        }
                       }
                    });
     var publishOrder = config.publisherFailoverOrder
