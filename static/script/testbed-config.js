@@ -23,7 +23,7 @@
   protocol = protocol.substring(0, protocol.lastIndexOf(':'));
 
   var isMoz = !!navigator.mozGetUserMedia;
-  var isEdge = adapter.browserDetails.browser.toLowerCase() === 'edge';
+  var isEdge = adapter && adapter.browserDetails.browser.toLowerCase() === 'edge';
   var config = sessionStorage.getItem('r5proTestBed');
   var json;
   var serverSettings = {
