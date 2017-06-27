@@ -23,18 +23,8 @@
       publisher.setPublishOrder(order)
         .init(configuration)
         .then(function (selectedPublisher) {
-          var type = selectedPublisher ? selectedPublisher.getType() : undefined;
-          var requiresPreview = type.toLowerCase() === publisher.publishTypes.RTC;
-          /**
-          window.enableReachability('https://www.red5pro.com', function() {
-            window.red5proHandlePublisherEvent({
-              type: window.red5prosdk.PublisherEventTypes.CONNECTION_CLOSED
-            });
-            });
-            */
           resolve({
-            publisher: selectedPublisher,
-            requiresPreview: requiresPreview
+            publisher: selectedPublisher
           });
         })
         .catch(reject);
@@ -48,35 +38,15 @@
             }, ['rtc']);
   };
 
-  Publisher.prototype.preview = function (publisher, elementId, gumConfiguration) {
+  Publisher.prototype.preview = function (publisher, elementId) {
 
-    return new Promise(function (resolve, reject) {
+    return new Promise(function (resolve) {
       var view = new red5pro.PublisherView(elementId);
       view.attachPublisher(publisher);
-
-      var nav = navigator.mediaDevice || navigator;
-      if (typeof gumConfiguration !== 'undefined') {
-        console.log('[Red5ProPublisher] gUM:: ' + JSON.stringify(gumConfiguration, null, 2));
-        nav.getUserMedia(gumConfiguration, function (media) {
-          // Upon access of user media,
-          // 1. Attach the stream to the publisher.
-          // 2. Show the stream as preview in view instance.
-          publisher.attachStream(media);
-          view.preview(media, true);
-          resolve({
-            publisher: publisher,
-            view: view
-          });
-        }, function(error) {
-          reject(error);
-        })
-      }
-      else {
-        resolve({
-          publisher: publisher,
-          view: view
-        });
-      }
+      resolve({
+        publisher: publisher,
+        view: view
+      });
     });
 
   };
@@ -114,13 +84,6 @@
       subscriber.setPlaybackOrder(order)
         .init(configuration)
         .then(function (selectedSubscriber) {
-          /**
-          window.enableReachability('https://www.red5pro.com', function() {
-            window.red5proHandleSubscriberEvent({
-              type: window.red5prosdk.SubscriberEventTypes.CONNECTION_CLOSED
-            });
-            });
-            */
           resolve({
             subscriber: selectedSubscriber
           });

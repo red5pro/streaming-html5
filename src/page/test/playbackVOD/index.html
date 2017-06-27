@@ -1,0 +1,45 @@
+<!doctype html>
+<html>
+  <head>
+    {{> meta title='Playback VOD Test'}}
+    {{> header-scripts}}
+    {{> header-stylesheets}}
+    <style>
+      .status-field > p {
+        padding: 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      {{> version }}
+      {{> settings-link}}
+      {{> test-info testTitle='Playback VOD Test'}}
+      <!--      {{> status-field-subscriber}} -->
+      <div class="centered status-field">
+        <p>
+          To use this test, you must have first published a recorded broadcast using the <a href="../publishRecord" target="_blank">Publish - Record</a> test.
+          <br>
+          <br>
+          You can view a list of available Videos on Demand (VODs), by requesting <a id="mediafiles-link" href="mediafiles" target="_blank">mediafiles</a> and <a id="playlists-link" href="playlists" target="_blank">playlists</a>.
+          <br>
+          <em>Assumes you are viewing this test served from the same location as the server.</em>
+        </p>
+        <hr/>
+        <p>
+          Once you have done so, enter the filename - <strong>with extension</strong> - name below:
+        </p>
+        <p>
+          <label for="name-input">Name:</label>
+          <input type="text" name="name-input" id="name-input">
+          <button id="submit-button">play file</button>
+        </p>
+      </div>
+      <div id="video-container" class="centered">
+        <video id="red5pro-subscriber-video" controls class="video-element" autoplay></video>
+      </div>
+    </div>
+    {{> body-scripts}}
+    <script src="index.js"></script>
+  </body>
+</html>

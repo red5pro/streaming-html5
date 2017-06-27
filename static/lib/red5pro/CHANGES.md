@@ -1,5 +1,22 @@
 # Changes
 
+## 3.4.2
+
+- regex on level for rtmp pub setting. (bustardcelly)
+- exposing media settings of the rtmp publisher. (bustardcelly)
+
+## 3.4.1
+
+- readme updates (bustardcelly)
+- offloading subscriber start event to websocket notification. (bustardcelly)
+- Update for API change in browsers. (bustardcelly)
+
+    Though latest adapter.js should handle, adding for legacy and new browsers.
+
+
+## 3.4.0
+
+
 ## 3.3.0
 
 - using std camera sizes for RPRO-3787 (bustardcelly)

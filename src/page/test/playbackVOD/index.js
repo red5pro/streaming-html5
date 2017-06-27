@@ -1,9 +1,6 @@
 (function(window, document, red5pro, SubscriberBase) {
   'use strict';
 
-  var SharedObject = red5pro.Red5ProSharedObject;
-  var so = undefined; // @see onSubscribeSuccess
-
   var serverSettings = (function() {
     var settings = sessionStorage.getItem('r5proServerSettings');
     try {
@@ -32,11 +29,23 @@
   var updateStatusFromEvent = window.red5proHandleSubscriberEvent; // defined in src/template/partial/status-field-subscriber.hbs
   var instanceId = Math.floor(Math.random() * 0x10000).toString(16);
   var streamTitle = document.getElementById('stream-title');
-  var sendButton = document.getElementById('send-button');
-  var soField = document.getElementById('so-field');
-  sendButton.addEventListener('click', function () {
-    sendMessageOnSharedObject(document.getElementById('input-field').value);
+  var nameInput = document.getElementById('name-input');
+  var submitButton = document.getElementById('submit-button');
+  submitButton.addEventListener('click', function () {
+    var filename = nameInput.value;
+    if (filename.split('.').length < 2) {
+      alert('Expecting filename to have an extension (e.g., "filname.flv").');
+    }
+    else {
+      playback(filename);
+    }
   });
+
+  var mediaFilesLink = document.getElementById('mediafiles-link');
+  var playlistsLink = document.getElementById('playlists-link');
+  mediaFilesLink.setAttribute('href', [window.location.origin, configuration.app, 'mediafiles'].join('/'));
+  playlistsLink.setAttribute('href', [window.location.origin, configuration.app, 'playlists'].join('/'));
+
   var protocol = serverSettings.protocol;
   var isSecure = protocol === 'https';
   function getSocketLocationFromProtocol () {
@@ -69,73 +78,18 @@
   function onSubscriberEvent (event) {
     console.log('[Red5ProSubscriber] ' + event.type + '.');
     updateStatusFromEvent(event);
-    if (event.type === red5pro.SubscriberEventTypes.SUBSCRIBE_METADATA) {
-      var video = document.getElementById('red5pro-subscriber-video');
-      video.parentNode.style['height'] = ((event.data.orientation % 90 === 0) ? video.clientWidth : video.clientHeight) + 'px';
-    }
   }
   function onSubscribeFail (message) {
     console.error('[Red5ProSubsriber] Subscribe Error :: ' + message);
   }
-  function onSubscribeSuccess (subscriber) {
+  function onSubscribeSuccess () {
     console.log('[Red5ProSubsriber] Subscribe Complete.');
-    establishSharedObject(subscriber);
   }
   function onUnsubscribeFail (message) {
     console.error('[Red5ProSubsriber] Unsubscribe Error :: ' + message);
   }
   function onUnsubscribeSuccess () {
     console.log('[Red5ProSubsriber] Unsubscribe Complete.');
-  }
-
-  var hasRegistered = false;
-  function appendMessage (message) {
-    soField.value = [message, soField.value].join('\n');
-  }
-  // Invoked from METHOD_UPDATE event on Shared Object instance.
-  function messageTransmit (message) { // eslint-disable-line no-unused-vars
-    soField.value = ['User "' + message.user + '": ' + message.message, soField.value].join('\n');
-  }
-  function establishSharedObject (subscriber) {
-    // Create new shared object.
-    so = new SharedObject('sharedChatTest', subscriber);
-    var soCallback = {
-      messageTransmit: messageTransmit
-    };
-    so.on(red5pro.SharedObjectEventTypes.CONNECT_SUCCESS, function (event) { // eslint-disable-line no-unused-vars
-      console.log('[Red5ProSubscriber] SharedObject Connect.');
-      appendMessage('Connected.');
-    });
-    so.on(red5pro.SharedObjectEventTypes.CONNECT_FAILURE, function (event) { // eslint-disable-line no-unused-vars
-      console.log('[Red5ProSubscriber] SharedObject Fail.');
-    });
-    so.on(red5pro.SharedObjectEventTypes.PROPERTY_UPDATE, function (event) {
-      console.log('[Red5ProPublisher] SharedObject Property Update.');
-      console.log(JSON.stringify(event.data, null, 2));
-      if (event.data.hasOwnProperty('count')) {
-        appendMessage('User count is: ' + event.data.count + '.');
-        if (!hasRegistered) {
-          hasRegistered = true;
-          so.setProperty('count', parseInt(event.data.count) + 1);
-        }
-      else if (!hasRegistered) {
-          hasRegistered = true;
-          so.setProperty('count', 1);
-        }
-      }
-    });
-    so.on(red5pro.SharedObjectEventTypes.METHOD_UPDATE, function (event) {
-      console.log('[Red5ProPublisher] SharedObject Method Update.');
-      console.log(JSON.stringify(event.data, null, 2));
-      soCallback[event.data.methodName].call(null, event.data.message);
-    });
-  }
-
-  function sendMessageOnSharedObject (message) {
-    so.send('messageTransmit', {
-      user: [configuration.stream1, 'subscriber'].join(' '),
-      message: message
-    });
   }
 
   function determineSubscriber () {
@@ -157,15 +111,20 @@
       streamName: config.stream1,
       mimeType: 'rtmp/flv',
       useVideoJS: false,
-      width: config.cameraWidth,
-      height: config.cameraHeight,
       swf: '../../lib/red5pro/red5pro-subscriber.swf',
       swfobjectURL: '../../lib/swfobject/swfobject.js',
-      productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
+      productInstallURL: '../../lib/swfobject/playerProductInstall.swf',
+      mediaConstraints: {
+        audio: true,
+        video: {
+          width: config.cameraWidth,
+          height: config.cameraHeight
+        }
+      }
     })
     var hlsConfig = Object.assign({}, config, {
       protocol: protocol,
-      port: isSecure ? serverSettings.hlssport : serverSettings.hlsport,
+      port: window.location.port,
       streamName: config.stream1,
       mimeType: 'application/x-mpegURL',
       swf: '../../lib/red5pro/red5pro-video-js.swf',
@@ -183,7 +142,7 @@
     var subscribeOrder = config.subscriberFailoverOrder
                           .split(',').map(function (item) {
                             return item.trim();
-                            });
+                          });
 
     return SubscriberBase.determineSubscriber({
               rtc: rtcConfig,
@@ -209,7 +168,7 @@
     return new Promise(function (resolve, reject) {
       SubscriberBase.subscribe(subscriber, view)
         .then(function () {
-          onSubscribeSuccess(subscriber);
+          onSubscribeSuccess();
           resolve();
         })
         .catch(reject);
@@ -218,9 +177,6 @@
 
   // Request to unsubscribe.
   function unsubscribe () {
-    if (so !== undefined) {
-      so.close();
-    }
     return new Promise(function(resolve, reject) {
       var view = targetView
       var subscriber = targetSubscriber
@@ -240,24 +196,73 @@
     });
   }
 
-  // Kick off.
-  determineSubscriber()
-    .then(function(payload) {
-      var subscriber = payload.subscriber;
-      // Subscribe to events.
-      subscriber.on('*', onSubscriberEvent);
-      return view(subscriber);
-    })
-    .then(function(payload) {
-      var subscriber = payload.subscriber;
-      var view = payload.view;
-      return subscribe(subscriber, view, configuration.stream1);
-    })
-    .catch(function (error) {
-      var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
-      console.error('[Red5ProSubscriber] :: Error in subscribing - ' + jsonError);
-      onSubscribeFail(jsonError);
-    });
+  var formats = {
+    rtmp: ['mp4', 'flv'],
+    hls: ['m3u8']
+  }
+
+  function determineFailoverOrderFromFilename (filename) {
+    var ext = filename.split('.')[1];
+    for (var key in formats) {
+      var i = formats[key].length;
+      while (--i > -1) {
+        if (formats[key][i] === ext) {
+          return key;
+        }
+      }
+    }
+    return configuration.subscriberFailoverOrder;
+  }
+
+  function determineStreamNameFromFilename (filename) {
+    var parts = filename.split('.');
+    var ext = parts[1];
+    if (ext === 'm3u8') {
+      return parts[0];
+    }
+    return filename;
+  }
+
+  function playback(filename) {
+    configuration.subscriberFailoverOrder = determineFailoverOrderFromFilename(filename);
+    configuration.stream1 = determineStreamNameFromFilename(filename);
+
+    var start = function () {
+      // Kick off.
+      determineSubscriber()
+        .then(function(payload) {
+          var subscriber = payload.subscriber;
+          // Subscribe to events.
+          subscriber.on('*', onSubscriberEvent);
+          return view(subscriber);
+        })
+        .then(function(payload) {
+          var subscriber = payload.subscriber;
+          var view = payload.view;
+          return subscribe(subscriber, view, configuration.stream1);
+        })
+        .catch(function (error) {
+          var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
+          console.error('[Red5ProSubscriber] :: Error in subscribing - ' + jsonError);
+          onSubscribeFail(jsonError);
+        });
+    };
+
+    if (typeof targetSubscriber !== 'undefined') {
+      var reset = function reset() {
+        var container = document.getElementById('video-container');
+        while (container.hasChildNodes()) {
+          container.removeChild(container.lastChild);
+        }
+        container.innerHTML = '<video id="red5pro-subscriber-video" controls class="video-element"></video>';
+        start();
+      }
+      unsubscribe().then(reset).catch(reset);
+    }
+    else {
+      start();
+    }
+  }
 
   // Clean up.
   window.addEventListener('beforeunload', function() {

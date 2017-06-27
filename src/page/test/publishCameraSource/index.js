@@ -47,8 +47,7 @@
 
   var userMedia = {
     audio: configuration.useAudio ? configuration.userMedia.audio : false,
-    video: configuration.useVideo ? configuration.userMedia.video : false,
-    frameRate: configuration.frameRate
+    video: configuration.useVideo ? configuration.userMedia.video : false
   };
 
   function onBitrateUpdate (bitrate, packetsSent) {
@@ -92,11 +91,11 @@
     if (selection && selection !== 'undefined' && selection !== SELECT_DEFAULT) {
       // assign selected camera to defined UserMedia.
       if (userMedia.video && typeof userMedia.video !== 'boolean') {
-        userMedia.video.sourceId = selection
+        userMedia.video.deviceId = { exact: selection }
       }
       else {
         userMedia.video = {
-          sourceId: selection
+          deviceId: { exact: selection }
         };
       }
       // Kick off.
@@ -117,14 +116,17 @@
         var cameras = [{
           label: SELECT_DEFAULT
         }].concat(videoCameras);
-        var options = cameras.map(function (camera) {
-          return '<option value="' + camera.deviceId + '">' + camera.label + '</option>';
+        var options = cameras.map(function (camera, index) {
+          return '<option value="' + camera.deviceId + '">' + (camera.label || 'camera ' + index) + '</option>';
         });
         cameraSelect.innerHTML = options.join(' ');
         cameraSelect.addEventListener('change', function () {
           onCameraSelect(cameraSelect.value);
         });
-    });
+      })
+      .catch(function (error) {
+        console.error('Could not access camera devices: ' + error);
+      });
   }
 
   function startPublishSession () {
@@ -153,7 +155,7 @@
     var config = Object.assign({},
                     configuration,
                     defaultConfiguration,
-                    getUserMediaConfiguration());
+                    {mediaConstraints: getUserMediaConfiguration()});
     var rtcConfig = Object.assign({}, config, {
                       protocol: getSocketLocationFromProtocol().protocol,
                       port: getSocketLocationFromProtocol().port,
@@ -163,10 +165,9 @@
     return PublisherBase.getRTCPublisher(rtcConfig);
   }
 
-  function preview (publisher, requiresGUM) {
+  function preview (publisher) {
     var elementId = 'red5pro-publisher-video';
-    var gUM = getUserMediaConfiguration();
-    return PublisherBase.preview(publisher, elementId, requiresGUM ? gUM : undefined);
+    return PublisherBase.preview(publisher, elementId);
   }
 
   function publish (publisher, view, streamName) {
