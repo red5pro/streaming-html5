@@ -29,7 +29,10 @@
   var updateStatusFromEvent = window.red5proHandlePublisherEvent; // defined in src/template/partial/status-field-publisher.hbs
   var streamTitle = document.getElementById('stream-title');
   var statisticsField = document.getElementById('statistics-field');
-  var cameraSelect = document.getElementById('camera-select');
+  var loginForm = document.getElementById('login-form');
+  var usernameField = document.getElementById('username-field');
+  var passwordField = document.getElementById('password-field');
+  var submitButton = document.getElementById('submit-button');
 
   var protocol = serverSettings.protocol;
   var isSecure = protocol == 'https';
@@ -38,18 +41,6 @@
       ? {protocol: 'ws', port: serverSettings.wsport}
       : {protocol: 'wss', port: serverSettings.wssport};
   }
-
-  var defaultConfiguration = {
-    protocol: getSocketLocationFromProtocol().protocol,
-    port: getSocketLocationFromProtocol().port,
-    app: 'live'
-  };
-
-  var userMedia = {
-    audio: configuration.useAudio ? configuration.userMedia.audio : false,
-    video: configuration.useVideo ? configuration.userMedia.video : false,
-    frameRate: configuration.frameRate
-  };
 
   function onBitrateUpdate (bitrate, packetsSent) {
     statisticsField.innerText = 'Bitrate: ' + Math.floor(bitrate) + '. Packets Sent: ' + packetsSent + '.';
@@ -79,91 +70,44 @@
   }
 
   function getUserMediaConfiguration () {
-    return Object.assign({}, userMedia);
-  }
-
-  var SELECT_DEFAULT = 'Select a camera...';
-  function onCameraSelect (selection) {
-
-    if (!configuration.useVideo) {
-      return;
-    }
-
-    if (selection && selection !== 'undefined' && selection !== SELECT_DEFAULT) {
-      // assign selected camera to defined UserMedia.
-      if (userMedia.video && typeof userMedia.video !== 'boolean') {
-        userMedia.video.deviceId = { exact: selection }
-      }
-      else {
-        userMedia.video = {
-          deviceId: { exact: selection }
-        };
-      }
-      // Kick off.
-      unpublish()
-        .then(startPublishSession)
-        .catch(function (error) {
-          console.error('[Red5ProPublisher] :: Error in publishing - ' + error);
-         });
-    }
-  }
-
-  function waitForSelect () {
-    navigator.mediaDevices.enumerateDevices()
-      .then(function (devices) {
-        var videoCameras = devices.filter(function (item) {
-          return item.kind === 'videoinput';
-        })
-        var cameras = [{
-          label: SELECT_DEFAULT
-        }].concat(videoCameras);
-        var options = cameras.map(function (camera, index) {
-          return '<option value="' + camera.deviceId + '">' + (camera.label || 'camera ' + index) + '</option>';
-        });
-        cameraSelect.innerHTML = options.join(' ');
-        cameraSelect.addEventListener('change', function () {
-          onCameraSelect(cameraSelect.value);
-        });
-      })
-      .catch(function (error) {
-        console.error('Could not access camera devices: ' + error);
-      });
-  }
-
-  function startPublishSession () {
-    // Kick off.
-    determinePublisher()
-      .then(function (payload) {
-        var requiresPreview = payload.requiresPreview;
-        var publisher = payload.publisher;
-        publisher.on('*', onPublisherEvent);
-        return preview(publisher, requiresPreview);
-      })
-      .then(function (payload) {
-        var publisher = payload.publisher;
-        var view = payload.view;
-        return publish(publisher, view, configuration.stream1);
-      })
-      .catch(function (error) {
-        var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
-        console.error('[Red5ProPublisher] :: Error in publishing - ' + jsonError);
-        onPublishFail(jsonError);
-       });
-    return true;
+    return {
+      audio: configuration.useAudio ? configuration.userMedia.audio : false,
+      video: configuration.useVideo ? configuration.userMedia.video : false,
+      frameRate: configuration.frameRate
+    };
   }
 
   function determinePublisher () {
+
     var config = Object.assign({},
-                    configuration,
-                    defaultConfiguration,
-                    getUserMediaConfiguration());
+                   configuration,
+                   getUserMediaConfiguration());
     var rtcConfig = Object.assign({}, config, {
                       protocol: getSocketLocationFromProtocol().protocol,
                       port: getSocketLocationFromProtocol().port,
                       streamName: config.stream1,
                       streamType: 'webrtc'
                    });
-    return PublisherBase.getRTCPublisher(rtcConfig);
+    var rtmpConfig = Object.assign({}, config, {
+                      protocol: 'rtmp',
+                      port: serverSettings.rtmpport,
+                      streamName: config.stream1,
+                      width: config.cameraWidth,
+                      height: config.cameraHeight,
+                      swf: '../../lib/red5pro/red5pro-publisher.swf',
+                      swfobjectURL: '../../lib/swfobject/swfobject.js',
+                      productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
+                   });
+    var publishOrder = config.publisherFailoverOrder
+                            .split(',')
+                            .map(function (item) {
+                              return item.trim()
+                        });
+
+    return PublisherBase.determinePublisher({
+                rtc: rtcConfig,
+                rtmp: rtmpConfig
+              }, publishOrder);
   }
 
   function preview (publisher, requiresGUM) {
@@ -178,7 +122,7 @@
     targetView = view;
     return new Promise(function (resolve, reject) {
       PublisherBase.publish(publisher, streamName)
-        .then(function () {
+       .then(function () {
           onPublishSuccess(publisher);
         })
         .catch(function (error) {
@@ -204,18 +148,45 @@
     });
   }
 
-  // Kick off.
-  waitForSelect();
+  function start () {
+    // Kick off.
+    loginForm.classList.add('hidden');
+    determinePublisher()
+      .then(function (payload) {
+        var requiresPreview = payload.requiresPreview;
+        var publisher = payload.publisher;
+        publisher.on('*', onPublisherEvent);
+        return preview(publisher, requiresPreview);
+      })
+      .then(function (payload) {
+        var publisher = payload.publisher;
+        var view = payload.view;
+        return publish(publisher, view, configuration.stream1);
+      })
+      .catch(function (error) {
+        var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
+        console.error('[Red5ProPublisher] :: Error in publishing - ' + jsonError);
+        onPublishFail(jsonError);
+        loginForm.classList.remove('hidden');
+       });
+  }
+
+  submitButton.addEventListener('click', function () {
+    configuration.connectionParams = {
+      username: usernameField.value,
+      password: passwordField.value
+    };
+    start();
+  });
 
   window.addEventListener('beforeunload', function() {
     function clearRefs () {
-      if (targetPublisher) {
-        targetPublisher.off('*', onPublisherEvent);
-      }
+      targetPublisher.off('*', onPublisherEvent);
       targetView = targetPublisher = undefined;
     }
     unpublish().then(clearRefs).catch(clearRefs);
     window.untrackBitrate();
   });
+
 })(this, document, window.red5prosdk, new window.R5ProBase.Publisher());
 

@@ -1,9 +1,6 @@
 (function(window, document, red5pro, SubscriberBase) {
   'use strict';
 
-  var SharedObject = red5pro.Red5ProSharedObject;
-  var so = undefined; // @see onSubscribeSuccess
-
   var serverSettings = (function() {
     var settings = sessionStorage.getItem('r5proServerSettings');
     try {
@@ -29,14 +26,19 @@
   var targetSubscriber;
   var targetView;
 
-  var updateStatusFromEvent = window.red5proHandleSubscriberEvent; // defined in src/template/partial/status-field-subscriber.hbs
+  var updateStatusFromEvent = function (event) {
+    var subTypes = red5pro.SubscriberEventTypes;
+    switch (event.type) {
+        case subTypes.CONNECT_FAILURE:
+        case subTypes.SUBSCRIBE_FAIL:
+          shutdownVideoElement();
+          break;
+    }
+    window.red5proHandleSubscriberEvent(event); // defined in src/template/partial/status-field-subscriber.hbs
+  };
   var instanceId = Math.floor(Math.random() * 0x10000).toString(16);
   var streamTitle = document.getElementById('stream-title');
-  var sendButton = document.getElementById('send-button');
-  var soField = document.getElementById('so-field');
-  sendButton.addEventListener('click', function () {
-    sendMessageOnSharedObject(document.getElementById('input-field').value);
-  });
+  var addressField = document.getElementById('address-field');
   var protocol = serverSettings.protocol;
   var isSecure = protocol === 'https';
   function getSocketLocationFromProtocol () {
@@ -65,21 +67,30 @@
     return c;
   })(configuration.useVideo, configuration.useAudio);
 
+  function shutdownVideoElement () {
+    var videoElement = document.getElementById('red5pro-subscriber-video');
+    if (videoElement) {
+      videoElement.pause()
+      videoElement.src = ''
+    }
+  }
+
+  function displayServerAddress (serverAddress, proxyAddress) 
+  {
+	proxyAddress = (typeof proxyAddress === 'undefined') ? 'N/A' : proxyAddress;
+    addressField.innerText = ' Proxy Address: ' + proxyAddress + ' | ' + ' Edge Address: ' + serverAddress;
+  }
+
   // Local lifecycle notifications.
   function onSubscriberEvent (event) {
-    console.log('[Red5ProSubscriber] ' + event.type + '.');
+    console.log('[Red5ProSubsriber] ' + event.type + '.');
     updateStatusFromEvent(event);
-    if (event.type === red5pro.SubscriberEventTypes.SUBSCRIBE_METADATA) {
-      var video = document.getElementById('red5pro-subscriber-video');
-      video.parentNode.style['height'] = ((event.data.orientation % 90 === 0) ? video.clientWidth : video.clientHeight) + 'px';
-    }
   }
   function onSubscribeFail (message) {
     console.error('[Red5ProSubsriber] Subscribe Error :: ' + message);
   }
-  function onSubscribeSuccess (subscriber) {
+  function onSubscribeSuccess () {
     console.log('[Red5ProSubsriber] Subscribe Complete.');
-    establishSharedObject(subscriber);
   }
   function onUnsubscribeFail (message) {
     console.error('[Red5ProSubsriber] Unsubscribe Error :: ' + message);
@@ -88,61 +99,49 @@
     console.log('[Red5ProSubsriber] Unsubscribe Complete.');
   }
 
-  var hasRegistered = false;
-  function appendMessage (message) {
-    soField.value = [message, soField.value].join('\n');
-  }
-  // Invoked from METHOD_UPDATE event on Shared Object instance.
-  function messageTransmit (message) { // eslint-disable-line no-unused-vars
-    soField.value = ['User "' + message.user + '": ' + message.message, soField.value].join('\n');
-  }
-  function establishSharedObject (subscriber) {
-    // Create new shared object.
-    so = new SharedObject('sharedChatTest', subscriber);
-    var soCallback = {
-      messageTransmit: messageTransmit
-    };
-    so.on(red5pro.SharedObjectEventTypes.CONNECT_SUCCESS, function (event) { // eslint-disable-line no-unused-vars
-      console.log('[Red5ProSubscriber] SharedObject Connect.');
-      appendMessage('Connected.');
-    });
-    so.on(red5pro.SharedObjectEventTypes.CONNECT_FAILURE, function (event) { // eslint-disable-line no-unused-vars
-      console.log('[Red5ProSubscriber] SharedObject Fail.');
-    });
-    so.on(red5pro.SharedObjectEventTypes.PROPERTY_UPDATE, function (event) {
-      console.log('[Red5ProPublisher] SharedObject Property Update.');
-      console.log(JSON.stringify(event.data, null, 2));
-      if (event.data.hasOwnProperty('count')) {
-        appendMessage('User count is: ' + event.data.count + '.');
-        if (!hasRegistered) {
-          hasRegistered = true;
-          so.setProperty('count', parseInt(event.data.count) + 1);
-        }
-      else if (!hasRegistered) {
-          hasRegistered = true;
-          so.setProperty('count', 1);
-        }
-      }
-    });
-    so.on(red5pro.SharedObjectEventTypes.METHOD_UPDATE, function (event) {
-      console.log('[Red5ProPublisher] SharedObject Method Update.');
-      console.log(JSON.stringify(event.data, null, 2));
-      soCallback[event.data.methodName].call(null, event.data.message);
+  function requestEdge (configuration) {
+    var host = configuration.host;
+    var app = configuration.app;
+    var port = serverSettings.httpport.toString();
+    var portURI = (port.length > 0 ? ':' + port : '');
+    var baseUrl = isSecure ? protocol + '://' + host : protocol + '://' + host + portURI;
+    var streamName = configuration.stream1;
+    var apiVersion = configuration.streamManagerAPI || '2.0';
+    var url = baseUrl + '/streammanager/api/' + apiVersion + '/event/' + app + '/' + streamName + '?action=subscribe';
+      return new Promise(function (resolve, reject) {
+        fetch(url)
+          .then(function (res) {
+            if (res.headers.get("content-type") &&
+              res.headers.get("content-type").toLowerCase().indexOf("application/json") >= 0) {
+                return res.json();
+            }
+            else {
+              throw new TypeError('Could not properly parse response.');
+            }
+          })
+          .then(function (json) {
+            resolve(json.serverAddress);
+          })
+          .catch(function (error) {
+            var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
+            console.error('[SubscribeStreamManagerTest] :: Error - Could not request Edge IP from Stream Manager. ' + jsonError)
+            reject(error)
+          });
     });
   }
 
-  function sendMessageOnSharedObject (message) {
-    so.send('messageTransmit', {
-      user: [configuration.stream1, 'subscriber'].join(' '),
-      message: message
-    });
-  }
-
-  function determineSubscriber () {
+  function determineSubscriber (serverAddress) {
+	
     var config = Object.assign({}, configuration, defaultConfiguration);
     var rtcConfig = Object.assign({}, config, {
+      host: configuration.host,
       protocol: getSocketLocationFromProtocol().protocol,
       port: getSocketLocationFromProtocol().port,
+	  app: configuration.proxy,
+	  connectionParams: {
+		host: serverAddress,
+		app: configuration.app
+      },
       subscriptionId: 'subscriber-' + instanceId,
       streamName: config.stream1,
       bandwidth: {
@@ -152,6 +151,7 @@
       }
     })
     var rtmpConfig = Object.assign({}, config, {
+      host: serverAddress,
       protocol: 'rtmp',
       port: serverSettings.rtmpport,
       streamName: config.stream1,
@@ -164,6 +164,7 @@
       productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
     })
     var hlsConfig = Object.assign({}, config, {
+      host: serverAddress,
       protocol: protocol,
       port: isSecure ? serverSettings.hlssport : serverSettings.hlsport,
       streamName: config.stream1,
@@ -183,7 +184,7 @@
     var subscribeOrder = config.subscriberFailoverOrder
                           .split(',').map(function (item) {
                             return item.trim();
-                            });
+                          });
 
     return SubscriberBase.determineSubscriber({
               rtc: rtcConfig,
@@ -199,6 +200,28 @@
 
   // Request to start subscribing using an overlayed configuration from local default and local storage.
   function subscribe (subscriber, view, streamName) {
+	
+	var config = subscriber.getOptions();
+	console.log("Host = " + config.host + " | " + "app = " + config.app);
+	
+	if (subscriber.getType().toLowerCase() === 'rtc')
+	{
+		displayServerAddress(config.connectionParams.host, config.host);
+		
+		console.log("Using streammanager proxy for rtc");
+		console.log("Proxy target = " + config.connectionParams.host + " | " + "Proxy app = " + config.connectionParams.app)
+		
+		if(isSecure)
+		console.log("Operating over secure connection | protocol: " + config.protocol + " | port: " +  config.port);
+		else
+		console.log("Operating over unsecure connection | protocol: " + config.protocol + " | port: " +  config.port);
+	}
+	else
+	{
+		displayServerAddress(config.host);
+	}
+	
+	  
     streamTitle.innerText = streamName;
     targetSubscriber = subscriber;
     targetView = view;
@@ -209,7 +232,7 @@
     return new Promise(function (resolve, reject) {
       SubscriberBase.subscribe(subscriber, view)
         .then(function () {
-          onSubscribeSuccess(subscriber);
+          onSubscribeSuccess();
           resolve();
         })
         .catch(reject);
@@ -218,9 +241,6 @@
 
   // Request to unsubscribe.
   function unsubscribe () {
-    if (so !== undefined) {
-      so.close();
-    }
     return new Promise(function(resolve, reject) {
       var view = targetView
       var subscriber = targetSubscriber
@@ -241,14 +261,15 @@
   }
 
   // Kick off.
-  determineSubscriber()
-    .then(function(payload) {
+  requestEdge(configuration)
+    .then(determineSubscriber)
+    .then(function (payload) {
       var subscriber = payload.subscriber;
       // Subscribe to events.
       subscriber.on('*', onSubscriberEvent);
       return view(subscriber);
     })
-    .then(function(payload) {
+    .then(function (payload) {
       var subscriber = payload.subscriber;
       var view = payload.view;
       return subscribe(subscriber, view, configuration.stream1);

@@ -1,7 +1,7 @@
 <!doctype html>
 <html>
   <head>
-    <title>Subscriber Cluster Test</title>
+    <title>Playback VOD Test</title>
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
     <meta content="width=device-width, initial-scale=1, user-scalable=no" name="viewport">
     <script src="../../lib/webrtc/adapter.js"></script>
@@ -15,9 +15,8 @@
     <link rel="stylesheet" href="../../css/reset.css">
     <link rel="stylesheet" href="../../css/testbed.css">
     <style>
-      #address-field {
-        padding: 6px;
-        background-color: #ccc;
+      .status-field > p {
+        padding: 12px;
       }
     </style>
   </head>
@@ -25,13 +24,32 @@
     <div id="app">
       <p class="version-field">Testbed Version: 3.5.0&nbsp;&nbsp;&nbsp;&nbsp;<a href="https://red5pro.github.io/red5pro-html-sdk-testbed/red5pro-html-testbed-latest.zip">download</a></p>
       <div id="back-link-container" style="text-align: left;"><p id="back-link"><a href="../../index.html">&lt; Settings</a></p></div>
-      <h1 class="centered">Subscriber Cluster Test</h1>
+      <h1 class="centered">Playback VOD Test</h1>
       <hr />
       <h2 class="centered"><em>stream</em>: <span id="stream-title"></span></h2>
-      <p id="status-field" class="centered status-field">On hold.</p>
-      <script src="../../script/subscription-status.js"></script>
-      <div class="centered"><p id="address-field">Edge Address: N/A</p></div>
-      <div class="centered">
+      <!--      <p id="status-field" class="centered status-field">On hold.</p>
+<script src="../../script/subscription-status.js"></script>
+ -->
+      <div class="centered status-field">
+        <p>
+          To use this test, you must have first published a recorded broadcast using the <a href="../publishRecord" target="_blank">Publish - Record</a> test.
+          <br>
+          <br>
+          You can view a list of available Videos on Demand (VODs), by requesting <a id="mediafiles-link" href="mediafiles" target="_blank">mediafiles</a> and <a id="playlists-link" href="playlists" target="_blank">playlists</a>.
+          <br>
+          <em>Assumes you are viewing this test served from the same location as the server.</em>
+        </p>
+        <hr/>
+        <p>
+          Once you have done so, enter the filename - <strong>with extension</strong> - name below:
+        </p>
+        <p>
+          <label for="name-input">Name:</label>
+          <input type="text" name="name-input" id="name-input">
+          <button id="submit-button">play file</button>
+        </p>
+      </div>
+      <div id="video-container" class="centered">
         <video id="red5pro-subscriber-video" controls class="video-element"></video>
       </div>
     </div>

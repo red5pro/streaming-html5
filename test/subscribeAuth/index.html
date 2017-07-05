@@ -1,7 +1,7 @@
 <!doctype html>
 <html>
   <head>
-    <title>Subscriber Cluster Test</title>
+    <title>Subscriber Auth Test</title>
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
     <meta content="width=device-width, initial-scale=1, user-scalable=no" name="viewport">
     <script src="../../lib/webrtc/adapter.js"></script>
@@ -15,9 +15,20 @@
     <link rel="stylesheet" href="../../css/reset.css">
     <link rel="stylesheet" href="../../css/testbed.css">
     <style>
-      #address-field {
-        padding: 6px;
-        background-color: #ccc;
+      .hidden {
+        display: none;
+      }
+      #login-form {
+        padding: 10px 0;
+        background-color: #afafaf;
+      }
+      #login-form p {
+        margin: 10px 0;
+      }
+      #login-form p label {
+        margin-right: 6px;
+        width: 100%;
+        text-align: right;
       }
     </style>
   </head>
@@ -25,12 +36,17 @@
     <div id="app">
       <p class="version-field">Testbed Version: 3.5.0&nbsp;&nbsp;&nbsp;&nbsp;<a href="https://red5pro.github.io/red5pro-html-sdk-testbed/red5pro-html-testbed-latest.zip">download</a></p>
       <div id="back-link-container" style="text-align: left;"><p id="back-link"><a href="../../index.html">&lt; Settings</a></p></div>
-      <h1 class="centered">Subscriber Cluster Test</h1>
+      <h1 class="centered">Subscriber Auth Test</h1>
       <hr />
       <h2 class="centered"><em>stream</em>: <span id="stream-title"></span></h2>
       <p id="status-field" class="centered status-field">On hold.</p>
       <script src="../../script/subscription-status.js"></script>
-      <div class="centered"><p id="address-field">Edge Address: N/A</p></div>
+      <div id="login-form" class="centered">
+        <p>Log In to begin playback:</p>
+        <p><label for="username-field">username:</label><input id="username-field" name="username-field"></p>
+        <p><label for="password-field">password:</label><input id="password-field" name="password-field"></p>
+        <button id="submit-button">submit</button>
+      </div>
       <div class="centered">
         <video id="red5pro-subscriber-video" controls class="video-element"></video>
       </div>

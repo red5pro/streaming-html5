@@ -15,7 +15,7 @@
   </head>
   <body>
     <div id="app">
-      <p class="version-field">Testbed Version: 3.3.0&nbsp;&nbsp;&nbsp;&nbsp;<a href="https://red5pro.github.io/red5pro-html-sdk-testbed/red5pro-html-testbed-latest.zip">download</a></p>
+      <p class="version-field">Testbed Version: 3.5.0&nbsp;&nbsp;&nbsp;&nbsp;<a href="https://red5pro.github.io/red5pro-html-sdk-testbed/red5pro-html-testbed-latest.zip">download</a></p>
       <div id="back-link-container" style="text-align: left;"><p id="back-link"><a href="testbed-menu.html">&lt; Testbed Menu</a></p></div>
       <div class="ice-background">
         <div class="test-notification">
@@ -31,6 +31,10 @@
         <p class="settings-field">
           <label class="settings-label">Host:</label>
           <input id="host-field" name="host-field" value="localhost">
+        </p>
+        <p class="settings-field">
+          <label class="settings-label">WebApp:</label>
+          <input id="app-field" name="app-field" value="live">
         </p>
         <p class="settings-field">
           <label class="settings-label">Stream1 Name:</label>
@@ -77,6 +81,7 @@
         }
 
         var hostField = document.getElementById('host-field');
+        var appField = document.getElementById('app-field');
         var stream1Field = document.getElementById('stream1-field');
         var stream2Field = document.getElementById('stream2-field');
         var loggingField = document.getElementById('logging-field');
@@ -86,6 +91,11 @@
 
         hostField.addEventListener('blur', function () {
           configuration.host = hostField.value;
+          seal(configuration);
+        });
+
+        appField.addEventListener('blur', function () {
+          configuration.app = appField.value;
           seal(configuration);
         });
 
@@ -125,6 +135,7 @@
 
         function populate (config) {
           hostField.value = config.host;
+          appField.value = config.app;
           stream1Field.value = config.stream1;
           stream2Field.value = config.stream2;
           loggingField.checked = config.verboseLogging ? true : false;

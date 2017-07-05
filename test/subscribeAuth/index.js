@@ -1,9 +1,6 @@
 (function(window, document, red5pro, SubscriberBase) {
   'use strict';
 
-  var SharedObject = red5pro.Red5ProSharedObject;
-  var so = undefined; // @see onSubscribeSuccess
-
   var serverSettings = (function() {
     var settings = sessionStorage.getItem('r5proServerSettings');
     try {
@@ -32,11 +29,11 @@
   var updateStatusFromEvent = window.red5proHandleSubscriberEvent; // defined in src/template/partial/status-field-subscriber.hbs
   var instanceId = Math.floor(Math.random() * 0x10000).toString(16);
   var streamTitle = document.getElementById('stream-title');
-  var sendButton = document.getElementById('send-button');
-  var soField = document.getElementById('so-field');
-  sendButton.addEventListener('click', function () {
-    sendMessageOnSharedObject(document.getElementById('input-field').value);
-  });
+  var loginForm = document.getElementById('login-form');
+  var usernameField = document.getElementById('username-field');
+  var passwordField = document.getElementById('password-field');
+  var submitButton = document.getElementById('submit-button');
+
   var protocol = serverSettings.protocol;
   var isSecure = protocol === 'https';
   function getSocketLocationFromProtocol () {
@@ -69,73 +66,18 @@
   function onSubscriberEvent (event) {
     console.log('[Red5ProSubscriber] ' + event.type + '.');
     updateStatusFromEvent(event);
-    if (event.type === red5pro.SubscriberEventTypes.SUBSCRIBE_METADATA) {
-      var video = document.getElementById('red5pro-subscriber-video');
-      video.parentNode.style['height'] = ((event.data.orientation % 90 === 0) ? video.clientWidth : video.clientHeight) + 'px';
-    }
   }
   function onSubscribeFail (message) {
     console.error('[Red5ProSubsriber] Subscribe Error :: ' + message);
   }
-  function onSubscribeSuccess (subscriber) {
+  function onSubscribeSuccess () {
     console.log('[Red5ProSubsriber] Subscribe Complete.');
-    establishSharedObject(subscriber);
   }
   function onUnsubscribeFail (message) {
     console.error('[Red5ProSubsriber] Unsubscribe Error :: ' + message);
   }
   function onUnsubscribeSuccess () {
     console.log('[Red5ProSubsriber] Unsubscribe Complete.');
-  }
-
-  var hasRegistered = false;
-  function appendMessage (message) {
-    soField.value = [message, soField.value].join('\n');
-  }
-  // Invoked from METHOD_UPDATE event on Shared Object instance.
-  function messageTransmit (message) { // eslint-disable-line no-unused-vars
-    soField.value = ['User "' + message.user + '": ' + message.message, soField.value].join('\n');
-  }
-  function establishSharedObject (subscriber) {
-    // Create new shared object.
-    so = new SharedObject('sharedChatTest', subscriber);
-    var soCallback = {
-      messageTransmit: messageTransmit
-    };
-    so.on(red5pro.SharedObjectEventTypes.CONNECT_SUCCESS, function (event) { // eslint-disable-line no-unused-vars
-      console.log('[Red5ProSubscriber] SharedObject Connect.');
-      appendMessage('Connected.');
-    });
-    so.on(red5pro.SharedObjectEventTypes.CONNECT_FAILURE, function (event) { // eslint-disable-line no-unused-vars
-      console.log('[Red5ProSubscriber] SharedObject Fail.');
-    });
-    so.on(red5pro.SharedObjectEventTypes.PROPERTY_UPDATE, function (event) {
-      console.log('[Red5ProPublisher] SharedObject Property Update.');
-      console.log(JSON.stringify(event.data, null, 2));
-      if (event.data.hasOwnProperty('count')) {
-        appendMessage('User count is: ' + event.data.count + '.');
-        if (!hasRegistered) {
-          hasRegistered = true;
-          so.setProperty('count', parseInt(event.data.count) + 1);
-        }
-      else if (!hasRegistered) {
-          hasRegistered = true;
-          so.setProperty('count', 1);
-        }
-      }
-    });
-    so.on(red5pro.SharedObjectEventTypes.METHOD_UPDATE, function (event) {
-      console.log('[Red5ProPublisher] SharedObject Method Update.');
-      console.log(JSON.stringify(event.data, null, 2));
-      soCallback[event.data.methodName].call(null, event.data.message);
-    });
-  }
-
-  function sendMessageOnSharedObject (message) {
-    so.send('messageTransmit', {
-      user: [configuration.stream1, 'subscriber'].join(' '),
-      message: message
-    });
   }
 
   function determineSubscriber () {
@@ -183,7 +125,7 @@
     var subscribeOrder = config.subscriberFailoverOrder
                           .split(',').map(function (item) {
                             return item.trim();
-                            });
+                          });
 
     return SubscriberBase.determineSubscriber({
               rtc: rtcConfig,
@@ -209,7 +151,7 @@
     return new Promise(function (resolve, reject) {
       SubscriberBase.subscribe(subscriber, view)
         .then(function () {
-          onSubscribeSuccess(subscriber);
+          onSubscribeSuccess();
           resolve();
         })
         .catch(reject);
@@ -218,9 +160,6 @@
 
   // Request to unsubscribe.
   function unsubscribe () {
-    if (so !== undefined) {
-      so.close();
-    }
     return new Promise(function(resolve, reject) {
       var view = targetView
       var subscriber = targetSubscriber
@@ -240,31 +179,41 @@
     });
   }
 
-  // Kick off.
-  determineSubscriber()
-    .then(function(payload) {
-      var subscriber = payload.subscriber;
-      // Subscribe to events.
-      subscriber.on('*', onSubscriberEvent);
-      return view(subscriber);
-    })
-    .then(function(payload) {
-      var subscriber = payload.subscriber;
-      var view = payload.view;
-      return subscribe(subscriber, view, configuration.stream1);
-    })
-    .catch(function (error) {
-      var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
-      console.error('[Red5ProSubscriber] :: Error in subscribing - ' + jsonError);
-      onSubscribeFail(jsonError);
-    });
+  function start () {
+    // Kick off.
+    loginForm.classList.add('hidden');
+    determineSubscriber()
+      .then(function(payload) {
+        var subscriber = payload.subscriber;
+        // Subscribe to events.
+        subscriber.on('*', onSubscriberEvent);
+        return view(subscriber);
+      })
+      .then(function(payload) {
+        var subscriber = payload.subscriber;
+        var view = payload.view;
+        return subscribe(subscriber, view, configuration.stream1);
+      })
+      .catch(function (error) {
+        var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
+        console.error('[Red5ProSubscriber] :: Error in subscribing - ' + jsonError);
+        onSubscribeFail(jsonError);
+        loginForm.classList.remove('hidden');
+      });
+  }
+
+  submitButton.addEventListener('click', function () {
+    configuration.connectionParams = {
+      username: usernameField.value,
+      password: passwordField.value
+    };
+    start();
+  });
 
   // Clean up.
   window.addEventListener('beforeunload', function() {
     function clearRefs () {
-      if (targetSubscriber) {
-        targetSubscriber.off('*', onSubscriberEvent);
-      }
+      targetSubscriber.off('*', onSubscriberEvent);
       targetSubscriber = targetView = undefined;
     }
     unsubscribe().then(clearRefs).catch(clearRefs);
