@@ -1,5 +1,16 @@
 # Changes
 
+## 3.4.3
+
+- removing, but also adding option to set through config as well. shhhh.... (bustardcelly)
+- change to endpoint host in rtmp pub example. (bustardcelly)
+- fix for test of `srcObject` in video element. (Todd Anderson)
+
+## 3.4.2
+
+- regex on level for rtmp pub setting. (bustardcelly)
+- exposing media settings of the rtmp publisher. (bustardcelly)
+
 ## 3.4.1
 
 - readme updates (bustardcelly)
