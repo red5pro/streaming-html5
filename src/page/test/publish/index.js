@@ -66,10 +66,9 @@
 
   function getUserMediaConfiguration () {
     return {
-      mediaConfiguration: {
+      mediaConstraints: {
         audio: configuration.useAudio ? configuration.mediaConstraints.audio : false,
-        video: configuration.useVideo ? configuration.mediaConstraints.video : false,
-        frameRate: configuration.frameRate
+        video: configuration.useVideo ? configuration.mediaConstraints.video : false
       }
     };
   }
@@ -147,5 +146,5 @@
     window.untrackBitrate();
   });
 
-})(this, document, window.red5prosdk, new window.R5ProBase.Publisher());
+})(this, document, window.red5prosdk);
 
