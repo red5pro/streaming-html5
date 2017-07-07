@@ -160,5 +160,5 @@
     unsubscribe().then(clearRefs).catch(clearRefs);
   });
 
-})(this, document, window.red5prosdk, new window.R5ProBase.Subscriber());
+})(this, document, window.red5prosdk);
 

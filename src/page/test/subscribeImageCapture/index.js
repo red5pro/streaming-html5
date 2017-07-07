@@ -68,7 +68,7 @@
   })(configuration.useVideo, configuration.useAudio);
 
   function shutdownVideoElement () {
-    var videoElement = document.getElementById('red5pro-subscriber-video');
+    var videoElement = document.getElementById('red5pro-subscriber');
     if (videoElement) {
       videoElement.pause()
       videoElement.src = ''
@@ -162,5 +162,5 @@
     unsubscribe().then(clearRefs).catch(clearRefs);
   });
 
-})(this, document, window.red5prosdk, new window.R5ProBase.Subscriber());
+})(this, document, window.red5prosdk);
 

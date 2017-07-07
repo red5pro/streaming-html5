@@ -22,14 +22,21 @@
         <h2 class="centered"><em>Publisher Stream</em>: <span id="pub-stream-title"></span></h2>
         <p id="pub-status-field" class="centered status-field">On hold.</p>
         <div class="centered">
-          <video id="red5pro-publisher-video" controls class="video-element" muted></video>
+        <video id="red5pro-publisher"
+                autoplay muted
+                width="640" height="480">
+        </video>
         </div>
       </div>
       <div class="float-right float-right-two-way">
         <h2 class="centered"><em>Suscriber Stream</em>: <span id="sub-stream-title"></span></h2>
         <p id="sub-status-field" class="centered status-field">On hold.</p>
         <div class="centered">
-          <video id="red5pro-subscriber-video" controls class="video-element"></video>
+        <video id="red5pro-subscriber"
+                controls autoplay
+                class="red5pro-video red5pro-video-background"
+                width="640" height="480">
+        </video>
         </div>
       </div>
     </div>
