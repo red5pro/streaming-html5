@@ -11,8 +11,10 @@
       {{> settings-link}}
       {{> test-info testTitle='WebRTC Subscriber Audio-Only Test'}}
       {{> status-field-subscriber}}
-      <div class="centered">
-        <audio id="red5pro-subscriber-audio" controls class="video-element"></audio>
+      <div class="centered" style="height:40px">
+        <audio id="red5pro-subscriber"
+               autoplay controls
+               class="red5pro-video"></audio>
       </div>
     </div>
     {{> body-scripts}}
