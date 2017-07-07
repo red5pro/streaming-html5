@@ -133,10 +133,10 @@
       host: configuration.host,
       protocol: getSocketLocationFromProtocol().protocol,
       port: getSocketLocationFromProtocol().port,
-    app: configuration.proxy,
-    connectionParams: {
-    host: serverAddress,
-    app: configuration.app
+      app: configuration.proxy,
+      connectionParams: {
+        host: serverAddress,
+        app: configuration.app
       },
       subscriptionId: 'subscriber-' + instanceId,
       streamName: config.stream1,

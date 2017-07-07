@@ -1,4 +1,4 @@
-(function(window, document, red5pro, PublisherBase /* see: src/static/script/main.js */) {
+(function(window, document, red5prosdk) {
   'use strict';
 
   var serverSettings = (function() {
@@ -24,7 +24,6 @@
   })();
 
   var targetPublisher;
-  var targetView;
 
   var updateStatusFromEvent = window.red5proHandlePublisherEvent; // defined in src/template/partial/status-field-publisher.hbs
   var streamTitle = document.getElementById('stream-title');
@@ -45,10 +44,9 @@
     app: 'live'
   };
 
-  var userMedia = {
-    audio: configuration.useAudio ? configuration.userMedia.audio : false,
-    video: configuration.useVideo ? configuration.userMedia.video : false,
-    frameRate: configuration.frameRate
+  var mediaConstraints = {
+    audio: configuration.useAudio ? configuration.mediaConstraints.audio : false,
+    video: configuration.useVideo ? configuration.mediaConstraints.video : false,
   };
 
   function onBitrateUpdate (bitrate, packetsSent) {
@@ -79,7 +77,7 @@
   }
 
   function getUserMediaConfiguration () {
-    return Object.assign({}, userMedia);
+    return Object.assign({}, mediaConstraints);
   }
 
   var SELECT_DEFAULT = 'Select a camera...';
@@ -91,11 +89,11 @@
 
     if (selection && selection !== 'undefined' && selection !== SELECT_DEFAULT) {
       // assign selected camera to defined UserMedia.
-      if (userMedia.video && typeof userMedia.video !== 'boolean') {
-        userMedia.video.deviceId = { exact: selection }
+      if (mediaConstraints.video && typeof mediaConstraints.video !== 'boolean') {
+        mediaConstraints.video.deviceId = { exact: selection }
       }
       else {
-        userMedia.video = {
+        mediaConstraints.video = {
           deviceId: { exact: selection }
         };
       }
@@ -133,16 +131,14 @@
   function startPublishSession () {
     // Kick off.
     determinePublisher()
-      .then(function (payload) {
-        var requiresPreview = payload.requiresPreview;
-        var publisher = payload.publisher;
-        publisher.on('*', onPublisherEvent);
-        return preview(publisher, requiresPreview);
+      .then(function (publisherImpl) {
+        streamTitle.innerText = configuration.stream1;
+        targetPublisher = publisherImpl;
+        targetPublisher.on('*', onPublisherEvent);
+        return targetPublisher.publish();
       })
-      .then(function (payload) {
-        var publisher = payload.publisher;
-        var view = payload.view;
-        return publish(publisher, view, configuration.stream1);
+      .then(function () {
+        onPublishSuccess();
       })
       .catch(function (error) {
         var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
@@ -160,38 +156,14 @@
     var rtcConfig = Object.assign({}, config, {
                       protocol: getSocketLocationFromProtocol().protocol,
                       port: getSocketLocationFromProtocol().port,
-                      streamName: config.stream1,
-                      streamType: 'webrtc'
+                      streamName: config.stream1
                    });
-    return PublisherBase.getRTCPublisher(rtcConfig);
-  }
-
-  function preview (publisher, requiresGUM) {
-    var elementId = 'red5pro-publisher-video';
-    var gUM = getUserMediaConfiguration();
-    return PublisherBase.preview(publisher, elementId, requiresGUM ? gUM : undefined);
-  }
-
-  function publish (publisher, view, streamName) {
-    streamTitle.innerText = streamName;
-    targetPublisher = publisher;
-    targetView = view;
-    return new Promise(function (resolve, reject) {
-      PublisherBase.publish(publisher, streamName)
-        .then(function () {
-          onPublishSuccess(publisher);
-        })
-        .catch(function (error) {
-          reject(error);
-        })
-    });
+    return new red5prosdk.RTCPublisher().init(rtcConfig);
   }
 
   function unpublish () {
     return new Promise(function (resolve, reject) {
-      var view = targetView;
-      var publisher = targetPublisher;
-      PublisherBase.unpublish(publisher, view)
+      targetPublisher.unpublish()
         .then(function () {
           onUnpublishSuccess();
           resolve();
@@ -212,10 +184,10 @@
       if (targetPublisher) {
         targetPublisher.off('*', onPublisherEvent);
       }
-      targetView = targetPublisher = undefined;
+      targetPublisher = undefined;
     }
     unpublish().then(clearRefs).catch(clearRefs);
     window.untrackBitrate();
   });
-})(this, document, window.red5prosdk, new window.R5ProBase.Publisher());
+})(this, document, window.red5prosdk);
 

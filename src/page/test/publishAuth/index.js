@@ -1,4 +1,4 @@
-(function(window, document, red5pro, PublisherBase /* see: src/static/script/main.js */) {
+(function(window, document, red5prosdk) {
   'use strict';
 
   var serverSettings = (function() {
@@ -24,7 +24,6 @@
   })();
 
   var targetPublisher;
-  var targetView;
 
   var updateStatusFromEvent = window.red5proHandlePublisherEvent; // defined in src/template/partial/status-field-publisher.hbs
   var streamTitle = document.getElementById('stream-title');
@@ -71,9 +70,10 @@
 
   function getUserMediaConfiguration () {
     return {
-      audio: configuration.useAudio ? configuration.userMedia.audio : false,
-      video: configuration.useVideo ? configuration.userMedia.video : false,
-      frameRate: configuration.frameRate
+      mediaConstraints: {
+        audio: configuration.useAudio ? configuration.mediaConstraints.audio : false,
+        video: configuration.useVideo ? configuration.mediaConstraints.video : false
+      }
     };
   }
 
@@ -85,8 +85,7 @@
     var rtcConfig = Object.assign({}, config, {
                       protocol: getSocketLocationFromProtocol().protocol,
                       port: getSocketLocationFromProtocol().port,
-                      streamName: config.stream1,
-                      streamType: 'webrtc'
+                      streamName: config.stream1
                    });
     var rtmpConfig = Object.assign({}, config, {
                       protocol: 'rtmp',
@@ -104,38 +103,18 @@
                               return item.trim()
                         });
 
-    return PublisherBase.determinePublisher({
+    var publisher = new red5prosdk.Red5ProPublisher();
+    return publisher.setPublishOrder(publishOrder)
+            .init({
                 rtc: rtcConfig,
                 rtmp: rtmpConfig
-              }, publishOrder);
-  }
-
-  function preview (publisher, requiresGUM) {
-    var elementId = 'red5pro-publisher-video';
-    var gUM = getUserMediaConfiguration();
-    return PublisherBase.preview(publisher, elementId, requiresGUM ? gUM : undefined);
-  }
-
-  function publish (publisher, view, streamName) {
-    streamTitle.innerText = streamName;
-    targetPublisher = publisher;
-    targetView = view;
-    return new Promise(function (resolve, reject) {
-      PublisherBase.publish(publisher, streamName)
-       .then(function () {
-          onPublishSuccess(publisher);
-        })
-        .catch(function (error) {
-          reject(error);
-        })
-    });
+              });
   }
 
   function unpublish () {
     return new Promise(function (resolve, reject) {
-      var view = targetView;
       var publisher = targetPublisher;
-      PublisherBase.unpublish(publisher, view)
+      publisher.unpublish()
         .then(function () {
           onUnpublishSuccess();
           resolve();
@@ -152,16 +131,14 @@
     // Kick off.
     loginForm.classList.add('hidden');
     determinePublisher()
-      .then(function (payload) {
-        var requiresPreview = payload.requiresPreview;
-        var publisher = payload.publisher;
-        publisher.on('*', onPublisherEvent);
-        return preview(publisher, requiresPreview);
+      .then(function (publisherImpl) {
+        streamTitle.innerText = configuration.stream1;
+        targetPublisher = publisherImpl;
+        targetPublisher.on('*', onPublisherEvent);
+        return targetPublisher.publish();
       })
-      .then(function (payload) {
-        var publisher = payload.publisher;
-        var view = payload.view;
-        return publish(publisher, view, configuration.stream1);
+      .then(function () {
+        onPublishSuccess();
       })
       .catch(function (error) {
         var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
@@ -182,11 +159,11 @@
   window.addEventListener('beforeunload', function() {
     function clearRefs () {
       targetPublisher.off('*', onPublisherEvent);
-      targetView = targetPublisher = undefined;
+      targetPublisher = undefined;
     }
     unpublish().then(clearRefs).catch(clearRefs);
     window.untrackBitrate();
   });
 
-})(this, document, window.red5prosdk, new window.R5ProBase.Publisher());
+})(this, document, window.red5prosdk);
 
