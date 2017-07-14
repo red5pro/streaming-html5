@@ -158,8 +158,8 @@
     })
     var hlsConfig = Object.assign({}, config, {
       host: host,
-      protocol: protocol,
-      port: isSecure ? serverSettings.hlssport : serverSettings.hlsport,
+      protocol: 'http',
+      port: serverSettings.hlsport,
       streamName: config.stream1,
       mimeType: 'application/x-mpegURL',
       swf: '../../lib/red5pro/red5pro-video-js.swf',
