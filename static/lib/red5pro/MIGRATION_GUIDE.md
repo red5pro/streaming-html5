@@ -9,6 +9,9 @@ The `4.0.0` release of the Red5 Pro HTML SDK saw some major changes in the follo
 * Internalizing the `getUserMedia` request in order to simplify the intialization-to-broadcast sequence of **Publishers**.
   * While the default process of accessing a stream through the `getUserMedia` API of the browser has been internalized to the SDK, we have also exposed a way to override this default to allow developers to specifically handle this process as per requirements.
   * [Refer to section:]()
+* Change in **Subscriber** API from `play()` to `subscribe()` as request to start playback.
+  * This change is in keeping the Red5 PRo HTML SDK PLayback Controls API in-line with consistent method names that properly describe their intent - e.g., `play`, `pause`, `resume`, etc.
+  * The method change to `subscribe` also keeps consistent method naming convention for **Publishers** and **Subscribers**, as the method name to request publishing for **Publishers** is `publish`.
 * Removal of explicitly defining and assigning views for **Publishers** and **Subscribers**.
   * The process of associating a view display to either a **Publisher** or a **Subscriber** has been internalized with access to DOM elements using a default `videoElementId` configuration property.
   * This change simplifies the creation and initialization process for both **Publishers** and **Subscribers**.

@@ -2,6 +2,7 @@
   display: block;
   box-sizing: border-box;
   position: relative;
+  height: 100%;
 }
 
 .red5pro-video {

@@ -128,8 +128,12 @@ _main.js_:
       video: 512
     }
   })
-  .then(function(player) {
-    // `player` is the WebRTC Player instance.
+  .then(function(subscriber) {
+    // `subcriber` is the WebRTC Subscriber instance.
+    subscriber.subscribe();
+  })
+  .then(function(subscriber) {
+    // subscription is complete.
     // playback should begin immediately due to
     //   declaration of `autoplay` on the `video` element.
   })
@@ -216,8 +220,12 @@ _main.js_:
     streamName: 'mystream',
     swf: 'lib/red5pro-subscriber.swf'
   })
-  .then(function(player) {
-    // `player` is the WebRTC Player instance.
+  .then(function(subscriber) {
+    // `subcriber` is the Flash/RTMP Subscriber instance.
+    subscriber.subscribe();
+  })
+  .then(function(subscriber) {
+    // subscription is complete.
     // playback should begin immediately due to
     //   declaration of `autoplay` on the `video` element.
   })
@@ -287,8 +295,12 @@ _main.js_:
     mimeType: 'application/x-mpegURL',
     swf: 'lib/red5pro/red5pro-video-js.swf'
   })
-  .then(function(player) {
-    // `player` is the WebRTC Player instance.
+  .then(function(subscriber) {
+    // `subcriber` is the HLS Subscriber instance.
+    subscriber.subscribe();
+  })
+  .then(function(subscriber) {
+    // subscription is complete.
     // playback should begin immediately due to
     //   declaration of `autoplay` on the `video` element.
   })
