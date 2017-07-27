@@ -1,6 +1,6 @@
 # Changes
 
-## 3.4.2
+## 3.5.0
 
 - regex on level for rtmp pub setting. (bustardcelly)
 - exposing media settings of the rtmp publisher. (bustardcelly)
