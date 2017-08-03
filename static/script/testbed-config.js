@@ -1,5 +1,9 @@
 // Defining/accessing testbed configuration.
-(function (window) {
+(function (window, adapter) {
+
+  if (typeof adapter !== 'undefined') {
+    console.log('Browser: ' + JSON.stringify(adapter.browserDetails, null, 2));
+  }
 
   // http://stackoverflow.com/questions/901115/how-can-i-get-query-string-values-in-javascript
   function getParameterByName(name, url) { // eslint-disable-line no-unused-vars
@@ -19,12 +23,13 @@
   protocol = protocol.substring(0, protocol.lastIndexOf(':'));
 
   var isMoz = !!navigator.mozGetUserMedia;
+  var isEdge = adapter && adapter.browserDetails.browser.toLowerCase() === 'edge';
   var config = sessionStorage.getItem('r5proTestBed');
   var json;
   var serverSettings = {
     "protocol": protocol,
     "httpport": port,
-    "hlsport": 5443,
+    "hlsport": 5080,
     "hlssport": 443,
     "wsport": 8081,
     "wssport": 8083,
@@ -53,7 +58,7 @@
       "useVideo": true,
       "userMedia": {
         "audio": true,
-        "video": isMoz ? true : {
+        "video": (isMoz || isEdge) ? true : {
           "width": {
             "min": 320,
             "max": 640
@@ -109,5 +114,5 @@
   sessionStorage.setItem('r5proServerSettings', JSON.stringify(serverSettings));
   return json;
 
-})(this);
+})(this, window.adapter);
 

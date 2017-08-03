@@ -69,6 +69,10 @@
   function onSubscriberEvent (event) {
     console.log('[Red5ProSubscriber] ' + event.type + '.');
     updateStatusFromEvent(event);
+    if (event.type === red5pro.SubscriberEventTypes.SUBSCRIBE_METADATA) {
+      var video = document.getElementById('red5pro-subscriber-video');
+      video.parentNode.style['height'] = ((event.data.orientation % 90 === 0) ? video.clientWidth : video.clientHeight) + 'px';
+    }
   }
   function onSubscribeFail (message) {
     console.error('[Red5ProSubsriber] Subscribe Error :: ' + message);

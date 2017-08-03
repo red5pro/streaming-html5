@@ -9,8 +9,7 @@
     var lastResult;
     bitrateInterval = setInterval(function () {
       connection.getStats(null).then(function(res) {
-        Object.keys(res).forEach(function(key) {
-          var report = res[key];
+        res.forEach(function(report) {
           var bytes;
           var packets;
           var now = report.timestamp;
@@ -19,10 +18,10 @@
               (report.type === 'ssrc' && report.bytesSent)) {
             bytes = report.bytesSent;
             packets = report.packetsSent;
-            if (lastResult && lastResult[report.id]) {
+            if (lastResult && lastResult.get(report.id)) {
               // calculate bitrate
-              var bitrate = 8 * (bytes - lastResult[report.id].bytesSent) /
-                  (now - lastResult[report.id].timestamp);
+              var bitrate = 8 * (bytes - lastResult.get(report.id).bytesSent) /
+                  (now - lastResult.get(report.id).timestamp);
               cb(bitrate, packets);
             }
           }
