@@ -375,14 +375,13 @@
       var view = payload.view;
       return publish(publisher, view, configuration.stream1);
     })
-    .then(function () {
-      beginStreamListCall();
-    })
     .catch(function (error) {
       var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
       console.error('[Red5ProPublisher] :: Error in publishing - ' + jsonError);
       onPublishFail(jsonError);
      });
+  
+  beginStreamListCall();
 
   window.addEventListener('beforeunload', function() {
     function clearRefs () {
