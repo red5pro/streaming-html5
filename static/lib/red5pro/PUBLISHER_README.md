@@ -56,7 +56,7 @@ _It is *highly* recommended to include [adapter.js](https://github.com/webrtc/ad
 | streamMode | [x] | `live` | The mode to broadcast; `live`, `record` or `append`. |
 | host | [x] | *None* | The IP or address that the WebSocket server resides on. |
 | streamName | [x] | *None* | The name of the stream to subscribe to. |
-| videoElementId | [-] | `red5pro-publisher` | The target `video` element `id` attribute which will display the preview video. |
+| mediaElementId | [-] | `red5pro-publisher` | The target `video` or `audio` element `id` attribute which will display the preview media. |
 | iceServers | [x] | *None* ([Test](https://webrtc.github.io/samples/src/content/peerconnection/trickle-ice/)) | The list of ICE servers to use in requesting a Peer Connection. |
 | bandwidth | [-] |`{audio: 56, video: 512}` | A configuration object to setup bandwidth setting in publisher. |
 | connectionParams | [-] | `undefined` | An object of connection parameters to send to the server upon connection request. |
@@ -115,7 +115,7 @@ _main.js_:
 
 Because this example demonstrates publishing to a Red5 Pro Server located on `localhost`, we set the *protocol* to `ws` and *port* to `8081`, which are the default values for non-secure socket connection. If you are publishing to a remote Red5 Pro Server, it will need to be delivered securely - upon which you can rely on the default property values of `wss` and `8083`, respectively.
 
-The `video` element has the `autoplay` and `muted` attributes defined. This will ensure:
+The `video` or `audio` element has the `autoplay` and `muted` attributes defined. This will ensure:
 
 * `autoplay`: Once access to your Camera and Microphone are available, it will show a preview of your broadcast to yourself.
 * `muted`: You don't get noise feedback when you start publishing, since it will mute your _playback_ volume. Your publishing session will still have audio.
@@ -218,7 +218,7 @@ The Red5 Pro HTML SDK Flash-based Publisher embeds a SWF file - utilizing [swfob
 | streamMode | [x] | `live` | The mode to broadcast; `live`, `record` or `append`. |
 | host | [x] | *None* | The IP or address that the stream resides on. |
 | streamName | [x] | *None* | The stream name to subscribe to. |
-| videoElementId | [-] | `red5pro-publisher` | The target `video` element `id` attribute which will display the preview video. |
+| mediaElementId | [-] | `red5pro-publisher` | The target `video` or `audio` element `id` attribute which will display the preview media. |
 | connectionParams | [-] | `undefined` | An object of connection parameters to send to the server upon connection request. |
 | embedWidth | [x] | `100%` | The width of the object element for the SWF movie embed. (`Integer` or `"100%"`) |
 | embedHeight | [x] | `100%` | The height of the object element for the SWF movie embed. (`Integer` or `"100%"`) |

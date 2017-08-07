@@ -36,10 +36,10 @@ As such, you will need a distribution of the [Red5 Pro Server](https://www.red5p
 # Subscriber Types
 The following subscriber types / protocols are supported:
 
-* [WebRTC](#webrtc) (using [WebSockets](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API), [WebRTC](https://developer.mozilla.org/en-US/docs/Web/Guide/API/WebRTC) and the HTML5 [video](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/video) Element)
+* [WebRTC](#webrtc) (using [WebSockets](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API), [WebRTC](https://developer.mozilla.org/en-US/docs/Web/Guide/API/WebRTC) and the HTML5 [video](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/video) Element or HTML5 [audio](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/audio) Element).
 
 * [RTMP](#flashrtmp) (using the custom Flash-based player developed for Red5 Pro)
-* [HLS](#hls) (using the HTML5 Video Element)
+* [HLS](#hls) (using the HTML5 Video/Audio Element)
 
 Additionally, the **Red5 Pro HTML SDK** allows for automatic detection and failover to determine the correct playback option to use based on desired order and browser support. To learn more, visit the [Auto Failover](#auto-failover-and-order) section.
 
@@ -56,7 +56,7 @@ _It is *highly* recommended to include [adapter.js](https://github.com/webrtc/ad
 | app | [x] | `live` | The webapp name that the WebSocket is listening on. |
 | host | [x] | *None* | The IP or address that the WebSocket server resides on. |
 | streamName | [x] | *None* | The name of the stream to subscribe to. |
-| videoElementId | [-] | `red5pro-subscriber` | The target `video` element `id` attribute which will display the stream. |
+| mediaElementId | [-] | `red5pro-subscriber` | The target `video` or `audio` element `id` attribute which will display the stream. |
 | iceServers | [x] | *None* ([Test](https://webrtc.github.io/samples/src/content/peerconnection/trickle-ice/)) | The list of ICE servers to use in requesting a Peer Connection. |
 | subscriptionId | [x] | auto-generated | A unique string representing the requesting client. |
 | bandwidth | [-] | `{audio: 56, video: 512}` | A configuration object to setup playback. |
@@ -90,13 +90,13 @@ _index.html_:
     <!-- Recommended shim for cross-browser WebRTC support. -->
     <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
     <!-- Default Red5 Pro Playback Control styles. -->
-    <link href="lib/red5pro/red5pro-video.css" rel="stylesheet">
+    <link href="lib/red5pro/red5pro-media.css" rel="stylesheet">
     <!-- Fullscreen shim. -->
     <script src="lib/screenfull/screenfull.min.js"></script>
   </head>
   <body>
     <video id="red5pro-subscriber"
-           class="red5pro-video red5pro-video-background"
+           class="red5pro-media red5pro-media-background"
            autoplay controls>
     </video>
     <!-- Exposes `red5prosdk` on the window global. -->
@@ -150,8 +150,6 @@ The Red5 Pro HTML SDK Flash-based Subscriber embeds a SWF file - utilizing [swfo
 
 The **Red5 Pro HTML SDK** supports the following SWF integration:
 
-* A customized [videojs swf](https://github.com/videojs) - included in `src` directory as **red5pro-videojs.swf** - and utilizing the `RTMP` playback support from [videojs](https://github.com/videojs).
-    * _Note: You will need to also include the [videojs](http://videojs.com/) script on the page as it is not bundled in the Red5 Pro HTML SDK._
 * A bare-bones RTMP playback viewer - included in the `src` directory as **red5pro-subscriber.swf** - and distributed with the `live` webapp of the [Red5 Pro Server](https://account.red5pro.com/login) install.
     * _Note: You will need to provide a URL to the [swfobject](https://github.com/swfobject/swfobject) library which will be dynamically injected at runtime if not - by default - found relative to the page at `lib/swfobject`._
 
@@ -163,9 +161,9 @@ The **Red5 Pro HTML SDK** supports the following SWF integration:
 | app | [x] | `live` | The application to locate the stream. |
 | host | [x] | *None* | The IP or address that the stream resides on. |
 | streamName | [x] | *None* | The stream name to subscribe to. |
-| videoElementId | [-] | `red5pro-subscriber` | The target `video` element `id` attribute which will display the stream. |
+| mediaElementId | [-] | `red5pro-subscriber` | The target `video` or `audio` element `id` attribute which will display the stream. |
 | buffer | [-] | `1` | The amount ot buffer the stream (in seconds). |
-| mimeType | [x] | `rtmp/flv` | The __mimeType__ to assign the source added to the `video` element |
+| mimeType | [x] | `rtmp/flv` | The __mimeType__ to assign the source added to the `video` or `audio` element |
 | connectionParams | [-] | `undefined` | An object of connection parameters to send to the server upon connection request. |
 | width | [x] | `640` | The width of the video element within the SWF movie. |
 | height | [x] | `480` | The height of the video element within the SWF movie. |
@@ -176,7 +174,6 @@ The **Red5 Pro HTML SDK** supports the following SWF integration:
 | backgroundColor | [-] | `0x000000` | The color to show in the background of the SWF movie. |
 | swfobjectURL | [x] | `lib/swfobject/swfobject.js` | Location of the [swfobject](https://github.com/swfobject/swfobject) dependency library that will be dynamically injected. |
 | productInstallURL | [x] | `lib/swfobject/playerProductInstall.swf` | Location of the **playerProductInstall** SWF used by [swfobject](https://github.com/swfobject/swfobject). |
-|| useVideoJS | [-] | `false` | Flag to utilize the [videojs](https://github.com/videojs) library. |
 
 ### Flash Example
 _index.html_
@@ -186,13 +183,13 @@ _index.html_
 <html>
   <head>
     <!-- Default Red5 Pro Playback Control styles. -->
-    <link href="lib/red5pro/red5pro-video.css" rel="stylesheet">
+    <link href="lib/red5pro/red5pro-media.css" rel="stylesheet">
     <!-- Fullscreen shim. -->
     <script src="lib/screenfull/screenfull.min.js"></script>
   </head>
   <body>
     <video id="red5pro-subscriber"
-           class="red5pro-video red5pro-video-background"
+           class="red5pro-media red5pro-media-background"
            autoplay controls>
     </video>
     <!-- Exposes `red5prosdk` on the window global. -->
@@ -238,7 +235,7 @@ _main.js_:
 ```
 
 ## HLS
-The Red5 Pro HTML SDK HLS Subscriber utilizes the [HLS support](https://github.com/videojs/videojs-contrib-hls) for [videojs](https://github.com/videojs).
+The Red5 Pro HTML SDK HLS Subscriber.
 
 ### HLS Configuration Properties
 | Property | Required | Default | Description |
@@ -248,9 +245,8 @@ The Red5 Pro HTML SDK HLS Subscriber utilizes the [HLS support](https://github.c
 | app | [x] | `live` | The webapp name that the stream source resides in. |
 | host | [x] | *None* | The IP or address that the stream resides on. |
 | streamName | [x] | *None* | The stream name to subscribe to. |
-| videoElementId | [-] | `red5pro-subscriber` | The target `video` element `id` attribute which will display the stream. |
+| mediaElementId | [-] | `red5pro-subscriber` | The target `video` or `audio` element `id` attribute which will display the stream. |
 | mimeType | [x] | `application/x-mpegURL` | The mime-type of the stream source. |
-| swf | [x] |  `lib/red5pro/red5pro-video-js.swf` | The fallback SWF file to use if HTML5 `video` element is not supported. |
 
 ### HLS Example
 _index.html_:
@@ -260,13 +256,13 @@ _index.html_:
 <html>
   <head>
     <!-- Default Red5 Pro Playback Control styles. -->
-    <link href="lib/red5pro/red5pro-video.css" rel="stylesheet">
+    <link href="lib/red5pro/red5pro-media.css" rel="stylesheet">
     <!-- Fullscreen shim. -->
     <script src="lib/screenfull/screenfull.min.js"></script>
   </head>
   <body>
     <video id="red5pro-subscriber"
-           class="red5pro-video red5pro-video-background"
+           class="red5pro-media red5pro-media-background"
            autoplay controls>
     </video>
     <!-- Exposes `red5prosdk` on the window global. -->
@@ -292,8 +288,7 @@ _main.js_:
     app: 'live',
     host: 'localhost',
     streamName: 'mystream',
-    mimeType: 'application/x-mpegURL',
-    swf: 'lib/red5pro/red5pro-video-js.swf'
+    mimeType: 'application/x-mpegURL'
   })
   .then(function(subscriber) {
     // `subcriber` is the HLS Subscriber instance.
@@ -319,7 +314,7 @@ As you may have noticed form the previous section, the source configuration for 
 
 * The **WebRTC** player utilizes [WebSockets](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API) and [WebRTC](https://developer.mozilla.org/en-US/docs/Glossary/WebRTC) to subscribe to a video to be displayed in an [HTML5 video](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/video) element.
 * The **Flash/RTMP** player utilizes a SWF file to playback streaming video in the Flash Player plugin.
-* The **HLS** player utilizes the [HTTP Live Streaming protocol](https://developer.mozilla.org/en-US/Apps/Fundamentals/Audio_and_video_delivery/Live_streaming_web_audio_and_video#HLS) to subscribe to a stream and [VideoJS](http://videojs.com/) to provide playback with optional fallback of SWF.
+* The **HLS** player utilizes the [HTTP Live Streaming protocol](https://developer.mozilla.org/en-US/Apps/Fundamentals/Audio_and_video_delivery/Live_streaming_web_audio_and_video#HLS) to subscribe to a stream.
 
 As such, the **init** configuration provided to the library to allow for auto-failover player selection should be provided with attributes defining the target source(s) - i.e., `rtc`, `rtmp` and/or `hls`:
 
@@ -332,13 +327,13 @@ _index.html_:
     <!-- WebRTC Shim -->
     <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
     <!-- Default Red5 Pro Playback Control styles. -->
-    <link href="lib/red5pro/red5pro-video.css" rel="stylesheet">
+    <link href="lib/red5pro/red5pro-media.css" rel="stylesheet">
     <!-- Fullscreen shim. -->
     <script src="lib/screenfull/screenfull.min.js"></script>
   </head>
   <body>
     <video id="red5pro-subscriber"
-           class="red5pro-video red5pro-video-background"
+           class="red5pro-media red5pro-media-background"
            autoplay controls>
     </video>
     <!-- Exposes `red5prosdk` on the window global. -->
@@ -441,8 +436,13 @@ The following events are common across all Subscriber implementations from the R
 | SUBSCRIBE_STOP | 'Subscribe.Stop' | When the subscriber has successfully closed an active subscription to a stream. |
 | SUBSCRIBE_METADATA | 'Subscribe.Metadata' | When metadata is received on the client from the server. |
 | SUBSCRIBE_SEND_INVOKE | 'Subscribe.Send.Invoke' | When a message is being sent by a subscribed-to publisher. |
-| PLAY_UNPUBLISH | 'Subscriber.Play.Unpublish' | Notification of when a live broadcast has stopped publishing. |
-| CONNECTION_CLOSED | 'Subscriber.Connection.Closed' | Invoked when a close to the connection is detected. |
+| PLAY_UNPUBLISH | 'Subscribe.Play.Unpublish' | Notification of when a live broadcast has stopped publishing. |
+| CONNECTION_CLOSED | 'Subscribe.Connection.Closed' | Invoked when a close to the connection is detected. |
+| ORIENTATION_CHANGE | 'Subscribe.Orientation.Change' | Invoked when an orientation change is detected in metadata. Mobile (iOS and Android) broadcasts are sent with an orientation. |
+| VOLUME_CHANGE | 'Subscribe.Volume.Change' | Invoked when a change to volume is detected during playback. _From 0 to 1._ |
+| PLAYBACK_TIME_UPDATE | 'Subscribe.Time.Update' | Invoked when a change in playhead time is detected during playback. _In seconds._ |
+| PLAYBACK_STATE_CHANGE | 'Subscribe.Playback.Change' | Invoked when a change in playback state has occured, such as when going from a `Playback.PAUSED` state to `Playback.PLAYING` state. |
+| FULL_SCREEN_STATE_CHANGE | 'Subscribe.FullScreen.Change' | Invoked when a change in fullscreen state occurs during playback. |
 
 ## WebRTC Subscriber Events
 The following events are specific to the `RTCSubscriber` implementation and accessible on the global `red5prosdk` object from the `RTCSubscriberEventTypes` attribute. These events are dispatched during the lifecycle of thre trickle ICE functionality required to start subscribing to a stream:

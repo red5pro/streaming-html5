@@ -58,8 +58,10 @@
 
   // Local lifecycle notifications.
   function onSubscriberEvent (event) {
-    console.log('[Red5ProSubscriber] ' + event.type + '.');
-    updateStatusFromEvent(event);
+    if (event.type !== 'Subscribe.Time.Update') {
+      console.log('[Red5ProSubscriber] ' + event.type + '.');
+      updateStatusFromEvent(event);
+    }
   }
   function onSubscribeFail (message) {
     console.error('[Red5ProSubsriber] Subscribe Error :: ' + message);
@@ -116,7 +118,6 @@
       port: isSecure ? serverSettings.hlssport : serverSettings.hlsport,
       streamName: config.stream1,
       mimeType: 'application/x-mpegURL',
-      swf: '../../lib/red5pro/red5pro-video-js.swf',
       swfobjectURL: '../../lib/swfobject/swfobject.js',
       productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
     })
@@ -125,6 +126,10 @@
                           .split(',').map(function (item) {
                             return item.trim();
                           });
+
+    if (window.query('view')) {
+      subscribeOrder = [window.query('view')];
+    }
 
     var subscriber = new red5prosdk.Red5ProSubscriber()
     subscriber.setPlaybackOrder(subscribeOrder)

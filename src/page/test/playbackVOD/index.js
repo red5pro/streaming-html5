@@ -108,7 +108,6 @@
       port: window.location.port,
       streamName: config.stream1,
       mimeType: 'application/x-mpegURL',
-      swf: '../../lib/red5pro/red5pro-video-js.swf',
       swfobjectURL: '../../lib/swfobject/swfobject.js',
       productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
     })

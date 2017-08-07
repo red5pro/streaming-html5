@@ -1,34 +1,29 @@
-.red5pro-video-container {
+.red5pro-media-container {
   display: block;
   box-sizing: border-box;
   position: relative;
   height: 100%;
 }
 
-.red5pro-video {
+.red5pro-media {
   width: 100%;
 }
 
-.red5pro-video-background {
+.red5pro-media-background {
   background-color: #000;
 }
 
-.red5pro-video-container-full-screen {
+.red5pro-media-container-full-screen {
   width: 100% !important;
   height: 100% !important;
   overflow: hidden !important;
 }
 
-.red5pro-video-object {
-  position: absolute;
-  top: 0;
-  left: 0;
-}
-
-.red5pro-video-control-bar {
+.red5pro-media-control-bar {
   font-family: sans-serif;
   opacity: 0;
   display: flex;
+  align-items: center;
   flex-direction: row;
   flex-align: center;
   display: -ms-flexbox;
@@ -58,18 +53,17 @@ input[type=range][orient=vertical] {
     padding: 0 5px;
 }
 
-.red5pro-video-control-bar-show {
+.red5pro-media-control-bar-show {
   opacity: 1;
 }
 
-.red5pro-video-control-element {
+.red5pro-media-control-element {
   margin: 0 0.5em;
   cursor: pointer;
 }
-.red5pro-video-time-field {
+.red5pro-media-time-field {
   font-size: 0.8em;
   line-height: 1em;
-  margin-top: 0.5em;
   -webkit-user-select: none;
   -khtml-user-select: none;
   -moz-user-select: none;
@@ -77,11 +71,11 @@ input[type=range][orient=vertical] {
   user-select: none;
 }
 
-.red5pro-video-slider {
+.red5pro-media-slider {
   flex-grow: 1;
   -webkit-appearance: none !important; /*Needed to reset default slider styles */
   transition: all 0.3s ease;
-  margin-top: 1em;
+  margin-top: 0.8em;
   cursor: pointer;
   -webkit-user-select: none;
   -khtml-user-select: none;
@@ -90,16 +84,7 @@ input[type=range][orient=vertical] {
   user-select: none;
 }
 
-.red5pro-video-volume-slider {
-  max-width: 110px;
-  margin-top: 0.6em
-}
-
-.red5pro-video-seektime-slider {
-  margin-top: 0.6em
-}
-
-.red5pro-video-slider-track {
+.red5pro-media-slider-track {
   background-color: #595959;
   height: 0.2em;
   position: relative;
@@ -107,30 +92,39 @@ input[type=range][orient=vertical] {
   top: 0.1em
 }
 
-.red5pro-video-slider-progress {
+.red5pro-media-slider-progress {
   background-color: #4286F4;
   height: 0.2em;
-  position: absolute;
+  position: relative;
   display: block;
-  top: 1.2em;
+  top: -0.1em;
 }
 
-.red5pro-video-slider-button {
+.red5pro-media-slider-button {
   width: 1em;
   height: 1em;
-  top: -0.5em;
+  max-width: 24px;
+  max-height: 24px;
+  top: -0.7em;
   position: relative;
   display: block;
   border-radius: 20px;
   background-color: #4286F4;
 }
 
-.red5pro-video-slider-disabled {
+.red5pro-media-slider-disabled {
   background-color: #bbb;
   cursor: arrow;
 }
 
-.red5pro-video-element-button {
+.red5pro-media-volume-slider {
+  max-width: 110px;
+}
+
+.red5pro-media-seektime-slider {
+}
+
+.red5pro-media-element-button {
   width: 24px;
   height: 24px;
   display: inline-block;
@@ -142,27 +136,32 @@ input[type=range][orient=vertical] {
   cursor: pointer;
 }
 
-.red5pro-video-play-button {
+.red5pro-media-element-button-disabled {
+  cursor: arrow;
+  opacity: 0.5;
+}
+
+.red5pro-media-play-button {
   background-image: url(icons/play.png);
 }
 
-.red5pro-video-pause-button {
+.red5pro-media-pause-button {
   background-image: url(icons/pause.png);
 }
 
-.red5pro-video-unmute-button {
+.red5pro-media-unmute-button {
   background-image: url(icons/volume-2.png);
 }
 
-.red5pro-video-mute-button {
+.red5pro-media-mute-button {
   background-image: url(icons/volume-x.png);
 }
 
-.red5pro-video-fullscreen-button {
+.red5pro-media-fullscreen-button {
   background-image: url(icons/maximize.png);
 }
 
-.red5pro-video-exit-fullscreen-button {
+.red5pro-media-exit-fullscreen-button {
   background-image: url(icons/minimize.png);
 }
 
