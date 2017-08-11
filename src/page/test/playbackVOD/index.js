@@ -107,9 +107,7 @@
       protocol: protocol,
       port: window.location.port,
       streamName: config.stream1,
-      mimeType: 'application/x-mpegURL',
-      swfobjectURL: '../../lib/swfobject/swfobject.js',
-      productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
+      mimeType: 'application/x-mpegURL'
     })
 
     var subscriber = new red5prosdk.Red5ProSubscriber();

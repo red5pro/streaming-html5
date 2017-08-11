@@ -76,9 +76,7 @@ function determineSubscriber () {
     protocol: 'http',
     port: config.hlsport,
     streamName: config.stream1,
-    mimeType: 'application/x-mpegURL',
-    swfobjectURL: '../../lib/swfobject/swfobject.js',
-    productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
+    mimeType: 'application/x-mpegURL'
   })
 
   return new Promise(function (resolve, reject) {

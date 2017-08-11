@@ -116,9 +116,7 @@ function determineSubscriber (serverAddress) {
       protocol: protocol,
       port: isSecure ? serverSettings.hlssport : serverSettings.hlsport,
       streamName: config.stream1,
-      mimeType: 'application/x-mpegURL',
-      swfobjectURL: '../../lib/swfobject/swfobject.js',
-      productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
+      mimeType: 'application/x-mpegURL'
     })
 
     if (!config.useVideo) {
