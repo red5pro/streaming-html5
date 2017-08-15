@@ -320,7 +320,7 @@
       return targetPublisher.publish();
     })
     .then(function () {
-      onPublishSuccess();
+      onPublishSuccess(targetPublisher);
       beginStreamListCall();
     })
     .catch(function (error) {

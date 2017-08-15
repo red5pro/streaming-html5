@@ -138,7 +138,7 @@
         return targetPublisher.publish();
       })
       .then(function () {
-        onPublishSuccess();
+        onPublishSuccess(targetPublisher);
       })
       .catch(function (error) {
         var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
