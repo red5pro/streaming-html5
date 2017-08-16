@@ -129,6 +129,10 @@
                             return item.trim();
                           });
 
+    if (window.query('view')) {
+      subscribeOrder = [window.query('view')];
+    }
+
     var subscriber = new red5prosdk.Red5ProSubscriber();
     subscriber.setPlaybackOrder(subscribeOrder)
     .init({

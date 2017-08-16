@@ -104,6 +104,7 @@
                       streamName: config.stream1,
                       width: config.cameraWidth,
                       height: config.cameraHeight,
+                      backgroundColor: '#000000',
                       swf: '../../lib/red5pro/red5pro-publisher.swf',
                       swfobjectURL: '../../lib/swfobject/swfobject.js',
                       productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
@@ -113,6 +114,10 @@
                             .map(function (item) {
                               return item.trim()
                         });
+
+  if (window.query('view')) {
+    publishOrder = [window.query('view')];
+  }
 
   var publisher = new red5prosdk.Red5ProPublisher()
   publisher.setPublishOrder(publishOrder)

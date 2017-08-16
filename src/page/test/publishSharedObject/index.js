@@ -160,6 +160,10 @@
                               return item.trim()
                         });
 
+    if(window.query('view')) {
+      publishOrder = [window.query('view')];
+    }
+
     var publisher = new red5prosdk.Red5ProPublisher();
     return publisher.setPublishOrder(publishOrder)
             .init({
