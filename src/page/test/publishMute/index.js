@@ -93,8 +93,8 @@
 
   function getUserMediaConfiguration () {
     return {
-      audio: configuration.useAudio ? configuration.userMedia.audio : false,
-      video: configuration.useVideo ? configuration.userMedia.video : false,
+      audio: configuration.useAudio ? configuration.mediaConstraints.audio : false,
+      video: configuration.useVideo ? configuration.mediaConstraints.video : false,
       frameRate: configuration.frameRate
     };
   }
@@ -138,7 +138,7 @@
       return targetPublisher.publish();
     })
     .then(function () {
-      addMuteListener();
+      addMuteListener(targetPublisher);
       onPublishSuccess(targetPublisher);
     })
     .catch(function (error) {

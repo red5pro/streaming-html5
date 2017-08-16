@@ -25,7 +25,6 @@
 
   var targetSubscriber;
 
-  var updateStatusFromEvent = window.red5proHandleSubscriberEvent; // defined in src/template/partial/status-field-subscriber.hbs
   var streamTitle = document.getElementById('stream-title');
   var nameInput = document.getElementById('name-input');
   var submitButton = document.getElementById('submit-button');
@@ -74,7 +73,6 @@
   // Local lifecycle notifications.
   function onSubscriberEvent (event) {
     console.log('[Red5ProSubscriber] ' + event.type + '.');
-    updateStatusFromEvent(event);
   }
   function onSubscribeFail (message) {
     console.error('[Red5ProSubsriber] Subscribe Error :: ' + message);
