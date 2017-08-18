@@ -635,7 +635,6 @@ Playback of a stream being broadcast to a Red5 Pro Server is possible using [Vid
           (function (window, VideoJS) {
             'use strict';
             var videoElement = document.getElementById('my-player');
-            var orientation = 0;
             var v;
             function getVJS() {
               return v;

@@ -195,6 +195,7 @@ The CSS Style Declaration from the `red5pro-media.css` file delivered with the R
 | `red5pro-media-volume-slider` | Volume slider control. | A slider control with a button and track. |
 | `red5pro-media-seektime-slider` | Seek time slider control. | A slider control with a button and track. |
 | `red5pro-media-element-button` | Top-level style declaration for the button elements for play/pause, mute/unmute, and fullscreen toggle. |
+| `red5pro-media-element-button-disabled` | Top-level style declaration for button element in disabled state. |
 | `red5pro-media-play-button` | Play/Pause button. | The display while in the `Paused` and `Idle` state of the stream. |
 | `red5pro-media-pause-button` | Play/Pause button. | The display while in the `P;aying` state of the stream. |
 | `red5pro-media-unmute-button` | Mute/Unmute button. | The display while the stream is muted. |

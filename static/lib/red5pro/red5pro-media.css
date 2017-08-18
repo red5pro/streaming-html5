@@ -73,6 +73,8 @@ input[type=range][orient=vertical] {
 
 .red5pro-media-slider {
   flex-grow: 1;
+  -ms-flex-grow: 1;
+  -ms-flex-positive: 1;
   -webkit-appearance: none !important; /*Needed to reset default slider styles */
   transition: all 0.3s ease;
   margin-top: 0.8em;
