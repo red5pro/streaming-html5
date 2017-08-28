@@ -40,39 +40,70 @@ In a browser:
 [download the latest release](https://account.red5pro.com/download)
 
 ```html
-<!-- *Recommended WebRTC Shim -->
-<script src="http://webrtc.github.io/adapter/adapter-latest.js"></script>
-<!-- Red5 Pro SDK -->
-<script src="lib/red5pro/red5pro-sdk.min.js"></script>
-<!-- video container -->
-<div id="video-container">
-  <video id="red5pro-subscriber" width="640" height="480" controls autoplay></video>
-</div>
-<!-- Create subscriber -->
-<script>
-  (function(red5pro) {
+<!doctype html>
+<html>
+  <head>
+    <!-- *Recommended WebRTC Shim -->
+    <script src="http://webrtc.github.io/adapter/adapter-latest.js"></script>
+  </head>
+  <body>
+    <!-- video containers -->
+    <!-- publisher -->
+    <div>
+      <video id="red5pro-publisher" width="640" height="480" muted autoplay></video>
+    </div>
+    <!-- subscriber -->
+    <div>
+      <video id="red5pro-subscriber" width="640" height="480" controls autoplay></video>
+    </div>
+    <!-- Red5 Pro SDK -->
+    <script src="lib/red5pro/red5pro-sdk.min.js"></script>
+    <!-- Create Pub/Sub -->
+    <script>
+      (function(red5prosdk) {
+        'use strict';
 
-    var rtcSubscriber = new red5pro.RTCSubscriber();
-    var viewer = new red5pro.PlaybackView();
-    viewer.attachSubscriber(rtcSubscriber);
+        var rtcPublisher = new red5prosdk.RTCPublisher();
+        var rtcSubscriber = new red5prosdk.RTCSubscriber();
+        var config = {
+          protocol: 'ws',
+          host: 'localhost',
+          port: 8081,
+          app: 'live',
+          streamName: 'mystream',
+          iceServers: [{urls: 'stun:stun2.l.google.com:19302'}]
+        };
 
-    rtcSubscriber.init({
-      protocol: 'ws',
-      host: 'localhost',
-      port: 8081,
-      app: 'live',
-      streamName: 'mystream',
-      iceServers: [{urls: 'stun:stun2.l.google.com:19302'}]
-    })
-    .then(function() {
-      console.log('Playing!');
-    })
-    .catch(function(err) {
-      console.log('Something happened. ' + err);
-    });
+        function subscribe () {
+          rtcSubscriber.init(config)
+            .then(function () {
+              rtcSubscriber.subscribe();
+            })
+            .then(function () {
+              console.log('Playing!');
+            })
+            .catch(function (err) {
+              console.log('Could not play: ' + err);
+            });
+        }
 
-  }(window.red5prosdk));
-</script>
+        rtcPublisher.init(config)
+          .then(function () {
+            // On broadcast started, subscribe.
+            rtcPublisher.on(red5prosdk.PublisherEventTypes.PUBLISH_START, subscribe);
+            rtcPublisher.publish();
+          })
+          .then(function () {
+            console.log('Publishing!');
+          })
+          .catch(function (err) {
+            console.error('Could not publish: ' + err);
+          });
+
+      }(window.red5prosdk));
+    </script>
+  </body>
+</html>
 ```
 
 # Requirements
