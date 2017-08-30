@@ -55,7 +55,6 @@
     var c = {
       protocol: getSocketLocationFromProtocol().protocol,
       port: getSocketLocationFromProtocol().port,
-      app: 'live',
       bandwidth: {
         audio: 50,
         video: 256

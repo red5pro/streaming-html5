@@ -41,8 +41,7 @@
   }
   var defaultConfiguration = {
     protocol: getSocketLocationFromProtocol().protocol,
-    port: getSocketLocationFromProtocol().port,
-    app: 'live'
+    port: getSocketLocationFromProtocol().port
   };
 
   function onBitrateUpdate (bitrate, packetsSent) {

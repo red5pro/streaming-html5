@@ -57,8 +57,7 @@
 
   var defaultConfiguration = {
     protocol: getSocketLocationFromProtocol().protocol,
-    port: getSocketLocationFromProtocol().port,
-    app: 'live'
+    port: getSocketLocationFromProtocol().port
   };
 
   var userMedia = (function (isSupported) {

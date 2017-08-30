@@ -40,7 +40,6 @@
   var defaultConfiguration = {
     protocol: getSocketLocationFromProtocol().protocol,
     port: getSocketLocationFromProtocol().port,
-    app: 'live',
     streamMode: 'record'
   };
 
