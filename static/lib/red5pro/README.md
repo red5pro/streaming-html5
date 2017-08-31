@@ -77,7 +77,7 @@ In a browser:
         function subscribe () {
           rtcSubscriber.init(config)
             .then(function () {
-              rtcSubscriber.subscribe();
+              return rtcSubscriber.subscribe();
             })
             .then(function () {
               console.log('Playing!');
@@ -91,7 +91,7 @@ In a browser:
           .then(function () {
             // On broadcast started, subscribe.
             rtcPublisher.on(red5prosdk.PublisherEventTypes.PUBLISH_START, subscribe);
-            rtcPublisher.publish();
+            return rtcPublisher.publish();
           })
           .then(function () {
             console.log('Publishing!');

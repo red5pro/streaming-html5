@@ -398,4 +398,25 @@ The following example demonstrates how to utilize the [Playback Controls API](#p
 ```
 
 # Creating Custom Controls UI
+To customize the look and feel of the playback controls, use the `red5pro-media.css` file distributed with the SDK as your guide, and discover the cusomizable style declarations available from the [Playback Controls Style Declarations](#playback-controls-style-declarations) section.
+
+When you have change the declarations to your liking in a separate CSS file, it is recommended to define your custom CSS file dependency after the `red5pro-media.css` dependency in your page.
+
+For example, if you have saved your custom styles to a file named `my-custom-playback-controls.css`:
+
+```html
+<!doctype html>
+<html>
+  <head>
+    <title>My Custom Playback Controls</title>
+    <link rel="stylesheet" href="lib/red5pro/red5pro-media.css">
+    <link rel="stylesheet" href="my-custom-playback-controls.css">
+    <script src="https://rawgit.com/sindresorhus/screenfull.js/gh-pages/dist/screenfull.min.js"></script>
+  </head>
+  <body>
+    <video id="red5pro-subscriber" controls autoplay class="red5pro-media"></video>
+    <script src="lib/red5pro/red5pro-sdk.js"></script>
+  </body>
+</html>
+```
 

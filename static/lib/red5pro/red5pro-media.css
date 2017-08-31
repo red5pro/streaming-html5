@@ -72,9 +72,6 @@ input[type=range][orient=vertical] {
 }
 
 .red5pro-media-slider {
-  flex-grow: 1;
-  -ms-flex-grow: 1;
-  -ms-flex-positive: 1;
   -webkit-appearance: none !important; /*Needed to reset default slider styles */
   transition: all 0.3s ease;
   margin-top: 0.8em;
@@ -120,10 +117,13 @@ input[type=range][orient=vertical] {
 }
 
 .red5pro-media-volume-slider {
-  max-width: 110px;
+  width: 110px;
 }
 
 .red5pro-media-seektime-slider {
+  flex-grow: 1;
+  -ms-flex-grow: 1;
+  -ms-flex-positive: 1;
 }
 
 .red5pro-media-element-button {

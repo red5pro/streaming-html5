@@ -200,7 +200,10 @@ code {
   color: #000;
 }
 
-@media (max-width:440px) {
+@media (max-width:510px) {
+  .red5pro-media-volume-slider {
+    width: 65px;
+  }
   .settings-field > input {
     width: 90%;
   }
