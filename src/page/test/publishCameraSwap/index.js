@@ -22,6 +22,7 @@
     }
     return {}
   })();
+  red5prosdk.setLogLevel(configuration.verboseLogging ? red5prosdk.LOG_LEVELS.TRACE : red5prosdk.LOG_LEVELS.WARN);
 
   // The two acceptable video targets on supported devices.
   var FACING_MODE_FRONT = 'user';

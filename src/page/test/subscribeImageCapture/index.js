@@ -22,8 +22,7 @@
     }
     return {}
   })();
-
-  red5prosdk.setLogLevel(configuration.verboseLogging ? red5prosdk.LogLevels.TRACE : red5prosdk.LogLevels.WARN);
+  red5prosdk.setLogLevel(configuration.verboseLogging ? red5prosdk.LOG_LEVELS.TRACE : red5prosdk.LOG_LEVELS.WARN);
 
   var targetSubscriber;
   var updateStatusFromEvent = function (event) {

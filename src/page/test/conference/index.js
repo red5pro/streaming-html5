@@ -23,8 +23,6 @@
     return {}
   })();
 
-  red5pro.setLogLevel(configuration.verboseLogging ? red5pro.LogLevels.TRACE : red5pro.LogLevels.WARN);
-
   var targetPublisher;
   var targetPubView;
 

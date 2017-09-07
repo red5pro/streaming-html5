@@ -22,6 +22,7 @@
     }
     return {};
   })();
+  red5prosdk.setLogLevel(configuration.verboseLogging ? red5prosdk.LOG_LEVELS.TRACE : red5prosdk.LOG_LEVELS.WARN);
 
   var targetPublisher;
 
