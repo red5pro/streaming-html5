@@ -3,6 +3,7 @@
   box-sizing: border-box;
   position: relative;
   height: 100%;
+  line-height: 0px;
 }
 
 .red5pro-media {
