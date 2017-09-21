@@ -52,7 +52,7 @@
   var publishing = false;
 
   var subBlock ="<div class=\"float-left float-left-conf\" id=\"FILLNAME\">" +
-                  "<h2 class=\"centered\"><em>Suscriber Stream</em>: <span id=\"FILLNAME-title\"></span></h2>" +
+                  "<h2 class=\"centered\"><em>Subscriber Stream</em>: <span id=\"FILLNAME-title\"></span></h2>" +
                   "<p id=\"FILLNAME-status\" class=\"centered status-field\">On hold.</p>" +
                   "<div class=\"centered\">" +
                     "<video id=\"FILLNAME-video\" autoplay class=\"video-element\"></video>" +
