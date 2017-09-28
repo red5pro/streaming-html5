@@ -1,4 +1,4 @@
-(function(window, document, red5pro, SubscriberBase) {
+(function(window, document, red5prosdk) {
   'use strict';
 
   var serverSettings = (function() {
@@ -22,14 +22,11 @@
     }
     return {}
   })();
-
-  red5pro.setLogLevel(configuration.verboseLogging ? red5pro.LogLevels.TRACE : red5pro.LogLevels.WARN);
+  red5prosdk.setLogLevel(configuration.verboseLogging ? red5prosdk.LOG_LEVELS.TRACE : red5prosdk.LOG_LEVELS.WARN);
 
   var targetSubscriber;
-  var targetView;
-
   var updateStatusFromEvent = function (event) {
-    var subTypes = red5pro.SubscriberEventTypes;
+    var subTypes = red5prosdk.SubscriberEventTypes;
     switch (event.type) {
         case subTypes.CONNECT_FAILURE:
         case subTypes.SUBSCRIBE_FAIL:
@@ -39,7 +36,7 @@
     window.red5proHandleSubscriberEvent(event); // defined in src/template/partial/status-field-subscriber.hbs
   };
   var streamTitle = document.getElementById('stream-title');
-  var videoElement = document.getElementById('red5pro-subscriber-video');
+  var videoElement = document.getElementById('red5pro-subscriber');
   var canvasElement = document.getElementById('capture-canvas');
   var captureTarget = document.getElementById('video-container');
   var protocol = serverSettings.protocol;
@@ -54,24 +51,22 @@
     var c = {
       protocol: getSocketLocationFromProtocol().protocol,
       port: getSocketLocationFromProtocol().port,
-      app: 'live',
       bandwidth: {
         audio: 50,
-        video: 256,
-        data: 30 * 1000 * 1000
+        video: 256
       }
     };
     if (!useVideo) {
-      c.videoEncoding = red5pro.PlaybackVideoEncoder.NONE;
+      c.videoEncoding = red5prosdk.PlaybackVideoEncoder.NONE;
     }
     if (!useAudio) {
-      c.audioEncoding = red5pro.PlaybackAudioEncoder.NONE;
+      c.audioEncoding = red5prosdk.PlaybackAudioEncoder.NONE;
     }
     return c;
   })(configuration.useVideo, configuration.useAudio);
 
   function shutdownVideoElement () {
-    var videoElement = document.getElementById('red5pro-subscriber-video');
+    var videoElement = document.getElementById('red5pro-subscriber');
     if (videoElement) {
       videoElement.pause()
       videoElement.src = ''
@@ -96,43 +91,13 @@
     console.log('[Red5ProSubsriber] Unsubscribe Complete.');
   }
 
-  function determineSubscriber () {
-    var config = Object.assign({}, configuration, defaultConfiguration);
-    config.streamName = config.stream1;
-    return SubscriberBase.getRTCSubscriber(config);
-  }
-
-  // Request to start subscribing using an overlayed configuration from local default and local storage.
-  function subscribe (subscriber, view, streamName) {
-    streamTitle.innerText = streamName;
-    targetSubscriber = subscriber;
-    targetView = view;
-    // Initiate playback.
-    return new Promise(function (resolve, reject) {
-      SubscriberBase.subscribe(subscriber, view)
-        .then(function () {
-          onSubscribeSuccess();
-          resolve();
-        })
-        .catch(reject);
-    });
-  }
-
-  function view (subscriber) {
-    var elementId = 'red5pro-subscriber-video';
-    return SubscriberBase.view(subscriber, elementId);
-  }
-
   // Request to unsubscribe.
   function unsubscribe () {
     return new Promise(function(resolve, reject) {
-      var view = targetView
-      var subscriber = targetSubscriber
-      SubscriberBase.unsubscribe(subscriber, view)
+      targetSubscriber.unsubscribe()
         .then(function () {
           targetSubscriber.off('*', onSubscriberEvent);
           targetSubscriber = undefined;
-          targetView = undefined;
           onUnsubscribeSuccess();
           resolve();
         })
@@ -158,17 +123,19 @@
   }
 
   // Kick off.
-  determineSubscriber()
-    .then(function (payload) {
-      var subscriber = payload.subscriber;
+  var config = Object.assign({}, configuration, defaultConfiguration);
+  config.streamName = config.stream1;
+  var subscriber = new red5prosdk.RTCSubscriber()
+  subscriber.init(config)
+    .then(function (subscriberImpl) {
+      streamTitle.innerText = configuration.stream1
+      targetSubscriber = subscriberImpl
       // Subscribe to events.
-      subscriber.on('*', onSubscriberEvent);
-      return view(subscriber);
+      targetSubscriber.on('*', onSubscriberEvent);
+      return targetSubscriber.subscribe();
     })
-    .then(function (payload) {
-      var subscriber = payload.subscriber;
-      var view = payload.view;
-      return subscribe(subscriber, view, configuration.stream1);
+    .then(function () {
+      onSubscribeSuccess();
     })
     .catch(function (error) {
       var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
@@ -188,10 +155,10 @@
       if (targetSubscriber) {
         targetSubscriber.off('*', onSubscriberEvent);
       }
-      targetSubscriber = targetView = undefined;
+      targetSubscriber = undefined;
     }
     unsubscribe().then(clearRefs).catch(clearRefs);
   });
 
-})(this, document, window.red5prosdk, new window.R5ProBase.Subscriber());
+})(this, document, window.red5prosdk);
 

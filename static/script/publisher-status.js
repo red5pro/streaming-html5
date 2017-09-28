@@ -47,7 +47,9 @@
           status = 'Negotiation complete. Waiting Publish Start...';
           break;
       }
-      statusField.innerText = ['STATUS', status].join(': ');
+    if (status && status.length > 0) {
+        statusField.innerText = ['STATUS', status].join(': ');
+      }
     }
 
     window.red5proHandlePublisherEvent = updateStatusFromEvent;

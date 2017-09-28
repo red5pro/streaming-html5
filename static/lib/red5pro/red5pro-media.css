@@ -1,0 +1,170 @@
+.red5pro-media-container {
+  display: block;
+  box-sizing: border-box;
+  position: relative;
+  height: 100%;
+  line-height: 0px;
+}
+
+.red5pro-media {
+  width: 100%;
+}
+
+.red5pro-media-background {
+  background-color: #000;
+}
+
+.red5pro-media-container-full-screen {
+  width: 100% !important;
+  height: 100% !important;
+  overflow: hidden !important;
+}
+
+.red5pro-media-control-bar {
+  font-family: sans-serif;
+  opacity: 0;
+  display: flex;
+  align-items: center;
+  flex-direction: row;
+  flex-align: center;
+  display: -ms-flexbox;
+  -ms-flex-direction: row;
+  -ms-flex-align: center;
+  -ms-flex-pack: justify;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1.5em;
+  padding: 0.5em;
+  background-color: rgba(255, 255, 255, 0.9);
+  color: #595959;
+  -webkit-transition: opacity 0.5s ease-in-out;
+     -moz-transition: opacity 0.5s ease-in-out;
+      -ms-transition: opacity 0.5s ease-in-out;
+       -o-transition: opacity 0.5s ease-in-out;
+          transition: opacity 0.5s ease-in-out;
+}
+
+input[type=range][orient=vertical] {
+    writing-mode: bt-lr; /* IE */
+    -webkit-appearance: slider-vertical; /* WebKit */
+    width: 8px;
+    height: 175px;
+    padding: 0 5px;
+}
+
+.red5pro-media-control-bar-show {
+  opacity: 1;
+}
+
+.red5pro-media-control-element {
+  margin: 0 0.5em;
+  cursor: pointer;
+}
+.red5pro-media-time-field {
+  font-size: 0.8em;
+  line-height: 1em;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -o-user-select: none;
+  user-select: none;
+}
+
+.red5pro-media-slider {
+  -webkit-appearance: none !important; /*Needed to reset default slider styles */
+  transition: all 0.3s ease;
+  margin-top: 0.8em;
+  cursor: pointer;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -o-user-select: none;
+  user-select: none;
+}
+
+.red5pro-media-slider-track {
+  background-color: #595959;
+  height: 0.2em;
+  position: relative;
+  display: block;
+  top: 0.1em
+}
+
+.red5pro-media-slider-progress {
+  background-color: #4286F4;
+  height: 0.2em;
+  position: relative;
+  display: block;
+  top: -0.1em;
+}
+
+.red5pro-media-slider-button {
+  width: 1em;
+  height: 1em;
+  max-width: 24px;
+  max-height: 24px;
+  top: -0.7em;
+  position: relative;
+  display: block;
+  border-radius: 20px;
+  background-color: #4286F4;
+}
+
+.red5pro-media-slider-disabled {
+  background-color: #bbb;
+  cursor: arrow;
+}
+
+.red5pro-media-volume-slider {
+  width: 110px;
+}
+
+.red5pro-media-seektime-slider {
+  flex-grow: 1;
+  -ms-flex-grow: 1;
+  -ms-flex-positive: 1;
+}
+
+.red5pro-media-element-button {
+  width: 24px;
+  height: 24px;
+  display: inline-block;
+  background-size: 100% 100%;
+  background-position: 50% 50%;
+  background-color: transparent;
+  background-repeat: no-repeat;
+  border: none;
+  cursor: pointer;
+}
+
+.red5pro-media-element-button-disabled {
+  cursor: arrow;
+  opacity: 0.5;
+}
+
+.red5pro-media-play-button {
+  background-image: url(icons/play.png);
+}
+
+.red5pro-media-pause-button {
+  background-image: url(icons/pause.png);
+}
+
+.red5pro-media-unmute-button {
+  background-image: url(icons/volume-2.png);
+}
+
+.red5pro-media-mute-button {
+  background-image: url(icons/volume-x.png);
+}
+
+.red5pro-media-fullscreen-button {
+  background-image: url(icons/maximize.png);
+}
+
+.red5pro-media-exit-fullscreen-button {
+  background-image: url(icons/minimize.png);
+}
+
