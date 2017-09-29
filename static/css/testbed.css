@@ -30,6 +30,10 @@ code {
   padding-bottom: 2rem;
 }
 
+.red5pro-media-container {
+  text-align: justify;
+}
+
 .ice-background {
   background-color: #eef7ff;
 }
@@ -196,7 +200,10 @@ code {
   color: #000;
 }
 
-@media (max-width:440px) {
+@media (max-width:510px) {
+  .red5pro-media-volume-slider {
+    width: 65px;
+  }
   .settings-field > input {
     width: 90%;
   }

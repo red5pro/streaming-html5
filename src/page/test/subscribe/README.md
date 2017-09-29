@@ -76,10 +76,7 @@ function determineSubscriber () {
     protocol: 'http',
     port: config.hlsport,
     streamName: config.stream1,
-    mimeType: 'application/x-mpegURL',
-    swf: '../../lib/red5pro/red5pro-video-js.swf',
-    swfobjectURL: '../../lib/swfobject/swfobject.js',
-    productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
+    mimeType: 'application/x-mpegURL'
   })
 
   return new Promise(function (resolve, reject) {

@@ -56,7 +56,7 @@
       },
       "useAudio": true,
       "useVideo": true,
-      "userMedia": {
+      "mediaConstraints": {
         "audio": true,
         "video": (isMoz || isEdge) ? true : {
           "width": {

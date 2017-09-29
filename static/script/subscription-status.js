@@ -60,7 +60,9 @@
           status = 'Negotiation complete. Waiting Subscription Start...';
           break;
     }
-    statusField.innerText = ['STATUS', status].join(': ');
+    if (status && status.length > 0) {
+      statusField.innerText = ['STATUS', status].join(': ');
+    }
   }
 
   window.red5proHandleSubscriberEvent = updateStatusFromEvent;
