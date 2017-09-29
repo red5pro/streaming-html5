@@ -1,0 +1,130 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Publish Test</title>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+    <meta content="width=device-width, initial-scale=1, user-scalable=no" name="viewport">
+    <script src="//webrtc.github.io/adapter/adapter-latest.js"></script>
+    <script src="../../lib/screenfull/screenfull.min.js"></script>
+    <script src="../../script/testbed-config.js"></script>
+    <script src="../../script/red5pro-utils.js"></script>
+    <script src="../../script/reachability.js"></script>
+    <link rel="stylesheet" href="../../css/reset.css">
+    <link rel="stylesheet" href="../../css/testbed.css">
+    <link rel="stylesheet" href="../../lib/red5pro/red5pro-media.css">
+    <style>
+        .param-form {
+                text-align: left;
+                margin: 20px;
+        }
+        .param-form > p {
+                padding: 10px;
+        }
+
+        #publish-button {
+                height: 24px;
+        }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <p class="version-field">Testbed Version: 4.0.0&nbsp;&nbsp;&nbsp;&nbsp;<a href="https://red5pro.github.io/red5pro-html-sdk-testbed/red5pro-html-testbed-latest.zip">download</a></p>
+      <div id="back-link-container" style="text-align: left;"><p id="back-link"><a href="../../index.html">&lt; Settings</a></p></div>
+      <h1 class="centered">Publish Flashvars Test (Flash Only)</h1>
+      <hr />
+      <h2 class="centered"><em>stream</em>: <span id="stream-title"></span></h2>
+      <p id="status-field" class="centered status-field">On hold.</p>
+      <script src="../../script/publisher-status.js"></script>
+      <div class="centered status-field">
+              <br>
+              <p>Set the desired Publishing parameters, then press "Publish"</p>
+              <div class="param-form">
+                      <p>
+                        <label for="framerate-field">Framerate (integer):</label>
+                        <input name="framerate-field" id="framerate-field" value="15"></input>
+                      </p>
+                      <p>More info <a href="http://help.adobe.com/en_US/FlashPlatform/reference/actionscript/3/flash/media/Camera.html#setMode()" target="_blank">Camera FPS</a></p>
+                      <hr>
+                      <p>
+                        <label for="bandwidth-field">Bandwidth (integer):</label>
+                        <input name="bandwidth-field" id="bandwidth-field" value="50000"></input>
+                      </p>
+                      <p>More info <a href="http://help.adobe.com/en_US/FlashPlatform/reference/actionscript/3/flash/media/Camera.html#bandwidth" target="_blank">Camera bandwidth</a></p>
+                      <hr>
+                      <p>
+                        <label for="quality-field">Quality (integer):</label>
+                        <input name="quality-field" id="quality-field" value="80"></input>
+                      </p>
+                      <p> More Info <a href="http://help.adobe.com/en_US/FlashPlatform/reference/actionscript/3/flash/media/Camera.html#quality" target="_blank">Camera quality</a></p>
+                      <hr>
+                      <p>
+                        <label for="profile-field">Profile:</label>
+                        <select name="profile-field" id="profile-field" value="baseline">
+                                <option value="baseline" selected>baseline</option>
+                                <option value="main">main</option>
+                        </select>
+                      </p>
+                      <p> More Info <a href="http://help.adobe.com/en_US/FlashPlatform/reference/actionscript/3/flash/media/H264Profile.html" target="_blank">Profile</a></p>
+                      <hr>
+                      <p>
+                        <label for="level-field">Level:</label>
+                        <select name="level-field" id="level-field" value="3.1">
+                                <option value="1">1</option>
+                                <option value="1.1">1.1</option>
+                                <option value="1.2">1.2</option>
+                                <option value="1.3">1.3</option>
+                                <option value="1b">1b</option>
+                                <option value="2">2</option>
+                                <option value="2.1">2.1</option>
+                                <option value="2.2">2.2</option>
+                                <option value="2.3">3</option>
+                                <option value="3.1" selected>3.1</option>
+                                <option value="3.2">3.2</option>
+                                <option value="4">4</option>
+                                <option value="4.1">4.1</option>
+                                <option value="4.2">4.2</option>
+                                <option value="5">5</option>
+                                <option value="5.1">5.1</option>
+                        </select>
+                      </p>
+                      <p> More Info <a href="http://help.adobe.com/en_US/FlashPlatform/reference/actionscript/3/flash/media/H264Level.html" target="_blank">Level</a></p>
+                      <hr>
+                      <button class="centered" id="publish-button">Publish</button>
+              </div>
+      </div>
+      <div class="centered">
+        <video id="red5pro-publisher-video" controls class="video-element" muted></video>
+      </div>
+    </div>
+    <script src="../../lib/es6/es6-promise.min.js"></script>
+    <script src="../../lib/es6/es6-bind.js"></script>
+    <script src="../../lib/es6/es6-array.js"></script>
+    <script src="../../lib/es6/es6-object-assign.js"></script>
+    <script src="../../lib/es6/es6-fetch.js"></script>
+    <script src="../../lib/red5pro/red5pro-sdk.min.js"></script>
+    <script>
+      (function(window) {
+        var configuration = (function () {
+          var conf = sessionStorage.getItem('r5proTestBed');
+          try {
+            return JSON.parse(conf);
+          }
+          catch (e) {
+            console.error('Could not read testbed configuration from sessionstorage: ' + e.message);
+          }
+          return {}
+        })();
+    
+        if (configuration.verboseLogging) {
+          window.publisherLog = function (message) {
+            console.log('[Red5ProRTMPPublisher:SWF] - ' + message);
+          };
+          window.subscriberLog = function (message) {
+            console.log('[Red5ProRTMPSubscriber:SWF] - ' + message);
+          };
+        }
+      })(this);
+    </script>
+    <script src="index.js"></script>
+  </body>
+</html>

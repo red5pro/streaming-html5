@@ -29,7 +29,7 @@
   var serverSettings = {
     "protocol": protocol,
     "httpport": port,
-    "hlsport": 5443,
+    "hlsport": 5080,
     "hlssport": 443,
     "wsport": 8081,
     "wssport": 8083,
@@ -56,7 +56,7 @@
       },
       "useAudio": true,
       "useVideo": true,
-      "userMedia": {
+      "mediaConstraints": {
         "audio": true,
         "video": (isMoz || isEdge) ? true : {
           "width": {

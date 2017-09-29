@@ -4,16 +4,14 @@
     <title>Subscriber Remote Call</title>
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
     <meta content="width=device-width, initial-scale=1, user-scalable=no" name="viewport">
-    <script src="../../lib/webrtc/adapter.js"></script>
-    <script src="../../lib/videojs/video.min.js"></script>
-    <script src="../../lib/videojs/videojs-media-sources.min.js"></script>
-    <script src="../../lib/videojs/videojs.hls.min.js"></script>
+    <script src="//webrtc.github.io/adapter/adapter-latest.js"></script>
+    <script src="../../lib/screenfull/screenfull.min.js"></script>
     <script src="../../script/testbed-config.js"></script>
     <script src="../../script/red5pro-utils.js"></script>
     <script src="../../script/reachability.js"></script>
-    <link rel="stylesheet" href="../../lib/videojs/video-js.min.css">
     <link rel="stylesheet" href="../../css/reset.css">
     <link rel="stylesheet" href="../../css/testbed.css">
+    <link rel="stylesheet" href="../../lib/red5pro/red5pro-media.css">
     <style>
       .callout {
         position: absolute;
@@ -24,7 +22,7 @@
   </head>
   <body>
     <div id="app">
-      <p class="version-field">Testbed Version: 3.5.0&nbsp;&nbsp;&nbsp;&nbsp;<a href="https://red5pro.github.io/red5pro-html-sdk-testbed/red5pro-html-testbed-latest.zip">download</a></p>
+      <p class="version-field">Testbed Version: 4.0.0&nbsp;&nbsp;&nbsp;&nbsp;<a href="https://red5pro.github.io/red5pro-html-sdk-testbed/red5pro-html-testbed-latest.zip">download</a></p>
       <div id="back-link-container" style="text-align: left;"><p id="back-link"><a href="../../index.html">&lt; Settings</a></p></div>
       <h1 class="centered">Subscriber Remote Call</h1>
       <hr />
@@ -32,7 +30,11 @@
       <p id="status-field" class="centered status-field">On hold.</p>
       <script src="../../script/subscription-status.js"></script>
       <div class="centered">
-        <video id="red5pro-subscriber-video" controls class="video-element"></video>
+        <video id="red5pro-subscriber"
+                controls autoplay
+                class="red5pro-media red5pro-media-background"
+                width="640" height="480">
+        </video>
         <div id="message-callout" class="callout hidden"></div>
       </div>
     </div>
@@ -42,7 +44,6 @@
     <script src="../../lib/es6/es6-object-assign.js"></script>
     <script src="../../lib/es6/es6-fetch.js"></script>
     <script src="../../lib/red5pro/red5pro-sdk.min.js"></script>
-    <script src="../../script/main.js"></script>
     <script>
       (function(window) {
         var configuration = (function () {
