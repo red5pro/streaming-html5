@@ -156,6 +156,10 @@
     function connect() {
       clearTimeout(retryTimeout);
 
+      // Assign new subscription id in off chance server rejects on subscriber already assigned.
+      // Subscribers will be cleaned up, but if we try to immediately re-subscribe, we may get rejected.
+      rtcConfig.subscriptionId = Math.floor(Math.random() * 0x10000).toString(16);
+
       var subscriber = new red5prosdk.Red5ProSubscriber()
       subscriber.on(red5prosdk.SubscriberEventTypes.CONNECT_FAILURE, function () {
         setConnected(false);
