@@ -1,0 +1,40 @@
+<!doctype html>
+<html>
+  <head>
+    {{> meta title='Publish Camera Resize Test'}}
+    {{> header-scripts}}
+    {{> header-stylesheets}}
+    <style>
+        .param-form {
+                text-align: left;
+                margin: 20px;
+        }
+        .param-form > p {
+                padding: 10px;
+        }
+
+        #publish-button {
+                height: 24px;
+        }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      {{> version }}
+      {{> settings-link}}
+      {{> test-info testTitle='Publish Camera Resize Test (Flash Only)'}}
+      {{> status-field-publisher}}
+      <div class="centered status-field">
+        <p id="dimensions-field">Camera Dimensions</p>
+      </div>
+      <div class="centered">
+        <video id="red5pro-publisher" controls class="video-element" muted></video>
+      </div>
+      <div class="centered">
+        <button id="swap-camera-btn">change camera size</button>
+      </div>
+    </div>
+    {{> body-scripts}}
+    <script src="index.js"></script>
+  </body>
+</html>
