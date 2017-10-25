@@ -106,7 +106,11 @@
                     swfobjectURL: '../../lib/swfobject/swfobject.js',
                     productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
   });
-
+  /**
+  // The following are to address: RPRO-3787
+  rtmpConfig.video.width = 854;
+  rtmpConfig.video.height = 480;
+  */
   function unpublish () {
     return new Promise(function (resolve, reject) {
       var publisher = targetPublisher;
