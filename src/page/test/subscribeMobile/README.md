@@ -1,4 +1,6 @@
-# Subscribe Failover using Red5 Pro
+# Subscriber page optimized for Mobile
+
+## Subscribe Failover using Red5 Pro
 This is an example of utilizing the failover mechanism of the Red5 Pro HTML SDK to select a subscriber based on browser support.
 
 The default failover order is:
