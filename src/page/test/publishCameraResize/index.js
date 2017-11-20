@@ -28,26 +28,34 @@
   var updateStatusFromEvent = window.red5proHandlePublisherEvent; // defined in src/template/partial/status-field-publisher.hbs
   var streamTitle = document.getElementById('stream-title');
   var statisticsField = document.getElementById('statistics-field');
-  var framerateField = document.getElementById('framerate-field');
-  var bandwidthField = document.getElementById('bandwidth-field');
-  var qualityField = document.getElementById('quality-field');
-  var profileField = document.getElementById('profile-field');
-  var levelField = document.getElementById('level-field');
+  var dimsField = document.getElementById('dimensions-field');
+  var swapCameraButton = document.getElementById('swap-camera-btn');
 
-  function getParam (target) {
-    switch (target) {
-      case 'framerate':
-        return parseInt(framerateField.value, 10);
-      case 'bandwidth':
-        return parseInt(bandwidthField.value, 10);
-      case 'quality':
-        return parseInt(qualityField.value, 10);
-      case 'profile':
-        return profileField.value;
-      case 'level':
-        return levelField.value;
+  function swapCamera () {
+    document.getElementsByTagName('object')[0].swapCameraSize();
+  }
+
+  function setUpSwapCamera () {
+    swapCameraButton.addEventListener('click', swapCamera);
+  }
+
+  function tearDownSwapCamera () {
+    swapCameraButton.removeEventListener('click', swapCamera);
+  }
+
+  var dimsLog = /^Change camera to: ([0-9]+),([0-9]+)/gi
+  var cameraLog = /^Set Camera to \(([0-9]+), ([0-9]+)\)/gi
+  var logFn = window.publisherLog;
+  window.publisherLog = function (message) {
+    logFn(message);
+    var results = dimsLog.exec(message);
+    results = results ? results : cameraLog.exec(message);
+    if (results && results.length > 2) {
+      var width = results[1];
+      var height = results[2];
+      var changeToDims = "Camera Size: " + width + ", " + height;
+      dimsField.innerText = changeToDims;
     }
-    return undefined
   }
 
   function onBitrateUpdate (bitrate, packetsSent) {
@@ -94,19 +102,19 @@
                     streamName: config.stream1,
                     width: config.cameraWidth,
                     height: config.cameraHeight,
-                    swf: '../../lib/red5pro/red5pro-publisher.swf',
+                    swf: 'red5pro-camera-resize-publisher.swf',
                     swfobjectURL: '../../lib/swfobject/swfobject.js',
-                    productInstallURL: '../../lib/swfobject/playerProductInstall.swf',
-                    framerate: getParam('framerate'),
-                    bandwidth: getParam('bandwidth'),
-                    quality: getParam('quality'),
-                    profile: getParam('profile'),
-                    level: getParam('level')
+                    productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
   });
-
+  /**
+  // The following are to address: RPRO-3787
+  rtmpConfig.video.width = 854;
+  rtmpConfig.video.height = 480;
+  */
   function unpublish () {
     return new Promise(function (resolve, reject) {
       var publisher = targetPublisher;
+      tearDownSwapCamera();
       publisher.unpublish()
         .then(function () {
           onUnpublishSuccess();
@@ -120,30 +128,29 @@
     });
   }
 
-  document.getElementById('publish-button').addEventListener('click', function () {
-    // Kick off.
-    targetPublisher = new red5prosdk.RTMPPublisher();
-    targetPublisher.init(rtmpConfig)
-      .then(function () {
-        streamTitle.innerText = configuration.stream1;
-        targetPublisher.on('*', onPublisherEvent);
-        return targetPublisher.publish();
-      })
-      .then(function () {
-        onPublishSuccess(targetPublisher);
-      })
-      .catch(function (error) {
-        var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
-        console.error('[Red5ProPublisher] :: Error in publishing - ' + jsonError);
-        onPublishFail(jsonError);
-       });
-  });
+  targetPublisher = new red5prosdk.RTMPPublisher();
+  targetPublisher.init(rtmpConfig)
+    .then(function () {
+      streamTitle.innerText = configuration.stream1;
+      targetPublisher.on('*', onPublisherEvent);
+      setUpSwapCamera();
+      return targetPublisher.publish();
+    })
+    .then(function () {
+      onPublishSuccess(targetPublisher);
+    })
+    .catch(function (error) {
+      var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
+      console.error('[Red5ProPublisher] :: Error in publishing - ' + jsonError);
+      onPublishFail(jsonError);
+     });
 
   window.addEventListener('beforeunload', function() {
     function clearRefs () {
       if (targetPublisher) {
         targetPublisher.off('*', onPublisherEvent);
       }
+      targetPublisher = undefined;
     }
     unpublish().then(clearRefs).catch(clearRefs);
     window.untrackBitrate();
