@@ -1,5 +1,25 @@
 # Changes
 
+## 4.2.0
+
+- Firefox SDP munge for bandwidth RPRO-4625 (bustardcelly)
+- End of Candidates support for publisher and subscriber (requires Server update) RPRO-4654 (bustardcelly)
+- Multiple Subscribe.Connection.Closed events 4653 via red5pro/streaming-html5#113 (bustardcelly)
+- Attribute recognition fix for controls and autoplay (bustardcelly)
+- Encoding connection params for WebRTC and RTMP pub/sub requires PR from simple-auth infrared5/red5pro-simple-auth-plugin#3 (bustardcelly)
+- adding peer connection configs for possible speed up of ice gather. (bustardcelly)
+- adding promise check on video element playback for mobile safari 11. (bustardcelly)
+- more logs for disconnect timeout. (bustardcelly)
+- putting disconnect on a timeout for rtc peers. (bustardcelly)
+- remove of bundle form isAvailable call in websocket api. (bustardcelly)
+- encoding connect params for rtc and rtmp. (bustardcelly)
+- fix per [https://www.w3.org/wiki/HTML/Elements/video](https://www.w3.org/wiki/HTML/Elements/video) (bustardcelly)
+- debug info for hls playback. (bustardcelly)
+- accounting for NetConnection Fail on rtc connections. (bustardcelly)
+- one close notification from subscriber. (bustardcelly)
+- adding subscriber side of empty candidate socket notification. (bustardcelly)
+- injecting b=AS: for a/v on FF. (bustardcelly)
+
 ## 4.0.0
 
 - removing babel-polyfill compilation. (bustardcelly)

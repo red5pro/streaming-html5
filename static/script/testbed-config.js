@@ -93,10 +93,28 @@
       "verboseLogging": true,
       "streamManagerAPI": "2.0"
     };
+    /**
     if (isMoz) {
       json.iceServers = json.mozIce;
     }
+    */
     sessionStorage.setItem('r5proTestBed', JSON.stringify(json));
+  }
+
+  function defineIceServers () {
+    var param = getParameterByName('ice');
+    if (param) {
+      if (param === 'moz') {
+        json.iceServers = json.mozIce;
+      }
+      else {
+        json.iceServers = json.googleIce;
+      }
+    }
+    else {
+      json.iceServers = json.googleIce;
+    }
+    console.log('Selected ICE servers: ' + JSON.stringify(json.iceServers, null, 2));
   }
 
   if (config) {
@@ -106,9 +124,15 @@
     catch (e) {
       assignStorage();
     }
+    finally {
+      defineIceServers();
+      sessionStorage.setItem('r5proTestBed', JSON.stringify(json));
+    }
   }
   else {
     assignStorage();
+    defineIceServers();
+    sessionStorage.setItem('r5proTestBed', JSON.stringify(json));
   }
 
   sessionStorage.setItem('r5proServerSettings', JSON.stringify(serverSettings));

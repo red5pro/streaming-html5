@@ -94,7 +94,8 @@
 
   var config = Object.assign({},
                    configuration,
-                   getUserMediaConfiguration());
+                  getUserMediaConfiguration());
+
   var rtcConfig = Object.assign({}, config, {
                       protocol: getSocketLocationFromProtocol().protocol,
                       port: getSocketLocationFromProtocol().port,
@@ -105,8 +106,13 @@
                       protocol: 'rtmp',
                       port: serverSettings.rtmpport,
                       streamName: config.stream1,
-                      width: config.cameraWidth,
-                      height: config.cameraHeight,
+                      mediaConstraints: {
+                        video: {
+                          width: config.cameraWidth,
+                          height: config.cameraHeight
+                        },
+                        audio: true
+                      },
                       backgroundColor: '#000000',
                       swf: '../../lib/red5pro/red5pro-publisher.swf',
                       swfobjectURL: '../../lib/swfobject/swfobject.js',
