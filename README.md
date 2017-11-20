@@ -129,6 +129,10 @@ To define the **Host** with the server instance's IP, click the _Host_ field f t
 | :-----
 | *Demonstrates accessing an IP from the Red5 Pro Cluster API to subcribe to a live stream.*
 
+| **[Reconnect](src/page/test/subscribeReconnect)**
+| :-----
+| *Demonstrates the failover mechanism of the Red5 Pro HTML SDK to select a subscriber based on browser support and to auto-reconnect on close of broadcast or loss of connection.*
+
 | **[Stream Manager](src/page/test/subscribeStreamManager)**
 | :-----
 | *Demonstrates utilizing the Red5 Pro Stream Manager API, and acting as SSL WebSocket Proxy, to access an Edge server IP to subscribe to a live stream.*
