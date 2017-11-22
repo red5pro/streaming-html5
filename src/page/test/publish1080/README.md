@@ -12,42 +12,39 @@ This example demonstrates a request for a `MediaStream` with video contraints to
 ## MediaStream
 Constraints for the audio and video components are defined when accessing a `MediaStream` from the browser.
 
-To define a stream with 1080p constraints for publishing, request the `MediaStream` on `getUserMedia` and provide the stream to a Publisher instance:
+To define a stream with 1080p constraints for publishing, initialize the Publisher with a `mediaConstraint` with those video constraints:
 
 ```js
 var userMedia = {
   video: {
-    width: {exact: 1920},
-    height: {exact: 1080}
+    width: {
+      ideal: 1920
+    },
+    height: {
+      ideal: 1080
+    },
+    frameRate: {
+      ideal: 60
+    }
   }
 };
 
-function getUserMediaConfiguration () {
-  return Object.assign({}, configuration.userMedia, userMedia);
-}
+var rtcConfig = Object.assign({}, config, {
+  mediaConstraints: userMedia
+});
 
- nav.getUserMedia(getUserMediaConfiguration(), function (media) {
-
-     // Upon access of user media,
-    // 1. Attach the stream to the publisher.
-    // 2. Show the stream as preview in view instance.
-    // 3. Associate publisher & view (optional).
-    publisher.attachStream(media);
-    view.preview(media, true);
-    view.attachPublisher(publisher);
-
-    targetPublisher = publisher;
-    targetView = view;
-    resolve();
-
-  }, function(error) {
-    onPublishFail('Error - ' + error);
-    reject(error);
+var publisher = new window.red5prosdk.RTCPublisher();
+publisher.init(rtcConfig)
+  .then(function (publisher) {
+    return publisher.publish();
+  })
+  .catch(function (error) {
   });
+
 ```
 
 <sup>
-[index.js #71](index.js#L71)
+[index.js #49](index.js#L49)
 </sup>
 
 > More information: [Media.getUserMedia from MDN](https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia)
