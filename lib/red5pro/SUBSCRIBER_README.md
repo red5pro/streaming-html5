@@ -130,7 +130,7 @@ _main.js_:
   })
   .then(function(subscriber) {
     // `subcriber` is the WebRTC Subscriber instance.
-    subscriber.subscribe();
+    return subscriber.subscribe();
   })
   .then(function(subscriber) {
     // subscription is complete.
@@ -219,7 +219,7 @@ _main.js_:
   })
   .then(function(subscriber) {
     // `subcriber` is the Flash/RTMP Subscriber instance.
-    subscriber.subscribe();
+    return subscriber.subscribe();
   })
   .then(function(subscriber) {
     // subscription is complete.
@@ -292,7 +292,7 @@ _main.js_:
   })
   .then(function(subscriber) {
     // `subcriber` is the HLS Subscriber instance.
-    subscriber.subscribe();
+    return subscriber.subscribe();
   })
   .then(function(subscriber) {
     // subscription is complete.
@@ -365,13 +365,13 @@ _main.js_:
           // See above documentation for HLS source option requirements
         }
     })
-    .then(function(player) {
+    .then(function(subscriber) {
+      return subscriber.subscribe();
+    })
+    .then(function(subscriber) {
       // `player` is the WebRTC Player instance.
       // playback should begin immediately due to
       //   declaration of `autoplay` on the `video` element.
-    })
-    .then(function() {
-      // Playback has initiated successfully.
     })
     .catch(function(error) {
       // A fault occurred in finding failover player and playing stream.

@@ -1,7 +1,7 @@
 <!doctype html>
 <html>
   <head>
-    <title>Subscriber Test</title>
+    <title>Publish Camera Resize Test</title>
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
     <meta content="width=device-width, initial-scale=1, user-scalable=no" name="viewport">
     <script src="//webrtc.github.io/adapter/adapter-latest.js"></script>
@@ -12,22 +12,37 @@
     <link rel="stylesheet" href="../../css/reset.css">
     <link rel="stylesheet" href="../../css/testbed.css">
     <link rel="stylesheet" href="../../lib/red5pro/red5pro-media.css">
+    <style>
+        .param-form {
+                text-align: left;
+                margin: 20px;
+        }
+        .param-form > p {
+                padding: 10px;
+        }
+
+        #publish-button {
+                height: 24px;
+        }
+    </style>
   </head>
   <body>
     <div id="app">
       <p class="version-field">Testbed Version: 4.2.0&nbsp;&nbsp;&nbsp;&nbsp;<a href="https://red5pro.github.io/red5pro-html-sdk-testbed/red5pro-html-testbed-latest.zip">download</a></p>
       <div id="back-link-container" style="text-align: left;"><p id="back-link"><a href="../../index.html">&lt; Settings</a></p></div>
-      <h1 class="centered">Subscriber Test</h1>
+      <h1 class="centered">Publish Camera Resize Test (Flash Only)</h1>
       <hr />
       <h2 class="centered"><em>stream</em>: <span id="stream-title"></span></h2>
       <p id="status-field" class="centered status-field">On hold.</p>
-      <script src="../../script/subscription-status.js"></script>
+      <script src="../../script/publisher-status.js"></script>
+      <div class="centered status-field">
+        <p id="dimensions-field">Camera Dimensions</p>
+      </div>
       <div class="centered">
-        <video id="red5pro-subscriber"
-                controls="controls" autoplay="autoplay" playsinline
-                class="red5pro-media red5pro-media-background"
-                width="640" height="480">
-        </video>
+        <video id="red5pro-publisher" controls class="video-element" muted></video>
+      </div>
+      <div class="centered">
+        <button id="swap-camera-btn">change camera size</button>
       </div>
     </div>
     <script src="../../lib/es6/es6-promise.min.js"></script>
