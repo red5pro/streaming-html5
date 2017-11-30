@@ -137,7 +137,7 @@
       var muteButtonList = document.getElementsByClassName('red5pro-media-muteunmute-button');
       if (muteButtonList.length > 0) {
         muteButtonList[0].addEventListener('click', function () {
-          if (videoElement.muted) {
+          if (!videoElement.muted) {
             audioSub.mute();
           }
           else {

@@ -1,3 +1,5 @@
+// Chrome & Firefox
+// Firefox needs to be over https - no localhost support.
 // Required: https://www.webrtc-experiment.com/getScreenId/
 // @see https://medium.com/@chris_82106/implementing-webrtc-screen-sharing-in-a-web-app-late-2016-51c1a2642e4
 (function(window, document, red5prosdk, getScreenId) {
@@ -165,13 +167,24 @@
                         port: getSocketLocationFromProtocol().port,
                         streamName: config.stream1,
                         onGetUserMedia: function () {
-                          var c = Object.assign({}, constraints, {
-                          });
-                          c.video.optional.push({
-                            maxWidth: 680
-                          }, {
-                            maxHeight: 480
-                          });
+                          var c = Object.assign({}, constraints);
+                          if (c.video.optional) {
+                            // chrome
+                            c.video.optional.push({
+                              maxWidth: 640
+                            }, {
+                              maxHeight: 480
+                            });
+                          }
+                          else if (c.video.mediaSource === 'window') {
+                            // moz
+                            c.video.width = {
+                              exact: 640
+                            };
+                            c.video.height = {
+                              exact: 480
+                            }
+                          }
                           return navigator.mediaDevices.getUserMedia(c);
                         }
                     });
