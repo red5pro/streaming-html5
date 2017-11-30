@@ -37,15 +37,17 @@
   var streamTitle = document.getElementById('stream-title');
   var statisticsField = document.getElementById('statistics-field');
   var captureButton = document.getElementById('capture-button');
-  var audioButton = document.getElementById('audio-button');
+  //  var audioButton = document.getElementById('audio-button');
 
   captureButton.addEventListener('click', function() {
     capture(setupPublisher);
   });
 
+  /*
   audioButton.addEventListener('click', function() {
     setupAudio();
   })
+  */
 
   var protocol = serverSettings.protocol;
   var isSecure = protocol == 'https';
@@ -199,6 +201,7 @@
       })
       .then(function () {
         onPublishSuccess(targetPublisher);
+        setupAudio();
       })
       .catch(function (error) {
         var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
