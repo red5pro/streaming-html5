@@ -2,9 +2,13 @@
     'use strict';
 
     var field = document.getElementById('status-field');
+    var inFailedState = false;
 
     // Displays in status field based on events from subscriber instance.
     function updateStatusFromEvent (event, statusField) {
+      if (inFailedState) {
+        return;
+      }
       statusField = typeof statusField !== 'undefined' ? statusField : field;
       var subTypes = window.red5prosdk.SubscriberEventTypes;
       var rtcTypes = window.red5prosdk.RTCSubscriberEventTypes;
@@ -18,21 +22,27 @@
         case subTypes.CONNECTION_CLOSED:
           status = 'Connection closed.';
           window.untrackBitrate();
+          inFailedState = false;
           break;
         case subTypes.CONNECT_SUCCESS:
           status = 'Connection established...';
+          inFailedState = false;
           break;
         case subTypes.CONNECT_FAILURE:
           status = 'Error - Could not establish connection.';
+          inFailedState = true;
           break;
         case subTypes.SUBSCRIBE_START:
           status = 'Started subscribing session.';
+          inFailedState = false;
           break;
         case subTypes.SUBSCRIBE_FAIL:
           status = 'Error - Could not start a subscribing session.';
+          inFailedState = true;
           break;
         case subTypes.SUBSCRIBE_INVALID_NAME:
           status = 'Error - Stream name not in use.';
+          inFailedState = true;
           break;
         case rtcTypes.OFFER_START:
           status = 'Begin offer...';

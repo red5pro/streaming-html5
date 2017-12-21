@@ -1,0 +1,33 @@
+<!doctype html>
+<html>
+  <head>
+    {{> meta title='Subscriber Screen Share Test'}}
+    {{> header-scripts}}
+    {{> header-stylesheets}}
+  </head>
+  <body>
+    <div id="app">
+      {{> version }}
+      {{> settings-link}}
+      <div class="ice-background">
+        <div class="test-notification">
+          <p>This exampe attempts to make two connections; one for screen share and one for audio from the broadcaster.<br>Start a screen share broadcast using the <a href="../publishScreenShare" target="_blank">Publisher Screen Share</a>.</p>
+        </div>
+      </div>
+      {{> test-info testTitle='Subscriber Screen Share Test'}}
+      {{> status-field-subscriber}}
+      <div class="centered">
+        <video id="red5pro-subscriber"
+                controls="controls" autoplay="autoplay" playsinline
+                class="red5pro-media red5pro-media-background"
+                width="640" height="480">
+        </video>
+        <audio id="red5pro-audio"
+                controls autoplay
+                style="display: none;"></audio>
+      </div>
+    </div>
+    {{> body-scripts}}
+    <script src="index.js"></script>
+  </body>
+</html>

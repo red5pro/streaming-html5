@@ -2,8 +2,12 @@
     'use strict';
 
     var field = document.getElementById('status-field');
+    var inFailedState = false;
 
     function updateStatusFromEvent (event, statusField) {
+      if (inFailedState) {
+        return;
+      }
       statusField = typeof statusField !== 'undefined' ? statusField : field;
       var pubTypes = window.red5prosdk.PublisherEventTypes;
       var rtcTypes = window.red5prosdk.RTCPublisherEventTypes;
@@ -15,24 +19,31 @@
         case pubTypes.CONNECTION_CLOSED:
           status = 'Connection closed.';
           window.untrackBitrate();
+          inFailedState = false;
           break;
         case pubTypes.CONNECT_SUCCESS:
           status = 'Connection established...';
-          break;
+          inFailedState = false;
+         break;
         case pubTypes.CONNECT_FAILURE:
           status = 'Error - Could not establish connection.';
+          inFailedState = true;
           break;
         case pubTypes.PUBLISH_START:
           status = 'Started publishing session.';
+          inFailedState = false;
           break;
         case pubTypes.PUBLISH_FAIL:
           status = 'Error - Could not start a publishing session.';
+          inFailedState = true;
           break;
         case pubTypes.PUBLISH_INVALID_NAME:
           status = 'Error - Stream name already in use.';
+          inFailedState = true;
           break;
         case rtcTypes.MEDIA_STREAM_AVAILABLE:
           status = 'Stream available...';
+          inFailedState = false;
           break;
         case rtcTypes.PEER_CONNECTION_AVAILABLE:
           status = 'Peer Connection available...';
