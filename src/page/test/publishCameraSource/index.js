@@ -163,6 +163,10 @@
 
   function unpublish () {
     return new Promise(function (resolve, reject) {
+      if (!targetPublisher) {
+        resolve();
+        return;
+      }
       targetPublisher.unpublish()
         .then(function () {
           onUnpublishSuccess();
