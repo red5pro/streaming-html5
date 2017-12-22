@@ -1,0 +1,37 @@
+<!doctype html>
+<html>
+  <head>
+    {{> meta title='Publish Screen Share Test'}}
+    {{> header-scripts}}
+    {{> header-stylesheets}}
+  </head>
+  <body>
+    <div id="app">
+      {{> version }}
+      {{> settings-link}}
+      <div class="ice-background">
+        <div class="test-notification">
+          <p>If using Chrome, you will need to first install the <a href="https://chrome.google.com/webstore/detail/screen-capturing/ajhifddimkapgcifgcodmmfdlknahffk" target="_blank">Screen Capturing Extension</a>.</p>
+          <br>
+          <p>More Information: <a href="https://www.webrtc-experiment.com/getScreenId/" target="_blank">https://www.webrtc-experiment.com/getScreenId/</a></p>
+          <hr>
+          <p>This exampe actually uses two connections to match adio with screen sharing.<br>Visit the <a href="../subscribeScreenShare" target="_blank">Subscriber Screen Share</a> test to properly playback.</p>
+        </div>
+      </div>
+      {{> test-info testTitle='Publish Screen Share Test'}}
+      {{> status-field-publisher}}
+      {{> statistics-field}}
+      <script src="https://cdn.WebRTC-Experiment.com/getScreenId.js"></script>
+      <div class="centered">
+        <video id="red5pro-publisher" controls autoplay muted></video>
+        <audio id="red5pro-audio" muted style="display: none;"></audio>
+      </div>
+      <div class="centered">
+        <button id="capture-button">Capture Screen</button>
+        <!-- <button id="audio-button">With Audio</button> -->
+      </div>
+    </div>
+    {{> body-scripts}}
+    <script src="index.js"></script>
+  </body>
+</html>

@@ -56,7 +56,7 @@ To define the **Host** with the server instance's IP, click the _Host_ field f t
 
 | **[Publisher](src/page/test/publish)**
 | :-----
-| *Basic publisher example using WebRTC with failover.<br>*i.e, if no WebRTC browser support, then Flash Player if detected.*
+| *Basic publisher example using WebRTC with failover.<br>* i.e, if no WebRTC browser support, then Flash Player if detected.
 
 | **[1080p](src/page/test/publish1080)**
 | :-----
@@ -80,7 +80,7 @@ To define the **Host** with the server instance's IP, click the _Host_ field f t
 
 | **[Stream Manager](src/page/test/publishStreamManager)**
 | :-----
-| **Demonstrates utilizing the Red5 Pro Stream Manager API to publish to an autoscaling cluster's origin.*
+| *Demonstrates utilizing the Red5 Pro Stream Manager API to publish to an autoscaling cluster's origin.*
 
 | **[Stream Manager Proxy](src/page/test/publishStreamManagerProxy)**
 | :-----
@@ -106,12 +106,16 @@ To define the **Host** with the server instance's IP, click the _Host_ field f t
 | :-----
 | *Demonstrates simultaneously publishing while subscribing - allowing a conversation. Includes stream detection and auto-connection.*
 
+| **[Screen Share](src/page/test/publishScreenShare)**
+| :-----
+| *An example of utilizing the screen sharing capabilities of* **Chrome** *and* **Firefox**.<br> For use with Subscribe Screen Share example.
+
 
 ### [Subscribing](src/page/test/subscribe)
 
 | **[Subscriber](src/page/test/subscribe)**
 | :-----
-| *Basic subscriber example with failover.<br>*i.e, if no WebRTC browser support, then first Flash Player is detected, then HLS.*
+| *Basic subscriber example with failover.<br>* i.e, if no WebRTC browser support, then first Flash Player is detected, then HLS.
 
 | **[Audio Only](src/page/test/subscribeAudioOnly)**
 | :-----
@@ -149,11 +153,15 @@ To define the **Host** with the server instance's IP, click the _Host_ field f t
 | :-----
 | *Demonstrates using remote Shared Object to send and recieve information between connected clients.*
 
+| **[Screen Share](src/page/test/subscribeScreenShare)**
+| :-----
+| *An example of utilizing the screen sharing capabilities of* **Chrome** *and* **Firefox**.<br> For use with Publish Screen Share example.
 
 ## Notes
 
 1. For the Subscriber examples, you will need to have a live stream currently being published and named based on the *Stream 1 Name* field of the _Settings_. You can use another device to start streaming using this webapp, or you can also use a web browser to publish via Flash, [http://your_red5_pro_server_ip:5080/live](http://your_red5_pro_server_ip:5080/live).
 2. You can see a list of active streams by navigating to [http://your_red5_pro_server_ip:5080/live/subscribe.jsp](http://your_red5_pro_server_ip:5080/live/subscribe.jsp) (will need to refresh this page after you have started publishing).
 3. You can access the server IP of your Red5 Pro Server install - to be used in the *Host* field of the _Settings_ - by opening [http://your_red5_pro_server_ip:5080/](http://your_red5_pro_server_ip:5080/) and finding the IP printed in the upper-right of the page.
+4. Unless you are running the server locally, WebRTC publishing requires a valid SSL certificate.
 
 [![Analytics](https://ga-beacon.appspot.com/UA-59819838-3/red5pro/streaming-html?pixel)](https://github.com/igrigorik/ga-beacon)
