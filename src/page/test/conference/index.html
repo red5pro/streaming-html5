@@ -1,0 +1,43 @@
+<!doctype html>
+<html>
+  <head>
+    {{> meta title='Conference Test'}}
+    {{> header-scripts}}
+    {{> header-stylesheets}}
+  </head>
+  <body>
+    <div id="app">
+      {{> version }}
+      {{> settings-link}}
+      <div class="ice-background">
+      <div class="test-notification">
+        <p>The Two-Way example requires access to a service that returns a stream listing. You may run into Cross-Origin Resource Sharing (<strong>CORS</strong>) issues if trying to use this example without the proper <strong>CORS</strong> settings provided by the server.</p>
+        <br/>
+        <p>It is recommended to view this example as part of the <code>webrtcexamples</code> webapp shipped with the <a href="https://account.red5pro.com/download" target="_blank">Red5 Pro Server</a>.</p>
+      </div>
+      </div>
+      {{> test-info testTitle='Two-Way Test'}}
+      <hr />
+      <div>
+        <label for="roomTxt">Room - </label><input type="text" id="roomTxt">
+        <label for="nameTxt">Name - </label><input type="text" id="nameTxt">
+        <label for="videoCheck">Video - </label><input type="checkbox" id="videoCheck" checked>
+        <label for="audioCheck">Audio - </label><input type="checkbox" id="audioCheck" checked>
+        <input type="submit" value="Connect" id="submitBtn">
+      </div>
+      <div class="float-left-conf">
+        <h2 class="centered"><em>Publisher Stream</em>: <span id="pub-stream-title"></span></h2>
+        <p id="pub-status-field" class="centered status-field">On hold.</p>
+        <div class="centered">
+          <video id="red5pro-publisher-video"
+                controls autoplay muted
+                width="640" height="480"></video>
+        </div>
+      </div>
+    </div>
+    {{> body-scripts}}
+    <script src="../../script/publisher-status.js"></script>
+    <script src="../../script/subscription-status.js"></script>
+    <script src="index.js"></script>
+  </body>
+</html>
