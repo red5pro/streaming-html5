@@ -47,7 +47,7 @@
                     "<video id=\"FILLNAME-video\"" +
                             "controls autoplay" +
                             "class=\"red5pro-media red5pro-media-background\"" +
-                            "width="640" height="480"></video>" +
+                            "width=\"640\" height=\"480\"></video>" +
                   "</div>" +
                 "</div>";
 
@@ -65,7 +65,7 @@
     catch (e) {
       console.error('Could not read testbed configuration from sessionstorage: ' + e.message);
     }
-    return {}
+    return {};
   })();
   red5prosdk.setLogLevel(configuration.verboseLogging ? red5prosdk.LOG_LEVELS.TRACE : red5prosdk.LOG_LEVELS.WARN);
 
@@ -79,8 +79,8 @@
     var found = false;
     for (var i = streamsList.length - 1; i >= 0; i--) {
       found = streamsList[i] == roomName + "-" + chosenName;
-      if (found) {break};
-    };
+      if (found) {break;}
+    }
 
     if(!found)
       publish( roomName + "-" + chosenName );
@@ -112,7 +112,7 @@
     return {
       mediaConstraints: {
         audio: configuration.useAudio ? configuration.mediaConstraints.audio : false,
-        video: configuration.useVideo ? "width": { "min": 160, "max": 320 }, "height": { "min": 120, "max": 240 } : false,
+        video: configuration.useVideo ? { "width": { "min": 160, "max": 320 }, "height": { "min": 120, "max": 240 } } : false,
         frameRate: configuration.frameRate
       }
     };
@@ -124,7 +124,7 @@
 
       var elementId = 'red5pro-publisher-video';
       targetPublisher = new red5prosdk.Red5ProPublisher();
-      targetPubView = new red5pro.PublisherView(elementId);
+      targetPubView = new red5prosdk.PublisherView(elementId);
       var gmd = navigator.mediaDevice || navigator;
 
       targetPublisher.on('*', onPublisherEvent);
@@ -144,7 +144,7 @@
         onPublishFail('Error - ' + error);
         reject(error);
 
-      })
+      });
     });
   }
 
@@ -155,12 +155,12 @@
                     defaultConfiguration,
                     getUserMediaConfiguration());
     //lowered settings to compensate for people recieving multiple streams
-    config.cameraWidth = 320
-    config.cameraHeight = 240
-    config.bandwith = {audio:16, video:192}
+    config.cameraWidth = 320;
+    config.cameraHeight = 240;
+    config.bandwith = {audio:16, video:192};
     config.streamName = publishName;
-    config.useVideo = videoCheck.checked
-    config.useAudio = audioCheck.checked
+    config.useVideo = videoCheck.checked;
+    config.useAudio = audioCheck.checked;
 
     var rtcConfig = Object.assign({}, config, {
                       protocol: getSocketLocationFromProtocol().protocol,
@@ -182,7 +182,7 @@
     var publishOrder = config.publisherFailoverOrder
                             .split(',')
                             .map(function (item) {
-                              return item.trim()
+                              return item.trim();
                         });
 
     if (window.query('view')) {
@@ -329,12 +329,12 @@
       }
     }
     for( i = callList.length - 1; i >= 0; i-- ){
-      if( typeof roomName !=== 'string' || streamsList.indexOf(callList[i]) < 0 ){
+      if( typeof roomName !== 'string' || streamsList.indexOf(callList[i]) < 0 ){
         removeSubscriber(callList[i]);
       }
     }
 
-    setWaitTime( delayTime );
+    setWaitTime( 0 );
   }
 
   function listError (err) {
@@ -346,7 +346,7 @@
     setTimeout(beginStreamListCall, 5000 + plusWait);
   }
 
-  delayedSubs = [];
+  var delayedSubs = [];
   function setToCreateSub (subName){
     if(delayedSubs.indexOf(subName) < 0){
       delayedSubs.push(subName);
@@ -356,8 +356,13 @@
     }
   }
   function continueSubQueue(){
-    delayedSubs.shift();
     failCount = 0;
+    if( typeof roomName !== 'string' ){
+      delayedSubs = [];
+      return;
+    }
+
+    delayedSubs.shift();
     if(delayedSubs.length > 0){
       createSubcriber( delayedSubs[0] );
     }
@@ -371,9 +376,10 @@
   function onSubscribeFail (message) {
     console.error('[Red5ProSubsriber] Subscribe Error :: ' + message);
 
-    var failedName = delayedSubs[0]
+    var failedName = delayedSubs[0];
     if(delayedSubs.length > 1){
       delayedSubs.push(failedName);
+      removeSubscriber(failedName);
       continueSubQueue();
     }
     else{
@@ -382,14 +388,12 @@
       if(failCount < 4){
         setTimeout(function(){
           if(delayedSubs.length > 0){
-            removeSubscriber(failedName);
-            createSubcriber( delayedSubs[0] );
+            resubscribe(failedName);
           }
         }, delayTime * failCount);
       }
       else{
-        // ...I don't know what to do here.
-        // I guess it just stays there looking embarresed?
+        // I guess the block just sits there in failure, and we move along?
         continueSubQueue();
       }
     }
@@ -418,12 +422,12 @@
     console.log('[Red5ProSubscriber] config:: ' + JSON.stringify(config, null, 2));
 
     // Setup view.
-    var view = new red5pro.PlaybackView(subscribeName + '-video');
-    var subscriber = new red5pro.RTCSubscriber();
+    var view = new red5prosdk.PlaybackView(subscribeName + '-video');
+    var subscriber = new red5prosdk.RTCSubscriber();
     var origAttachStream = view.attachStream.bind(view);
     view.attachStream = function (stream, autoplay) {
-      origAttachStream(stream, autoplay)
-      view.attachStream = origAttachStream
+      origAttachStream(stream, autoplay);
+      view.attachStream = origAttachStream;
     };
     view.attachSubscriber(subscriber);
     var subStreamTitle = document.getElementById(subscribeName + '-title');
@@ -441,10 +445,10 @@
         return player.play();
       })
       .then(function () {
-        onSubscribeSuccess()
+        onSubscribeSuccess();
       })
       .catch(function (error) {
-        var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
+        var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
         onSubscribeFail('Error - ' + jsonError);
       });
   }
@@ -454,7 +458,7 @@
       createSubcriber(subscribeName);
     }).catch(function(){
       createSubcriber(subscribeName);
-    })
+    });
   }
 
   function unsubscribe(){
@@ -471,7 +475,7 @@
         subscriber.stop()
           .then(function () {
             try{
-              view.view.src = ''
+              view.view.src = '';
             }catch(err){console.log(err);}
             subscriber.off('*', function(event){
               onSubscriberEvent(event, subscribeName);
@@ -491,7 +495,7 @@
           });
       }
       else {
-        resolve()
+        resolve();
       }
     });
   }
