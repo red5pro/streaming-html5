@@ -6,17 +6,29 @@
     {{> header-stylesheets}}
   </head>
   <body>
+    <div class="proto">
+      <div class="float-left-conf" id="FILLNAME">
+        <h2 class="centered"><em>Subscriber Stream</em>: <span id="FILLNAME-title"></span></h2>
+        <p id="FILLNAME-status" class="centered status-field">On hold.</p>
+        <div class="centered">
+          <video id="FILLNAME-video"
+                  controls autoplay
+                  class="red5pro-media red5pro-media-background"
+                  width="480" height="360"></video>
+        </div>
+      </div>
+    </div>
     <div id="app">
       {{> version }}
       {{> settings-link}}
       <div class="ice-background">
       <div class="test-notification">
-        <p>The Two-Way example requires access to a service that returns a stream listing. You may run into Cross-Origin Resource Sharing (<strong>CORS</strong>) issues if trying to use this example without the proper <strong>CORS</strong> settings provided by the server.</p>
+        <p>The Conference example requires access to a service that returns a stream listing. You may run into Cross-Origin Resource Sharing (<strong>CORS</strong>) issues if trying to use this example without the proper <strong>CORS</strong> settings provided by the server.</p>
         <br/>
         <p>It is recommended to view this example as part of the <code>webrtcexamples</code> webapp shipped with the <a href="https://account.red5pro.com/download" target="_blank">Red5 Pro Server</a>.</p>
       </div>
       </div>
-      {{> test-info testTitle='Two-Way Test'}}
+      {{> test-info testTitle='Conference Test'}}
       <hr />
       <div>
         <label for="roomTxt">Room - </label><input type="text" id="roomTxt">
@@ -31,7 +43,7 @@
         <div class="centered">
           <video id="red5pro-publisher-video"
                 controls autoplay muted
-                width="640" height="480"></video>
+                width="480" height="360"></video>
         </div>
       </div>
     </div>
