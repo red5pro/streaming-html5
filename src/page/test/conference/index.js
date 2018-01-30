@@ -559,7 +559,19 @@
   }
 
   function subscriberFinally(subscribeName){
-    document.getElementById('app').removeChild( document.getElementById(subscribeName) );
+    var subBlock = document.getElementById(subscribeName);
+    if(subBlock != null && subBlock.parentNode != null){
+      subBlock.parentNode.removeChild( subBlock );
+    }
+    else{
+      var floatingBlocks = document.getElementsByClassName("float-left-conf");
+      for (var i = 0; i < subAppBlocks.length; i++) {
+        subBlock = subAppBlocks[i];
+        if(subBlock.id != "" && ( subBlock.id == subscribeName || callList.indexOf(subBlock.id) < 0 ) && subBlock.parentNode != null)){
+          subBlock.parentNode.removeChild(subBlock);
+        }
+      };
+    }
     subscribers.splice(callList.indexOf(subscribeName), 1);
     callList.splice(callList.indexOf(subscribeName), 1);
     popQueueObject(subscribeName);
