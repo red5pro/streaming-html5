@@ -163,20 +163,22 @@
 
   function unpublish () {
     return new Promise(function (resolve, reject) {
-      if (!targetPublisher) {
-        resolve();
-        return;
+      if (targetPublisher) {
+        targetPublisher.unpublish()
+          .then(function () {
+            onUnpublishSuccess();
+            resolve();
+          })
+          .catch(function (error) {
+            var jsonError = typeof error === 'string' ? error : JSON.stringify(error, 2, null);
+            onUnpublishFail('Unmount Error ' + jsonError);
+            reject(error);
+          });
       }
-      targetPublisher.unpublish()
-        .then(function () {
-          onUnpublishSuccess();
-          resolve();
-        })
-        .catch(function (error) {
-          var jsonError = typeof error === 'string' ? error : JSON.stringify(error, 2, null);
-          onUnpublishFail('Unmount Error ' + jsonError);
-          reject(error);
-        });
+      else {
+        resolve();
+      }
+
     });
   }
 
