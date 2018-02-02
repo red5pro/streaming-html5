@@ -1,0 +1,37 @@
+<!doctype html>
+<html>
+  <head>
+    {{> meta title='Publish Stream Manager Proxy Test'}}
+    {{> header-scripts}}
+    {{> header-stylesheets}}
+    <style>
+      #address-field {
+        padding: 6px;
+        background-color: #ccc;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      {{> version }}
+      {{> settings-link}}
+      <div class="ice-background">
+      <div class="test-notification">
+        <p>In order to properly run the Stream Manager examples, you will need to configure you server for cluster infrastructure as described in the following documentation:</p>
+        <p><a href="https://www.red5pro.com/docs/server/autoscale/" target="_blank">https://www.red5pro.com/docs/server/autoscale/</a></p>
+		<p>Additionally to use this example stream manager proxy gateway should be enabled.</p>
+      </div>
+      </div>
+      {{> test-info testTitle='Publish Stream Manager Proxy Test'}}
+      {{> status-field-publisher}}
+      {{> statistics-field}}
+      <div class="centered"><p id="address-field">Origin Address: N/A</p></div>
+      <div class="centered">
+        <video id="red5pro-publisher" controls autoplay muted></video>
+      </div>
+    </div>
+    {{> body-scripts}}
+    <script src="index.js"></script>
+  </body>
+</html>
+
