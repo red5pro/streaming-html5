@@ -565,9 +565,9 @@
     }
     else{
       var floatingBlocks = document.getElementsByClassName("float-left-conf");
-      for (var i = 0; i < subAppBlocks.length; i++) {
-        subBlock = subAppBlocks[i];
-        if(subBlock.id != "" && ( subBlock.id == subscribeName || callList.indexOf(subBlock.id) < 0 ) && subBlock.parentNode != null)){
+      for (var i = 0; i < floatingBlocks.length; i++) {
+        subBlock = floatingBlocks[i];
+        if(subBlock.id != "" && ( subBlock.id == subscribeName || callList.indexOf(subBlock.id) < 0 ) && subBlock.parentNode != null){
           subBlock.parentNode.removeChild(subBlock);
         }
       };
