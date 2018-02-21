@@ -150,6 +150,16 @@ code {
   width: 50%;
 }
 
+.float-left-conf {
+  float: left;
+  display: inline-block;
+  width: 480px;
+}
+
+.proto {
+  display: none;
+}
+
 #back-link-container {
   cursor: pointer;
   width: 100%;
