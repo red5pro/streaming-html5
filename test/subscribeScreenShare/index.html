@@ -1,7 +1,7 @@
 <!doctype html>
 <html>
   <head>
-    <title>Publish Record Test</title>
+    <title>Subscriber Screen Share Test</title>
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
     <meta content="width=device-width, initial-scale=1, user-scalable=no" name="viewport">
     <script src="//webrtc.github.io/adapter/adapter-latest.js"></script>
@@ -17,14 +17,25 @@
     <div id="app">
       <p class="version-field">Testbed Version: 4.5.0&nbsp;&nbsp;&nbsp;&nbsp;<a href="https://red5pro.github.io/red5pro-html-sdk-testbed/red5pro-html-testbed-latest.zip">download</a></p>
       <div id="back-link-container" style="text-align: left;"><p id="back-link"><a href="../../index.html">&lt; Settings</a></p></div>
-      <h1 class="centered">Publish Record Test</h1>
+      <div class="ice-background">
+        <div class="test-notification">
+          <p>This exampe attempts to make two connections; one for screen share and one for audio from the broadcaster.<br>Start a screen share broadcast using the <a href="../publishScreenShare" target="_blank">Publisher Screen Share</a>.</p>
+        </div>
+      </div>
+      <h1 class="centered">Subscriber Screen Share Test</h1>
       <hr />
       <h2 class="centered"><em>stream</em>: <span id="stream-title"></span></h2>
       <p id="status-field" class="centered status-field">On hold.</p>
-      <script src="../../script/publisher-status.js"></script>
-      <p id="statistics-field" class="centered status-field"></p>
+      <script src="../../script/subscription-status.js"></script>
       <div class="centered">
-        <video id="red5pro-publisher" controls autoplay muted></video>
+        <video id="red5pro-subscriber"
+                controls="controls" autoplay="autoplay" playsinline
+                class="red5pro-media red5pro-media-background"
+                width="640" height="480">
+        </video>
+        <audio id="red5pro-audio"
+                controls autoplay
+                style="display: none;"></audio>
       </div>
     </div>
     <script src="../../lib/es6/es6-promise.min.js"></script>
