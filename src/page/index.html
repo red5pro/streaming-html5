@@ -43,6 +43,10 @@
           <label class="settings-label">Stream2 Name:</label>
           <input id="stream2-field" name="stream2-field" value="stream2">
         </p>
+        <p class="settings-field">
+          <label class="settings-label">ICE server</label>
+          <input id="ice-field" name="ice-field" value="stun:stun2.l.google.com:19302">
+        </p>
         <hr class="paddedHR" />
         <p class="settings-field">
           <label class="settings-label">Verbose R5 Logging:</label>
@@ -82,6 +86,7 @@
         var appField = document.getElementById('app-field');
         var stream1Field = document.getElementById('stream1-field');
         var stream2Field = document.getElementById('stream2-field');
+        var iceField = document.getElementById('ice-field');
         var loggingField = document.getElementById('logging-field');
         var videoField = document.getElementById('video-active-field');
         var audioField = document.getElementById('audio-active-field');
@@ -104,6 +109,15 @@
 
         stream2Field.addEventListener('blur', function () {
           configuration.stream2 = stream2Field.value;
+          seal(configuration);
+        });
+
+        iceField.addEventListener('blur', function () {
+          configuration.iceServers = [
+            {
+              "urls": iceField.value
+            }
+          ]
           seal(configuration);
         });
 
@@ -136,6 +150,7 @@
           appField.value = config.app;
           stream1Field.value = config.stream1;
           stream2Field.value = config.stream2;
+          iceField.value = config.iceServers[0].urls;
           loggingField.checked = config.verboseLogging ? true : false;
           videoField.checked = config.useVideo ? true : false;
           audioField.checked = config.useAudio ? true : false;
