@@ -26,19 +26,19 @@
 
   var targetSubscriber;
 
-  var updateStatusFromEvent = function (event) {
-    var subTypes = red5prosdk.SubscriberEventTypes;
-    switch (event.type) {
-        case subTypes.CONNECT_FAILURE:
-        case subTypes.SUBSCRIBE_FAIL:
-          shutdownVideoElement();
-          break;
-    }
-    window.red5proHandleSubscriberEvent(event); // defined in src/template/partial/status-field-subscriber.hbs
-  };
-  var instanceId = Math.floor(Math.random() * 0x10000).toString(16);
   var streamTitle = document.getElementById('stream-title');
-  var addressField = document.getElementById('address-field');
+  var nameInput = document.getElementById('name-input');
+  var submitButton = document.getElementById('submit-button');
+  submitButton.addEventListener('click', function () {
+    var filename = nameInput.value;
+    if (filename.split('.').length < 2) {
+      alert('Expecting filename to have an extension (e.g., "filname.flv").');
+    }
+    else {
+      playback(filename);
+    }
+  });
+
   var protocol = serverSettings.protocol;
   var isSecure = protocol === 'https';
   function getSocketLocationFromProtocol () {
@@ -65,22 +65,9 @@
     return c;
   })(configuration.useVideo, configuration.useAudio);
 
-  function shutdownVideoElement () {
-    var videoElement = document.getElementById('red5pro-subscriber');
-    if (videoElement) {
-      videoElement.pause()
-      videoElement.src = ''
-    }
-  }
-
-  function displayServerAddress (serverAddress, type) {
-    addressField.innerText = type + ' Address: ' + serverAddress;
-  }
-
   // Local lifecycle notifications.
   function onSubscriberEvent (event) {
-    console.log('[Red5ProSubsriber] ' + event.type + '.');
-    updateStatusFromEvent(event);
+    console.log('[Red5ProSubscriber] ' + event.type + '.');
   }
   function onSubscribeFail (message) {
     console.error('[Red5ProSubsriber] Subscribe Error :: ' + message);
@@ -95,15 +82,14 @@
     console.log('[Red5ProSubsriber] Unsubscribe Complete.');
   }
 
-  function requestEdge (configuration) {
+  function requestEdge (configuration, vod) {
     var host = configuration.host;
     var app = configuration.app;
-    var port = serverSettings.httpport;
+    var port = serverSettings.httpport.toString();
     var portURI = (port.length > 0 ? ':' + port : '');
     var baseUrl = isSecure ? protocol + '://' + host : protocol + '://' + host + portURI;
-    var streamName = configuration.stream1;
-    var apiVersion = configuration.streamManagerAPI || '3.0';
-    var url = baseUrl + '/streammanager/api/' + apiVersion + '/event/' + app + '/' + streamName + '?action=subscribe';
+    var apiVersion = configuration.streamManagerAPI || '2.0';
+    var url = baseUrl + '/streammanager/api/' + apiVersion + '/media/' + app + '/' + vod;
       return new Promise(function (resolve, reject) {
         fetch(url)
           .then(function (res) {
@@ -126,28 +112,15 @@
     });
   }
 
-  function determineSubscriber (host) {
-    displayServerAddress('Edge', host);
+  function determineSubscriber (serverAddress) {
     var config = Object.assign({}, configuration, defaultConfiguration);
-    var rtcConfig = Object.assign({}, config, {
-      host: host,
-      protocol: 'ws', // cluster is not over secure, at this time
-      port: serverSettings.wsport, // cluster is not over secure, at this time
-      subscriptionId: 'subscriber-' + instanceId,
-      streamName: config.stream1,
-      bandwidth: {
-        audio: 50,
-        video: 256,
-        data: 30 * 1000 * 1000
-      }
-    })
     var rtmpConfig = Object.assign({}, config, {
-      host: host,
+      host: serverAddress,
       protocol: 'rtmp',
       port: serverSettings.rtmpport,
       streamName: config.stream1,
       mimeType: 'rtmp/flv',
-      useVideoJS: false,
+      backgroundColor: '#000000',
       width: config.cameraWidth,
       height: config.cameraHeight,
       swf: '../../lib/red5pro/red5pro-subscriber.swf',
@@ -155,28 +128,18 @@
       productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
     })
     var hlsConfig = Object.assign({}, config, {
-      host: host,
-      protocol: 'http',
-      port: serverSettings.hlsport,
+      protocol: protocol,
+      port: window.location.port,
       streamName: config.stream1,
       mimeType: 'application/x-mpegURL'
     })
 
-    var subscribeOrder = config.subscriberFailoverOrder
-                          .split(',').map(function (item) {
-                            return item.trim();
-                          });
-
-    if (window.query('view')) {
-      subscribeOrder = [window.query('view')];
-    }
-
     var subscriber = new red5prosdk.Red5ProSubscriber();
-    return subscriber.setPlaybackOrder(subscribeOrder).init({
-      rtc: rtcConfig,
-      rtmp: rtmpConfig,
-      hls: hlsConfig
-    })
+    return subscriber.setPlaybackOrder(['rtmp', 'hls'])
+      .init({
+        rtmp: rtmpConfig,
+        hls: hlsConfig
+      });
   }
 
   // Request to unsubscribe.
@@ -198,24 +161,73 @@
     });
   }
 
-  // Kick off.
-  requestEdge(configuration)
-    .then(determineSubscriber)
-    .then(function (subscriberImpl) {
-      streamTitle.innerText = configuration.stream1;
-      targetSubscriber = subscriberImpl;
-      // Subscribe to events.
-      targetSubscriber.on('*', onSubscriberEvent);
-      return targetSubscriber.subscribe();
-    })
-    .then(function () {
-      onSubscribeSuccess();
-    })
-    .catch(function (error) {
-      var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
-      console.error('[Red5ProSubscriber] :: Error in subscribing - ' + jsonError);
-      onSubscribeFail(jsonError);
-    });
+  var formats = {
+    rtmp: ['mp4', 'flv'],
+    hls: ['m3u8']
+  }
+
+  function determineFailoverOrderFromFilename (filename) {
+    var ext = filename.split('.')[1];
+    for (var key in formats) {
+      var i = formats[key].length;
+      while (--i > -1) {
+        if (formats[key][i] === ext) {
+          return key;
+        }
+      }
+    }
+    return configuration.subscriberFailoverOrder;
+  }
+
+  function determineStreamNameFromFilename (filename) {
+    var parts = filename.split('.');
+    var ext = parts[1];
+    if (ext === 'm3u8') {
+      return parts[0];
+    }
+    return filename;
+  }
+
+  function playback(filename) {
+    configuration.subscriberFailoverOrder = determineFailoverOrderFromFilename(filename);
+    configuration.stream1 = determineStreamNameFromFilename(filename);
+
+    var start = function () {
+      // Kick off.
+      requestEdge(configuration, filename)
+        .then(determineSubscriber)
+        .then(function(subscriberImpl) {
+          streamTitle.innerText = configuration.stream1;
+          targetSubscriber = subscriberImpl;
+          // Subscribe to events.
+          targetSubscriber.on('*', onSubscriberEvent);
+          return targetSubscriber.subscribe();
+        })
+        .then(function() {
+          onSubscribeSuccess();
+        })
+        .catch(function (error) {
+          var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
+          console.error('[Red5ProSubscriber] :: Error in subscribing - ' + jsonError);
+          onSubscribeFail(jsonError);
+        });
+    };
+
+    if (typeof targetSubscriber !== 'undefined') {
+      var reset = function reset() {
+        var container = document.getElementById('video-container');
+        while (container.hasChildNodes()) {
+          container.removeChild(container.lastChild);
+        }
+        container.innerHTML = '<video id="red5pro-subscriber-video" controls class="video-element"></video>';
+        start();
+      }
+      unsubscribe().then(reset).catch(reset);
+    }
+    else {
+      start();
+    }
+  }
 
   // Clean up.
   window.addEventListener('beforeunload', function() {

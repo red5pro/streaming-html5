@@ -41,14 +41,11 @@
 
   var defaultConfiguration = {
     protocol: getSocketLocationFromProtocol().protocol,
-    port: getSocketLocationFromProtocol().port,
-    streamMode: 'record'
+    port: getSocketLocationFromProtocol().port
   };
 
-  function displayServerAddress (serverAddress, proxyAddress) 
-  {
-  proxyAddress = (typeof proxyAddress === 'undefined') ? 'N/A' : proxyAddress;
-    addressField.innerText = ' Proxy Address: ' + proxyAddress + ' | ' + ' Origin Address: ' + serverAddress;
+  function displayServerAddress (serverAddress) {
+    addressField.innerText = 'Origin Address: ' + serverAddress;
   }
 
   function onBitrateUpdate (bitrate, packetsSent) {
@@ -82,10 +79,10 @@
     var host = configuration.host;
     var app = configuration.app;
     var streamName = configuration.stream1;
-    var port = serverSettings.httpport.toString();
+    var port = serverSettings.httpport;
     var portURI = (port.length > 0 ? ':' + port : '');
     var baseUrl = isSecure ? protocol + '://' + host : protocol + '://' + host + portURI;
-    var apiVersion = configuration.streamManagerAPI || '3.0';
+    var apiVersion = configuration.streamManagerAPI || '2.0';
     var url = baseUrl + '/streammanager/api/' + apiVersion + '/event/' + app + '/' + streamName + '?action=broadcast';
       return new Promise(function (resolve, reject) {
         fetch(url)
@@ -118,7 +115,7 @@
     };
   }
 
-  function determinePublisher (serverAddress) {
+  function determinePublisher () {
 
     var config = Object.assign({},
                     configuration,
@@ -127,15 +124,9 @@
     var rtcConfig = Object.assign({}, config, {
                       protocol: getSocketLocationFromProtocol().protocol,
                       port: getSocketLocationFromProtocol().port,
-                      streamName: config.stream1,
-                      app: configuration.proxy,
-                      connectionParams: {
-                        host: serverAddress,
-                        app: configuration.app
-                      }
+                      streamName: config.stream1
                    });
     var rtmpConfig = Object.assign({}, config, {
-                      host: serverAddress,
                       protocol: 'rtmp',
                       port: serverSettings.rtmpport,
                       streamName: config.stream1,
@@ -164,25 +155,6 @@
               });
   }
 
-  function showAddress (publisher) {
-    var config = publisher.getOptions();
-    console.log("Host = " + config.host + " | " + "app = " + config.app);
-    if (publisher.getType().toLowerCase() === 'rtc') {
-      displayServerAddress(config.connectionParams.host, config.host);
-      console.log("Using streammanager proxy for rtc");
-      console.log("Proxy target = " + config.connectionParams.host + " | " + "Proxy app = " + config.connectionParams.app)
-      if(isSecure) {
-        console.log("Operating over secure connection | protocol: " + config.protocol + " | port: " +  config.port);
-      }
-      else {
-        console.log("Operating over unsecure connection | protocol: " + config.protocol + " | port: " +  config.port);
-      }
-    }
-    else {
-      displayServerAddress(config.host);
-    }
-  }
-
   function unpublish () {
     return new Promise(function (resolve, reject) {
       var publisher = targetPublisher;
@@ -202,13 +174,14 @@
   // Kick off.
   requestOrigin(configuration)
     .then(function (serverAddress) {
-      return determinePublisher(serverAddress);
+      displayServerAddress(serverAddress);
+      configuration.host = serverAddress;
+      return determinePublisher();
     })
     .then(function (publisherImpl) {
       streamTitle.innerText = configuration.stream1;
       targetPublisher = publisherImpl;
       targetPublisher.on('*', onPublisherEvent);
-      showAddress(targetPublisher)
       return targetPublisher.publish();
     })
     .then(function () {

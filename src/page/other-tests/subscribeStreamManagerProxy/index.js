@@ -73,8 +73,9 @@
     }
   }
 
-  function displayServerAddress (serverAddress, type) {
-    addressField.innerText = type + ' Address: ' + serverAddress;
+  function displayServerAddress (serverAddress, proxyAddress) {
+    proxyAddress = (typeof proxyAddress === 'undefined') ? 'N/A' : proxyAddress;
+    addressField.innerText = ' Proxy Address: ' + proxyAddress + ' | ' + ' Edge Address: ' + serverAddress;
   }
 
   // Local lifecycle notifications.
@@ -98,7 +99,7 @@
   function requestEdge (configuration) {
     var host = configuration.host;
     var app = configuration.app;
-    var port = serverSettings.httpport;
+    var port = serverSettings.httpport.toString();
     var portURI = (port.length > 0 ? ':' + port : '');
     var baseUrl = isSecure ? protocol + '://' + host : protocol + '://' + host + portURI;
     var streamName = configuration.stream1;
@@ -126,13 +127,17 @@
     });
   }
 
-  function determineSubscriber (host) {
-    displayServerAddress('Edge', host);
+  function determineSubscriber (serverAddress) {
     var config = Object.assign({}, configuration, defaultConfiguration);
     var rtcConfig = Object.assign({}, config, {
-      host: host,
-      protocol: 'ws', // cluster is not over secure, at this time
-      port: serverSettings.wsport, // cluster is not over secure, at this time
+      host: configuration.host,
+      protocol: getSocketLocationFromProtocol().protocol,
+      port: getSocketLocationFromProtocol().port,
+      app: configuration.proxy,
+      connectionParams: {
+        host: serverAddress,
+        app: configuration.app
+      },
       subscriptionId: 'subscriber-' + instanceId,
       streamName: config.stream1,
       bandwidth: {
@@ -142,7 +147,7 @@
       }
     })
     var rtmpConfig = Object.assign({}, config, {
-      host: host,
+      host: serverAddress,
       protocol: 'rtmp',
       port: serverSettings.rtmpport,
       streamName: config.stream1,
@@ -155,12 +160,19 @@
       productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
     })
     var hlsConfig = Object.assign({}, config, {
-      host: host,
+      host: serverAddress,
       protocol: 'http',
       port: serverSettings.hlsport,
       streamName: config.stream1,
       mimeType: 'application/x-mpegURL'
     })
+
+    if (!config.useVideo) {
+      rtcConfig.videoEncoding = 'NONE';
+    }
+    if (!config.useAudio) {
+      rtcConfig.audioEncoding = 'NONE';
+    }
 
     var subscribeOrder = config.subscriberFailoverOrder
                           .split(',').map(function (item) {
@@ -172,11 +184,31 @@
     }
 
     var subscriber = new red5prosdk.Red5ProSubscriber();
-    return subscriber.setPlaybackOrder(subscribeOrder).init({
-      rtc: rtcConfig,
-      rtmp: rtmpConfig,
-      hls: hlsConfig
-    })
+    return subscriber.setPlaybackOrder(subscribeOrder)
+      .init({
+        rtc: rtcConfig,
+        rtmp: rtmpConfig,
+        hls: hlsConfig
+       });
+  }
+
+  function showServerAddress (subscriber) {
+    var config = subscriber.getOptions();
+    console.log("Host = " + config.host + " | " + "app = " + config.app);
+    if (subscriber.getType().toLowerCase() === 'rtc') {
+      displayServerAddress(config.connectionParams.host, config.host);
+      console.log("Using streammanager proxy for rtc");
+      console.log("Proxy target = " + config.connectionParams.host + " | " + "Proxy app = " + config.connectionParams.app)
+      if(isSecure) {
+        console.log("Operating over secure connection | protocol: " + config.protocol + " | port: " +  config.port);
+      }
+      else {
+        console.log("Operating over unsecure connection | protocol: " + config.protocol + " | port: " +  config.port);
+      }
+    }
+    else {
+      displayServerAddress(config.host);
+    }
   }
 
   // Request to unsubscribe.
@@ -206,6 +238,7 @@
       targetSubscriber = subscriberImpl;
       // Subscribe to events.
       targetSubscriber.on('*', onSubscriberEvent);
+      showServerAddress(targetSubscriber);
       return targetSubscriber.subscribe();
     })
     .then(function () {

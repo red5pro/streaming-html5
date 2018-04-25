@@ -41,8 +41,7 @@
 
   var defaultConfiguration = {
     protocol: getSocketLocationFromProtocol().protocol,
-    port: getSocketLocationFromProtocol().port,
-    streamMode: 'record'
+    port: getSocketLocationFromProtocol().port
   };
 
   function displayServerAddress (serverAddress, proxyAddress) 

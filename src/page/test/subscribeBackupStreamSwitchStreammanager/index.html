@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang=en>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width">
+    <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
+    <script src="../lib/screenfull/screenfull.min.js"></script>
+    <link href="../lib/red5pro/red5pro-media.css" rel="stylesheet">
+    <style>
+
+      #stream-swap-container {
+        width: 100%;
+        height: 480px;
+        border: 1px solid black;
+      }
+
+      #no-video-alert {
+        text-align: center;
+      }
+
+      #info-field {
+        padding: 10px;
+        text-align: center;
+      }
+
+      .stream-form {
+        float: left;
+        display: block;
+        border: 1px solid black;
+        padding: 10px;
+      }
+
+      .btn {
+        height: 40px;
+        width: 100%;
+        margin-top: 10px;
+      }
+
+      .clearfix:after {
+        content: ".";
+        display: block;
+        clear: both;
+        visibility: hidden;
+        line-height: 0;
+        height: 0;
+      }
+      .clearfix {
+        display: inline-block;
+      }
+
+      .red5pro-media-container {
+        border: 1px solid black;
+        position: absolute;
+        height: 480px;
+        width: 640px;
+      }
+      .red5pro-media-control-bar {
+        position: relative;
+        top: -2.5em;
+      }
+
+      .hidden {
+        display: none;
+      }
+
+      .inline-container {
+        position: relative;
+      }
+
+      .inline-controls {
+        position: absolute;
+        top: 0;
+      }
+
+      .floater {
+        position: relative;
+        float: left;
+      }
+
+    </style>
+  </head>
+  <body>
+   <div class="clearfix">
+    <div class="stream-form">
+      <h1>Stream Manager</h1>
+      <p>
+        <label for="stream-manager-address">Stream Manager address:</label>
+        <input id="stream-manager-address" name="stream-manager-address" value="FQDN HERE">
+      </p>
+      <p>
+        <label for="stream-name">Stream Name:</label>
+        <input id="stream-name" name="stream-name" value="stream1">
+      </p>
+    </div>
+   </div>
+   <div id="info-field">
+   </div>
+   <div id="stream-swap-container" class="clearfix">
+    <div id="no-video-alert">
+      No videos to display.
+    </div>
+   </div>
+   <div style="text-align: center">
+    <button id="start-button" class="btn">Start</button>
+    </div>
+   <div style="text-align: center">
+    <button id="toggle-overlap" class="btn hidden">Toggle Overlap</button>   </div>
+   <script src="../lib/red5pro/red5pro-sdk.min.js"></script>
+   <script src="index.js"></script>
+  </body>
+</html>
