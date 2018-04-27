@@ -12,6 +12,13 @@
       .label-style {
         margin-right: 0.5rem;
       }
+      .control {
+        margin: 0.5rem;
+        font-size: 14px;
+      }
+      #publish-button {
+        width: 100px;
+      }
     </style>
   </head>
   <body>
@@ -20,10 +27,11 @@
       {{> settings-link}}
       {{> test-info testTitle='WebRTC Publish Camera Source Test'}}
       <div class="instructions-block">
-        <p>To begin this test, first select a camera from the following selections:</p>
+        <p>Select a camera from the following selections and click Publish:</p>
         <p class="camera-select-field">
-          <label for="camera-select" style="label-style">Camera Source:</label>
-          <select id="camera-select"></select>
+          <label for="camera-select" style="label-style"></label>
+          <select id="camera-select" class="control"></select>
+          <button id="publish-button" class="control" disabled>Publish</button>
         </p>
       </div>
       {{> status-field-publisher}}
