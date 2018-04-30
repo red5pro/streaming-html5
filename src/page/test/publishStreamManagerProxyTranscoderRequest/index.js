@@ -41,7 +41,30 @@
 
   var defaultConfiguration = {
     protocol: getSocketLocationFromProtocol().protocol,
-    port: getSocketLocationFromProtocol().port
+    port: getSocketLocationFromProtocol().port,
+    bandwidth: {
+      video: 2500
+    }
+  };
+
+  var userMedia = {
+    video: {
+      width: {
+        min: 640,
+        ideal: 1920,
+        max: 1920
+      },
+      height: {
+        min: 480,
+        ideal: 1080,
+        max: 1080
+      },
+      frameRate: {
+        min: 25,
+        ideal: 60,
+        max: 60
+      }
+    }
   };
 
   function displayServerAddress (serverAddress, proxyAddress) 
