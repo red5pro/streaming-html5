@@ -2,7 +2,37 @@
 (function (red5prosdk) {
 
   'use strict';
-  red5prosdk.setLogLevel('debug');
+
+  var serverSettings = (function() {
+    var settings = sessionStorage.getItem('r5proServerSettings');
+    try {
+      return JSON.parse(settings);
+    }
+    catch (e) {
+      console.error('Could not read server settings from sessionstorage: ' + e.message);
+    }
+    return {};
+  })();
+
+  var configuration = (function () {
+    var conf = sessionStorage.getItem('r5proTestBed');
+    try {
+      return JSON.parse(conf);
+    }
+    catch (e) {
+      console.error('Could not read testbed configuration from sessionstorage: ' + e.message);
+    }
+    return {}
+  })();
+  red5prosdk.setLogLevel(configuration.verboseLogging ? red5prosdk.LOG_LEVELS.TRACE : red5prosdk.LOG_LEVELS.WARN);
+
+  var protocol = serverSettings.protocol;
+  var isSecure = protocol == 'https';
+  function getSocketLocationFromProtocol () {
+    return !isSecure
+      ? {protocol: 'ws', port: serverSettings.wsport}
+      : {protocol: 'wss', port: serverSettings.wssport};
+  }
 
   var SubscriberFetch = function (req) {
     this.request = req;
@@ -38,8 +68,8 @@
   var container = document.getElementById('stream-swap-container');
   var noVideoAlert = document.getElementById('no-video-alert');
   var baseConfig = {
-    protocol: 'ws',
-    port: 8081,
+    protocol: getSocketLocationFromProtocol().protocol,
+    port: getSocketLocationFromProtocol().port,
     autoLayoutOrientation: false
   };
 
@@ -52,6 +82,9 @@
     subscriber: null,
     eventHandler: null
   };
+
+  streamManagerAddress.value = configuration.host;
+  streamName.value = configuration.stream1;
 
   function query(name, url) { // eslint-disable-line no-unused-vars
     if (!url) {
@@ -219,8 +252,6 @@
       generateSubscriber(Object.assign({}, baseConfig, {
         mediaElementId: id,
         host: streamManagerAddress.value,
-        protocol: 'wss',
-        port: 8083,
         app: 'streammanager',
         connectionParams: {
           host: edgeList[i].serverAddress,
