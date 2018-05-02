@@ -110,11 +110,8 @@
       else {
         json.iceServers = json.googleIce;
       }
+      console.log('ICE server provided in query param: ' + JSON.stringify(json.iceServers, null, 2));
     }
-    else {
-      json.iceServers = json.googleIce;
-    }
-    console.log('Selected ICE servers: ' + JSON.stringify(json.iceServers, null, 2));
   }
 
   if (config) {

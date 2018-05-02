@@ -1,0 +1,26 @@
+<!doctype html>
+<html>
+  <head>
+    {{> meta title='HLS Subscriber Test'}}
+    {{> header-scripts}}
+    {{> header-stylesheets}}
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  </head>
+  <body>
+    <div id="app">
+      {{> version }}
+      {{> settings-link}}
+      {{> test-info testTitle='HLS Subscriber Test'}}
+      {{> status-field-subscriber}}
+      <div class="centered">
+        <video id="red5pro-subscriber"
+                controls="controls" autoplay="autoplay" playsinline
+                class="red5pro-media red5pro-media-background"
+                width="640" height="480">
+        </video>
+      </div>
+    </div>
+    {{> body-scripts}}
+    <script src="index.js"></script>
+  </body>
+</html>
