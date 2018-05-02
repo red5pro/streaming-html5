@@ -42,11 +42,7 @@
     var c = {
       protocol: getSocketLocationFromProtocol().protocol,
       videoEncoding: red5prosdk.PlaybackVideoEncoder.VP8,
-      port: getSocketLocationFromProtocol().port,
-      bandwidth: {
-        audio: 50,
-        video: 256
-      }
+      port: getSocketLocationFromProtocol().port
     };
     if (!useAudio) {
       c.audioEncoding = red5prosdk.PlaybackAudioEncoder.NONE;
