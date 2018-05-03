@@ -49,8 +49,7 @@
   var defaultConfiguration = (function(useVideo, useAudio) {
     var c = {
       protocol: getSocketLocationFromProtocol().protocol,
-      port: getSocketLocationFromProtocol().port,
-      maintainConnectionOnInitErrors: true
+      port: getSocketLocationFromProtocol().port
     };
     if (!useVideo) {
       c.videoEncoding = red5prosdk.PlaybackVideoEncoder.NONE;
@@ -128,10 +127,13 @@
   }
 
   // Kick off.
-  var config = Object.assign({}, configuration, defaultConfiguration);
+  var config = Object.assign({
+    maintainConnectionOnSubscribeErrors: true
+  }, configuration, defaultConfiguration);
   config.streamName = config.stream1;
+
   var subscriber = new red5prosdk.RTCSubscriber();
-  subscriber.on(window.red5prosdk.SubscriberEventTypes.SUBSCRIBE_INVALID_NAME, function () {
+  subscriber.on(red5prosdk.SubscriberEventTypes.SUBSCRIBE_INVALID_NAME, function () {
     enableRetryButton();
   });
   disableRetryButton();
