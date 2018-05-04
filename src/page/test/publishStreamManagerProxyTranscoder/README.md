@@ -1,4 +1,4 @@
-# Publishing RTC Streams over stream manager proxy multi origin request
+# Publishing RTC Streams over stream manager transcode request
 
 The streammanager WebRTC proxy is a communication layer built inside streammanager web application which allows it to act as a proxy gateway for webrtc publishers / subscribers. The target use case of this communication layer is to facilitate a secure browser client to be able to connect to a "unsecure" remote websocket endpoint for consuming WebRTC services offered by Red5pro. 
 
