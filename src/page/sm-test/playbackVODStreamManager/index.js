@@ -88,7 +88,7 @@
     var port = serverSettings.httpport.toString();
     var portURI = (port.length > 0 ? ':' + port : '');
     var baseUrl = isSecure ? protocol + '://' + host : protocol + '://' + host + portURI;
-    var apiVersion = configuration.streamManagerAPI || '2.0';
+    var apiVersion = configuration.streamManagerAPI || '3.0';
     var url = baseUrl + '/streammanager/api/' + apiVersion + '/media/' + app + '/' + vod;
       return new Promise(function (resolve, reject) {
         fetch(url)
