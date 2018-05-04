@@ -96,7 +96,7 @@
             }
           })
           .then(function (json) {
-            resolve(json.serverAddress);
+            resolve(json);
           })
           .catch(function (error) {
             var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
@@ -115,7 +115,7 @@
     };
   }
 
-  function determinePublisher () {
+  function determinePublisher (streamName) {
 
     var config = Object.assign({},
                     configuration,
@@ -124,12 +124,12 @@
     var rtcConfig = Object.assign({}, config, {
                       protocol: getSocketLocationFromProtocol().protocol,
                       port: getSocketLocationFromProtocol().port,
-                      streamName: config.stream1
+                      streamName: streamName
                    });
     var rtmpConfig = Object.assign({}, config, {
                       protocol: 'rtmp',
                       port: serverSettings.rtmpport,
-                      streamName: config.stream1,
+                      streamName: streamName,
                       width: config.cameraWidth,
                       height: config.cameraHeight,
                       backgroundColor: '#000000',
@@ -173,10 +173,11 @@
 
   // Kick off.
   requestOrigin(configuration)
-    .then(function (serverAddress) {
-      displayServerAddress(serverAddress);
-      configuration.host = serverAddress;
-      return determinePublisher();
+    .then(function (jsonResponse) {
+      displayServerAddress(jsonResponse.host);
+      configuration.host = jsonResponse.host;
+      configuration.app = jsonResponse.app;
+      return determinePublisher(jsonResponse.name);
     })
     .then(function (publisherImpl) {
       streamTitle.innerText = configuration.stream1;

@@ -102,7 +102,7 @@
             }
           })
           .then(function (json) {
-            resolve(json.serverAddress);
+            resolve(json);
           })
           .catch(function (error) {
             var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
@@ -112,13 +112,17 @@
     });
   }
 
-  function determineSubscriber (serverAddress) {
+  function determineSubscriber (jsonResponse) {
+    var host = jsonResponse.serverAddress;
+    var name = jsonResponse.name;
+    var app = jsonResponse.scope;
     var config = Object.assign({}, configuration, defaultConfiguration);
     var rtmpConfig = Object.assign({}, config, {
-      host: serverAddress,
+      host: host,
+      app: app,
       protocol: 'rtmp',
       port: serverSettings.rtmpport,
-      streamName: config.stream1,
+      streamName: name,
       mimeType: 'rtmp/flv',
       backgroundColor: '#000000',
       width: config.cameraWidth,
@@ -128,9 +132,11 @@
       productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
     })
     var hlsConfig = Object.assign({}, config, {
+      host: host,
+      app: app,
       protocol: protocol,
       port: window.location.port,
-      streamName: config.stream1,
+      streamName: name,
       mimeType: 'application/x-mpegURL'
     })
 

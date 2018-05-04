@@ -98,7 +98,7 @@
             }
           })
           .then(function (json) {
-            resolve(json.serverAddress);
+            resolve(json);
           })
           .catch(function (error) {
             var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
@@ -117,8 +117,10 @@
     };
   }
 
-  function determinePublisher (serverAddress) {
-
+  function determinePublisher (jsonResponse) {
+    var host = jsonResponse.serverAddress;
+    var app = jsonResponse.scope;
+    var name = jsonResponse.name;
     var config = Object.assign({},
                     configuration,
                     defaultConfiguration,
@@ -126,18 +128,19 @@
     var rtcConfig = Object.assign({}, config, {
                       protocol: getSocketLocationFromProtocol().protocol,
                       port: getSocketLocationFromProtocol().port,
-                      streamName: config.stream1,
+                      streamName: name,
                       app: configuration.proxy,
                       connectionParams: {
-                        host: serverAddress,
-                        app: configuration.app
+                        host: host,
+                        app: app
                       }
                    });
     var rtmpConfig = Object.assign({}, config, {
-                      host: serverAddress,
+                      host: host,
+                      app: app,
                       protocol: 'rtmp',
                       port: serverSettings.rtmpport,
-                      streamName: config.stream1,
+                      streamName: name,
                       width: config.cameraWidth,
                       height: config.cameraHeight,
                       backgroundColor: '#000000',

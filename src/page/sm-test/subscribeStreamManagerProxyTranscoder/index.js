@@ -104,7 +104,7 @@
     var baseUrl = isSecure ? protocol + '://' + host : protocol + '://' + host + portURI;
     var streamName = configuration.stream1;
     var apiVersion = configuration.streamManagerAPI || '3.0';
-    var url = baseUrl + '/streammanager/api/' + apiVersion + '/event/' + app + '/' + streamName + '?action=subscribe&transcoder=true ';
+    var url = baseUrl + '/streammanager/api/' + apiVersion + '/event/' + app + '/' + streamName + '?action=subscribe&transcoder=true';
       return new Promise(function (resolve, reject) {
         fetch(url)
           .then(function (res) {
@@ -117,7 +117,7 @@
             }
           })
           .then(function (json) {
-            resolve(json.serverAddress);
+            resolve(json);
           })
           .catch(function (error) {
             var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
@@ -127,7 +127,10 @@
     });
   }
 
-  function determineSubscriber (serverAddress) {
+  function determineSubscriber (jsonResponse) {
+    var host = jsonResponse.serverAddress;
+    var name = jsonResponse.name;
+    var app = jsonResponse.scope;
     var config = Object.assign({}, configuration, defaultConfiguration);
     var rtcConfig = Object.assign({}, config, {
       host: configuration.host,
@@ -135,11 +138,11 @@
       port: getSocketLocationFromProtocol().port,
       app: configuration.proxy,
       connectionParams: {
-        host: serverAddress,
-        app: configuration.app
+        host: host,
+        app: app
       },
       subscriptionId: 'subscriber-' + instanceId,
-      streamName: config.stream1,
+      streamName: name,
       bandwidth: {
         audio: 50,
         video: 256,
@@ -147,10 +150,11 @@
       }
     })
     var rtmpConfig = Object.assign({}, config, {
-      host: serverAddress,
+      host: host,
+      app: app,
       protocol: 'rtmp',
       port: serverSettings.rtmpport,
-      streamName: config.stream1,
+      streamName: name,
       mimeType: 'rtmp/flv',
       useVideoJS: false,
       width: config.cameraWidth,
@@ -160,10 +164,11 @@
       productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
     })
     var hlsConfig = Object.assign({}, config, {
-      host: serverAddress,
+      host: host,
+      app: app,
       protocol: 'http',
       port: serverSettings.hlsport,
-      streamName: config.stream1,
+      streamName: name,
       mimeType: 'application/x-mpegURL'
     })
 

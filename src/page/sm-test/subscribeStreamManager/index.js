@@ -116,7 +116,7 @@
             }
           })
           .then(function (json) {
-            resolve(json.serverAddress);
+            resolve(json);
           })
           .catch(function (error) {
             var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
@@ -126,7 +126,10 @@
     });
   }
 
-  function determineSubscriber (host) {
+  function determineSubscriber (jsonResponse) {
+    var host = jsonResponse.serverAddress;
+    var name = jsonResponse.name;
+    var app = jsonResponse.scope;
     displayServerAddress('Edge', host);
     var config = Object.assign({}, configuration, defaultConfiguration);
     var rtcConfig = Object.assign({}, config, {
@@ -134,7 +137,8 @@
       protocol: 'ws', // cluster is not over secure, at this time
       port: serverSettings.wsport, // cluster is not over secure, at this time
       subscriptionId: 'subscriber-' + instanceId,
-      streamName: config.stream1,
+      app: app,
+      streamName: name,
       bandwidth: {
         audio: 50,
         video: 256,
@@ -143,9 +147,10 @@
     })
     var rtmpConfig = Object.assign({}, config, {
       host: host,
+      app: app,
       protocol: 'rtmp',
       port: serverSettings.rtmpport,
-      streamName: config.stream1,
+      streamName: name,
       mimeType: 'rtmp/flv',
       useVideoJS: false,
       width: config.cameraWidth,
@@ -157,8 +162,9 @@
     var hlsConfig = Object.assign({}, config, {
       host: host,
       protocol: 'http',
+      app: app,
       port: serverSettings.hlsport,
-      streamName: config.stream1,
+      streamName: name,
       mimeType: 'application/x-mpegURL'
     })
 
