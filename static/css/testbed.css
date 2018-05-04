@@ -211,6 +211,10 @@ code {
   color: #000;
 }
 
+.top-level-listing {
+  background-color: #b2d7f3;
+}
+
 @media (max-width:510px) {
   .red5pro-media-volume-slider {
     width: 65px;
