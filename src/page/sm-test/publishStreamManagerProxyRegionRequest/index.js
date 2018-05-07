@@ -201,29 +201,53 @@
     });
   }
 
-  // Kick off.
-  requestOrigin(configuration)
-    .then(function (serverAddress) {
-      return determinePublisher(serverAddress);
-    })
-    .then(function (publisherImpl) {
-      streamTitle.innerText = configuration.stream1;
-      targetPublisher = publisherImpl;
-      targetPublisher.on('*', onPublisherEvent);
-      showAddress(targetPublisher)
-      return targetPublisher.publish();
-    })
-    .then(function () {
-      onPublishSuccess(targetPublisher);
-    })
-    .catch(function (error) {
+  var retryCount = 0;
+  var retryLimit = 3;
+  function respondToOrigin (response) {
+    determinePublisher(response.name)
+      .then(function (publisherImpl) {
+        streamTitle.innerText = configuration.stream1;
+        targetPublisher = publisherImpl;
+        targetPublisher.on('*', onPublisherEvent);
+        showAddress(targetPublisher);
+        return targetPublisher.publish();
+      })
+      .then(function () {
+        onPublishSuccess(targetPublisher);
+      })
+      .catch(function (error) {
+        var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
+        console.error('[Red5ProPublisher] :: Error in access of Origin IP: ' + jsonError);
+        updateStatusFromEvent({
+          type: red5prosdk.PublisherEventTypes.CONNECT_FAILURE
+        });
+        onPublishFail(jsonError);
+      });
+  }
+
+  function respondToOriginFailure (error) {
+    if (retryCount++ < retryLimit) {
+      var retryTimer = setTimeout(function () {
+        clearTimeout(retryTimer);
+        startup();
+      }, 1000);
+    }
+    else {
       var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
-      console.error('[Red5ProPublisher] :: Error in access of Origin IP: ' + jsonError);
       updateStatusFromEvent({
         type: red5prosdk.PublisherEventTypes.CONNECT_FAILURE
       });
-      onPublishFail(jsonError);
-    });
+      console.error('[Red5ProPublisher] :: Retry timeout in publishing - ' + jsonError);
+    }
+  }
+
+  function startup () {
+    // Kick off.
+    requestOrigin(configuration)
+      .then(respondToOrigin)
+      .catch(respondToOriginFailure);
+  }
+  startup();
 
   window.addEventListener('beforeunload', function() {
     function clearRefs () {

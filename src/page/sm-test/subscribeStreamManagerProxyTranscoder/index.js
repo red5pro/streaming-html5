@@ -235,25 +235,48 @@
     });
   }
 
-  // Kick off.
-  requestEdge(configuration)
-    .then(determineSubscriber)
-    .then(function (subscriberImpl) {
-      streamTitle.innerText = configuration.stream1;
-      targetSubscriber = subscriberImpl;
-      // Subscribe to events.
-      targetSubscriber.on('*', onSubscriberEvent);
-      showServerAddress(targetSubscriber);
-      return targetSubscriber.subscribe();
-    })
-    .then(function () {
-      onSubscribeSuccess();
-    })
-    .catch(function (error) {
+  var retryCount = 0;
+  var retryLimit = 3;
+  function respondToEdge (response) {
+    determineSubscriber(response)
+      .then(function (subscriberImpl) {
+        streamTitle.innerText = configuration.stream1;
+        targetSubscriber = subscriberImpl;
+        // Subscribe to events.
+        targetSubscriber.on('*', onSubscriberEvent);
+        showServerAddress(targetSubscriber);
+        return targetSubscriber.subscribe();
+      })
+      .then(function () {
+        onSubscribeSuccess();
+      })
+      .catch(function (error) {
+        var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
+        console.error('[Red5ProSubscriber] :: Error in subscribing - ' + jsonError);
+        onSubscribeFail(jsonError);
+      });
+  }
+
+  function respondToEdgeFailure (error) {
+    if (retryCount++ < retryLimit) {
+      var retryTimer = setTimeout(function () {
+        clearTimeout(retryTimer);
+        startup();
+      }, 1000);
+    }
+    else {
       var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
-      console.error('[Red5ProSubscriber] :: Error in subscribing - ' + jsonError);
-      onSubscribeFail(jsonError);
-    });
+      console.error('[Red5ProSubscriber] :: Retry timeout in subscribing - ' + jsonError);
+    }
+  }
+
+  function startup () {
+    // Kick off.
+    requestEdge(configuration)
+      .then(respondToEdge)
+      .catch(respondToEdgeFailure);
+  }
+  startup();
 
   // Clean up.
   window.addEventListener('beforeunload', function() {

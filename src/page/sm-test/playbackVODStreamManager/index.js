@@ -194,30 +194,50 @@
     return filename;
   }
 
+  var retryCount = 0;
+  var retryLimit = 3;
+  function respondToEdge (response) {
+    determineSubscriber(response)
+      .then(function (subscriberImpl) {
+        streamTitle.innerText = configuration.stream1;
+        targetSubscriber = subscriberImpl;
+        // Subscribe to events.
+        targetSubscriber.on('*', onSubscriberEvent);
+        return targetSubscriber.subscribe();
+      })
+      .then(function () {
+        onSubscribeSuccess();
+      })
+      .catch(function (error) {
+        var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
+        console.error('[Red5ProSubscriber] :: Error in subscribing - ' + jsonError);
+        onSubscribeFail(jsonError);
+      });
+  }
+
+  function respondToEdgeFailure (error) {
+    if (retryCount++ < retryLimit) {
+      var retryTimer = setTimeout(function () {
+        clearTimeout(retryTimer);
+        startup();
+      }, 1000);
+    }
+    else {
+      var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
+      console.error('[Red5ProSubscriber] :: Retry timeout in subscribing - ' + jsonError);
+    }
+  }
+
+  function startup () {
+    // Kick off.
+    requestEdge(configuration)
+      .then(respondToEdge)
+      .catch(respondToEdgeFailure);
+  }
+
   function playback(filename) {
     configuration.subscriberFailoverOrder = determineFailoverOrderFromFilename(filename);
     configuration.stream1 = determineStreamNameFromFilename(filename);
-
-    var start = function () {
-      // Kick off.
-      requestEdge(configuration, filename)
-        .then(determineSubscriber)
-        .then(function(subscriberImpl) {
-          streamTitle.innerText = configuration.stream1;
-          targetSubscriber = subscriberImpl;
-          // Subscribe to events.
-          targetSubscriber.on('*', onSubscriberEvent);
-          return targetSubscriber.subscribe();
-        })
-        .then(function() {
-          onSubscribeSuccess();
-        })
-        .catch(function (error) {
-          var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
-          console.error('[Red5ProSubscriber] :: Error in subscribing - ' + jsonError);
-          onSubscribeFail(jsonError);
-        });
-    };
 
     if (typeof targetSubscriber !== 'undefined') {
       var reset = function reset() {
@@ -226,12 +246,12 @@
           container.removeChild(container.lastChild);
         }
         container.innerHTML = '<video id="red5pro-subscriber-video" controls class="video-element"></video>';
-        start();
+        startup();
       }
       unsubscribe().then(reset).catch(reset);
     }
     else {
-      start();
+      startup();
     }
   }
 
