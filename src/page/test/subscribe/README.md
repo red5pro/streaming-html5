@@ -58,7 +58,7 @@ Once the required SDK files are provided and loaded on the page, the root of the
       (function (window, red5pro) {
 
         // Turn on debugging, to be shown in the Dev Console.
-        red5pro.setLogger('debug');
+        red5pro.setLogger(red5pro.LOG_LEVELS.DEBUG);
 
         // Continue with your code, more examples below.
 
@@ -98,10 +98,9 @@ var rtmpConfig = Object.assign({}, config, {
   protocol: 'rtmp',
   port: config.rtmpport,
   streamName: config.stream1,
-  mimeType: 'rtmp/flv',
-  swf: '../../lib/red5pro/red5pro-subscriber.swf',
-  swfobjectURL: '../../lib/swfobject/swfobject.js',
-  productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
+  swf: 'lib/red5pro/red5pro-subscriber.swf',
+  swfobjectURL: 'lib/swfobject/swfobject.js',
+  productInstallURL: 'lib/swfobject/playerProductInstall.swf'
 })
 var hlsConfig = Object.assign({}, config, {
   protocol: 'http',
@@ -123,9 +122,7 @@ var hlsConfig = Object.assign({}, config, {
 });
 ```
 
-_The test in this section perfoms a similar request through `determineSubscriber`._
-
-[index.js #42](index.js#L42)
+[index.js #97](index.js#L97)
 
 The `init` method of the `Red5ProSubscriber` returns a `Promise`-like object that will be resolved with the instantiated Subscriber implementation based on the subscriber order and browser support.
 
@@ -155,5 +152,5 @@ subscriber.setPlaybackOrder(subscribeOrder)
   })
 ```
 
-[index.js #93](index.js#L93)
+[index.js #136](index.js#L136)
 
