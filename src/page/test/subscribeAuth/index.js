@@ -45,11 +45,7 @@
   var defaultConfiguration = (function(useVideo, useAudio) {
     var c = {
       protocol: getSocketLocationFromProtocol().protocol,
-      port: getSocketLocationFromProtocol().port,
-      bandwidth: {
-        audio: 50,
-        video: 256
-      }
+      port: getSocketLocationFromProtocol().port
     };
     if (!useVideo) {
       c.videoEncoding = red5prosdk.PlaybackVideoEncoder.NONE;
@@ -99,23 +95,17 @@
   function start () {
     // Kick off.
     loginForm.classList.add('hidden');
-        var config = Object.assign({}, configuration, defaultConfiguration);
+    var config = Object.assign({}, configuration, defaultConfiguration);
     var rtcConfig = Object.assign({}, config, {
       protocol: getSocketLocationFromProtocol().protocol,
       port: getSocketLocationFromProtocol().port,
       subscriptionId: 'subscriber-' + instanceId,
-      streamName: config.stream1,
-      bandwidth: {
-        audio: 50,
-        video: 256,
-        data: 30 * 1000 * 1000
-      }
+      streamName: config.stream1
     });
     var rtmpConfig = Object.assign({}, config, {
       protocol: 'rtmp',
       port: serverSettings.rtmpport,
       streamName: config.stream1,
-      mimeType: 'rtmp/flv',
       width: config.cameraWidth,
       height: config.cameraHeight,
       backgroundColor: '#000000',

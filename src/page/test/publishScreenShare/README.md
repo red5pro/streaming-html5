@@ -10,11 +10,14 @@ Additionally, it is currently not possible (as of the time of this writing, *Nov
 
 > You will need to use the [Subscribe Screen Share](../subscribeScreenShare) test in order to check this test is working.
 
-### Example Code
+**Please refer to the [Basic Publisher Documentation](../publish/README.md) to learn more about the basic setup.**
+
+## Example Code
+
 - **[index.html](index.html)**
 - **[index.js](index.js)**
 
-## How to Publish a Screen Share
+# How to Publish a Screen Share
 
 Utilize the `onGetUserMedia` configuration attribute to provide the constraints returned from the [getScreenId](https://www.webrtc-experiment.com/getScreenId/) library:
 
@@ -31,7 +34,25 @@ function setupPublisher (constraints) {
     port: '8083',
     streamName: 'mystream',
     onGetUserMedia: function () {
-      return navigator.mediaDevices.getUserMedia(constraints)
+      var c = Object.assign({}, constraints);
+      if (c.video.optional) {
+        // chrome
+        c.video.optional.push({
+          maxWidth: 640
+        }, {
+          maxHeight: 480
+        });
+      }
+      else if (c.video.mediaSource === 'window') {
+        // moz
+        c.video.width = {
+          exact: 640
+        };
+        c.video.height = {
+          exact: 480
+        }
+      }
+      return navigator.mediaDevices.getUserMedia(c);
     }
   };
 
@@ -48,6 +69,6 @@ function setupPublisher (constraints) {
 capture(setupPublisher);
 ```
 
-### View Your Stream
+# View Your Stream
 
 Launch the [Subscriber Screen Share Test](../subscribeScreenShare) in another tab!

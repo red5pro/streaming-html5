@@ -66,7 +66,6 @@
         publisher.muteVideo();
       }
     });
-
   }
 
   function onBitrateUpdate (bitrate, packetsSent) {

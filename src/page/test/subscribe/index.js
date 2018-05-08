@@ -32,20 +32,19 @@
 
   var protocol = serverSettings.protocol;
   var isSecure = protocol === 'https';
+
+  // Determines the ports and protocols based on being served over TLS.
   function getSocketLocationFromProtocol () {
     return !isSecure
       ? {protocol: 'ws', port: serverSettings.wsport}
       : {protocol: 'wss', port: serverSettings.wssport};
   }
 
+  // Base configuration to extend in ptoviding specific tech failover configurations.
   var defaultConfiguration = (function(useVideo, useAudio) {
     var c = {
       protocol: getSocketLocationFromProtocol().protocol,
-      port: getSocketLocationFromProtocol().port,
-      bandwidth: {
-        audio: 50,
-        video: 256
-      }
+      port: getSocketLocationFromProtocol().port
     };
     if (!useVideo) {
       c.videoEncoding = red5prosdk.PlaybackVideoEncoder.NONE;
@@ -95,62 +94,66 @@
     });
   }
 
-    var config = Object.assign({}, configuration, defaultConfiguration);
-    var rtcConfig = Object.assign({}, config, {
-      protocol: getSocketLocationFromProtocol().protocol,
-      port: getSocketLocationFromProtocol().port,
-      subscriptionId: 'subscriber-' + instanceId,
-      streamName: config.stream1,
-    })
-    var rtmpConfig = Object.assign({}, config, {
-      protocol: 'rtmp',
-      port: serverSettings.rtmpport,
-      streamName: config.stream1,
-      width: config.cameraWidth,
-      height: config.cameraHeight,
-      backgroundColor: '#000000',
-      swf: '../../lib/red5pro/red5pro-subscriber.swf',
-      swfobjectURL: '../../lib/swfobject/swfobject.js',
-      productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
-    })
-    var hlsConfig = Object.assign({}, config, {
-      protocol: protocol,
-      port: isSecure ? serverSettings.hlssport : serverSettings.hlsport,
-      streamName: config.stream1,
-      mimeType: 'application/x-mpegURL'
-    })
+  // Define tech spefific configurations for each failover item.
+  var config = Object.assign({}, configuration, defaultConfiguration);
+  var rtcConfig = Object.assign({}, config, {
+    protocol: getSocketLocationFromProtocol().protocol,
+    port: getSocketLocationFromProtocol().port,
+    subscriptionId: 'subscriber-' + instanceId,
+    streamName: config.stream1,
+  })
+  var rtmpConfig = Object.assign({}, config, {
+    protocol: 'rtmp',
+    port: serverSettings.rtmpport,
+    streamName: config.stream1,
+    width: config.cameraWidth,
+    height: config.cameraHeight,
+    backgroundColor: '#000000',
+    swf: '../../lib/red5pro/red5pro-subscriber.swf',
+    swfobjectURL: '../../lib/swfobject/swfobject.js',
+    productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
+  })
+  var hlsConfig = Object.assign({}, config, {
+    protocol: protocol,
+    port: isSecure ? serverSettings.hlssport : serverSettings.hlsport,
+    streamName: config.stream1,
+    mimeType: 'application/x-mpegURL'
+  })
 
-    var subscribeOrder = config.subscriberFailoverOrder
-                          .split(',').map(function (item) {
-                            return item.trim();
-                          });
+  // Define failover order.
+  var subscribeOrder = config.subscriberFailoverOrder
+        .split(',').map(function (item) {
+          return item.trim();
+        });
 
-    if (window.query('view')) {
-      subscribeOrder = [window.query('view')];
-    }
+  // Override for providing ?view= query param.
+  if (window.query('view')) {
+    subscribeOrder = [window.query('view')];
+  }
 
-    var subscriber = new red5prosdk.Red5ProSubscriber()
-    subscriber.setPlaybackOrder(subscribeOrder)
-      .init({
-              rtc: rtcConfig,
-              rtmp: rtmpConfig,
-              hls: hlsConfig
-      })
-      .then(function (subscriberImpl) {
-        streamTitle.innerText = configuration.stream1;
-        targetSubscriber = subscriberImpl
-        // Subscribe to events.
-        targetSubscriber.on('*', onSubscriberEvent);
-        return targetSubscriber.subscribe()
-      })
-      .then(function () {
-        onSubscribeSuccess();
-      })
-      .catch(function (error) {
-        var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
-        console.error('[Red5ProSubscriber] :: Error in subscribing - ' + jsonError);
-        onSubscribeFail(jsonError);
-      });
+  // Request to initialization and start subscribing through failover support.
+  var subscriber = new red5prosdk.Red5ProSubscriber()
+  subscriber.setPlaybackOrder(subscribeOrder)
+    .init({
+      rtc: rtcConfig,
+      rtmp: rtmpConfig,
+      hls: hlsConfig
+    })
+    .then(function (subscriberImpl) {
+      streamTitle.innerText = configuration.stream1;
+      targetSubscriber = subscriberImpl
+      // Subscribe to events.
+      targetSubscriber.on('*', onSubscriberEvent);
+      return targetSubscriber.subscribe()
+    })
+    .then(function () {
+      onSubscribeSuccess();
+    })
+    .catch(function (error) {
+      var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
+      console.error('[Red5ProSubscriber] :: Error in subscribing - ' + jsonError);
+      onSubscribeFail(jsonError);
+    });
 
   // Clean up.
   window.addEventListener('beforeunload', function() {

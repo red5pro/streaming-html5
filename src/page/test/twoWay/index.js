@@ -44,11 +44,7 @@
   var defaultSubscriberConfiguration = (function(useVideo, useAudio) {
     var c = {
       protocol: getSocketLocationFromProtocol().protocol,
-      port: getSocketLocationFromProtocol().port,
-      bandwidth: {
-        audio: 50,
-        video: 256
-      }
+      port: getSocketLocationFromProtocol().port
     };
     if (!useVideo) {
       c.videoEncoding = red5prosdk.PlaybackVideoEncoder.NONE;
@@ -162,7 +158,6 @@
   }
 
   function beginStreamListCall () {
-
     var host = configuration.host;
     var port = serverSettings.httpport;
     var portURI = (port.length > 0 ? ':' + port : '');
@@ -195,12 +190,10 @@
         console.error('[Two-Way] :: Error - Could not request Stream List. ' + jsonError);
         listError(error);
        });
-
   }
 
   function recieveList (listIn) {
     var found = false;
-
     for (var i = listIn.length - 1; i >= 0; i--) {
       found = listIn[i].name == configuration.stream2;
       if(found) break;
@@ -249,12 +242,7 @@
       protocol: getSocketLocationFromProtocol().protocol,
       port: getSocketLocationFromProtocol().port,
       subscriptionId: 'subscriber-' + instanceId,
-      streamName: config.stream2,
-      bandwidth: {
-        audio: 50,
-        video: 256,
-        data: 30 * 1000 * 1000
-      }
+      streamName: config.stream2
     })
     var rtmpConfig = Object.assign({}, config, {
       protocol: 'rtmp',
