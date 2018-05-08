@@ -47,29 +47,42 @@
     }
   };
 
-  var userMedia = {
-    video: {
-      width: {
-        min: 640,
-        ideal: 1920,
-        max: 1920
+  var transcoderPOST = {
+    //    meta: {
+    //      authentication: {
+    //        username: '',
+    //        password: ''
+    //      }
+    //    },
+    stream: [
+      {
+        name: configuration.stream1 + '_1',
+        bandwidth: 25000,
+        level: 3,
+        properties: {}
       },
-      height: {
-        min: 480,
-        ideal: 1080,
-        max: 1080
+      {
+        name: configuration.stream1 + '_2',
+        bandwidth: 37500,
+        level: 2,
+        properties: {}
       },
-      frameRate: {
-        min: 25,
-        ideal: 60,
-        max: 60
+      {
+        name: configuration.stream1 + '_3',
+        bandwidth: 62500,
+        level: 1,
+        properties: {}
       }
-    }
-  };
+    ],
+    georules: {
+      regions: ['US', 'UK'],
+      restricted: false
+    },
+    qos: 3
+  }
 
-  function displayServerAddress (serverAddress, proxyAddress) 
-  {
-  proxyAddress = (typeof proxyAddress === 'undefined') ? 'N/A' : proxyAddress;
+  function displayServerAddress (serverAddress, proxyAddress) {
+    proxyAddress = (typeof proxyAddress === 'undefined') ? 'N/A' : proxyAddress;
     addressField.innerText = ' Proxy Address: ' + proxyAddress + ' | ' + ' Origin Address: ' + serverAddress;
   }
 
@@ -98,6 +111,43 @@
   }
   function onUnpublishSuccess () {
     console.log('[Red5ProPublisher] Unpublish Complete.');
+  }
+
+  function postTranscode (transcode) {
+    var host = configuration.host;
+    var app = configuration.app;
+    var streamName = configuration.stream1;
+    var port = serverSettings.httpport.toString();
+    var portURI = (port.length > 0 ? ':' + port : '');
+    var baseUrl = isSecure ? protocol + '://' + host : protocol + '://' + host + portURI;
+    var apiVersion = configuration.streamManagerAPI || '3.0';
+    var url = baseUrl + '/streammanager/api/' + apiVersion + '/admin/event/meta/' + app + '/' + streamName;
+    return new Promise(function (resolve, reject) {
+      fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+        body: JSON.stringify(transcode)
+        })
+        .then(function (res) {
+          if (res.headers.get("content-type") &&
+            res.headers.get("content-type").toLowerCase().indexOf("application/json") >= 0) {
+              return res.json();
+          }
+          else {
+            throw new TypeError('Could not properly parse response.');
+          }
+        })
+        .then(function (json) {
+          resolve(json);
+        })
+        .catch(function (error) {
+            var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
+            console.error('[PublisherStreamManagerTest] :: Error - Could not POST transcode request. ' + jsonError)
+            reject(error)
+        });
+    });
   }
 
   function requestOrigin (configuration) {
@@ -270,7 +320,17 @@
       .then(respondToOrigin)
       .catch(respondToOriginFailure);
   }
-  startup();
+
+  postTranscode(transcoderPOST)
+    .then(startup)
+    .catch(function (error) {
+      var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
+      console.error('[Red5ProPublisher] :: Error in POST of transcode configuration: ' + jsonError);
+      updateStatusFromEvent({
+        type: red5prosdk.PublisherEventTypes.CONNECT_FAILURE
+      });
+      onPublishFail(jsonError);
+    });
 
   window.addEventListener('beforeunload', function() {
     function clearRefs () {
