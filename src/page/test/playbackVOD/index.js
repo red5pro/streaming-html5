@@ -89,10 +89,9 @@
       protocol: 'rtmp',
       port: serverSettings.rtmpport,
       streamName: config.stream1,
-      mimeType: 'rtmp/flv',
-      backgroundColor: '#000000',
       width: config.cameraWidth,
       height: config.cameraHeight,
+      backgroundColor: '#000000',
       swf: '../../lib/red5pro/red5pro-subscriber.swf',
       swfobjectURL: '../../lib/swfobject/swfobject.js',
       productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
