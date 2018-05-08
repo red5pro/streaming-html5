@@ -55,33 +55,33 @@
       authentication: {
         username: authName,
         password: authPass
-      }
-    },
-    stream: [
-      {
-        name: configuration.stream1 + '_1',
-        bandwidth: 25000,
-        level: 3,
-        properties: {}
       },
-      {
-        name: configuration.stream1 + '_2',
-        bandwidth: 37500,
-        level: 2,
-        properties: {}
+      stream: [
+        {
+          name: configuration.stream1 + '_1',
+          bandwidth: 25000,
+          level: 3,
+          properties: {}
+        },
+        {
+          name: configuration.stream1 + '_2',
+          bandwidth: 37500,
+          level: 2,
+          properties: {}
+        },
+        {
+          name: configuration.stream1 + '_3',
+          bandwidth: 62500,
+          level: 1,
+          properties: {}
+        }
+      ],
+      georules: {
+        regions: ['US', 'UK'],
+        restricted: false
       },
-      {
-        name: configuration.stream1 + '_3',
-        bandwidth: 62500,
-        level: 1,
-        properties: {}
-      }
-    ],
-    georules: {
-      regions: ['US', 'UK'],
-      restricted: false
-    },
-    qos: 3
+      qos: 3
+    }
   }
 
   function displayServerAddress (serverAddress, proxyAddress) {
@@ -325,7 +325,18 @@
   }
 
   postTranscode(transcoderPOST)
-    .then(startup)
+    .then(function (response) {
+      if (response.errorMessage) {
+        console.error('[Red5ProPublisher] :: Error in POST of transcode configuration: ' + response.errorMessage);
+        updateStatusFromEvent({
+          type: red5prosdk.PublisherEventTypes.CONNECT_FAILURE
+        });
+        onPublishFail(response.errorMessage);
+      }
+      else {
+        startup();
+      }
+    })
     .catch(function (error) {
       var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
       console.error('[Red5ProPublisher] :: Error in POST of transcode configuration: ' + jsonError);
