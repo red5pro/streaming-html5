@@ -158,7 +158,6 @@
   }
 
   function beginStreamListCall () {
-
     var host = configuration.host;
     var port = serverSettings.httpport;
     var portURI = (port.length > 0 ? ':' + port : '');
@@ -191,12 +190,10 @@
         console.error('[Two-Way] :: Error - Could not request Stream List. ' + jsonError);
         listError(error);
        });
-
   }
 
   function recieveList (listIn) {
     var found = false;
-
     for (var i = listIn.length - 1; i >= 0; i--) {
       found = listIn[i].name == configuration.stream2;
       if(found) break;

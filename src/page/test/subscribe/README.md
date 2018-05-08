@@ -1,4 +1,5 @@
 # Subscribe Failover using Red5 Pro
+
 This is an example of utilizing the failover mechanism of the Red5 Pro HTML SDK to select a subscriber based on browser support.
 
 The default failover order is:
@@ -47,7 +48,7 @@ Once the required SDK files are provided and loaded on the page, the root of the
   </head>
   <body>
     <!-- Target video element to playback stream. -->
-    <video id="red5pro-subscriber-video"
+    <video id="red5pro-subscriber"
       autoplay controls playsinline
       class="red5pro-media red5pro-media-background"
       width="640" height="480"></video>
@@ -109,17 +110,16 @@ var hlsConfig = Object.assign({}, config, {
   mimeType: 'application/x-mpegURL'
 })
 
-  var subscriber = new red5pro.Red5ProSubscriber();
-  subscriber.setPlaybackOrder(subscribeOrder)
-    .init({
-      rtc: rtcConfig,
-      rtmp: rtmpConfig,
-      hls: hlsConfig
-    })
-    .then(function (selectedSubscriber) {
-      // We have successfully found a playback tech from the list...
-    });
-});
+var subscriber = new red5pro.Red5ProSubscriber();
+subscriber.setPlaybackOrder(subscribeOrder)
+  .init({
+    rtc: rtcConfig,
+    rtmp: rtmpConfig,
+    hls: hlsConfig
+  })
+  .then(function (selectedSubscriber) {
+    // We have successfully found a playback tech from the list...
+  });
 ```
 
 [index.js #97](index.js#L97)

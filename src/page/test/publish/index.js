@@ -93,8 +93,8 @@
   }
 
   var config = Object.assign({},
-                   configuration,
-                  getUserMediaConfiguration());
+    configuration,
+    getUserMediaConfiguration());
 
   var rtcConfig = Object.assign({}, config, {
                       protocol: getSocketLocationFromProtocol().protocol,
