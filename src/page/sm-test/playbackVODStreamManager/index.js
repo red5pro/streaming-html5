@@ -32,7 +32,7 @@
   submitButton.addEventListener('click', function () {
     var filename = nameInput.value;
     if (filename.split('.').length < 2) {
-      alert('Expecting filename to have an extension (e.g., "filname.flv").');
+      alert('Expecting filename to have an extension (e.g., "filname.flv" or "filename.m3u8").');
     }
     else {
       playback(filename);
@@ -230,7 +230,7 @@
 
   function startup () {
     // Kick off.
-    requestEdge(configuration)
+    requestEdge(configuration, configuration.stream1)
       .then(respondToEdge)
       .catch(respondToEdgeFailure);
   }

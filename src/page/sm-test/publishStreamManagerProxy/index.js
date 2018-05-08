@@ -204,7 +204,7 @@
   var retryCount = 0;
   var retryLimit = 3;
   function respondToOrigin (response) {
-    determinePublisher(response.name)
+    determinePublisher(response)
       .then(function (publisherImpl) {
         streamTitle.innerText = configuration.stream1;
         targetPublisher = publisherImpl;
