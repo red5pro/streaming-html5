@@ -4,68 +4,63 @@ The streammanager WebRTC proxy is a communication layer built inside streammanag
 
 Streammanager autoscaling works with dynamic nodes which are associated with dynamic IP addresses and cannot have a SSL attached to them. The proxy layer helps subscribers to connect and initiate a WebRTC `subscribe` session from a `secure` (ssl enabled) domain to a `unsecure` Red5pro origin having using an IP address.
 
-
 **Please refer to the [Basic Subscriber Documentation](../subscribe/README.md) to learn more about the basic setup.**
 
 > In order to properly run the Stream Manager examples, you will need to configure you server for cluster infrastructure as described in the following documentation: [https://www.red5pro.com/docs/server/autoscale/](https://www.red5pro.com/docs/server/autoscale/).
 
 > You also need to ensure that the stream manager proxy layer is `enabled`. The configuration section can be found in stream manager's config file - `red5-web.properties`
 
-`
+```sh
 ## WEBSOCKET PROXY SECTION
 proxy.enabled=false
-`
+```
 
-### Example Code
+## Example Code
 - **[index.html](index.html)**
 - **[index.js](index.js)**
 
-## Setup
+# Setup
+
 In order to subscribe, you first need to connect to the Stream Manager. The Stream Manager will know which origin is being used for the stream and accordingly will provide with an usable edge to consume the stream.
 
 ```js
-
 function requestEdge (configuration) {
-var host = configuration.host;
-var app = configuration.app;
-var port = serverSettings.httpport.toString();
-var portURI = (port.length > 0 ? ':' + port : '');
-var baseUrl = isSecure ? protocol + '://' + host : protocol + '://' + host + portURI;
-var streamName = configuration.stream1;
-var apiVersion = configuration.streamManagerAPI || '2.0';
-var url = baseUrl + '/streammanager/api/' + apiVersion + '/event/' + app + '/' + streamName + '?action=subscribe';
+  var host = configuration.host;
+  var app = configuration.app;
+  var port = serverSettings.httpport.toString();
+  var portURI = (port.length > 0 ? ':' + port : '');
+  var baseUrl = isSecure ? protocol + '://' + host : protocol + '://' + host + portURI;
+  var streamName = configuration.stream1;
+  var apiVersion = configuration.streamManagerAPI || '2.0';
+  var url = baseUrl + '/streammanager/api/' + apiVersion + '/event/' + app + '/' + streamName + '?action=subscribe';
   return new Promise(function (resolve, reject) {
-	fetch(url)
-	  .then(function (res) {
-		if (res.headers.get("content-type") &&
-		  res.headers.get("content-type").toLowerCase().indexOf("application/json") >= 0) {
-			return res.json();
-		}
-		else {
-		  throw new TypeError('Could not properly parse response.');
-		}
-	  })
-	  .then(function (json) {
-		resolve(json.serverAddress);
-	  })
-	  .catch(function (error) {
-		var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
-		console.error('[SubscribeStreamManagerTest] :: Error - Could not request Edge IP from Stream Manager. ' + jsonError)
-		reject(error)
-	  });
-});
+    fetch(url)
+      .then(function (res) {
+        if (res.headers.get("content-type") &&
+          res.headers.get("content-type").toLowerCase().indexOf("application/json") >= 0) {
+          return res.json();
+        }
+        else {
+          throw new TypeError('Could not properly parse response.');
+        }
+      })
+      .then(function (json) {
+        resolve(json.serverAddress);
+      })
+      .catch(function (error) {
+        var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
+        console.error('[SubscribeStreamManagerTest] :: Error - Could not request Edge IP from Stream Manager. ' + jsonError)
+        reject(error)
+      });
+  });
 }
-
 ```
 
-<sup>
-[index.js #100](index.js#L100)
-</sup>
+[index.js #95](index.js#L95)
 
 The service returns a JSON object. In particular to note is the `serverAddress` attribute which will be the IP of the Edge server.
 
-
-```
+```js
   "name": "<stream-name>",
   "scope": "<stream-scope>",
   "serverAddress": "<edge-host-address>",
@@ -77,18 +72,17 @@ Next we construct the configuration objects for the subscriber per supported pro
 
 Another important to note is that for `rtc` subscriber the target application is the `proxy` - the `streammanager` webapp and not the app that you want to subscribe to. The `rtc` configuration passes the actual target application name in connectionParams as `app`.
 
-```
+```js
 function determineSubscriber (serverAddress) {
-	
     var config = Object.assign({}, configuration, defaultConfiguration);
     var rtcConfig = Object.assign({}, config, {
       host: configuration.host,
       protocol: getSocketLocationFromProtocol().protocol,
       port: getSocketLocationFromProtocol().port,
-	  app: configuration.proxy,
-	  connectionParams: {
-		host: serverAddress,
-		app: configuration.app
+      app: configuration.proxy,
+      connectionParams: {
+        host: serverAddress,
+        app: configuration.app
       },
       subscriptionId: 'subscriber-' + instanceId,
       streamName: config.stream1
@@ -134,7 +128,5 @@ function determineSubscriber (serverAddress) {
   }
 ```
 
-<sup>
-[index.js #133](index.js#L133)
-</sup>
+[index.js #126](index.js#L126)
 

@@ -128,9 +128,9 @@
     var subscriber = new red5prosdk.Red5ProSubscriber()
     subscriber.setPlaybackOrder(subscribeOrder)
       .init({
-              rtc: rtcConfig,
-              rtmp: rtmpConfig,
-              hls: hlsConfig
+        rtc: rtcConfig,
+        rtmp: rtmpConfig,
+        hls: hlsConfig
       })
       .then(function (subscriberImpl) {
         streamTitle.innerText = configuration.stream1;

@@ -137,8 +137,6 @@
       protocol: 'rtmp',
       port: serverSettings.rtmpport,
       streamName: config.stream1,
-      mimeType: 'rtmp/flv',
-      useVideoJS: false,
       width: config.cameraWidth,
       height: config.cameraHeight,
       swf: '../../lib/red5pro/red5pro-subscriber.swf',
