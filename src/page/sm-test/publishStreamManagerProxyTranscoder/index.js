@@ -47,13 +47,16 @@
     }
   };
 
+  var accessToken = 'xyz123';
+  var authName = '';
+  var authPass = '';
   var transcoderPOST = {
-    //    meta: {
-    //      authentication: {
-    //        username: '',
-    //        password: ''
-    //      }
-    //    },
+    meta: {
+      authentication: {
+        username: authName,
+        password: authPass
+      }
+    },
     stream: [
       {
         name: configuration.stream1 + '_1',
@@ -121,7 +124,7 @@
     var portURI = (port.length > 0 ? ':' + port : '');
     var baseUrl = isSecure ? protocol + '://' + host : protocol + '://' + host + portURI;
     var apiVersion = configuration.streamManagerAPI || '3.0';
-    var url = baseUrl + '/streammanager/api/' + apiVersion + '/admin/event/meta/' + app + '/' + streamName;
+    var url = baseUrl + '/streammanager/api/' + apiVersion + '/admin/event/meta/' + app + '/' + streamName + '?accessToken=' + accessToken;
     return new Promise(function (resolve, reject) {
       fetch(url, {
           method: 'POST',
