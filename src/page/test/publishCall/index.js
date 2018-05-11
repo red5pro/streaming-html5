@@ -142,8 +142,21 @@
     })
     .then(function () {
       onPublishSuccess(targetPublisher);
-      targetPublisher.callServer('getLiveStreams', []);
-      targetPublisher.callServer('getLiveStreams2', ['baz', 2]);
+      targetPublisher.callServer('getLiveStreams', [])
+        .then(function (d) {
+          console.log('getLiveStreams return!');
+        })
+        .catch(function (e) {
+          console.error('getLiveStreams error: ' + e);
+        });
+      targetPublisher.callServer('getLiveStreams2', ['baz', 2, true])
+        .then(function (d) {
+          console.log('getLiveStreams2 return!');
+        })
+        .catch(function (e) {
+          console.error('getLiveStreams2 error: ' + e);
+        });
+
     })
     .catch(function (error) {
       var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
