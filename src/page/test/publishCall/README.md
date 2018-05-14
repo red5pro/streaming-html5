@@ -1,149 +1,48 @@
-# Publish Failover using Red5 Pro
-This is an example of utilizing the failover mechanism of the Red5 Pro HTML SDK to select a publisher based on browser support.
+# Publish Server Call (WebRTC-only)
+This example demonstrates using the `callServer` API to invoke a method on the Application Adapter of the target app. The `callServer` method returns a `Promise`-like object that can additional deliver return data from the server.
 
-The default failover order is:
-
-1. WebRTC
-2. RTMP/Flash
-
-When utilizing the auto-failover mechanism, the SDK - by default - will first test for WebRTC support and if missing will attempt to embed a publisher SWF for the broadcast.
-
-You can define the desired failover order from using `setPublishOrder`.
+**Please refer to the [Basic Publisher Documentation](../publish/README.md) to learn more about the basic setup.**
 
 ### Example Code
 - **[index.html](index.html)**
 - **[index.js](index.js)**
 
-## How to Publish
-Publishing to a Red5 Pro stream requires a few components to function fully.
+> These examples use the WebRTC-based Publisher implementation from the Red5 Pro HTML SDK. However, there is failover support to allow for Flash-base publisher on unsupported browsers.
 
-#### Including the SDK
-You will need to include the Red5 Pro SDK library on the page. The root of the library is accessible from `window.red5prosdk`:
+_To learn more about the Application Adapter and creating a custom webapp, please refer to [Creating Your First Red5 Pro Server Application](https://www.red5pro.com/docs/server/red5prolive.html)._
+
+# Running the Example
+
+The example is a basic publisher example with the addition of the ability to cal the `getLiveStreams` request on the server. This request returns a list of all the current streams available on the server.
+
+Initialially this request was only accessible through an HTTP/S request on the server. With the introduction of the `callServer` API, you can now invoke methods on the target Application Adapter and receive information back on the return.
+
+## Invoking `getLiveStream`
+
+Once a publishing session has begun - in which a WebSocket connection has been established - than the `callServer` API can be used to call a method on the Applicaiton Adapter of the server.
 
 ```html
-<!doctype html>
-<html>
-  <head>
-...
-  </head>
-  <body>
-    <video id="red5pro-publisher-video"></video>
-...
-    <script src="lib/red5pro/red5pro.min.sdk"></script>
-    <script>
-      (function (window, red5pro) {
-...
-      })(window, window.red5prosdk);
-    </script>
-...
-  </body>
-</html>
-```
-
-#### Publisher Selection
-A Publisher instance is required to attach a stream and request publishing. The SDK can determine browser support and instantiate the proper Publisher implementation based on the desired failover order.
-
-A configuration for each tech implementation must be provided to the `init` invocation:
-
-```js
-function determinePublisher () {
-    var config = Object.assign({},
-                   configuration,
-                   getUserMediaConfiguration());
-    var rtcConfig = Object.assign({}, config, {
-                      protocol: 'ws',
-                      port: config.rtcport,
-                      streamName: config.stream1,
-                      streamType: 'webrtc'
-                   });
-    var rtmpConfig = Object.assign({}, config, {
-                      protocol: 'rtmp',
-                      port: config.rtmpport,
-                      streamName: config.stream1,
-                      width: config.cameraWidth,
-                      height: config.cameraHeight,
-                      swf: '../../lib/red5pro/red5pro-publisher.swf',
-                      swfobjectURL: '../../lib/swfobject/swfobject.js',
-                      productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
-                   });
-
-  return new Promise(function (resolve, reject) {
-
-    var publisher = new red5pro.Red5ProPublisher();
-
-    publisher.setPublishOrder(publishOrder)
-      .init({
-        rtc: rtcConfig,
-        rtmp: rtmpConfig
-      })
-      .then(function (selectedPublisher) {
-...
-      });
-  });
-}
-```
-
-<sup>
-[index.js #76](index.js#L76)
-</sup>
-
-The `init` method of the `Red5ProPublisher` returns a `Promise` that will be resolved with the instantiated Publisher implementation based on the publish order and browser support.
-
-You can determine the selected implementation by invoking `selectedPublisher.getType()`.
-
-> Read more about configurations and their attributes from the [Red5 Pro HTML SDK Documentation](https://github.com/infrared5/red5pro-html-sdk#publisher).
-
-#### RTCPublisher
-If the browser supports WebRTC and the `Red5ProPublisher` has instantiated the `RTCPublisher` based on failover, a `MediaStream` needs to be requested from the browser and provided to the `RTCPublisher` implementation.
-
-This is done using the `getUserMedia` method on the `navigator` instance of the page which will return the `MediaStream` on success callback:
-
-```js
-var nav = navigator.mediaDevice || navigator;
-nav.getUserMedia({
-    audio: true,
-    video: true
-  }, function (media) {
-
-    selectedPublisher.attachMedia(media);
-    view.preview(media, true);
-
-  }, function (error) {
-    console.error('Error accessing media: ' + error);
+targetPublisher.callServer('getLiveStreams', [])
+  .then(function (data) {
+    while (callList.hasChildNodes()) {
+      callList.removeChild(callList.lastChild);
+    }
+    var list = data;
+    var i, length = list.length;
+    for (i = 0; i < length; i++) {
+      var li = document.createElement('li');
+      li.classList.add(i % 2 !== 0 ? 'call-list-item-odd' : 'call-list-item-even');
+      li.innerText = list[i];
+      callList.appendChild(li);
+    }
+  })
+  .catch(function (e) {
+    console.error('getLiveStreams error: ' + e);
   });
 ```
 
-When requesting the `MediaStream` you provide a constraints declaration for the audio and video components.
+The `callServer` method returns a `Promise`-like object that will be resolved upon successful call of the target method on the Application Adapter (`getLiveStreams` in this case).
 
-> More information: [Media.getUserMedia from MDN](https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia)
+If the method defined on the Application Adapter does not return data, it will simple resolve with empty data.
 
-<sup>
-[index.js #139](index.js#L139)
-</sup>
-
-#### Publishing
-The `init` method of the `Red5ProPublisher` instance returns a `Promise` which, when resolved, relays the Publisher instance determined from the failover. To start a publishing session, call the `publish` method of the Publisher resolved:
-
-```js
-publisher.setPublishOrder(publishOrder)
-  .init({
-    rtc: rtcConfig,
-    rtmp: rtmpConfig
-  })
-  .then(function (selectedPublisher) {
-    return selectedPublisher.publish();
-  })
-  .then(function () {
-    console.log('Successfully started a broadcast session!');
-  })
-  .catch(function () {
-    console.error('Could not start a broadcast session: ' + error);
-  })
-```
-
-<sup>
-[index.js #106](index.js#L106)
-</sup>
-
-### View Your Stream
-After you have started a broadcast session, open a browser window and navigate to your Red5 Pro server (e.g., [http://localhost:5080/live/subscribe.jsp](http://localhost:5080/live/subscribe.jsp) to see a list of streams. Select the stream name used from this example and view in the browser using WebRTC, Flash or HLS playback options.
+If the method is either not defined or otherwise throws an exception on invocation, it will `reject` with the error message.

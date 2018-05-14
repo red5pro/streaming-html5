@@ -182,7 +182,9 @@
     })
     .then(function () {
       onPublishSuccess(targetPublisher);
-      enableCallButton();
+      if (targetPublisher.getType().toLowerCase() === 'rtc') {
+        enableCallButton();
+      }
     })
     .catch(function (error) {
       var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
