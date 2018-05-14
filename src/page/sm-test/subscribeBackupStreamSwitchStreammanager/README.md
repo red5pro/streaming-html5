@@ -1,4 +1,4 @@
-# Back-Up Stream Switching for Subscribers Using Stream Maanger
+# Back-Up Stream Switching for Subscribers Using Stream Manager
 
 This example demonstrates the ability to load 2 (_can be modified_) Subscribers to 2 Edges at once and placing all but the first to report subscription success into `standby` mode in order to be "activated" in the off-chance that the current subscriber has gone down unexpectedly - such as from losing network connect or the edge server is lost.
 
