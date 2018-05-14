@@ -4,6 +4,19 @@
     {{> meta title='Publish Test'}}
     {{> header-scripts}}
     {{> header-stylesheets}}
+    <style>
+      #call-list {
+        max-width: 300px;
+        margin: 20px auto;
+        border: 1px solid #aaa;
+      }
+      .call-list-item-even {
+        background-color: #fff;
+      }
+      .call-list-item-odd {
+        background-color: #ddd;
+      }
+    </style>
   </head>
   <body>
     <div id="app">
@@ -14,6 +27,10 @@
       {{> statistics-field}}
       <div class="centered">
         <video id="red5pro-publisher" controls autoplay muted></video>
+      </div>
+      <div class="centered" style="padding: 20px; background-color: #eee">
+        <p><button id="call-button" disabled>Get Live Streams</button></p>
+        <ul id="call-list"></ul>
       </div>
     </div>
     {{> body-scripts}}

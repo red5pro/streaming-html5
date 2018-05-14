@@ -31,6 +31,32 @@
   var updateStatusFromEvent = window.red5proHandlePublisherEvent; // defined in src/template/partial/status-field-publisher.hbs
   var streamTitle = document.getElementById('stream-title');
   var statisticsField = document.getElementById('statistics-field');
+  var callButton = document.getElementById('call-button');
+  var callList = document.getElementById('call-list');
+
+  callButton.addEventListener('click', function() {
+    if (!targetPublisher) return;
+
+    targetPublisher.callServer('getLiveStreams', [])
+      .then(function (data) {
+        while (callList.hasChildNodes()) {
+          callList.removeChild(callList.lastChild);
+        }
+        var list = data;
+        var i, length = list.length;
+        for (i = 0; i < length; i++) {
+          var li = document.createElement('li');
+          li.classList.add(i % 2 !== 0 ? 'call-list-item-odd' : 'call-list-item-even');
+          li.innerText = list[i];
+          callList.appendChild(li);
+        }
+        console.log('getLiveStreams return!');
+      })
+      .catch(function (e) {
+        console.error('getLiveStreams error: ' + e);
+      });
+  });
+
 
   var protocol = serverSettings.protocol;
   var isSecure = protocol == 'https';
@@ -40,6 +66,14 @@
       : {protocol: 'wss', port: serverSettings.wssport};
   }
 
+  function enableCallButton () {
+    callButton.removeAttribute('disabled');
+  }
+
+  function disableCallButton () {
+    callButton.setAttribute('disabled', 'disabled');
+  }
+
   function onBitrateUpdate (bitrate, packetsSent) {
     statisticsField.innerText = 'Bitrate: ' + Math.floor(bitrate) + '. Packets Sent: ' + packetsSent + '.';
   }
@@ -47,9 +81,13 @@
   function onPublisherEvent (event) {
     console.log('[Red5ProPublisher] ' + event.type + '.');
     updateStatusFromEvent(event);
+    if (event.type === 'Publisher.Connection.Closed') {
+      disableCallButton();
+    }
   }
   function onPublishFail (message) {
     console.error('[Red5ProPublisher] Publish Error :: ' + message);
+    disableCallButton();
   }
   function onPublishSuccess (publisher) {
     console.log('[Red5ProPublisher] Publish Complete.');
@@ -62,9 +100,11 @@
   }
   function onUnpublishFail (message) {
     console.error('[Red5ProPublisher] Unpublish Error :: ' + message);
+    disableCallButton();
   }
   function onUnpublishSuccess () {
     console.log('[Red5ProPublisher] Unpublish Complete.');
+    disableCallButton();
   }
 
   function getUserMediaConfiguration () {
@@ -142,21 +182,7 @@
     })
     .then(function () {
       onPublishSuccess(targetPublisher);
-      targetPublisher.callServer('getLiveStreams', [])
-        .then(function (d) {
-          console.log('getLiveStreams return!');
-        })
-        .catch(function (e) {
-          console.error('getLiveStreams error: ' + e);
-        });
-      targetPublisher.callServer('getLiveStreams2', ['baz', 2, true])
-        .then(function (d) {
-          console.log('getLiveStreams2 return!');
-        })
-        .catch(function (e) {
-          console.error('getLiveStreams2 error: ' + e);
-        });
-
+      enableCallButton();
     })
     .catch(function (error) {
       var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
