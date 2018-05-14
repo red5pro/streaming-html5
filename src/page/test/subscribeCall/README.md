@@ -1,19 +1,19 @@
-# Publish Server Call (WebRTC-only)
+# Subscriber Server Call (WebRTC-only)
 This example demonstrates using the `callServer` API to invoke a method on the Application Adapter of the target app. The `callServer` method returns a `Promise`-like object that can additional deliver return data from the server.
 
-**Please refer to the [Basic Publisher Documentation](../publish/README.md) to learn more about the basic setup.**
+**Please refer to the [Basic Subscriber Documentation](../subscriber/README.md) to learn more about the basic setup.**
 
 ### Example Code
 - **[index.html](index.html)**
 - **[index.js](index.js)**
 
-> These examples use the WebRTC-based Publisher implementation from the Red5 Pro HTML SDK.
+> These examples use the WebRTC-based Subscriber implementation from the Red5 Pro HTML SDK.
 
 _To learn more about the Application Adapter and creating a custom webapp, please refer to [Creating Your First Red5 Pro Server Application](https://www.red5pro.com/docs/server/red5prolive.html)._
 
 # Running the Example
 
-The example is a basic publisher example with the addition of the ability to cal the `getLiveStreams` request on the server. This request returns a list of all the current streams available on the server.
+The example is a basic subscriber example with the addition of the ability to cal the `getLiveStreams` request on the server. This request returns a list of all the current streams available on the server.
 
 Initialially this request was only accessible through an HTTP/S request on the server. With the introduction of the `callServer` API, you can now invoke methods on the target Application Adapter and receive information back on the return.
 
@@ -22,7 +22,7 @@ Initialially this request was only accessible through an HTTP/S request on the s
 Once a publishing session has begun - in which a WebSocket connection has been established - than the `callServer` API can be used to call a method on the Applicaiton Adapter of the server.
 
 ```html
-targetPublisher.callServer('getLiveStreams', [])
+targetSubscriber.callServer('getLiveStreams', [])
   .then(function (data) {
     while (callList.hasChildNodes()) {
       callList.removeChild(callList.lastChild);

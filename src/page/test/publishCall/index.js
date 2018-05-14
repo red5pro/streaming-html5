@@ -57,7 +57,6 @@
       });
   });
 
-
   var protocol = serverSettings.protocol;
   var isSecure = protocol == 'https';
   function getSocketLocationFromProtocol () {
