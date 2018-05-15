@@ -47,7 +47,7 @@
     }
   };
 
-  var accessToken = 'xyz123';
+  var accessToken = configuration.streamManagerAccessToken;
   var authName = '';
   var authPass = '';
   var transcoderPOST = {

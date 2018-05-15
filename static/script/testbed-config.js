@@ -91,7 +91,8 @@
         }
       ],
       "verboseLogging": true,
-      "streamManagerAPI": "3.0"
+      "streamManagerAPI": "3.0",
+      "streamManagerAccessToken": "xyz123"
     };
     /**
     if (isMoz) {
