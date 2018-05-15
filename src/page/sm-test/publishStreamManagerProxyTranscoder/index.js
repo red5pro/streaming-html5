@@ -39,6 +39,26 @@
       : {protocol: 'wss', port: serverSettings.wssport};
   }
 
+  var userMedia = {
+    video: {
+      width: {
+        min: 640,
+        ideal: 1920,
+        max: 1920
+      },
+      height: {
+        min: 480,
+        ideal: 1080,
+        max: 1080
+      },
+      frameRate: {
+        min: 25,
+        ideal: 60,
+        max: 60
+      }
+    }
+  };
+
   var defaultConfiguration = {
     protocol: getSocketLocationFromProtocol().protocol,
     port: getSocketLocationFromProtocol().port,
@@ -58,22 +78,31 @@
       },
       stream: [
         {
-          name: configuration.stream1 + '_1',
-          bandwidth: 25000,
-          level: 3,
-          properties: {}
-        },
-        {
-          name: configuration.stream1 + '_2',
-          bandwidth: 37500,
-          level: 2,
-          properties: {}
-        },
-        {
-          name: configuration.stream1 + '_3',
-          bandwidth: 62500,
+          name: configuration.stream1 + '_high',
           level: 1,
-          properties: {}
+          properties: {
+            videoWidth: userMedia.video.width.ideal,
+            videoHeight: userMedia.video.height.ideal,
+            videoBR: defaultConfiguration.bandwidth.video * 100
+          }
+        },
+        {
+          name: configuration.stream1 + '_mid',
+          level: 2,
+          properties: {
+            videoWidth:320,
+            videoHeight:240,
+            videoBR:256000 
+          }
+        },
+        {
+          name: configuration.stream1 + '_low',
+          level: 3,
+          properties: {
+            videoWidth:160,
+            videoHeight:120,
+            videoBR:128000 
+          }
         }
       ],
       georules: {
@@ -188,7 +217,7 @@
     return {
       mediaConstraints: {
         audio: configuration.useAudio ? configuration.mediaConstraints.audio : false,
-        video: configuration.useVideo ? configuration.mediaConstraints.video : false
+        video: configuration.useVideo ? userMedia.video : false
       }
     };
   }
@@ -210,7 +239,7 @@
                         host: host,
                         app: app
                       }
-                   });
+                    });
     var rtmpConfig = Object.assign({}, config, {
                       host: host,
                       app: app,
