@@ -49,11 +49,7 @@
   var defaultConfiguration = (function(useVideo, useAudio) {
     var c = {
       protocol: getSocketLocationFromProtocol().protocol,
-      port: getSocketLocationFromProtocol().port,
-      bandwidth: {
-        audio: 50,
-        video: 256
-      }
+      port: getSocketLocationFromProtocol().port
     };
     if (!useVideo) {
       c.videoEncoding = red5prosdk.PlaybackVideoEncoder.NONE;
@@ -129,12 +125,7 @@
       protocol: 'ws', // cluster is not over secure, at this time
       port: serverSettings.wsport, // cluster is not over secure, at this time
       subscriptionId: 'subscriber-' + instanceId,
-      streamName: config.stream1,
-      bandwidth: {
-        audio: 50,
-        video: 256,
-        data: 30 * 1000 * 1000
-      }
+      streamName: config.stream1
     })
     var rtmpConfig = Object.assign({}, config, {
       host: host,

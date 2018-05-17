@@ -55,12 +55,7 @@ function determineSubscriber () {
     protocol: 'ws',
     port: config.rtcport,
     subscriptionId: 'subscriber-' + instanceId,
-    streamName: config.stream1,
-    bandwidth: {
-      audio: 50,
-      video: 256,
-      data: 30 * 1000 * 1000
-    }
+    streamName: config.stream1
   })
   var rtmpConfig = Object.assign({}, config, {
     protocol: 'rtmp',
