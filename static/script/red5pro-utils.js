@@ -4,7 +4,7 @@
   var bitrateInterval = 0;
 
   // Based on https://github.com/webrtc/samples/blob/gh-pages/src/content/peerconnection/bandwidth/js/main.js
-  window.trackBitrate = function (connection, cb) {
+  window.trackBitrate = function (connection, cb, resolutionCb) {
     window.untrackBitrate(cb);
     var lastResult;
     bitrateInterval = setInterval(function () {
@@ -13,6 +13,7 @@
           var bytes;
           var packets;
           var now = report.timestamp;
+          var bitrate;
           if ((report.type === 'outboundrtp') ||
               (report.type === 'outbound-rtp') ||
               (report.type === 'ssrc' && report.bytesSent)) {
@@ -20,9 +21,25 @@
             packets = report.packetsSent;
             if (report.mediaType === 'video' && lastResult && lastResult.get(report.id)) {
               // calculate bitrate
-              var bitrate = 8 * (bytes - lastResult.get(report.id).bytesSent) /
+              bitrate = 8 * (bytes - lastResult.get(report.id).bytesSent) /
                   (now - lastResult.get(report.id).timestamp);
               cb(bitrate, packets);
+            }
+            // playback.
+            else if ((report.type === 'inboundrtp') ||
+                (report.type === 'inbound-rtp') ||
+                (report.type === 'ssrc' && report.bytesReceived)) {
+              bytes = report.bytesReceived;
+              packets = report.packetsReceived;
+              if (report.mediaType === 'video' && lastResult && lastResult.get(report.id)) {
+                // calculate bitrate
+                bitrate = 8 * (bytes - lastResult.get(report.id).bytesReceived) /
+                  (now - lastResult.get(report.id).timestamp);
+                cb(bitrate, packets);
+              }
+            }
+            else if (resolutionCb && report.type === 'track' && report.kind === 'video') {
+              resolutionCb(report.frameWidth, report.frameHeight);
             }
           }
         });
