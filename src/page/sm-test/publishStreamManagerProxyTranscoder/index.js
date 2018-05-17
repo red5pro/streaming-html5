@@ -30,6 +30,17 @@
   var streamTitle = document.getElementById('stream-title');
   var statisticsField = document.getElementById('statistics-field');
   var addressField = document.getElementById('address-field');
+  var submitButton = document.getElementById('submit-button');
+  var transcoderTypes = ['high', 'mid', 'low'];
+  var transcoderForms = (function (types) {
+    var list = [];
+    var i, length = types.length;
+    for (i = 0; i < length; i++) {
+      list.push(document.getElementById(['transcoder', types[i]].join('-')));
+    }
+    return list;
+  })(transcoderTypes);
+  submitButton.addEventListener('click', submitTranscode);
 
   var protocol = serverSettings.protocol;
   var isSecure = protocol == 'https';
@@ -76,35 +87,7 @@
         username: authName,
         password: authPass
       },
-      stream: [
-        {
-          name: configuration.stream1 + '_high',
-          level: 1,
-          properties: {
-            videoWidth: userMedia.video.width.ideal,
-            videoHeight: userMedia.video.height.ideal,
-            videoBR: defaultConfiguration.bandwidth.video * 100
-          }
-        },
-        {
-          name: configuration.stream1 + '_mid',
-          level: 2,
-          properties: {
-            videoWidth:320,
-            videoHeight:240,
-            videoBR:256000 
-          }
-        },
-        {
-          name: configuration.stream1 + '_low',
-          level: 3,
-          properties: {
-            videoWidth:160,
-            videoHeight:120,
-            videoBR:128000 
-          }
-        }
-      ],
+      stream: [],
       georules: {
         regions: ['US', 'UK'],
         restricted: false
@@ -353,27 +336,67 @@
       .catch(respondToOriginFailure);
   }
 
-  postTranscode(transcoderPOST)
-    .then(function (response) {
-      if (response.errorMessage) {
-        console.error('[Red5ProPublisher] :: Error in POST of transcode configuration: ' + response.errorMessage);
+  function generateTranscoderPost (streamName, forms) {
+    /*
+              name: configuration.stream1 + '_high',
+          level: 1,
+          properties: {
+            videoWidth: userMedia.video.width.ideal,
+            videoHeight: userMedia.video.height.ideal,
+            videoBR: defaultConfiguration.bandwidth.video * 100
+          }
+          */
+    var i = forms.length;
+    var formItem;
+    var bitrateField;
+    var widthField;
+    var heightField;
+    var setting;
+    var streams = [];
+    while (--i > -1) {
+      formItem = forms[i];
+      bitrateField = formItem.getElementsByClassName('bitrate-field')[0];
+      widthField = formItem.getElementsByClassName('width-field')[0];
+      heightField = formItem.getElementsByClassName('height-field')[0];
+      setting = {
+        name: [streamName, transcoderTypes[i]].join('_'),
+        level: (i + 1),
+        properties: {
+          videoWidth: parseInt(widthField.value, 10),
+          videoHeight: parseInt(heightField.value, 10),
+          videoBR: parseInt(bitrateField.value, 10)
+        }
+      }
+      streams.push(setting);
+    }
+    return streams;
+  }
+
+  function submitTranscode () {
+    var streams = generateTranscoderPost(configuration.stream1, transcoderForms);
+    transcoderPOST.meta.stream = streams;
+    postTranscode(transcoderPOST)
+      .then(function (response) {
+        if (response.errorMessage) {
+          console.error('[Red5ProPublisher] :: Error in POST of transcode configuration: ' + response.errorMessage);
+          updateStatusFromEvent({
+            type: red5prosdk.PublisherEventTypes.CONNECT_FAILURE
+          });
+          onPublishFail(response.errorMessage);
+        }
+        else {
+          startup();
+        }
+      })
+      .catch(function (error) {
+        var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
+        console.error('[Red5ProPublisher] :: Error in POST of transcode configuration: ' + jsonError);
         updateStatusFromEvent({
           type: red5prosdk.PublisherEventTypes.CONNECT_FAILURE
         });
-        onPublishFail(response.errorMessage);
-      }
-      else {
-        startup();
-      }
-    })
-    .catch(function (error) {
-      var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
-      console.error('[Red5ProPublisher] :: Error in POST of transcode configuration: ' + jsonError);
-      updateStatusFromEvent({
-        type: red5prosdk.PublisherEventTypes.CONNECT_FAILURE
+        onPublishFail(jsonError);
       });
-      onPublishFail(jsonError);
-    });
+  }
 
   window.addEventListener('beforeunload', function() {
     function clearRefs () {
