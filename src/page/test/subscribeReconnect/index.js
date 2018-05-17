@@ -106,13 +106,8 @@
       protocol: 'rtmp',
       port: serverSettings.rtmpport,
       streamName: config.stream1,
-      mediaConstraints: {
-        video: {
-          width: config.cameraWidth,
-          height: config.cameraHeight
-        },
-        audio: true
-      },
+      width: config.cameraWidth,
+      height: config.cameraHeight,
       backgroundColor: '#000000',
       swf: '../../lib/red5pro/red5pro-subscriber.swf',
       swfobjectURL: '../../lib/swfobject/swfobject.js',

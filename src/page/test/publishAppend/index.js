@@ -81,7 +81,6 @@
   }
 
   function determinePublisher () {
-
     var config = Object.assign({},
                     configuration,
                     defaultConfiguration,

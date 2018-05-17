@@ -118,7 +118,6 @@
   }
 
   function determinePublisher (serverAddress) {
-
     var config = Object.assign({},
                     configuration,
                     defaultConfiguration,

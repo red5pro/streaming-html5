@@ -93,14 +93,13 @@
   }
 
   var config = Object.assign({},
-                   configuration,
-                  getUserMediaConfiguration());
+    configuration,
+    getUserMediaConfiguration());
 
   var rtcConfig = Object.assign({}, config, {
                       protocol: getSocketLocationFromProtocol().protocol,
                       port: getSocketLocationFromProtocol().port,
                       streamName: config.stream1,
-                      streamType: 'webrtc'
                    });
   var rtmpConfig = Object.assign({}, config, {
                       protocol: 'rtmp',

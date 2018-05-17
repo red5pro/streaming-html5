@@ -95,7 +95,7 @@
   function start () {
     // Kick off.
     loginForm.classList.add('hidden');
-        var config = Object.assign({}, configuration, defaultConfiguration);
+    var config = Object.assign({}, configuration, defaultConfiguration);
     var rtcConfig = Object.assign({}, config, {
       protocol: getSocketLocationFromProtocol().protocol,
       port: getSocketLocationFromProtocol().port,
@@ -106,7 +106,6 @@
       protocol: 'rtmp',
       port: serverSettings.rtmpport,
       streamName: config.stream1,
-      mimeType: 'rtmp/flv',
       width: config.cameraWidth,
       height: config.cameraHeight,
       backgroundColor: '#000000',
