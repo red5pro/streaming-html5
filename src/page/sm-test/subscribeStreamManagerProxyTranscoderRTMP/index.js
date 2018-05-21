@@ -39,6 +39,33 @@
   var streamTitle = document.getElementById('stream-title');
   var addressField = document.getElementById('address-field');
   var streamInfoField = document.getElementById('stream-info-field');
+  var upBtn = document.getElementById('uplevel-btn');
+  var downBtn = document.getElementById('downlevel-btn');
+  var startBtn = document.getElementById('start-btn');
+  var stopBtn = document.getElementById('stop-btn');
+
+  upBtn.addEventListener('click', function () {
+    if (targetSubscriber) {
+      abrLevel = (--abrLevel < 1 ? 1 : abrLevel);
+      targetSubscriber.setABRLevel(abrLevel);
+    }
+  });
+  downBtn.addEventListener('click', function () {
+    if (targetSubscriber) {
+      abrLevel = (++abrLevel > 3 ? 3 : abrLevel);
+      targetSubscriber.setABRLevel(abrLevel);
+    }
+  });
+  startBtn.addEventListener('click', function () {
+    if (targetSubscriber) {
+      targetSubscriber.startABRController();
+    }
+  });
+  stopBtn.addEventListener('click', function () {
+    if (targetSubscriber) {
+      targetSubscriber.stopABRController();
+    }
+  });
 
   var abrLevel = 1;
 
@@ -92,6 +119,7 @@
         });
     }
     else if (event.type === 'RTMP.AdaptiveBitrate.Level') {
+      abrLevel = event.data.level;
       streamInfoField.innerText = "Stream Level: " + event.data.stream.name;
     }
   }
