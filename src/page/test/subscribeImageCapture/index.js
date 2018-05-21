@@ -39,8 +39,32 @@
   var videoElement = document.getElementById('red5pro-subscriber');
   var canvasElement = document.getElementById('capture-canvas');
   var captureTarget = document.getElementById('video-container');
+  var statisticsField = document.getElementById('statistics-field');
+
   var protocol = serverSettings.protocol;
   var isSecure = protocol === 'https';
+
+  var bitrate = 0;
+  var packetsReceived = 0;
+  var frameWidth = 0;
+  var frameHeight = 0;
+  function updateStatistics (b, p, w, h) {
+    statisticsField.innerText = 'Bitrate: ' + Math.floor(b) + '. Packets Received: ' + p + '.' + ' Resolution: ' + w + ', ' + h + '.';
+  }
+
+  function onBitrateUpdate (b, p) {
+    bitrate = b;
+    packetsReceived = p;
+    updateStatistics(bitrate, packetsReceived, frameWidth, frameHeight);
+  }
+
+  function onResolutionUpdate (w, h) {
+    frameWidth = w;
+    frameHeight = h;
+    updateStatistics(bitrate, packetsReceived, frameWidth, frameHeight);
+  }
+
+  // Determines the ports and protocols based on being served over TLS.
   function getSocketLocationFromProtocol () {
     return !isSecure
       ? {protocol: 'ws', port: serverSettings.wsport}
@@ -77,8 +101,16 @@
   function onSubscribeFail (message) {
     console.error('[Red5ProSubsriber] Subscribe Error :: ' + message);
   }
-  function onSubscribeSuccess () {
+  function onSubscribeSuccess (subscriber) {
     console.log('[Red5ProSubsriber] Subscribe Complete.');
+    if (subscriber.getType().toLowerCase() === 'rtc') {
+      try {
+        window.trackBitrate(subscriber.getPeerConnection(), onBitrateUpdate, onResolutionUpdate);
+      }
+      catch (e) {
+        //
+      }
+    }
   }
   function onUnsubscribeFail (message) {
     console.error('[Red5ProSubsriber] Unsubscribe Error :: ' + message);
@@ -131,7 +163,7 @@
       return targetSubscriber.subscribe();
     })
     .then(function () {
-      onSubscribeSuccess();
+      onSubscribeSuccess(targetSubscriber);
     })
     .catch(function (error) {
       var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
@@ -154,6 +186,7 @@
       targetSubscriber = undefined;
     }
     unsubscribe().then(clearRefs).catch(clearRefs);
+    window.untrackbitrate();
   });
 
 })(this, document, window.red5prosdk);
