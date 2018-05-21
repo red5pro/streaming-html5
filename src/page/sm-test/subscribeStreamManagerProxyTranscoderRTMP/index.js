@@ -36,10 +36,12 @@
     }
     window.red5proHandleSubscriberEvent(event); // defined in src/template/partial/status-field-subscriber.hbs
   };
-  var instanceId = Math.floor(Math.random() * 0x10000).toString(16);
   var streamTitle = document.getElementById('stream-title');
-  var statisticsField = document.getElementById('statistics-field');
   var addressField = document.getElementById('address-field');
+  var streamInfoField = document.getElementById('stream-info-field');
+
+  var abrLevel = 1;
+
   var protocol = serverSettings.protocol;
   var isSecure = protocol === 'https';
   function getSocketLocationFromProtocol () {
@@ -74,24 +76,6 @@
     }
   }
 
-  var bitrate = 0;
-  var packetsReceived = 0;
-  var frameWidth = 0;
-  var frameHeight = 0;
-  function updateStatistics (b, p, w, h) {
-    statisticsField.innerText = 'Bitrate: ' + Math.floor(b) + '. Packets Received: ' + p + '.' + ' Resolution: ' + w + ', ' + h + '.';
-  }
-  function onBitrateUpdate (b, p) {
-    bitrate = b;
-    packetsReceived = p;
-    updateStatistics(bitrate, packetsReceived, frameWidth, frameHeight);
-  }
-  function onResolutionUpdate (w, h) {
-    frameWidth = w;
-    frameHeight = h;
-    updateStatistics(bitrate, packetsReceived, frameWidth, frameHeight);
-  }
-
   function displayServerAddress (serverAddress, proxyAddress) {
     proxyAddress = (typeof proxyAddress === 'undefined') ? 'N/A' : proxyAddress;
     addressField.innerText = ' Proxy Address: ' + proxyAddress + ' | ' + ' Edge Address: ' + serverAddress;
@@ -101,18 +85,21 @@
   function onSubscriberEvent (event) {
     console.log('[Red5ProSubsriber] ' + event.type + '.');
     updateStatusFromEvent(event);
+    if (event.type === 'FlashPlayer.Embed.Success') {
+      requestABRSettings(targetSubscriber.getOptions().streamName)
+        .then(function (settings) {
+          targetSubscriber.setABRVariants(settings, abrLevel);
+        });
+    }
+    else if (event.type === 'RTMP.AdaptiveBitrate.Level') {
+      streamInfoField.innerText = "Stream Level: " + event.data.stream.name;
+    }
   }
   function onSubscribeFail (message) {
     console.error('[Red5ProSubsriber] Subscribe Error :: ' + message);
   }
-  function onSubscribeSuccess (subscriber) {
+  function onSubscribeSuccess () {
     console.log('[Red5ProSubsriber] Subscribe Complete.');
-    try {
-      window.trackBitrate(subscriber.getPeerConnection(), onBitrateUpdate, onResolutionUpdate);
-    }
-    catch (e) {
-      //
-    }
   }
   function onUnsubscribeFail (message) {
     console.error('[Red5ProSubsriber] Unsubscribe Error :: ' + message);
@@ -122,6 +109,14 @@
   }
 
   function requestEdge (configuration) {
+    return new Promise(function (resolve) {
+      resolve({
+        name: configuration.stream1,
+        serverAddress: 'localhost',
+        scope: 'live'
+      });
+    });
+    /*
     var host = configuration.host;
     var app = configuration.app;
     var port = serverSettings.httpport.toString();
@@ -150,6 +145,57 @@
             reject(error)
           });
     });
+    */
+  }
+
+  var authName = '';
+  var authPass = '';
+  function requestABRSettings (streamName) {
+    // TODO: Assuming this goes out to some service?
+    return new Promise(function (resolve, reject) { //eslint-disable-line no-unused-vars
+      resolve({
+        meta: {
+          authentication: {
+            username: authName,
+            password: authPass
+          },
+          stream: [
+            {
+              name: streamName + '_high',
+              level: 1,
+              properties: {
+                videoWidth: 640,
+                videoHeight: 480,
+                videoBR: 500000 
+              }
+            },
+            {
+              name: streamName + '_mid',
+              level: 2,
+              properties: {
+                videoWidth: 320,
+                videoHeight: 240,
+                videoBR: 256000 
+              }
+            },
+            {
+              name: streamName + '_low',
+              level: 3,
+              properties: {
+                videoWidth: 160,
+                videoHeight: 120,
+                videoBR: 128000 
+              }
+            }
+          ],
+          georules: {
+            regions: ['US', 'UK'],
+            restricted: false
+          },
+          qos: 3
+        }
+      });
+    });
   }
 
   function determineSubscriber (jsonResponse) {
@@ -157,54 +203,22 @@
     var name = jsonResponse.name;
     var app = jsonResponse.scope;
     var config = Object.assign({}, configuration, defaultConfiguration);
-    var rtcConfig = Object.assign({}, config, {
-      host: configuration.host,
-      protocol: getSocketLocationFromProtocol().protocol,
-      port: getSocketLocationFromProtocol().port,
-      app: configuration.proxy,
-      connectionParams: {
-        host: host,
-        app: app
-      },
-      subscriptionId: 'subscriber-' + instanceId,
-      streamName: name,
-      bandwidth: {
-        audio: 50,
-        video: 256,
-        data: 30 * 1000 * 1000
-      }
-    })
-    var hlsConfig = Object.assign({}, config, {
+    var rtmpConfig = Object.assign({}, config, {
       host: host,
       app: app,
-      protocol: 'http',
-      port: serverSettings.hlsport,
+      port: serverSettings.rtmpport,
       streamName: name,
-      mimeType: 'application/x-mpegURL'
+      buffer: 0.2,
+      width: config.cameraWidth,
+      height: config.cameraHeight,
+      useAdaptiveBitrateController: true,
+      backgroundColor: '#000000',
+      swf: '../../lib/red5pro/red5pro-subscriber.swf',
+      swfobjectURL: '../../lib/swfobject/swfobject.js',
+      productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
     })
-
-    if (!config.useVideo) {
-      rtcConfig.videoEncoding = 'NONE';
-    }
-    if (!config.useAudio) {
-      rtcConfig.audioEncoding = 'NONE';
-    }
-
-    var subscribeOrder = config.subscriberFailoverOrder
-                          .split(',').map(function (item) {
-                            return item.trim();
-                          });
-
-    if (window.query('view')) {
-      subscribeOrder = [window.query('view')];
-    }
-
-    var subscriber = new red5prosdk.Red5ProSubscriber();
-    return subscriber.setPlaybackOrder(subscribeOrder)
-      .init({
-        rtc: rtcConfig,
-        hls: hlsConfig
-       });
+    var subscriber = new red5prosdk.RTMPSubscriber();
+    return subscriber.init(rtmpConfig);
   }
 
   function showServerAddress (subscriber) {
