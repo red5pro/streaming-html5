@@ -25,22 +25,22 @@
                   (now - lastResult.get(report.id).timestamp);
               cb(bitrate, packets);
             }
-            // playback.
-            else if ((report.type === 'inboundrtp') ||
-                (report.type === 'inbound-rtp') ||
-                (report.type === 'ssrc' && report.bytesReceived)) {
-              bytes = report.bytesReceived;
-              packets = report.packetsReceived;
-              if (report.mediaType === 'video' && lastResult && lastResult.get(report.id)) {
-                // calculate bitrate
-                bitrate = 8 * (bytes - lastResult.get(report.id).bytesReceived) /
-                  (now - lastResult.get(report.id).timestamp);
-                cb(bitrate, packets);
-              }
+          }
+          // playback.
+          else if ((report.type === 'inboundrtp') ||
+              (report.type === 'inbound-rtp') ||
+              (report.type === 'ssrc' && report.bytesReceived)) {
+            bytes = report.bytesReceived;
+            packets = report.packetsReceived;
+            if (report.mediaType === 'video' && lastResult && lastResult.get(report.id)) {
+              // calculate bitrate
+              bitrate = 8 * (bytes - lastResult.get(report.id).bytesReceived) /
+                (now - lastResult.get(report.id).timestamp);
+              cb(bitrate, packets);
             }
-            else if (resolutionCb && report.type === 'track' && report.kind === 'video') {
-              resolutionCb(report.frameWidth, report.frameHeight);
-            }
+          }
+          else if (resolutionCb && report.type === 'track' && report.kind === 'video') {
+            resolutionCb(report.frameWidth, report.frameHeight);
           }
         });
         lastResult = res;
