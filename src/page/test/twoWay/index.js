@@ -159,7 +159,7 @@
 
   function beginStreamListCall () {
     var host = configuration.host;
-    var port = serverSettings.httpport;
+    var port = serverSettings.hlsport.toString();
     var portURI = (port.length > 0 ? ':' + port : '');
     var baseUrl = isSecure ? protocol + '://' + host : protocol + '://' + host + portURI;
     var url = baseUrl + '/' + configuration.app + '/streams.jsp';
