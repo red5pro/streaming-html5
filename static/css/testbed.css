@@ -235,7 +235,7 @@ code {
   }
 }
 
-@media (max-width:745px) {
+@media (max-width:800px) {
   .float-left-two-way {
     width: 100%;
   }
