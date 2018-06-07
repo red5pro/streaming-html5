@@ -30,17 +30,9 @@
   var streamTitle = document.getElementById('stream-title');
   var statisticsField = document.getElementById('statistics-field');
   var addressField = document.getElementById('address-field');
-  var submitButton = document.getElementById('submit-button');
-  var transcoderTypes = ['high', 'mid', 'low'];
-  var transcoderForms = (function (types) {
-    var list = [];
-    var i, length = types.length;
-    for (i = 0; i < length; i++) {
-      list.push(document.getElementById(['transcoder', types[i]].join('-')));
-    }
-    return list;
-  })(transcoderTypes);
-  submitButton.addEventListener('click', submitTranscode);
+  var cameraSelect = document.getElementById('camera-select');
+  var startButton = document.getElementById('start-btn');
+  startButton.addEventListener('click', start);
 
   var protocol = serverSettings.protocol;
   var isSecure = protocol == 'https';
@@ -50,54 +42,32 @@
       : {protocol: 'wss', port: serverSettings.wssport};
   }
 
-  var userMedia = {
-    video: {
-      width: {
-        min: 640,
-        ideal: 1920,
-        max: 1920
-      },
-      height: {
-        min: 480,
-        ideal: 1080,
-        max: 1080
-      },
-      frameRate: {
-        min: 25,
-        ideal: 60,
-        max: 60
-      }
-    }
-  };
-
   var defaultConfiguration = {
     protocol: getSocketLocationFromProtocol().protocol,
     port: getSocketLocationFromProtocol().port,
     bandwidth: {
-      video: 2500
+      video: 672
     }
   };
 
-  var accessToken = configuration.streamManagerAccessToken;
-  var authName = '';
-  var authPass = '';
-  var transcoderPOST = {
-    meta: {
-      authentication: {
-        username: authName,
-        password: authPass
+  var mediaConstraints = {
+      video: {
+        width: {
+          exact: 640
+        },
+        height: {
+          exact: 360
+        },
+        frameRate: {
+          exact: 24
+        }
       },
-      stream: [],
-      georules: {
-        regions: ['US', 'UK'],
-        restricted: false
-      },
-      qos: 3
-    }
-  }
+      audio: true
+  };
 
-  function displayServerAddress (serverAddress, proxyAddress) {
-    proxyAddress = (typeof proxyAddress === 'undefined') ? 'N/A' : proxyAddress;
+  function displayServerAddress (serverAddress, proxyAddress) 
+  {
+  proxyAddress = (typeof proxyAddress === 'undefined') ? 'N/A' : proxyAddress;
     addressField.innerText = ' Proxy Address: ' + proxyAddress + ' | ' + ' Origin Address: ' + serverAddress;
   }
 
@@ -128,43 +98,6 @@
     console.log('[Red5ProPublisher] Unpublish Complete.');
   }
 
-  function postTranscode (transcode) {
-    var host = configuration.host;
-    var app = configuration.app;
-    var streamName = configuration.stream1;
-    var port = serverSettings.httpport.toString();
-    var portURI = (port.length > 0 ? ':' + port : '');
-    var baseUrl = isSecure ? protocol + '://' + host : protocol + '://' + host + portURI;
-    var apiVersion = configuration.streamManagerAPI || '3.0';
-    var url = baseUrl + '/streammanager/api/' + apiVersion + '/admin/event/meta/' + app + '/' + streamName + '?accessToken=' + accessToken;
-    return new Promise(function (resolve, reject) {
-      fetch(url, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-        body: JSON.stringify(transcode)
-        })
-        .then(function (res) {
-          if (res.headers.get("content-type") &&
-            res.headers.get("content-type").toLowerCase().indexOf("application/json") >= 0) {
-              return res.json();
-          }
-          else {
-            throw new TypeError('Could not properly parse response.');
-          }
-        })
-        .then(function (json) {
-          resolve(json);
-        })
-        .catch(function (error) {
-            var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
-            console.error('[PublisherStreamManagerTest] :: Error - Could not POST transcode request. ' + jsonError)
-            reject(error)
-        });
-    });
-  }
-
   function requestOrigin (configuration) {
     var host = configuration.host;
     var app = configuration.app;
@@ -172,8 +105,8 @@
     var port = serverSettings.httpport.toString();
     var portURI = (port.length > 0 ? ':' + port : '');
     var baseUrl = isSecure ? protocol + '://' + host : protocol + '://' + host + portURI;
-    var apiVersion = configuration.streamManagerAPI || '3.0';
-    var url = baseUrl + '/streammanager/api/' + apiVersion + '/event/' + app + '/' + streamName + '?action=broadcast&transcoder=true';
+    var apiVersion = configuration.streamManagerAPI || '2.0';
+    var url = baseUrl + '/streammanager/api/' + apiVersion + '/event/' + app + '/' + streamName + '?action=broadcast';
       return new Promise(function (resolve, reject) {
         fetch(url)
           .then(function (res) {
@@ -186,7 +119,7 @@
             }
           })
           .then(function (json) {
-            resolve(json);
+            resolve(json.serverAddress);
           })
           .catch(function (error) {
             var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
@@ -196,39 +129,76 @@
     });
   }
 
-  function getUserMediaConfiguration () {
-    return {
-      mediaConstraints: {
-        audio: configuration.useAudio ? configuration.mediaConstraints.audio : false,
-        video: configuration.useVideo ? userMedia.video : false
+  var SELECT_DEFAULT = 'Select a camera...';
+  function onCameraSelect (selection) {
+
+    if (!configuration.useVideo) {
+      return;
+    }
+
+    if (selection && selection !== 'undefined' && selection !== SELECT_DEFAULT) {
+      // assign selected camera to defined UserMedia.
+      if (mediaConstraints.video && typeof mediaConstraints.video !== 'boolean') {
+        mediaConstraints.video.deviceId = { exact: selection }
       }
-    };
+      else {
+        mediaConstraints.video = {
+          deviceId: { exact: selection }
+        };
+      }
+      // Kick off.
+      unpublish()
+        .then(function () {
+          console.log('unpublished.');
+        })
+        .catch(function (error) {
+          console.error('[Red5ProPublisher] :: Error in publishing - ' + error);
+         });
+    }
   }
 
-  function determinePublisher (jsonResponse) {
-    var host = jsonResponse.serverAddress;
-    var app = jsonResponse.scope;
-    var name = jsonResponse.name;
+  function waitForSelect () {
+    navigator.mediaDevices.enumerateDevices()
+      .then(function (devices) {
+        var videoCameras = devices.filter(function (item) {
+          return item.kind === 'videoinput';
+        })
+        var cameras = [{
+          label: SELECT_DEFAULT
+        }].concat(videoCameras);
+        var options = cameras.map(function (camera, index) {
+          return '<option value="' + camera.deviceId + '">' + (camera.label || 'camera ' + index) + '</option>';
+        });
+        cameraSelect.innerHTML = options.join(' ');
+        cameraSelect.addEventListener('change', function () {
+          onCameraSelect(cameraSelect.value);
+        });
+      })
+      .catch(function (error) {
+        console.error('Could not access camera devices: ' + error);
+      });
+  }
+
+  function determinePublisher (serverAddress) {
     var config = Object.assign({},
                     configuration,
-                    defaultConfiguration,
-                    getUserMediaConfiguration());
+                    defaultConfiguration);
     var rtcConfig = Object.assign({}, config, {
                       protocol: getSocketLocationFromProtocol().protocol,
                       port: getSocketLocationFromProtocol().port,
-                      streamName: name,
+                      streamName: config.stream1,
                       app: configuration.proxy,
                       connectionParams: {
-                        host: host,
-                        app: app
-                      }
-                    });
+                        host: serverAddress,
+                        app: configuration.app
+                      },
+                      mediaConstraints: mediaConstraints
+                      });
     var rtmpConfig = Object.assign({}, config, {
-                      host: host,
-                      app: app,
+                      host: serverAddress,
                       protocol: 'rtmp',
                       port: serverSettings.rtmpport,
-                      streamName: name,
+                      streamName: config.stream1,
                       width: config.cameraWidth,
                       height: config.cameraHeight,
                       backgroundColor: '#000000',
@@ -276,6 +246,10 @@
   function unpublish () {
     return new Promise(function (resolve, reject) {
       var publisher = targetPublisher;
+      if (!targetPublisher) {
+        resolve();
+        return;
+      }
       publisher.unpublish()
         .then(function () {
           onUnpublishSuccess();
@@ -289,15 +263,17 @@
     });
   }
 
-  var retryCount = 0;
-  var retryLimit = 3;
-  function respondToOrigin (response) {
-    determinePublisher(response)
+  function start() {
+    // Kick off.
+    requestOrigin(configuration)
+      .then(function (serverAddress) {
+        return determinePublisher(serverAddress);
+      })
       .then(function (publisherImpl) {
         streamTitle.innerText = configuration.stream1;
         targetPublisher = publisherImpl;
         targetPublisher.on('*', onPublisherEvent);
-        showAddress(targetPublisher);
+        showAddress(targetPublisher)
         return targetPublisher.publish();
       })
       .then(function () {
@@ -313,90 +289,8 @@
       });
   }
 
-  function respondToOriginFailure (error) {
-    if (retryCount++ < retryLimit) {
-      var retryTimer = setTimeout(function () {
-        clearTimeout(retryTimer);
-        startup();
-      }, 1000);
-    }
-    else {
-      var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
-      updateStatusFromEvent({
-        type: red5prosdk.PublisherEventTypes.CONNECT_FAILURE
-      });
-      console.error('[Red5ProPublisher] :: Retry timeout in publishing - ' + jsonError);
-    }
-  }
-
-  function startup () {
-    // Kick off.
-    requestOrigin(configuration)
-      .then(respondToOrigin)
-      .catch(respondToOriginFailure);
-  }
-
-  function generateTranscoderPost (streamName, forms) {
-    /*
-              name: configuration.stream1 + '_high',
-          level: 1,
-          properties: {
-            videoWidth: userMedia.video.width.ideal,
-            videoHeight: userMedia.video.height.ideal,
-            videoBR: defaultConfiguration.bandwidth.video * 100
-          }
-          */
-    var i = forms.length;
-    var formItem;
-    var bitrateField;
-    var widthField;
-    var heightField;
-    var setting;
-    var streams = [];
-    while (--i > -1) {
-      formItem = forms[i];
-      bitrateField = formItem.getElementsByClassName('bitrate-field')[0];
-      widthField = formItem.getElementsByClassName('width-field')[0];
-      heightField = formItem.getElementsByClassName('height-field')[0];
-      setting = {
-        name: [streamName, transcoderTypes[i]].join('_'),
-        level: (i + 1),
-        properties: {
-          videoWidth: parseInt(widthField.value, 10),
-          videoHeight: parseInt(heightField.value, 10),
-          videoBR: parseInt(bitrateField.value, 10)
-        }
-      }
-      streams.push(setting);
-    }
-    return streams;
-  }
-
-  function submitTranscode () {
-    var streams = generateTranscoderPost(configuration.stream1, transcoderForms);
-    transcoderPOST.meta.stream = streams;
-    postTranscode(transcoderPOST)
-      .then(function (response) {
-        if (response.errorMessage) {
-          console.error('[Red5ProPublisher] :: Error in POST of transcode configuration: ' + response.errorMessage);
-          updateStatusFromEvent({
-            type: red5prosdk.PublisherEventTypes.CONNECT_FAILURE
-          });
-          onPublishFail(response.errorMessage);
-        }
-        else {
-          startup();
-        }
-      })
-      .catch(function (error) {
-        var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
-        console.error('[Red5ProPublisher] :: Error in POST of transcode configuration: ' + jsonError);
-        updateStatusFromEvent({
-          type: red5prosdk.PublisherEventTypes.CONNECT_FAILURE
-        });
-        onPublishFail(jsonError);
-      });
-  }
+  // Kick off.
+  waitForSelect();
 
   window.addEventListener('beforeunload', function() {
     function clearRefs () {
