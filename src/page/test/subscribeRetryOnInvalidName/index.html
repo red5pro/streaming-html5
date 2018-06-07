@@ -1,0 +1,33 @@
+<!doctype html>
+<html>
+  <head>
+    {{> meta title='Subscriber Retry On Connection'}}
+    {{> header-scripts}}
+    {{> header-stylesheets}}
+    <style>
+      #retry-button {
+        margin-top: 1rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      {{> version }}
+      {{> settings-link}}
+      {{> test-info testTitle='Subscriber Retry On Connection'}}
+      {{> status-field-subscriber}}
+      <div id="video-container" class="centered">
+        <video id="red5pro-subscriber"
+                controls autoplay playsinline
+                class="red5pro-media red5pro-media-background"
+                width="640" height="480">
+        </video>
+      </div>
+      <div class="centered">
+        <button id="retry-button" disabled>Retry Subscription</button>
+      </div>
+    </div>
+    {{> body-scripts}}
+    <script src="index.js"></script>
+  </body>
+</html>
