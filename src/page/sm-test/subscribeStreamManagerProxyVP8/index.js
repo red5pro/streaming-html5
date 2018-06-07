@@ -51,11 +51,7 @@
     var c = {
       protocol: getSocketLocationFromProtocol().protocol,
       videoEncoding: red5prosdk.PlaybackVideoEncoder.VP8,
-      port: getSocketLocationFromProtocol().port,
-      bandwidth: {
-        audio: 50,
-        video: 256
-      }
+      port: getSocketLocationFromProtocol().port
     };
     if (!useVideo) {
       c.videoEncoding = red5prosdk.PlaybackVideoEncoder.NONE;
@@ -143,12 +139,7 @@
         app: app
       },
       subscriptionId: 'subscriber-' + instanceId,
-      streamName: name,
-      bandwidth: {
-        audio: 50,
-        video: 256,
-        data: 30 * 1000 * 1000
-      }
+      streamName: name
     })
     var rtmpConfig = Object.assign({}, config, {
       host: host,
