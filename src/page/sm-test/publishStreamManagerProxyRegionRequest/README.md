@@ -36,24 +36,24 @@ var baseUrl = isSecure ? protocol + '://' + host : protocol + '://' + host + por
 var apiVersion = configuration.streamManagerAPI || '2.0';
 var url = baseUrl + '/streammanager/api/' + apiVersion + '/event/' + app + '/' + streamName + '?action=broadcast';
   return new Promise(function (resolve, reject) {
-	fetch(url)
-	  .then(function (res) {
-		if (res.headers.get("content-type") &&
-		  res.headers.get("content-type").toLowerCase().indexOf("application/json") >= 0) {
-			return res.json();
-		}
-		else {
-		  throw new TypeError('Could not properly parse response.');
-		}
-	  })
-	  .then(function (json) {
-		resolve(json.serverAddress);
-	  })
-	  .catch(function (error) {
-		var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
-		console.error('[PublisherStreamManagerTest] :: Error - Could not request Origin IP from Stream Manager. ' + jsonError)
-		reject(error)
-	  });
+  fetch(url)
+    .then(function (res) {
+    if (res.headers.get("content-type") &&
+      res.headers.get("content-type").toLowerCase().indexOf("application/json") >= 0) {
+      return res.json();
+    }
+    else {
+      throw new TypeError('Could not properly parse response.');
+    }
+    })
+    .then(function (json) {
+    resolve(json.serverAddress);
+    })
+    .catch(function (error) {
+    var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
+    console.error('[PublisherStreamManagerTest] :: Error - Could not request Origin IP from Stream Manager. ' + jsonError)
+    reject(error)
+    });
 });
 }
 
@@ -93,21 +93,25 @@ function determinePublisher (serverAddress) {
                       streamName: config.stream1,
                       streamType: 'webrtc',
                       app: configuration.proxy,
-		      connectionParams: {
-				host: serverAddress,
-				app: configuration.app
-			}
+                      connectionParams: {
+                        host: serverAddress,
+                        app: configuration.app
+                      }
                    });
     var rtmpConfig = Object.assign({}, config, {
                       host: serverAddress,
                       protocol: 'rtmp',
                       port: serverSettings.rtmpport,
                       streamName: config.stream1,
-                      width: config.cameraWidth,
-                      height: config.cameraHeight,
                       swf: '../../lib/red5pro/red5pro-publisher.swf',
                       swfobjectURL: '../../lib/swfobject/swfobject.js',
-                      productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
+                      productInstallURL: '../../lib/swfobject/playerProductInstall.swf',
+                      mediaConstraint: {
+                        video: {
+                          width: config.cameraWidth,
+                          height: config.cameraHeight,
+                        }
+                      }
                    });
     var publishOrder = config.publisherFailoverOrder
                             .split(',')

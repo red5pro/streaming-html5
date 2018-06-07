@@ -100,11 +100,15 @@
                     protocol: 'rtmp',
                     port: serverSettings.rtmpport,
                     streamName: config.stream1,
-                    width: config.cameraWidth,
-                    height: config.cameraHeight,
                     swf: 'red5pro-camera-resize-publisher.swf',
                     swfobjectURL: '../../lib/swfobject/swfobject.js',
-                    productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
+                    productInstallURL: '../../lib/swfobject/playerProductInstall.swf',
+                    mediaConstraint: {
+                      video: {
+                        width: config.cameraWidth,
+                        height: config.cameraHeight,
+                      }
+                    }
   });
   /**
   // The following are to address: RPRO-3787

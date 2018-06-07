@@ -110,13 +110,13 @@
                     protocol: 'rtmp',
                     port: serverSettings.rtmpport,
                     streamName: config.stream1,
-                    width: config.cameraWidth,
-                    height: config.cameraHeight,
                     swf: '../../lib/red5pro/red5pro-publisher.swf',
                     swfobjectURL: '../../lib/swfobject/swfobject.js',
                     productInstallURL: '../../lib/swfobject/playerProductInstall.swf',
                     mediaConstraints: {
                       video: {
+                        width: config.cameraWidth,
+                        height: config.cameraHeight,
                         framerate: getParam('framerate'),
                         bandwidth: getParam('bandwidth'),
                         quality: getParam('quality'),

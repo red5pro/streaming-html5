@@ -141,12 +141,16 @@
                       protocol: 'rtmp',
                       port: serverSettings.rtmpport,
                       streamName: name,
-                      width: config.cameraWidth,
-                      height: config.cameraHeight,
                       backgroundColor: '#000000',
                       swf: '../../lib/red5pro/red5pro-publisher.swf',
                       swfobjectURL: '../../lib/swfobject/swfobject.js',
-                      productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
+                      productInstallURL: '../../lib/swfobject/playerProductInstall.swf',
+                      mediaConstraint: {
+                        video: {
+                          width: config.cameraWidth,
+                          height: config.cameraHeight,
+                        }
+                      }
                    });
     var publishOrder = config.publisherFailoverOrder
                             .split(',')
