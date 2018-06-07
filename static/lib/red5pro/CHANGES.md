@@ -1,9 +1,5 @@
 # Changes
 
-## 4.5.0
-
-- docs update. (bustardcelly)
-
 ## 4.2.0
 
 - Firefox SDP munge for bandwidth RPRO-4625 (bustardcelly)

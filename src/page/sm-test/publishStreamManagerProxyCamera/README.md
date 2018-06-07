@@ -1,4 +1,5 @@
 # Playback VOD using Red5 Pro
+
 This is an example of Video On Demand (VOD) playback.
 
 To view the recorded files available for VOD playback, view the listings from your server deploy in the webapp that the recorded stream was recorded to, such as the following:
@@ -6,11 +7,15 @@ To view the recorded files available for VOD playback, view the listings from yo
 * [http://localhost:5080/live/mediafiles](../../live/mediafiles)
 * [http://localhost:5080/live/playlists](../../live/playlists)
 
-### Example Code
+**Please refer to the [Basic Subscriber Documentation](../subscribe/README.md) to learn more about the basic setup.**
+
+## Example Code
+
 - **[index.html](index.html)**
 - **[index.js](index.js)**
 
-## How to Playback
+# How to Playback
+
 > Be sure to have previously recorded a broadcast using the [Publish Record Example](../publishRecord).
 
 1. Enter in a filename - including the extension - of a previously recorded broadcast.
@@ -24,10 +29,12 @@ The playback format - either Flash or HLS - will be determined based on the exte
 | `mp4` | Flash/RTMP |
 | `m3u8` | HLS |
 
-## Specifying a file as playback in a Subscriber
+# Specifying a file as playback in a Subscriber
+
 Playing back a VOD file using the Red5 Pro Subscriber is similar to streaming a live video. Some configuration attributes will be different depending on the playback target.
 
-### Flash/RTMP
+## Flash/RTMP
+
 To playback a VOD in the RTMP-based Subscriber:
 
 * Set the `streamName` in the configuration to the filename, with the extension.
@@ -46,7 +53,8 @@ With a configuration provided for the RTMP Subscriber:
 
 The Playback engine will connect to the server at `rtmp://localhost:1935/` and attempt to play back the `thefiletoplay.flv` file located in `<red5proserver>/webapps/live/streams`.
 
-### HLS
+## HLS
+
 To playback a VOD in the HLS-based Subscriber:
 
 * Set the `streamName` in the configuration to the filename, _without_ the extension.

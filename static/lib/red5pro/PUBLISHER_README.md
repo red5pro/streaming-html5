@@ -51,7 +51,7 @@ _It is *highly* recommended to include [adapter.js](https://github.com/webrtc/ad
 | Property | Required | Default | Description |
 | :--- | :---: | :---: | :--- |
 | protocol | [x] | `wss` | The protocol for the WebSocket communication; `ws` or `wss`. |
-| port | [x] | `8033` | The port on the host that the WebSocket server resides on; `8081` or `8083`. |
+| port | [x] | `8083` | The port on the host that the WebSocket server resides on; `8081` or `8083`. |
 | app | [x] | `live` | The webapp name that the WebSocket is listening on. |
 | streamMode | [x] | `live` | The mode to broadcast; `live`, `record` or `append`. |
 | host | [x] | *None* | The IP or address that the WebSocket server resides on. |
@@ -99,7 +99,28 @@ _main.js_:
       host: 'localhost',
       app: 'live',
       streamName: 'mystream',
-      iceServers: [{urls: 'stun:stun2.l.google.com:19302'}]
+      iceServers: [{urls: 'stun:stun2.l.google.com:19302'}],
+      streamMode: 'live',
+      mediaElementId: 'red5pro-publisher',
+      bandwidth: {
+        audio: 56,
+        video: 512
+      },
+      mediaConstraints: {
+        audio: true,
+        video: {
+          width: {
+            exact: 640
+          },
+          height: {
+            exact: 480
+          },
+          frameRate: {
+            min: 8
+            max: 24
+          }
+        }
+      }
     })
     .then(function() {
       // Invoke the publish action.
@@ -262,7 +283,22 @@ _main.js_:
       host: 'localhost',
       app: 'live',
       streamName: 'mystream',
-      swf: 'lib/red5pro/red5pro-publisher.swf'
+      swf: 'lib/red5pro/red5pro-publisher.swf',
+      productInstallURL: 'lib/swfobject/playerProductInstall.swf',
+      minFlashVersion: '10.0.0',
+      streamMode: 'live',
+      mediaElementId: 'red5pro-publisher',
+      embedWidth: '100%',
+      embedHeight: '100%',
+      mediaConstraints: {
+        width: 640,
+        height: 480,
+        framerate: 15,
+        bandwidth: 50000,
+        quality: 80,
+        profile: 'baseline',
+        level: '3.1'
+      }
     })
     .then(function() {
       // Invoke the publish action.

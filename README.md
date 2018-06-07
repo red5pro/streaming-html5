@@ -6,14 +6,13 @@
   <a href="#publishing">publishing</a> &bull;
   <a href="#subscribing">subscribing</a>
 </p>
--------
 
 # Red5 Pro HTML5 Streaming Testbed
 This repository contains a simple project with a number of examples that can be used for testing and reference for the Red5 Pro HTML SDK.
 
 > These examples are also shipped with the [Red5 Pro Server](https://account.red5pro.com/download) and can be found in the webapp `webrtcexamples`.
 
-##Requirements
+## Requirements
 
 You will need a functional, running Red5 Pro server web- (or locally-) accessible for the client browser (mobile & desktop) to connect to.
 

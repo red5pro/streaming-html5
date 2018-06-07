@@ -51,8 +51,8 @@ _It is *highly* recommended to include [adapter.js](https://github.com/webrtc/ad
 ### WebRTC Configuration Properties
 | Property | Required | Default | Description |
 | :--- | :---: | :---: | :--- |
-| protocol | [x] | `rtmp` | The protocol for the WebSocket communication. |
-| port | [x] | `1935` | The port on the host that the WebSocket server resides on. |
+| protocol | [x] | `wss` | The protocol for the WebSocket communication. |
+| port | [x] | `8083` | The port on the host that the WebSocket server resides on. |
 | app | [x] | `live` | The webapp name that the WebSocket is listening on. |
 | host | [x] | *None* | The IP or address that the WebSocket server resides on. |
 | streamName | [x] | *None* | The name of the stream to subscribe to. |
@@ -63,6 +63,7 @@ _It is *highly* recommended to include [adapter.js](https://github.com/webrtc/ad
 | connectionParams | [-] | `undefined` | An object of connection parameters to send to the server upon connection request. |
 | videoEncoding | [-] | *None* | Specifies target video encoder. |
 | audio Encoding | [-] | *None* | Specifies target audio encoder. |
+| autoLayoutOrientation | [-] | `true` | Flag to allow SDK to auto-orientation the layout of `video` element based on broadcast metadata. _Mobile publishers broadcast with orientation._ |
 
 #### Video Encoding Configuration
 By not providing the `videoEncoding` attribute in the WebRTC Subscriber configuration, the server will choose the default encoder to use. If you do not wish for the server to default, you can provide the following values for the property:
@@ -126,7 +127,11 @@ _main.js_:
     bandwidth: {
       audio: 56,
       video: 512
-    }
+    },
+    mediaElementId: 'red5pro-subscriber',
+    subscriptionId: 'mystream' + Math.floor(Math.random() * 0x10000).toString(16),
+    videoEncoding: 'NONE',
+    audioEncoding: 'NONE'
   })
   .then(function(subscriber) {
     // `subcriber` is the WebRTC Subscriber instance.
@@ -216,6 +221,14 @@ _main.js_:
     app: 'live',
     streamName: 'mystream',
     swf: 'lib/red5pro-subscriber.swf'
+    productInstallURL: 'lib/swfobject/playerProductInstall.swf',
+    minFlashVersion: '10.0.0',
+    mimeType: 'rtmp/flv',
+    buffer: 1,
+    width: 640,
+    height: 480,
+    embedWidth: '100%',
+    embedHeight: '100%'
   })
   .then(function(subscriber) {
     // `subcriber` is the Flash/RTMP Subscriber instance.
@@ -247,6 +260,7 @@ The Red5 Pro HTML SDK HLS Subscriber.
 | streamName | [x] | *None* | The stream name to subscribe to. |
 | mediaElementId | [-] | `red5pro-subscriber` | The target `video` or `audio` element `id` attribute which will display the stream. |
 | mimeType | [x] | `application/x-mpegURL` | The mime-type of the stream source. |
+| autoLayoutOrientation | [-] | `true` | Flag to allow SDK to auto-orientation the layout of `video` element based on broadcast metadata. _Mobile publishers broadcast with orientation._ |
 
 ### HLS Example
 _index.html_:
@@ -288,7 +302,8 @@ _main.js_:
     app: 'live',
     host: 'localhost',
     streamName: 'mystream',
-    mimeType: 'application/x-mpegURL'
+    mimeType: 'application/x-mpegURL',
+    mediaElementId: 'red5pro-subscriber'
   })
   .then(function(subscriber) {
     // `subcriber` is the HLS Subscriber instance.

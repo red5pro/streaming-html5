@@ -14,7 +14,6 @@
           var packets;
           var now = report.timestamp;
           var bitrate;
-          // broadcast.
           if ((report.type === 'outboundrtp') ||
               (report.type === 'outbound-rtp') ||
               (report.type === 'ssrc' && report.bytesSent)) {
@@ -36,7 +35,7 @@
             if (report.mediaType === 'video' && lastResult && lastResult.get(report.id)) {
               // calculate bitrate
               bitrate = 8 * (bytes - lastResult.get(report.id).bytesReceived) /
-                  (now - lastResult.get(report.id).timestamp);
+                (now - lastResult.get(report.id).timestamp);
               cb(bitrate, packets);
             }
           }

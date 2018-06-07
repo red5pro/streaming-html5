@@ -1,17 +1,22 @@
 # Publish & Subscribe Remote Call
 This example demonstrates the `send` API of the publisher in the Red5 Pro HTML SDK. Using `send`, a publisher can send a message object to any currently subscribed clients.
 
-### Example Code
+**Please refer to the [Basic Subscriber Documentation](../subscribe/README.md) and [Basic Publisher Documentation](../publisher/README.md) to learn more about the basic setup.**
 
-#### Publisher
+## Example Code
+
+### Publisher
+
 - **[index.html](../publishRemoteCall/index.html)**
 - **[index.js](../publishRemoteCall/index.js)**
 
-#### Subscriber
+### Subscriber
+
 - **[index.html](index.html)**
 - **[index.js](index.js)**
 
 # Running the example
+
 Two clients are required to run this example: one as a publisher, and the other as a subscriber.
 
 Connect the first client (publisher) with the *Publish - Remote Call* example. On the second lient (subscriber) use the *Subscribe - Remote Call* example.
@@ -19,7 +24,8 @@ Connect the first client (publisher) with the *Publish - Remote Call* example. O
 Touch the preview on the publisher screen to display a label on the subscriber screen where the publisher touched.
 
 ## Using the `send` API
-Once the stream has connected you are able to dispatch messages to any connected subscribers. Sending the message is a simple call:
+
+Once the broadcast stream has connected you are able to dispatch messages to any connected subscribers. Sending the message is a simple call:
 
 ```js
 send('whateverFunctionName', {
@@ -29,9 +35,10 @@ send('whateverFunctionName', {
 });
 ```
 
-[index.js #37](index.js#L37)
+[index.js #37](../publishRemoteCall/index.js#L37)
 
 ## Method signature
+
 The method signature for the `send` API is:
 
 | Param | Description |
@@ -48,12 +55,14 @@ The structure of `data` can be any javascript `Object`. The data will be seriali
 > You should *not* send the `data` object as a `String`.
 
 ## Receiving the message
+
 On the browser-based subscriber client, you will need to define the event responder for `Subscriber.Send.Invoke` and handle the event properties to determine the `methodName` being invoked. In using the Red5 Pro HTML SDK:
 
 ```js
 subscriber.on(red5pro.SubscriberEventTypes.SUBSCRIBE_SEND_INVOKE, sendClientHandler);
 ```
-[index.js #186](index.js#L186)
+
+[index.js #139](index.js#L139)
 
 ```js
 var sendClientHandler = function (event) {
@@ -68,5 +77,5 @@ var sendClientHandler = function (event) {
   }
 };
 ```
-[index.js #201](index.js#L201)
+[index.js #152](index.js#L152)
 

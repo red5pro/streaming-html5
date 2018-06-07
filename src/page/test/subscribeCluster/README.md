@@ -9,13 +9,13 @@ With clustering, we need to determine which Red5 Pro instance the client will us
 
 In the basic clustering scenario, our configuration IP will be used differently for publishers and subscribers. Publishers will stream directly to the configuration IP. Subscribers will not. Instead, subscribers will call a web service to receive the IP that should be used.
 
-### Example Code
+## Example Code
 - **[index.html](index.html)**
 - **[index.js](index.js)**
 
 > These examples use the WebRTC-based Subscriber implementation from the Red5 Pro HTML SDK. However, there is failover support to allow for Flash-based and HLS-based subscribers on unsupported browsers.
 
-## Configuration of the server.
+# Configuration of the server.
 The **cluster.xml** file located in the `conf` directory of the Red5 Pro Server install. If the server is an edge, add an ip for its origin(s) within the origins list. Every server in your cluster must use the same password or core connections are denied. Set the public facing ip and port.
 
 Origins provide round robin, and you can exclude instances from it by setting the privateInstance property to true on the edge. The hidden edge can be used for other purposes such as being a repeater origin.
@@ -25,10 +25,10 @@ Origins provide round robin, and you can exclude instances from it by setting th
 
   <property name="origins">
 
-    <list>
-      <!-- add origin ips and optional port if not the default.  -->
-      <value>0.0.0.0:1935</value>
-    </list>
+  <list>
+    <!-- add origin ips and optional port if not the default.  -->
+    <value>0.0.0.0:1935</value>
+  </list>
 
   </property>
   <!-- edge/origin link cluster password-->
@@ -63,10 +63,12 @@ The round robin servlet is defined in **web.xml** of your webapp. It is the serv
 
 The URI would be `http://YOUR_IP:5080/YOURAPP/cluster`.
 
-## How to Publish
+# How to Publish
+
 Publishers must use the origin IP in their configuration. The stream is distributed to the edges from the origin. Use the [Publish example](../publish) to provide a live stream.
 
-## How to Subscribe
+# How to Subscribe
+
 Subscribers call the cluster servlet, and use the return data as the configuration IP. The origin will know which edges are active and provide the next in sequence.
 
 ```js
@@ -94,9 +96,7 @@ function requestEdge (configuration) {
 }
 ```
 
-<sup>
-[index.js #69](index.js#L69]
-</sup>
+[index.js #93](index.js#L93]
 
 The origin server is returned in plain text with the format `IP:PORT`. As such, we strip the `:PORT` off the end and use the `IP` value as the `host` in the configuration for subscription.
 

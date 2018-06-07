@@ -2,12 +2,14 @@
 
 This is an example of utilizing the failover mechanism of the Red5 Pro HTML SDK to select a subscriber based on browser support and to reconnect on close of broadcast or loss of connection.
 
-### Example Code
+**Please refer to the [Basic Subscriber Documentation](../subscribe/README.md) to learn more about the basic setup.**
+
+## Example Code
 
 - **[index.html](index.html)**
 - **[index.js](index.js)**
 
-## Implementation
+# Implementation
 
 Use the events API to determine when to kick off a reconnection request.
 
@@ -21,18 +23,18 @@ function retryConnect () {
   }
 }
 ```
-[index.js #143](index.js#L143)
+[index.js #134](index.js#L134)
 
 When a connection is established, an event handler is assigned to the subscriber instance to handle situations in which the broadcast will be stopped.
 
-### Events & Reconnection
+## Events & Reconnection
 
 In the occurance of a lost stream from the publisher - either from a network issue or stop of broadcast - you can stopstart the request cycle again.
 
 There are 2 important events that relate to the loss of a publisher:
 
 * CONNECTION_CLOSED
-* NET_STATUS with message of NetStream.Play.UnpublishNotify
+* NET_STATUS with message of `NetStream.Play.UnpublishNotify`
 
 In this example, we rely on the `CONNECTION_CLOSED` event to start that reconnect cycle again, waiting for the publisher to come back:
 
@@ -51,7 +53,7 @@ function onSubscriberEvent (event) {
 }
 ```
 
-[index.js #60](index.js#L60)
+[index.js #56](index.js#L56)
 
 Listening on `CONNECTION_CLOSED` is best as it will handle both the scenario that the broadcast has stopped from the publisher side (either explicitly or from a poor network condition) and the connection for the subscriber having been closed (either explcitly from the server after a broadcast stop or from a poor network condition).
 
