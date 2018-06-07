@@ -91,7 +91,8 @@
         }
       ],
       "verboseLogging": true,
-      "streamManagerAPI": "2.0"
+      "streamManagerAPI": "3.0",
+      "streamManagerAccessToken": "xyz123"
     };
     /**
     if (isMoz) {
@@ -110,11 +111,8 @@
       else {
         json.iceServers = json.googleIce;
       }
+      console.log('ICE server provided in query param: ' + JSON.stringify(json.iceServers, null, 2));
     }
-    else {
-      json.iceServers = json.googleIce;
-    }
-    console.log('Selected ICE servers: ' + JSON.stringify(json.iceServers, null, 2));
   }
 
   if (config) {

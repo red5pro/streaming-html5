@@ -30,6 +30,9 @@
   var streamTitle = document.getElementById('stream-title');
   var statisticsField = document.getElementById('statistics-field');
   var addressField = document.getElementById('address-field');
+  var cameraSelect = document.getElementById('camera-select');
+  var startButton = document.getElementById('start-btn');
+  startButton.addEventListener('click', start);
 
   var protocol = serverSettings.protocol;
   var isSecure = protocol == 'https';
@@ -41,11 +44,31 @@
 
   var defaultConfiguration = {
     protocol: getSocketLocationFromProtocol().protocol,
-    port: getSocketLocationFromProtocol().port
+    port: getSocketLocationFromProtocol().port,
+    bandwidth: {
+      video: 672
+    }
   };
 
-  function displayServerAddress (serverAddress) {
-    addressField.innerText = 'Origin Address: ' + serverAddress;
+  var mediaConstraints = {
+      video: {
+        width: {
+          exact: 640
+        },
+        height: {
+          exact: 360
+        },
+        frameRate: {
+          exact: 24
+        }
+      },
+      audio: true
+  };
+
+  function displayServerAddress (serverAddress, proxyAddress) 
+  {
+  proxyAddress = (typeof proxyAddress === 'undefined') ? 'N/A' : proxyAddress;
+    addressField.innerText = ' Proxy Address: ' + proxyAddress + ' | ' + ' Origin Address: ' + serverAddress;
   }
 
   function onBitrateUpdate (bitrate, packetsSent) {
@@ -79,7 +102,7 @@
     var host = configuration.host;
     var app = configuration.app;
     var streamName = configuration.stream1;
-    var port = serverSettings.httpport;
+    var port = serverSettings.httpport.toString();
     var portURI = (port.length > 0 ? ':' + port : '');
     var baseUrl = isSecure ? protocol + '://' + host : protocol + '://' + host + portURI;
     var apiVersion = configuration.streamManagerAPI || '2.0';
@@ -106,27 +129,73 @@
     });
   }
 
-  function getUserMediaConfiguration () {
-    return {
-      mediaConstraints: {
-        audio: configuration.useAudio ? configuration.mediaConstraints.audio : false,
-        video: configuration.useVideo ? configuration.mediaConstraints.video : false
+  var SELECT_DEFAULT = 'Select a camera...';
+  function onCameraSelect (selection) {
+
+    if (!configuration.useVideo) {
+      return;
+    }
+
+    if (selection && selection !== 'undefined' && selection !== SELECT_DEFAULT) {
+      // assign selected camera to defined UserMedia.
+      if (mediaConstraints.video && typeof mediaConstraints.video !== 'boolean') {
+        mediaConstraints.video.deviceId = { exact: selection }
       }
-    };
+      else {
+        mediaConstraints.video = {
+          deviceId: { exact: selection }
+        };
+      }
+      // Kick off.
+      unpublish()
+        .then(function () {
+          console.log('unpublished.');
+        })
+        .catch(function (error) {
+          console.error('[Red5ProPublisher] :: Error in publishing - ' + error);
+         });
+    }
   }
 
-  function determinePublisher () {
+  function waitForSelect () {
+    navigator.mediaDevices.enumerateDevices()
+      .then(function (devices) {
+        var videoCameras = devices.filter(function (item) {
+          return item.kind === 'videoinput';
+        })
+        var cameras = [{
+          label: SELECT_DEFAULT
+        }].concat(videoCameras);
+        var options = cameras.map(function (camera, index) {
+          return '<option value="' + camera.deviceId + '">' + (camera.label || 'camera ' + index) + '</option>';
+        });
+        cameraSelect.innerHTML = options.join(' ');
+        cameraSelect.addEventListener('change', function () {
+          onCameraSelect(cameraSelect.value);
+        });
+      })
+      .catch(function (error) {
+        console.error('Could not access camera devices: ' + error);
+      });
+  }
 
+  function determinePublisher (serverAddress) {
     var config = Object.assign({},
                     configuration,
-                    defaultConfiguration,
-                    getUserMediaConfiguration());
+                    defaultConfiguration);
     var rtcConfig = Object.assign({}, config, {
                       protocol: getSocketLocationFromProtocol().protocol,
                       port: getSocketLocationFromProtocol().port,
-                      streamName: config.stream1
-                   });
+                      streamName: config.stream1,
+                      app: configuration.proxy,
+                      connectionParams: {
+                        host: serverAddress,
+                        app: configuration.app
+                      },
+                      mediaConstraints: mediaConstraints
+                      });
     var rtmpConfig = Object.assign({}, config, {
+                      host: serverAddress,
                       protocol: 'rtmp',
                       port: serverSettings.rtmpport,
                       streamName: config.stream1,
@@ -155,9 +224,32 @@
               });
   }
 
+  function showAddress (publisher) {
+    var config = publisher.getOptions();
+    console.log("Host = " + config.host + " | " + "app = " + config.app);
+    if (publisher.getType().toLowerCase() === 'rtc') {
+      displayServerAddress(config.connectionParams.host, config.host);
+      console.log("Using streammanager proxy for rtc");
+      console.log("Proxy target = " + config.connectionParams.host + " | " + "Proxy app = " + config.connectionParams.app)
+      if(isSecure) {
+        console.log("Operating over secure connection | protocol: " + config.protocol + " | port: " +  config.port);
+      }
+      else {
+        console.log("Operating over unsecure connection | protocol: " + config.protocol + " | port: " +  config.port);
+      }
+    }
+    else {
+      displayServerAddress(config.host);
+    }
+  }
+
   function unpublish () {
     return new Promise(function (resolve, reject) {
       var publisher = targetPublisher;
+      if (!targetPublisher) {
+        resolve();
+        return;
+      }
       publisher.unpublish()
         .then(function () {
           onUnpublishSuccess();
@@ -171,30 +263,34 @@
     });
   }
 
-  // Kick off.
-  requestOrigin(configuration)
-    .then(function (serverAddress) {
-      displayServerAddress(serverAddress);
-      configuration.host = serverAddress;
-      return determinePublisher();
-    })
-    .then(function (publisherImpl) {
-      streamTitle.innerText = configuration.stream1;
-      targetPublisher = publisherImpl;
-      targetPublisher.on('*', onPublisherEvent);
-      return targetPublisher.publish();
-    })
-    .then(function () {
-      onPublishSuccess(targetPublisher);
-    })
-    .catch(function (error) {
-      var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
-      console.error('[Red5ProPublisher] :: Error in access of Origin IP: ' + jsonError);
-      updateStatusFromEvent({
-        type: red5prosdk.PublisherEventTypes.CONNECT_FAILURE
+  function start() {
+    // Kick off.
+    requestOrigin(configuration)
+      .then(function (serverAddress) {
+        return determinePublisher(serverAddress);
+      })
+      .then(function (publisherImpl) {
+        streamTitle.innerText = configuration.stream1;
+        targetPublisher = publisherImpl;
+        targetPublisher.on('*', onPublisherEvent);
+        showAddress(targetPublisher)
+        return targetPublisher.publish();
+      })
+      .then(function () {
+        onPublishSuccess(targetPublisher);
+      })
+      .catch(function (error) {
+        var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
+        console.error('[Red5ProPublisher] :: Error in access of Origin IP: ' + jsonError);
+        updateStatusFromEvent({
+          type: red5prosdk.PublisherEventTypes.CONNECT_FAILURE
+        });
+        onPublishFail(jsonError);
       });
-      onPublishFail(jsonError);
-    });
+  }
+
+  // Kick off.
+  waitForSelect();
 
   window.addEventListener('beforeunload', function() {
     function clearRefs () {

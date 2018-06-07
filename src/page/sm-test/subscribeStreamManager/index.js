@@ -102,7 +102,7 @@
     var portURI = (port.length > 0 ? ':' + port : '');
     var baseUrl = isSecure ? protocol + '://' + host : protocol + '://' + host + portURI;
     var streamName = configuration.stream1;
-    var apiVersion = configuration.streamManagerAPI || '2.0';
+    var apiVersion = configuration.streamManagerAPI || '3.0';
     var url = baseUrl + '/streammanager/api/' + apiVersion + '/event/' + app + '/' + streamName + '?action=subscribe';
       return new Promise(function (resolve, reject) {
         fetch(url)
@@ -116,7 +116,7 @@
             }
           })
           .then(function (json) {
-            resolve(json.serverAddress);
+            resolve(json);
           })
           .catch(function (error) {
             var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
@@ -126,7 +126,10 @@
     });
   }
 
-  function determineSubscriber (host) {
+  function determineSubscriber (jsonResponse) {
+    var host = jsonResponse.serverAddress;
+    var name = jsonResponse.name;
+    var app = jsonResponse.scope;
     displayServerAddress('Edge', host);
     var config = Object.assign({}, configuration, defaultConfiguration);
     var rtcConfig = Object.assign({}, config, {
@@ -134,7 +137,8 @@
       protocol: 'ws', // cluster is not over secure, at this time
       port: serverSettings.wsport, // cluster is not over secure, at this time
       subscriptionId: 'subscriber-' + instanceId,
-      streamName: config.stream1,
+      app: app,
+      streamName: name,
       bandwidth: {
         audio: 50,
         video: 256,
@@ -143,9 +147,10 @@
     })
     var rtmpConfig = Object.assign({}, config, {
       host: host,
+      app: app,
       protocol: 'rtmp',
       port: serverSettings.rtmpport,
-      streamName: config.stream1,
+      streamName: name,
       mimeType: 'rtmp/flv',
       useVideoJS: false,
       width: config.cameraWidth,
@@ -157,8 +162,9 @@
     var hlsConfig = Object.assign({}, config, {
       host: host,
       protocol: 'http',
+      app: app,
       port: serverSettings.hlsport,
-      streamName: config.stream1,
+      streamName: name,
       mimeType: 'application/x-mpegURL'
     })
 
@@ -198,24 +204,47 @@
     });
   }
 
-  // Kick off.
-  requestEdge(configuration)
-    .then(determineSubscriber)
-    .then(function (subscriberImpl) {
-      streamTitle.innerText = configuration.stream1;
-      targetSubscriber = subscriberImpl;
-      // Subscribe to events.
-      targetSubscriber.on('*', onSubscriberEvent);
-      return targetSubscriber.subscribe();
-    })
-    .then(function () {
-      onSubscribeSuccess();
-    })
-    .catch(function (error) {
+  var retryCount = 0;
+  var retryLimit = 3;
+  function respondToEdge (response) {
+    determineSubscriber(response)
+      .then(function (subscriberImpl) {
+        streamTitle.innerText = configuration.stream1;
+        targetSubscriber = subscriberImpl;
+        // Subscribe to events.
+        targetSubscriber.on('*', onSubscriberEvent);
+        return targetSubscriber.subscribe();
+      })
+      .then(function () {
+        onSubscribeSuccess();
+      })
+      .catch(function (error) {
+        var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
+        console.error('[Red5ProSubscriber] :: Error in subscribing - ' + jsonError);
+        onSubscribeFail(jsonError);
+      });
+  }
+
+  function respondToEdgeFailure (error) {
+    if (retryCount++ < retryLimit) {
+      var retryTimer = setTimeout(function () {
+        clearTimeout(retryTimer);
+        startup();
+      }, 1000);
+    }
+    else {
       var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
-      console.error('[Red5ProSubscriber] :: Error in subscribing - ' + jsonError);
-      onSubscribeFail(jsonError);
-    });
+      console.error('[Red5ProSubscriber] :: Retry timeout in subscribing - ' + jsonError);
+    }
+  }
+
+  function startup () {
+    // Kick off.
+    requestEdge(configuration)
+      .then(respondToEdge)
+      .catch(respondToEdgeFailure);
+  }
+  startup();
 
   // Clean up.
   window.addEventListener('beforeunload', function() {
