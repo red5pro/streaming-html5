@@ -93,6 +93,18 @@
     };
   }
 
+  function getRTMPMediaConfiguration () {
+    return {
+      mediaConstraints: {
+        audio: configuration.useAudio ? configuration.mediaConstraints.audio : false,
+        video: configuration.useVideo ? {
+                width: configuration.cameraWidth,
+                height: configuration.cameraHeight
+              } : false
+      }
+    }
+  }
+
   var config = Object.assign({},
                  configuration,
                  getUserMediaConfiguration());
@@ -102,14 +114,8 @@
                     streamName: config.stream1,
                     swf: 'red5pro-camera-resize-publisher.swf',
                     swfobjectURL: '../../lib/swfobject/swfobject.js',
-                    productInstallURL: '../../lib/swfobject/playerProductInstall.swf',
-                    mediaConstraint: {
-                      video: {
-                        width: config.cameraWidth,
-                        height: config.cameraHeight,
-                      }
-                    }
-  });
+                    productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
+                  }, getRTMPMediaConfiguration());
   /**
   // The following are to address: RPRO-3787
   rtmpConfig.video.width = 854;

@@ -78,6 +78,18 @@
     };
   }
 
+  function getRTMPMediaConfiguration () {
+    return {
+      mediaConstraints: {
+        audio: configuration.useAudio ? configuration.mediaConstraints.audio : false,
+        video: configuration.useVideo ? {
+                width: configuration.cameraWidth,
+                height: configuration.cameraHeight
+              } : false
+      }
+    }
+  }
+
   function determinePublisher () {
 
     var config = Object.assign({},
@@ -95,14 +107,8 @@
                       backgroundColor: '#000000',
                       swf: '../../lib/red5pro/red5pro-publisher.swf',
                       swfobjectURL: '../../lib/swfobject/swfobject.js',
-                      productInstallURL: '../../lib/swfobject/playerProductInstall.swf',
-                      mediaConstraint: {
-                        video: {
-                          width: config.cameraWidth,
-                          height: config.cameraHeight,
-                        }
-                      }
-                   });
+                      productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
+                    }, getRTMPMediaConfiguration());
     var publishOrder = config.publisherFailoverOrder
                             .split(',')
                             .map(function (item) {

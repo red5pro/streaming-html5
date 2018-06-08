@@ -79,9 +79,11 @@
 
   function getUserMediaConfiguration () {
     return {
-      audio: configuration.useAudio ? configuration.mediaConstraints.audio : false,
-      video: configuration.useVideo ? configuration.mediaConstraints.video : false,
-      frameRate: configuration.frameRate
+      mediaConstraints: {
+        audio: configuration.useAudio ? configuration.mediaConstraints.audio : false,
+        video: configuration.useVideo ? configuration.mediaConstraints.video : false,
+        frameRate: configuration.frameRate
+      }
     };
   }
 
@@ -114,7 +116,7 @@
                     swfobjectURL: '../../lib/swfobject/swfobject.js',
                     productInstallURL: '../../lib/swfobject/playerProductInstall.swf',
                     mediaConstraints: {
-                      video: {
+                      video: configuration.useVideo ? {
                         width: config.cameraWidth,
                         height: config.cameraHeight,
                         framerate: getParam('framerate'),
@@ -122,7 +124,8 @@
                         quality: getParam('quality'),
                         profile: getParam('profile'),
                         level: getParam('level')
-                      }
+                      } : false,
+                      audio: configuration.useAudio
                     }
     });
     // Kick off.
