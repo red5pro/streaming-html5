@@ -38,31 +38,9 @@
   };
   var instanceId = Math.floor(Math.random() * 0x10000).toString(16);
   var streamTitle = document.getElementById('stream-title');
-  var statisticsField = document.getElementById('statistics-field');
   var addressField = document.getElementById('address-field');
   var protocol = serverSettings.protocol;
   var isSecure = protocol === 'https';
-
-  var bitrate = 0;
-  var packetsReceived = 0;
-  var frameWidth = 0;
-  var frameHeight = 0;
-  function updateStatistics (b, p, w, h) {
-    statisticsField.innerText = 'Bitrate: ' + Math.floor(b) + '. Packets Received: ' + p + '.' + ' Resolution: ' + w + ', ' + h + '.';
-  }
-
-  function onBitrateUpdate (b, p) {
-    bitrate = b;
-    packetsReceived = p;
-    updateStatistics(bitrate, packetsReceived, frameWidth, frameHeight);
-  }
-
-  function onResolutionUpdate (w, h) {
-    frameWidth = w;
-    frameHeight = h;
-    updateStatistics(bitrate, packetsReceived, frameWidth, frameHeight);
-  }
-
   function getSocketLocationFromProtocol () {
     return !isSecure
       ? {protocol: 'ws', port: serverSettings.wsport}
@@ -72,6 +50,7 @@
   var defaultConfiguration = (function(useVideo, useAudio) {
     var c = {
       protocol: getSocketLocationFromProtocol().protocol,
+      videoEncoding: red5prosdk.PlaybackVideoEncoder.VP8,
       port: getSocketLocationFromProtocol().port
     };
     if (!useVideo) {
@@ -91,8 +70,9 @@
     }
   }
 
-  function displayServerAddress (serverAddress, type) {
-    addressField.innerText = type + ' Address: ' + serverAddress;
+  function displayServerAddress (serverAddress, proxyAddress) {
+    proxyAddress = (typeof proxyAddress === 'undefined') ? 'N/A' : proxyAddress;
+    addressField.innerText = ' Proxy Address: ' + proxyAddress + ' | ' + ' Edge Address: ' + serverAddress;
   }
 
   // Local lifecycle notifications.
@@ -103,16 +83,8 @@
   function onSubscribeFail (message) {
     console.error('[Red5ProSubsriber] Subscribe Error :: ' + message);
   }
-  function onSubscribeSuccess (subscriber) {
+  function onSubscribeSuccess () {
     console.log('[Red5ProSubsriber] Subscribe Complete.');
-    if (subscriber.getType().toLowerCase() === 'rtc') {
-      try {
-        window.trackBitrate(subscriber.getPeerConnection(), onBitrateUpdate, onResolutionUpdate);
-      }
-      catch (e) {
-        //
-      }
-    }
   }
   function onUnsubscribeFail (message) {
     console.error('[Red5ProSubsriber] Unsubscribe Error :: ' + message);
@@ -124,11 +96,11 @@
   function requestEdge (configuration) {
     var host = configuration.host;
     var app = configuration.app;
-    var port = serverSettings.httpport;
+    var port = serverSettings.httpport.toString();
     var portURI = (port.length > 0 ? ':' + port : '');
     var baseUrl = isSecure ? protocol + '://' + host : protocol + '://' + host + portURI;
     var streamName = configuration.stream1;
-    var apiVersion = configuration.streamManagerAPI || '2.0';
+    var apiVersion = configuration.streamManagerAPI || '3.0';
     var url = baseUrl + '/streammanager/api/' + apiVersion + '/event/' + app + '/' + streamName + '?action=subscribe';
       return new Promise(function (resolve, reject) {
         fetch(url)
@@ -142,7 +114,7 @@
             }
           })
           .then(function (json) {
-            resolve(json.serverAddress);
+            resolve(json);
           })
           .catch(function (error) {
             var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
@@ -152,34 +124,51 @@
     });
   }
 
-  function determineSubscriber (host) {
-    displayServerAddress('Edge', host);
+  function determineSubscriber (jsonResponse) {
+    var host = jsonResponse.serverAddress;
+    var name = jsonResponse.name;
+    var app = jsonResponse.scope;
     var config = Object.assign({}, configuration, defaultConfiguration);
     var rtcConfig = Object.assign({}, config, {
-      host: host,
-      protocol: 'ws', // cluster is not over secure, at this time
-      port: serverSettings.wsport, // cluster is not over secure, at this time
+      host: configuration.host,
+      protocol: getSocketLocationFromProtocol().protocol,
+      port: getSocketLocationFromProtocol().port,
+      app: configuration.proxy,
+      connectionParams: {
+        host: host,
+        app: app
+      },
       subscriptionId: 'subscriber-' + instanceId,
-      streamName: config.stream1
+      streamName: name
     })
     var rtmpConfig = Object.assign({}, config, {
       host: host,
+      app: app,
       protocol: 'rtmp',
       port: serverSettings.rtmpport,
-      streamName: config.stream1,
+      streamName: name,
       width: config.cameraWidth,
       height: config.cameraHeight,
+      backgroundColor: '#000000',
       swf: '../../lib/red5pro/red5pro-subscriber.swf',
       swfobjectURL: '../../lib/swfobject/swfobject.js',
       productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
     })
     var hlsConfig = Object.assign({}, config, {
       host: host,
+      app: app,
       protocol: 'http',
       port: serverSettings.hlsport,
-      streamName: config.stream1,
+      streamName: name,
       mimeType: 'application/x-mpegURL'
     })
+
+    if (!config.useVideo) {
+      rtcConfig.videoEncoding = 'NONE';
+    }
+    if (!config.useAudio) {
+      rtcConfig.audioEncoding = 'NONE';
+    }
 
     var subscribeOrder = config.subscriberFailoverOrder
                           .split(',').map(function (item) {
@@ -191,11 +180,31 @@
     }
 
     var subscriber = new red5prosdk.Red5ProSubscriber();
-    return subscriber.setPlaybackOrder(subscribeOrder).init({
-      rtc: rtcConfig,
-      rtmp: rtmpConfig,
-      hls: hlsConfig
-    })
+    return subscriber.setPlaybackOrder(subscribeOrder)
+      .init({
+        rtc: rtcConfig,
+        rtmp: rtmpConfig,
+        hls: hlsConfig
+       });
+  }
+
+  function showServerAddress (subscriber) {
+    var config = subscriber.getOptions();
+    console.log("Host = " + config.host + " | " + "app = " + config.app);
+    if (subscriber.getType().toLowerCase() === 'rtc') {
+      displayServerAddress(config.connectionParams.host, config.host);
+      console.log("Using streammanager proxy for rtc");
+      console.log("Proxy target = " + config.connectionParams.host + " | " + "Proxy app = " + config.connectionParams.app)
+      if(isSecure) {
+        console.log("Operating over secure connection | protocol: " + config.protocol + " | port: " +  config.port);
+      }
+      else {
+        console.log("Operating over unsecure connection | protocol: " + config.protocol + " | port: " +  config.port);
+      }
+    }
+    else {
+      displayServerAddress(config.host);
+    }
   }
 
   // Request to unsubscribe.
@@ -217,24 +226,48 @@
     });
   }
 
-  // Kick off.
-  requestEdge(configuration)
-    .then(determineSubscriber)
-    .then(function (subscriberImpl) {
-      streamTitle.innerText = configuration.stream1;
-      targetSubscriber = subscriberImpl;
-      // Subscribe to events.
-      targetSubscriber.on('*', onSubscriberEvent);
-      return targetSubscriber.subscribe();
-    })
-    .then(function () {
-      onSubscribeSuccess(targetSubscriber);
-    })
-    .catch(function (error) {
+  var retryCount = 0;
+  var retryLimit = 3;
+  function respondToEdge (response) {
+    determineSubscriber(response)
+      .then(function (subscriberImpl) {
+        streamTitle.innerText = configuration.stream1;
+        targetSubscriber = subscriberImpl;
+        // Subscribe to events.
+        targetSubscriber.on('*', onSubscriberEvent);
+        showServerAddress(targetSubscriber);
+        return targetSubscriber.subscribe();
+      })
+      .then(function () {
+        onSubscribeSuccess();
+      })
+      .catch(function (error) {
+        var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
+        console.error('[Red5ProSubscriber] :: Error in subscribing - ' + jsonError);
+        onSubscribeFail(jsonError);
+      });
+  }
+
+  function respondToEdgeFailure (error) {
+    if (retryCount++ < retryLimit) {
+      var retryTimer = setTimeout(function () {
+        clearTimeout(retryTimer);
+        startup();
+      }, 1000);
+    }
+    else {
       var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
-      console.error('[Red5ProSubscriber] :: Error in subscribing - ' + jsonError);
-      onSubscribeFail(jsonError);
-    });
+      console.error('[Red5ProSubscriber] :: Retry timeout in subscribing - ' + jsonError);
+    }
+  }
+
+  function startup () {
+    // Kick off.
+    requestEdge(configuration)
+      .then(respondToEdge)
+      .catch(respondToEdgeFailure);
+  }
+  startup();
 
   // Clean up.
   window.addEventListener('beforeunload', function() {
@@ -245,7 +278,6 @@
       targetSubscriber = undefined;
     }
     unsubscribe().then(clearRefs).catch(clearRefs);
-    window.untrackbitrate();
   });
 
 })(this, document, window.red5prosdk);

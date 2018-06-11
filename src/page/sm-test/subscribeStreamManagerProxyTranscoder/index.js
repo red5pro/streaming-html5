@@ -42,27 +42,6 @@
   var addressField = document.getElementById('address-field');
   var protocol = serverSettings.protocol;
   var isSecure = protocol === 'https';
-
-  var bitrate = 0;
-  var packetsReceived = 0;
-  var frameWidth = 0;
-  var frameHeight = 0;
-  function updateStatistics (b, p, w, h) {
-    statisticsField.innerText = 'Bitrate: ' + Math.floor(b) + '. Packets Received: ' + p + '.' + ' Resolution: ' + w + ', ' + h + '.';
-  }
-
-  function onBitrateUpdate (b, p) {
-    bitrate = b;
-    packetsReceived = p;
-    updateStatistics(bitrate, packetsReceived, frameWidth, frameHeight);
-  }
-
-  function onResolutionUpdate (w, h) {
-    frameWidth = w;
-    frameHeight = h;
-    updateStatistics(bitrate, packetsReceived, frameWidth, frameHeight);
-  }
-
   function getSocketLocationFromProtocol () {
     return !isSecure
       ? {protocol: 'ws', port: serverSettings.wsport}
@@ -91,6 +70,24 @@
     }
   }
 
+  var bitrate = 0;
+  var packetsReceived = 0;
+  var frameWidth = 0;
+  var frameHeight = 0;
+  function updateStatistics (b, p, w, h) {
+    statisticsField.innerText = 'Bitrate: ' + Math.floor(b) + '. Packets Received: ' + p + '.' + ' Resolution: ' + w + ', ' + h + '.';
+  }
+  function onBitrateUpdate (b, p) {
+    bitrate = b;
+    packetsReceived = p;
+    updateStatistics(bitrate, packetsReceived, frameWidth, frameHeight);
+  }
+  function onResolutionUpdate (w, h) {
+    frameWidth = w;
+    frameHeight = h;
+    updateStatistics(bitrate, packetsReceived, frameWidth, frameHeight);
+  }
+
   function displayServerAddress (serverAddress, proxyAddress) {
     proxyAddress = (typeof proxyAddress === 'undefined') ? 'N/A' : proxyAddress;
     addressField.innerText = ' Proxy Address: ' + proxyAddress + ' | ' + ' Edge Address: ' + serverAddress;
@@ -106,13 +103,11 @@
   }
   function onSubscribeSuccess (subscriber) {
     console.log('[Red5ProSubsriber] Subscribe Complete.');
-    if (subscriber.getType().toLowerCase() === 'rtc') {
-      try {
-        window.trackBitrate(subscriber.getPeerConnection(), onBitrateUpdate, onResolutionUpdate);
-      }
-      catch (e) {
-        //
-      }
+    try {
+      window.trackBitrate(subscriber.getPeerConnection(), onBitrateUpdate, onResolutionUpdate);
+    }
+    catch (e) {
+      //
     }
   }
   function onUnsubscribeFail (message) {
@@ -129,8 +124,8 @@
     var portURI = (port.length > 0 ? ':' + port : '');
     var baseUrl = isSecure ? protocol + '://' + host : protocol + '://' + host + portURI;
     var streamName = configuration.stream1;
-    var apiVersion = configuration.streamManagerAPI || '2.0';
-    var url = baseUrl + '/streammanager/api/' + apiVersion + '/event/' + app + '/' + streamName + '?action=subscribe';
+    var apiVersion = configuration.streamManagerAPI || '3.0';
+    var url = baseUrl + '/streammanager/api/' + apiVersion + '/event/' + app + '/' + streamName + '?action=subscribe&transcoder=true';
       return new Promise(function (resolve, reject) {
         fetch(url)
           .then(function (res) {
@@ -143,7 +138,7 @@
             }
           })
           .then(function (json) {
-            resolve(json.serverAddress);
+            resolve(json);
           })
           .catch(function (error) {
             var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
@@ -153,7 +148,10 @@
     });
   }
 
-  function determineSubscriber (serverAddress) {
+  function determineSubscriber (jsonResponse) {
+    var host = jsonResponse.serverAddress;
+    var name = jsonResponse.name;
+    var app = jsonResponse.scope;
     var config = Object.assign({}, configuration, defaultConfiguration);
     var rtcConfig = Object.assign({}, config, {
       host: configuration.host,
@@ -161,30 +159,18 @@
       port: getSocketLocationFromProtocol().port,
       app: configuration.proxy,
       connectionParams: {
-        host: serverAddress,
-        app: configuration.app
+        host: host,
+        app: app
       },
       subscriptionId: 'subscriber-' + instanceId,
-      streamName: config.stream1
-    })
-    var rtmpConfig = Object.assign({}, config, {
-      host: serverAddress,
-      protocol: 'rtmp',
-      port: serverSettings.rtmpport,
-      streamName: config.stream1,
-      mimeType: 'rtmp/flv',
-      useVideoJS: false,
-      width: config.cameraWidth,
-      height: config.cameraHeight,
-      swf: '../../lib/red5pro/red5pro-subscriber.swf',
-      swfobjectURL: '../../lib/swfobject/swfobject.js',
-      productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
+      streamName: name
     })
     var hlsConfig = Object.assign({}, config, {
-      host: serverAddress,
+      host: host,
+      app: app,
       protocol: 'http',
       port: serverSettings.hlsport,
-      streamName: config.stream1,
+      streamName: name,
       mimeType: 'application/x-mpegURL'
     })
 
@@ -208,7 +194,6 @@
     return subscriber.setPlaybackOrder(subscribeOrder)
       .init({
         rtc: rtcConfig,
-        rtmp: rtmpConfig,
         hls: hlsConfig
        });
   }
@@ -251,25 +236,48 @@
     });
   }
 
-  // Kick off.
-  requestEdge(configuration)
-    .then(determineSubscriber)
-    .then(function (subscriberImpl) {
-      streamTitle.innerText = configuration.stream1;
-      targetSubscriber = subscriberImpl;
-      // Subscribe to events.
-      targetSubscriber.on('*', onSubscriberEvent);
-      showServerAddress(targetSubscriber);
-      return targetSubscriber.subscribe();
-    })
-    .then(function () {
-      onSubscribeSuccess(targetSubscriber);
-    })
-    .catch(function (error) {
+  var retryCount = 0;
+  var retryLimit = 3;
+  function respondToEdge (response) {
+    determineSubscriber(response)
+      .then(function (subscriberImpl) {
+        streamTitle.innerText = configuration.stream1;
+        targetSubscriber = subscriberImpl;
+        // Subscribe to events.
+        targetSubscriber.on('*', onSubscriberEvent);
+        showServerAddress(targetSubscriber);
+        return targetSubscriber.subscribe();
+      })
+      .then(function () {
+        onSubscribeSuccess(targetSubscriber);
+      })
+      .catch(function (error) {
+        var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
+        console.error('[Red5ProSubscriber] :: Error in subscribing - ' + jsonError);
+        onSubscribeFail(jsonError);
+      });
+  }
+
+  function respondToEdgeFailure (error) {
+    if (retryCount++ < retryLimit) {
+      var retryTimer = setTimeout(function () {
+        clearTimeout(retryTimer);
+        startup();
+      }, 1000);
+    }
+    else {
       var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
-      console.error('[Red5ProSubscriber] :: Error in subscribing - ' + jsonError);
-      onSubscribeFail(jsonError);
-    });
+      console.error('[Red5ProSubscriber] :: Retry timeout in subscribing - ' + jsonError);
+    }
+  }
+
+  function startup () {
+    // Kick off.
+    requestEdge(configuration)
+      .then(respondToEdge)
+      .catch(respondToEdgeFailure);
+  }
+  startup();
 
   // Clean up.
   window.addEventListener('beforeunload', function() {
@@ -280,7 +288,6 @@
       targetSubscriber = undefined;
     }
     unsubscribe().then(clearRefs).catch(clearRefs);
-    window.untrackbitrate();
   });
 
 })(this, document, window.red5prosdk);

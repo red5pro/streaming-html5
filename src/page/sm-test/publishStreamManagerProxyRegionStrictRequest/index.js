@@ -44,8 +44,10 @@
     port: getSocketLocationFromProtocol().port
   };
 
-  function displayServerAddress (serverAddress) {
-    addressField.innerText = 'Origin Address: ' + serverAddress;
+  function displayServerAddress (serverAddress, proxyAddress) 
+  {
+  proxyAddress = (typeof proxyAddress === 'undefined') ? 'N/A' : proxyAddress;
+    addressField.innerText = ' Proxy Address: ' + proxyAddress + ' | ' + ' Origin Address: ' + serverAddress;
   }
 
   function onBitrateUpdate (bitrate, packetsSent) {
@@ -79,7 +81,7 @@
     var host = configuration.host;
     var app = configuration.app;
     var streamName = configuration.stream1;
-    var port = serverSettings.httpport;
+    var port = serverSettings.httpport.toString();
     var portURI = (port.length > 0 ? ':' + port : '');
     var baseUrl = isSecure ? protocol + '://' + host : protocol + '://' + host + portURI;
     var apiVersion = configuration.streamManagerAPI || '2.0';
@@ -96,7 +98,7 @@
             }
           })
           .then(function (json) {
-            resolve(json.serverAddress);
+            resolve(json);
           })
           .catch(function (error) {
             var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
@@ -115,8 +117,22 @@
     };
   }
 
-  function determinePublisher () {
+  function getRTMPMediaConfiguration () {
+    return {
+      mediaConstraints: {
+        audio: configuration.useAudio ? configuration.mediaConstraints.audio : false,
+        video: configuration.useVideo ? {
+                width: configuration.cameraWidth,
+                height: configuration.cameraHeight
+              } : false
+      }
+    }
+  }
 
+  function determinePublisher (jsonResponse) {
+    var host = jsonResponse.serverAddress;
+    var app = jsonResponse.scope;
+    var name = jsonResponse.name;
     var config = Object.assign({},
                     configuration,
                     defaultConfiguration,
@@ -124,19 +140,24 @@
     var rtcConfig = Object.assign({}, config, {
                       protocol: getSocketLocationFromProtocol().protocol,
                       port: getSocketLocationFromProtocol().port,
-                      streamName: config.stream1
+                      streamName: name,
+                      app: configuration.proxy,
+                      connectionParams: {
+                        host: host,
+                        app: app
+                      }
                    });
     var rtmpConfig = Object.assign({}, config, {
+                      host: host,
+                      app: app,
                       protocol: 'rtmp',
                       port: serverSettings.rtmpport,
-                      streamName: config.stream1,
-                      width: config.cameraWidth,
-                      height: config.cameraHeight,
+                      streamName: name,
                       backgroundColor: '#000000',
                       swf: '../../lib/red5pro/red5pro-publisher.swf',
                       swfobjectURL: '../../lib/swfobject/swfobject.js',
-                      productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
-                   });
+                      productInstallURL: '../../lib/swfobject/playerProductInstall.swf'},
+                      getRTMPMediaConfiguration());
     var publishOrder = config.publisherFailoverOrder
                             .split(',')
                             .map(function (item) {
@@ -155,6 +176,25 @@
               });
   }
 
+  function showAddress (publisher) {
+    var config = publisher.getOptions();
+    console.log("Host = " + config.host + " | " + "app = " + config.app);
+    if (publisher.getType().toLowerCase() === 'rtc') {
+      displayServerAddress(config.connectionParams.host, config.host);
+      console.log("Using streammanager proxy for rtc");
+      console.log("Proxy target = " + config.connectionParams.host + " | " + "Proxy app = " + config.connectionParams.app)
+      if(isSecure) {
+        console.log("Operating over secure connection | protocol: " + config.protocol + " | port: " +  config.port);
+      }
+      else {
+        console.log("Operating over unsecure connection | protocol: " + config.protocol + " | port: " +  config.port);
+      }
+    }
+    else {
+      displayServerAddress(config.host);
+    }
+  }
+
   function unpublish () {
     return new Promise(function (resolve, reject) {
       var publisher = targetPublisher;
@@ -171,30 +211,54 @@
     });
   }
 
-  // Kick off.
-  requestOrigin(configuration)
-    .then(function (serverAddress) {
-      displayServerAddress(serverAddress);
-      configuration.host = serverAddress;
-      return determinePublisher();
-    })
-    .then(function (publisherImpl) {
-      streamTitle.innerText = configuration.stream1;
-      targetPublisher = publisherImpl;
-      targetPublisher.on('*', onPublisherEvent);
-      return targetPublisher.publish();
-    })
-    .then(function () {
-      onPublishSuccess(targetPublisher);
-    })
-    .catch(function (error) {
+
+  var retryCount = 0;
+  var retryLimit = 3;
+  function respondToOrigin (response) {
+    determinePublisher(response)
+      .then(function (publisherImpl) {
+        streamTitle.innerText = configuration.stream1;
+        targetPublisher = publisherImpl;
+        targetPublisher.on('*', onPublisherEvent);
+        showAddress(targetPublisher);
+        return targetPublisher.publish();
+      })
+      .then(function () {
+        onPublishSuccess(targetPublisher);
+      })
+      .catch(function (error) {
+        var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
+        console.error('[Red5ProPublisher] :: Error in access of Origin IP: ' + jsonError);
+        updateStatusFromEvent({
+          type: red5prosdk.PublisherEventTypes.CONNECT_FAILURE
+        });
+        onPublishFail(jsonError);
+      });
+  }
+
+  function respondToOriginFailure (error) {
+    if (retryCount++ < retryLimit) {
+      var retryTimer = setTimeout(function () {
+        clearTimeout(retryTimer);
+        startup();
+      }, 1000);
+    }
+    else {
       var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
-      console.error('[Red5ProPublisher] :: Error in access of Origin IP: ' + jsonError);
       updateStatusFromEvent({
         type: red5prosdk.PublisherEventTypes.CONNECT_FAILURE
       });
-      onPublishFail(jsonError);
-    });
+      console.error('[Red5ProPublisher] :: Retry timeout in publishing - ' + jsonError);
+    }
+  }
+
+  function startup () {
+    // Kick off.
+    requestOrigin(configuration)
+      .then(respondToOrigin)
+      .catch(respondToOriginFailure);
+  }
+  startup();
 
   window.addEventListener('beforeunload', function() {
     function clearRefs () {
