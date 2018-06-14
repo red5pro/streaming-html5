@@ -148,7 +148,7 @@
     var baseUrl = isSecure ? protocol + '://' + host : protocol + '://' + host + portURI;
     var streamName = configuration.stream1;
     var apiVersion = configuration.streamManagerAPI || '3.0';
-    var url = baseUrl + '/streammanager/api/' + apiVersion + '/event/' + app + '/' + streamName + '?action=subscribe&transcoder=true';
+    var url = baseUrl + '/streammanager/api/' + apiVersion + '/event/' + app + '/' + streamName + '?action=subscribe&transcode=true';
       return new Promise(function (resolve, reject) {
         fetch(url)
           .then(function (res) {
