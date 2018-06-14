@@ -238,8 +238,8 @@
         showServerAddress(targetSubscriber);
         return targetSubscriber.subscribe();
       })
-      .then(function () {
-        onSubscribeSuccess();
+      .then(function (sub) {
+        onSubscribeSuccess(sub);
       })
       .catch(function (error) {
         var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
