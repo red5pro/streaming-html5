@@ -9,6 +9,27 @@
         padding: 6px;
         background-color: #ccc;
       }
+      #validation-container {
+        padding-bottom: 1.4rem;
+      }
+      #validation-container > h2 {
+        margin: 0;
+        padding: 1.4rem;
+      }
+      #validation-container > p {
+        max-width: 320px;
+        margin: 0 auto 1.4rem auto;
+      }
+      #validation-form > div {
+        margin: 1.2rem;
+      }
+      #validation-form > div > input {
+        margin: 0 0.6rem;
+      }
+      #add-param-btn {
+        font-size: 1rem;
+        background-color: lightsteelblue
+      }
     </style>
   </head>
   <body>
@@ -22,7 +43,24 @@
 		<p>Additionally to use this example stream manager proxy gateway should be enabled.</p>
       </div>
       </div>
-      {{> test-info testTitle='Publish SM Proxy Validation Test'}}
+      <h1 class="centered">Publish SM Proxy Validation Test</h1>
+      <hr />
+      <div id="validation-container" class="centered ice-background">
+        <h2>Validation Parameters</h2>
+        <p>Provide validation parameters to be used in the Stream Manager request and Origin connection requests.</p>
+        <form id="validation-form" action="#" method="post">
+          <div id="param-field1">
+            <label for="param-name1">Param Name:</label>
+            <input type="text" id="param-name1" name="param_name1">
+            <label for="param-value1">Param Value:</label>
+            <input type="text" id="param-value1" name="param_value1">
+            <button id="add-param-btn" type="button">+</button>
+          </div>
+        </form>
+        <button id="validation-submit-btn">Start Publishing</button>
+      </div>
+      <hr />
+      <h2 class="centered"><em>stream</em>: <span id="stream-title"></span></h2>
       {{> status-field-publisher}}
       {{> statistics-field}}
       <div class="centered"><p id="address-field">Origin Address: N/A</p></div>

@@ -33,6 +33,9 @@
   var streamTitle = document.getElementById('stream-title');
   var statisticsField = document.getElementById('statistics-field');
   var addressField = document.getElementById('address-field');
+  var validationForm = document.getElementById('validation-form');
+  var validationSubmit = document.getElementById('validation-submit-btn');
+  var validationAddButton = document.getElementById('add-param-btn');
 
   var proxyLocal = window.query('local')
   var protocol = proxyLocal ? 'https' : serverSettings.protocol;
@@ -51,11 +54,41 @@
     port: getSocketLocationFromProtocol().port
   };
 
-  function getValidationParams () {
-    return {
-      validation_url: 'https://go.to.somewhere'
-    };
+  var validationParamCount = 1;
+  function getNewValidationParamForm () {
+    validationParamCount += 1;
+    var form = document.createElement('div');
+    form.id = 'param-field' + validationParamCount;
+    var innerForm = '<label for="param-name' + validationParamCount + '">Param Name:</label>' +
+        '<input type="text" id="param-name' + validationParamCount + '" name="param_name' + validationParamCount + '">' +
+        '<label for="param-value' + validationParamCount + '">Param Value:</label>' +
+        '<input type="text" id="param-value' + validationParamCount + '" name="param_value' + validationParamCount + '">';
+    form.innerHTML = innerForm;
+    validationForm.appendChild(form);
+    validationAddButton.parentElement.removeChild(validationAddButton);
+    document.getElementById(form.id).appendChild(validationAddButton);
+    return form;
   }
+
+  function getValidationParams () {
+    var kvObject = {}
+    var nodes = validationForm.childNodes;
+    var i = 0, length = nodes.length;
+    var inputField, valueField;
+    var fieldCount = 1;
+    for(i; i < length; i++) {
+      if (nodes[i].nodeType === 1) {
+        inputField = document.getElementById('param-name' + (fieldCount));
+        valueField = document.getElementById('param-value' + (fieldCount));
+        if (inputField.value && valueField.value) {
+          kvObject[inputField.value.trim()] = valueField.value.trim();
+        }
+        fieldCount = fieldCount + 1;
+      }
+    }
+    return kvObject;
+  }
+
   var autoscaleConfig = {
     action: 'broadcast',
     protocol: protocol,
@@ -66,8 +99,7 @@
     apiVersion: configuration.streamManagerAPI || '3.0',
     retryLimit: retryLimit,
     retryDelay: retryDelay,
-    useProxy: true,
-    connectionParams: getValidationParams()
+    useProxy: true 
   };
 
   function displayServerAddress (serverAddress, proxyAddress) {
@@ -170,9 +202,13 @@
       publishOrder = [window.query('view')];
     }
 
+    var aConfig = Object.assign({}, autoscaleConfig, {
+      connectionParams: getValidationParams()
+    });
+
     var publisher = new red5prosdk.Red5ProPublisher();
     return publisher.setPublishOrder(publishOrder)
-            .autoscale(autoscaleConfig, {
+            .autoscale(aConfig, {
                 rtc: rtcConfig,
                 rtmp: rtmpConfig
               });
@@ -221,7 +257,9 @@
       });
 
   }
-  startup();
+
+  validationAddButton.addEventListener('click', getNewValidationParamForm);
+  validationSubmit.addEventListener('click', startup);
 
   window.addEventListener('beforeunload', function() {
     function clearRefs () {
