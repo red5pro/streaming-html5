@@ -50,6 +50,12 @@
     protocol: getSocketLocationFromProtocol().protocol,
     port: getSocketLocationFromProtocol().port
   };
+
+  function getValidationParams () {
+    return {
+      validation_url: 'https://go.to.somewhere'
+    };
+  }
   var autoscaleConfig = {
     action: 'broadcast',
     protocol: protocol,
@@ -61,9 +67,7 @@
     retryLimit: retryLimit,
     retryDelay: retryDelay,
     useProxy: true,
-    connectionParams: {
-      validation_url: ''
-    }
+    connectionParams: getValidationParams()
   };
 
   function displayServerAddress (serverAddress, proxyAddress) {
@@ -142,13 +146,15 @@
     var rtcConfig = Object.assign({}, config, {
                       protocol: getSocketLocationFromProtocol().protocol,
                       port: getSocketLocationFromProtocol().port,
-                      streamName: name
+                      streamName: name,
+                      connectionParams: getValidationParams()
                       }, getUserMediaConfiguration());
     var rtmpConfig = Object.assign({}, config, {
                       protocol: 'rtmp',
                       port: serverSettings.rtmpport,
                       streamName: name,
                       backgroundColor: '#000000',
+                      connectionParams: getValidationParams(),
                       swf: '../../lib/red5pro/red5pro-publisher.swf',
                       swfobjectURL: '../../lib/swfobject/swfobject.js',
                       productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
