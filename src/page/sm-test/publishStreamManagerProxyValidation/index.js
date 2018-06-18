@@ -34,7 +34,8 @@
   var statisticsField = document.getElementById('statistics-field');
   var addressField = document.getElementById('address-field');
 
-  var protocol = serverSettings.protocol;
+  var proxyLocal = window.query('local')
+  var protocol = proxyLocal ? 'https' : serverSettings.protocol;
   var isSecure = protocol == 'https';
   var retryLimit = 3;
   var retryDelay = 2000;
@@ -53,7 +54,7 @@
     action: 'broadcast',
     protocol: protocol,
     host: configuration.host,
-    port: isSecure ? undefined : serverSettings.httpport.toString(),
+    port: isSecure || proxyLocal ? undefined : serverSettings.httpport.toString(),
     scope: configuration.app,
     streamName: configuration.stream1,
     apiVersion: configuration.streamManagerAPI || '3.0',

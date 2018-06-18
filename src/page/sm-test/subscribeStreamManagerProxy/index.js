@@ -36,17 +36,19 @@
     }
     window.red5proHandleSubscriberEvent(event); // defined in src/template/partial/status-field-subscriber.hbs
   };
+  var proxyLocal = window.query('local')
   var instanceId = Math.floor(Math.random() * 0x10000).toString(16);
   var streamTitle = document.getElementById('stream-title');
   var statisticsField = document.getElementById('statistics-field');
   var addressField = document.getElementById('address-field');
-  var protocol = serverSettings.protocol;
+  var protocol = proxyLocal ? 'https' : serverSettings.protocol;
   var isSecure = protocol === 'https';
 
   var bitrate = 0;
   var packetsReceived = 0;
   var frameWidth = 0;
   var frameHeight = 0;
+
   function updateStatistics (b, p, w, h) {
     statisticsField.innerText = 'Bitrate: ' + Math.floor(b) + '. Packets Received: ' + p + '.' + ' Resolution: ' + w + ', ' + h + '.';
   }
@@ -125,9 +127,9 @@
   function requestEdge (configuration) {
     var host = configuration.host;
     var app = configuration.app;
-    var port = serverSettings.httpport.toString();
+    var port = proxyLocal ? '' : serverSettings.httpport.toString();
     var portURI = (port.length > 0 ? ':' + port : '');
-    var baseUrl = isSecure ? protocol + '://' + host : protocol + '://' + host + portURI;
+    var baseUrl = isSecure || proxyLocal ? protocol + '://' + host : protocol + '://' + host + portURI;
     var streamName = configuration.stream1;
     var apiVersion = configuration.streamManagerAPI || '3.0';
     var url = baseUrl + '/streammanager/api/' + apiVersion + '/event/' + app + '/' + streamName + '?action=subscribe';
@@ -176,10 +178,9 @@
       protocol: 'rtmp',
       port: serverSettings.rtmpport,
       streamName: name,
-      mimeType: 'rtmp/flv',
-      useVideoJS: false,
       width: config.cameraWidth,
       height: config.cameraHeight,
+      backgroundColor: '#000000',
       swf: '../../lib/red5pro/red5pro-subscriber.swf',
       swfobjectURL: '../../lib/swfobject/swfobject.js',
       productInstallURL: '../../lib/swfobject/playerProductInstall.swf'

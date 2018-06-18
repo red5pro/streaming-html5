@@ -38,11 +38,12 @@
     }
     window.red5proHandleSubscriberEvent(event); // defined in src/template/partial/status-field-subscriber.hbs
   };
+  var proxyLocal = window.query('local')
   var instanceId = Math.floor(Math.random() * 0x10000).toString(16);
   var streamTitle = document.getElementById('stream-title');
   var statisticsField = document.getElementById('statistics-field');
   var addressField = document.getElementById('address-field');
-  var protocol = serverSettings.protocol;
+  var protocol = proxyLocal ? 'https' : serverSettings.protocol;
   var isSecure = protocol === 'https';
 
   var bitrate = 0;
@@ -88,20 +89,23 @@
     return c;
   })(configuration.useVideo, configuration.useAudio);
 
+  function getValidationParams () {
+    return {
+      validation_url: 'https://go.to.somewhere'
+    };
+  }
   var autoscaleConfig = {
     action: 'subscribe',
     protocol: protocol,
     host: configuration.host,
-    port: isSecure ? undefined : serverSettings.httpport.toString(),
+    port: isSecure || proxyLocal ? undefined : serverSettings.httpport.toString(),
     scope: configuration.app,
     streamName: configuration.stream1,
     apiVersion: configuration.streamManagerAPI || '3.0',
     retryLimit: retryLimit,
     retryDelay: retryDelay,
     useProxy: true,
-    connectionParams: {
-      validation_url: ''
-    }
+    connectionParams: getValidationParams()
   };
 
 
@@ -168,23 +172,29 @@
       protocol: getSocketLocationFromProtocol().protocol,
       port: getSocketLocationFromProtocol().port,
       streamName: config.stream1,
-      subscriptionId: 'subscriber-' + instanceId
+      subscriptionId: 'subscriber-' + instanceId,
+      connectionParams: getValidationParams()
     })
     var rtmpConfig = Object.assign({}, config, {
       protocol: 'rtmp',
       port: serverSettings.rtmpport,
       streamName: name,
+      embedHeight: '480px',
       width: config.cameraWidth,
       height: config.cameraHeight,
+      buffer: 0.5,
+      backgroundColor: '#000000',
       swf: '../../lib/red5pro/red5pro-subscriber.swf',
       swfobjectURL: '../../lib/swfobject/swfobject.js',
-      productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
+      productInstallURL: '../../lib/swfobject/playerProductInstall.swf',
+      connectionParams: getValidationParams()
     })
     var hlsConfig = Object.assign({}, config, {
       protocol: 'http',
       port: serverSettings.hlsport,
       streamName: name,
-      subscriptionId: 'subscriber-' + instanceId
+      subscriptionId: 'subscriber-' + instanceId,
+      connectionParams: getValidationParams()
     })
 
     if (!config.useVideo) {
