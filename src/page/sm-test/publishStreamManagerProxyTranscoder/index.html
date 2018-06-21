@@ -9,6 +9,9 @@
         padding: 6px;
         background-color: #ccc;
       }
+      .hidden {
+        display: none;
+      }
     </style>
   </head>
   <body>
@@ -23,7 +26,7 @@
         <p>All resolutions should have the same aspect ratio, otherwise your stream will be skewed.</p>
       </div>
       </div>
-      {{> test-info testTitle='Publish Stream Manager Transcode Proxy Test'}}
+      {{> test-info testTitle='Publish SM Transcode Proxy Test'}}
       <div class="clearfix centered ice-background" style="padding: 24px 0; border-top: 1px solid #ddd;">
         <p>Please provide the following provisions:</p>
         {{> transcoder-form id="transcoder-high" category="High" width="1280" height="720" bitrate="1000000"}}
@@ -32,6 +35,19 @@
         <p style="padding-top: 20px;">
           <button id="submit-button">Submit</button>
         </p>
+        <div id="quality-container" class="hidden">
+          <hr/>
+          <p><strong>Trasncoder Manifest submitted successfully!</strong><p>
+          <p>
+            Choose which quality to publish on:
+            <select id="quality-select">
+              <option value="high" selected>High</option>
+              <option value="mid">Mid</option>
+              <option value="low">Low</option>
+            </select>
+            <button id="quality-submit">Start Publishing</button>
+          </p>
+        </div>
       </div>
       {{> status-field-publisher}}
       {{> statistics-field}}
