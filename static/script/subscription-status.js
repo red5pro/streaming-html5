@@ -42,7 +42,6 @@
           break;
         case subTypes.SUBSCRIBE_INVALID_NAME:
           status = 'Error - Stream name not in use.';
-          inFailedState = true;
           break;
         case rtcTypes.OFFER_START:
           status = 'Begin offer...';
