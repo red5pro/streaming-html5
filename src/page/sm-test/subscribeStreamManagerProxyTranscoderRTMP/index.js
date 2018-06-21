@@ -133,14 +133,6 @@
   }
 
   function requestEdge (configuration) {
-    return new Promise(function (resolve) {
-      resolve({
-        name: configuration.stream1,
-        serverAddress: 'localhost',
-        scope: 'live'
-      });
-    });
-    /*
     var host = configuration.host;
     var app = configuration.app;
     var port = serverSettings.httpport.toString();
@@ -169,56 +161,35 @@
             reject(error)
           });
     });
-    */
   }
 
-  var authName = '';
-  var authPass = '';
   function requestABRSettings (streamName) {
-    // TODO: Assuming this goes out to some service?
-    return new Promise(function (resolve, reject) { //eslint-disable-line no-unused-vars
-      resolve({
-        meta: {
-          authentication: {
-            username: authName,
-            password: authPass
-          },
-          stream: [
-            {
-              name: streamName + '_high',
-              level: 1,
-              properties: {
-                videoWidth: 640,
-                videoHeight: 480,
-                videoBR: 500000 
-              }
-            },
-            {
-              name: streamName + '_mid',
-              level: 2,
-              properties: {
-                videoWidth: 320,
-                videoHeight: 240,
-                videoBR: 256000 
-              }
-            },
-            {
-              name: streamName + '_low',
-              level: 3,
-              properties: {
-                videoWidth: 160,
-                videoHeight: 120,
-                videoBR: 128000 
-              }
-            }
-          ],
-          georules: {
-            regions: ['US', 'UK'],
-            restricted: false
-          },
-          qos: 3
-        }
-      });
+    var host = configuration.host;
+    var app = configuration.app;
+    var port = serverSettings.httpport.toString();
+    var portURI = (port.length > 0 ? ':' + port : '');
+    var baseUrl = isSecure ? protocol + '://' + host : protocol + '://' + host + portURI;
+    var apiVersion = configuration.streamManagerAPI || '3.0';
+    var url = baseUrl + '/streammanager/api/' + apiVersion + '/event/' + app + '/' + streamName + '?action=subscribe&accessToken=' + configuration.streamManagerAccessToken;
+    return new Promise(function (resolve, reject) {
+      fetch(url)
+        .then(function (res) {
+          if (res.headers.get("content-type") &&
+            res.headers.get("content-type").toLowerCase().indexOf("application/json") >= 0) {
+              return res.json();
+          }
+          else {
+            throw new TypeError('Could not properly parse response.');
+          }
+        })
+        .then(function (json) {
+          resolve(json.data);
+        })
+        .catch(function (error) {
+            var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
+            console.error('[PublisherStreamManagerTest] :: Error - Could not POST transcode request. ' + jsonError)
+            reject(error)
+        });
     });
   }
 
