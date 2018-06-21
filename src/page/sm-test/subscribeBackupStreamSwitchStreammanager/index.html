@@ -1,0 +1,138 @@
+<!doctype html>
+<html>
+  <head>
+    {{> meta title='Publish Stream Manager Multi Origin Proxy Test'}}
+    {{> header-scripts}}
+    {{> header-stylesheets}}
+    <style>
+
+      button {
+        font-size: 14px;
+      }
+
+      #stream-swap-container {
+        width: 100%;
+        height: 480px;
+        border: 1px solid black;
+      }
+
+      #no-video-alert {
+        text-align: center;
+        margin-top: 10px;
+      }
+
+      #info-field {
+        padding: 10px;
+        text-align: center;
+      }
+
+      .stream-form {
+        display: block;
+        padding: 10px;
+        width: 450px;
+        margin: 0 auto;
+        background-color: #eef7ff;
+        border: 1px solid #ddd;
+      }
+
+      .stream-form_fields {
+        width: 360px;
+        text-align: right;
+      }
+
+      .stream-form_fields > p {
+        margin: 10px 0;
+      }
+
+      .btn {
+        height: 40px;
+        width: 100%;
+        margin-top: 10px;
+      }
+
+      .clearfix:after {
+        content: ".";
+        display: block;
+        clear: both;
+        visibility: hidden;
+        line-height: 0;
+        height: 0;
+      }
+      .clearfix {
+        display: inline-block;
+      }
+
+      .red5pro-media-container {
+        border: 1px solid black;
+        position: absolute;
+        height: 480px;
+        width: 640px;
+      }
+      .red5pro-media-control-bar {
+        position: relative;
+        top: -2.5em;
+      }
+
+      .hidden {
+        display: none;
+      }
+
+      .inline-container {
+        position: relative;
+      }
+
+      .inline-controls {
+        position: absolute;
+        top: 0;
+      }
+
+      .floater {
+        position: relative;
+        float: left;
+      }
+
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      {{> version }}
+      {{> settings-link}}
+      <div class="ice-background">
+        <div class="test-notification">
+          <p>In order to properly run the Stream Manager examples, you will need to configure you server for cluster infrastructure as described in the following documentation:</p>
+          <p><a href="https://www.red5pro.com/docs/server/autoscale/" target="_blank">https://www.red5pro.com/docs/server/autoscale/</a></p>
+        </div>
+      </div>
+      <h1 class="centered">Subscriber Backup Stream Manager Switch Test</h1>
+      <hr />
+      <div class="clearfix centered">
+        <div class="stream-form">
+          <h1>Stream Manager Override</h1>
+          <div class="stream-form_fields">
+            <p>
+              <label for="stream-manager-address">Stream Manager address:</label>
+              <input id="stream-manager-address" name="stream-manager-address" value="FQDN HERE">
+            </p>
+            <p>
+              <label for="stream-name">Stream Name:</label>
+              <input id="stream-name" name="stream-name" value="stream1">
+            </p>
+          </div>
+        </div>
+       </div>
+       <div id="info-field" class="centered status-field">...</div>
+       <div id="stream-swap-container" class="clearfix">
+        <div id="no-video-alert">
+          No videos to display.
+        </div>
+       </div>
+       <div style="text-align: center">
+        <button id="start-button" class="btn">Start</button>
+        </div>
+       <div style="text-align: center">
+        <button id="toggle-overlap" class="btn hidden">Toggle Overlap</button>   </div>
+       {{> body-scripts}}
+       <script src="index.js"></script>
+    </div>
+  </body>
+</html>

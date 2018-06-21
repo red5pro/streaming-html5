@@ -1,15 +1,16 @@
 # Subscribe Image Capture
+
 This example demonstrates capturing a still of the playback by using the `drawImage` API of `CanvasRenderingContext2D`.
 
 **Please refer to the [Basic Subscriber Documentation](../subscribe/README.md) to learn more about the basic setup.**
 
-### Example Code
+## Example Code
 - **[index.html](index.html)**
 - **[index.js](index.js)**
 
 > These examples use the WebRTC-based Subscriber implementation from the Red5 Pro HTML SDK. However, there is failover support to allow for Flash-based subscriber on unsupported browsers.
 
-## Running the Example
+# Running the Example
 Click on the video playback to generate a still image of the video and display it below the video preview.
 
 ## Using drawImage
@@ -34,8 +35,6 @@ captureTarget.addEventListener('click', function () {
 });
 ```
 
-<sup>
-[index #134](index#L134)
-</sup>
+[index #108](index#L108)
 
 > More information: [CanvasRenderingContext2D.drawImage from MDN](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/drawImage)

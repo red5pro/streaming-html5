@@ -1,15 +1,18 @@
 # Publishing with User-Selected Camera Source : WebRTC
+
 This example demonstrates a request for a `MediaStream` with a defined `video` source for the constraint.
 
 **Please refer to the [Basic Publisher Documentation](../publish/README.md) to learn more about the basic setup.**
 
-### Example Code
+## Example Code
+
 - **[index.html](index.html)**
 - **[index.js](index.js)**
 
 > These examples use the WebRTC-based Publisher implementation from the Red5 Pro HTML SDK. However, there is failover support to allow for Flash-base publisher on unsupported browsers.
 
-## Camera Selection
+# Camera Selection
+
 Allow the User to select from a list of cameras detected by their browser. To access the list of camera devices, use the `enumerateDevices` API:
 
 ```js
@@ -36,15 +39,14 @@ function waitForSelect () {
 }
 ```
 
-<sup>
-[index.js #73](index.js#L73)
-</sup>
+[index.js #109](index.js#L109)
 
 The camera devices are filtered out from the list returned on `enumerateDevices` based on the `kind` attribute being of `videoinput` value. The list is then provided a a `select` element with an event handler assigned.
 
 Upon a `change` event, the camera `deviceId` is used to assign the `video` constraint for the `MediaStream`.
 
-## Selection & Assignment
+# Selection & Assignment
+
 Constraints for the audio and video components are defined when accessing a `MediaStream` from the browser.
 
 To define a stream with a specific camera device for publishing, update the `video` constraint used in requesting a `MediaStream` and declare a `sourceId` with the selected camera `deviceId`.
@@ -52,52 +54,51 @@ To define a stream with a specific camera device for publishing, update the `vid
 The following `change` event handler is invoked upon User selection of a camera from the `select` element populated in the previous section:
 
 ```js
-var userMedia = {
-  audio: true,
-  video: true
+var mediaConstraints = {
+  audio: configuration.useAudio ? configuration.mediaConstraints.audio : false,
+  video: configuration.useVideo ? configuration.mediaConstraints.video : false,
 };
 
 function onCameraSelect (selection) {
-  if (selection && selection !== SELECT_DEFAULT) {
-    // assign selected camere to defined UserMedia.
-    userMedia.video = {
-      optional: [{
-        sourceId: selection
-      }]
-    };
+  if (!configuration.useVideo) {
+    return;
+  }
+
+  if (selection && selection !== 'undefined' && selection !== SELECT_DEFAULT) {
+    // assign selected camera to defined UserMedia.
+    if (mediaConstraints.video && typeof mediaConstraints.video !== 'boolean') {
+      mediaConstraints.video.deviceId = { exact: selection }
+    }
+    else {
+      mediaConstraints.video = {
+        deviceId: { exact: selection }
+      };
+    }
+  }
 }
 ```
 
-## MediaStream & Publishing
-With the `userMedia` updated, a new `MediaStream` can be requested with the selected camera device and broadcast started:
+# Publishing
+
+With the `mediaConstraints` object updated with the target camera, the initialization configuration is set to start a new publishing session:
 
 ```js
 function getUserMediaConfiguration () {
-  return Object.assign({}, configuration.userMedia, userMedia);
+  return Object.assign({}, mediaConstraints);
 }
 
- nav.getUserMedia(getUserMediaConfiguration(), function (media) {
-
-     // Upon access of user media,
-    // 1. Attach the stream to the publisher.
-    // 2. Show the stream as preview in view instance.
-    // 3. Associate publisher & view (optional).
-    publisher.attachStream(media);
-    view.preview(media, true);
-    view.attachPublisher(publisher);
-
-    targetPublisher = publisher;
-    targetView = view;
-    resolve();
-
-  }, function(error) {
-    onPublishFail('Error - ' + error);
-    reject(error);
-  });
+var config = Object.assign({},
+               configuration,
+               defaultConfiguration,
+               getUserMediaConfiguration());
+var rtcConfig = Object.assign({}, config, {
+                  protocol: getSocketLocationFromProtocol().protocol,
+                  port: getSocketLocationFromProtocol().port,
+                  streamName: config.stream1
+                });
+var publisher = new red5prosdk.RTCPublisher().init(rtcConfig);
 ```
 
-<sup>
-[index.js #104](index.js#L104)
-</sup>
+[index.js #152](index.js#L152)
 
 > More information: [Media.getUserMedia from MDN](https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia)

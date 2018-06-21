@@ -24,6 +24,7 @@
 
   var isMoz = !!navigator.mozGetUserMedia;
   var isEdge = adapter && adapter.browserDetails.browser.toLowerCase() === 'edge';
+  var isiPod = !!navigator.platform && /iPod/.test(navigator.platform);
   var config = sessionStorage.getItem('r5proTestBed');
   var json;
   var serverSettings = {
@@ -57,7 +58,7 @@
       "useAudio": true,
       "useVideo": true,
       "mediaConstraints": {
-        "audio": true,
+        "audio": isiPod ? false : true,
         "video": (isMoz || isEdge) ? true : {
           "width": {
             "min": 320,
@@ -91,7 +92,8 @@
         }
       ],
       "verboseLogging": true,
-      "streamManagerAPI": "2.0"
+      "streamManagerAPI": "3.0",
+      "streamManagerAccessToken": "xyz123"
     };
     /**
     if (isMoz) {

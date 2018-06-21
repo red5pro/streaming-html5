@@ -123,8 +123,7 @@
     var rtcConfig = Object.assign({}, config, {
                       protocol: getSocketLocationFromProtocol().protocol,
                       port: getSocketLocationFromProtocol().port,
-                      streamName: config.stream1,
-                      streamType: 'webrtc'
+                      streamName: config.stream1
                    });
     return new red5prosdk.RTCPublisher().init(rtcConfig);
   }
@@ -144,6 +143,7 @@
         });
     });
   }
+
   function startPublishSession() {
     determinePublisher()
       .then(function (publisherImpl) {

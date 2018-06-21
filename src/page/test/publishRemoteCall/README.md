@@ -1,17 +1,23 @@
 # Publish & Subscribe Remote Call
+
 This example demonstrates the `send` API of the publisher in the Red5 Pro HTML SDK. Using `send`, a publisher can send a message object to any currently subscribed clients.
 
-### Example Code
+**Please refer to the [Basic Publisher Documentation](../publish/README.md) to learn more about the basic setup.**
 
-#### Publisher
+## Example Code
+
+### Publisher
+
 - **[index.html](index.html)**
 - **[index.js](index.js)**
 
-#### Subscriber
+### Subscriber
+
 - **[index.html](../subscribeRemoteCall/index.html)**
 - **[index.js](../subscribeRemoteCall/index.js)**
 
 # Running the example
+
 Two clients are required to run this example: one as a publisher, and the other as a subscriber.
 
 Connect the first client (publisher) with the *Publish - Remote Call* example. On the second lient (subscriber) use the *Subscribe - Remote Call* example.
@@ -32,6 +38,7 @@ send('whateverFunctionName', {
 [index.js #37](index.js#L37)
 
 ## Method signature
+
 The method signature for the `send` API is:
 
 | Param | Description |
@@ -48,11 +55,13 @@ The structure of `data` can be any javascript `Object`. The data will be seriali
 > You should *not* send the `data` object as a `String`.
 
 ## Receiving the message
+
 On the browser-based subscriber client, you will need to define the event responder for `Subscriber.Send.Invoke` and handle the event properties to determine the `methodName` being invoked. In using the Red5 Pro HTML SDK:
 
 ```js
 subscriber.on(red5pro.SubscriberEventTypes.SUBSCRIBE_SEND_INVOKE, sendClientHandler);
 ```
+
 [index.js #186](../subscribeRemoteCall/index.js#L186)
 
 ```js
@@ -68,5 +77,6 @@ var sendClientHandler = function (event) {
   }
 };
 ```
+
 [index.js #201](../subscribeRemoteCall/index.js#L201)
 
