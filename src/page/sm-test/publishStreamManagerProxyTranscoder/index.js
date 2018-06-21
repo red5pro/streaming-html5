@@ -54,13 +54,13 @@
     video: {
       width: {
         min: 640,
-        ideal: 1920,
-        max: 1920
+        ideal: 1280,
+        max: 1280
       },
       height: {
-        min: 480,
-        ideal: 1080,
-        max: 1080
+        min: 360,
+        ideal: 720,
+        max: 720
       },
       frameRate: {
         min: 25,
@@ -74,7 +74,7 @@
     protocol: getSocketLocationFromProtocol().protocol,
     port: getSocketLocationFromProtocol().port,
     bandwidth: {
-      video: 2500
+      video: 1000
     }
   };
 
