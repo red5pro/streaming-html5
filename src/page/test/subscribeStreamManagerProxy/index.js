@@ -117,7 +117,12 @@
             }
           })
           .then(function (json) {
-            resolve(json.serverAddress);
+            if(json.serverAddress && json.serverAddress !== 'NONE') {
+              resolve(json.serverAddress);
+            }
+            else {
+              throw new TypeError('Could not get edge ip.');
+            }
           })
           .catch(function (error) {
             var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
