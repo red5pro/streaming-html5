@@ -252,13 +252,13 @@
 
   // Clean up.
   window.addEventListener('beforeunload', function() {
-    function clearRefs () {
-      if (targetSubscriber) {
+    if (targetSubscriber) {
+      function clearRefs () {
         targetSubscriber.off('*', onSubscriberEvent);
+        targetSubscriber = undefined;
       }
-      targetSubscriber = undefined;
+      unsubscribe().then(clearRefs).catch(clearRefs);
     }
-    unsubscribe().then(clearRefs).catch(clearRefs);
   });
 
 })(this, document, window.red5prosdk);
