@@ -90,6 +90,7 @@
           "urls": "stun:stun.services.mozilla.com:3478"
         }
       ],
+      "iceTransport": "udp",
       "verboseLogging": true,
       "streamManagerAPI": "2.0"
     };
