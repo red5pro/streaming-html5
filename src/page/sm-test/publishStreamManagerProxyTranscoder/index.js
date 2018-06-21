@@ -54,13 +54,13 @@
     video: {
       width: {
         min: 640,
-        ideal: 1920,
-        max: 1920
+        ideal: 1280,
+        max: 1280
       },
       height: {
-        min: 480,
-        ideal: 1080,
-        max: 1080
+        min: 360,
+        ideal: 720,
+        max: 720
       },
       frameRate: {
         min: 25,
@@ -74,7 +74,7 @@
     protocol: getSocketLocationFromProtocol().protocol,
     port: getSocketLocationFromProtocol().port,
     bandwidth: {
-      video: 2500
+      video: 1000
     }
   };
 
@@ -173,7 +173,7 @@
     var portURI = (port.length > 0 ? ':' + port : '');
     var baseUrl = isSecure ? protocol + '://' + host : protocol + '://' + host + portURI;
     var apiVersion = configuration.streamManagerAPI || '3.0';
-    var url = baseUrl + '/streammanager/api/' + apiVersion + '/event/' + app + '/' + streamName + '?action=broadcast&transcoder=true';
+    var url = baseUrl + '/streammanager/api/' + apiVersion + '/event/' + app + '/' + streamName + '?action=broadcast&transcode=true';
       return new Promise(function (resolve, reject) {
         fetch(url)
           .then(function (res) {
