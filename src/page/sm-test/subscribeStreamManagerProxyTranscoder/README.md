@@ -104,4 +104,4 @@ Requesting an Edge server to broadcast is the same as you are familiar with when
 https://yourcompany.com/streammanager/api/3.0/event/live/mystream_high?action=subscribe
 ```
 
-Use the `serverAddress` of the JSON response form the above `GET` request to start subscribing the the ABR-enabled stream.
+Use the `serverAddress` of the JSON response from the above `GET` request to start subscribing the the ABR-enabled stream.
