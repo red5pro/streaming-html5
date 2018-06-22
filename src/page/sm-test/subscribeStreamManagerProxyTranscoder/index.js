@@ -117,15 +117,14 @@
     console.log('[Red5ProSubsriber] Unsubscribe Complete.');
   }
 
-  function requestEdge (configuration) {
+  function requestEdge (configuration, streamName) {
     var host = configuration.host;
     var app = configuration.app;
     var port = serverSettings.httpport.toString();
     var portURI = (port.length > 0 ? ':' + port : '');
     var baseUrl = isSecure ? protocol + '://' + host : protocol + '://' + host + portURI;
-    var streamName = configuration.stream1;
     var apiVersion = configuration.streamManagerAPI || '3.0';
-    var url = baseUrl + '/streammanager/api/' + apiVersion + '/event/' + app + '/' + streamName + '?action=subscribe&transcode=true';
+    var url = baseUrl + '/streammanager/api/' + apiVersion + '/event/' + app + '/' + streamName + '?action=subscribe';
       return new Promise(function (resolve, reject) {
         fetch(url)
           .then(function (res) {
@@ -148,6 +147,36 @@
     });
   }
 
+  function requestABRSettings (streamName) {
+    var host = configuration.host;
+    var app = configuration.app;
+    var port = serverSettings.httpport.toString();
+    var portURI = (port.length > 0 ? ':' + port : '');
+    var baseUrl = isSecure ? protocol + '://' + host : protocol + '://' + host + portURI;
+    var apiVersion = configuration.streamManagerAPI || '3.0';
+    var url = baseUrl + '/streammanager/api/' + apiVersion + '/admin/event/meta/' + app + '/' + streamName + '?action=subscribe&accessToken=' + configuration.streamManagerAccessToken;
+    return new Promise(function (resolve, reject) {
+      fetch(url)
+        .then(function (res) {
+          if (res.headers.get("content-type") &&
+            res.headers.get("content-type").toLowerCase().indexOf("application/json") >= 0) {
+              return res.json();
+          }
+          else {
+            throw new TypeError('Could not properly parse response.');
+          }
+        })
+        .then(function (json) {
+          resolve(json.data);
+        })
+        .catch(function (error) {
+            var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
+            console.error('[PublisherStreamManagerTest] :: Error - Could not POST transcode request. ' + jsonError)
+            reject(error)
+        });
+    });
+  }
+
   function determineSubscriber (jsonResponse) {
     var host = jsonResponse.serverAddress;
     var name = jsonResponse.name;
@@ -165,14 +194,6 @@
       subscriptionId: 'subscriber-' + instanceId,
       streamName: name
     })
-    var hlsConfig = Object.assign({}, config, {
-      host: host,
-      app: app,
-      protocol: 'http',
-      port: serverSettings.hlsport,
-      streamName: name,
-      mimeType: 'application/x-mpegURL'
-    })
 
     if (!config.useVideo) {
       rtcConfig.videoEncoding = 'NONE';
@@ -181,21 +202,8 @@
       rtcConfig.audioEncoding = 'NONE';
     }
 
-    var subscribeOrder = config.subscriberFailoverOrder
-                          .split(',').map(function (item) {
-                            return item.trim();
-                          });
-
-    if (window.query('view')) {
-      subscribeOrder = [window.query('view')];
-    }
-
-    var subscriber = new red5prosdk.Red5ProSubscriber();
-    return subscriber.setPlaybackOrder(subscribeOrder)
-      .init({
-        rtc: rtcConfig,
-        hls: hlsConfig
-       });
+    var subscriber = new red5prosdk.RTCSubscriber();
+    return subscriber.init(rtcConfig)
   }
 
   function showServerAddress (subscriber) {
@@ -271,13 +279,28 @@
     }
   }
 
-  function startup () {
+  function startup (selectedStreamVariantName) {
     // Kick off.
-    requestEdge(configuration)
+    requestEdge(configuration, selectedStreamVariantName)
       .then(respondToEdge)
       .catch(respondToEdgeFailure);
   }
-  startup();
+
+  requestABRSettings(configuration.stream1)
+    .then(function (settings) {
+      try {
+        var streams = settings.meta.stream;
+        if (streams.length > 0) {
+          var selectedStream = streams.length > 1 ? streams[1] : streams[0];
+          startup(selectedStream.name);
+        } else {
+          throw new Error('Could not parse settings.');
+        }
+      } catch (e) {
+        console.error("Count not properly acces ABR stream based on settings: " + JSON.stringify(settings, null, 0));
+      }
+
+    });
 
   // Clean up.
   window.addEventListener('beforeunload', function() {

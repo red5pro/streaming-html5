@@ -68,6 +68,7 @@
   });
 
   var abrLevel = 1;
+  var abrSettings;
 
   var protocol = serverSettings.protocol;
   var isSecure = protocol === 'https';
@@ -109,10 +110,7 @@
     console.log('[Red5ProSubsriber] ' + event.type + '.');
     updateStatusFromEvent(event);
     if (event.type === 'FlashPlayer.Embed.Success') {
-      requestABRSettings(targetSubscriber.getOptions().streamName)
-        .then(function (settings) {
-          targetSubscriber.setABRVariants(settings, abrLevel);
-        });
+      targetSubscriber.setABRVariants(abrSettings, abrLevel);
     }
     else if (event.type === 'RTMP.AdaptiveBitrate.Level') {
       abrLevel = event.data.level;
@@ -140,7 +138,7 @@
     var baseUrl = isSecure ? protocol + '://' + host : protocol + '://' + host + portURI;
     var streamName = configuration.stream1;
     var apiVersion = configuration.streamManagerAPI || '3.0';
-    var url = baseUrl + '/streammanager/api/' + apiVersion + '/event/' + app + '/' + streamName + '?action=subscribe&transcode=true';
+    var url = baseUrl + '/streammanager/api/' + apiVersion + '/admin/event/meta/' + app + '/' + streamName + '?action=subscribe';
       return new Promise(function (resolve, reject) {
         fetch(url)
           .then(function (res) {
@@ -289,13 +287,29 @@
     }
   }
 
-  function startup () {
+  function startup (selectedStreamVariantName) {
     // Kick off.
-    requestEdge(configuration)
+    requestEdge(configuration, selectedStreamVariantName)
       .then(respondToEdge)
       .catch(respondToEdgeFailure);
   }
-  startup();
+
+  requestABRSettings(configuration.stream1)
+    .then(function (settings) {
+      abrSettings = settings;
+      try {
+        var streams = settings.meta.stream;
+        if (streams.length > 0) {
+          abrLevel = streams.length > 1 ? 2 : 1;
+          var selectedStream = streams[abrLevel-1];
+          startup(selectedStream.name);
+        } else {
+          throw new Error('Could not parse settings.');
+        }
+      } catch (e) {
+        console.error("Count not properly acces ABR stream based on settings: " + JSON.stringify(settings, null, 0));
+      }
+    });
 
   // Clean up.
   window.addEventListener('beforeunload', function() {
