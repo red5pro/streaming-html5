@@ -1,4 +1,12 @@
-# Publishing RTC Streams over stream manager transcode request
+# Provisioning and Transcoding for Adaptive Bitrate Broadcast over Stream Manager
+
+To enable Adaptive Bitrate (ABR) control of a stream being played back by a consumer, you need to `POST` a provision to the Stream Manager detailing the variants at which you will be broadcasting.
+
+For scenarios in which the broadcaster does not have the capability of publishing the variants of the provision, the broadcaster can request that the server does the Transcoding to the variants.
+
+To do so, the broadcast most locate the server address of the Transcoder using the `transcode=true` query param, from which one of the variants will be broadcast to. The tTranscoder will that generate the additional variants for consumption.
+
+---
 
 The streammanager WebRTC proxy is a communication layer built inside streammanager web application which allows it to act as a proxy gateway for webrtc publishers / subscribers. The target use case of this communication layer is to facilitate a secure browser client to be able to connect to a "unsecure" remote websocket endpoint for consuming WebRTC services offered by Red5pro. 
 
@@ -12,122 +20,147 @@ Streammanager autoscaling works with dynamic nodes which are associated with dyn
 
 `
 ## WEBSOCKET PROXY SECTION
+
 proxy.enabled=false
 `
 
 ### Example Code
+
 - **[index.html](index.html)**
 - **[index.js](index.js)**
 
-## Setup
-In order to publish, you first need to connect to the Stream Manager. The Stream Manager knows which origins are valid (part of a cluster) & available for publishing. Note that we have hardcoded the number of origins to be `2` in this example. You can specify any number as long as you have that many origins in your nodegroup.
+# Setup
+
+This example provides a simple form that allows you to provision a `High`, `Mid` and `Low` set of variants to broadcast. After you have submitted the provision successfully, you are given the option to start a broadcast (using `RTC` to `RTMP` publisher failover) with a target variant (we recommend `High` for the test).
+
+Once you select the variant to publish as, click the **Start Publishing** button and a request on the Stream Manager will be made for the Transcoder server address to start publishing to. The Transcoder will take care of fleshing out the additional variants to be consumed by subscribers in ABR.
+
+Once you have started a broadcast for the target variant on the Transcoder, open the [../subscribeStreamManagerProxyTranscoder](Subscribe Stream Manager Transcoder Proxy) example to see how you can subscribe to a stream that will have dynammic ABR based on your client's network conditions.
+
+> This example differs from the [../publisherStreamManagerProvisionForm](Publisher Stream Manager Provision Form) in that it makes a request for a Transcoder server address as the Origin to broadcast on.
+
+## API
+
+The API to `POST` a provision is as follows:
+
+### Endpoint
+
+The following endpoint accepts a `POST` of JSON explained in the next section. Replace `yourstreammanager.com`, `mystream` and `myaccessToken` accordingly to your Red5 Pro Server remote location, target top-level stream name and `accessToken` defined in your Stream Manager configurations:
 
 ```js
-
-function requestOrigin (configuration) {
-var host = configuration.host;
-var app = configuration.app;
-var proxy = configuration.proxy;
-var streamName = configuration.stream1;
-var port = serverSettings.httpport.toString();
-var portURI = (port.length > 0 ? ':' + port : '');
-var baseUrl = isSecure ? protocol + '://' + host : protocol + '://' + host + portURI;
-var apiVersion = configuration.streamManagerAPI || '2.0';
-var url = baseUrl + '/streammanager/api/' + apiVersion + '/event/' + app + '/' + streamName + '?action=broadcast&endpoints=2';
-  return new Promise(function (resolve, reject) {
-  fetch(url)
-    .then(function (res) {
-    if (res.headers.get("content-type") &&
-      res.headers.get("content-type").toLowerCase().indexOf("application/json") >= 0) {
-      return res.json();
-    }
-    else {
-      throw new TypeError('Could not properly parse response.');
-    }
-    })
-    .then(function (json) {
-    resolve(json.serverAddress);
-    })
-    .catch(function (error) {
-    var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
-    console.error('[PublisherStreamManagerTest] :: Error - Could not request Origin IP from Stream Manager. ' + jsonError)
-    reject(error)
-    });
-});
-}
-
+https://yourstreammanager.com/streammanager/api/3.0/admin/event/meta/live/mystream?accessToken=myaccessToken
 ```
 
-<sup>
-[index.js #181](index.js#L181)
-</sup>
+### JSON Schema
 
-The service returns a JSON object. In particular to note is the `serverAddress` attribute which will be the IP of the Origin server.
+The JSON schema of the data to `POST` to the endpoint above has the following structure:
 
-
-```
-  "name": "<stream-name>",
-  "scope": "<stream-scope>",
-  "serverAddress": "<origin-host-address>",
-  "region": "<region-code>"
-}
-```
-
-
-Next we construct the configuration object for the publisher per supported protocol. Note that the `proxy` usage is applicable for `rtc` only. The origin address is set directly as host for `rtmp` publisher where as it is passed in through `connectionParams` for `rtc`.
-
-Another important to note is that for `rtc` publisher the target application is the proxy - the `streammanager` webapp and not the app that you want to publish to. The rtc configuration passes the actual target application name in `connectionParams` as `app`.
-
-
-```
-function determinePublisher (serverAddress) {
-  
-    var config = Object.assign({},
-                    configuration,
-                    defaultConfiguration,
-                    getUserMediaConfiguration());
-    var rtcConfig = Object.assign({}, config, {
-                      protocol: getSocketLocationFromProtocol().protocol,
-                      port: getSocketLocationFromProtocol().port,
-                      streamName: config.stream1,
-                      streamType: 'webrtc',
-                      app: configuration.proxy,
-                      connectionParams: {
-                        host: serverAddress,
-                        app: configuration.app
-                      }
-                   });
-    var rtmpConfig = Object.assign({}, config, {
-                      host: serverAddress,
-                      protocol: 'rtmp',
-                      port: serverSettings.rtmpport,
-                      streamName: config.stream1,
-                      swf: '../../lib/red5pro/red5pro-publisher.swf',
-                      swfobjectURL: '../../lib/swfobject/swfobject.js',
-                      productInstallURL: '../../lib/swfobject/playerProductInstall.swf',
-                      mediaConstraint: {
-                        video: {
-                          width: config.cameraWidth,
-                          height: config.cameraHeight,
-                        }
-                      }
-                   });
-    var publishOrder = config.publisherFailoverOrder
-                            .split(',')
-                            .map(function (item) {
-                              return item.trim()
-                        });
-
-    return PublisherBase.determinePublisher({
-                rtc: rtcConfig,
-                rtmp: rtmpConfig
-              }, publishOrder);
+```js
+{
+  "meta": {
+    "authentication": {
+      "password": "",
+      "username": ""
+    },
+    "qos": <int>,
+    "georules": {
+      "regions": [<"",...>],
+      "restricted": <true|false>,
+    },
+    "stream": [
+      {
+        "level": <int>,
+        "name": <string>,
+        "properties": [
+          "videoBR": <int>,
+          "videoHeight": <int>,
+          "videoWidth": <int>
+        ]
+      }, ...
+    ]
   }
-  
-  ```
-  
-<sup>
-[index.js #122](index.js#L122)
-</sup>
+}
+```
 
+As an example, using `mystream` as the top-level GUID, the JSON in the `POST` to the above endpoint would look like the following:
 
+```js
+{
+  "meta": {
+    "authentication": {
+      "password": "",
+      "username": ""
+    },
+    "qos": 3,
+    "georules": {
+      "regions": ["US", "UK"],
+      "restricted": false,
+    },
+    "stream": [
+      {
+        "level": 1,
+        "name": "mystream_low",
+        "properties": [
+          "videoBR": 128000,
+          "videoHeight": 180,
+          "videoWidth": 320
+        ]
+      },
+      {
+        "level": 2,
+        "name": "mystream_mid",
+        "properties": [
+          "videoBR": 512000,
+          "videoHeight": 360,
+          "videoWidth": 640
+        ]
+      },
+      {
+        "level": 3,
+        "name": "mystream_high",
+        "properties": [
+          "videoBR": 1000000,
+          "videoHeight": 720,
+          "videoWidth": 1280
+        ]
+      }
+    ]
+  }
+}
+```
+
+### Response
+
+A successful response will return the top-level provisioning with the `meta` field populated with the JSON sent in the `POST`:
+
+```js
+{
+  "name": "mystream",
+  "scope": "live",
+  "data": {
+    "meta": <see above JSON>
+  }
+}
+```
+
+You can, as well, access this new provision at any time by making a `GET` request on the Stream Manager as such:
+
+```js
+https://yourstreammanager.com/streammanager/api/3.0/admin/event/meta/live/mystream?accessToken=myaccessToken
+```
+
+## Accessing the Transcoder Origin
+
+Now that the variants have been provided to the Stream Manager, the broadcaster will need to request the server address to publish on using a Transcoder. To access that server address, is as easy as adding the `&transcode=true` query param in the normal call to Stream Manager for an Origin server address.
+
+In following with the previous examples, such a call would look like:
+
+```js
+https://yourstreammanager.com/streammanager/api/3.0/event/live/mystream?action=broadcast&transcode=true
+```
+
+That will return a JSON with the same structure as you are familiar with in requesting any other Origin server info from the Stream Manager.
+
+The Broadcaster will then use the `serverAddress` from that response to publish their target variant to (e.g., `mystream_high`) with the additional proper configuration set for that variant - `width`, `height` and `bitrate`.
+
+> Even though the broadcaster is publishing a single variant, since the Transcoder endpoint is used, the other variants will be available for consumption on the subscriber-side. You can verify this by locating one of your edges in the Stream Manager deployment and viewing the available streams.
