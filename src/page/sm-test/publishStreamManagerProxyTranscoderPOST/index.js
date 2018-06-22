@@ -32,7 +32,6 @@
   var streamTitle = document.getElementById('stream-title');
   var statisticsField = document.getElementById('statistics-field');
   var addressField = document.getElementById('address-field');
-  var provisionLink = document.getElementById('provision-link');
   var submitButton = document.getElementById('submit-button');
   var transcoderTypes = ['high', 'mid', 'low'];
   var transcoderForms = (function (types) {
@@ -49,6 +48,7 @@
 
   qualitySubmit.addEventListener('click', setQualityAndPublish);
   submitButton.addEventListener('click', submitTranscode);
+  streamTitle.innerText = configuration.stream1;
 
   var protocol = serverSettings.protocol;
   var isSecure = protocol == 'https';
@@ -144,8 +144,6 @@
         })
         .then(function (json) {
           resolve(json);
-          provisionLink.href = url;
-          provisionLink.innerText = url;
         })
         .catch(function (error) {
             var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
