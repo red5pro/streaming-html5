@@ -14,11 +14,10 @@ Streammanager autoscaling works with dynamic nodes which are associated with dyn
 
 > You also need to ensure that the stream manager proxy layer is `enabled`. The configuration section can be found in stream manager's config file - `red5-web.properties`
 
-`
+```txt
 ## WEBSOCKET PROXY SECTION
-
 proxy.enabled=false
-`
+```
 
 ### Example Code
 
