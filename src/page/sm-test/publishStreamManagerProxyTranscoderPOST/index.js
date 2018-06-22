@@ -32,6 +32,7 @@
   var streamTitle = document.getElementById('stream-title');
   var statisticsField = document.getElementById('statistics-field');
   var addressField = document.getElementById('address-field');
+  var provisionLink = document.getElementById('provision-link');
   var submitButton = document.getElementById('submit-button');
   var transcoderTypes = ['high', 'mid', 'low'];
   var transcoderForms = (function (types) {
@@ -143,6 +144,8 @@
         })
         .then(function (json) {
           resolve(json);
+          provisionLink.href = url;
+          provisionLink.innerText = url;
         })
         .catch(function (error) {
             var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
@@ -339,15 +342,6 @@
   }
 
   function generateTranscoderPost (streamName, forms) {
-    /*
-              name: configuration.stream1 + '_high',
-          level: 1,
-          properties: {
-            videoWidth: userMedia.video.width.ideal,
-            videoHeight: userMedia.video.height.ideal,
-            videoBR: defaultConfiguration.bandwidth.video * 100
-          }
-          */
     var i = forms.length;
     var formItem;
     var bitrateField;
