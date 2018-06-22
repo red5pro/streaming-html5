@@ -27,28 +27,6 @@
       </div>
       </div>
       {{> test-info testTitle='Publish SM Transcode Proxy Test'}}
-      <div class="clearfix centered ice-background" style="padding: 24px 0; border-top: 1px solid #ddd;">
-        <p>Please provide the following provisions:</p>
-        {{> transcoder-form id="transcoder-high" category="High" width="1280" height="720" bitrate="1000000"}}
-        {{> transcoder-form id="transcoder-mid" category="Mid" width="640" height="360" bitrate="512000"}}
-        {{> transcoder-form id="transcoder-low" category="Low" width="320" height="180" bitrate="128000"}}
-        <p style="padding-top: 20px;">
-          <button id="submit-button">Submit</button>
-        </p>
-        <div id="quality-container" class="hidden">
-          <hr/>
-          <p style="padding: 20px;"><strong>Transcoder Manifest submitted successfully!</strong><p>
-          <p>
-            Choose which quality to publish on:
-            <select id="quality-select">
-              <option value="high" selected>High</option>
-              <option value="mid">Mid</option>
-              <option value="low">Low</option>
-            </select>
-            <button id="quality-submit">Start Publishing</button>
-          </p>
-        </div>
-      </div>
       {{> status-field-publisher}}
       {{> statistics-field}}
       <div class="centered"><p id="address-field">Transcoder Address: N/A</p></div>

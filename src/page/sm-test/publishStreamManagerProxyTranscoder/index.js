@@ -25,29 +25,11 @@
   red5prosdk.setLogLevel(configuration.verboseLogging ? red5prosdk.LOG_LEVELS.TRACE : red5prosdk.LOG_LEVELS.WARN);
 
   var targetPublisher;
-  var transcoderManifest;
-  var selectedTranscoderToPublish;
 
   var updateStatusFromEvent = window.red5proHandlePublisherEvent; // defined in src/template/partial/status-field-publisher.hbs
   var streamTitle = document.getElementById('stream-title');
   var statisticsField = document.getElementById('statistics-field');
   var addressField = document.getElementById('address-field');
-  var submitButton = document.getElementById('submit-button');
-  var transcoderTypes = ['high', 'mid', 'low'];
-  var transcoderForms = (function (types) {
-    var list = [];
-    var i, length = types.length;
-    for (i = 0; i < length; i++) {
-      list.push(document.getElementById(['transcoder', types[i]].join('-')));
-    }
-    return list;
-  })(transcoderTypes);
-  var qualityContainer = document.getElementById('quality-container');
-  var qualitySelect = document.getElementById('quality-select');
-  var qualitySubmit = document.getElementById('quality-submit');
-
-  qualitySubmit.addEventListener('click', setQualityAndPublish);
-  submitButton.addEventListener('click', submitTranscode);
 
   var protocol = serverSettings.protocol;
   var isSecure = protocol == 'https';
@@ -64,24 +46,6 @@
       video: 1000
     }
   };
-
-  var accessToken = configuration.streamManagerAccessToken;
-  var authName = '';
-  var authPass = '';
-  var transcoderPOST = {
-    meta: {
-      authentication: {
-        username: authName,
-        password: authPass
-      },
-      stream: [],
-      georules: {
-        regions: ['US', 'UK'],
-        restricted: false
-      },
-      qos: 3
-    }
-  }
 
   function displayServerAddress (serverAddress, proxyAddress) {
     proxyAddress = (typeof proxyAddress === 'undefined') ? 'N/A' : proxyAddress;
@@ -115,7 +79,8 @@
     console.log('[Red5ProPublisher] Unpublish Complete.');
   }
 
-  function postTranscode (transcode) {
+  function requestTranscodeOrigin (configuration) {
+    var accessToken = configuration.streamManagerAccessToken;
     var host = configuration.host;
     var app = configuration.app;
     var streamName = configuration.stream1;
@@ -123,15 +88,9 @@
     var portURI = (port.length > 0 ? ':' + port : '');
     var baseUrl = isSecure ? protocol + '://' + host : protocol + '://' + host + portURI;
     var apiVersion = configuration.streamManagerAPI || '3.0';
-    var url = baseUrl + '/streammanager/api/' + apiVersion + '/admin/event/meta/' + app + '/' + streamName + '?accessToken=' + accessToken;
+    var url = baseUrl + '/streammanager/api/' + apiVersion + '/event/' + app + '/' + streamName + '?action=broadcast&transcode=true&accessToken=' + accessToken;
     return new Promise(function (resolve, reject) {
-      fetch(url, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-        body: JSON.stringify(transcode)
-        })
+      fetch(url)
         .then(function (res) {
           if (res.headers.get("content-type") &&
             res.headers.get("content-type").toLowerCase().indexOf("application/json") >= 0) {
@@ -145,41 +104,10 @@
           resolve(json);
         })
         .catch(function (error) {
-            var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
-            console.error('[PublisherStreamManagerTest] :: Error - Could not POST transcode request. ' + jsonError)
-            reject(error)
+          var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
+          console.error('[PublisherStreamManagerTest] :: Error - Could not request Origin IP from Stream Manager. ' + jsonError)
+          reject(error)
         });
-    });
-  }
-
-  function requestOrigin (configuration) {
-    var host = configuration.host;
-    var app = configuration.app;
-    var streamName = configuration.stream1;
-    var port = serverSettings.httpport.toString();
-    var portURI = (port.length > 0 ? ':' + port : '');
-    var baseUrl = isSecure ? protocol + '://' + host : protocol + '://' + host + portURI;
-    var apiVersion = configuration.streamManagerAPI || '3.0';
-    var url = baseUrl + '/streammanager/api/' + apiVersion + '/event/' + app + '/' + streamName + '?action=broadcast&transcode=true';
-      return new Promise(function (resolve, reject) {
-        fetch(url)
-          .then(function (res) {
-            if (res.headers.get("content-type") &&
-              res.headers.get("content-type").toLowerCase().indexOf("application/json") >= 0) {
-                return res.json();
-            }
-            else {
-              throw new TypeError('Could not properly parse response.');
-            }
-          })
-          .then(function (json) {
-            resolve(json);
-          })
-          .catch(function (error) {
-            var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
-            console.error('[PublisherStreamManagerTest] :: Error - Could not request Origin IP from Stream Manager. ' + jsonError)
-            reject(error)
-          });
     });
   }
 
@@ -238,6 +166,7 @@
                       swfobjectURL: '../../lib/swfobject/swfobject.js',
                       productInstallURL: '../../lib/swfobject/playerProductInstall.swf'},
                       getRTMPMediaConfiguration(transcoderConfig));
+
     var publishOrder = config.publisherFailoverOrder
                             .split(',')
                             .map(function (item) {
@@ -294,7 +223,7 @@
   var retryCount = 0;
   var retryLimit = 3;
   function respondToOrigin (response) {
-    determinePublisher(response, selectedTranscoderToPublish)
+    determinePublisher(response)
       .then(function (publisherImpl) {
         streamTitle.innerText = configuration.stream1;
         targetPublisher = publisherImpl;
@@ -333,90 +262,9 @@
 
   function startup () {
     // Kick off.
-    requestOrigin(configuration)
+    requestTranscodeOrigin(configuration)
       .then(respondToOrigin)
       .catch(respondToOriginFailure);
-  }
-
-  function generateTranscoderPost (streamName, forms) {
-    /*
-              name: configuration.stream1 + '_high',
-          level: 1,
-          properties: {
-            videoWidth: userMedia.video.width.ideal,
-            videoHeight: userMedia.video.height.ideal,
-            videoBR: defaultConfiguration.bandwidth.video * 100
-          }
-          */
-    var i = forms.length;
-    var formItem;
-    var bitrateField;
-    var widthField;
-    var heightField;
-    var setting;
-    var streams = [];
-    while (--i > -1) {
-      formItem = forms[i];
-      bitrateField = formItem.getElementsByClassName('bitrate-field')[0];
-      widthField = formItem.getElementsByClassName('width-field')[0];
-      heightField = formItem.getElementsByClassName('height-field')[0];
-      setting = {
-        name: [streamName, transcoderTypes[i]].join('_'),
-        level: (i + 1),
-        properties: {
-          videoWidth: parseInt(widthField.value, 10),
-          videoHeight: parseInt(heightField.value, 10),
-          videoBR: parseInt(bitrateField.value, 10)
-        }
-      }
-      streams.push(setting);
-    }
-    return streams;
-  }
-
-  function submitTranscode () {
-    var streams = generateTranscoderPost(configuration.stream1, transcoderForms);
-    transcoderPOST.meta.stream = streams;
-    postTranscode(transcoderPOST)
-      .then(function (response) {
-        if (response.errorMessage) {
-          console.error('[Red5ProPublisher] :: Error in POST of transcode configuration: ' + response.errorMessage);
-          updateStatusFromEvent({
-            type: red5prosdk.PublisherEventTypes.CONNECT_FAILURE
-          });
-          onPublishFail(response.errorMessage);
-        }
-        else {
-          transcoderManifest = streams;
-          qualityContainer.classList.remove('hidden');
-        }
-      })
-      .catch(function (error) {
-        var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
-        console.error('[Red5ProPublisher] :: Error in POST of transcode configuration: ' + jsonError);
-        updateStatusFromEvent({
-          type: red5prosdk.PublisherEventTypes.CONNECT_FAILURE
-        });
-        onPublishFail(jsonError);
-      });
-  }
-
-  function setQualityAndPublish () {
-    var selectedQuality = qualitySelect.value;
-    var targetName = [configuration.stream1, selectedQuality].join('_');
-    var i = transcoderManifest.length, config;
-    while (--i > -1) {
-      config = transcoderManifest[i];
-      if (config.name === targetName) {
-        break;
-      }
-      config = null;
-    }
-
-    if (config) {
-      selectedTranscoderToPublish = config;
-      startup();
-    }
   }
 
   window.addEventListener('beforeunload', function() {
