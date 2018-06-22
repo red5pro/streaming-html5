@@ -1,4 +1,4 @@
-# Subscribing to ABR Streams over stream manager proxy
+# Subscribing to ABR Streams over Stream Manager Proxy with WebRTC
 
 When a broadcast has the capability for Adaptive Bitrate (ABR) control, the consumed stream can dynamically switch variants based on the network conditions of the subscriber.
 

@@ -1,4 +1,10 @@
-# Subscribing RTC Streams over stream manager proxy
+# Subscribing to ABR Streams over Stream Manager Proxy with HLS
+
+When a broadcast has the capability for Adaptive Bitrate (ABR) control, the consumed stream can dynamically switch variants based on the network conditions of the subscriber.
+
+Subscription to an ABR-enabled stream differs for HLS from that of WebRTC and Flash in that the `m3u8` of the top-level GUID for the stream name is requested. In the HLS manifest returned is the variant information that will be switched to based on the network conditions of the subscriber.
+
+---
 
 The streammanager WebRTC proxy is a communication layer built inside streammanager web application which allows it to act as a proxy gateway for webrtc publishers / subscribers. The target use case of this communication layer is to facilitate a secure browser client to be able to connect to a "unsecure" remote websocket endpoint for consuming WebRTC services offered by Red5pro. 
 
@@ -11,130 +17,91 @@ Streammanager autoscaling works with dynamic nodes which are associated with dyn
 
 > You also need to ensure that the stream manager proxy layer is `enabled`. The configuration section can be found in stream manager's config file - `red5-web.properties`
 
-`
+```txt
 ## WEBSOCKET PROXY SECTION
 proxy.enabled=false
-`
+```
 
 ### Example Code
+
 - **[index.html](index.html)**
 - **[index.js](index.js)**
 
 ## Setup
-In order to subscribe, you first need to connect to the Stream Manager. The Stream Manager will know which origin is being used for the stream and accordingly will provide with an usable edge to consume the stream.
+
+In order to subscribe to a stream that has an ABR provision, you will first need to request the Provision to get a list of variants that are available to subscribe to.
+
+### Endpoint
+
+If you were to request the Provision for a stream named `mystream` on your Stream Manager instance deployed to `https://yourcompany.com` with the access token defined as `myaccessToken`, the `GET` request for the Provision would have the following structure:
 
 ```js
-
-function requestEdge (configuration) {
-var host = configuration.host;
-var app = configuration.app;
-var port = serverSettings.httpport.toString();
-var portURI = (port.length > 0 ? ':' + port : '');
-var baseUrl = isSecure ? protocol + '://' + host : protocol + '://' + host + portURI;
-var streamName = configuration.stream1;
-var apiVersion = configuration.streamManagerAPI || '2.0';
-var url = baseUrl + '/streammanager/api/' + apiVersion + '/event/' + app + '/' + streamName + '?action=subscribe';
-  return new Promise(function (resolve, reject) {
-	fetch(url)
-	  .then(function (res) {
-		if (res.headers.get("content-type") &&
-		  res.headers.get("content-type").toLowerCase().indexOf("application/json") >= 0) {
-			return res.json();
-		}
-		else {
-		  throw new TypeError('Could not properly parse response.');
-		}
-	  })
-	  .then(function (json) {
-		resolve(json.serverAddress);
-	  })
-	  .catch(function (error) {
-		var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
-		console.error('[SubscribeStreamManagerTest] :: Error - Could not request Edge IP from Stream Manager. ' + jsonError)
-		reject(error)
-	  });
-});
-}
-
+https://yourcompany.com/streammanager/api/3.0/admin/event/meta/live/mystream?accessToken=myaccessToken
 ```
 
-<sup>
-[index.js #100](index.js#L100)
-</sup>
+### Response
 
-The service returns a JSON object. In particular to note is the `serverAddress` attribute which will be the IP of the Edge server.
+If the broadcast for `mystream` was provisioned for `High`, `Mid` and `Low` variants (as they are in the example at [../publishStreamManagerProvisionForm](Publisher Stream Manager Provision)), the JSON response from the above request will look similar to the following:
 
-
-```
-  "name": "<stream-name>",
-  "scope": "<stream-scope>",
-  "serverAddress": "<edge-host-address>",
-  "region": "<region-code>"
-}
-```
-
-Next we construct the configuration objects for the subscriber per supported protocol. Note that the proxy usage is applicable for `rtc` only. The edge address is set directly as host for `rtmp` or `hls` subscriber configuration, whereas it is passed in through connectionParams for `rtc`.
-
-Another important to note is that for `rtc` subscriber the target application is the `proxy` - the `streammanager` webapp and not the app that you want to subscribe to. The `rtc` configuration passes the actual target application name in connectionParams as `app`.
-
-```
-function determineSubscriber (serverAddress) {
-	
-    var config = Object.assign({}, configuration, defaultConfiguration);
-    var rtcConfig = Object.assign({}, config, {
-      host: configuration.host,
-      protocol: getSocketLocationFromProtocol().protocol,
-      port: getSocketLocationFromProtocol().port,
-	  app: configuration.proxy,
-	  connectionParams: {
-		host: serverAddress,
-		app: configuration.app
+```js
+{
+  "name": "stream1todd17",
+  "scope":"live",
+  "data": {
+    "meta": {
+      "authentication": {
+        "password": "",
+        "username": ""
       },
-      subscriptionId: 'subscriber-' + instanceId,
-      streamName: config.stream1
-    })
-    var rtmpConfig = Object.assign({}, config, {
-      host: serverAddress,
-      protocol: 'rtmp',
-      port: serverSettings.rtmpport,
-      streamName: config.stream1,
-      mimeType: 'rtmp/flv',
-      useVideoJS: false,
-      width: config.cameraWidth,
-      height: config.cameraHeight,
-      swf: '../../lib/red5pro/red5pro-subscriber.swf',
-      swfobjectURL: '../../lib/swfobject/swfobject.js',
-      productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
-    })
-    var hlsConfig = Object.assign({}, config, {
-      host: serverAddress,
-      protocol: protocol,
-      port: isSecure ? serverSettings.hlssport : serverSettings.hlsport,
-      streamName: config.stream1,
-      mimeType: 'application/x-mpegURL'
-    })
-
-    if (!config.useVideo) {
-      rtcConfig.videoEncoding = 'NONE';
+      "qos": 3,
+      "georules": {
+        "regions": ["US", "UK"],
+        "restricted": false,
+      },
+      "stream": [
+        {
+          "level": 1,
+          "name": "mystream_low",
+          "properties": [
+            "videoBR": 128000,
+            "videoHeight": 180,
+            "videoWidth": 320
+          ]
+        },
+        {
+          "level": 2,
+          "name": "mystream_mid",
+          "properties": [
+            "videoBR": 512000,
+            "videoHeight": 360,
+            "videoWidth": 640
+          ]
+        },
+        {
+          "level": 3,
+          "name": "mystream_high",
+          "properties": [
+            "videoBR": 1000000,
+            "videoHeight": 720,
+            "videoWidth": 1280
+          ]
+        }
+      ]
     }
-    if (!config.useAudio) {
-      rtcConfig.audioEncoding = 'NONE';
-    }
-
-    var subscribeOrder = config.subscriberFailoverOrder
-                          .split(',').map(function (item) {
-                            return item.trim();
-                          });
-
-    return SubscriberBase.determineSubscriber({
-              rtc: rtcConfig,
-              rtmp: rtmpConfig,
-              hls: hlsConfig
-            }, subscribeOrder);
   }
+}
 ```
 
-<sup>
-[index.js #133](index.js#L133)
-</sup>
+The `data.meta.stream` listing provides the available variants to subscribe to.
 
+## Subscribing
+
+With the Provision data available, the next requirement is to request an Edge server to subscribe to from the Stream Manager. Any of the `name`s listed in the Provision variants can be used to make the request. Once the Edge server address is provided form the Stream Manager, you will then request the associated `m3u8` using the top-level GUID of the stream (the top-level `name` attribute value of the JSON above).
+
+Requesting an Edge server to broadcast is the same as you are familiar with when using the Stream Manager API. The only difference is that you provide the name of one of the variants:
+
+```js
+https://yourcompany.com/streammanager/api/3.0/event/live/mystream_high?action=subscribe
+```
+
+Use the `serverAddress` of the JSON response from the above `GET` request together with the top-level GUID `name` of the stream to start subscribing the the ABR-enabled stream using HLS.
