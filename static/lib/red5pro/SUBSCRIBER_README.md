@@ -58,12 +58,13 @@ _It is *highly* recommended to include [adapter.js](https://github.com/webrtc/ad
 | streamName | [x] | *None* | The name of the stream to subscribe to. |
 | mediaElementId | [-] | `red5pro-subscriber` | The target `video` or `audio` element `id` attribute which will display the stream. |
 | iceServers | [x] | *None* ([Test](https://webrtc.github.io/samples/src/content/peerconnection/trickle-ice/)) | The list of ICE servers to use in requesting a Peer Connection. |
+| iceTransport | [-] | `UDP` | The transport type to use in ICE negotiation. Either `UDP` or `TCP` |
 | subscriptionId | [x] | auto-generated | A unique string representing the requesting client. |
-| bandwidth | [-] | `{audio: 56, video: 512}` | A configuration object to setup playback. |
 | connectionParams | [-] | `undefined` | An object of connection parameters to send to the server upon connection request. |
 | videoEncoding | [-] | *None* | Specifies target video encoder. |
 | audio Encoding | [-] | *None* | Specifies target audio encoder. |
 | autoLayoutOrientation | [-] | `true` | Flag to allow SDK to auto-orientation the layout of `video` element based on broadcast metadata. _Mobile publishers broadcast with orientation._ |
+| maintainConnectionOnSubscribeErrors | [-] | `false` | Flag to maintain previously established `WebSocket` connection on any failure within the `subscribe` request flow. [Example](https://github.com/red5pro/streaming-html5/tree/master/src/page/test/subscribeRetryOnInvalidName) |
 
 #### Video Encoding Configuration
 By not providing the `videoEncoding` attribute in the WebRTC Subscriber configuration, the server will choose the default encoder to use. If you do not wish for the server to default, you can provide the following values for the property:
@@ -124,10 +125,6 @@ _main.js_:
     app: 'live',
     streamName: 'mystream',
     iceServers: [{urls: 'stun:stun2.l.google.com:19302'}],
-    bandwidth: {
-      audio: 56,
-      video: 512
-    },
     mediaElementId: 'red5pro-subscriber',
     subscriptionId: 'mystream' + Math.floor(Math.random() * 0x10000).toString(16),
     videoEncoding: 'NONE',
@@ -261,6 +258,8 @@ The Red5 Pro HTML SDK HLS Subscriber.
 | mediaElementId | [-] | `red5pro-subscriber` | The target `video` or `audio` element `id` attribute which will display the stream. |
 | mimeType | [x] | `application/x-mpegURL` | The mime-type of the stream source. |
 | autoLayoutOrientation | [-] | `true` | Flag to allow SDK to auto-orientation the layout of `video` element based on broadcast metadata. _Mobile publishers broadcast with orientation._ |
+| socketParams | [-] | `undefined` | By providing a `socketParams` property, you turn on a verification system that will pass the provided `connectionParams` to a WebSocket endpoint (much like how the WebRTC subscriber does in verification). |
+| connectionParams | [-] |  `undefined` | An object of connection parameters to send to the server upon connection request. |
 
 ### HLS Example
 _index.html_:
