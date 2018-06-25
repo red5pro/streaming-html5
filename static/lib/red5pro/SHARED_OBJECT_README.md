@@ -52,7 +52,7 @@ Use of Shared objects requires an active stream - either publishing or subscribi
   var subscriber = new red5prosdk.Red5ProSubscriber();
   subscriber.init(configuration)
     .then( function(subscriberImpl) {
-      return subscriberImpl.play();
+      return subscriberImpl.subscribe();
     })
     .then( function(subscriberImpl) {
       so = new red5pro.Red5ProSharedObject('sharedObjectTest', subscriberImpl);
