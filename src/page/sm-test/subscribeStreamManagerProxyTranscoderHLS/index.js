@@ -36,7 +36,6 @@
     }
     window.red5proHandleSubscriberEvent(event); // defined in src/template/partial/status-field-subscriber.hbs
   };
-  var instanceId = Math.floor(Math.random() * 0x10000).toString(16);
   var streamTitle = document.getElementById('stream-title');
   var statisticsField = document.getElementById('statistics-field');
   var addressField = document.getElementById('address-field');
@@ -179,31 +178,19 @@
 
   function determineSubscriber (jsonResponse) {
     var host = jsonResponse.serverAddress;
-    var name = jsonResponse.name;
     var app = jsonResponse.scope;
     var config = Object.assign({}, configuration, defaultConfiguration);
-    var rtcConfig = Object.assign({}, config, {
-      host: configuration.host,
-      protocol: getSocketLocationFromProtocol().protocol,
-      port: getSocketLocationFromProtocol().port,
-      app: configuration.proxy,
-      connectionParams: {
-        host: host,
-        app: app
-      },
-      subscriptionId: 'subscriber-' + instanceId,
-      streamName: name
+
+    var hlsConfig = Object.assign({}, config, {
+      host: host,
+      app: app,
+      protocol: 'http',
+      port: serverSettings.hlsport,
+      streamName: configuration.stream1 // use config name for HLS transcode sub.
     })
 
-    if (!config.useVideo) {
-      rtcConfig.videoEncoding = 'NONE';
-    }
-    if (!config.useAudio) {
-      rtcConfig.audioEncoding = 'NONE';
-    }
-
-    var subscriber = new red5prosdk.RTCSubscriber();
-    return subscriber.init(rtcConfig)
+    var subscriber = new red5prosdk.HLSSubscriber();
+    return subscriber.init(hlsConfig)
   }
 
   function showServerAddress (subscriber) {
