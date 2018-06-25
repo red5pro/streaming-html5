@@ -1,12 +1,10 @@
-# Subscribing to ABR Streams over Stream Manager Proxy with WebRTC
+# Subscribing to ABR Streams over Stream Manager with HLS
 
 When a broadcast has the capability for Adaptive Bitrate (ABR) control, the consumed stream can dynamically switch variants based on the network conditions of the subscriber.
 
-To start a subscription to a stream, request the ABR Provision of the target stream and select a variant to consume. Once the stream is being consumed, the server will update the variant and quality based on the network condition.
+Subscription to an ABR-enabled stream differs for HLS from that of WebRTC and Flash in that the `m3u8` of the top-level GUID for the stream name is requested. In the HLS manifest returned is the variant information that will be switched to based on the network conditions of the subscriber.
 
 ---
-
-The streammanager WebRTC proxy is a communication layer built inside streammanager web application which allows it to act as a proxy gateway for webrtc publishers / subscribers. The target use case of this communication layer is to facilitate a secure browser client to be able to connect to a "unsecure" remote websocket endpoint for consuming WebRTC services offered by Red5pro. 
 
 Streammanager autoscaling works with dynamic nodes which are associated with dynamic IP addresses and cannot have a SSL attached to them. The proxy layer helps subscribers to connect and initiate a WebRTC `subscribe` session from a `secure` (ssl enabled) domain to a `unsecure` Red5pro origin having using an IP address.
 
@@ -96,7 +94,7 @@ The `data.meta.stream` listing provides the available variants to subscribe to.
 
 ## Subscribing
 
-With the Provision data available, the next requirement is to request an Edge server to subscribe to from the Stream Manager. Any of the `name`s listed in the Provision variants can be used to make the request and subscribe to; the server will handle the stream downgrade and upgrade based on the network conditions of the subscriber.
+With the Provision data available, the next requirement is to request an Edge server to subscribe to from the Stream Manager. Any of the `name`s listed in the Provision variants can be used to make the request. Once the Edge server address is provided form the Stream Manager, you will then request the associated `m3u8` using the top-level GUID of the stream (the top-level `name` attribute value of the JSON above).
 
 Requesting an Edge server to broadcast is the same as you are familiar with when using the Stream Manager API. The only difference is that you provide the name of one of the variants:
 
@@ -104,4 +102,8 @@ Requesting an Edge server to broadcast is the same as you are familiar with when
 https://yourcompany.com/streammanager/api/3.0/event/live/mystream_high?action=subscribe
 ```
 
-Use the `serverAddress` of the JSON response from the above `GET` request to start subscribing the the ABR-enabled stream.
+Use the `serverAddress` of the JSON response from the above `GET` request together with the top-level GUID `name` of the stream to start subscribing the the ABR-enabled stream using HLS, e.g.,:
+
+```js
+http://xxx.xxx.xxx:5080/live/mystream.m3u8
+```
