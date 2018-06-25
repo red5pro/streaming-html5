@@ -6,8 +6,6 @@ Subscription to an ABR-enabled stream differs for HLS from that of WebRTC and Fl
 
 ---
 
-The streammanager WebRTC proxy is a communication layer built inside streammanager web application which allows it to act as a proxy gateway for webrtc publishers / subscribers. The target use case of this communication layer is to facilitate a secure browser client to be able to connect to a "unsecure" remote websocket endpoint for consuming WebRTC services offered by Red5pro. 
-
 Streammanager autoscaling works with dynamic nodes which are associated with dynamic IP addresses and cannot have a SSL attached to them. The proxy layer helps subscribers to connect and initiate a WebRTC `subscribe` session from a `secure` (ssl enabled) domain to a `unsecure` Red5pro origin having using an IP address.
 
 
@@ -104,4 +102,8 @@ Requesting an Edge server to broadcast is the same as you are familiar with when
 https://yourcompany.com/streammanager/api/3.0/event/live/mystream_high?action=subscribe
 ```
 
-Use the `serverAddress` of the JSON response from the above `GET` request together with the top-level GUID `name` of the stream to start subscribing the the ABR-enabled stream using HLS.
+Use the `serverAddress` of the JSON response from the above `GET` request together with the top-level GUID `name` of the stream to start subscribing the the ABR-enabled stream using HLS, e.g.,:
+
+```js
+http://xxx.xxx.xxx:5080/live/mystream.m3u8
+```
