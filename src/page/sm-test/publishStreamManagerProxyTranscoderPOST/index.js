@@ -373,10 +373,15 @@
       .then(function (response) {
         if (response.errorMessage) {
           console.error('[Red5ProPublisher] :: Error in POST of transcode configuration: ' + response.errorMessage);
-          updateStatusFromEvent({
-            type: red5prosdk.PublisherEventTypes.CONNECT_FAILURE
-          });
-          onPublishFail(response.errorMessage);
+          if (/Provision already exists/.exec(response.errorMessage)) {
+            transcoderManifest = streams;
+            qualityContainer.classList.remove('hidden');
+          } else {
+            updateStatusFromEvent({
+              type: red5prosdk.PublisherEventTypes.CONNECT_FAILURE
+            });
+            onPublishFail(response.errorMessage);
+          }
         }
         else {
           transcoderManifest = streams;
