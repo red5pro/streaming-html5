@@ -34,9 +34,9 @@ This example provides a simple form that allows you to provision a `High`, `Mid`
 
 Once you select the variant to publish as, click the **Start Publishing** button and a request on the Stream Manager will be made for the Transcoder server address to start publishing to. The Transcoder will take care of fleshing out the additional variants to be consumed by subscribers in ABR.
 
-Once you have started a broadcast for the target variant on the Transcoder, open the [../subscribeStreamManagerProxyTranscoder](Subscribe Stream Manager Transcoder Proxy) example to see how you can subscribe to a stream that will have dynammic ABR based on your client's network conditions.
+Once you have started a broadcast for the target variant on the Transcoder, open the [../subscribeStreamManagerProxyTranscoder/](Subscribe Stream Manager Transcoder Proxy) example to see how you can subscribe to a stream that will have dynammic ABR based on your client's network conditions.
 
-> This example differs from the [../publisherStreamManagerProvisionForm](Publisher Stream Manager Provision Form) in that it makes a request for a Transcoder server address as the Origin to broadcast on.
+> This example differs from the [../publisherStreamManagerProvisionForm/](Publisher Stream Manager Provision Form) in that it makes a request for a Transcoder server address as the Origin to broadcast on.
 
 ## API
 
