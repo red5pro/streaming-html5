@@ -212,7 +212,7 @@
   function determinePublisher (jsonResponse, transcoderConfig) {
     var host = jsonResponse.serverAddress;
     var app = jsonResponse.scope;
-    var name = [configuration.stream1, transcoderConfig.level].join('_');
+    var name = transcoderConfig.name;
     defaultConfiguration.bandwidth.video = transcoderConfig.properties.videoBR / 1000; 
     var config = Object.assign({},
                     configuration,
@@ -353,7 +353,7 @@
       widthField = formItem.getElementsByClassName('width-field')[0];
       heightField = formItem.getElementsByClassName('height-field')[0];
       setting = {
-        name: [streamName, transcoderTypes[i]].join('_'),
+        name: [streamName, (i + 1)].join('_'),
         level: (i + 1),
         properties: {
           videoWidth: parseInt(widthField.value, 10),

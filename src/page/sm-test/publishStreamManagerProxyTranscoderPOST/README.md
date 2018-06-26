@@ -98,7 +98,7 @@ As an example, using `mystream` as the top-level GUID, the JSON in the `POST` to
     "stream": [
       {
         "level": 3,
-        "name": "mystream_low",
+        "name": "mystream_3",
         "properties": [
           "videoBR": 128000,
           "videoHeight": 180,
@@ -107,7 +107,7 @@ As an example, using `mystream` as the top-level GUID, the JSON in the `POST` to
       },
       {
         "level": 2,
-        "name": "mystream_mid",
+        "name": "mystream_2",
         "properties": [
           "videoBR": 512000,
           "videoHeight": 360,
@@ -116,7 +116,7 @@ As an example, using `mystream` as the top-level GUID, the JSON in the `POST` to
       },
       {
         "level": 1,
-        "name": "mystream_high",
+        "name": "mystream_1",
         "properties": [
           "videoBR": 1000000,
           "videoHeight": 720,
