@@ -212,7 +212,7 @@
   function determinePublisher (jsonResponse, transcoderConfig) {
     var host = jsonResponse.serverAddress;
     var app = jsonResponse.scope;
-    var name = transcoderConfig.name;
+    var name = [configuration.stream1, transcoderConfig.level].join('_');
     defaultConfiguration.bandwidth.video = transcoderConfig.properties.videoBR / 1000; 
     var config = Object.assign({},
                     configuration,

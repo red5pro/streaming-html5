@@ -89,7 +89,7 @@ As an example, using `mystream` as the top-level GUID, the JSON in the `POST` to
     },
     "stream": [
       {
-        "level": 1,
+        "level": 3,
         "name": "mystream_low",
         "properties": [
           "videoBR": 128000,
@@ -107,7 +107,7 @@ As an example, using `mystream` as the top-level GUID, the JSON in the `POST` to
         ]
       },
       {
-        "level": 3,
+        "level": 1,
         "name": "mystream_high",
         "properties": [
           "videoBR": 1000000,
@@ -151,9 +151,11 @@ To access the Origin server address for a variant:
 Following along with the previous examples for URL structure, you would have the following 3 urls to make a `GET` request on to receiev the Origin server address to broadcast each on:
 
 ```js
-https://yourstreammanager.com/streammanager/api/3.0/event/live/mystream_high?action=broadcast&accessToken=myaccessToken
-https://yourstreammanager.com/streammanager/api/3.0/event/live/mystream_mid?action=broadcast&accessToken=myaccessToken
-https://yourstreammanager.com/streammanager/api/3.0/event/live/mystream_low?action=broadcast&accessToken=myaccessToken
+https://yourstreammanager.com/streammanager/api/3.0/event/live/mystream_1?action=broadcast&accessToken=myaccessToken
+https://yourstreammanager.com/streammanager/api/3.0/event/live/mystream_2?action=broadcast&accessToken=myaccessToken
+https://yourstreammanager.com/streammanager/api/3.0/event/live/mystream_3?action=broadcast&accessToken=myaccessToken
 ```
+
+You will request server address and broadcast using the stream name form of: `<stream name guid>_<level>`. In following with the above example, requesting to broadcast the higest variant would be: `mystream_1`.
 
 The response is the same response and JSON structure you are already familiar with when utilizing the Stream Manager.

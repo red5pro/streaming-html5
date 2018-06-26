@@ -97,7 +97,7 @@ As an example, using `mystream` as the top-level GUID, the JSON in the `POST` to
     },
     "stream": [
       {
-        "level": 1,
+        "level": 3,
         "name": "mystream_low",
         "properties": [
           "videoBR": 128000,
@@ -115,7 +115,7 @@ As an example, using `mystream` as the top-level GUID, the JSON in the `POST` to
         ]
       },
       {
-        "level": 3,
+        "level": 1,
         "name": "mystream_high",
         "properties": [
           "videoBR": 1000000,
@@ -160,6 +160,6 @@ https://yourstreammanager.com/streammanager/api/3.0/event/live/mystream?action=b
 
 That will return a JSON with the same structure as you are familiar with in requesting any other Origin server info from the Stream Manager.
 
-The Broadcaster will then use the `serverAddress` from that response to publish their target variant to (e.g., `mystream_high`) with the additional proper configuration set for that variant - `width`, `height` and `bitrate`.
+The Broadcaster will then use the `serverAddress` from that response to publish their target variant level to (e.g., `mystream_1`) with the additional proper configuration set for that variant - `width`, `height` and `bitrate`.
 
 > Even though the broadcaster is publishing a single variant, since the Transcoder endpoint is used, the other variants will be available for consumption on the subscriber-side. You can verify this by locating one of your edges in the Stream Manager deployment and viewing the available streams.
