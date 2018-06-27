@@ -36,12 +36,15 @@
     }
     window.red5proHandleSubscriberEvent(event); // defined in src/template/partial/status-field-subscriber.hbs
   };
-  var instanceId = Math.floor(Math.random() * 0x10000).toString(16);
   var streamTitle = document.getElementById('stream-title');
   var statisticsField = document.getElementById('statistics-field');
   var addressField = document.getElementById('address-field');
+  var streamSelect = document.getElementById('stream-select');
+  var streamSelectContainer = document.getElementById('stream-select-container');
+  var streamSelectButton = document.getElementById('stream-select-btn');
   var protocol = serverSettings.protocol;
   var isSecure = protocol === 'https';
+
   function getSocketLocationFromProtocol () {
     return !isSecure
       ? {protocol: 'ws', port: serverSettings.wsport}
@@ -191,7 +194,7 @@
         host: host,
         app: app
       },
-      subscriptionId: 'subscriber-' + instanceId,
+      subscriptionId: 'subscriber-' + Math.floor(Math.random() * 0x10000).toString(16),
       streamName: name
     })
 
@@ -290,17 +293,24 @@
     .then(function (settings) {
       try {
         var streams = settings.meta.stream;
-        if (streams.length > 0) {
-          var selectedStream = streams.length > 1 ? streams[1] : streams[0];
-          startup(selectedStream.name);
-        } else {
-          throw new Error('Could not parse settings.');
+        var i, length = streams.length;
+        for (i = 0; i < length; i++) {
+          var o = document.createElement('option');
+          o.textContent = streams[i].name;
+          streamSelect.appendChild(o);
         }
+        streamSelectContainer.classList.remove('hidden');
       } catch (e) {
         console.error("Count not properly acces ABR stream based on settings: " + JSON.stringify(settings, null, 0));
       }
 
     });
+
+  streamSelectButton.addEventListener('click', function () {
+    if (streamSelect.value !== 'Select...') {
+      startup(streamSelect.value);
+    }
+  });
 
   // Clean up.
   window.addEventListener('beforeunload', function() {
