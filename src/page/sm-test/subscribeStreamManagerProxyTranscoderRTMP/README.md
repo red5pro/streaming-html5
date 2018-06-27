@@ -45,7 +45,7 @@ If the broadcast for `mystream` was provisioned for `High`, `Mid` and `Low` vari
 
 ```js
 {
-  "name": "stream1todd17",
+  "name": "mystream",
   "scope":"live",
   "data": {
     "meta": {
