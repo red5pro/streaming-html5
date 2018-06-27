@@ -41,11 +41,11 @@ https://yourcompany.com/streammanager/api/3.0/admin/event/meta/live/mystream?acc
 
 ### Response
 
-If the broadcast for `mystream` was provisioned for `High`, `Mid` and `Low` variants (as they are in the example at [../publishStreamManagerProvisionForm](Publisher Stream Manager Provision)), the JSON response from the above request will look similar to the following:
+If the broadcast for `mystream` was provisioned for levels of `1`, `2` and `3` variants (as they are in the example at [../publishStreamManagerProvisionForm](Publisher Stream Manager Provision)), the JSON response from the above request will look similar to the following:
 
 ```js
 {
-  "name": "stream1todd17",
+  "name": "mystream",
   "scope":"live",
   "data": {
     "meta": {
@@ -60,8 +60,8 @@ If the broadcast for `mystream` was provisioned for `High`, `Mid` and `Low` vari
       },
       "stream": [
         {
-          "level": 1,
-          "name": "mystream_low",
+          "level": 3,
+          "name": "mystream_3",
           "properties": [
             "videoBR": 128000,
             "videoHeight": 180,
@@ -70,7 +70,7 @@ If the broadcast for `mystream` was provisioned for `High`, `Mid` and `Low` vari
         },
         {
           "level": 2,
-          "name": "mystream_mid",
+          "name": "mystream_2",
           "properties": [
             "videoBR": 512000,
             "videoHeight": 360,
@@ -78,8 +78,8 @@ If the broadcast for `mystream` was provisioned for `High`, `Mid` and `Low` vari
           ]
         },
         {
-          "level": 3,
-          "name": "mystream_high",
+          "level": 1,
+          "name": "mystream_1",
           "properties": [
             "videoBR": 1000000,
             "videoHeight": 720,
@@ -101,7 +101,7 @@ With the Provision data available, the next requirement is to request an Edge se
 Requesting an Edge server to broadcast is the same as you are familiar with when using the Stream Manager API. The only difference is that you provide the name of one of the variants:
 
 ```js
-https://yourcompany.com/streammanager/api/3.0/event/live/mystream_high?action=subscribe
+https://yourcompany.com/streammanager/api/3.0/event/live/mystream_1?action=subscribe
 ```
 
 Use the `serverAddress` of the JSON response from the above `GET` request to start subscribing the the ABR-enabled stream.
