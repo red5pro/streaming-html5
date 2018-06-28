@@ -1,4 +1,5 @@
 # Publish Stream Recording
+
 This example demonstrates recording the published stream to the server.
 
 **Please refer to the [Basic Publisher Documentation](../publish/README.md) to learn more about the basic setup.**
@@ -9,7 +10,8 @@ This example demonstrates recording the published stream to the server.
 
 > These examples use the WebRTC-based Publisher implementation from the Red5 Pro HTML SDK. However, there is failover support to allow for Flash-base publisher on unsupported browsers.
 
-## Recording
+# Recording
+
 To record a published stream, modify the `streamMode` configuration attribute provided upon initialization of the Publisher:
 
 ```js
@@ -21,9 +23,7 @@ var defaultConfiguration = {
 };
 ```
 
-<sup>
-[index.js #22](index.js#L22)
-</sup>
+[index.js #41](index.js#L41)
 
 The following are accepted values for the `streamMode` configuration attribute:
 

@@ -1,0 +1,58 @@
+<!doctype html>
+<html>
+  <head>
+    {{> meta title='Publish Stream Manager Transcode Proxy Test'}}
+    {{> header-scripts}}
+    {{> header-stylesheets}}
+    <style>
+      #address-field {
+        padding: 6px;
+        background-color: #ccc;
+      }
+      .hidden {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      {{> version }}
+      {{> settings-link}}
+      <div class="ice-background">
+      <div class="test-notification">
+        <p>In order to properly run the Stream Manager examples, you will need to configure you server for cluster infrastructure as described in the following documentation:</p>
+        <p><a href="https://www.red5pro.com/docs/server/autoscale/" target="_blank">https://www.red5pro.com/docs/server/autoscale/</a></p>
+        <p>Additionally to use this example stream manager proxy gateway should be enabled.</p>
+        <p>All resolutions should have the same aspect ratio, otherwise your stream will be skewed.</p>
+      </div>
+      </div>
+      {{> test-info testTitle='Publish SM ABR Provision Form'}}
+      <div class="clearfix centered ice-background" style="padding: 24px 0; border-top: 1px solid #ddd;">
+        <p>Use this form to post your ABR Provisions:</p>
+        {{> transcoder-form id="transcoder-high" category="High" width="1280" height="720" bitrate="1000000"}}
+        {{> transcoder-form id="transcoder-mid" category="Mid" width="640" height="360" bitrate="512000"}}
+        {{> transcoder-form id="transcoder-low" category="Low" width="320" height="180" bitrate="128000"}}
+        <p style="padding-top: 20px;">
+          <button id="submit-button">Submit</button>
+        </p>
+        <div id="quality-container" class="hidden">
+          <hr/>
+          <p style="padding-top: 20px;"><strong>Transcoder Manifest submitted successfully!</strong><p>
+          <p style="padding: 14px;">Now you can visit</p>
+          <p style="padding: 8px;"><a id="provision-link" target="_blank"></a></p>
+          <p style="padding: 14px;">to view your Provision.
+          <hr />
+          <div id="stream-listing" style="padding: 14px;">
+            <p><strong>Start the following streams with your Media Encoder:</strong></p>
+          </div>
+          <hr />
+          <div style="padding-top: 14px">
+            <p>Then visit the accompanying <a href="../subscribeStreamManagerProxyTranscoder">Subscriber</a>!</p>
+          </div>
+        </div>
+      </div>
+    {{> body-scripts}}
+    <script src="index.js"></script>
+  </body>
+</html>
+

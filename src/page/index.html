@@ -56,6 +56,11 @@
         </p>
         <hr class="paddedHR" />
         <p class="settings-field">
+          <label class="settings-label">Stream Manager Access Token:</label>
+          <input id="sm-access-field" name="sm-access-field" placeholder="e.g., abc123">
+        </p>
+        <hr class="paddedHR" />
+        <p class="settings-field">
           <label class="settings-label">Verbose R5 Logging:</label>
           <input type="checkbox" id="logging-field" name="logging-field" style="vertical-align: middle;">
         </p>
@@ -99,6 +104,7 @@
         var videoField = document.getElementById('video-active-field');
         var audioField = document.getElementById('audio-active-field');
         var streamSwapButton = document.getElementById('stream-swap-btn');
+        var smAccessField = document.getElementById('sm-access-field');
 
         hostField.addEventListener('blur', function () {
           configuration.host = hostField.value;
@@ -150,6 +156,11 @@
           seal(configuration);
         });
 
+        smAccessField.addEventListener('blur', function () {
+          configuration.streamManagerAccessToken = smAccessField.value;
+          seal(configuration);
+        });
+
         streamSwapButton.addEventListener('click', function () {
           var stream1Value = stream1Field.value;
           var stream2Value = stream2Field.value;
@@ -168,6 +179,7 @@
           loggingField.checked = config.verboseLogging ? true : false;
           videoField.checked = config.useVideo ? true : false;
           audioField.checked = config.useAudio ? true : false;
+          smAccessField.value = config.streamManagerAccessToken;
 
           var transport = config.iceTransport;
           var i = iceTransportSelect.childNodes.length;
