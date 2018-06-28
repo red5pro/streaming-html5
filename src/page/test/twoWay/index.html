@@ -16,15 +16,15 @@
         <p>It is recommended to view this example as part of the <code>webrtcexamples</code> webapp shipped with the <a href="https://account.red5pro.com/download" target="_blank">Red5 Pro Server</a>.</p>
       </div>
       </div>
-      {{> test-info testTitle='Two-Way Test'}}
+      <h1 class="centered">Two-Way Test</h1>
       <hr />
       <div class="float-left float-left-two-way">
         <h2 class="centered"><em>Publisher Stream</em>: <span id="pub-stream-title"></span></h2>
         <p id="pub-status-field" class="centered status-field">On hold.</p>
-        <div class="centered">
+        <div class="centered red5pro-media-background">
         <video id="red5pro-publisher"
-                controls autoplay muted
-                width="640" height="480">
+                controls autoplay muted playsinline
+                width="320" height="240">
         </video>
         </div>
       </div>
@@ -33,9 +33,9 @@
         <p id="sub-status-field" class="centered status-field">On hold.</p>
         <div class="centered">
         <video id="red5pro-subscriber"
-                controls autoplay
+                controls autoplay playsinline
                 class="red5pro-media red5pro-media-background"
-                width="640" height="480">
+                width="320" height="240">
         </video>
         </div>
       </div>

@@ -92,6 +92,7 @@ code {
 
 .settings-field > input {
   height: 1.5rem;
+  min-width: 240px;
   font-size: 1rem;
   padding-left: 0.8rem;
 }
@@ -150,6 +151,16 @@ code {
   width: 50%;
 }
 
+.float-left-conf {
+  float: left;
+  display: inline-block;
+  width: 480px;
+}
+
+.proto {
+  display: none;
+}
+
 #back-link-container {
   cursor: pointer;
   width: 100%;
@@ -200,6 +211,10 @@ code {
   color: #000;
 }
 
+.top-level-listing {
+  background-color: #b2d7f3;
+}
+
 @media (max-width:510px) {
   .red5pro-media-volume-slider {
     width: 65px;
@@ -224,7 +239,7 @@ code {
   }
 }
 
-@media (max-width:745px) {
+@media (max-width:800px) {
   .float-left-two-way {
     width: 100%;
   }

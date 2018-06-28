@@ -43,6 +43,22 @@
           <label class="settings-label">Stream2 Name:</label>
           <input id="stream2-field" name="stream2-field" value="stream2">
         </p>
+        <p class="settings-field">
+          <label class="settings-label">ICE server:</label>
+          <input id="ice-field" name="ice-field" value="stun:stun2.l.google.com:19302">
+        </p>
+        <p class="settings-field">
+          <label class="settings-label">ICE Transport:</label>
+          <select id="ice-transport" name="ice-transport" style="min-width: 120px">
+            <option value="udp">UDP</option>
+            <option value="tcp">TCP</option>
+          </select>
+        </p>
+        <hr class="paddedHR" />
+        <p class="settings-field">
+          <label class="settings-label">Stream Manager Access Token:</label>
+          <input id="sm-access-field" name="sm-access-field" placeholder="e.g., abc123">
+        </p>
         <hr class="paddedHR" />
         <p class="settings-field">
           <label class="settings-label">Verbose R5 Logging:</label>
@@ -82,10 +98,13 @@
         var appField = document.getElementById('app-field');
         var stream1Field = document.getElementById('stream1-field');
         var stream2Field = document.getElementById('stream2-field');
+        var iceField = document.getElementById('ice-field');
+        var iceTransportSelect = document.getElementById('ice-transport');
         var loggingField = document.getElementById('logging-field');
         var videoField = document.getElementById('video-active-field');
         var audioField = document.getElementById('audio-active-field');
         var streamSwapButton = document.getElementById('stream-swap-btn');
+        var smAccessField = document.getElementById('sm-access-field');
 
         hostField.addEventListener('blur', function () {
           configuration.host = hostField.value;
@@ -107,6 +126,21 @@
           seal(configuration);
         });
 
+        iceField.addEventListener('blur', function () {
+          configuration.iceServers = [
+            {
+              "urls": iceField.value
+            }
+          ]
+          seal(configuration);
+        });
+
+        // <select> change event not supported in Gecko?
+        iceTransportSelect.addEventListener('change', function (event) {
+          configuration.iceTransport = event.target.value;
+          seal(configuration);
+        });
+
         loggingField.addEventListener('change', function () {
           configuration.verboseLogging = !configuration.verboseLogging;
           seal(configuration);
@@ -119,6 +153,11 @@
 
         audioField.addEventListener('change', function () {
           configuration.useAudio = !configuration.useAudio;
+          seal(configuration);
+        });
+
+        smAccessField.addEventListener('blur', function () {
+          configuration.streamManagerAccessToken = smAccessField.value;
           seal(configuration);
         });
 
@@ -136,9 +175,23 @@
           appField.value = config.app;
           stream1Field.value = config.stream1;
           stream2Field.value = config.stream2;
+          iceField.value = config.iceServers[0].urls;
           loggingField.checked = config.verboseLogging ? true : false;
           videoField.checked = config.useVideo ? true : false;
           audioField.checked = config.useAudio ? true : false;
+          smAccessField.value = config.streamManagerAccessToken;
+
+          var transport = config.iceTransport;
+          var i = iceTransportSelect.childNodes.length;
+          var option;
+          while (--i > -1) {
+            option = iceTransportSelect.childNodes[i];
+            if (option.value === transport) {
+              option.selected = true;
+              break;
+            }
+          }
+          iceTransportSelect.value = transport;
         }
 
         populate(configuration)

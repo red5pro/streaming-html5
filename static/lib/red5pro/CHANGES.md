@@ -1,5 +1,24 @@
 # Changes
 
+## 5.0.0
+
+- removing onbeforeunload hook to dismantle sockets. (bustardcelly)
+- Allowing for auth/validation on HLS Subscribers (bustardcelly)
+
+    > Enabling auth/validation using connectionParam options on HLS Subscribers. This will internally attempt to make a connection on a WebSocket using the connection parameters. If the socket is opened, it is considered successful validation. If rejected, the client is shutdown.
+
+- fix for mutiple property updates on shared object integration. (bustardcelly)
+- offload translation logic for orientation to focus on dynamic layout updates. (bustardcelly)
+- adding iceTransport config option. (bustardcelly)
+- WebRTC subscriber config prop maintainConnectionOnSubscribeErrors (bustardcelly)
+- removal of unnecessary bandwidth config prop on subscribers. (bustardcelly)
+- Exposing autoLayoutOrientation (bustardcelly)
+
+    > Defaulted to true.
+    > When set to false, it is up to the developer to assign transitions as related to orientation of broadcasts.
+
+- docs update. (bustardcelly)
+
 ## 4.2.0
 
 - Firefox SDP munge for bandwidth RPRO-4625 (bustardcelly)

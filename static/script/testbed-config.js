@@ -24,6 +24,7 @@
 
   var isMoz = !!navigator.mozGetUserMedia;
   var isEdge = adapter && adapter.browserDetails.browser.toLowerCase() === 'edge';
+  var isiPod = !!navigator.platform && /iPod/.test(navigator.platform);
   var config = sessionStorage.getItem('r5proTestBed');
   var json;
   var serverSettings = {
@@ -57,7 +58,7 @@
       "useAudio": true,
       "useVideo": true,
       "mediaConstraints": {
-        "audio": true,
+        "audio": isiPod ? false : true,
         "video": (isMoz || isEdge) ? true : {
           "width": {
             "min": 320,
@@ -90,8 +91,10 @@
           "urls": "stun:stun.services.mozilla.com:3478"
         }
       ],
+      "iceTransport": "udp",
       "verboseLogging": true,
-      "streamManagerAPI": "2.0"
+      "streamManagerAPI": "3.0",
+      "streamManagerAccessToken": "xyz123"
     };
     /**
     if (isMoz) {
@@ -110,11 +113,8 @@
       else {
         json.iceServers = json.googleIce;
       }
+      console.log('ICE server provided in query param: ' + JSON.stringify(json.iceServers, null, 2));
     }
-    else {
-      json.iceServers = json.googleIce;
-    }
-    console.log('Selected ICE servers: ' + JSON.stringify(json.iceServers, null, 2));
   }
 
   if (config) {
