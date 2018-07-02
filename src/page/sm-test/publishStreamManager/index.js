@@ -184,8 +184,8 @@
   var retryCount = 0;
   var retryLimit = 3;
   function respondToOrigin (response) {
-    displayServerAddress(response.host);
-    configuration.host = response.host;
+    displayServerAddress(response.serverAddress);
+    configuration.host = response.serverAddress;
     configuration.app = response.app;
     determinePublisher(response.name)
       .then(function (publisherImpl) {
