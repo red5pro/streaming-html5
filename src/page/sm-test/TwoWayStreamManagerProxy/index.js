@@ -200,7 +200,7 @@
     var port = serverSettings.hlsport.toString();
     var portURI = (port.length > 0 ? ':' + port : '');
     var baseUrl = isSecure ? protocol + '://' + host : protocol + '://' + host + portURI;
-    var url = baseUrl + '/' + configuration.app + '/streams.jsp';
+    var url = baseUrl + '/streammanager/api/2.0/event/list';
     fetch(url)
       .then(function (res) {
         if (res.headers.get('content-type') &&
@@ -251,12 +251,15 @@
   }
 
   function setWaitTime () {
-    setTimeout(beginStreamListCall, 5000);
+    setTimeout(beginStreamListCall, 2000);
   }
 
   function startSubscribing () {
     // Kick off.
-    determineSubscriber()
+    requestOrigin(configuration.stream2, "subscribe")
+    .then(function(serverAddress) {
+        return determineSubscriber(serverAddress)
+    })
     .then(function(subscriberImpl) {
         subStreamTitle.innerText = configuration.stream2;
         targetSubscriber = subscriberImpl;
@@ -274,18 +277,25 @@
       });
   }
 
-  function determineSubscriber () {
+  function determineSubscriber (serverAddress) {
     var config = Object.assign({}, configuration, defaultSubscriberConfiguration);
     var rtcConfig = Object.assign({}, config, {
+      host: configuration.host,
       protocol: getSocketLocationFromProtocol().protocol,
       port: getSocketLocationFromProtocol().port,
+      app: configuration.proxy,
+      connectionParams: {
+        host: serverAddress,
+        app: configuration.app
+      },
       subscriptionId: 'subscriber-' + instanceId,
       streamName: config.stream2
     })
     var rtmpConfig = Object.assign({}, config, {
+      host: serverAddress,
       protocol: 'rtmp',
       port: serverSettings.rtmpport,
-      streamName: config.stream2,
+      streamName: config.stream1,
       mimeType: 'rtmp/flv',
       useVideoJS: false,
       width: config.cameraWidth,
@@ -295,9 +305,10 @@
       productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
     })
     var hlsConfig = Object.assign({}, config, {
+      host: serverAddress,
       protocol: protocol,
       port: isSecure ? serverSettings.hlssport : serverSettings.hlsport,
-      streamName: config.stream2,
+      streamName: config.stream1,
       mimeType: 'application/x-mpegURL'
     })
 
@@ -346,7 +357,11 @@
   }
 
   // Kick off.
-  determinePublisher()
+
+  requestOrigin(configuration.stream1, "broadcast")
+    .then(function(serverAddress) {
+        return determinePublisher(serverAddress)
+    })
     .then(function (publisherImpl) {
       pubStreamTitle.innerText = configuration.stream1;
       targetPublisher = publisherImpl;
