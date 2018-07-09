@@ -153,24 +153,26 @@
   }
 
   function determineSubscriber (jsonResponse) {
-    var host = jsonResponse.hostname;
+    var isSecureHost = typeof jsonResponse.hostname !== 'undefined';
+    var host = isSecureHost ? jsonResponse.hostname : jsonResponse.serverAddress;
     var name = jsonResponse.name;
     var app = jsonResponse.scope;
     displayhostname('Edge', host);
     var config = Object.assign({}, configuration, defaultConfiguration);
     var rtcConfig = Object.assign({}, config, {
       host: host,
-      protocol: 'ws', // cluster is not over secure, at this time
-      port: serverSettings.wsport, // cluster is not over secure, at this time
+      protocol: isSecureHost ? 'wss' : 'ws',
+      port: isSecureHost ? serverSettings.wssport : serverSettings.wsport,
+      app: app,
       subscriptionId: 'subscriber-' + instanceId,
-      streamName: config.stream1
+      streamName: name
     })
     var rtmpConfig = Object.assign({}, config, {
       host: host,
       app: app,
       protocol: 'rtmp',
       port: serverSettings.rtmpport,
-      streamName: config.stream1,
+      streamName: name,
       width: config.cameraWidth,
       height: config.cameraHeight,
       swf: '../../lib/red5pro/red5pro-subscriber.swf',
