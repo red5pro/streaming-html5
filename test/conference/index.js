@@ -45,6 +45,19 @@
   var videoCheck = document.getElementById('videoCheck');
   var submitBtn = document.getElementById('submitBtn');
 
+  audioCheck.onchange = function(){
+    if(publishing){
+      if (audioCheck.checked) { targetPublisher.unmuteAudio(); }
+      else { targetPublisher.muteAudio(); }
+    }
+  };
+  videoCheck.onchange = function(){
+    if(publishing){
+      if (videoCheck.checked) { targetPublisher.unmuteVideo(); }
+      else { targetPublisher.muteVideo(); }
+    }
+  };
+
   var configuration = (function () {
     var conf = sessionStorage.getItem('r5proTestBed');
     try {
@@ -82,12 +95,15 @@
     }
   });
 
-  var updateStatusFromPublishEvent = window.red5proHandlePublisherEvent; // defined in src/template/partial/status-field-publisher.hbs
-  var updateStatusFromSubscribeEvent = window.red5proHandleSubscriberEvent; // defined in src/template/partial/status-field-subscriber.hbs
+  var updateStatusFromPublishEvent = window.red5proHandlePublisherEvent; // defined in static/script/publisher-status.js
+  var updateStatusFromSubscribeEvent = window.red5proHandleSubscriberEvent; // defined in static/script/subscription-status.js
 
   function onPublisherEvent (event) {
     console.log('[Red5ProPublisher] ' + event.type + '.');
     updateStatusFromPublishEvent(event, pubStatusField);
+    if(event.type == red5prosdk.PublisherEventTypes.CONNECTION_CLOSED){
+      publishing = false;
+    }
   }
   function onPublishFail (message) {
     console.error('[Red5ProPublisher] Publish Error :: ' + message);
@@ -96,6 +112,7 @@
   }
   function onPublishSuccess () {
     console.log('[Red5ProPublisher] Publish Complete.');
+    publishing = true;
     continueSubQueue();
   }
   function onUnpublishFail (message) {
@@ -103,6 +120,7 @@
   }
   function onUnpublishSuccess () {
     console.log('[Red5ProPublisher] Unpublish Complete.');
+    publishing = false;
   }
 
   function getUserMediaConfiguration () {
@@ -139,8 +157,8 @@
     config.cameraHeight = 240;
     config.bandwith = {audio:16, video:128};
     config.streamName = publishName;
-    config.useVideo = videoCheck.checked;
-    config.useAudio = audioCheck.checked;
+    config.useVideo = true; //will be muted on publish
+    config.useAudio = true;
     config.mediaElementId = 'red5pro-publisher-video';
 
     var rtcConfig = Object.assign({}, config, {
@@ -153,12 +171,16 @@
                       protocol: 'rtmp',
                       port: serverSettings.rtmpport,
                       streamName: publishName,
-                      width: config.cameraWidth,
-                      height: config.cameraHeight,
                       backgroundColor: '#000000',
                       swf: '../../lib/red5pro/red5pro-publisher.swf',
                       swfobjectURL: '../../lib/swfobject/swfobject.js',
-                      productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
+                      productInstallURL: '../../lib/swfobject/playerProductInstall.swf',
+                      mediaConstraint: {
+                        video: {
+                          width: config.cameraWidth,
+                          height: config.cameraHeight,
+                        }
+                      }
                    });
     var publishOrder = config.publisherFailoverOrder
                             .split(',')
@@ -187,8 +209,6 @@
 
     roomText.disabled = true;
     nameText.disabled = true;
-    videoCheck.disabled = true;
-    audioCheck.disabled = true;
     submitBtn.disabled = true;
 
     // Initialize
@@ -200,6 +220,8 @@
         return targetPublisher.publish();
       })
       .then(function () {
+        if(!videoCheck.checked){ targetPublisher.muteVideo(); }
+        if(!audioCheck.checked){ targetPublisher.muteAudio(); }
         onPublishSuccess();
       })
       .catch(function (error) {
@@ -220,8 +242,6 @@
 
     roomText.disabled = false;
     nameText.disabled = false;
-    videoCheck.disabled = false;
-    audioCheck.disabled = false;
     submitBtn.disabled = false;
   }
 
@@ -415,11 +435,7 @@
   var defaultSubscriberConfiguration = (function(useVideo, useAudio) {
     var c = {
       protocol: getSocketLocationFromProtocol().protocol,
-      port: getSocketLocationFromProtocol().port,
-      bandwidth: {
-        audio: 50,
-        video: 256
-      }
+      port: getSocketLocationFromProtocol().port
     };
     if (!useVideo) {
       c.videoEncoding = red5prosdk.PlaybackVideoEncoder.NONE;
@@ -438,12 +454,7 @@
       protocol: getSocketLocationFromProtocol().protocol,
       port: getSocketLocationFromProtocol().port,
       subscriptionId: 'subscriber-' + subscribeName + "-" + instanceId,
-      streamName: subscribeName,
-      bandwidth: {
-        audio: 50,
-        video: 256,
-        data: 30 * 1000 * 1000
-      }
+      streamName: subscribeName
     });
     var rtmpConfig = Object.assign({}, config, {
       protocol: 'rtmp',

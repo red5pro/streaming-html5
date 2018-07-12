@@ -32,6 +32,7 @@
   var updateStatusFromEvent = window.red5proHandleSubscriberEvent; // defined in src/template/partial/status-field-subscriber.hbs
   var instanceId = Math.floor(Math.random() * 0x10000).toString(16);
   var streamTitle = document.getElementById('stream-title');
+  var statisticsField = document.getElementById('statistics-field');
   var sendButton = document.getElementById('send-button');
   var soField = document.getElementById('so-field');
   sendButton.addEventListener('click', function () {
@@ -39,6 +40,27 @@
   });
   var protocol = serverSettings.protocol;
   var isSecure = protocol === 'https';
+
+  var bitrate = 0;
+  var packetsReceived = 0;
+  var frameWidth = 0;
+  var frameHeight = 0;
+  function updateStatistics (b, p, w, h) {
+    statisticsField.innerText = 'Bitrate: ' + Math.floor(b) + '. Packets Received: ' + p + '.' + ' Resolution: ' + w + ', ' + h + '.';
+  }
+
+  function onBitrateUpdate (b, p) {
+    bitrate = b;
+    packetsReceived = p;
+    updateStatistics(bitrate, packetsReceived, frameWidth, frameHeight);
+  }
+
+  function onResolutionUpdate (w, h) {
+    frameWidth = w;
+    frameHeight = h;
+    updateStatistics(bitrate, packetsReceived, frameWidth, frameHeight);
+  }
+
   function getSocketLocationFromProtocol () {
     return !isSecure
       ? {protocol: 'ws', port: serverSettings.wsport}
@@ -48,11 +70,7 @@
   var defaultConfiguration = (function(useVideo, useAudio) {
     var c = {
       protocol: getSocketLocationFromProtocol().protocol,
-      port: getSocketLocationFromProtocol().port,
-      bandwidth: {
-        audio: 50,
-        video: 256
-      }
+      port: getSocketLocationFromProtocol().port
     };
     if (!useVideo) {
       c.videoEncoding = red5prosdk.PlaybackVideoEncoder.NONE;
@@ -78,6 +96,14 @@
   function onSubscribeSuccess (subscriber) {
     console.log('[Red5ProSubsriber] Subscribe Complete.');
     establishSharedObject(subscriber);
+    if (subscriber.getType().toLowerCase() === 'rtc') {
+      try {
+        window.trackBitrate(subscriber.getPeerConnection(), onBitrateUpdate, onResolutionUpdate);
+      }
+      catch (e) {
+        //
+      }
+    }
   }
   function onUnsubscribeFail (message) {
     console.error('[Red5ProSubsriber] Unsubscribe Error :: ' + message);
@@ -162,12 +188,7 @@
     protocol: getSocketLocationFromProtocol().protocol,
     port: getSocketLocationFromProtocol().port,
     subscriptionId: 'subscriber-' + instanceId,
-    streamName: config.stream1,
-    bandwidth: {
-      audio: 50,
-      video: 256,
-      data: 30 * 1000 * 1000
-    }
+    streamName: config.stream1
   })
   var rtmpConfig = Object.assign({}, config, {
     protocol: 'rtmp',
@@ -228,6 +249,7 @@
       targetSubscriber = undefined;
     }
     unsubscribe().then(clearRefs).catch(clearRefs);
+    window.untrackbitrate();
   });
 
 })(this, document, window.red5prosdk);

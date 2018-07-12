@@ -15,7 +15,7 @@
   </head>
   <body>
     <div id="app">
-      <p class="version-field">Testbed Version: 4.5.0&nbsp;&nbsp;&nbsp;&nbsp;<a href="https://red5pro.github.io/red5pro-html-sdk-testbed/red5pro-html-testbed-latest.zip">download</a></p>
+      <p class="version-field">Testbed Version: 5.0.0&nbsp;&nbsp;&nbsp;&nbsp;<a href="https://red5pro.github.io/red5pro-html-sdk-testbed/red5pro-html-testbed-latest.zip">download</a></p>
       <div id="back-link-container" style="text-align: left;"><p id="back-link"><a href="../../index.html">&lt; Settings</a></p></div>
       <div class="ice-background">
       <div class="test-notification">
@@ -26,15 +26,13 @@
       </div>
       <h1 class="centered">Two-Way Test</h1>
       <hr />
-      <h2 class="centered"><em>stream</em>: <span id="stream-title"></span></h2>
-      <hr />
       <div class="float-left float-left-two-way">
         <h2 class="centered"><em>Publisher Stream</em>: <span id="pub-stream-title"></span></h2>
         <p id="pub-status-field" class="centered status-field">On hold.</p>
-        <div class="centered">
+        <div class="centered red5pro-media-background">
         <video id="red5pro-publisher"
-                controls autoplay muted
-                width="640" height="480">
+                controls autoplay muted playsinline
+                width="320" height="240">
         </video>
         </div>
       </div>
@@ -43,9 +41,9 @@
         <p id="sub-status-field" class="centered status-field">On hold.</p>
         <div class="centered">
         <video id="red5pro-subscriber"
-                controls autoplay
+                controls autoplay playsinline
                 class="red5pro-media red5pro-media-background"
-                width="640" height="480">
+                width="320" height="240">
         </video>
         </div>
       </div>
