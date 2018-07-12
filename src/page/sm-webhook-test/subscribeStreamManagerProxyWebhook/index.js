@@ -262,5 +262,4 @@
     window.untrackbitrate();
   });
 
-})(this, document, window.red5prosdk);
-
+})(this, document, window.red5prosdk, window.red5prosdk_ext_stream_manager);
