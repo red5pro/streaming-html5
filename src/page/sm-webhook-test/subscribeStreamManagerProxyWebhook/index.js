@@ -138,6 +138,7 @@
       action: 'subscribe',
       useProxy: true,
       retryLimit: 3,
+      retryDelay: 2000,
       accessToken: configuration.streamManagerAccessToken
     };
 

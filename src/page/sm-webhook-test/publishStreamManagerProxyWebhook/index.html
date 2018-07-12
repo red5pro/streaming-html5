@@ -9,6 +9,9 @@
         padding: 6px;
         background-color: #ccc;
       }
+      #additional-form {
+        padding: 1rem 0;
+      }
     </style>
   </head>
   <body>
@@ -26,6 +29,25 @@
       {{> status-field-publisher}}
       {{> statistics-field}}
       <div class="centered"><p id="address-field">Origin Address: N/A</p></div>
+      <div id="additional-form" class="ice-background">
+        <p style="width: 100%; text-align: center;"><strong>Additional Connection Params:</strong></p>
+        <div>
+          <p class="settings-field">
+            <label class="settings-label" for="customer-field">Customer Scope:</label>
+            <input type="text" id="customer-field" name="customer-field" style="vertical-align: middle;">
+          </p>
+          <p class="settings-field">
+            <label class="settings-label" for="meta-field">Meta Object (JSON):</label>
+            <textarea id="meta-field" name="meta-field" style="vertical-align: middle; min-height: 70px; min-width: 240px; font-size: 1rem; padding-left: 0.8rem; border: 1px solid #ddd;">{}</textarea>
+          </p>
+          <p class="settings-field">
+            <label class="settings-label" for="recording-field">Enable Recording:</label>
+            <input type="checkbox" id="recording-field" name="recording-field" style="vertical-align: middle;">
+          </p>
+          <hr />
+          <p class="centered"><button id="submit-button">Start Publishing</button></p>
+        </div>
+      </div>
       <div class="centered">
         <video id="red5pro-publisher" controls autoplay playsinline muted></video>
       </div>

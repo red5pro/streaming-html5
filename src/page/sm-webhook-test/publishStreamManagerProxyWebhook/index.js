@@ -35,6 +35,10 @@
   var streamTitle = document.getElementById('stream-title');
   var statisticsField = document.getElementById('statistics-field');
   var addressField = document.getElementById('address-field');
+  var customerField = document.getElementById('customer-field');
+  var recordingField = document.getElementById('recording-field');
+  var metaField = document.getElementById('meta-field');
+  var submitButton = document.getElementById('submit-button');
 
   var protocol = serverSettings.protocol;
   var isSecure = protocol == 'https';
@@ -103,6 +107,24 @@
     }
   }
 
+  function getConnectionParamsFromFormFields () {
+    var optionalMeta;
+    var metaValue = metaField.value;
+    try {
+      optionalMeta = JSON.parse(metaValue);
+    } catch (e) {
+      console.error('Could not determine meta JSON from: ' + metaValue);
+      console.error(e);
+    }
+    return {
+      username: '',
+      password: '',
+      customerScope: customerField.value,
+      recording: recordingField.checked,
+      meta: optionalMeta || {}
+    };
+  }
+
   function determinePublisher () {
 
     var autoscaleConfig = {
@@ -114,6 +136,7 @@
       action: 'broadcast',
       useProxy: true,
       retryLimit: 3,
+      retryDelay: 2000,
       accessToken: configuration.streamManagerAccessToken
     };
 
@@ -125,7 +148,9 @@
                       protocol: getSocketLocationFromProtocol().protocol,
                       port: getSocketLocationFromProtocol().port,
                       host: configuration.host,
-                      streamName: configuration.stream1
+                      streamName: configuration.stream1,
+                      streamMode: recordingField.checked ? 'record' : 'live',
+                      connectionParams: getConnectionParamsFromFormFields()
                    });
     var rtmpConfig = Object.assign({}, config, {
                       host: configuration.host,
@@ -133,6 +158,7 @@
                       protocol: 'rtmp',
                       port: serverSettings.rtmpport,
                       streamName: configuration.stream1,
+                      streamMode: recordingField.selected ? 'record' : 'live',
                       backgroundColor: '#000000',
                       swf: '../../lib/red5pro/red5pro-publisher.swf',
                       swfobjectURL: '../../lib/swfobject/swfobject.js',
@@ -194,25 +220,29 @@
     });
   }
 
-  determinePublisher()
-    .then(function (publisherImpl) {
-      streamTitle.innerText = configuration.stream1;
-      targetPublisher = publisherImpl;
-      targetPublisher.on('*', onPublisherEvent);
-      showAddress(targetPublisher);
-      return targetPublisher.publish();
-    })
-    .then(function () {
-      onPublishSuccess(targetPublisher);
-    })
-    .catch(function (error) {
-      var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
-      console.error('[Red5ProPublisher] :: Error in access of Origin IP: ' + jsonError);
-      updateStatusFromEvent({
-        type: red5prosdk.PublisherEventTypes.CONNECT_FAILURE
+  function startSession () {
+    determinePublisher()
+      .then(function (publisherImpl) {
+        streamTitle.innerText = configuration.stream1;
+        targetPublisher = publisherImpl;
+        targetPublisher.on('*', onPublisherEvent);
+        showAddress(targetPublisher);
+        return targetPublisher.publish();
+      })
+      .then(function () {
+        onPublishSuccess(targetPublisher);
+      })
+      .catch(function (error) {
+        var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
+        console.error('[Red5ProPublisher] :: Error in access of Origin IP: ' + jsonError);
+        updateStatusFromEvent({
+          type: red5prosdk.PublisherEventTypes.CONNECT_FAILURE
+        });
+        onPublishFail(jsonError);
       });
-      onPublishFail(jsonError);
-    });
+  }
+
+  submitButton.addEventListener('click', startSession);
 
   window.addEventListener('beforeunload', function() {
     function clearRefs () {
