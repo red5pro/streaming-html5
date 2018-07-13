@@ -113,14 +113,14 @@
     var optionalMeta;
     var metaValue = metaField.value;
     try {
-      optionalMeta = JSON.parse(metaValue);
+      optionalMeta = JSON.stringify(JSON.parse(metaValue));
     } catch (e) {
       console.error('Could not determine meta JSON from: ' + metaValue);
       console.error(e);
     }
     return {
-      username: usernameField.value || '',
-      password: passwordField.value || '',
+      username: usernameField.value || undefined,
+      password: passwordField.value || undefined,
       customerScope: customerField.value,
       recording: recordingField.checked,
       meta: optionalMeta || {}

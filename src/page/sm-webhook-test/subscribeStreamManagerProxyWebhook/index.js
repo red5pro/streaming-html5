@@ -133,8 +133,8 @@
 
   function getConnectionParamsFromFormFields () {
     return {
-      username: usernameField.value || '',
-      password: passwordField.value || '',
+      username: usernameField.value || undefined,
+      password: passwordField.value || undefined,
       customerScope: customerField.value
     };
   }
