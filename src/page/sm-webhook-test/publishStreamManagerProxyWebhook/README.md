@@ -39,7 +39,7 @@ Included in the the `index.html` page is field for a **Webhook Socket Connection
 
 ## Stream Manager Connection Form
 
-Also included in the `index.html` page are fields for additional information to pass along in the `connectionParams` of a connecting Publihser to the Stream Manager in its request for an Origin address.
+Also included in the `index.html` page are fields for additional information to pass along in the `connectionParams` of a connecting Publisher to the Stream Manager in its request for an Origin address.
 
 The following fields are available:
 
@@ -61,6 +61,14 @@ wss://streammanager.company.com:8083/streammanager?id=mystream&username=foo&pass
 
 Once you have provided the proper **Webhook Socket URL** and additional **Connection Params**, click the `Start Publishing` button to begin a publishing session over the Stream Manager Proxy.
 
-# Result
+## Stop Publishing
+
+After a publishing session has begun, you can optionally stop publishing by clicking the `Stop Publishing` button.
+
+> Stopping publishing and restarting will begin the process of Stream Manager negotiation for Origin and Proxy Connection again.
+
+# Webhook Notifications
 
 If properly connected to a webhook interceptor WebSocket connection that forwards along webhooks from the webapp distributed on the target Origin, you should be able to open the dev console of your browser and see webhook notification sbeing received during the lifecycle events of the Publisher.
+
+> The WebSocket conneciton for webhook notification will receieve **all** notifications associated with the `customerScope`.

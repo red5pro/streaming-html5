@@ -1,4 +1,8 @@
-# Subscribing RTC Streams over stream manager proxy
+# Subscribing Over Stream Manager with Webhook Integration
+
+**This test is intended to be used with Stream Manager that contains a webapp with webhook integration.**
+
+---
 
 The streammanager WebRTC proxy is a communication layer built inside streammanager web application which allows it to act as a proxy gateway for webrtc publishers / subscribers. The target use case of this communication layer is to facilitate a secure browser client to be able to connect to a "unsecure" remote websocket endpoint for consuming WebRTC services offered by Red5pro. 
 
@@ -19,114 +23,49 @@ proxy.enabled=false
 - **[index.html](index.html)**
 - **[index.js](index.js)**
 
-# Setup
+# Usage
 
-In order to subscribe, you first need to connect to the Stream Manager. The Stream Manager will know which origin is being used for the stream and accordingly will provide with an usable edge to consume the stream.
+This test allows for:
 
-```js
-function requestEdge (configuration) {
-  var host = configuration.host;
-  var app = configuration.app;
-  var port = serverSettings.httpport.toString();
-  var portURI = (port.length > 0 ? ':' + port : '');
-  var baseUrl = isSecure ? protocol + '://' + host : protocol + '://' + host + portURI;
-  var streamName = configuration.stream1;
-  var apiVersion = configuration.streamManagerAPI || '2.0';
-  var url = baseUrl + '/streammanager/api/' + apiVersion + '/event/' + app + '/' + streamName + '?action=subscribe';
-  return new Promise(function (resolve, reject) {
-    fetch(url)
-      .then(function (res) {
-        if (res.headers.get("content-type") &&
-          res.headers.get("content-type").toLowerCase().indexOf("application/json") >= 0) {
-          return res.json();
-        }
-        else {
-          throw new TypeError('Could not properly parse response.');
-        }
-      })
-      .then(function (json) {
-        resolve(json.serverAddress);
-      })
-      .catch(function (error) {
-        var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
-        console.error('[SubscribeStreamManagerTest] :: Error - Could not request Edge IP from Stream Manager. ' + jsonError)
-        reject(error)
-      });
-  });
-}
+* Receiving messages from a webhook interceptor through an additional WebSocket connection used for only such messaging.
+* Sending additional `connectionParams` along with the Stream Manager Proxy connection that are to be used with webhook integration.
+
+## Webhook Connection Form
+
+Included in the the `index.html` page is field for a **Webhook Socket Connection URL**. Enter in the full WebSocket endpoint that will issue webhook notifications.
+
+> By default, the **URL** field has `wss://xxx.xxx.xxx:8083/live/webhook` pre-populated as the value. Replace `xxx.xxx.xxx` with the target domain name. Ensure that you have an additional webhook interceptor server running that will forward along the webhook messages on that socket channel, as well.
+
+## Stream Manager Connection Form
+
+Also included in the `index.html` page are fields for additional information to pass along in the `connectionParams` of a connecting Subscriber to the Stream Manager in its request for an Origin address.
+
+The following fields are available:
+
+* **username** - optional `username` to provide in Stream Manager Socket connection (`undefined` is sent if not specified).
+* **password** - optional `password` to provide in Stream Manager Socket connection (`undefined` is sent if not specified).
+* **customer scope** - the required `customerScope` used by the webhook webapp to signal hooks on.
+
+These additional `connectionParams` are appended to the connection made to the Stream Manager Proxy after receipt of Edge address to subscribe to the broadcast stream on.
+
+As an example of the outgoing WebSocket URL in the request (assembled and connection handled by the Red5 Pro SDK):
+
+```ssh
+wss://streammanager.company.com:8083/streammanager?id=mystream&username=foo&password=bar&customerScope=scope&host=xxx.xxx.xxx&app=live
 ```
 
-[index.js #95](index.js#L95)
+## Start Subscribing
 
-The service returns a JSON object. In particular to note is the `serverAddress` attribute which will be the IP of the Edge server.
+Once you have provided the proper **Webhook Socket URL** and additional **Connection Params**, click the `Start Subscribing` button to begin a subscriber session over the Stream Manager Proxy.
 
-```js
-  "name": "<stream-name>",
-  "scope": "<stream-scope>",
-  "serverAddress": "<edge-host-address>",
-  "region": "<region-code>"
-}
-```
+## Stop Subscribing
 
-Next we construct the configuration objects for the subscriber per supported protocol. Note that the proxy usage is applicable for `rtc` only. The edge address is set directly as host for `rtmp` or `hls` subscriber configuration, whereas it is passed in through connectionParams for `rtc`.
+After a subscibing session has begun, you can optionally stop ubscribing by clicking the `Stop Subscribing` button.
 
-Another important to note is that for `rtc` subscriber the target application is the `proxy` - the `streammanager` webapp and not the app that you want to subscribe to. The `rtc` configuration passes the actual target application name in connectionParams as `app`.
+> Stopping subscribing and restarting will begin the process of Stream Manager negotiation for Edge and Proxy Connection again.
 
-```js
-function determineSubscriber (serverAddress) {
-    var config = Object.assign({}, configuration, defaultConfiguration);
-    var rtcConfig = Object.assign({}, config, {
-      host: configuration.host,
-      protocol: getSocketLocationFromProtocol().protocol,
-      port: getSocketLocationFromProtocol().port,
-      app: configuration.proxy,
-      connectionParams: {
-        host: serverAddress,
-        app: configuration.app
-      },
-      subscriptionId: 'subscriber-' + instanceId,
-      streamName: config.stream1
-    })
-    var rtmpConfig = Object.assign({}, config, {
-      host: serverAddress,
-      protocol: 'rtmp',
-      port: serverSettings.rtmpport,
-      streamName: config.stream1,
-      mimeType: 'rtmp/flv',
-      useVideoJS: false,
-      width: config.cameraWidth,
-      height: config.cameraHeight,
-      swf: '../../lib/red5pro/red5pro-subscriber.swf',
-      swfobjectURL: '../../lib/swfobject/swfobject.js',
-      productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
-    })
-    var hlsConfig = Object.assign({}, config, {
-      host: serverAddress,
-      protocol: protocol,
-      port: isSecure ? serverSettings.hlssport : serverSettings.hlsport,
-      streamName: config.stream1,
-      mimeType: 'application/x-mpegURL'
-    })
+# Webhook Notifications
 
-    if (!config.useVideo) {
-      rtcConfig.videoEncoding = 'NONE';
-    }
-    if (!config.useAudio) {
-      rtcConfig.audioEncoding = 'NONE';
-    }
+If properly connected to a webhook interceptor WebSocket connection that forwards along webhooks from the webapp distributed on the target Edge, you should be able to open the dev console of your browser and see webhook notification sbeing received during the lifecycle events of the Subscriber.
 
-    var subscribeOrder = config.subscriberFailoverOrder
-                          .split(',').map(function (item) {
-                            return item.trim();
-                          });
-
-    return SubscriberBase.determineSubscriber({
-              rtc: rtcConfig,
-              rtmp: rtmpConfig,
-              hls: hlsConfig
-            }, subscribeOrder);
-  }
-```
-
-[index.js #126](index.js#L126)
-
+> The WebSocket conneciton for webhook notification will receieve **all** notifications associated with the `customerScope`.
