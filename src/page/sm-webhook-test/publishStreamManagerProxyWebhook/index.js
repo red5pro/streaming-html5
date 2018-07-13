@@ -223,7 +223,7 @@
     });
   }
 
-  var ws = new WebSocket('wss://ipv6west.red5.org:8083/live/webhook')
+  var ws = new WebSocket('wss://xxx.xxx.xxx:8083/live/webhook')
   ws.onopen = function () {
     console.log('websocket opened.');
   }
