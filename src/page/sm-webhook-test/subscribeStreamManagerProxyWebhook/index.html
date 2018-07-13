@@ -30,6 +30,16 @@
       {{> statistics-field}}
       <div class="centered"><p id="address-field">Edge Address: N/A</p></div>
       <div id="additional-form" class="ice-background">
+        <p style="width: 100%; text-align: center;"><strong>Webhook Socket Connection:</strong></p>
+        <div>
+          <p class="settings-field">
+            <label class="settings-label" for="websocket-field">URL:</label>
+            <input type="text" id="websocket-field" name="websocket-field"
+              style="vertical-align: middle; min-width: 360px;"
+              value="wss://xxx.xxx.xxx:8083/live/webhook">
+          </p>
+        </div>
+        <hr />
         <p style="width: 100%; text-align: center;"><strong>Additional Connection Params:</strong></p>
         <div>
           <p class="settings-field">
@@ -45,7 +55,10 @@
             <input type="text" id="customer-field" name="customer-field" style="vertical-align: middle;">
           </p>
           <hr />
-          <p class="centered"><button id="submit-button">Start Subscribing</button></p>
+          <p class="centered">
+            <button id="submit-button" style="margin-right: 1rem;">Start Subscribing</button>
+            <button id="stop-button" disabled>Stop Subscribing</button>
+          </p>
         </div>
       </div>
       <div class="centered">

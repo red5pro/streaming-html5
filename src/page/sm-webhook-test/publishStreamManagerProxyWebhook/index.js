@@ -41,6 +41,8 @@
   var recordingField = document.getElementById('recording-field');
   var metaField = document.getElementById('meta-field');
   var submitButton = document.getElementById('submit-button');
+  var stopButton = document.getElementById('stop-button');
+  var websocketField = document.getElementById('websocket-field');
 
   var protocol = serverSettings.protocol;
   var isSecure = protocol == 'https';
@@ -210,28 +212,26 @@
   function unpublish () {
     return new Promise(function (resolve, reject) {
       var publisher = targetPublisher;
-      publisher.unpublish()
-        .then(function () {
-          onUnpublishSuccess();
-          resolve();
-        })
-        .catch(function (error) {
-          var jsonError = typeof error === 'string' ? error : JSON.stringify(error, 2, null);
-          onUnpublishFail('Unmount Error ' + jsonError);
-          reject(error);
-        });
+      if (publisher) {
+        publisher.unpublish()
+          .then(function () {
+            onUnpublishSuccess();
+            stopButton.setAttribute('disabled', true);
+            submitButton.removeAttribute('disabled');
+            resolve();
+          })
+          .catch(function (error) {
+            var jsonError = typeof error === 'string' ? error : JSON.stringify(error, 2, null);
+            onUnpublishFail('Unmount Error ' + jsonError);
+            reject(error);
+          });
+      } else {
+        resolve();
+      }
     });
   }
 
-  var ws = new WebSocket('wss://xxx.xxx.xxx:8083/live/webhook')
-  ws.onopen = function () {
-    console.log('websocket opened.');
-  }
-  ws.onmessage = function (event) {
-    console.log(JSON.stringify(JSON.parse(event.data, null, 2)));
-  }
-
-  function startSession () {
+  function startPublishing () {
 
     determinePublisher()
       .then(function (publisherImpl) {
@@ -243,6 +243,7 @@
       })
       .then(function () {
         onPublishSuccess(targetPublisher);
+        stopButton.removeAttribute('disabled');
       })
       .catch(function (error) {
         var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
@@ -251,11 +252,34 @@
           type: red5prosdk.PublisherEventTypes.CONNECT_FAILURE
         });
         onPublishFail(jsonError);
+        submitButton.removeAttribute('disabled');
       });
 
   }
 
+  function startSession () {
+
+    var ws = new WebSocket(websocketField.value)
+    ws.onopen = function () {
+      startPublishing();
+    }
+    ws.onmessage = function (event) {
+      console.log('[WEBHOOK]>>');
+      console.log(JSON.stringify(JSON.parse(event.data, null, 2)));
+      console.log('<<[WEBHOOK]');
+    }
+    ws.onerror = function (event) {
+      console.error('Could not open websocket for webhook communication!');
+      console.error(event);
+      // Start publishing anyway?
+      startPublishing();
+    }
+    submitButton.setAttribute('disabled', true);
+
+  }
+
   submitButton.addEventListener('click', startSession);
+  stopButton.addEventListener('click', unpublish)
 
   window.addEventListener('beforeunload', function() {
     function clearRefs () {

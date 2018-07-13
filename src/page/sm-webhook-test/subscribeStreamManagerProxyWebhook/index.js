@@ -40,7 +40,6 @@
     }
     window.red5proHandleSubscriberEvent(event); // defined in src/template/partial/status-field-subscriber.hbs
   };
-  var instanceId = Math.floor(Math.random() * 0x10000).toString(16);
   var streamTitle = document.getElementById('stream-title');
   var statisticsField = document.getElementById('statistics-field');
   var addressField = document.getElementById('address-field');
@@ -48,6 +47,8 @@
   var passwordField = document.getElementById('password-field');
   var customerField = document.getElementById('customer-field');
   var submitButton = document.getElementById('submit-button');
+  var stopButton = document.getElementById('stop-button');
+  var websocketField = document.getElementById('websocket-field');
 
   var protocol = serverSettings.protocol;
   var isSecure = protocol === 'https';
@@ -160,7 +161,7 @@
       protocol: getSocketLocationFromProtocol().protocol,
       port: getSocketLocationFromProtocol().port,
       app: configuration.app,
-      subscriptionId: 'subscriber-' + instanceId,
+      subscriptionId: 'subscriber-' + Math.floor(Math.random() * 0x10000).toString(16),
       streamName: configuration.stream1,
       connectionParams: getConnectionParamsFromFormFields()
     })
@@ -248,6 +249,8 @@
           targetSubscriber.off('*', onSubscriberEvent);
           targetSubscriber = undefined;
           onUnsubscribeSuccess();
+          stopButton.setAttribute('disabled', true);
+          submitButton.removeAttribute('disabled');
           resolve();
         })
         .catch(function (error) {
@@ -258,7 +261,7 @@
     });
   }
 
-  function startSession () {
+  function startSubscribing () {
 
     determineSubscriber()
       .then(function (subscriberImpl) {
@@ -271,25 +274,40 @@
       })
       .then(function (sub) {
         onSubscribeSuccess(sub);
+        stopButton.removeAttribute('disabled');
       })
       .catch(function (error) {
         var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
         console.error('[Red5ProSubscriber] :: Error in subscribing - ' + jsonError);
         onSubscribeFail(jsonError);
+        submitButton.removeAttribute('disabled');
       });
 
   }
 
-  submitButton.addEventListener('click', startSession);
+  function startSession () {
 
-  // Webhook notification integration.
-  var ws = new WebSocket('wss://xxx.xxx.xxx:8083/live/webhook')
-  ws.onopen = function () {
-    console.log('websocket opened.');
+    var ws = new WebSocket(websocketField.value)
+    ws.onopen = function () {
+      startSubscribing();
+    }
+    ws.onmessage = function (event) {
+      console.log('[WEBHOOK]>>');
+      console.log(JSON.stringify(JSON.parse(event.data, null, 2)));
+      console.log('<<[WEBHOOK]');
+    }
+    ws.onerror = function (event) {
+      console.error('Could not open websocket for webhook communication!');
+      console.error(event);
+      // Start publishing anyway?
+      startSubscribing();
+    }
+    submitButton.setAttribute('disabled', true);
+
   }
-  ws.onmessage = function (event) {
-    console.log(JSON.stringify(JSON.parse(event.data, null, 2)));
-  }
+
+  submitButton.addEventListener('click', startSession);
+  stopButton.addEventListener('click', unsubscribe)
 
   // Clean up.
   window.addEventListener('beforeunload', function() {
