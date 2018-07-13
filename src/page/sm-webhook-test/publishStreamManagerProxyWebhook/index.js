@@ -35,6 +35,8 @@
   var streamTitle = document.getElementById('stream-title');
   var statisticsField = document.getElementById('statistics-field');
   var addressField = document.getElementById('address-field');
+  var usernameField = document.getElementById('username-field');
+  var passwordField = document.getElementById('password-field');
   var customerField = document.getElementById('customer-field');
   var recordingField = document.getElementById('recording-field');
   var metaField = document.getElementById('meta-field');
@@ -117,8 +119,8 @@
       console.error(e);
     }
     return {
-      username: '',
-      password: '',
+      username: usernameField.value || '',
+      password: passwordField.value || '',
       customerScope: customerField.value,
       recording: recordingField.checked,
       meta: optionalMeta || {}
