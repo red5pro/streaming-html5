@@ -226,6 +226,8 @@
             reject(error);
           });
       } else {
+        stopButton.setAttribute('disabled', true);
+        submitButton.removeAttribute('disabled');
         resolve();
       }
     });

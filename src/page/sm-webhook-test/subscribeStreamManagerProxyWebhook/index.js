@@ -244,20 +244,26 @@
   function unsubscribe () {
     return new Promise(function(resolve, reject) {
       var subscriber = targetSubscriber
-      subscriber.unsubscribe()
-        .then(function () {
-          targetSubscriber.off('*', onSubscriberEvent);
-          targetSubscriber = undefined;
-          onUnsubscribeSuccess();
-          stopButton.setAttribute('disabled', true);
-          submitButton.removeAttribute('disabled');
-          resolve();
-        })
-        .catch(function (error) {
-          var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
-          onUnsubscribeFail(jsonError);
-          reject(error);
-        });
+      if (subscriber) {
+        subscriber.unsubscribe()
+          .then(function () {
+            targetSubscriber.off('*', onSubscriberEvent);
+            targetSubscriber = undefined;
+            onUnsubscribeSuccess();
+            stopButton.setAttribute('disabled', true);
+            submitButton.removeAttribute('disabled');
+            resolve();
+          })
+          .catch(function (error) {
+            var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
+            onUnsubscribeFail(jsonError);
+            reject(error);
+          });
+      } else {
+        stopButton.setAttribute('disabled', true);
+        submitButton.removeAttribute('disabled');
+        resolve();
+      }
     });
   }
 
