@@ -161,6 +161,7 @@
                       port: serverSettings.rtmpport,
                       streamName: configuration.stream1,
                       streamMode: recordingField.selected ? 'record' : 'live',
+                      connectionParams: getConnectionParamsFromFormFields(),
                       backgroundColor: '#000000',
                       swf: '../../lib/red5pro/red5pro-publisher.swf',
                       swfobjectURL: '../../lib/swfobject/swfobject.js',

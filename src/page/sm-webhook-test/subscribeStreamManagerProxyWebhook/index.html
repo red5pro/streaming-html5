@@ -9,6 +9,9 @@
         padding: 6px;
         background-color: #ccc;
       }
+      #additional-form {
+        padding: 1rem 0;
+      }
     </style>
   </head>
   <body>
@@ -26,6 +29,25 @@
       {{> status-field-subscriber}}
       {{> statistics-field}}
       <div class="centered"><p id="address-field">Edge Address: N/A</p></div>
+      <div id="additional-form" class="ice-background">
+        <p style="width: 100%; text-align: center;"><strong>Additional Connection Params:</strong></p>
+        <div>
+          <p class="settings-field">
+            <label class="settings-label" for="username-field">Username (Optional):</label>
+            <input type="text" id="username-field" name="username-field" style="vertical-align: middle;">
+          </p>
+          <p class="settings-field">
+            <label class="settings-label" for="password-field">Password (Optional):</label>
+            <input type="text" id="password-field" name="password-field" style="vertical-align: middle;">
+          </p>
+          <p class="settings-field">
+            <label class="settings-label" for="customer-field">Customer Scope:</label>
+            <input type="text" id="customer-field" name="customer-field" style="vertical-align: middle;">
+          </p>
+          <hr />
+          <p class="centered"><button id="submit-button">Start Subscribing</button></p>
+        </div>
+      </div>
       <div class="centered">
         <video id="red5pro-subscriber"
                 controls autoplay playsinline

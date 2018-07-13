@@ -44,6 +44,11 @@
   var streamTitle = document.getElementById('stream-title');
   var statisticsField = document.getElementById('statistics-field');
   var addressField = document.getElementById('address-field');
+  var usernameField = document.getElementById('username-field');
+  var passwordField = document.getElementById('password-field');
+  var customerField = document.getElementById('customer-field');
+  var submitButton = document.getElementById('submit-button');
+
   var protocol = serverSettings.protocol;
   var isSecure = protocol === 'https';
 
@@ -126,6 +131,14 @@
     console.log('[Red5ProSubsriber] Unsubscribe Complete.');
   }
 
+  function getConnectionParamsFromFormFields () {
+    return {
+      username: usernameField.value || '',
+      password: passwordField.value || '',
+      customerScope: customerField.value
+    };
+  }
+
   function determineSubscriber () {
 
     var config = Object.assign({}, configuration, defaultConfiguration);
@@ -146,8 +159,10 @@
       host: configuration.host,
       protocol: getSocketLocationFromProtocol().protocol,
       port: getSocketLocationFromProtocol().port,
+      app: configuration.app,
       subscriptionId: 'subscriber-' + instanceId,
-      streamName: configuration.stream1
+      streamName: configuration.stream1,
+      connectionParams: getConnectionParamsFromFormFields()
     })
     var rtmpConfig = Object.assign({}, config, {
       host: configuration.host,
@@ -155,8 +170,11 @@
       protocol: 'rtmp',
       port: serverSettings.rtmpport,
       streamName: configuration.stream1,
+      connectionParams: getConnectionParamsFromFormFields(),
+      embedHeight: '100%',
       width: configuration.cameraWidth,
       height: configuration.cameraHeight,
+      backgroundColor: '#000000',
       swf: '../../lib/red5pro/red5pro-subscriber.swf',
       swfobjectURL: '../../lib/swfobject/swfobject.js',
       productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
@@ -167,7 +185,14 @@
       protocol: 'http',
       port: serverSettings.hlsport,
       streamName: configuration.stream1,
-      mimeType: 'application/x-mpegURL'
+      mimeType: 'application/x-mpegURL',
+      socketParams: {
+        host: configuration.host,
+        protocol: getSocketLocationFromProtocol().protocol,
+        port: getSocketLocationFromProtocol().port,
+        app: configuration.proxy
+      },
+      connectionParams: getConnectionParamsFromFormFields()
     })
 
     if (!config.useVideo) {
@@ -233,23 +258,27 @@
     });
   }
 
-  determineSubscriber()
-    .then(function (subscriberImpl) {
-      streamTitle.innerText = configuration.stream1;
-      targetSubscriber = subscriberImpl;
-      // Subscribe to events.
-      targetSubscriber.on('*', onSubscriberEvent);
-      showServerAddress(targetSubscriber);
-      return targetSubscriber.subscribe();
-    })
-    .then(function (sub) {
-      onSubscribeSuccess(sub);
-    })
-    .catch(function (error) {
-      var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
-      console.error('[Red5ProSubscriber] :: Error in subscribing - ' + jsonError);
-      onSubscribeFail(jsonError);
-    });
+  function startSession () {
+    determineSubscriber()
+      .then(function (subscriberImpl) {
+        streamTitle.innerText = configuration.stream1;
+        targetSubscriber = subscriberImpl;
+        // Subscribe to events.
+        targetSubscriber.on('*', onSubscriberEvent);
+        showServerAddress(targetSubscriber);
+        return targetSubscriber.subscribe();
+      })
+      .then(function (sub) {
+        onSubscribeSuccess(sub);
+      })
+      .catch(function (error) {
+        var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
+        console.error('[Red5ProSubscriber] :: Error in subscribing - ' + jsonError);
+        onSubscribeFail(jsonError);
+      });
+  }
+
+  submitButton.addEventListener('click', startSession);
 
   // Clean up.
   window.addEventListener('beforeunload', function() {
