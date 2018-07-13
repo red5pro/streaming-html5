@@ -258,7 +258,16 @@
     });
   }
 
+  var ws = new WebSocket('wss://ipv6west.red5.org:8083/live/webhook')
+  ws.onopen = function () {
+    console.log('websocket opened.');
+  }
+  ws.onmessage = function (event) {
+    console.log(JSON.stringify(JSON.parse(event.data, null, 2)));
+  }
+
   function startSession () {
+
     determineSubscriber()
       .then(function (subscriberImpl) {
         streamTitle.innerText = configuration.stream1;
@@ -276,6 +285,7 @@
         console.error('[Red5ProSubscriber] :: Error in subscribing - ' + jsonError);
         onSubscribeFail(jsonError);
       });
+
   }
 
   submitButton.addEventListener('click', startSession);
