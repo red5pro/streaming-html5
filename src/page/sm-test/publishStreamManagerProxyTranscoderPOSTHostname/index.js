@@ -257,20 +257,19 @@
 
   function showAddress (publisher) {
     var config = publisher.getOptions();
-    console.log("hostname = " + config.hostname + " | " + "app = " + config.app);
+    console.log("hostname = " + config.host + " | " + "app = " + config.app);
     if (publisher.getType().toLowerCase() === 'rtc') {
-      displayServerAddress(config.connectionParams.hostname, config.hostname);
-      console.log("Using streammanager proxy for rtc");
-      console.log("Proxy target = " + config.connectionParams.hostname + " | " + "Proxy app = " + config.connectionParams.app)
+      displayServerAddress(config.host, config.host);
+      console.log("Host target = " + config.host + " | " + "Proxy app = " + config.connectionParams.app)
       if(isSecure) {
         console.log("Operating over secure connection | protocol: " + config.protocol + " | port: " +  config.port);
       }
       else {
-        console.log("Operating over unsecure connection | protocol: " + config.protocol + " | port: " +  config.port);
+        console.log("Operating over insecure connection | protocol: " + config.protocol + " | port: " +  config.port);
       }
     }
     else {
-      displayServerAddress(config.hostname);
+      displayServerAddress(config.host);
     }
   }
 
