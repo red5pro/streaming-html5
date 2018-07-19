@@ -154,7 +154,7 @@
   }
 
   function requestOrigin (configuration) {
-    var hostname = configuration.hostname;
+    var hostname = configuration.host;
     var app = configuration.app;
     var streamName = configuration.stream1;
     var port = serverSettings.httpport.toString();
