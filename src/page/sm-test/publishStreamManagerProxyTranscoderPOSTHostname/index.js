@@ -84,9 +84,8 @@
     }
   }
 
-  function displayServerAddress (serverAddress, proxyAddress) {
-    proxyAddress = (typeof proxyAddress === 'undefined') ? 'N/A' : proxyAddress;
-    addressField.innerText = ' Proxy Address: ' + proxyAddress + ' | ' + ' Origin Address: ' + serverAddress;
+  function displayServerAddress (serverAddress) {
+    addressField.innerText = ' Origin Address: ' + serverAddress;
   }
 
   function onBitrateUpdate (bitrate, packetsSent) {
@@ -259,7 +258,7 @@
     var config = publisher.getOptions();
     console.log("hostname = " + config.host + " | " + "app = " + config.app);
     if (publisher.getType().toLowerCase() === 'rtc') {
-      displayServerAddress(config.host, config.host);
+      displayServerAddress(config.host);
       console.log("Host target = " + config.host + " | " + "Proxy app = " + config.connectionParams.app)
       if(isSecure) {
         console.log("Operating over secure connection | protocol: " + config.protocol + " | port: " +  config.port);
