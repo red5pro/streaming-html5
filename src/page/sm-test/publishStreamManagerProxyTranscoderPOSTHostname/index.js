@@ -210,7 +210,8 @@
   }
 
   function determinePublisher (jsonResponse, transcoderConfig) {
-    var hostname = jsonResponse.serverAddress;
+    var isSecureHost = typeof jsonResponse.hostname !== 'undefined';
+    var hostname = isSecureHost ? jsonResponse.hostname : jsonResponse.serverAddress;
     var app = jsonResponse.scope;
     var name = transcoderConfig.name;
     defaultConfiguration.bandwidth.video = transcoderConfig.properties.videoBR / 1000; 
@@ -219,14 +220,11 @@
                     defaultConfiguration,
                     getUserMediaConfiguration(transcoderConfig));
     var rtcConfig = Object.assign({}, config, {
-                      protocol: getSocketLocationFromProtocol().protocol,
-                      port: getSocketLocationFromProtocol().port,
+                      host: hostname,
+                      protocol: isSecureHost ? 'wss' : getSocketLocationFromProtocol().protocol,
+                      port: isSecureHost ? serverSettings.wssport : getSocketLocationFromProtocol().port,
                       streamName: name,
-                      app: configuration.proxy,
-                      connectionParams: {
-                        hostname: hostname,
-                        app: app
-                      }
+                      app: app
                     });
     var rtmpConfig = Object.assign({}, config, {
                       hostname: hostname,
