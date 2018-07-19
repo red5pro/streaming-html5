@@ -83,7 +83,7 @@
     eventHandler: null
   };
 
-  streamManagerAddress.value = configuration.hostname;
+  streamManagerAddress.value = configuration.host;
   streamName.value = configuration.stream1;
 
   function query(name, url) { // eslint-disable-line no-unused-vars
@@ -171,7 +171,7 @@
             replacement.subscriber.play();
             replacement.subscriber.disableStandby();
             var options = replacement.subscriber._options;
-            infoField.innerText = 'Subscribed to "' + options.streamName + '" on ' + options.connectionParams.hostname + ".";
+            infoField.innerText = 'Subscribed to "' + options.streamName + '" on ' + options.host + ".";
           }
           else {
             container.appendChild(noVideoAlert);
@@ -207,7 +207,7 @@
       console.log('[OMG] Subscriber ' + id + ' is the first one in!');
       console.log('[OMG] :: ' + JSON.stringify(subscriber._options, null, 2));
       var options = subscriber._options;
-      infoField.innerText = 'Subscribed to "' + options.streamName + '" on ' + options.connectionParams.hostname + ".";
+      infoField.innerText = 'Subscribed to "' + options.streamName + '" on ' + options.host + ".";
       if (noVideoAlert.parentNode) {
         noVideoAlert.parentNode.removeChild(noVideoAlert);
       }
