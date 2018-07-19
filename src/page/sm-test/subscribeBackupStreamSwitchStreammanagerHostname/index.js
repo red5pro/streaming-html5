@@ -244,20 +244,21 @@
   function setupSubscribers (edgeList) {
     var i = 0, length = edgeList.length;
     var id;
+    var edgeResponse;
     for (i; i < length; i++) {
-      id = ['red5pro-subscriber', edgeList[i].name, i].join('-');
+      edgeResponse = edgeList[i];
+      id = ['red5pro-subscriber', edgeResponse.name, i].join('-');
       container.appendChild(generateVideoElement(id));
-      var app = edgeList[i].scope;
+      var isSecure = typeof edgeResponse.hostname !== 'undefined';
+      var app = edgeResponse.scope;
       app = app.charAt(0) === '/' ? app.substr(1, app.length) : app;
       generateSubscriber(Object.assign({}, baseConfig, {
         mediaElementId: id,
-        hostname: streamManagerAddress.value,
-        app: 'streammanager',
-        connectionParams: {
-          hostname: edgeList[i].serverAddress,
-          app: app 
-        },
-        streamName: edgeList[i].name
+        host: isSecure ? edgeResponse.hostname : edgeResponse.serverAddress,
+        protocol: isSecure ? 'wss' : 'ws',
+        port: isSecure ? serverSettings.wssport : serverSettings.wsport,
+        app: app,
+        streamName: edgeResponse.name
       }))
       .then(onSubscriberResolve(id))
       .catch(handleGenerateSubscriberError);
