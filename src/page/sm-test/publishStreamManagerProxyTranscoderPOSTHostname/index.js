@@ -259,7 +259,7 @@
     console.log("hostname = " + config.host + " | " + "app = " + config.app);
     if (publisher.getType().toLowerCase() === 'rtc') {
       displayServerAddress(config.host);
-      console.log("Host target = " + config.host + " | " + "Proxy app = " + config.connectionParams.app)
+      console.log("Host target = " + config.host + " | " + "Proxy app = " + config.app)
       if(isSecure) {
         console.log("Operating over secure connection | protocol: " + config.protocol + " | port: " +  config.port);
       }
