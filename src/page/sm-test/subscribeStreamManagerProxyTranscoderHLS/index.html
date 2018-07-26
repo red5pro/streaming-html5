@@ -22,9 +22,9 @@
       <p>Additionally to use this example stream manager proxy gateway should be enabled.</p>
       </div>
       </div>
-      {{> test-info testTitle='Subscriber SM Transcoder RTMP'}}
+      {{> test-info testTitle='Subscriber SM Transcoder Proxy Test (RTC)'}}
       {{> status-field-subscriber}}
-      <p id="stream-info-field" class="centered status-field"></p>
+      {{> statistics-field}}
       <div class="centered"><p id="address-field">Edge Address: N/A</p></div>
       <div class="centered">
         <video id="red5pro-subscriber"
@@ -32,10 +32,6 @@
                 class="red5pro-media red5pro-media-background"
                 width="640" height="480">
         </video>
-      </div>
-      <div class="centered status-field">
-        <p><button id="uplevel-btn" style="margin-right: 16px">upgrade</button><button id="downlevel-btn">downgrade</button></p>
-        <p style="margin-top: 16px;"><button id="stop-btn" style="margin-right: 16px">stop abr</button><button id="start-btn">start abr</button></p>
       </div>
     </div>
     {{> body-scripts}}

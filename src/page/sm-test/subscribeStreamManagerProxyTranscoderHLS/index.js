@@ -39,12 +39,8 @@
   var streamTitle = document.getElementById('stream-title');
   var statisticsField = document.getElementById('statistics-field');
   var addressField = document.getElementById('address-field');
-  var streamSelect = document.getElementById('stream-select');
-  var streamSelectContainer = document.getElementById('stream-select-container');
-  var streamSelectButton = document.getElementById('stream-select-btn');
   var protocol = serverSettings.protocol;
   var isSecure = protocol === 'https';
-
   function getSocketLocationFromProtocol () {
     return !isSecure
       ? {protocol: 'ws', port: serverSettings.wsport}
@@ -182,31 +178,19 @@
 
   function determineSubscriber (jsonResponse) {
     var host = jsonResponse.serverAddress;
-    var name = jsonResponse.name;
     var app = jsonResponse.scope;
     var config = Object.assign({}, configuration, defaultConfiguration);
-    var rtcConfig = Object.assign({}, config, {
-      host: configuration.host,
-      protocol: getSocketLocationFromProtocol().protocol,
-      port: getSocketLocationFromProtocol().port,
-      app: configuration.proxy,
-      connectionParams: {
-        host: host,
-        app: app
-      },
-      subscriptionId: 'subscriber-' + Math.floor(Math.random() * 0x10000).toString(16),
-      streamName: name
+
+    var hlsConfig = Object.assign({}, config, {
+      host: host,
+      app: app,
+      protocol: 'http',
+      port: serverSettings.hlsport,
+      streamName: configuration.stream1 // use config name for HLS transcode sub.
     })
 
-    if (!config.useVideo) {
-      rtcConfig.videoEncoding = 'NONE';
-    }
-    if (!config.useAudio) {
-      rtcConfig.audioEncoding = 'NONE';
-    }
-
-    var subscriber = new red5prosdk.RTCSubscriber();
-    return subscriber.init(rtcConfig)
+    var subscriber = new red5prosdk.HLSSubscriber();
+    return subscriber.init(hlsConfig)
   }
 
   function showServerAddress (subscriber) {
@@ -293,24 +277,17 @@
     .then(function (settings) {
       try {
         var streams = settings.meta.stream;
-        var i, length = streams.length;
-        for (i = 0; i < length; i++) {
-          var o = document.createElement('option');
-          o.textContent = streams[i].name;
-          streamSelect.appendChild(o);
+        if (streams.length > 0) {
+          var selectedStream = streams.length > 1 ? streams[1] : streams[0];
+          startup(selectedStream.name);
+        } else {
+          throw new Error('Could not parse settings.');
         }
-        streamSelectContainer.classList.remove('hidden');
       } catch (e) {
         console.error("Count not properly acces ABR stream based on settings: " + JSON.stringify(settings, null, 0));
       }
 
     });
-
-  streamSelectButton.addEventListener('click', function () {
-    if (streamSelect.value !== 'Select...') {
-      startup(streamSelect.value);
-    }
-  });
 
   // Clean up.
   window.addEventListener('beforeunload', function() {

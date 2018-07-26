@@ -25,6 +25,8 @@
   red5prosdk.setLogLevel(configuration.verboseLogging ? red5prosdk.LOG_LEVELS.TRACE : red5prosdk.LOG_LEVELS.WARN);
 
   var targetPublisher;
+  var transcoderManifest;
+  var selectedTranscoderToPublish;
 
   var updateStatusFromEvent = window.red5proHandlePublisherEvent; // defined in src/template/partial/status-field-publisher.hbs
   var streamTitle = document.getElementById('stream-title');
@@ -40,7 +42,13 @@
     }
     return list;
   })(transcoderTypes);
+  var qualityContainer = document.getElementById('quality-container');
+  var qualitySelect = document.getElementById('quality-select');
+  var qualitySubmit = document.getElementById('quality-submit');
+
+  qualitySubmit.addEventListener('click', setQualityAndPublish);
   submitButton.addEventListener('click', submitTranscode);
+  streamTitle.innerText = configuration.stream1;
 
   var protocol = serverSettings.protocol;
   var isSecure = protocol == 'https';
@@ -49,26 +57,6 @@
       ? {protocol: 'ws', port: serverSettings.wsport}
       : {protocol: 'wss', port: serverSettings.wssport};
   }
-
-  var userMedia = {
-    video: {
-      width: {
-        min: 640,
-        ideal: 1280,
-        max: 1280
-      },
-      height: {
-        min: 360,
-        ideal: 720,
-        max: 720
-      },
-      frameRate: {
-        min: 25,
-        ideal: 60,
-        max: 60
-      }
-    }
-  };
 
   var defaultConfiguration = {
     protocol: getSocketLocationFromProtocol().protocol,
@@ -196,35 +184,40 @@
     });
   }
 
-  function getUserMediaConfiguration () {
-    return {
-      mediaConstraints: {
-        audio: configuration.useAudio ? configuration.mediaConstraints.audio : false,
-        video: configuration.useVideo ? userMedia.video : false
-      }
-    };
-  }
-
-  function getRTMPMediaConfiguration () {
+  function getUserMediaConfiguration (config) {
     return {
       mediaConstraints: {
         audio: configuration.useAudio ? configuration.mediaConstraints.audio : false,
         video: configuration.useVideo ? {
-                width: configuration.cameraWidth,
-                height: configuration.cameraHeight
+          width: {exact: config.properties.videoWidth},
+          height: {exact: config.properties.videoHeight}
+        }: false
+      }
+    };
+  }
+
+  function getRTMPMediaConfiguration (config) {
+    return {
+      mediaConstraints: {
+        audio: configuration.useAudio ? configuration.mediaConstraints.audio : false,
+        video: configuration.useVideo ? {
+                width: config.properties.videoWidth,
+                height: config.properties.videoHeight,
+                bandwidth: config.properties.videoBR / 1000
               } : false
       }
     }
   }
 
-  function determinePublisher (jsonResponse) {
+  function determinePublisher (jsonResponse, transcoderConfig) {
     var host = jsonResponse.serverAddress;
     var app = jsonResponse.scope;
-    var name = jsonResponse.name;
+    var name = transcoderConfig.name;
+    defaultConfiguration.bandwidth.video = transcoderConfig.properties.videoBR / 1000; 
     var config = Object.assign({},
                     configuration,
                     defaultConfiguration,
-                    getUserMediaConfiguration());
+                    getUserMediaConfiguration(transcoderConfig));
     var rtcConfig = Object.assign({}, config, {
                       protocol: getSocketLocationFromProtocol().protocol,
                       port: getSocketLocationFromProtocol().port,
@@ -245,7 +238,7 @@
                       swf: '../../lib/red5pro/red5pro-publisher.swf',
                       swfobjectURL: '../../lib/swfobject/swfobject.js',
                       productInstallURL: '../../lib/swfobject/playerProductInstall.swf'},
-                      getRTMPMediaConfiguration());
+                      getRTMPMediaConfiguration(transcoderConfig));
     var publishOrder = config.publisherFailoverOrder
                             .split(',')
                             .map(function (item) {
@@ -302,7 +295,7 @@
   var retryCount = 0;
   var retryLimit = 3;
   function respondToOrigin (response) {
-    determinePublisher(response)
+    determinePublisher(response, selectedTranscoderToPublish)
       .then(function (publisherImpl) {
         streamTitle.innerText = configuration.stream1;
         targetPublisher = publisherImpl;
@@ -347,15 +340,6 @@
   }
 
   function generateTranscoderPost (streamName, forms) {
-    /*
-              name: configuration.stream1 + '_high',
-          level: 1,
-          properties: {
-            videoWidth: userMedia.video.width.ideal,
-            videoHeight: userMedia.video.height.ideal,
-            videoBR: defaultConfiguration.bandwidth.video * 100
-          }
-          */
     var i = forms.length;
     var formItem;
     var bitrateField;
@@ -369,7 +353,7 @@
       widthField = formItem.getElementsByClassName('width-field')[0];
       heightField = formItem.getElementsByClassName('height-field')[0];
       setting = {
-        name: [streamName, transcoderTypes[i]].join('_'),
+        name: [streamName, (i + 1)].join('_'),
         level: (i + 1),
         properties: {
           videoWidth: parseInt(widthField.value, 10),
@@ -389,13 +373,19 @@
       .then(function (response) {
         if (response.errorMessage) {
           console.error('[Red5ProPublisher] :: Error in POST of transcode configuration: ' + response.errorMessage);
-          updateStatusFromEvent({
-            type: red5prosdk.PublisherEventTypes.CONNECT_FAILURE
-          });
-          onPublishFail(response.errorMessage);
+          if (/Provision already exists/.exec(response.errorMessage)) {
+            transcoderManifest = streams;
+            qualityContainer.classList.remove('hidden');
+          } else {
+            updateStatusFromEvent({
+              type: red5prosdk.PublisherEventTypes.CONNECT_FAILURE
+            });
+            onPublishFail(response.errorMessage);
+          }
         }
         else {
-          startup();
+          transcoderManifest = streams;
+          qualityContainer.classList.remove('hidden');
         }
       })
       .catch(function (error) {
@@ -406,6 +396,24 @@
         });
         onPublishFail(jsonError);
       });
+  }
+
+  function setQualityAndPublish () {
+    var selectedQuality = qualitySelect.value;
+    var targetName = [configuration.stream1, selectedQuality].join('_');
+    var i = transcoderManifest.length, config;
+    while (--i > -1) {
+      config = transcoderManifest[i];
+      if (config.name === targetName) {
+        break;
+      }
+      config = null;
+    }
+
+    if (config) {
+      selectedTranscoderToPublish = config;
+      startup();
+    }
   }
 
   window.addEventListener('beforeunload', function() {

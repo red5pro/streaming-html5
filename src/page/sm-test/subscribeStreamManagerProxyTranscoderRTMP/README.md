@@ -1,6 +1,12 @@
-# Subscribing RTC Streams over stream manager proxy
+# Subscribing to ABR Streams over Stream Manager with RTMP
 
-The streammanager WebRTC proxy is a communication layer built inside streammanager web application which allows it to act as a proxy gateway for webrtc publishers / subscribers. The target use case of this communication layer is to facilitate a secure browser client to be able to connect to a "unsecure" remote websocket endpoint for consuming WebRTC services offered by Red5pro. 
+When a broadcast has the capability for Adaptive Bitrate (ABR) control, the consumed stream can dynamically switch variants based on the network conditions of the subscriber.
+
+Subscription to an ABR-enabled stream differs for Flash/RTMP from that of WebRTC and HLS in that the streams served over RTMP are not provided from the server in an ABR scenario. As such, the Provisioning variant configuration needs to be provided to the Flash subscriber client in order to perform the ABR logic client-side.
+
+> How the Provision variant configuration is set on the Flash client is described more further in this article.
+
+---
 
 Streammanager autoscaling works with dynamic nodes which are associated with dynamic IP addresses and cannot have a SSL attached to them. The proxy layer helps subscribers to connect and initiate a WebRTC `subscribe` session from a `secure` (ssl enabled) domain to a `unsecure` Red5pro origin having using an IP address.
 
@@ -11,130 +17,212 @@ Streammanager autoscaling works with dynamic nodes which are associated with dyn
 
 > You also need to ensure that the stream manager proxy layer is `enabled`. The configuration section can be found in stream manager's config file - `red5-web.properties`
 
-`
+```sh
 ## WEBSOCKET PROXY SECTION
 proxy.enabled=false
-`
+```
 
-### Example Code
+## Example Code
+
 - **[index.html](index.html)**
 - **[index.js](index.js)**
 
-## Setup
-In order to subscribe, you first need to connect to the Stream Manager. The Stream Manager will know which origin is being used for the stream and accordingly will provide with an usable edge to consume the stream.
+# Setup
+
+In order to subscribe to a stream and allow for ABR with a Flash-based subscriber, you will first need to request the Provision to get a list of variants that are available to subscribe to.
+
+### Endpoint
+
+If you were to request the Provision for a stream named `mystream` on your Stream Manager instance deployed to `https://yourcompany.com` with the access token defined as `myaccessToken`, the `GET` request for the Provision would have the following structure:
 
 ```js
-
-function requestEdge (configuration) {
-var host = configuration.host;
-var app = configuration.app;
-var port = serverSettings.httpport.toString();
-var portURI = (port.length > 0 ? ':' + port : '');
-var baseUrl = isSecure ? protocol + '://' + host : protocol + '://' + host + portURI;
-var streamName = configuration.stream1;
-var apiVersion = configuration.streamManagerAPI || '2.0';
-var url = baseUrl + '/streammanager/api/' + apiVersion + '/event/' + app + '/' + streamName + '?action=subscribe';
-  return new Promise(function (resolve, reject) {
-	fetch(url)
-	  .then(function (res) {
-		if (res.headers.get("content-type") &&
-		  res.headers.get("content-type").toLowerCase().indexOf("application/json") >= 0) {
-			return res.json();
-		}
-		else {
-		  throw new TypeError('Could not properly parse response.');
-		}
-	  })
-	  .then(function (json) {
-		resolve(json.serverAddress);
-	  })
-	  .catch(function (error) {
-		var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
-		console.error('[SubscribeStreamManagerTest] :: Error - Could not request Edge IP from Stream Manager. ' + jsonError)
-		reject(error)
-	  });
-});
-}
-
+https://yourcompany.com/streammanager/api/3.0/admin/event/meta/live/mystream?accessToken=myaccessToken
 ```
 
-<sup>
-[index.js #100](index.js#L100)
-</sup>
+### Response
 
-The service returns a JSON object. In particular to note is the `serverAddress` attribute which will be the IP of the Edge server.
+If the broadcast for `mystream` was provisioned for levels of `1`, `2` and `3` variants (as they are in the example at [../publishStreamManagerProvisionForm](Publisher Stream Manager Provision)), the JSON response from the above request will look similar to the following:
 
-
-```
-  "name": "<stream-name>",
-  "scope": "<stream-scope>",
-  "serverAddress": "<edge-host-address>",
-  "region": "<region-code>"
-}
-```
-
-Next we construct the configuration objects for the subscriber per supported protocol. Note that the proxy usage is applicable for `rtc` only. The edge address is set directly as host for `rtmp` or `hls` subscriber configuration, whereas it is passed in through connectionParams for `rtc`.
-
-Another important to note is that for `rtc` subscriber the target application is the `proxy` - the `streammanager` webapp and not the app that you want to subscribe to. The `rtc` configuration passes the actual target application name in connectionParams as `app`.
-
-```
-function determineSubscriber (serverAddress) {
-	
-    var config = Object.assign({}, configuration, defaultConfiguration);
-    var rtcConfig = Object.assign({}, config, {
-      host: configuration.host,
-      protocol: getSocketLocationFromProtocol().protocol,
-      port: getSocketLocationFromProtocol().port,
-	  app: configuration.proxy,
-	  connectionParams: {
-		host: serverAddress,
-		app: configuration.app
+```js
+{
+  "name": "mystream",
+  "scope":"live",
+  "data": {
+    "meta": {
+      "authentication": {
+        "password": "",
+        "username": ""
       },
-      subscriptionId: 'subscriber-' + instanceId,
-      streamName: config.stream1
-    })
-    var rtmpConfig = Object.assign({}, config, {
-      host: serverAddress,
-      protocol: 'rtmp',
-      port: serverSettings.rtmpport,
-      streamName: config.stream1,
-      mimeType: 'rtmp/flv',
-      useVideoJS: false,
-      width: config.cameraWidth,
-      height: config.cameraHeight,
-      swf: '../../lib/red5pro/red5pro-subscriber.swf',
-      swfobjectURL: '../../lib/swfobject/swfobject.js',
-      productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
-    })
-    var hlsConfig = Object.assign({}, config, {
-      host: serverAddress,
-      protocol: protocol,
-      port: isSecure ? serverSettings.hlssport : serverSettings.hlsport,
-      streamName: config.stream1,
-      mimeType: 'application/x-mpegURL'
-    })
-
-    if (!config.useVideo) {
-      rtcConfig.videoEncoding = 'NONE';
+      "qos": 3,
+      "georules": {
+        "regions": ["US", "UK"],
+        "restricted": false,
+      },
+      "stream": [
+        {
+          "level": 3,
+          "name": "mystream_3",
+          "properties": [
+            "videoBR": 128000,
+            "videoHeight": 180,
+            "videoWidth": 320
+          ]
+        },
+        {
+          "level": 2,
+          "name": "mystream_2",
+          "properties": [
+            "videoBR": 512000,
+            "videoHeight": 360,
+            "videoWidth": 640
+          ]
+        },
+        {
+          "level": 3,
+          "name": "mystream_1",
+          "properties": [
+            "videoBR": 1000000,
+            "videoHeight": 720,
+            "videoWidth": 1280
+          ]
+        }
+      ]
     }
-    if (!config.useAudio) {
-      rtcConfig.audioEncoding = 'NONE';
-    }
-
-    var subscribeOrder = config.subscriberFailoverOrder
-                          .split(',').map(function (item) {
-                            return item.trim();
-                          });
-
-    return SubscriberBase.determineSubscriber({
-              rtc: rtcConfig,
-              rtmp: rtmpConfig,
-              hls: hlsConfig
-            }, subscribeOrder);
   }
+}
 ```
 
-<sup>
-[index.js #133](index.js#L133)
-</sup>
+The `data.meta.stream` listing provides the available variants to subscribe to.
 
+## Subscribing
+
+With the Provision data available, the next requirement is to request an Edge server to subscribe to from the Stream Manager. Any of the `name`s listed in the Provision variants can be used to make the request. Once the Edge server address is provided form the Stream Manager, you will then request to subscribe to a to one of the variant stream names listed - just as you would in a regular Flash-base subscriber scenario.
+
+Requesting an Edge server to broadcast is the same as you are familiar with when using the Stream Manager API. The only difference is that you provide the name of one of the variants:
+
+```js
+https://yourcompany.com/streammanager/api/3.0/event/live/mystream_1?action=subscribe
+```
+
+Use the information from the JSON response to configure the initial connection configuration of the Flahs-based subscriber:
+
+```js
+function determineSubscriber (jsonResponse) {
+  var host = jsonResponse.serverAddress;
+  var name = jsonResponse.name;
+  var app = jsonResponse.scope;
+  var config = Object.assign({}, configuration, defaultConfiguration);
+  var rtmpConfig = Object.assign({}, config, {
+    host: host,
+    app: app,
+    port: serverSettings.rtmpport,
+    streamName: name,
+    buffer: 0.2,
+    width: config.cameraWidth,
+    height: config.cameraHeight,
+    useAdaptiveBitrateController: true,
+    backgroundColor: '#000000',
+    swf: '../../lib/red5pro/red5pro-subscriber.swf',
+    swfobjectURL: '../../lib/swfobject/swfobject.js',
+    productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
+  })
+  var subscriber = new red5prosdk.RTMPSubscriber();
+  return subscriber.init(rtmpConfig);
+}
+```
+
+[index.js #193](index.js#L193)
+
+> Note the additional configuration property: `useAdaptiveBitrateController`
+
+Once the client is embedded successfully on the page, the ABR Provision and the current target level is provided to the Flash subscriber client using the `setABRVariants` call:
+
+```js
+function onSubscriberEvent (event) {
+  console.log('[Red5ProSubsriber] ' + event.type + '.');
+  updateStatusFromEvent(event);
+  if (event.type === 'FlashPlayer.Embed.Success') {
+    targetSubscriber.setABRVariants(abrSettings, abrLevel);
+  }
+  else if (event.type === 'RTMP.AdaptiveBitrate.Level') {
+    abrLevel = event.data.level;
+    streamInfoField.innerText = "Stream Level: " + event.data.stream.name;
+  }
+}
+```
+
+[index.js #109](index.js#L109)
+
+The `setABRVariants` call provides the Provisioning info from the `data` property of the JSON response from the Stream Manager (described above) and the current target level to begin subscribing to.
+
+Internally, the Flash subscriber client will then use the Provisioning Variant settings to handle ABR switching logic. The logic of switching up or down in levels is based on the `InsufficentBandwidth` events sent from the server.
+
+The `InsufficientBandwidth` event is sent from the server and notified on any subscribing client that does not have sufficient bandwidth to consume a stream at the current network condition for the playback quality. When such an event is delivered to the Flash subscriber client, the stream is downgraded by `1` level at a time. Upon downgrading an "upgrade timer" is started internally, at which point the Flash-client will attempt to upgrade the stream by `1` level at a time.
+
+# ABR-Related API Update for Flash-based Subscriber
+
+The follow API has been provided to the Flash-based Subscriber to allow for Adaptive Bitrate (ABR) logic:
+
+* [setABRVariants](#setabrvariants)
+* [setABRLevel](#setabrlevel)
+* [setABRVariantUpgradeSettings](#setabrvariantupgradesettings)
+
+## setABRVariants
+
+Request to use the provide ABR Variants when performing Adaptive Bitrate Control.
+
+> Requires the `useAdaptiveBitrateController` intitialization configuration property to be `true`.
+
+### arguments
+
+* **abrVariants**:Object - Provisioning Variants object. _described above_.
+* **level**:int - The target level to begin playback.
+
+## setABRLevel
+
+Request to set ABR level explicitly. The SDK attempts to properly choose the correct level based on bandwidth, but this API allows for the level to be set explicitly.
+
+### arguments
+
+* **level**:Object - The level to set the ABR based on the variants provided in `setABRVariants`.
+* **firm**:Boolean - Flag to set level firmly, disabling the automatic switching of the Adaptive Bitrate Controller.
+
+## setABRVariantUpgradeSettings
+
+Provides the upgrade settings to use by the Adaptive Bitrate Control in upgrading previously downgraded streams.
+
+### arguments
+
+* **abrVariantUpgrades**:Object - A configuration object that defines the associated retry limits based on levels of the Provision Variants.
+
+### example
+
+```js
+{
+  minimumDowngradePlaybackSpan: 2000,
+  upgrade: [
+    {
+      level: 1,
+      retryTimeout: 0
+    },
+    {
+      level: 2,
+      retryTimeout: 2000
+    },
+    {
+      level: 3,
+      retryTimeout: 4000
+    }
+  ]
+}
+```
+
+## startABRController
+
+Request to start the Adaptive Bitrate Controller to automatically downgrade and upgrade streams based on NetStatus and bandwidth.
+
+> The ABR is started automatically when providing the `useAdaptiveBitrateController` configuration property.
+
+## stopABRController
+
+Request to stop the Adaptive Bitrate Controller from automatically downgrading and upgrading streams based on NetStatus and bandwidth.

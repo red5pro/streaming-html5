@@ -9,6 +9,9 @@
         padding: 6px;
         background-color: #ccc;
       }
+      .hidden {
+        display: none;
+      }
     </style>
   </head>
   <body>
@@ -22,10 +25,17 @@
       <p>Additionally to use this example stream manager proxy gateway should be enabled.</p>
       </div>
       </div>
-      {{> test-info testTitle='Subscriber Stream Manager Test'}}
+      {{> test-info testTitle='Subscriber SM Transcoder Proxy Test (RTC)'}}
       {{> status-field-subscriber}}
       {{> statistics-field}}
       <div class="centered"><p id="address-field">Edge Address: N/A</p></div>
+      <div class="centered hidden ice-background" id="stream-select-container" style="padding: 12px">
+        <label for="stream-select">Select a variant to subscribe to:</label>
+        <select name="stream-select" id="stream-select">
+          <option>Select...</option>
+        </select>
+        <button id="stream-select-btn">Start Subscribing</button>
+      </div>
       <div class="centered">
         <video id="red5pro-subscriber"
                 controls autoplay playsinline

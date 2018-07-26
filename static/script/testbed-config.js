@@ -91,6 +91,7 @@
           "urls": "stun:stun.services.mozilla.com:3478"
         }
       ],
+      "iceTransport": "udp",
       "verboseLogging": true,
       "streamManagerAPI": "3.0",
       "streamManagerAccessToken": "xyz123"
