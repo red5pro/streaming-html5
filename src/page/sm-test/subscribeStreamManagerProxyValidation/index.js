@@ -1,4 +1,4 @@
-(function(window, document, red5prosdk) {
+(function(window, document, red5prosdk, sm_extension) {
   'use strict';
 
   var serverSettings = (function() {
@@ -23,6 +23,8 @@
     return {}
   })();
   red5prosdk.setLogLevel(configuration.verboseLogging ? red5prosdk.LOG_LEVELS.TRACE : red5prosdk.LOG_LEVELS.WARN);
+  sm_extension.setLogLevel(configuration.verboseLogging ? sm_extension.LOG_LEVELS.TRACE : sm_extension.LOG_LEVELS.WARN);
+  sm_extension.decorate();
 
   var targetSubscriber;
 
@@ -41,6 +43,10 @@
   var streamTitle = document.getElementById('stream-title');
   var statisticsField = document.getElementById('statistics-field');
   var addressField = document.getElementById('address-field');
+  var validationForm = document.getElementById('validation-form');
+  var validationSubmit = document.getElementById('validation-submit-btn');
+  var validationAddButton = document.getElementById('add-param-btn');
+
   var protocol = proxyLocal ? 'https' : serverSettings.protocol;
   var isSecure = protocol === 'https';
 
@@ -48,6 +54,8 @@
   var packetsReceived = 0;
   var frameWidth = 0;
   var frameHeight = 0;
+  var retryLimit = 3;
+  var retryDelay = 2000;
 
   function updateStatistics (b, p, w, h) {
     statisticsField.innerText = 'Bitrate: ' + Math.floor(b) + '. Packets Received: ' + p + '.' + ' Resolution: ' + w + ', ' + h + '.';
@@ -85,6 +93,55 @@
     return c;
   })(configuration.useVideo, configuration.useAudio);
 
+  var validationParamCount = 1;
+  function getNewValidationParamForm () {
+    validationParamCount += 1;
+    var form = document.createElement('div');
+    form.id = 'param-field' + validationParamCount;
+    var innerForm = '<label for="param-name' + validationParamCount + '">Param Name:</label>' +
+        '<input type="text" id="param-name' + validationParamCount + '" name="param_name' + validationParamCount + '">' +
+        '<label for="param-value' + validationParamCount + '">Param Value:</label>' +
+        '<input type="text" id="param-value' + validationParamCount + '" name="param_value' + validationParamCount + '">';
+    form.innerHTML = innerForm;
+    validationForm.appendChild(form);
+    validationAddButton.parentElement.removeChild(validationAddButton);
+    document.getElementById(form.id).appendChild(validationAddButton);
+    return form;
+  }
+
+  function getValidationParams () {
+    var kvObject = {}
+    var nodes = validationForm.childNodes;
+    var i = 0, length = nodes.length;
+    var inputField, valueField;
+    var fieldCount = 1;
+    for(i; i < length; i++) {
+      if (nodes[i].nodeType === 1) {
+        inputField = document.getElementById('param-name' + (fieldCount));
+        valueField = document.getElementById('param-value' + (fieldCount));
+        if (inputField.value && valueField.value) {
+          kvObject[inputField.value.trim()] = valueField.value.trim();
+        }
+        fieldCount = fieldCount + 1;
+      }
+    }
+    return kvObject;
+  }
+
+  var autoscaleConfig = {
+    action: 'subscribe',
+    protocol: protocol,
+    host: configuration.host,
+    port: isSecure || proxyLocal ? undefined : serverSettings.httpport.toString(),
+    scope: configuration.app,
+    streamName: configuration.stream1,
+    apiVersion: configuration.streamManagerAPI || '3.0',
+    retryLimit: retryLimit,
+    retryDelay: retryDelay,
+    useProxy: true
+  };
+
+
   function shutdownVideoElement () {
     var videoElement = document.getElementById('red5pro-subscriber');
     if (videoElement) {
@@ -96,6 +153,25 @@
   function displayServerAddress (serverAddress, proxyAddress) {
     proxyAddress = (typeof proxyAddress === 'undefined') ? 'N/A' : proxyAddress;
     addressField.innerText = ' Proxy Address: ' + proxyAddress + ' | ' + ' Edge Address: ' + serverAddress;
+  }
+
+  function showServerAddress (subscriber) {
+    var config = subscriber.getOptions();
+    console.log("Host = " + config.host + " | " + "app = " + config.app);
+    if (subscriber.getType().toLowerCase() === 'rtc') {
+      displayServerAddress(config.connectionParams.host, config.host);
+      console.log("Using streammanager proxy for rtc");
+      console.log("Proxy target = " + config.connectionParams.host + " | " + "Proxy app = " + config.connectionParams.app)
+      if(isSecure) {
+        console.log("Operating over secure connection | protocol: " + config.protocol + " | port: " +  config.port);
+      }
+      else {
+        console.log("Operating over unsecure connection | protocol: " + config.protocol + " | port: " +  config.port);
+      }
+    }
+    else {
+      displayServerAddress(config.host);
+    }
   }
 
   // Local lifecycle notifications.
@@ -124,74 +200,34 @@
     console.log('[Red5ProSubsriber] Unsubscribe Complete.');
   }
 
-  function requestEdge (configuration) {
-    var host = configuration.host;
-    var app = configuration.app;
-    var port = proxyLocal ? '' : serverSettings.httpport.toString();
-    var portURI = (port.length > 0 ? ':' + port : '');
-    var baseUrl = isSecure || proxyLocal ? protocol + '://' + host : protocol + '://' + host + portURI;
-    var streamName = configuration.stream1;
-    var apiVersion = configuration.streamManagerAPI || '3.0';
-    var url = baseUrl + '/streammanager/api/' + apiVersion + '/event/' + app + '/' + streamName + '?action=subscribe';
-      return new Promise(function (resolve, reject) {
-        fetch(url)
-          .then(function (res) {
-            if (res.headers.get("content-type") &&
-              res.headers.get("content-type").toLowerCase().indexOf("application/json") >= 0) {
-                return res.json();
-            }
-            else {
-              throw new TypeError('Could not properly parse response.');
-            }
-          })
-          .then(function (json) {
-            resolve(json);
-          })
-          .catch(function (error) {
-            var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
-            console.error('[SubscribeStreamManagerTest] :: Error - Could not request Edge IP from Stream Manager. ' + jsonError)
-            reject(error)
-          });
-    });
-  }
-
-  function determineSubscriber (jsonResponse) {
-    var host = jsonResponse.serverAddress;
-    var name = jsonResponse.name;
-    var app = jsonResponse.scope;
-    var config = Object.assign({}, configuration, defaultConfiguration);
+  function getAutoscaledSubscriber (config) {
     var rtcConfig = Object.assign({}, config, {
-      host: configuration.host,
       protocol: getSocketLocationFromProtocol().protocol,
       port: getSocketLocationFromProtocol().port,
-      app: configuration.proxy,
-      connectionParams: {
-        host: host,
-        app: app
-      },
+      streamName: config.stream1,
       subscriptionId: 'subscriber-' + instanceId,
-      streamName: config.stream1
+      connectionParams: getValidationParams()
     })
     var rtmpConfig = Object.assign({}, config, {
-      host: host,
-      app: app,
       protocol: 'rtmp',
       port: serverSettings.rtmpport,
       streamName: name,
+      embedHeight: '480px',
       width: config.cameraWidth,
       height: config.cameraHeight,
+      buffer: 0.5,
       backgroundColor: '#000000',
       swf: '../../lib/red5pro/red5pro-subscriber.swf',
       swfobjectURL: '../../lib/swfobject/swfobject.js',
-      productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
+      productInstallURL: '../../lib/swfobject/playerProductInstall.swf',
+      connectionParams: getValidationParams()
     })
     var hlsConfig = Object.assign({}, config, {
-      host: host,
-      app: app,
       protocol: 'http',
       port: serverSettings.hlsport,
       streamName: name,
-      mimeType: 'application/x-mpegURL'
+      subscriptionId: 'subscriber-' + instanceId,
+      connectionParams: getValidationParams()
     })
 
     if (!config.useVideo) {
@@ -210,32 +246,17 @@
       subscribeOrder = [window.query('view')];
     }
 
+    var aConfig = Object.assign({}, autoscaleConfig, {
+      connectionParams: getValidationParams()
+    });
+
     var subscriber = new red5prosdk.Red5ProSubscriber();
     return subscriber.setPlaybackOrder(subscribeOrder)
-      .init({
+      .autoscale(aConfig, {
         rtc: rtcConfig,
         rtmp: rtmpConfig,
         hls: hlsConfig
        });
-  }
-
-  function showServerAddress (subscriber) {
-    var config = subscriber.getOptions();
-    console.log("Host = " + config.host + " | " + "app = " + config.app);
-    if (subscriber.getType().toLowerCase() === 'rtc') {
-      displayServerAddress(config.connectionParams.host, config.host);
-      console.log("Using streammanager proxy for rtc");
-      console.log("Proxy target = " + config.connectionParams.host + " | " + "Proxy app = " + config.connectionParams.app)
-      if(isSecure) {
-        console.log("Operating over secure connection | protocol: " + config.protocol + " | port: " +  config.port);
-      }
-      else {
-        console.log("Operating over unsecure connection | protocol: " + config.protocol + " | port: " +  config.port);
-      }
-    }
-    else {
-      displayServerAddress(config.host);
-    }
   }
 
   // Request to unsubscribe.
@@ -257,10 +278,10 @@
     });
   }
 
-  var retryCount = 0;
-  var retryLimit = 3;
-  function respondToEdge (response) {
-    determineSubscriber(response)
+  function startup () {
+    // Kick off.
+    var config = Object.assign({}, configuration, defaultConfiguration);
+    getAutoscaledSubscriber(config)
       .then(function (subscriberImpl) {
         streamTitle.innerText = configuration.stream1;
         targetSubscriber = subscriberImpl;
@@ -278,27 +299,8 @@
         onSubscribeFail(jsonError);
       });
   }
-
-  function respondToEdgeFailure (error) {
-    if (retryCount++ < retryLimit) {
-      var retryTimer = setTimeout(function () {
-        clearTimeout(retryTimer);
-        startup();
-      }, 1000);
-    }
-    else {
-      var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
-      console.error('[Red5ProSubscriber] :: Retry timeout in subscribing - ' + jsonError);
-    }
-  }
-
-  function startup () {
-    // Kick off.
-    requestEdge(configuration)
-      .then(respondToEdge)
-      .catch(respondToEdgeFailure);
-  }
-  startup();
+  validationAddButton.addEventListener('click', getNewValidationParamForm);
+  validationSubmit.addEventListener('click', startup);
 
   // Clean up.
   window.addEventListener('beforeunload', function() {
@@ -312,5 +314,5 @@
     window.untrackbitrate();
   });
 
-})(this, document, window.red5prosdk);
+})(this, document, window.red5prosdk, window.red5prosdk_ext_stream_manager);
 
