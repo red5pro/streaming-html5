@@ -273,7 +273,7 @@
     if (retryCount++ < retryLimit) {
       var retryTimer = setTimeout(function () {
         clearTimeout(retryTimer);
-        startup();
+        startup(streamSelect.value);
       }, 1000);
     }
     else {

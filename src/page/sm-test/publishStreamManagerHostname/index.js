@@ -44,8 +44,8 @@
     port: getSocketLocationFromProtocol().port
   };
 
-  function displayServerAddress (serverAddress) {
-    addressField.innerText = 'Origin Address: ' + serverAddress;
+  function displayhostname (hostname) {
+    addressField.innerText = 'Origin Address: ' + hostname;
   }
 
   function onBitrateUpdate (bitrate, packetsSent) {
@@ -127,21 +127,23 @@
     }
   }
 
-  function determinePublisher (streamName) {
-
+  function determinePublisher (response) {
+    var isSecureHost = typeof response.hostname !== 'undefined';
+    configuration.host = isSecureHost ? response.hostname : response.serverAddress;
+    configuration.app = response.scope;
     var config = Object.assign({},
                     configuration,
                     defaultConfiguration,
                     getUserMediaConfiguration());
     var rtcConfig = Object.assign({}, config, {
-                      protocol: getSocketLocationFromProtocol().protocol,
-                      port: getSocketLocationFromProtocol().port,
-                      streamName: streamName
+                      protocol: isSecureHost ? 'wss' : getSocketLocationFromProtocol().protocol,
+                      port: isSecureHost ? 8083 : getSocketLocationFromProtocol().port,
+                      streamName: response.name
                    });
     var rtmpConfig = Object.assign({}, config, {
                       protocol: 'rtmp',
                       port: serverSettings.rtmpport,
-                      streamName: streamName,
+                      streamName: response.name,
                       backgroundColor: '#000000',
                       swf: '../../lib/red5pro/red5pro-publisher.swf',
                       swfobjectURL: '../../lib/swfobject/swfobject.js',
@@ -184,10 +186,8 @@
   var retryCount = 0;
   var retryLimit = 3;
   function respondToOrigin (response) {
-    displayServerAddress(response.serverAddress);
-    configuration.host = response.serverAddress;
-    configuration.app = response.app;
-    determinePublisher(response.name)
+    displayhostname(response.hostname);
+    determinePublisher(response)
       .then(function (publisherImpl) {
         streamTitle.innerText = configuration.stream1;
         targetPublisher = publisherImpl;
