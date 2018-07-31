@@ -9,6 +9,12 @@
       .paddedHR {
         margin: 2rem 0;
       }
+      .ice-option {
+        margin-top: 1.2rem;
+      }
+      .hidden {
+        display: none;
+      }
     </style>
   </head>
   <body>
@@ -46,6 +52,10 @@
         <p class="settings-field">
           <label class="settings-label">ICE server:</label>
           <input id="ice-field" name="ice-field" value="stun:stun2.l.google.com:19302">
+          <label class="settings-label ice-option hidden">ICE username:</label>
+          <input id="ice-username" class="ice-option-field hidden" name="ice-username" value="">
+          <label class="settings-label ice-option hidden">ICE credential:</label>
+          <input id="ice-credential" class="ice-option-field hidden" name="ice-crential" value="">
         </p>
         <p class="settings-field">
           <label class="settings-label">ICE Transport:</label>
@@ -77,6 +87,8 @@
     <script>
       (function (window, document, red5pro) {
 
+        var turnRegex = /^turn\:/;
+        var iceOptions = Array.prototype.slice.call(document.getElementsByClassName('ice-option')).concat(Array.prototype.slice.call(document.getElementsByClassName('ice-option-field')));
         var configuration = (function () {
           var conf = sessionStorage.getItem('r5proTestBed');
           try {
@@ -99,12 +111,29 @@
         var stream1Field = document.getElementById('stream1-field');
         var stream2Field = document.getElementById('stream2-field');
         var iceField = document.getElementById('ice-field');
+        var iceUsername = document.getElementById('ice-username');
+        var iceCredential = document.getElementById('ice-credential');
         var iceTransportSelect = document.getElementById('ice-transport');
         var loggingField = document.getElementById('logging-field');
         var videoField = document.getElementById('video-active-field');
         var audioField = document.getElementById('audio-active-field');
         var streamSwapButton = document.getElementById('stream-swap-btn');
         var smAccessField = document.getElementById('sm-access-field');
+
+        function hideShowICEOptions () {
+          var isTurnServer = turnRegex.test(iceField.value);
+          var i = iceOptions.length;
+          while (--i > -1) {
+            if (isTurnServer) {
+              iceOptions[i].classList.remove('hidden');
+              iceUsername.focus();
+            } else {
+              iceOptions[i].classList.add('hidden');
+              delete configuration.iceServers[0].username;
+              delete configuration.iceServers[0].credential;
+            }
+          }
+        }
 
         hostField.addEventListener('blur', function () {
           configuration.host = hostField.value;
@@ -132,6 +161,31 @@
               "urls": iceField.value
             }
           ]
+          hideShowICEOptions();
+          seal(configuration);
+        });
+
+        iceUsername.addEventListener('blur', function () {
+          if (configuration.iceServers.length <= 0) {
+            configuration.iceServers = [
+              {
+                "urls": iceField.value
+              }
+            ]
+          }
+          configuration.iceServers[0].username = iceUsername.value;
+          seal(configuration);
+        });
+
+        iceCredential.addEventListener('blur', function () {
+          if (configuration.iceServers.length <= 0) {
+            configuration.iceServers = [
+              {
+                "urls": iceField.value
+              }
+            ]
+          }
+          configuration.iceServers[0].credential = iceCredential.value;
           seal(configuration);
         });
 
@@ -176,6 +230,8 @@
           stream1Field.value = config.stream1;
           stream2Field.value = config.stream2;
           iceField.value = config.iceServers[0].urls;
+          iceUsername.value = config.iceServers[0].username || '';
+          iceCredential.value = config.iceServers[0].credential || '';
           loggingField.checked = config.verboseLogging ? true : false;
           videoField.checked = config.useVideo ? true : false;
           audioField.checked = config.useAudio ? true : false;
@@ -194,7 +250,8 @@
           iceTransportSelect.value = transport;
         }
 
-        populate(configuration)
+        populate(configuration);
+        hideShowICEOptions();
 
       })(this, document, window.red5prosk);
     </script>
