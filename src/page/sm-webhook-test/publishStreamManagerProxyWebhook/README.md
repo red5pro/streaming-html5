@@ -16,7 +16,7 @@ Streammanager autoscaling works with dynamic nodes which are associated with dyn
 
 ```txt
 ## WEBSOCKET PROXY SECTION
-proxy.enabled=false
+proxy.enabled=true
 ```
 
 ## Example Code
