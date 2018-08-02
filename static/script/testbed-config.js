@@ -76,11 +76,17 @@
       },
       "publisherFailoverOrder": "rtc,rtmp",
       "subscriberFailoverOrder": "rtc,rtmp,hls",
-      "iceServers": [
-        {
-          "urls": "stun:stun2.l.google.com:19302"
-        }
-      ],
+      "rtcConfiguration": {
+        "iceServers": [
+          {
+            "urls": "stun:stun2.l.google.com:19302"
+          }
+        ],
+        "bundlePolicy": "max-bundle",
+        "iceCandidatePoolSize": 2,
+        "iceTransportPolicy": "all",
+        "rtcpMuxPolicy": "require"
+      },
       "googleIce": [
         {
           "urls": "stun:stun2.l.google.com:19302"
@@ -98,7 +104,7 @@
     };
     /**
     if (isMoz) {
-      json.iceServers = json.mozIce;
+      json.rtcConfiguration.iceServers = json.mozIce;
     }
     */
     sessionStorage.setItem('r5proTestBed', JSON.stringify(json));
@@ -108,12 +114,12 @@
     var param = getParameterByName('ice');
     if (param) {
       if (param === 'moz') {
-        json.iceServers = json.mozIce;
+        json.rtcConfiguration.iceServers = json.mozIce;
       }
       else {
-        json.iceServers = json.googleIce;
+        json.rtcConfiguration.iceServers = json.googleIce;
       }
-      console.log('ICE server provided in query param: ' + JSON.stringify(json.iceServers, null, 2));
+      console.log('ICE server provided in query param: ' + JSON.stringify(json.rtcConfiguration.iceServers, null, 2));
     }
   }
 
