@@ -231,6 +231,9 @@ code {
     margin-left: 0.3rem;
     margin-bottom: 0.6rem;
   }
+  .ice-option {
+    margin-top: 0;
+  }
   .swap-streams-link {
     width: 100%;
     text-align: left;

@@ -9,6 +9,12 @@
       .paddedHR {
         margin: 2rem 0;
       }
+      .ice-option {
+        margin-top: 1.2rem;
+      }
+      .hidden {
+        display: none;
+      }
     </style>
   </head>
   <body>
@@ -43,9 +49,22 @@
           <label class="settings-label">Stream2 Name:</label>
           <input id="stream2-field" name="stream2-field" value="stream2">
         </p>
+        <hr class="paddedHR" />
+        <h2 class="centered">WebRTC Specific</h2>
         <p class="settings-field">
           <label class="settings-label">ICE server:</label>
           <input id="ice-field" name="ice-field" value="stun:stun2.l.google.com:19302">
+          <label class="settings-label ice-option hidden">ICE username:</label>
+          <input id="ice-username" class="ice-option-field hidden" name="ice-username" value="" placeholder="required for TURN">
+          <label class="settings-label ice-option hidden">ICE credential:</label>
+          <input id="ice-credential" class="ice-option-field hidden" name="ice-crential" value="" placeholder="required for TURN">
+        </p>
+        <p class="settings-field">
+          <label class="settings-label">Candidate Pool Size:</label>
+          <input type="number" id="rtc-pool-size" name="rtc-pool-size"
+            min="0" 
+            value="0"
+            style="min-width: 120px">
         </p>
         <p class="settings-field">
           <label class="settings-label">ICE Transport:</label>
@@ -54,9 +73,37 @@
             <option value="tcp">TCP</option>
           </select>
         </p>
-        <hr class="paddedHR" />
         <p class="settings-field">
-          <label class="settings-label">Stream Manager Access Token:</label>
+          <label class="settings-label">Bundle Policy:</label>
+          <select id="rtc-bundle-policy" name="rtc-bundle-policy" style="min-width: 120px">
+            <option value="balanced">balanced</option>
+            <option value="max-compat">max-compat</option>
+            <option value="max-bundle">max-bundle</option>
+          </select>
+        </p>
+        <p class="settings-field">
+          <label class="settings-label">Transport Policy:</label>
+          <select id="rtc-transport-policy" name="rtc-transport-policy" style="min-width: 120px">
+            <option value="none">none</option>
+            <option value="relay">relay</option>
+            <option value="all">all</option>
+          </select>
+        </p>
+        <p class="settings-field">
+          <label class="settings-label">Mux Policy:</label>
+          <select id="rtc-mux-policy" name="rtc-mux-policy" style="min-width: 120px">
+            <option value="negotiate">negotiate</option>
+            <option value="require">require</option>
+          </select>
+        </p>
+        <hr class="paddedHR" />
+        <h2 class="centered">Stream Manager Specific</h2>
+        <p class="settings-field">
+          <label class="settings-label">Version:</label>
+          <input id="sm-version-field" name="sm-version-field" placeholder="e.g., 3.0">
+        </p>
+        <p class="settings-field">
+          <label class="settings-label">Access Token:</label>
           <input id="sm-access-field" name="sm-access-field" placeholder="e.g., abc123">
         </p>
         <hr class="paddedHR" />
@@ -77,6 +124,8 @@
     <script>
       (function (window, document, red5pro) {
 
+        var turnRegex = /^turn\:/;
+        var iceOptions = Array.prototype.slice.call(document.getElementsByClassName('ice-option')).concat(Array.prototype.slice.call(document.getElementsByClassName('ice-option-field')));
         var configuration = (function () {
           var conf = sessionStorage.getItem('r5proTestBed');
           try {
@@ -99,12 +148,34 @@
         var stream1Field = document.getElementById('stream1-field');
         var stream2Field = document.getElementById('stream2-field');
         var iceField = document.getElementById('ice-field');
+        var iceUsername = document.getElementById('ice-username');
+        var iceCredential = document.getElementById('ice-credential');
         var iceTransportSelect = document.getElementById('ice-transport');
+        var rtcCandidatePoolSize = document.getElementById('rtc-pool-size');
+        var rtcBundlePolicySelect = document.getElementById('rtc-bundle-policy');
+        var rtcTransportPolicySelect = document.getElementById('rtc-transport-policy');
+        var rtcpMuxPolicySelect = document.getElementById('rtc-mux-policy');
         var loggingField = document.getElementById('logging-field');
         var videoField = document.getElementById('video-active-field');
         var audioField = document.getElementById('audio-active-field');
         var streamSwapButton = document.getElementById('stream-swap-btn');
+        var smVersionField = document.getElementById('sm-version-field');
         var smAccessField = document.getElementById('sm-access-field');
+
+        function hideShowICEOptions () {
+          var isTurnServer = turnRegex.test(iceField.value);
+          var i = iceOptions.length;
+          while (--i > -1) {
+            if (isTurnServer) {
+              iceOptions[i].classList.remove('hidden');
+              iceUsername.focus();
+            } else {
+              iceOptions[i].classList.add('hidden');
+              delete configuration.rtcConfiguration.iceServers[0].username;
+              delete configuration.rtcConfiguration.iceServers[0].credential;
+            }
+          }
+        }
 
         hostField.addEventListener('blur', function () {
           configuration.host = hostField.value;
@@ -127,17 +198,58 @@
         });
 
         iceField.addEventListener('blur', function () {
-          configuration.iceServers = [
+          configuration.rtcConfiguration.iceServers = [
             {
               "urls": iceField.value
             }
           ]
+          hideShowICEOptions();
+          seal(configuration);
+        });
+
+        iceUsername.addEventListener('blur', function () {
+          if (configuration.rtcConfiguration.iceServers.length <= 0) {
+            configuration.rtcConfiguration.iceServers = [
+              {
+                "urls": iceField.value
+              }
+            ]
+          }
+          configuration.rtcConfiguration.iceServers[0].username = iceUsername.value;
+          seal(configuration);
+        });
+
+        iceCredential.addEventListener('blur', function () {
+          if (configuration.rtcConfiguration.iceServers.length <= 0) {
+            configuration.rtcConfiguration.iceServers = [
+              {
+                "urls": iceField.value
+              }
+            ]
+          }
+          configuration.rtcConfiguration.iceServers[0].credential = iceCredential.value;
           seal(configuration);
         });
 
         // <select> change event not supported in Gecko?
         iceTransportSelect.addEventListener('change', function (event) {
           configuration.iceTransport = event.target.value;
+          seal(configuration);
+        });
+        rtcBundlePolicySelect.addEventListener('change', function (event) {
+          configuration.rtcConfiguration.bundlePolicy = event.target.value;
+          seal(configuration);
+        });
+        rtcTransportPolicySelect.addEventListener('change', function (event) {
+          configuration.rtcConfiguration.iceTransportPolicy = event.target.value;
+          seal(configuration);
+        });
+        rtcpMuxPolicySelect.addEventListener('change', function (event) {
+          configuration.rtcConfiguration.rtcpMuxPolicy = event.target.value;
+          seal(configuration);
+        });
+        rtcCandidatePoolSize.addEventListener('blur', function (event) {
+          configuration.rtcConfiguration.iceCandidatePoolSize = parseInt(event.target.value, 10);
           seal(configuration);
         });
 
@@ -153,6 +265,11 @@
 
         audioField.addEventListener('change', function () {
           configuration.useAudio = !configuration.useAudio;
+          seal(configuration);
+        });
+
+        smVersionField.addEventListener('blur', function () {
+          configuration.streamManagerAPI = smVersionField.value;
           seal(configuration);
         });
 
@@ -175,26 +292,36 @@
           appField.value = config.app;
           stream1Field.value = config.stream1;
           stream2Field.value = config.stream2;
-          iceField.value = config.iceServers[0].urls;
+          iceField.value = config.rtcConfiguration.iceServers[0].urls;
+          iceUsername.value = config.rtcConfiguration.iceServers[0].username || '';
+          iceCredential.value = config.rtcConfiguration.iceServers[0].credential || '';
+          rtcCandidatePoolSize.value = config.rtcConfiguration.iceCandidatePoolSize || 0;
           loggingField.checked = config.verboseLogging ? true : false;
           videoField.checked = config.useVideo ? true : false;
           audioField.checked = config.useAudio ? true : false;
+          smVersionField.value = config.streamManagerAPI;
           smAccessField.value = config.streamManagerAccessToken;
 
-          var transport = config.iceTransport;
-          var i = iceTransportSelect.childNodes.length;
-          var option;
-          while (--i > -1) {
-            option = iceTransportSelect.childNodes[i];
-            if (option.value === transport) {
-              option.selected = true;
-              break;
+          function selectFieldFromConfiguration (value, selectElem) {
+            var i = selectElem.childNodes.length;
+            var option;
+            while (--i > -1) {
+              option = selectElem.childNodes[i];
+              if (option.value === value) {
+                option.selected = true;
+                break;
+              }
             }
+            selectElem.value = value;
           }
-          iceTransportSelect.value = transport;
+          selectFieldFromConfiguration(config.iceTransport, iceTransportSelect);
+          selectFieldFromConfiguration(config.rtcConfiguration.bundlePolicy, rtcBundlePolicySelect);
+          selectFieldFromConfiguration(config.rtcConfiguration.iceTransportPolicy, rtcTransportPolicySelect);
+          selectFieldFromConfiguration(config.rtcConfiguration.rtcpMuxPolicy, rtcpMuxPolicySelect);
         }
 
-        populate(configuration)
+        populate(configuration);
+        hideShowICEOptions();
 
       })(this, document, window.red5prosk);
     </script>
