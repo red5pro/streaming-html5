@@ -50,6 +50,47 @@
         deviceId: { exact: selection }
       };
     }
+    console.log(connection.getSenders())
+    console.log(mediaStream.getTracks())
+      /*
+    var senders = connection.getSenders();
+    var tracks = mediaStream.getTracks();
+    var i = tracks.length;
+    while ( --i > -1) {
+      if (tracks[i].kind === 'video') {
+        connection.removeTrack(senders[i]);
+        connection.addTrack(tracks[i], mediaStream);
+        swappedStream = mediaStream;
+        connection.createOffer()
+          .then(function (offer) {
+            connection.setLocalDescription(offer);
+          })
+          .then(function () {
+            console.log(connection.localDescription);
+            targetPublisher._setRemoteDescription(connection.localDescription)
+          });
+        break;
+      }
+    }
+    */
+    connection.createOffer()
+      .then(function (offer) {
+        connection.setLocalDescription(offer);
+        //      })
+        //      .then(function () {
+        connection.setRemoteDescription(new RTCSessionDescription(offer))
+          .then(function (stream) {
+            swappedStream = stream;
+            document.getElementById('red5pro-publisher').srcObject = stream;
+            stream.getTracks().forEach(function (track) {
+              connection.addTrack(track, stream);
+            });
+          })
+          .catch(function (error) {
+            console.error(error);
+          });
+      })
+      /*
     navigator.mediaDevices.getUserMedia(mediaConstraints)
       .then(function (stream) {
         connection.removeStream(mediaStream);
@@ -70,6 +111,7 @@
       .catch(function (error) {
         console.log('[gUM] Failure: ' + error.message);
       });
+      */
   });
 
   (function (cameraSelect) {
