@@ -37,9 +37,7 @@
   var cameraSelect = document.getElementById('camera-select');
   var swapButton = document.getElementById('swap-button');
 
-  var swappedStream;
   swapButton.addEventListener('click', function () {
-    var mediaStream = swappedStream || targetPublisher.getMediaStream();
     var connection = targetPublisher.getPeerConnection();
     var selection = cameraSelect.value;
     if (mediaConstraints.video && typeof mediaConstraints.video !== 'boolean') {
@@ -50,68 +48,26 @@
         deviceId: { exact: selection }
       };
     }
-    console.log(connection.getSenders())
-    console.log(mediaStream.getTracks())
-      /*
-    var senders = connection.getSenders();
-    var tracks = mediaStream.getTracks();
-    var i = tracks.length;
-    while ( --i > -1) {
-      if (tracks[i].kind === 'video') {
-        connection.removeTrack(senders[i]);
-        connection.addTrack(tracks[i], mediaStream);
-        swappedStream = mediaStream;
-        connection.createOffer()
-          .then(function (offer) {
-            connection.setLocalDescription(offer);
-          })
-          .then(function () {
-            console.log(connection.localDescription);
-            targetPublisher._setRemoteDescription(connection.localDescription)
-          });
-        break;
-      }
-    }
-    */
-    connection.createOffer()
-      .then(function (offer) {
-        connection.setLocalDescription(offer);
-        //      })
-        //      .then(function () {
-        connection.setRemoteDescription(new RTCSessionDescription(offer))
-          .then(function (stream) {
-            swappedStream = stream;
-            document.getElementById('red5pro-publisher').srcObject = stream;
-            stream.getTracks().forEach(function (track) {
-              connection.addTrack(track, stream);
-            });
-          })
-          .catch(function (error) {
-            console.error(error);
-          });
-      })
-      /*
+    //    console.log(connection.getSenders())
+    //    console.log(mediaStream.getTracks())
+    // 1. Grap new MediaStream from updated constraints.
     navigator.mediaDevices.getUserMedia(mediaConstraints)
       .then(function (stream) {
-        connection.removeStream(mediaStream);
-        connection.addStream(stream);
-        swappedStream = stream;
-        connection.createOffer()
-          .then(function (offer) {
-            connection.setLocalDescription(offer);
-          })
-          .then(function () {
-            console.log(connection.localDescription);
-            targetPublisher._setRemoteDescription(connection.localDescription)
-          });
-        //console.log( mediaStream.getVideoTracks()[0]);
-        //console.log( mediaStream.getVideoTracks()[0].getConstraints());
-        //mediaStream.getVideoTracks()[0].applyConstraints(mediaConstraints);
+        // 2. Update the media tracks on senders through connection.
+        var senders = connection.getSenders();
+        var tracks = stream.getTracks();
+        var i = tracks.length;
+        while ( --i > -1) {
+          if (tracks[i].kind === 'video') {
+            senders[i].replaceTrack(tracks[i]);
+          }
+        }
+        // 3. Update the video display with new stream.
+        document.getElementById('red5pro-publisher').srcObject = stream;
       })
-      .catch(function (error) {
-        console.log('[gUM] Failure: ' + error.message);
+      .catch (function (error) {
+        console.error('Could not replace track : ' + error.message);
       });
-      */
   });
 
   (function (cameraSelect) {
