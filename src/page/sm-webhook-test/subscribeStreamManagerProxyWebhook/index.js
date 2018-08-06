@@ -136,7 +136,7 @@
     return {
       username: usernameField.value || undefined,
       password: passwordField.value || undefined,
-      customerScope: customerField.value
+      customerscope: customerField.value
     };
   }
 

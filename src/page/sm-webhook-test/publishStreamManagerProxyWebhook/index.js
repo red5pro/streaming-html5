@@ -90,6 +90,34 @@
     console.log('[Red5ProPublisher] Unpublish Complete.');
   }
 
+  function notifyWebAppOfUnpublish (url) {
+    var json = getConnectionParamsForPublishStop();
+    fetch(url, {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(json)
+      })
+      .then(function (res) {
+        if (res.headers.get("content-type") &&
+          res.headers.get("content-type").toLowerCase().indexOf("application/json") >= 0) {
+            return res.json();
+        }
+        else {
+          throw new TypeError('Could not properly parse response.');
+        }
+      })
+      .then(function () {
+        console.log('[PublisherWebHookStreamManagerTest] :: Unpublish notify sent successfully.')
+      })
+      .catch(function (error) {
+        var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
+        console.error('[PublisherWebHookStreamManagerTest] :: Error - Could not POST Unpublish notification. ' + jsonError)
+      });
+  }
+
   function getUserMediaConfiguration () {
     return {
       mediaConstraints: {
@@ -123,10 +151,17 @@
     return {
       username: usernameField.value || undefined,
       password: passwordField.value || undefined,
-      customerScope: customerField.value,
+      customerscope: customerField.value,
       recording: recordingField.checked,
       meta: optionalMeta || {}
     };
+  }
+
+  function getConnectionParamsForPublishStop () {
+    return {
+      customerscope: customerField.value,
+      streamName: configuration.stream1
+    }
   }
 
   function determinePublisher () {
@@ -213,21 +248,26 @@
     return new Promise(function (resolve, reject) {
       var publisher = targetPublisher;
       if (publisher) {
+        var config = publisher.getOptions();
+        var url =  'http://' + config.host + ':5080/auctionfrontier/publishstop';
         publisher.unpublish()
           .then(function () {
             onUnpublishSuccess();
             stopButton.setAttribute('disabled', true);
             submitButton.removeAttribute('disabled');
             resolve();
+            notifyWebAppOfUnpublish(url);
           })
           .catch(function (error) {
             var jsonError = typeof error === 'string' ? error : JSON.stringify(error, 2, null);
             onUnpublishFail('Unmount Error ' + jsonError);
             reject(error);
+            notifyWebAppOfUnpublish(url);
           });
       } else {
         stopButton.setAttribute('disabled', true);
         submitButton.removeAttribute('disabled');
+        notifyWebAppOfUnpublish(url);
         resolve();
       }
     });
