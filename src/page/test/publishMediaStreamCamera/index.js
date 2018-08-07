@@ -37,41 +37,11 @@
   var cameraSelect = document.getElementById('camera-select');
   var swapButton = document.getElementById('swap-button');
 
-  swapButton.addEventListener('click', function () {
-    var connection = targetPublisher.getPeerConnection();
-    var selection = cameraSelect.value;
-    if (mediaConstraints.video && typeof mediaConstraints.video !== 'boolean') {
-      mediaConstraints.video.deviceId = { exact: selection }
-    }
-    else {
-      mediaConstraints.video = {
-        deviceId: { exact: selection }
-      };
-    }
-    //    console.log(connection.getSenders())
-    //    console.log(mediaStream.getTracks())
-    // 1. Grap new MediaStream from updated constraints.
-    navigator.mediaDevices.getUserMedia(mediaConstraints)
-      .then(function (stream) {
-        // 2. Update the media tracks on senders through connection.
-        var senders = connection.getSenders();
-        var tracks = stream.getTracks();
-        var i = tracks.length;
-        while ( --i > -1) {
-          if (tracks[i].kind === 'video') {
-            senders[i].replaceTrack(tracks[i]);
-          }
-        }
-        // 3. Update the video display with new stream.
-        document.getElementById('red5pro-publisher').srcObject = stream;
-      })
-      .catch (function (error) {
-        console.error('Could not replace track : ' + error.message);
-      });
-  });
+  swapButton.addEventListener('click', swapCamera);
 
+  var SELECT_DEFAULT = 'Select a camera...';
+  // Fill Camera listing.
   (function (cameraSelect) {
-    var SELECT_DEFAULT = 'Select a camera...';
     navigator.mediaDevices.enumerateDevices()
       .then(function (devices) {
         var videoCameras = devices.filter(function (item) {
@@ -134,18 +104,6 @@
     };
   }
 
-  function getRTMPMediaConfiguration () {
-    return {
-      mediaConstraints: {
-        audio: configuration.useAudio ? configuration.mediaConstraints.audio : false,
-        video: configuration.useVideo ? {
-                width: configuration.cameraWidth,
-                height: configuration.cameraHeight
-              } : false
-      }
-    }
-  }
-
   function unpublish () {
     return new Promise(function (resolve, reject) {
       var publisher = targetPublisher;
@@ -162,6 +120,40 @@
     });
   }
 
+  function swapCamera () {
+    var connection = targetPublisher.getPeerConnection();
+    var selection = cameraSelect.value;
+    if (selection === SELECT_DEFAULT) {
+      return;
+    }
+    if (mediaConstraints.video && typeof mediaConstraints.video !== 'boolean') {
+      mediaConstraints.video.deviceId = { exact: selection }
+    }
+    else {
+      mediaConstraints.video = {
+        deviceId: { exact: selection }
+      };
+    }
+    // 1. Grap new MediaStream from updated constraints.
+    navigator.mediaDevices.getUserMedia(mediaConstraints)
+      .then(function (stream) {
+        // 2. Update the media tracks on senders through connection.
+        var senders = connection.getSenders();
+        var tracks = stream.getTracks();
+        var i = tracks.length;
+        while ( --i > -1) {
+          if (tracks[i].kind === 'video') {
+            senders[i].replaceTrack(tracks[i]);
+          }
+        }
+        // 3. Update the video display with new stream.
+        document.getElementById('red5pro-publisher').srcObject = stream;
+      })
+      .catch (function (error) {
+        console.error('Could not replace track : ' + error.message);
+      });
+  }
+
   var config = Object.assign({},
     configuration,
     getUserMediaConfiguration());
@@ -171,31 +163,9 @@
                       port: getSocketLocationFromProtocol().port,
                       streamName: config.stream1,
                    });
-  var rtmpConfig = Object.assign({}, config, {
-                      protocol: 'rtmp',
-                      port: serverSettings.rtmpport,
-                      streamName: config.stream1,
-                      backgroundColor: '#000000',
-                      swf: '../../lib/red5pro/red5pro-publisher.swf',
-                      swfobjectURL: '../../lib/swfobject/swfobject.js',
-                      productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
-                    }, getRTMPMediaConfiguration());
-  var publishOrder = config.publisherFailoverOrder
-                            .split(',')
-                            .map(function (item) {
-                              return item.trim()
-                        });
 
-  if (window.query('view')) {
-    publishOrder = [window.query('view')];
-  }
-
-  var publisher = new red5prosdk.Red5ProPublisher()
-  publisher.setPublishOrder(publishOrder)
-    .init({
-      rtc: rtcConfig,
-      rtmp: rtmpConfig
-    })
+  var publisher = new red5prosdk.RTCPublisher()
+  publisher.init(rtcConfig)
     .then(function (publisherImpl) {
       streamTitle.innerText = configuration.stream1;
       targetPublisher = publisherImpl;
