@@ -93,7 +93,7 @@
     action: 'broadcast',
     protocol: protocol,
     host: configuration.host,
-    port: isSecure || proxyLocal ? undefined : serverSettings.httpport.toString(),
+    port: (isSecure || proxyLocal) ? undefined : serverSettings.httpport.toString(),
     scope: configuration.app,
     streamName: configuration.stream1,
     apiVersion: configuration.streamManagerAPI || '3.0',
