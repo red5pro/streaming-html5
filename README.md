@@ -69,6 +69,10 @@ To define the **Host** with the server instance's IP, click the _Host_ field f t
 | :-----
 | *Demonstrates selecting the desired camera to publish with.*
 
+| **[MediaStream Swap](src/page/test/publishMediaStreamCamera)**
+| :-----
+| *Demonstrates using `replaceTrack` to swap in a different Camera source dynamically for WebRTC-based Publishers.*
+
 | **[Image Capture](src/page/test/publishImageCapture)**
 | :-----
 | *Demonstrates capturing an image of a live video being published.*
