@@ -266,7 +266,7 @@
         targetSubscriber = subscriberImpl;
         // Subscribe to events.
         targetSubscriber.on('*', onSubscriberEvent);
-        displayhostname(targetSubscriber);
+        displayhostname(targetSubscriber.getOptions().host);
         return targetSubscriber.subscribe();
       })
       .then(function (sub) {
