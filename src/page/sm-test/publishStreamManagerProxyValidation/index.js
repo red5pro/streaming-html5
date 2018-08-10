@@ -231,6 +231,8 @@
   }
 
   function startup () {
+    validationSubmit.classList.add('hidden');
+
     // Kick off.
     var config = Object.assign({},
                 configuration,
@@ -254,6 +256,7 @@
           type: red5prosdk.PublisherEventTypes.CONNECT_FAILURE
         });
         onPublishFail(jsonError);
+        validationSubmit.classList.remove('hidden');
       });
 
   }

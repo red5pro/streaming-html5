@@ -39,7 +39,6 @@
     window.red5proHandleSubscriberEvent(event); // defined in src/template/partial/status-field-subscriber.hbs
   };
   var proxyLocal = window.query('local')
-  var instanceId = Math.floor(Math.random() * 0x10000).toString(16);
   var streamTitle = document.getElementById('stream-title');
   var statisticsField = document.getElementById('statistics-field');
   var addressField = document.getElementById('address-field');
@@ -184,7 +183,7 @@
       protocol: getSocketLocationFromProtocol().protocol,
       port: getSocketLocationFromProtocol().port,
       streamName: config.stream1,
-      subscriptionId: 'subscriber-' + instanceId,
+      subscriptionId: 'subscriber-' + Math.floor(Math.random() * 0x10000).toString(16),
       connectionParams: getValidationParams()
     })
     var rtmpConfig = Object.assign({}, config, {
@@ -205,7 +204,7 @@
       protocol: 'http',
       port: serverSettings.hlsport,
       streamName: name,
-      subscriptionId: 'subscriber-' + instanceId,
+      subscriptionId: 'subscriber-' + Math.floor(Math.random() * 0x10000).toString(16),
       connectionParams: getValidationParams()
     })
 
@@ -258,6 +257,8 @@
   }
 
   function startup () {
+    validationSubmit.classList.add('hidden');
+
     // Kick off.
     var config = Object.assign({}, configuration, defaultConfiguration);
     getAutoscaledSubscriber(config)
@@ -276,6 +277,7 @@
         var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
         console.error('[Red5ProSubscriber] :: Error in subscribing - ' + jsonError);
         onSubscribeFail(jsonError);
+        validationSubmit.classList.remove('hidden');
       });
   }
   validationAddButton.addEventListener('click', getNewValidationParamForm);
