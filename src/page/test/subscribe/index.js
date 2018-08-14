@@ -1,6 +1,8 @@
 (function(window, document, red5prosdk) {
   'use strict';
 
+  var isEdge = (window.adapter && window.adapter.browserDetails.browser.toLowerCase() === 'edge');
+
   var serverSettings = (function() {
     var settings = sessionStorage.getItem('r5proServerSettings');
     try {
@@ -82,6 +84,14 @@
       console.log('[Red5ProSubscriber] ' + event.type + '.');
       updateStatusFromEvent(event);
     }
+    if (event.type === 'WebRTC.PeerConnection.CandidateEnd') {
+      console.log('[Red5ProSubscriber] isEdge? (' + isEdge + ')');
+      if (isEdge) {
+        console.log('[Red5ProSubscriber] -> addIceCandidate(null)');
+        targetSubscriber.onAddIceCandidate(null);
+      }
+    }
+
   }
   function onSubscribeFail (message) {
     console.error('[Red5ProSubsriber] Subscribe Error :: ' + message);
