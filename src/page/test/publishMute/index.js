@@ -47,8 +47,8 @@
 
   function addMuteListener (publisher) {
     muteAudioButton.addEventListener('click', function () {
-      var wasMuted = muteAudioButton.innerText === 'unmute';
-      muteAudioButton.innerText = wasMuted ? 'mute' : 'unmute';
+      var wasMuted = muteAudioButton.innerText === 'unmute audio';
+      muteAudioButton.innerText = wasMuted ? 'mute audio' : 'unmute audio';
       if (wasMuted) {
         publisher.unmuteAudio();
       }
@@ -57,8 +57,8 @@
       }
     });
     muteVideoButton.addEventListener('click', function () {
-      var wasMuted = muteVideoButton.innerText === 'unmute';
-      muteVideoButton.innerText = wasMuted ? 'mute' : 'unmute';
+      var wasMuted = muteVideoButton.innerText === 'unmute video';
+      muteVideoButton.innerText = wasMuted ? 'mute video' : 'unmute video';
       if (wasMuted) {
         publisher.unmuteVideo();
       }
