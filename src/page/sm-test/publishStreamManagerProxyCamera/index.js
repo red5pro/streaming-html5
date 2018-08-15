@@ -42,6 +42,18 @@
       : {protocol: 'wss', port: serverSettings.wssport};
   }
 
+  function getAuthenticationParams () {
+    var auth = configuration.authentication;
+    return auth.enabled
+      ? {
+        connectionParams: {
+          username: auth.username,
+          password: auth.password
+        }
+      }
+      : {};
+  }
+
   var defaultConfiguration = {
     protocol: getSocketLocationFromProtocol().protocol,
     port: getSocketLocationFromProtocol().port,
@@ -209,12 +221,16 @@
                           height: config.cameraHeight,
                         }
                       }
-                   });
+                    },
+                    getAuthenticationParams());
     var publishOrder = config.publisherFailoverOrder
                             .split(',')
                             .map(function (item) {
                               return item.trim()
                         });
+
+    // Merge in possible authentication params.
+    rtcConfig.connectionParams = Object.assign(getAuthenticationParams(), rtcConfig.connectionParams);
 
     if(window.query('view')) {
       publishOrder = [window.query('view')];
