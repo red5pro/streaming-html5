@@ -100,6 +100,18 @@
     }
   }
 
+  function getAuthenticationParams () {
+    var auth = configuration.authentication;
+    return auth.enabled
+      ? {
+        connectionParams: {
+          username: auth.username,
+          password: auth.password
+        }
+      }
+      : {};
+  }
+
   function displayServerAddress (serverAddress, proxyAddress) {
     proxyAddress = (typeof proxyAddress === 'undefined') ? 'N/A' : proxyAddress;
     addressField.innerText = ' Proxy Address: ' + proxyAddress + ' | ' + ' Edge Address: ' + serverAddress;
@@ -208,7 +220,8 @@
       swf: '../../lib/red5pro/red5pro-subscriber.swf',
       swfobjectURL: '../../lib/swfobject/swfobject.js',
       productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
-    })
+    }, getAuthenticationParams());
+
     var subscriber = new red5prosdk.RTMPSubscriber();
     return subscriber.init(rtmpConfig);
   }

@@ -91,6 +91,18 @@
     updateStatistics(bitrate, packetsReceived, frameWidth, frameHeight);
   }
 
+  function getAuthenticationParams () {
+    var auth = configuration.authentication;
+    return auth.enabled
+      ? {
+        connectionParams: {
+          username: auth.username,
+          password: auth.password
+        }
+      }
+      : {};
+  }
+
   function displayServerAddress (serverAddress, proxyAddress) {
     proxyAddress = (typeof proxyAddress === 'undefined') ? 'N/A' : proxyAddress;
     addressField.innerText = ' Proxy Address: ' + proxyAddress + ' | ' + ' Edge Address: ' + serverAddress;
@@ -196,7 +208,10 @@
       },
       subscriptionId: 'subscriber-' + Math.floor(Math.random() * 0x10000).toString(16),
       streamName: name
-    })
+    });
+
+    // Merge in possible authentication params.
+    rtcConfig.connectionParams = Object.assign(getAuthenticationParams(), rtcConfig.connectionParams);
 
     if (!config.useVideo) {
       rtcConfig.videoEncoding = 'NONE';

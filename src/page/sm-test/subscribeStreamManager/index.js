@@ -91,6 +91,18 @@
     }
   }
 
+  function getAuthenticationParams () {
+    var auth = configuration.authentication;
+    return auth.enabled
+      ? {
+        connectionParams: {
+          username: auth.username,
+          password: auth.password
+        }
+      }
+      : {};
+  }
+
   function displayServerAddress (serverAddress, type) {
     addressField.innerText = type + ' Address: ' + serverAddress;
   }
@@ -157,7 +169,10 @@
     var name = jsonResponse.name;
     var app = jsonResponse.scope;
     displayServerAddress('Edge', host);
-    var config = Object.assign({}, configuration, defaultConfiguration);
+    var config = Object.assign({},
+      configuration,
+      defaultConfiguration,
+      getAuthenticationParams());
     var rtcConfig = Object.assign({}, config, {
       host: host,
       protocol: 'ws', // cluster is not over secure, at this time
