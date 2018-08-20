@@ -96,13 +96,13 @@ The `data.meta.stream` listing provides the available variants to subscribe to.
 
 With the Provision data available, the next requirement is to request an Edge server to subscribe to from the Stream Manager. Any of the `name`s listed in the Provision variants can be used to make the request. Once the Edge server address is provided form the Stream Manager, you will then request the associated `m3u8` using the top-level GUID of the stream (the top-level `name` attribute value of the JSON above).
 
-Requesting an Edge server to broadcast is the same as you are familiar with when using the Stream Manager API. The only difference is that you provide the name of one of the variants:
+Requesting an Edge server to subscribe is the same as you are familiar with when using the Stream Manager API. The only difference is that you provide the name of one of the variants:
 
 ```js
 https://yourcompany.com/streammanager/api/3.0/event/live/mystream_1?action=subscribe
 ```
 
-Use the `serverAddress` of the JSON response from the above `GET` request together with the top-level GUID `name` of the stream to start subscribing the the ABR-enabled stream using HLS, e.g.,:
+Use the `hostname` of the JSON response from the above `GET` request together with the top-level GUID `name` of the stream to start subscribing the the ABR-enabled stream using HLS, e.g.,:
 
 ```js
 http://xxx.xxx.xxx:5080/live/mystream.m3u8

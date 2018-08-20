@@ -98,7 +98,7 @@ The `data.meta.stream` listing provides the available variants to subscribe to.
 
 With the Provision data available, the next requirement is to request an Edge server to subscribe to from the Stream Manager. Any of the `name`s listed in the Provision variants can be used to make the request. Once the Edge server address is provided form the Stream Manager, you will then request to subscribe to a to one of the variant stream names listed - just as you would in a regular Flash-base subscriber scenario.
 
-Requesting an Edge server to broadcast is the same as you are familiar with when using the Stream Manager API. The only difference is that you provide the name of one of the variants:
+Requesting an Edge server to subscribe is the same as you are familiar with when using the Stream Manager API. The only difference is that you provide the name of one of the variants:
 
 ```js
 https://yourcompany.com/streammanager/api/3.0/event/live/mystream_1?action=subscribe
@@ -108,7 +108,7 @@ Use the information from the JSON response to configure the initial connection c
 
 ```js
 function determineSubscriber (jsonResponse) {
-  var host = jsonResponse.serverAddress;
+  var host = jsonResponse.hostname;
   var name = jsonResponse.name;
   var app = jsonResponse.scope;
   var config = Object.assign({}, configuration, defaultConfiguration);

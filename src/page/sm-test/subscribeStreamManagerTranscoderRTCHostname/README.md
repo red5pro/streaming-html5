@@ -98,10 +98,10 @@ The `data.meta.stream` listing provides the available variants to subscribe to.
 
 With the Provision data available, the next requirement is to request an Edge server to subscribe to from the Stream Manager. Any of the `name`s listed in the Provision variants can be used to make the request and subscribe to; the server will handle the stream downgrade and upgrade based on the network conditions of the subscriber.
 
-Requesting an Edge server to broadcast is the same as you are familiar with when using the Stream Manager API. The only difference is that you provide the name of one of the variants:
+Requesting an Edge server to subscribe is the same as you are familiar with when using the Stream Manager API. The only difference is that you provide the name of one of the variants:
 
 ```js
 https://yourcompany.com/streammanager/api/3.0/event/live/mystream_1?action=subscribe
 ```
 
-Use the `serverAddress` of the JSON response from the above `GET` request to start subscribing the the ABR-enabled stream.
+Use the `hostname` of the JSON response from the above `GET` request to start subscribing the the ABR-enabled stream.
