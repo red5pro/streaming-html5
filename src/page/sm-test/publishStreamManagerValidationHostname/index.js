@@ -215,6 +215,7 @@
   }
 
   function startup () {
+    validationSubmit.disabled = true;
     // Kick off.
     var config = Object.assign({},
                 configuration,
@@ -230,6 +231,8 @@
       })
       .then(function () {
         onPublishSuccess(targetPublisher);
+        validationSubmit.innerText = 'Stop Publishing';
+        validationSubmit.disabled = false;
       })
       .catch(function (error) {
         var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
@@ -238,22 +241,37 @@
           type: red5prosdk.PublisherEventTypes.CONNECT_FAILURE
         });
         onPublishFail(jsonError);
+        validationSubmit.innerText = 'Start Publishing';
+        validationSubmit.disabled = false;
+        shutdown();
       });
 
   }
 
-  validationAddButton.addEventListener('click', getNewValidationParamForm);
-  validationSubmit.addEventListener('click', startup);
-
-  window.addEventListener('beforeunload', function() {
+  function shutdown () {
     function clearRefs () {
       if (targetPublisher) {
         targetPublisher.off('*', onPublisherEvent);
       }
       targetPublisher = undefined;
+      validationSubmit.innerText = 'Start Publishing';
+      validationSubmit.disabled = false;
     }
     unpublish().then(clearRefs).catch(clearRefs);
     window.untrackBitrate();
+  }
+
+  validationAddButton.addEventListener('click', getNewValidationParamForm);
+  validationSubmit.addEventListener('click', function () {
+    var wasPublishing = targetPublisher !== undefined;
+    if (wasPublishing) {
+      shutdown();
+    } else {
+      startup();
+    }
   });
+
+  window.addEventListener('beforeunload', shutdown);
+
 })(this, document, window.red5prosdk, window.red5prosdk_ext_stream_manager);
 

@@ -257,8 +257,7 @@
   }
 
   function startup () {
-    validationSubmit.classList.add('hidden');
-
+    validationSubmit.disabled = true;
     // Kick off.
     var config = Object.assign({}, configuration, defaultConfiguration);
     getAutoscaledSubscriber(config)
@@ -272,28 +271,42 @@
       })
       .then(function (sub) {
         onSubscribeSuccess(sub);
-      })
+        validationSubmit.innerText = 'Stop Subscribing';
+        validationSubmit.disabled = false;
+   })
       .catch(function (error) {
         var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
         console.error('[Red5ProSubscriber] :: Error in subscribing - ' + jsonError);
         onSubscribeFail(jsonError);
-        validationSubmit.classList.remove('hidden');
+        validationSubmit.innerText = 'Start Subscribing';
+        validationSubmit.disabled = false;
       });
   }
-  validationAddButton.addEventListener('click', getNewValidationParamForm);
-  validationSubmit.addEventListener('click', startup);
 
-  // Clean up.
-  window.addEventListener('beforeunload', function() {
+  function shutdown () {
     function clearRefs () {
       if (targetSubscriber) {
         targetSubscriber.off('*', onSubscriberEvent);
       }
       targetSubscriber = undefined;
+      validationSubmit.innerText = 'Start Subscribing';
+      validationSubmit.disabled = false;
     }
     unsubscribe().then(clearRefs).catch(clearRefs);
     window.untrackbitrate();
+  }
+
+  validationAddButton.addEventListener('click', getNewValidationParamForm);
+  validationSubmit.addEventListener('click', function() {
+    var wasSubscribing = targetSubscriber !== undefined;
+    if (wasSubscribing) {
+      shutdown();
+    } else {
+      startup();
+    }
   });
+
+  window.addEventListener('beforeunload', shutdown);
 
 })(this, document, window.red5prosdk, window.red5prosdk_ext_stream_manager);
 
