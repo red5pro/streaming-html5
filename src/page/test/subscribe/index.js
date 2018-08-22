@@ -87,8 +87,8 @@
     if (event.type === 'WebRTC.PeerConnection.CandidateEnd') {
       console.log('[Red5ProSubscriber] isEdge? (' + isEdge + ')');
       if (isEdge) {
-        console.log('[Red5ProSubscriber] -> addIceCandidate(null)');
-        targetSubscriber.onAddIceCandidate(null);
+        //        console.log('[Red5ProSubscriber] -> addIceCandidate(null)');
+        //        targetSubscriber.onPeerGatheringComplete();
       }
     }
 
@@ -170,6 +170,20 @@
     subscribeOrder = [window.query('view')];
   }
 
+  function trackPeerConnection () {
+    var pc = targetSubscriber.getPeerConnection();
+    if (pc ) {
+        pc.addEventListener('iceconnectionstatechange', function () {
+          if (pc.iceConnectionState === 'connected' && isEdge) {
+            console.log('[Red5ProSubscriber] -> sendEmptyCandidate()');
+            targetSubscriber.onPeerGatheringComplete();
+          }
+        });
+    } else {
+      setTimeout(trackPeerConnection, 500);
+    }
+  }
+
   // Request to initialization and start subscribing through failover support.
   var subscriber = new red5prosdk.Red5ProSubscriber()
   subscriber.setPlaybackOrder(subscribeOrder)
@@ -183,6 +197,7 @@
       targetSubscriber = subscriberImpl
       // Subscribe to events.
       targetSubscriber.on('*', onSubscriberEvent);
+      setTimeout(trackPeerConnection, 500);
       return targetSubscriber.subscribe()
     })
     .then(function () {

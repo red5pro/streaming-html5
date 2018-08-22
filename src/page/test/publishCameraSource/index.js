@@ -62,8 +62,8 @@
     if (event.type === 'WebRTC.PeerConnection.CandidateEnd') {
       console.log('[Red5ProPublisher] isEdge? (' + isEdge + ')');
       if (isEdge) {
-        console.log('[Red5ProPublisher] -> addIceCandidate(null)');
-        targetPublisher.onAddIceCandidate(null);
+        //        console.log('[Red5ProPublisher] -> addIceCandidate(null)');
+        //        targetPublisher.onAddIceCandidate(null);
       }
     }
   }
@@ -145,6 +145,20 @@
       });
   }
 
+  function trackPeerConnection () {
+    var pc = targetPublisher.getPeerConnection();
+    if (pc ) {
+        pc.addEventListener('iceconnectionstatechange', function () {
+          if (pc.iceConnectionState === 'connected' && isEdge) {
+            console.log('[Red5ProPublisher] -> sendEmptyCandidate()');
+            targetPublisher.onPeerGatheringComplete();
+          }
+        });
+    } else {
+      setTimeout(trackPeerConnection, 500);
+    }
+  }
+
   function startPublishSession () {
     // Kick off.
     determinePublisher()
@@ -152,6 +166,7 @@
         streamTitle.innerText = configuration.stream1;
         targetPublisher = publisherImpl;
         targetPublisher.on('*', onPublisherEvent);
+        setTimeout(trackPeerConnection, 500);
         return targetPublisher.publish();
       })
       .then(function () {
