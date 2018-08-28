@@ -177,6 +177,7 @@
           if (pc.iceConnectionState === 'connected' && isEdge) {
             console.log('[Red5ProSubscriber] -> sendEmptyCandidate()');
             targetSubscriber.onPeerGatheringComplete();
+            targetSubscriber.getPeerConnection().onicecandidate({candidate:null});
           }
         });
     } else {

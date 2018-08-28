@@ -87,7 +87,7 @@
   }
 
   function getUserMediaConfiguration () {
-    return Object.assign({}, mediaConstraints);
+    return Object.assign({}, {mediaConstraints: mediaConstraints});
   }
 
   var SELECT_DEFAULT = 'Select a camera...';
@@ -152,6 +152,7 @@
           if (pc.iceConnectionState === 'connected' && isEdge) {
             console.log('[Red5ProPublisher] -> sendEmptyCandidate()');
             targetPublisher.onPeerGatheringComplete();
+            //            targetPublisher.getPeerConnection().onicecandidate({candidate:null});
           }
         });
     } else {
