@@ -114,7 +114,7 @@
   // Request to unsubscribe.
   function unsubscribe (subscriber) {
     return new Promise(function(resolve, reject) {
-      subscriber.unscubscribe()
+      subscriber.unsubscribe()
         .then(function () {
           targetSubscriber.off('*', onSubscriberEvent);
           targetSubscriber = undefined;
