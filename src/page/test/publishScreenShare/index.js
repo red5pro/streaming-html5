@@ -90,6 +90,18 @@
     console.log('[Red5ProPublisher] Unpublish Complete.');
   }
 
+  function getAuthenticationParams () {
+    var auth = configuration.authentication;
+    return auth.enabled
+      ? {
+        connectionParams: {
+          username: auth.username,
+          password: auth.password
+        }
+      }
+      : {};
+  }
+
   function capture (cb) {
     getScreenId(function(error, sourceId, screen_constraints) {
       if (error) {
@@ -134,14 +146,17 @@
   }
 
   function setupAudio () {
-    var audioConfig = Object.assign({}, configuration, {
-      mediaElementId: 'red5pro-audio',
-      protocol: getSocketLocationFromProtocol().protocol,
-      port: getSocketLocationFromProtocol().port,
-      streamName: configuration.stream1 + '_audio',
-      mediaConstraints: {
-        audio: true,
-        video: false
+    var audioConfig = Object.assign({},
+      configuration, 
+      getAuthenticationParams(),
+      {
+        mediaElementId: 'red5pro-audio',
+        protocol: getSocketLocationFromProtocol().protocol,
+        port: getSocketLocationFromProtocol().port,
+        streamName: configuration.stream1 + '_audio',
+        mediaConstraints: {
+          audio: true,
+          video: false
       }
     });
     new red5prosdk.RTCPublisher()
@@ -162,7 +177,8 @@
   function setupPublisher (constraints) {
 
     var config = Object.assign({},
-                     configuration);
+                        configuration,
+                        getAuthenticationParams());
 
     var rtcConfig = Object.assign({}, config, {
                         protocol: getSocketLocationFromProtocol().protocol,

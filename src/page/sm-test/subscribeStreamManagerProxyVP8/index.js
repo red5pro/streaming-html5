@@ -70,6 +70,18 @@
     }
   }
 
+  function getAuthenticationParams () {
+    var auth = configuration.authentication;
+    return auth.enabled
+      ? {
+        connectionParams: {
+          username: auth.username,
+          password: auth.password
+        }
+      }
+      : {};
+  }
+
   function displayServerAddress (serverAddress, proxyAddress) {
     proxyAddress = (typeof proxyAddress === 'undefined') ? 'N/A' : proxyAddress;
     addressField.innerText = ' Proxy Address: ' + proxyAddress + ' | ' + ' Edge Address: ' + serverAddress;
@@ -140,7 +152,8 @@
       },
       subscriptionId: 'subscriber-' + instanceId,
       streamName: name
-    })
+    });
+
     var rtmpConfig = Object.assign({}, config, {
       host: host,
       app: app,
@@ -153,7 +166,8 @@
       swf: '../../lib/red5pro/red5pro-subscriber.swf',
       swfobjectURL: '../../lib/swfobject/swfobject.js',
       productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
-    })
+    }, getAuthenticationParams());
+
     var hlsConfig = Object.assign({}, config, {
       host: host,
       app: app,
@@ -161,7 +175,10 @@
       port: serverSettings.hlsport,
       streamName: name,
       mimeType: 'application/x-mpegURL'
-    })
+    });
+
+    // Merge in possible authentication params.
+    rtcConfig.connectionParams = Object.assign(getAuthenticationParams(), rtcConfig.connectionParams);
 
     if (!config.useVideo) {
       rtcConfig.videoEncoding = 'NONE';

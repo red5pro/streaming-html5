@@ -94,7 +94,12 @@
       "iceTransport": "udp",
       "verboseLogging": true,
       "streamManagerAPI": "3.0",
-      "streamManagerAccessToken": "xyz123"
+      "streamManagerAccessToken": "xyz123",
+      "authentication": {
+        "enabled": false,
+        "username": "user",
+        "password": "pass"
+      }
     };
     /**
     if (isMoz) {

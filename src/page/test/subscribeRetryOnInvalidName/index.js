@@ -139,6 +139,18 @@
     console.log('[Red5ProSubsriber] Unsubscribe Complete.');
   }
 
+  function getAuthenticationParams () {
+    var auth = configuration.authentication;
+    return auth.enabled
+      ? {
+        connectionParams: {
+          username: auth.username,
+          password: auth.password
+        }
+      }
+      : {};
+  }
+
   // Request to unsubscribe.
   function unsubscribe () {
     return new Promise(function(resolve, reject) {
@@ -159,8 +171,11 @@
 
   // Kick off.
   var config = Object.assign({
-    maintainConnectionOnSubscribeErrors: true
-  }, configuration, defaultConfiguration);
+      maintainConnectionOnSubscribeErrors: true
+    }, 
+    configuration,
+    defaultConfiguration,
+    getAuthenticationParams());
   config.streamName = config.stream1;
 
   var subscriber = new red5prosdk.RTCSubscriber();
