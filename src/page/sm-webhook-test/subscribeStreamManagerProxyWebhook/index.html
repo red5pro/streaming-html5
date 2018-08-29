@@ -1,0 +1,77 @@
+<!doctype html>
+<html>
+  <head>
+    {{> meta title='Subscriber Stream Manager Proxy Test'}}
+    {{> header-scripts}}
+    {{> header-stylesheets}}
+    <style>
+      #address-field {
+        padding: 6px;
+        background-color: #ccc;
+      }
+      #additional-form {
+        padding: 1rem 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      {{> version }}
+      {{> settings-link}}
+      <div class="ice-background">
+      <div class="test-notification">
+        <p>In order to properly run the Stream Manager examples, you will need to configure you server for cluster infrastructure as described in the following documentation:</p>
+        <p><a href="https://www.red5pro.com/docs/server/autoscale/" target="_blank">https://www.red5pro.com/docs/server/autoscale/</a></p>
+      <p>Additionally to use this example stream manager proxy gateway should be enabled.</p>
+      </div>
+      </div>
+      {{> test-info testTitle='Subscriber SM Webhook Test'}}
+      {{> status-field-subscriber}}
+      {{> statistics-field}}
+      <div class="centered"><p id="address-field">Edge Address: N/A</p></div>
+      <div id="additional-form" class="ice-background">
+        <p style="width: 100%; text-align: center;"><strong>Webhook Socket Connection:</strong></p>
+        <div>
+          <p class="settings-field">
+            <label class="settings-label" for="websocket-field">URL:</label>
+            <input type="text" id="websocket-field" name="websocket-field"
+              style="vertical-align: middle; min-width: 360px;"
+              value="wss://xxx.xxx.xxx:8083/live/webhook">
+          </p>
+        </div>
+        <hr />
+        <p style="width: 100%; text-align: center;"><strong>Additional Connection Params:</strong></p>
+        <div>
+          <p class="settings-field">
+            <label class="settings-label" for="username-field">Username (Optional):</label>
+            <input type="text" id="username-field" name="username-field" style="vertical-align: middle;">
+          </p>
+          <p class="settings-field">
+            <label class="settings-label" for="password-field">Password (Optional):</label>
+            <input type="text" id="password-field" name="password-field" style="vertical-align: middle;">
+          </p>
+          <p class="settings-field">
+            <label class="settings-label" for="customer-field">Customer Scope:</label>
+            <input type="text" id="customer-field" name="customer-field" style="vertical-align: middle;">
+          </p>
+          <hr />
+          <p class="centered">
+            <button id="submit-button" style="margin-right: 1rem;">Start Subscribing</button>
+            <button id="stop-button" disabled>Stop Subscribing</button>
+          </p>
+        </div>
+      </div>
+      <div class="centered">
+        <video id="red5pro-subscriber"
+                controls autoplay playsinline
+                class="red5pro-media red5pro-media-background"
+                width="640" height="480">
+        </video>
+      </div>
+    </div>
+    {{> body-scripts}}
+    <!-- Red5 Pro Stream Manager Extension -->
+    <script src="../../lib/red5pro/red5pro-ext-stream-manager.min.js"></script>
+    <script src="index.js"></script>
+  </body>
+</html>
