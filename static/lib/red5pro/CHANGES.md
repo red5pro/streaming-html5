@@ -1,5 +1,15 @@
 # Changes
 
+## 5.2.0
+
+- remove of duplicate event handler. (bustardcelly)
+- Adding check for empty candidate from server (bustardcelly)
+
+    > * Server at times (depending on client) will send a `candidate` object as empty during the negotiation process.
+    > * A new event type has been added to notify listeners of this empty candidate
+
+- Pub/Sub support for mobile device orientation recognition. (bustardcelly)
+
 ## 5.0.0
 
 - removing onbeforeunload hook to dismantle sockets. (bustardcelly)
