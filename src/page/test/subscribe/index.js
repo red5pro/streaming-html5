@@ -75,6 +75,7 @@
     if (!useAudio) {
       c.audioEncoding = red5prosdk.PlaybackAudioEncoder.NONE;
     }
+    c.videoEncoding = isEdge ? red5prosdk.PlaybackVideoEncoder.VP8 : red5prosdk.PlaybackVideoEncoder.NONE;
     return c;
   })(configuration.useVideo, configuration.useAudio);
 
