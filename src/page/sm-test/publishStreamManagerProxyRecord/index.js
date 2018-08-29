@@ -45,6 +45,18 @@
     streamMode: 'record'
   };
 
+  function getAuthenticationParams () {
+    var auth = configuration.authentication;
+    return auth.enabled
+      ? {
+        connectionParams: {
+          username: auth.username,
+          password: auth.password
+        }
+      }
+      : {};
+  }
+
   function displayServerAddress (serverAddress, proxyAddress) 
   {
   proxyAddress = (typeof proxyAddress === 'undefined') ? 'N/A' : proxyAddress;
@@ -158,12 +170,17 @@
                       swf: '../../lib/red5pro/red5pro-publisher.swf',
                       swfobjectURL: '../../lib/swfobject/swfobject.js',
                       productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
-                   }, getRTMPMediaConfiguration());
+                    }, 
+                    getAuthenticationParams(),
+                    getRTMPMediaConfiguration());
     var publishOrder = config.publisherFailoverOrder
                             .split(',')
                             .map(function (item) {
                               return item.trim()
                         });
+
+    // Merge in possible authentication params.
+    rtcConfig.connectionParams = Object.assign(getAuthenticationParams(), rtcConfig.connectionParams);
 
     if(window.query('view')) {
       publishOrder = [window.query('view')];

@@ -106,6 +106,18 @@
     console.log('[Red5ProSubsriber] Unsubscribe Complete.');
   }
 
+  function getAuthenticationParams () {
+    var auth = configuration.authentication;
+    return auth.enabled
+      ? {
+        connectionParams: {
+          username: auth.username,
+          password: auth.password
+        }
+      }
+      : {};
+  }
+
   // Request to unsubscribe.
   function unsubscribe () {
     return new Promise(function(resolve, reject) {
@@ -125,13 +137,18 @@
     });
   }
 
-    var config = Object.assign({}, configuration, defaultConfiguration);
+    var config = Object.assign({},
+      configuration,
+      defaultConfiguration,
+      getAuthenticationParams());
+
     var rtcConfig = Object.assign({}, config, {
       protocol: getSocketLocationFromProtocol().protocol,
       port: getSocketLocationFromProtocol().port,
       subscriptionId: 'subscriber-' + instanceId,
       streamName: config.stream1,
     })
+
     var rtmpConfig = Object.assign({}, config, {
       protocol: 'rtmp',
       port: serverSettings.rtmpport,
@@ -143,6 +160,7 @@
       swfobjectURL: '../../lib/swfobject/swfobject.js',
       productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
     })
+
     var hlsConfig = Object.assign({}, config, {
       protocol: protocol,
       port: isSecure ? serverSettings.hlssport : serverSettings.hlsport,

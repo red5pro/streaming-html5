@@ -104,6 +104,18 @@
     console.log('[Red5ProSubsriber] Unsubscribe Complete.');
   }
 
+  function getAuthenticationParams () {
+    var auth = configuration.authentication;
+    return auth.enabled
+      ? {
+        connectionParams: {
+          username: auth.username,
+          password: auth.password
+        }
+      }
+      : {};
+  }
+
   // Request to unsubscribe.
   function unsubscribe () {
     return new Promise(function(resolve, reject) {
@@ -124,7 +136,10 @@
   }
 
   // Define tech spefific configurations for each failover item.
-  var config = Object.assign({}, configuration, defaultConfiguration);
+  var config = Object.assign({},
+    configuration,
+    defaultConfiguration,
+    getAuthenticationParams());
   var rtcConfig = Object.assign({}, config, {
     protocol: getSocketLocationFromProtocol().protocol,
     port: getSocketLocationFromProtocol().port,

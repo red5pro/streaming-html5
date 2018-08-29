@@ -84,6 +84,18 @@
     }
   }
 
+  function getAuthenticationParams () {
+    var auth = configuration.authentication;
+    return auth.enabled
+      ? {
+        connectionParams: {
+          username: auth.username,
+          password: auth.password
+        }
+      }
+      : {};
+  }
+
   function displayServerAddress (serverAddress, proxyAddress) {
     proxyAddress = (typeof proxyAddress === 'undefined') ? 'N/A' : proxyAddress;
     addressField.innerText = ' Proxy Address: ' + proxyAddress + ' | ' + ' Origin Address: ' + serverAddress;
@@ -237,13 +249,18 @@
                       backgroundColor: '#000000',
                       swf: '../../lib/red5pro/red5pro-publisher.swf',
                       swfobjectURL: '../../lib/swfobject/swfobject.js',
-                      productInstallURL: '../../lib/swfobject/playerProductInstall.swf'},
-                      getRTMPMediaConfiguration(transcoderConfig));
+                      productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
+                    },
+                    getAuthenticationParams(),
+                    getRTMPMediaConfiguration(transcoderConfig));
     var publishOrder = config.publisherFailoverOrder
                             .split(',')
                             .map(function (item) {
                               return item.trim()
                         });
+
+    // Merge in possible authentication params.
+    rtcConfig.connectionParams = Object.assign(getAuthenticationParams(), rtcConfig.connectionParams);
 
     if(window.query('view')) {
       publishOrder = [window.query('view')];
