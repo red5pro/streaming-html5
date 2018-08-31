@@ -114,7 +114,7 @@
 
   function getAuthenticationParams () {
     var auth = configuration.authentication;
-    return auth.enabled
+    return auth && auth.enabled
       ? {
         connectionParams: {
           username: auth.username,
