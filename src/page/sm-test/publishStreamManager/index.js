@@ -82,7 +82,7 @@
     var port = serverSettings.httpport;
     var portURI = (port.length > 0 ? ':' + port : '');
     var baseUrl = isSecure ? protocol + '://' + host : protocol + '://' + host + portURI;
-    var apiVersion = configuration.streamManagerAPI || '3.0';
+    var apiVersion = configuration.streamManagerAPI || '3.1';
     var url = baseUrl + '/streammanager/api/' + apiVersion + '/event/' + app + '/' + streamName + '?action=broadcast';
       return new Promise(function (resolve, reject) {
         fetch(url)
@@ -104,6 +104,18 @@
             reject(error)
           });
     });
+  }
+
+  function getAuthenticationParams () {
+    var auth = configuration.authentication;
+    return auth && auth.enabled
+      ? {
+        connectionParams: {
+          username: auth.username,
+          password: auth.password
+        }
+      }
+      : {};
   }
 
   function getUserMediaConfiguration () {
@@ -130,9 +142,10 @@
   function determinePublisher (streamName) {
 
     var config = Object.assign({},
-                    configuration,
-                    defaultConfiguration,
-                    getUserMediaConfiguration());
+                      configuration,
+                      defaultConfiguration,
+                      getAuthenticationParams(),
+                      getUserMediaConfiguration());
     var rtcConfig = Object.assign({}, config, {
                       protocol: getSocketLocationFromProtocol().protocol,
                       port: getSocketLocationFromProtocol().port,

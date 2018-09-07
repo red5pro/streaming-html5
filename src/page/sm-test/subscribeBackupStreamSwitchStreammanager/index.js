@@ -86,6 +86,18 @@
   streamManagerAddress.value = configuration.host;
   streamName.value = configuration.stream1;
 
+  function getAuthenticationParams () {
+    var auth = configuration.authentication;
+    return auth && auth.enabled
+      ? {
+        connectionParams: {
+          username: auth.username,
+          password: auth.password
+        }
+      }
+      : {};
+  }
+
   function query(name, url) { // eslint-disable-line no-unused-vars
     if (!url) {
       url = window.location.href;
@@ -249,7 +261,7 @@
       container.appendChild(generateVideoElement(id));
       var app = edgeList[i].scope;
       app = app.charAt(0) === '/' ? app.substr(1, app.length) : app;
-      generateSubscriber(Object.assign({}, baseConfig, {
+      var subConfig = Object.assign({}, baseConfig, {
         mediaElementId: id,
         host: streamManagerAddress.value,
         app: 'streammanager',
@@ -258,9 +270,11 @@
           app: app 
         },
         streamName: edgeList[i].name
-      }))
-      .then(onSubscriberResolve(id))
-      .catch(handleGenerateSubscriberError);
+      });
+      subConfig.connectionParams = Object.assign(getAuthenticationParams(), subConfig.connectionParams);
+      generateSubscriber(subConfig)
+        .then(onSubscriberResolve(id))
+        .catch(handleGenerateSubscriberError);
     }
 
     if (length === 0) {
@@ -270,7 +284,7 @@
 
   function generateEdgeRequest (smHost, smApp, streamName) {
     return function (collection) {
-      var url = 'https://' + smHost + '/streammanager/api/3.0/event/' + smApp + '/' + streamName + '?action=subscribe';
+      var url = 'https://' + smHost + '/streammanager/api/3.1/event/' + smApp + '/' + streamName + '?action=subscribe';
       return new Promise(function (resolve, reject) { // eslint-disable-line no-unused-vars
         fetch(url)
           .then(function (res) {
