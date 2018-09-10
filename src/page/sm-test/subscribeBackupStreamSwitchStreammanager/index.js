@@ -284,7 +284,7 @@
 
   function generateEdgeRequest (smHost, smApp, streamName) {
     return function (collection) {
-      var url = 'https://' + smHost + '/streammanager/api/3.0/event/' + smApp + '/' + streamName + '?action=subscribe';
+      var url = 'https://' + smHost + '/streammanager/api/3.1/event/' + smApp + '/' + streamName + '?action=subscribe';
       return new Promise(function (resolve, reject) { // eslint-disable-line no-unused-vars
         fetch(url)
           .then(function (res) {
