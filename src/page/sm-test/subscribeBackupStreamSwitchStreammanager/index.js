@@ -265,9 +265,9 @@
     }
   }
 
-  function getEdgeListFromStreamName (smHost, smApp, streamName) {
+  function getEdgeListFromStreamName (smHost, smApp, streamName, amount) {
     var version = configuration.streamManagerAPI;
-    var url = 'https://' + smHost + '/streammanager/api/' + version + '/event/list';
+    var url = 'https://' + smHost + '/streammanager/api/' + version + '/event/' + smApp + '/' + streamName + '?action=subscribe&endpoints=' + amount;
     return new Promise(function (resolve, reject) { // eslint-disable-line no-unused-vars
       fetch(url)
         .then(function (res) {
@@ -279,9 +279,7 @@
           }
         })
         .then(function (json) {
-          resolve(json.filter(function (entry) {
-            return entry.type === 'edge' && entry.name === streamName && entry.scope === smApp;
-          }));
+          resolve(json);
         })
         .catch(function (error) {
           var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
@@ -294,13 +292,13 @@
 
   function getEdges (streamManagerAddress, streamName, amount) { // eslint-disable-line no-unused-vars
     return new Promise(function (resolve, reject) {
-      getEdgeListFromStreamName(streamManagerAddress, configuration.app, streamName)
+      getEdgeListFromStreamName(streamManagerAddress, configuration.app, streamName, amount)
         .then(function (list) {
           if (list.length === amount) {
             resolve(list);
           } else if (list.length > amount) {
             resolve(list.slice(0, amount));
-          } else {
+          } else if (list.length > 0) {
             var padded = [];
             var i = 0;
             var index = 0;
@@ -312,6 +310,8 @@
               index += 1;
             }
             resolve(padded);
+          } else {
+            resolve(list)
           }
         })
         .catch(function (e) {
