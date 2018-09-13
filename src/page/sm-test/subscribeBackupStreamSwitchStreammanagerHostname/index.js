@@ -248,6 +248,7 @@
       var app = edgeResponse.scope;
       app = app.charAt(0) === '/' ? app.substr(1, app.length) : app;
       var subConfig = Object.assign({}, baseConfig, {
+        mediaElementId: id,
         host: isSecure ? edgeResponse.hostname : edgeResponse.serverAddress,
         protocol: isSecure ? 'wss' : 'ws',
         port: isSecure ? serverSettings.wssport : serverSettings.wsport,
