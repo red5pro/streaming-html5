@@ -166,7 +166,7 @@
             replacement.subscriber.play();
             replacement.subscriber.disableStandby();
             var options = replacement.subscriber._options;
-            infoField.innerText = 'Subscribed to "' + options.streamName + '" on ' + options.connectionParams.host + ".";
+            infoField.innerText = 'Subscribed to "' + options.streamName + '" on ' + options.host + ".";
           }
           else {
             container.appendChild(noVideoAlert);
@@ -202,7 +202,7 @@
       console.log('[OMG] Subscriber ' + id + ' is the first one in!');
       console.log('[OMG] :: ' + JSON.stringify(subscriber._options, null, 2));
       var options = subscriber._options;
-      infoField.innerText = 'Subscribed to "' + options.streamName + '" on ' + options.connectionParams.host + ".";
+      infoField.innerText = 'Subscribed to "' + options.streamName + '" on ' + options.host + ".";
       if (noVideoAlert.parentNode) {
         noVideoAlert.parentNode.removeChild(noVideoAlert);
       }
