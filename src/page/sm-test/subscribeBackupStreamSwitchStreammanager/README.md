@@ -4,9 +4,9 @@ This example demonstrates the ability to load 2 (_can be modified_) Subscribers 
 
 # Usage
 
-There Stream Manager form allows you to input information about the host address of the stream manager instance. It is assumed that the stream manager is served over SSL when constructing the APi request; as such, put in the Full Qualified Domain Name of the stream manager - e.g., `mystreammanager.red5.me`.
+The Stream Manager form allows you to input information about the host address of the stream manager instance. It is assumed that the stream manager is served over SSL when constructing the APi request; as such, put in the Full Qualified Domain Name of the stream manager - e.g., `mystreammanager.red5.me`.
 
-In the Stream Manage form, also provide the stream name you wish to subscriber to.
+In the Stream Manager form, also provide the stream name you wish to subscribe to.
 
 When the form is complete, click `Start`.
 
