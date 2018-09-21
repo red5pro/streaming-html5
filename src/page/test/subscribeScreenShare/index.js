@@ -210,12 +210,29 @@
       .then(function () {
         console.log('[Red5ProSubscriber:AUDIO] :: Complete');
         marshalMuteOperation(audioSubscriber);
+        checkForAudioMuteSafari(targetSubscriber, audioSubscriber);
       })
       .catch(function (error) {
         var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
         console.error('[Red5ProSubscriber] :: Error in subscribing - ' + jsonError);
         onSubscribeFail(jsonError);
       });
+  }
+
+  function checkForAudioMuteSafari (videoSubscriber, audioSubscriber) {
+    var videoElement = videoSubscriber.getPlayer()
+    var audioElement = audioSubscriber.getPlayer()
+    var timeout = setTimeout(function () {
+      clearTimeout(timeout);
+      if (videoElement.played.length === 0) {
+        checkForAudioMuteSafari(videoSubscriber, audioSubscriber);
+      } else {
+        if (videoElement.played.length !== audioElement.played.length) {
+          audioElement.muted = true;
+          videoSubscriber.mute();
+        }
+      }
+    }, 1000);
   }
 
   // Clean up.
