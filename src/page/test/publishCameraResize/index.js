@@ -85,6 +85,18 @@
     console.log('[Red5ProPublisher] Unpublish Complete.');
   }
 
+  function getAuthenticationParams () {
+    var auth = configuration.authentication;
+    return auth && auth.enabled
+      ? {
+        connectionParams: {
+          username: auth.username,
+          password: auth.password
+        }
+      }
+      : {};
+  }
+
   function getUserMediaConfiguration () {
     return {
       audio: configuration.useAudio ? configuration.mediaConstraints.audio : false,
@@ -106,8 +118,10 @@
   }
 
   var config = Object.assign({},
-                 configuration,
-                 getUserMediaConfiguration());
+                    configuration,
+                    getAuthenticationParams(),
+                    getUserMediaConfiguration());
+
   var rtmpConfig = Object.assign({}, config, {
                     protocol: 'rtmp',
                     port: serverSettings.rtmpport,
@@ -116,11 +130,7 @@
                     swfobjectURL: '../../lib/swfobject/swfobject.js',
                     productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
                   }, getRTMPMediaConfiguration());
-  /**
-  // The following are to address: RPRO-3787
-  rtmpConfig.video.width = 854;
-  rtmpConfig.video.height = 480;
-  */
+
   function unpublish () {
     return new Promise(function (resolve, reject) {
       var publisher = targetPublisher;
