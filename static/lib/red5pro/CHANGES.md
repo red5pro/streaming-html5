@@ -1,7 +1,12 @@
 # Changes
 
-## 5.2.0
+## 5.2.0-RC5
 
+- moving ws.error invoke to promise.reject on timeout of ws connect. (bustardcelly)
+- change to warn on capture of exceptions for play on pause. (bustardcelly)
+- update to SDK to properly mute with UI update on controls. (bustardcelly)
+- removal of socket retry to socket check on ready state. (bustardcelly)
+- removal of onaddstream delegate for deprecation. (bustardcelly)
 - remove of duplicate event handler. (bustardcelly)
 - Adding check for empty candidate from server (bustardcelly)
 
@@ -26,6 +31,8 @@
 
     > Defaulted to true.
     > When set to false, it is up to the developer to assign transitions as related to orientation of broadcasts.
+
+## 4.5.0
 
 - docs update. (bustardcelly)
 

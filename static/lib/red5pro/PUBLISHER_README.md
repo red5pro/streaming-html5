@@ -43,7 +43,7 @@ Additionally, the **Red5 Pro HTML SDK** allows for automatic detection and failo
 ## WebRTC
 The Red5 Pro HTML SDK WebRTC Publisher solution utilizes WebSockets and WebRTC support in modern browsers.
 
-_It is *highly* recommended to include [adapter.js](https://github.com/webrtc/adapter) when targeting the WebRTC publisher._
+_It is *highly* recommended to include [adapter.js](https://github.com/webrtcHacks/adapter) when targeting the WebRTC publisher._
 
 > WebRTC-based Publishers need to be delivered over HTTPS due to browser security restrictions related to `getUserMedia` which accesses the Camera and Microphone of your machine. [Read more here](https://sites.google.com/a/chromium.org/dev/Home/chromium-security/deprecating-powerful-features-on-insecure-origins).
 
@@ -72,7 +72,7 @@ _index.html_:
 <html>
   <head>
     <!-- Recommended shim for cross-browser WebRTC support. -->
-    <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
+    <script src="https://webrtchacks.github.io/adapter/adapter-latest.js"></script>
   </head>
   <body>
     <!-- `autoplay` will immediately show preview video. `muted` will mute the audio to avoid feedback noise. -->
@@ -198,7 +198,7 @@ An example of providing `onGetUserMedia` as a configuration:
 ```js
 {
   host: "localhost",
-  protocol: 8083,
+  protocol: "ws",
   port: 8081,
   streamName: "mystream",
   iceServers: [{urls: 'stun:stun2.l.google.com:19302'}],
@@ -292,13 +292,16 @@ _main.js_:
       embedWidth: '100%',
       embedHeight: '100%',
       mediaConstraints: {
-        width: 640,
-        height: 480,
-        framerate: 15,
-        bandwidth: 50000,
-        quality: 80,
-        profile: 'baseline',
-        level: '3.1'
+        audio: true,
+        video: {
+          width: 640,
+          height: 480,
+          framerate: 15,
+          bandwidth: 50000,
+          quality: 80,
+          profile: 'baseline',
+          level: '3.1'
+        }
       }
     })
     .then(function() {
@@ -371,7 +374,7 @@ _index.html_:
 <html>
   <head>
     <!-- Recommended shim for cross-browser WebRTC support. -->
-    <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
+    <script src="https://webrtchacks.github.io/adapter/adapter-latest.js"></script>
   </head>
   <body>
     <video id="red5pro-publisher" autoplay muted></video>
