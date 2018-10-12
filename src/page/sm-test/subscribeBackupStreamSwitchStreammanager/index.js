@@ -34,23 +34,6 @@
       : {protocol: 'wss', port: serverSettings.wssport};
   }
 
-  var SubscriberFetch = function (req) {
-    this.request = req;
-    this.next = undefined;
-    this.nextScope = undefined;
-  }
-  SubscriberFetch.prototype.setNext = function (fn, scope) {
-    this.next = fn;
-    this.nextScope = scope;
-  }
-  SubscriberFetch.prototype.run = function (collection) {
-    var fn = this.next;
-    var scope = this.nextScope;
-    this.request(collection).then(function (collection) {
-      fn.call(scope, collection);
-    });
-  }
-
   var subscriberAmount = 2
 
   var infoField = document.getElementById('info-field');
@@ -85,6 +68,18 @@
 
   streamManagerAddress.value = configuration.host;
   streamName.value = configuration.stream1;
+
+  function getAuthenticationParams () {
+    var auth = configuration.authentication;
+    return auth && auth.enabled
+      ? {
+        connectionParams: {
+          username: auth.username,
+          password: auth.password
+        }
+      }
+      : {};
+  }
 
   function query(name, url) { // eslint-disable-line no-unused-vars
     if (!url) {
@@ -249,7 +244,7 @@
       container.appendChild(generateVideoElement(id));
       var app = edgeList[i].scope;
       app = app.charAt(0) === '/' ? app.substr(1, app.length) : app;
-      generateSubscriber(Object.assign({}, baseConfig, {
+      var subConfig = Object.assign({}, baseConfig, {
         mediaElementId: id,
         host: streamManagerAddress.value,
         app: 'streammanager',
@@ -258,9 +253,11 @@
           app: app 
         },
         streamName: edgeList[i].name
-      }))
-      .then(onSubscriberResolve(id))
-      .catch(handleGenerateSubscriberError);
+      });
+      subConfig.connectionParams = Object.assign(getAuthenticationParams(), subConfig.connectionParams);
+      generateSubscriber(subConfig)
+        .then(onSubscriberResolve(id))
+        .catch(handleGenerateSubscriberError);
     }
 
     if (length === 0) {
@@ -268,52 +265,59 @@
     }
   }
 
-  function generateEdgeRequest (smHost, smApp, streamName) {
-    return function (collection) {
-      var url = 'https://' + smHost + '/streammanager/api/3.0/event/' + smApp + '/' + streamName + '?action=subscribe';
-      return new Promise(function (resolve, reject) { // eslint-disable-line no-unused-vars
-        fetch(url)
-          .then(function (res) {
-            if (res.headers.get("content-type") &&
-              res.headers.get("content-type").toLowerCase().indexOf("application/json") >= 0) {
-                return res.json();
-            }
-            else {
-              throw new TypeError('Could not properly parse response.');
-            }
-          })
-          .then(function (json) {
-            collection.push(json)
-            resolve(collection);
-          })
-          .catch(function (error) {
-            var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
-            console.error('[streammanager-subscriber] :: Error - Could not request Edge IP from Stream Manager. ' + jsonError)
-            // let pass.
-            resolve(collection)
-          });
-      })
-    }
+  function getEdgeListFromStreamName (smHost, smApp, streamName, amount) {
+    var version = configuration.streamManagerAPI;
+    var url = 'https://' + smHost + '/streammanager/api/' + version + '/event/' + smApp + '/' + streamName + '?action=subscribe&endpoints=' + amount;
+    return new Promise(function (resolve, reject) { // eslint-disable-line no-unused-vars
+      fetch(url)
+        .then(function (res) {
+          if (res.headers.get("content-type") &&
+            res.headers.get("content-type").toLowerCase().indexOf("application/json") >= 0) {
+              return res.json();
+          } else {
+            throw new TypeError('Could not properly parse response.');
+          }
+        })
+        .then(function (json) {
+          resolve(json);
+        })
+        .catch(function (error) {
+          var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
+          console.error('[streammanager-subscriber] :: Error - Could not request Edge IPs from Stream Manager. ' + jsonError)
+          // let pass.
+          resolve([])
+        });
+    });
   }
 
   function getEdges (streamManagerAddress, streamName, amount) { // eslint-disable-line no-unused-vars
-    return new Promise(function (resolve, reject) { // eslint-disable-line no-unused-vars
-      var requests = [];
-      var prevFetcher;
-      var fetcher = new SubscriberFetch(generateEdgeRequest(streamManagerAddress, 'live', streamName));
-      fetcher.setNext(resolve, undefined);
-      requests.push(fetcher);
-
-      amount = amount - 1;
-      while (--amount > -1) {
-        prevFetcher = requests[amount];
-        fetcher = new SubscriberFetch(generateEdgeRequest(streamManagerAddress, 'live', streamName));
-        fetcher.setNext(prevFetcher.run, prevFetcher);
-        requests.push(fetcher);
-      }
-
-      requests.reverse()
-      requests[0].run([])
+    return new Promise(function (resolve, reject) {
+      getEdgeListFromStreamName(streamManagerAddress, configuration.app, streamName, amount)
+        .then(function (list) {
+          if (list.length === amount) {
+            resolve(list);
+          } else if (list.length > amount) {
+            resolve(list.slice(0, amount));
+          } else if (list.length > 0) {
+            var padded = [];
+            var i = 0;
+            var index = 0;
+            for(i; i < amount; i++) {
+              if (index >= list.length) {
+                index = 0;
+              }
+              padded.push(list[index]);
+              index += 1;
+            }
+            resolve(padded);
+          } else {
+            resolve(list)
+          }
+        })
+        .catch(function (e) {
+          console.log('Error in getting edge list: ' + e.message);
+          reject(e);
+        });
     });
   }
 
