@@ -24,7 +24,7 @@
   </head>
   <body>
     <div id="app">
-      <p class="version-field">Testbed Version: 5.0.0&nbsp;&nbsp;&nbsp;&nbsp;<a href="https://red5pro.github.io/red5pro-html-sdk-testbed/red5pro-html-testbed-latest.zip">download</a></p>
+      <p class="version-field">Testbed Version: 5.2.0&nbsp;&nbsp;&nbsp;&nbsp;<a href="https://red5pro.github.io/red5pro-html-sdk-testbed/red5pro-html-testbed-latest.zip">download</a></p>
       <div id="back-link-container" style="text-align: left;"><p id="back-link"><a href="../../index.html">&lt; Settings</a></p></div>
       <div class="ice-background">
       <div class="test-notification">
@@ -45,7 +45,7 @@
             <p style="display: inline-block; width: 60px; text-align: right">Bitrate: </p>
             <input class="bitrate-field"
               style="max-width: 60px"
-              value="750000">
+              value="1000000">
           </p>
           <p style="inline; margin: 16px 0">
             <p style="display: inline-block; width: 60px; text-align: right">Width:</p>
@@ -66,7 +66,7 @@
             <p style="display: inline-block; width: 60px; text-align: right">Bitrate: </p>
             <input class="bitrate-field"
               style="max-width: 60px"
-              value="500000">
+              value="750000">
           </p>
           <p style="inline; margin: 16px 0">
             <p style="display: inline-block; width: 60px; text-align: right">Width:</p>
@@ -87,7 +87,7 @@
             <p style="display: inline-block; width: 60px; text-align: right">Bitrate: </p>
             <input class="bitrate-field"
               style="max-width: 60px"
-              value="200000">
+              value="300000">
           </p>
           <p style="inline; margin: 16px 0">
             <p style="display: inline-block; width: 60px; text-align: right">Width:</p>
@@ -153,6 +153,22 @@
             console.log('[Red5ProRTMPSubscriber:SWF] - ' + message);
           };
         }
+    
+        if (configuration.authentication.enabled) {
+          var node = document.createElement('div');
+          node.classList.add('hint-block', 'auth-alert');
+          var note = document.createElement('span');
+          note.innerHTML = '*<strong>Authentication is Enabled</strong>*';
+          var link = document.createElement('a');
+          link.innerText = 'Click here to disable.';
+          link.href= '../../index.html';
+          link.classList.add('auth-link');
+          node.appendChild(note);
+          node.appendChild(link);
+          var testBody = document.getElementById('back-link-container').nextElementSibling;
+          testBody.parentNode.insertBefore(node, testBody);
+        }
+    
       })(this);
     </script>
     <script src="index.js"></script>

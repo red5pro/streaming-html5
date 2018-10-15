@@ -15,7 +15,7 @@
   </head>
   <body>
     <div id="app">
-      <p class="version-field">Testbed Version: 5.0.0&nbsp;&nbsp;&nbsp;&nbsp;<a href="https://red5pro.github.io/red5pro-html-sdk-testbed/red5pro-html-testbed-latest.zip">download</a></p>
+      <p class="version-field">Testbed Version: 5.2.0&nbsp;&nbsp;&nbsp;&nbsp;<a href="https://red5pro.github.io/red5pro-html-sdk-testbed/red5pro-html-testbed-latest.zip">download</a></p>
       <div id="back-link-container" style="text-align: left;"><p id="back-link"><a href="testbed-menu.html">&lt; Testbed Menu</a></p></div>
       <div class="ice-background">
         <div class="test-notification">
@@ -63,6 +63,19 @@
         </p>
         <hr class="paddedHR" />
         <p class="settings-field">
+          <label class="settings-label">Authentication Enabled:</label>
+          <input type="checkbox" id="auth-enabled-field" name="auth-enabled-field" style="vertical-align: middle;">
+        <p class="settings-field">
+          <label class="settings-label">Username:</label>
+          <input id="auth-username-field" name="auth-username-field" disabled>
+        </p>
+        <p class="settings-field">
+          <label class="settings-label">Password:</label>
+          <input id="auth-password-field" name="auth-password-field" disabled>
+        </p>
+        </p>
+        <hr class="paddedHR" />
+        <p class="settings-field">
           <label class="settings-label">Verbose R5 Logging:</label>
           <input type="checkbox" id="logging-field" name="logging-field" style="vertical-align: middle;">
         </p>
@@ -107,6 +120,9 @@
         var audioField = document.getElementById('audio-active-field');
         var streamSwapButton = document.getElementById('stream-swap-btn');
         var smAccessField = document.getElementById('sm-access-field');
+        var authEnabledField = document.getElementById('auth-enabled-field');
+        var authUsernameField = document.getElementById('auth-username-field');
+        var authPasswordField = document.getElementById('auth-password-field');
 
         hostField.addEventListener('blur', function () {
           configuration.host = hostField.value;
@@ -140,6 +156,20 @@
         // <select> change event not supported in Gecko?
         iceTransportSelect.addEventListener('change', function (event) {
           configuration.iceTransport = event.target.value;
+          seal(configuration);
+        });
+
+        authEnabledField.addEventListener('change', function () {
+          configuration.authentication.enabled = authEnabledField.checked;
+          authUsernameField.disabled = authPasswordField.disabled = !configuration.authentication.enabled;
+          seal(configuration);
+        });
+        authUsernameField.addEventListener('blur', function () {
+          configuration.authentication.username = authUsernameField.value;
+          seal(configuration);
+        });
+        authPasswordField.addEventListener('blur', function () {
+          configuration.authentication.password = authPasswordField.value;
           seal(configuration);
         });
 
@@ -182,6 +212,10 @@
           videoField.checked = config.useVideo ? true : false;
           audioField.checked = config.useAudio ? true : false;
           smAccessField.value = config.streamManagerAccessToken;
+          authEnabledField.checked = config.authentication.enabled ? true : false;
+          authUsernameField.value = config.authentication.username;
+          authPasswordField.value = config.authentication.password;
+          authUsernameField.disabled = authPasswordField.disabled = !authEnabledField.checked;
 
           var transport = config.iceTransport;
           var i = iceTransportSelect.childNodes.length;

@@ -46,7 +46,7 @@ Additionally, the **Red5 Pro HTML SDK** allows for automatic detection and failo
 ## WebRTC
 The Red5 Pro HTML SDK WebRTC Subscriber solution utilizes WebSockets and WebRTC support in modern browsers.
 
-_It is *highly* recommended to include [adapter.js](https://github.com/webrtc/adapter) when targeting the WebRTC subscriber._
+_It is *highly* recommended to include [adapter.js](https://github.com/webrtcHacks/adapter) when targeting the WebRTC subscriber._
 
 ### WebRTC Configuration Properties
 | Property | Required | Default | Description |
@@ -90,7 +90,7 @@ _index.html_:
 <html>
   <head>
     <!-- Recommended shim for cross-browser WebRTC support. -->
-    <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
+    <script src="https://webrtchacks.github.io/adapter/adapter-latest.js"></script>
     <!-- Default Red5 Pro Playback Control styles. -->
     <link href="lib/red5pro/red5pro-media.css" rel="stylesheet">
     <!-- Fullscreen shim. -->
@@ -165,7 +165,6 @@ The **Red5 Pro HTML SDK** supports the following SWF integration:
 | streamName | [x] | *None* | The stream name to subscribe to. |
 | mediaElementId | [-] | `red5pro-subscriber` | The target `video` or `audio` element `id` attribute which will display the stream. |
 | buffer | [-] | `1` | The amount ot buffer the stream (in seconds). |
-| mimeType | [x] | `rtmp/flv` | The __mimeType__ to assign the source added to the `video` or `audio` element |
 | connectionParams | [-] | `undefined` | An object of connection parameters to send to the server upon connection request. |
 | width | [x] | `640` | The width of the video element within the SWF movie. |
 | height | [x] | `480` | The height of the video element within the SWF movie. |
@@ -220,7 +219,6 @@ _main.js_:
     swf: 'lib/red5pro-subscriber.swf'
     productInstallURL: 'lib/swfobject/playerProductInstall.swf',
     minFlashVersion: '10.0.0',
-    mimeType: 'rtmp/flv',
     buffer: 1,
     width: 640,
     height: 480,
@@ -324,6 +322,18 @@ _main.js_:
 # Auto Failover and Order
 While you can specifically target a player - as described in the previous sections - you may want to let the library select the optimal player based on browser compatibility per support flavors.
 
+## Important Note
+
+It is important to note that the failover mechanism of the SDK is driven by browser support and does not depend on any third-party libraries.
+
+As such, specific failover targets - such as HLS - require native browser support. In the case of HLS, this means failover and playback are limited to Safari Mobile and Safari Desktop when using our SDK.
+
+It is entirely possible to playback streams in HLS using a 3rd-Party library (such as [VideoJS](https://videojs.com/)), but you will not be able to do so while utilizing the Red5 Pro HTML SDK.
+
+> For more information on how to playback HLS in browsers without native support, please refer to the *Using VideoJS for Playback* section of the [Migration Guide](https://www.red5pro.com/docs/streaming/migrationguide.html#migrating-from-350-to-400).
+
+## Initialization
+
 As you may have noticed form the previous section, the source configuration for each player has differing property requirements. This is due simply to the technologies and playback strategies that each use:
 
 * The **WebRTC** player utilizes [WebSockets](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API) and [WebRTC](https://developer.mozilla.org/en-US/docs/Glossary/WebRTC) to subscribe to a video to be displayed in an [HTML5 video](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/video) element.
@@ -339,7 +349,7 @@ _index.html_:
 <html>
   <head>
     <!-- WebRTC Shim -->
-    <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
+    <script src="https://webrtchacks.github.io/adapter/adapter-latest.js"></script>
     <!-- Default Red5 Pro Playback Control styles. -->
     <link href="lib/red5pro/red5pro-media.css" rel="stylesheet">
     <!-- Fullscreen shim. -->

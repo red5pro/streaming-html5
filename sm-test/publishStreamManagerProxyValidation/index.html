@@ -1,7 +1,7 @@
 <!doctype html>
 <html>
   <head>
-    <title>Subscriber Stream Manager Proxy Test</title>
+    <title>Publish Stream Manager Proxy Validation Test</title>
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
     <meta content="width=device-width, initial-scale=1, user-scalable=no" name="viewport">
     <script src="//webrtc.github.io/adapter/adapter-latest.js"></script>
@@ -17,6 +17,28 @@
         padding: 6px;
         background-color: #ccc;
       }
+      #validation-container {
+        padding-bottom: 1.4rem;
+      }
+      #validation-container > h2 {
+        margin: 0;
+        padding: 1.4rem;
+      }
+      #validation-container > p {
+        max-width: 320px;
+        margin: 0 auto 1.4rem auto;
+      }
+      #validation-form > div {
+        margin: 1.2rem;
+      }
+      #validation-form > div > input {
+        margin: 0 0.6rem;
+      }
+      #add-param-btn {
+        font-size: 1rem;
+        background-color: lightsteelblue
+      }
+
       .hidden {
         display: none;
       }
@@ -24,35 +46,39 @@
   </head>
   <body>
     <div id="app">
-      <p class="version-field">Testbed Version: 5.0.0&nbsp;&nbsp;&nbsp;&nbsp;<a href="https://red5pro.github.io/red5pro-html-sdk-testbed/red5pro-html-testbed-latest.zip">download</a></p>
+      <p class="version-field">Testbed Version: 5.2.0&nbsp;&nbsp;&nbsp;&nbsp;<a href="https://red5pro.github.io/red5pro-html-sdk-testbed/red5pro-html-testbed-latest.zip">download</a></p>
       <div id="back-link-container" style="text-align: left;"><p id="back-link"><a href="../../index.html">&lt; Settings</a></p></div>
       <div class="ice-background">
       <div class="test-notification">
         <p>In order to properly run the Stream Manager examples, you will need to configure you server for cluster infrastructure as described in the following documentation:</p>
         <p><a href="https://www.red5pro.com/docs/server/autoscale/" target="_blank">https://www.red5pro.com/docs/server/autoscale/</a></p>
-      <p>Additionally to use this example stream manager proxy gateway should be enabled.</p>
+		<p>Additionally to use this example stream manager proxy gateway should be enabled.</p>
       </div>
       </div>
-      <h1 class="centered">Subscriber SM Transcoder Proxy Test (RTC)</h1>
+      <h1 class="centered">Publish SM Proxy Validation Test</h1>
+      <hr />
+      <div id="validation-container" class="centered ice-background">
+        <h2>Validation Parameters</h2>
+        <p>Provide validation parameters to be used in the Stream Manager request and Origin connection requests.</p>
+        <form id="validation-form" action="#" method="post">
+          <div id="param-field1">
+            <label for="param-name1">Param Name:</label>
+            <input type="text" id="param-name1" name="param_name1">
+            <label for="param-value1">Param Value:</label>
+            <input type="text" id="param-value1" name="param_value1">
+            <button id="add-param-btn" type="button">+</button>
+          </div>
+        </form>
+        <button id="validation-submit-btn">Start Publishing</button>
+      </div>
       <hr />
       <h2 class="centered"><em>stream</em>: <span id="stream-title"></span></h2>
       <p id="status-field" class="centered status-field">On hold.</p>
-      <script src="../../script/subscription-status.js"></script>
+      <script src="../../script/publisher-status.js"></script>
       <p id="statistics-field" class="centered status-field"></p>
-      <div class="centered"><p id="address-field">Edge Address: N/A</p></div>
-      <div class="centered hidden ice-background" id="stream-select-container" style="padding: 12px">
-        <label for="stream-select">Select a variant to subscribe to:</label>
-        <select name="stream-select" id="stream-select">
-          <option>Select...</option>
-        </select>
-        <button id="stream-select-btn">Start Subscribing</button>
-      </div>
+      <div class="centered"><p id="address-field">Origin Address: N/A</p></div>
       <div class="centered">
-        <video id="red5pro-subscriber"
-                controls autoplay playsinline
-                class="red5pro-media red5pro-media-background"
-                width="640" height="480">
-        </video>
+        <video id="red5pro-publisher" controls autoplay playsinline muted></video>
       </div>
     </div>
     <script src="../../lib/es6/es6-promise.min.js"></script>
@@ -82,8 +108,26 @@
             console.log('[Red5ProRTMPSubscriber:SWF] - ' + message);
           };
         }
+    
+        if (configuration.authentication.enabled) {
+          var node = document.createElement('div');
+          node.classList.add('hint-block', 'auth-alert');
+          var note = document.createElement('span');
+          note.innerHTML = '*<strong>Authentication is Enabled</strong>*';
+          var link = document.createElement('a');
+          link.innerText = 'Click here to disable.';
+          link.href= '../../index.html';
+          link.classList.add('auth-link');
+          node.appendChild(note);
+          node.appendChild(link);
+          var testBody = document.getElementById('back-link-container').nextElementSibling;
+          testBody.parentNode.insertBefore(node, testBody);
+        }
+    
       })(this);
     </script>
+    <script src="../../lib/red5pro/red5pro-ext-stream-manager.min.js"></script>
     <script src="index.js"></script>
   </body>
 </html>
+

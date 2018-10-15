@@ -15,7 +15,7 @@
   </head>
   <body>
     <div id="app">
-      <p class="version-field">Testbed Version: 5.0.0&nbsp;&nbsp;&nbsp;&nbsp;<a href="https://red5pro.github.io/red5pro-html-sdk-testbed/red5pro-html-testbed-latest.zip">download</a></p>
+      <p class="version-field">Testbed Version: 5.2.0&nbsp;&nbsp;&nbsp;&nbsp;<a href="https://red5pro.github.io/red5pro-html-sdk-testbed/red5pro-html-testbed-latest.zip">download</a></p>
       <div id="back-link-container" style="text-align: left;"><p id="back-link"><a href="../../index.html">&lt; Settings</a></p></div>
       <h1 class="centered">Publish Test</h1>
       <hr />
@@ -54,6 +54,22 @@
             console.log('[Red5ProRTMPSubscriber:SWF] - ' + message);
           };
         }
+    
+        if (configuration.authentication.enabled) {
+          var node = document.createElement('div');
+          node.classList.add('hint-block', 'auth-alert');
+          var note = document.createElement('span');
+          note.innerHTML = '*<strong>Authentication is Enabled</strong>*';
+          var link = document.createElement('a');
+          link.innerText = 'Click here to disable.';
+          link.href= '../../index.html';
+          link.classList.add('auth-link');
+          node.appendChild(note);
+          node.appendChild(link);
+          var testBody = document.getElementById('back-link-container').nextElementSibling;
+          testBody.parentNode.insertBefore(node, testBody);
+        }
+    
       })(this);
     </script>
     <script src="index.js"></script>
