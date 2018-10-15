@@ -32,7 +32,7 @@ var port = serverSettings.httpport.toString();
 var portURI = (port.length > 0 ? ':' + port : '');
 var baseUrl = isSecure ? protocol + '://' + host : protocol + '://' + host + portURI;
 var streamName = configuration.stream1;
-var apiVersion = configuration.streamManagerAPI || '2.0';
+var apiVersion = configuration.streamManagerAPI || '3.1';
 var url = baseUrl + '/streammanager/api/' + apiVersion + '/event/' + app + '/' + streamName + '?action=subscribe';
   return new Promise(function (resolve, reject) {
 	fetch(url)
