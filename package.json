@@ -1,6 +1,6 @@
 {
   "name": "red5pro-html-sdk-testbed",
-  "version": "5.2.0",
+  "version": "5.2.1",
   "description": "Testbed examples for Red5 Pro HTML SDK",
   "main": "src/js/index.js",
   "repository": {
@@ -22,10 +22,10 @@
   "homepage": "https://github.com/infrared5/red5pro-html-sdk-testbed#readme",
   "devDependencies": {
     "eslint": "^3.8.0",
-    "gulp": "^3.9.1",
+    "gulp": "^4.0.0",
     "gulp-bump": "^2.4.0",
     "gulp-compile-handlebars": "^0.6.1",
-    "gulp-rename": "^1.2.2"
+    "gulp-rename": "^1.4.0"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
