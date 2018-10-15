@@ -96,7 +96,7 @@
     port: (isSecure || proxyLocal) ? undefined : serverSettings.httpport.toString(),
     scope: configuration.app,
     streamName: configuration.stream1,
-    apiVersion: configuration.streamManagerAPI || '3.0',
+    apiVersion: configuration.streamManagerAPI || '3.1',
     retryLimit: retryLimit,
     retryDelay: retryDelay,
     useProxy: true 
