@@ -20,17 +20,45 @@
     catch (e) {
       console.error('Could not read testbed configuration from sessionstorage: ' + e.message);
     }
-    return {};
+    return {}
   })();
+
   red5prosdk.setLogLevel(configuration.verboseLogging ? red5prosdk.LOG_LEVELS.TRACE : red5prosdk.LOG_LEVELS.WARN);
+  var mediaConstraints = {
+    audio: configuration.useAudio ? configuration.mediaConstraints.audio : false,
+    video: configuration.useVideo ? configuration.mediaConstraints.video : false,
+  };
 
   var targetPublisher;
 
   var updateStatusFromEvent = window.red5proHandlePublisherEvent; // defined in src/template/partial/status-field-publisher.hbs
   var streamTitle = document.getElementById('stream-title');
   var statisticsField = document.getElementById('statistics-field');
-  var muteAudioButton = document.getElementById('mute-audio-button');
-  var muteVideoButton = document.getElementById('mute-video-button');
+  var cameraSelect = document.getElementById('camera-select');
+  var swapButton = document.getElementById('swap-button');
+
+  swapButton.addEventListener('click', swapCamera);
+
+  var SELECT_DEFAULT = 'Select a camera...';
+  // Fill Camera listing.
+  (function (cameraSelect) {
+    navigator.mediaDevices.enumerateDevices()
+      .then(function (devices) {
+        var videoCameras = devices.filter(function (item) {
+          return item.kind === 'videoinput';
+        })
+        var cameras = [{
+          label: SELECT_DEFAULT
+        }].concat(videoCameras);
+        var options = cameras.map(function (camera, index) {
+          return '<option value="' + camera.deviceId + '">' + (camera.label || 'camera ' + index) + '</option>';
+        });
+        cameraSelect.innerHTML = options.join(' ');
+      })
+      .catch(function (error) {
+        console.error('Could not access camera devices: ' + error);
+      });
+  })(cameraSelect);
 
   var protocol = serverSettings.protocol;
   var isSecure = protocol == 'https';
@@ -38,34 +66,6 @@
     return !isSecure
       ? {protocol: 'ws', port: serverSettings.wsport}
       : {protocol: 'wss', port: serverSettings.wssport};
-  }
-
-  var defaultConfiguration = {
-    protocol: getSocketLocationFromProtocol().protocol,
-    port: getSocketLocationFromProtocol().port
-  };
-
-  function addMuteListener (publisher) {
-    muteAudioButton.addEventListener('click', function () {
-      var wasMuted = muteAudioButton.innerText === 'unmute audio';
-      muteAudioButton.innerText = wasMuted ? 'mute audio' : 'unmute audio';
-      if (wasMuted) {
-        publisher.unmuteAudio();
-      }
-      else {
-        publisher.muteAudio();
-      }
-    });
-    muteVideoButton.addEventListener('click', function () {
-      var wasMuted = muteVideoButton.innerText === 'unmute video';
-      muteVideoButton.innerText = wasMuted ? 'mute video' : 'unmute video';
-      if (wasMuted) {
-        publisher.unmuteVideo();
-      }
-      else {
-        publisher.muteVideo();
-      }
-    });
   }
 
   function onBitrateUpdate (bitrate, packetsSent) {
@@ -81,7 +81,12 @@
   }
   function onPublishSuccess (publisher) {
     console.log('[Red5ProPublisher] Publish Complete.');
-    window.trackBitrate(publisher.getPeerConnection(), onBitrateUpdate);
+    try {
+      window.trackBitrate(publisher.getPeerConnection(), onBitrateUpdate);
+    }
+    catch (e) {
+      // no tracking for you!
+    }
   }
   function onUnpublishFail (message) {
     console.error('[Red5ProPublisher] Unpublish Error :: ' + message);
@@ -90,40 +95,13 @@
     console.log('[Red5ProPublisher] Unpublish Complete.');
   }
 
-  function getAuthenticationParams () {
-    var auth = configuration.authentication;
-    return auth && auth.enabled
-      ? {
-        connectionParams: {
-          username: auth.username,
-          password: auth.password
-        }
-      }
-      : {};
-  }
-
   function getUserMediaConfiguration () {
     return {
-      audio: configuration.useAudio ? configuration.mediaConstraints.audio : false,
-      video: configuration.useVideo ? configuration.mediaConstraints.video : false,
-      frameRate: configuration.frameRate
+      mediaConstraints: {
+        audio: configuration.useAudio ? configuration.mediaConstraints.audio : false,
+        video: configuration.useVideo ? configuration.mediaConstraints.video : false
+      }
     };
-  }
-
-  function determinePublisher () {
-    var config = Object.assign({},
-                      configuration,
-                      defaultConfiguration,
-                      getAuthenticationParams(),
-                      getUserMediaConfiguration());
-
-    var rtcConfig = Object.assign({}, config, {
-                      protocol: getSocketLocationFromProtocol().protocol,
-                      port: getSocketLocationFromProtocol().port,
-                      streamName: config.stream1,
-                      streamType: 'webrtc'
-                   });
-    return new red5prosdk.RTCPublisher().init(rtcConfig);
   }
 
   function unpublish () {
@@ -142,8 +120,52 @@
     });
   }
 
-  // Kick off.
-  determinePublisher()
+  function swapCamera () {
+    var connection = targetPublisher.getPeerConnection();
+    var selection = cameraSelect.value;
+    if (selection === SELECT_DEFAULT) {
+      return;
+    }
+    if (mediaConstraints.video && typeof mediaConstraints.video !== 'boolean') {
+      mediaConstraints.video.deviceId = { exact: selection }
+    }
+    else {
+      mediaConstraints.video = {
+        deviceId: { exact: selection }
+      };
+    }
+    // 1. Grap new MediaStream from updated constraints.
+    navigator.mediaDevices.getUserMedia(mediaConstraints)
+      .then(function (stream) {
+        // 2. Update the media tracks on senders through connection.
+        var senders = connection.getSenders();
+        var tracks = stream.getTracks();
+        var i = tracks.length;
+        while ( --i > -1) {
+          if (tracks[i].kind === 'video') {
+            senders[i].replaceTrack(tracks[i]);
+          }
+        }
+        // 3. Update the video display with new stream.
+        document.getElementById('red5pro-publisher').srcObject = stream;
+      })
+      .catch (function (error) {
+        console.error('Could not replace track : ' + error.message);
+      });
+  }
+
+  var config = Object.assign({},
+    configuration,
+    getUserMediaConfiguration());
+
+  var rtcConfig = Object.assign({}, config, {
+                      protocol: getSocketLocationFromProtocol().protocol,
+                      port: getSocketLocationFromProtocol().port,
+                      streamName: config.stream1,
+                   });
+
+  var publisher = new red5prosdk.RTCPublisher()
+  publisher.init(rtcConfig)
     .then(function (publisherImpl) {
       streamTitle.innerText = configuration.stream1;
       targetPublisher = publisherImpl;
@@ -151,7 +173,6 @@
       return targetPublisher.publish();
     })
     .then(function () {
-      addMuteListener(targetPublisher);
       onPublishSuccess(targetPublisher);
     })
     .catch(function (error) {
@@ -170,5 +191,6 @@
     unpublish().then(clearRefs).catch(clearRefs);
     window.untrackBitrate();
   });
+
 })(this, document, window.red5prosdk);
 

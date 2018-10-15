@@ -1,4 +1,4 @@
-(function(window, document, red5prosdk) {
+(function(window, document, red5prosdk, sm_extension) {
   'use strict';
 
   var serverSettings = (function() {
@@ -22,7 +22,10 @@
     }
     return {}
   })();
+
   red5prosdk.setLogLevel(configuration.verboseLogging ? red5prosdk.LOG_LEVELS.TRACE : red5prosdk.LOG_LEVELS.WARN);
+  sm_extension.setLogLevel(configuration.verboseLogging ? sm_extension.LOG_LEVELS.TRACE : sm_extension.LOG_LEVELS.WARN);
+  sm_extension.decorate();
 
   var targetPublisher;
 
@@ -30,9 +33,16 @@
   var streamTitle = document.getElementById('stream-title');
   var statisticsField = document.getElementById('statistics-field');
   var addressField = document.getElementById('address-field');
+  var validationForm = document.getElementById('validation-form');
+  var validationSubmit = document.getElementById('validation-submit-btn');
+  var validationAddButton = document.getElementById('add-param-btn');
 
-  var protocol = serverSettings.protocol;
+  var proxyLocal = window.query('local')
+  var protocol = proxyLocal ? 'https' : serverSettings.protocol;
   var isSecure = protocol == 'https';
+  var retryLimit = 3;
+  var retryDelay = 2000;
+
   function getSocketLocationFromProtocol () {
     return !isSecure
       ? {protocol: 'ws', port: serverSettings.wsport}
@@ -44,8 +54,57 @@
     port: getSocketLocationFromProtocol().port
   };
 
-  function displayServerAddress (serverAddress) {
-    addressField.innerText = 'Origin Address: ' + serverAddress;
+  var validationParamCount = 1;
+  function getNewValidationParamForm () {
+    validationParamCount += 1;
+    var form = document.createElement('div');
+    form.id = 'param-field' + validationParamCount;
+    var innerForm = '<label for="param-name' + validationParamCount + '">Param Name:</label>' +
+        '<input type="text" id="param-name' + validationParamCount + '" name="param_name' + validationParamCount + '">' +
+        '<label for="param-value' + validationParamCount + '">Param Value:</label>' +
+        '<input type="text" id="param-value' + validationParamCount + '" name="param_value' + validationParamCount + '">';
+    form.innerHTML = innerForm;
+    validationForm.appendChild(form);
+    validationAddButton.parentElement.removeChild(validationAddButton);
+    document.getElementById(form.id).appendChild(validationAddButton);
+    return form;
+  }
+
+  function getValidationParams () {
+    var kvObject = {}
+    var nodes = validationForm.childNodes;
+    var i = 0, length = nodes.length;
+    var inputField, valueField;
+    var fieldCount = 1;
+    for(i; i < length; i++) {
+      if (nodes[i].nodeType === 1) {
+        inputField = document.getElementById('param-name' + (fieldCount));
+        valueField = document.getElementById('param-value' + (fieldCount));
+        if (inputField.value && valueField.value) {
+          kvObject[inputField.value.trim()] = valueField.value.trim();
+        }
+        fieldCount = fieldCount + 1;
+      }
+    }
+    return kvObject;
+  }
+
+  var autoscaleConfig = {
+    action: 'broadcast',
+    protocol: protocol,
+    host: configuration.host,
+    port: (isSecure || proxyLocal) ? undefined : serverSettings.httpport.toString(),
+    scope: configuration.app,
+    streamName: configuration.stream1,
+    apiVersion: configuration.streamManagerAPI || '3.0',
+    retryLimit: retryLimit,
+    retryDelay: retryDelay,
+    useProxy: true 
+  };
+
+  function displayServerAddress (serverAddress, proxyAddress) {
+    proxyAddress = (typeof proxyAddress === 'undefined') ? 'N/A' : proxyAddress;
+    addressField.innerText = ' Proxy Address: ' + proxyAddress + ' | ' + ' Origin Address: ' + serverAddress;
   }
 
   function onBitrateUpdate (bitrate, packetsSent) {
@@ -75,47 +134,23 @@
     console.log('[Red5ProPublisher] Unpublish Complete.');
   }
 
-  function requestOrigin (configuration) {
-    var host = configuration.host;
-    var app = configuration.app;
-    var streamName = configuration.stream1;
-    var port = serverSettings.httpport;
-    var portURI = (port.length > 0 ? ':' + port : '');
-    var baseUrl = isSecure ? protocol + '://' + host : protocol + '://' + host + portURI;
-    var apiVersion = configuration.streamManagerAPI || '3.1';
-    var url = baseUrl + '/streammanager/api/' + apiVersion + '/event/' + app + '/' + streamName + '?action=broadcast';
-      return new Promise(function (resolve, reject) {
-        fetch(url)
-          .then(function (res) {
-            if (res.headers.get("content-type") &&
-              res.headers.get("content-type").toLowerCase().indexOf("application/json") >= 0) {
-                return res.json();
-            }
-            else {
-              throw new TypeError('Could not properly parse response.');
-            }
-          })
-          .then(function (json) {
-            resolve(json);
-          })
-          .catch(function (error) {
-            var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
-            console.error('[PublisherStreamManagerTest] :: Error - Could not request Origin IP from Stream Manager. ' + jsonError)
-            reject(error)
-          });
-    });
-  }
-
-  function getAuthenticationParams () {
-    var auth = configuration.authentication;
-    return auth && auth.enabled
-      ? {
-        connectionParams: {
-          username: auth.username,
-          password: auth.password
-        }
+  function showAddress (publisher) {
+    var config = publisher.getOptions();
+    console.log("Host = " + config.host + " | " + "app = " + config.app);
+    if (publisher.getType().toLowerCase() === 'rtc') {
+      displayServerAddress(config.connectionParams.host, config.host);
+      console.log("Using streammanager proxy for rtc");
+      console.log("Proxy target = " + config.connectionParams.host + " | " + "Proxy app = " + config.connectionParams.app)
+      if(isSecure) {
+        console.log("Operating over secure connection | protocol: " + config.protocol + " | port: " +  config.port);
       }
-      : {};
+      else {
+        console.log("Operating over unsecure connection | protocol: " + config.protocol + " | port: " +  config.port);
+      }
+    }
+    else {
+      displayServerAddress(config.host);
+    }
   }
 
   function getUserMediaConfiguration () {
@@ -139,27 +174,24 @@
     }
   }
 
-  function determinePublisher (streamName) {
-
-    var config = Object.assign({},
-                      configuration,
-                      defaultConfiguration,
-                      getAuthenticationParams(),
-                      getUserMediaConfiguration());
+  function getAutoscaledPublisher (config) {
     var rtcConfig = Object.assign({}, config, {
                       protocol: getSocketLocationFromProtocol().protocol,
                       port: getSocketLocationFromProtocol().port,
-                      streamName: streamName
-                   });
+                      streamName: name,
+                      connectionParams: getValidationParams()
+                      }, getUserMediaConfiguration());
     var rtmpConfig = Object.assign({}, config, {
                       protocol: 'rtmp',
                       port: serverSettings.rtmpport,
-                      streamName: streamName,
+                      streamName: name,
                       backgroundColor: '#000000',
+                      connectionParams: getValidationParams(),
                       swf: '../../lib/red5pro/red5pro-publisher.swf',
                       swfobjectURL: '../../lib/swfobject/swfobject.js',
                       productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
-                    }, getRTMPMediaConfiguration());
+                      }, getRTMPMediaConfiguration());
+
     var publishOrder = config.publisherFailoverOrder
                             .split(',')
                             .map(function (item) {
@@ -170,9 +202,13 @@
       publishOrder = [window.query('view')];
     }
 
+    var aConfig = Object.assign({}, autoscaleConfig, {
+      connectionParams: getValidationParams()
+    });
+
     var publisher = new red5prosdk.Red5ProPublisher();
     return publisher.setPublishOrder(publishOrder)
-            .init({
+            .autoscale(aConfig, {
                 rtc: rtcConfig,
                 rtmp: rtmpConfig
               });
@@ -194,17 +230,20 @@
     });
   }
 
-  var retryCount = 0;
-  var retryLimit = 3;
-  function respondToOrigin (response) {
-    displayServerAddress(response.serverAddress);
-    configuration.host = response.serverAddress;
-    configuration.app = response.app;
-    determinePublisher(response.name)
+  function startup () {
+    validationSubmit.classList.add('hidden');
+
+    // Kick off.
+    var config = Object.assign({},
+                configuration,
+                defaultConfiguration);
+
+    getAutoscaledPublisher(config)
       .then(function (publisherImpl) {
         streamTitle.innerText = configuration.stream1;
         targetPublisher = publisherImpl;
         targetPublisher.on('*', onPublisherEvent);
+        showAddress(targetPublisher);
         return targetPublisher.publish();
       })
       .then(function () {
@@ -217,33 +256,13 @@
           type: red5prosdk.PublisherEventTypes.CONNECT_FAILURE
         });
         onPublishFail(jsonError);
+        validationSubmit.classList.remove('hidden');
       });
 
   }
 
-  function respondToOriginFailure (error) {
-    if (retryCount++ < retryLimit) {
-      var retryTimer = setTimeout(function () {
-        clearTimeout(retryTimer);
-        startup();
-      }, 1000);
-    }
-    else {
-      var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
-      updateStatusFromEvent({
-        type: red5prosdk.PublisherEventTypes.CONNECT_FAILURE
-      });
-      console.error('[Red5ProPublisher] :: Retry timeout in publishing - ' + jsonError);
-    }
-  }
-
-  function startup () {
-  // Kick off.
-    requestOrigin(configuration)
-      .then(respondToOrigin)
-      .catch(respondToOriginFailure);
-  }
-  startup();
+  validationAddButton.addEventListener('click', getNewValidationParamForm);
+  validationSubmit.addEventListener('click', startup);
 
   window.addEventListener('beforeunload', function() {
     function clearRefs () {
@@ -255,5 +274,5 @@
     unpublish().then(clearRefs).catch(clearRefs);
     window.untrackBitrate();
   });
-})(this, document, window.red5prosdk);
+})(this, document, window.red5prosdk, window.red5prosdk_ext_stream_manager);
 
