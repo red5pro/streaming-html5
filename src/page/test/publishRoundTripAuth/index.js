@@ -168,25 +168,37 @@
 
   submitButton.addEventListener('click', function () {
 	  
-	if (tokenCheckBox.checked == true)
-	{
-		console.log("Token required. Creating auth object");
-		configuration.connectionParams = {
-		  username: usernameField.value,
-		  password: passwordField.value,
-		  token: tokenField.value
-		};
-	}
+	if (usernameField.value === "" || passwordField.value === "")
+    {
+        alert("Error: Wrong username or password supplied");
+    }
+    else if (tokenField.value === "" && tokenCheckBox.checked == true)
+    {
+        alert("Error: Token field cannot be empty");
+    }
 	else
 	{
-		console.log("Token not required. Creating auth object");
-		configuration.connectionParams = {
-		  username: usernameField.value,
-		  password: passwordField.value
-		};
+		if (tokenCheckBox.checked == true)
+		{
+			console.log("Token required. Creating auth object");
+			configuration.connectionParams = {
+			  username: usernameField.value,
+			  password: passwordField.value,
+			  token: tokenField.value
+			};
+		}
+		else
+		{
+			console.log("Token not required. Creating auth object");
+			configuration.connectionParams = {
+			  username: usernameField.value,
+			  password: passwordField.value
+			};
+		}
+		
+		start();
 	}
-	
-    start();
+    
   });
 
   window.addEventListener('beforeunload', function() {
