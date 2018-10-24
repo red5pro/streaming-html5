@@ -35,6 +35,7 @@
   var usernameField = document.getElementById('username-field');
   var passwordField = document.getElementById('password-field');
   var tokenField = document.getElementById('token-field');
+  var tokenCheckBox = document.getElementById('token-required-field');
   var submitButton = document.getElementById('submit-button');
 
   var protocol = serverSettings.protocol;
@@ -139,6 +140,30 @@
     var host = jsonResponse.serverAddress;
     var app = jsonResponse.scope;
     var name = jsonResponse.name;
+	
+	if (tokenCheckBox.checked == true)
+	{
+		console.log("Token required. Creating auth object");
+		configuration.connectionParams = {
+		  host: host,
+		  app: app,
+		  username: usernameField.value,
+		  password: passwordField.value,
+		  token: tokenField.value
+		};
+	}
+	else
+	{
+		console.log("Token not required. Creating auth object");
+		configuration.connectionParams = {
+		  host: host,
+		  app: app,
+		  username: usernameField.value,
+		  password: passwordField.value
+		};
+	}
+	
+	
     var config = Object.assign({},
                     configuration,
                     defaultConfiguration,
@@ -147,21 +172,9 @@
                       protocol: getSocketLocationFromProtocol().protocol,
                       port: getSocketLocationFromProtocol().port,
                       streamName: name,
-                      app: configuration.proxy,
-                      connectionParams: {
-                        host: host,
-                        app: app,
-                        username: usernameField.value,
-                        password: passwordField.value,
-                        token: tokenField.value
-                      }
+                      app: configuration.proxy
                    });
     var rtmpConfig = Object.assign({}, config, {
-                      host: host,
-                      app: app,
-                      username: usernameField.value,
-                      password: passwordField.value,
-                      token: tokenField.value,
                       protocol: 'rtmp',
                       port: serverSettings.rtmpport,
                       streamName: name,
@@ -264,6 +277,7 @@
   }
 
   function startup () {
+	 loginForm.classList.add('hidden'); 
     // Kick off.
     requestOrigin(configuration)
       .then(respondToOrigin)
@@ -271,21 +285,9 @@
   }
 
   submitButton.addEventListener('click', function () {
-    var statusField = document.getElementById('status-field');
-        
-    if (usernameField.value === "" || passwordField.value === "")
-    {
-        statusField.innerText = "Error: Wrong username or password supplied";
-    }
-    else if (tokenField.value === "")
-    {
-        statusField.innerText = "Error: Token field cannot be empty";
-    }
-    else
-    {
-        statusField.innerText = "";
-        startup();
-    }
+    var statusField = document.getElementById('status-field');	
+	// optional validation
+    startup();
   });
   
   window.addEventListener('beforeunload', function() {
