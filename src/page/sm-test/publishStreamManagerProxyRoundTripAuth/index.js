@@ -285,9 +285,18 @@
   }
 
   submitButton.addEventListener('click', function () {
-    var statusField = document.getElementById('status-field');	
-	// optional validation
-    startup();
+	if (usernameField.value === "" || passwordField.value === "")
+    {
+        alert("Error: Wrong username or password supplied");
+    }
+    else if (tokenField.value === "" && tokenCheckBox.checked == true)
+    {
+        alert("Error: Token field cannot be empty");
+    }
+	else
+	{
+		startup();
+	}
   });
   
   window.addEventListener('beforeunload', function() {
