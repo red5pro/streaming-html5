@@ -1,21 +1,12 @@
 <!doctype html>
 <html>
   <head>
-	<title>Subscriber - Stream Manager Proxy With RoundTrip Authentication Test</title>
-    <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
-    <meta content="width=device-width, initial-scale=1, user-scalable=no" name="viewport">
-    <script src="//webrtc.github.io/adapter/adapter-latest.js"></script>
-    <script src="../../lib/screenfull/screenfull.min.js"></script>
-    <script src="../../script/testbed-config.js"></script>
-    <script src="../../script/red5pro-utils.js"></script>
-    <script src="../../script/reachability.js"></script>
-    <link rel="stylesheet" href="../../css/reset.css">
-    <link rel="stylesheet" href="../../css/testbed.css">
-    <link rel="stylesheet" href="../../lib/red5pro/red5pro-media.css">
+    {{> meta title='Subscribe - Stream Manager Proxy With RoundTrip Authentication Test'}}
+    {{> header-scripts}}
+    {{> header-stylesheets}}
     <style>
-      #address-field {
-        padding: 6px;
-        background-color: #ccc;
+      .hidden {
+        display: none;
       }
       #login-form {
         padding: 10px 0;
@@ -29,31 +20,34 @@
         width: 100%;
         text-align: right;
       }
+	  #address-field {
+        padding: 6px;
+        background-color: #ccc;
+      }
     </style>
   </head>
   <body>
     <div id="app">
-      <p class="version-field">Testbed Version: 5.0.0&nbsp;&nbsp;&nbsp;&nbsp;<a href="https://red5pro.github.io/red5pro-html-sdk-testbed/red5pro-html-testbed-latest.zip">download</a></p>
-      <div id="back-link-container" style="text-align: left;"><p id="back-link"><a href="../../index.html">&lt; Settings</a></p></div>
+      {{> version }}
+      {{> settings-link}}
       <div class="ice-background">
       <div class="test-notification">
         <p>In order to properly run the Stream Manager examples, you will need to configure you server for cluster infrastructure as described in the following documentation:</p>
         <p><a href="https://www.red5pro.com/docs/server/autoscale/" target="_blank">https://www.red5pro.com/docs/server/autoscale/</a></p>
-      <p>Additionally to use this example stream manager proxy gateway should be enabled.</p>
+		<p>Additionally to use this example stream manager proxy gateway should be enabled and `Simple Authentication Plugin` with `RoundTripValidator` should be enabled on your webapp.</p>
       </div>
       </div>
-      <h1 class="centered">Subscriber TechRojo Stream Manager Test</h1>
-      <hr />
-      <h2 class="centered"><em>stream</em>: <span id="stream-title"></span></h2>
-      <p id="status-field" class="centered status-field">On hold.</p>
-      <script src="../../script/subscription-status.js"></script>
-      <p id="statistics-field" class="centered status-field"></p>
+      {{> test-info testTitle='Subscribe Stream Manager Proxy With RoundTrip Authentication Test'}}
+      {{> status-field-publisher}}
+      {{> statistics-field}}
       <div class="centered"><p id="address-field">Edge Address: N/A</p></div>
       <div id="login-form" class="centered">
         <p>Log In to begin playback:</p>
         <p><label for="username-field">username:</label><input id="username-field" name="username-field"></p>
         <p><label for="password-field">password:</label><input id="password-field" name="password-field"></p>
         <p><label for="token-field">token:</label><input id="token-field" name="token-field"></p>
+		<p><label for="token-field">token:</label><input id="token-field" name="token-field"></p>
+		<p><input type="checkbox" id="token-required-field" name="token-required-field" checked>Token Required</p>
          
        <button id="submit-button">submit</button>
       </div>
@@ -65,35 +59,7 @@
         </video>
       </div>
     </div>
-    <script src="../../lib/es6/es6-promise.min.js"></script>
-    <script src="../../lib/es6/es6-bind.js"></script>
-    <script src="../../lib/es6/es6-array.js"></script>
-    <script src="../../lib/es6/es6-object-assign.js"></script>
-    <script src="../../lib/es6/es6-fetch.js"></script>
-    <script src="../../lib/red5pro/red5pro-sdk.min.js"></script>
-    <script>
-      (function(window) {
-        var configuration = (function () {
-          var conf = sessionStorage.getItem('r5proTestBed');
-          try {
-            return JSON.parse(conf);
-          }
-          catch (e) {
-            console.error('Could not read testbed configuration from sessionstorage: ' + e.message);
-          }
-          return {}
-        })();
-    
-        if (configuration.verboseLogging) {
-          window.publisherLog = function (message) {
-            console.log('[Red5ProRTMPPublisher:SWF] - ' + message);
-          };
-          window.subscriberLog = function (message) {
-            console.log('[Red5ProRTMPSubscriber:SWF] - ' + message);
-          };
-        }
-      })(this);
-    </script>
+    {{> body-scripts}}
     <script src="index.js"></script>
   </body>
 </html>
