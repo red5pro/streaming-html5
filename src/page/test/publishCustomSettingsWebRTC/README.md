@@ -1,6 +1,6 @@
-# Publish Image Capture
+# Publish Custom Settings
 
-This example demonstrates capturing a still of the camera by using the `drawImage` API of `CanvasRenderingContext2D`.
+This example allows you to customize the media broadcast settings for a WebRTC Publisher.
 
 **Please refer to the [Basic Publisher Documentation](../publish/README.md) to learn more about the basic setup.**
 
@@ -13,30 +13,17 @@ This example demonstrates capturing a still of the camera by using the `drawImag
 
 # Running the Example
 
-Click on the video playback to generate a still image of the video and display it below the video preview.
+Fill in any custom broadcast settings for testing, then press **Publish**.
 
-## Using drawImage
+## Settings
 
-```js
-function clearCanvas (targetElement, canvasElement) {
-  var context = canvasElement.getContext('2d');
-  context.fillStyle = '#a1a1a1';
-  context.fillRect(0, 0, targetElement.offsetWidth, targetElement.offsetHeight);
-}
+Settings included for customization:
 
-function drawOnCanvas (targetElement, canvasElement) {
-  var context = canvasElement.getContext('2d');
-  canvasElement.width = targetElement.offsetWidth;
-  canvasElement.height = targetElement.offsetHeight;
-  context.drawImage(targetElement, 0, 0, targetElement.offsetWidth, targetElement.offsetHeight);
-  }
-
-captureTarget.addEventListener('click', function () {
-  clearCanvas(videoElement, canvasElement);
-  drawOnCanvas(videoElement, canvasElement);
-});
-```
-
-[index #108](index#L108)
-
-> More information: [CanvasRenderingContext2D.drawImage from MDN](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/drawImage)
+| Name | Usage |
+|--- |--- |
+| Camera Width | The requested Camera width to broadcast. |
+| Camera Height | The requested Camera height to broadcast. |
+| Camera Framerate | The frequested framerate at which to broadcast. |
+| Video Bitrate (Kbps) | The requested video bitrate to broadcast. This will munge the SDP being sent out in Peer Connection offers.  |
+| Audio Bitrate (Kbps) | The requested audio bitrate to broadcast. This will munge the SDP being sent out in Peer Connection offers. |
+| Key Framerate (ms) | The requested time - in milliseconds - to send a key frame during broadcast. |
