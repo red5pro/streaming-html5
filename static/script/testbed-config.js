@@ -52,9 +52,10 @@
       "embedHeight": 480,
       "buffer": 0.5,
       "bandwidth": {
-        "audio": 50,
-        "video": 256
+        "audio": 56,
+        "video": 512
       },
+      "keyFramerate": 3000,
       "useAudio": true,
       "useVideo": true,
       "mediaConstraints": {
