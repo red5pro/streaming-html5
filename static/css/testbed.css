@@ -160,7 +160,7 @@ code {
 }
 
 .float-left-conf {
-  float: left;
+  /* float: left; */
   display: inline-block;
   width: 480px;
 }
@@ -256,4 +256,3 @@ code {
     width: 100%;
   }
 }
-

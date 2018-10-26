@@ -400,6 +400,7 @@
       if( delayedSubs[i].subName === subName )
         return delayedSubs.splice(i, 1);
     }
+    return null;
   }
 
   // Local lifecycle notifications.
@@ -411,10 +412,15 @@
     console.error('[Red5ProSubsriber] Subscribe Error :: ' + message);
 
     var failedSub = popQueueObject( connectingSub );
-    failedSub.failCount++;
-    if(failedSub.failCount < 4){
-      failedSub.minTime = Date.now() + (delayTime * failedSub.failCount);
-      delayedSubs.push(failedSub);
+    if(failedSub != null){
+      failedSub.failCount++;
+      if(failedSub.failCount < 4){
+        failedSub.minTime = Date.now() + (delayTime * failedSub.failCount);
+        delayedSubs.push(failedSub);
+      }
+    }
+    else {
+      console.error('[Red5ProSubsriber] Couldn\'t find subscriber to remove it');
     }
 
     continueSubQueue();
@@ -510,9 +516,6 @@
     blockToAdd.id = subscribeName;
     blockToAdd.innerHTML = blockToAdd.innerHTML.replace(/FILLNAME/g, subscribeName);
     document.getElementById("app").appendChild( blockToAdd );
-
-    var subStreamTitle = document.getElementById(subscribeName + '-title');
-    subStreamTitle.innerText = subscribeName;
   }
 
   function connectSubscriber( subscribeName ){
@@ -549,18 +552,17 @@
           .then(function () {
             subscriber.off('*', function(event){ onSubscriberEvent(event, subscribeName); });
             onUnsubscribeSuccess();
-            
+
+            subscriberFinally(subscribeName);
             resolve();
           })
           .catch(function (error) {
             var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
             onUnsubscribeFail('Unmount Error = ' + jsonError);
 
+            subscriberFinally(subscribeName);
             reject('Could not unsubscribe: ' + error);
           })
-          .finally(function(){
-            subscriberFinally(subscribeName);
-          });
       }
       else {
         subscriberFinally(subscribeName);
@@ -570,6 +572,10 @@
   }
 
   function subscriberFinally(subscribeName){
+    subscribers.splice(callList.indexOf(subscribeName), 1);
+    callList.splice(callList.indexOf(subscribeName), 1);
+    popQueueObject(subscribeName);
+
     var subBlock = document.getElementById(subscribeName);
     if(subBlock != null && subBlock.parentNode != null){
       subBlock.parentNode.removeChild( subBlock );
@@ -583,9 +589,6 @@
         }
       };
     }
-    subscribers.splice(callList.indexOf(subscribeName), 1);
-    callList.splice(callList.indexOf(subscribeName), 1);
-    popQueueObject(subscribeName);
   }
 
   window.addEventListener('beforeunload', function() {
