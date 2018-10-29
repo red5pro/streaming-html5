@@ -382,7 +382,8 @@
       });
 
       var nextTime = delayedSubs[0].minTime;
-      if( connectingSub === "delay" && nextTime < Date.now() ){
+      var dateNow = Date.now();
+      if( connectingSub === "delay" && nextTime < dateNow ){
         connectSubscriber( delayedSubs[0].subName );
       }
       else{
@@ -413,10 +414,14 @@
 
     var failedSub = popQueueObject( connectingSub );
     if(failedSub != null){
+      failedSub = failedSub[0];
       failedSub.failCount++;
       if(failedSub.failCount < 4){
         failedSub.minTime = Date.now() + (delayTime * failedSub.failCount);
         delayedSubs.push(failedSub);
+      }
+      else{
+        removeSubscriber(connectingSub);
       }
     }
     else {
@@ -571,23 +576,34 @@
     });
   }
 
+  var deadViews = 0;
+
   function subscriberFinally(subscribeName){
     subscribers.splice(callList.indexOf(subscribeName), 1);
     callList.splice(callList.indexOf(subscribeName), 1);
     popQueueObject(subscribeName);
 
     var subBlock = document.getElementById(subscribeName);
-    if(subBlock != null && subBlock.parentNode != null){
-      subBlock.parentNode.removeChild( subBlock );
+    try{
+      if(subBlock != null && subBlock.parentNode != null){
+        subBlock.parentNode.removeChild( subBlock );
+      }
+      else{
+        var floatingBlocks = document.getElementsByClassName("float-left-conf");
+        for (var i = 0; i < floatingBlocks.length; i++) {
+          subBlock = floatingBlocks[i];
+          if(subBlock.id != "" && ( subBlock.id == subscribeName || callList.indexOf(subBlock.id) < 0 ) && subBlock.parentNode != null){
+            subBlock.parentNode.removeChild(subBlock);
+          }
+        };
+      }
     }
-    else{
-      var floatingBlocks = document.getElementsByClassName("float-left-conf");
-      for (var i = 0; i < floatingBlocks.length; i++) {
-        subBlock = floatingBlocks[i];
-        if(subBlock.id != "" && ( subBlock.id == subscribeName || callList.indexOf(subBlock.id) < 0 ) && subBlock.parentNode != null){
-          subBlock.parentNode.removeChild(subBlock);
-        }
-      };
+    catch(error){
+      if(subBlock != null){
+        subBlock.innerHTML = '';
+        subBlock.id = 'dead' + deadViews++;
+        subBlock.classList.add("proto");
+      }
     }
   }
 
