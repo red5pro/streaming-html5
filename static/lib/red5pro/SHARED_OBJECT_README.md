@@ -20,16 +20,16 @@ Use of Shared objects requires an active stream - either publishing or subscribi
 * [Shared Object Events](#shared-object-events)
 
 # Creating a Shared Object with Publisher
+
 ```js
-(function (nav, red5prosdk) {
+(function (red5prosdk) {
 
   var so;
   var publisher = new red5prosdk.Red5ProPublisher();
   publisher.init(configuration)
     // Resolve to proper publisher implementation as you normally would.
     .then( function(publisherImpl) {
-    // Request to publish.
-    .then( function(publisherImpl) {
+      // Request to publish.
       return publisherImpl.publish()
     })
     // Instantiate Shared Object with publisher instance.

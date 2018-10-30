@@ -59,6 +59,23 @@
           <label class="settings-label">Stream Manager Access Token:</label>
           <input id="sm-access-field" name="sm-access-field" placeholder="e.g., abc123">
         </p>
+        <p class="settings-field">
+          <label class="settings-label">Stream Manager API Level:</label>
+          <input id="sm-api-field" name="sm-api-field" placeholder="e.g., 3.1">
+        </p>
+        <hr class="paddedHR" />
+        <p class="settings-field">
+          <label class="settings-label">Authentication Enabled:</label>
+          <input type="checkbox" id="auth-enabled-field" name="auth-enabled-field" style="vertical-align: middle;">
+        <p class="settings-field">
+          <label class="settings-label">Username:</label>
+          <input id="auth-username-field" name="auth-username-field" disabled>
+        </p>
+        <p class="settings-field">
+          <label class="settings-label">Password:</label>
+          <input id="auth-password-field" name="auth-password-field" disabled>
+        </p>
+        </p>
         <hr class="paddedHR" />
         <p class="settings-field">
           <label class="settings-label">Verbose R5 Logging:</label>
@@ -105,6 +122,10 @@
         var audioField = document.getElementById('audio-active-field');
         var streamSwapButton = document.getElementById('stream-swap-btn');
         var smAccessField = document.getElementById('sm-access-field');
+        var smAPIField = document.getElementById('sm-api-field');
+        var authEnabledField = document.getElementById('auth-enabled-field');
+        var authUsernameField = document.getElementById('auth-username-field');
+        var authPasswordField = document.getElementById('auth-password-field');
 
         hostField.addEventListener('blur', function () {
           configuration.host = hostField.value;
@@ -141,6 +162,20 @@
           seal(configuration);
         });
 
+        authEnabledField.addEventListener('change', function () {
+          configuration.authentication.enabled = authEnabledField.checked;
+          authUsernameField.disabled = authPasswordField.disabled = !configuration.authentication.enabled;
+          seal(configuration);
+        });
+        authUsernameField.addEventListener('blur', function () {
+          configuration.authentication.username = authUsernameField.value;
+          seal(configuration);
+        });
+        authPasswordField.addEventListener('blur', function () {
+          configuration.authentication.password = authPasswordField.value;
+          seal(configuration);
+        });
+
         loggingField.addEventListener('change', function () {
           configuration.verboseLogging = !configuration.verboseLogging;
           seal(configuration);
@@ -158,6 +193,11 @@
 
         smAccessField.addEventListener('blur', function () {
           configuration.streamManagerAccessToken = smAccessField.value;
+          seal(configuration);
+        });
+
+        smAPIField.addEventListener('blur', function () {
+          configuration.streamManagerAPI = smAPIField.value;
           seal(configuration);
         });
 
@@ -180,6 +220,11 @@
           videoField.checked = config.useVideo ? true : false;
           audioField.checked = config.useAudio ? true : false;
           smAccessField.value = config.streamManagerAccessToken;
+          smAPIField.value = config.streamManagerAPI;
+          authEnabledField.checked = config.authentication.enabled ? true : false;
+          authUsernameField.value = config.authentication.username;
+          authPasswordField.value = config.authentication.password;
+          authUsernameField.disabled = authPasswordField.disabled = !authEnabledField.checked;
 
           var transport = config.iceTransport;
           var i = iceTransportSelect.childNodes.length;
