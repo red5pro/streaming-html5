@@ -1,8 +1,6 @@
 (function(window, document, red5prosdk) {
   'use strict';
 
-  var isEdge = (window.adapter && window.adapter.browserDetails.browser.toLowerCase() === 'edge');
-
   var serverSettings = (function() {
     var settings = sessionStorage.getItem('r5proServerSettings');
     try {
@@ -49,13 +47,6 @@
   function onPublisherEvent (event) {
     console.log('[Red5ProPublisher] ' + event.type + '.');
     updateStatusFromEvent(event);
-    if (event.type === 'WebRTC.PeerConnection.CandidateEnd') {
-      console.log('[Red5ProPublisher] isEdge? (' + isEdge + ')');
-      if (isEdge) {
-        console.log('[Red5ProPublisher] -> addIceCandidate(null)');
-        targetPublisher.onAddIceCandidate(null);
-      }
-    }
   }
   function onPublishFail (message) {
     console.error('[Red5ProPublisher] Publish Error :: ' + message);
