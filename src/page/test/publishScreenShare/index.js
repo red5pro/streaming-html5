@@ -39,6 +39,20 @@
   var captureButton = document.getElementById('capture-button');
   //  var audioButton = document.getElementById('audio-button');
 
+  var bandwidthAudioField = document.getElementById('audio-bitrate-field');
+  var bandwidthVideoField = document.getElementById('video-bitrate-field');
+  var keyFramerateField = document.getElementById('key-framerate-field');
+  var cameraWidthField = document.getElementById('camera-width-field');
+  var cameraHeightField = document.getElementById('camera-height-field');
+  var framerateField =document.getElementById('framerate-field');
+
+  bandwidthAudioField.value = configuration.bandwidth.audio;
+  bandwidthVideoField.value = configuration.bandwidth.video;
+  keyFramerateField.value = configuration.keyFramerate || 3000;
+  cameraWidthField.value = configuration.mediaConstraints.video !== true ? configuration.mediaConstraints.video.width.max : 640;
+  cameraHeightField.value = configuration.mediaConstraints.video !== true ? configuration.mediaConstraints.video.height.max : 480;
+  framerateField.value = configuration.mediaConstraints.video !== true ? configuration.mediaConstraints.video.frameRate.max : 24;
+
   captureButton.addEventListener('click', function() {
     capture(setupPublisher);
   });
@@ -157,6 +171,11 @@
         mediaConstraints: {
           audio: true,
           video: false
+        }
+      },
+    {
+      bandwidth: {
+        audio: parseInt(bandwidthAudioField.value)
       }
     });
     new red5prosdk.RTCPublisher()
@@ -176,6 +195,10 @@
 
   function setupPublisher (constraints) {
 
+    var vw = parseInt(cameraWidthField.value);
+    var vh = parseInt(cameraHeightField.value);
+    var fr = parseInt(framerateField.value);
+
     var config = Object.assign({},
                         configuration,
                         getAuthenticationParams());
@@ -184,23 +207,32 @@
                         protocol: getSocketLocationFromProtocol().protocol,
                         port: getSocketLocationFromProtocol().port,
                         streamName: config.stream1,
+                        bandwidth: {
+                          video: parseInt(bandwidthVideoField.value)
+                        },
+                        keyFramerate: parseInt(keyFramerateField.value),
                         onGetUserMedia: function () {
                           var c = Object.assign({}, constraints);
                           if (c.video.optional) {
                             // chrome
                             c.video.optional.push({
-                              maxWidth: 640
+                              maxWidth: vw
                             }, {
-                              maxHeight: 480
+                              maxHeight: vh
+                            }, {
+                              maxFrameRate: fr
                             });
                           }
                           else if (c.video.mediaSource === 'window') {
                             // moz
                             c.video.width = {
-                              exact: 640
+                              exact: vw
                             };
                             c.video.height = {
-                              exact: 480
+                              exact: vh
+                            };
+                            c.video.frameRate = {
+                              exact: fr
                             }
                           }
                           return navigator.mediaDevices.getUserMedia(c);

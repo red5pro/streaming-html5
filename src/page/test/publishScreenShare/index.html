@@ -4,6 +4,11 @@
     {{> meta title='Publish Screen Share Test'}}
     {{> header-scripts}}
     {{> header-stylesheets}}
+    <style>
+      .settings-field, .settings-field > input {
+        font-size: 1em;
+      }
+    </style>
   </head>
   <body>
     <div id="app">
@@ -19,6 +24,33 @@
         </div>
       </div>
       {{> test-info testTitle='Publish Screen Share Test'}}
+      <hr/>
+      <div id="settings-container">
+        <p class="settings-field">
+          <label class="settings-label">Camera Width:</label>
+          <input id="camera-width-field" name="camera-width-field" value="0">
+        </p>
+        <p class="settings-field">
+          <label class="settings-label">Camera Height:</label>
+          <input id="camera-height-field" name="camera-height-field" value="0">
+        </p>
+        <p class="settings-field">
+          <label class="settings-label">Camera Framerate:</label>
+          <input id="framerate-field" name="framerate-field" value="0">
+        </p>
+        <p class="settings-field">
+          <label class="settings-label">Video Bitrate (Kbps):</label>
+          <input id="video-bitrate-field" name="video-bitrate-field" value="0">
+        </p>
+        <p class="settings-field">
+          <label class="settings-label">Audio Bitrate (Kbps):</label>
+          <input id="audio-bitrate-field" name="audio-bitrate-field" value="0">
+        </p>
+        <p class="settings-field">
+          <label class="settings-label">Key Framerate (ms):</label>
+          <input id="key-framerate-field" name="key-framerate-field" value="0">
+        </p>
+      </div>
       {{> status-field-publisher}}
       {{> statistics-field}}
       <script src="https://cdn.WebRTC-Experiment.com/getScreenId.js"></script>
