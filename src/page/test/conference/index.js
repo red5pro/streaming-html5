@@ -17,7 +17,7 @@
   var pubStreamTitle = document.getElementById('pub-stream-title');
   var targetPubView;
 
-  var instanceId = Math.floor(Math.random() * 0x10000).toString(16);
+  var instanceId = Math.floor(Math.random() * 0x10000);
   var protocol = serverSettings.protocol;
   var isSecure = protocol === 'https';
   function getSocketLocationFromProtocol () {
@@ -139,8 +139,6 @@
 
       targetPublisher = new red5prosdk.Red5ProPublisher();
 
-      targetPublisher.on('*', onPublisherEvent);
-
       determinePublisher(targetPublisher, "notTheStreamName");
       resolve();
     });
@@ -193,7 +191,7 @@
     }
 
     if(publishName != "notTheStreamName"){
-      // console.log('[Red5ProPublisher] config:: ' + JSON.stringify(config, null, 2));
+      console.log('[Red5ProPublisher] config:: ' + JSON.stringify(config, null, 2));
     }
 
     return publisher.setPublishOrder(publishOrder)
@@ -204,6 +202,19 @@
   }
 
   function publish (publishName) {
+
+    if(targetPublisher != null){
+      targetPublisher.off('*', onPublisherEvent);
+      if(targetPublisher.hasOwnProperty('unpublish') && typeof targetPublisher.unpublish === 'function'){
+        targetPublisher.unpublish()
+          .catch(function(error){
+            //probably wasn't astually publishing, catch and move on
+          });
+      }
+    }
+
+    targetPublisher = new red5prosdk.Red5ProPublisher();
+    targetPublisher.on('*', onPublisherEvent);
     var publisher = targetPublisher;
     // var view = targetPubView;
 
@@ -272,9 +283,7 @@
 
   var listBreak = false;
   function beginStreamListCall () {
-    if(listBreak){
-      return;
-    }
+    if(listBreak){ return; }
 
     var host = configuration.host;
     var port = serverSettings.httpport;
@@ -416,7 +425,7 @@
     if(failedSub != null){
       failedSub = failedSub[0];
       failedSub.failCount++;
-      if(failedSub.failCount < 4){
+      if(failedSub.failCount < 2){
         failedSub.minTime = Date.now() + (delayTime * failedSub.failCount);
         delayedSubs.push(failedSub);
       }
@@ -464,7 +473,7 @@
     var rtcConfig = Object.assign({}, config, {
       protocol: getSocketLocationFromProtocol().protocol,
       port: getSocketLocationFromProtocol().port,
-      subscriptionId: 'subscriber-' + subscribeName + "-" + instanceId,
+      subscriptionId: 'subscriber-' + subscribeName + "-" + (instanceId++).toString(16),
       streamName: subscribeName
     });
     var rtmpConfig = Object.assign({}, config, {
@@ -492,7 +501,7 @@
     if (!config.useAudio) {
       rtcConfig.audioEncoding = 'NONE';
     }
-    // console.log('[Red5ProSubscriber] config:: ' + JSON.stringify(config, null, 2));
+    console.log('[Red5ProSubscriber] config:: ' + JSON.stringify(config, null, 2));
 
     var subscribeOrder = config.subscriberFailoverOrder
                           .split(',').map(function (item) {
