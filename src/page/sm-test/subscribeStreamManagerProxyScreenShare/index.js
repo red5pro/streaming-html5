@@ -217,6 +217,10 @@
       streamName: name
     });
 
+    rtcConfig.connectionParams = Object.assign({}, 
+      getAuthenticationParams().connectionParams,
+      rtcConfig.connectionParams);
+
     new red5prosdk.RTCSubscriber()
       .init(rtcConfig)
       .then(function (subscriberImpl) {
@@ -279,6 +283,10 @@
       streamName: name + '_audio',
       mediaElementId: 'red5pro-audio'
     });
+
+    audioConfig.connectionParams = Object.assign({}, 
+      getAuthenticationParams().connectionParams,
+      audioConfig.connectionParams);
 
     new red5prosdk.RTCSubscriber()
       .init(audioConfig)
