@@ -1,0 +1,28 @@
+<!doctype html>
+<html>
+  <head>
+    {{> meta title='Shared Object'}}
+    {{> header-scripts}}
+    {{> header-stylesheets}}
+  </head>
+  <body>
+    <div id="app">
+      {{> version }}
+      {{> settings-link}}
+      <h1 class="centered">Shared Object</h1>
+      {{> status-field-subscriber}}
+      <div class="centered status-field">
+        <p>
+          <input type="text" id="input-field" />
+          <button id="send-button">send</button>
+        </p>
+        <hr>
+        <p>
+          <textarea id="so-field" disabled style="width: 50%; min-height: 240px; min-width: 320px"></textarea>
+        </p>
+      </div>
+    </div>
+    {{> body-scripts}}
+    <script src="index.js"></script>
+  </body>
+</html>
