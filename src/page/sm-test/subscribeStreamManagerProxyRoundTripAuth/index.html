@@ -1,0 +1,64 @@
+<!doctype html>
+<html>
+  <head>
+    {{> meta title='Subscribe - Stream Manager Proxy With RoundTrip Authentication Test'}}
+    {{> header-scripts}}
+    {{> header-stylesheets}}
+    <style>
+      .hidden {
+        display: none;
+      }
+      #login-form {
+        padding: 10px 0;
+        background-color: #afafaf;
+      }
+      #login-form p {
+        margin: 10px 0;
+      }
+      #login-form p label {
+        margin-right: 6px;
+        width: 100%;
+        text-align: right;
+      }
+	  #address-field {
+        padding: 6px;
+        background-color: #ccc;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      {{> version }}
+      {{> settings-link}}
+      <div class="ice-background">
+      <div class="test-notification">
+        <p>In order to properly run the Stream Manager examples, you will need to configure you server for cluster infrastructure as described in the following documentation:</p>
+        <p><a href="https://www.red5pro.com/docs/server/autoscale/" target="_blank">https://www.red5pro.com/docs/server/autoscale/</a></p>
+		<p>Additionally to use this example stream manager proxy gateway should be enabled and `Simple Authentication Plugin` with `RoundTripValidator` should be enabled on your webapp.</p>
+      </div>
+      </div>
+      {{> test-info testTitle='Subscribe Stream Manager Proxy With RoundTrip Authentication Test'}}
+      {{> status-field-subscriber}}
+      {{> statistics-field}}
+      <div class="centered"><p id="address-field">Edge Address: N/A</p></div>
+      <div id="login-form" class="centered">
+        <p>Log In to begin playback:</p>
+        <p><label for="username-field">username:</label><input id="username-field" name="username-field"></p>
+        <p><label for="password-field">password:</label><input id="password-field" name="password-field"></p>
+        <p><label for="token-field">token:</label><input id="token-field" name="token-field"></p>
+		<p><input type="checkbox" id="token-required-field" name="token-required-field" checked>Token Required</p>
+         
+       <button id="submit-button">submit</button>
+      </div>
+      <div class="centered">
+        <video id="red5pro-subscriber"
+                controls autoplay playsinline
+                class="red5pro-media red5pro-media-background"
+                width="640" height="480">
+        </video>
+      </div>
+    </div>
+    {{> body-scripts}}
+    <script src="index.js"></script>
+  </body>
+</html>
