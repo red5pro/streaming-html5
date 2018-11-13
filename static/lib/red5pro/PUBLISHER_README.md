@@ -54,6 +54,7 @@ _It is *highly* recommended to include [adapter.js](https://github.com/webrtcHac
 | port | [x] | `8083` | The port on the host that the WebSocket server resides on; `8081` or `8083`. |
 | app | [x] | `live` | The webapp name that the WebSocket is listening on. |
 | streamMode | [x] | `live` | The mode to broadcast; `live`, `record` or `append`. |
+| keyFramerate | [-] | `3000` | The framerate (in milliseconds) between sending key frames in broadcast. |
 | host | [x] | *None* | The IP or address that the WebSocket server resides on. |
 | streamName | [x] | *None* | The name of the stream to subscribe to. |
 | mediaElementId | [-] | `red5pro-publisher` | The target `video` or `audio` element `id` attribute which will display the preview media. |
