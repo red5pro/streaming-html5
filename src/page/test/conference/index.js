@@ -139,21 +139,25 @@
   // Local lifecycle notifications.
   function onSubscriberEvent (event, name) {
     if (event.type !== 'Subscribe.Time.Update') {
-      console.log('[Red5ProSubsriber:' + name + '] ' + event.type + '.');
+      console.log('[Red5ProSubscriber:' + name + '] ' + event.type + '.');
       updateStatusFromSubscribeEvent(event, document.getElementById( name + '-status' ));
+      if (event.type === 'Subscribe.Play.Unpublish' ||
+          event.type === 'Subscribe.Connection.Closed') {
+          removeSubscriberByName(name);
+    }
     }
   }
   function onSubscribeFail (message, name) {
-    console.error('[Red5ProSubsriber:' + name + '] Subscribe Error :: ' + message);
+    console.error('[Red5ProSubscriber:' + name + '] Subscribe Error :: ' + message);
   }
   function onSubscribeSuccess (name) {
-    console.log('[Red5ProSubsriber:' + name + '] Subscribe Complete.');
+    console.log('[Red5ProSubscriber:' + name + '] Subscribe Complete.');
   }
   function onUnsubscribeFail (message, name) {
-    console.error('[Red5ProSubsriber:' + name + '] Unsubscribe Error :: ' + message);
+    console.error('[Red5ProSubscriber:' + name + '] Unsubscribe Error :: ' + message);
   }
   function onUnsubscribeSuccess (name) {
-    console.log('[Red5ProSubsriber:' + name + '] Unsubscribe Complete.');
+    console.log('[Red5ProSubscriber:' + name + '] Unsubscribe Complete.');
   }
 
   function determinePublisher (publishName) {
