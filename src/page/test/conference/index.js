@@ -340,7 +340,29 @@
       setWaitTime();
     }
     streamsList = subscriberStreamList;
-    console.log('Active Streams: ' + streamsList.join(', '));
+    console.log('[Conference] :: Active Streams: ' + streamsList.join(', '));
+
+    var subscriberElements = Array.prototype.slice.call( document.getElementsByClassName('float-left-conf'), 0 )
+      .filter(function (el) {
+        return !el.classList.contains('publisher') && el.id !== 'FILLNAME';
+      }).map(function (el) {
+        return el.id;
+      });
+    var missingList = subscriberElements.filter(function (id) {
+      return streamsList.indexOf(id) === -1;
+    });
+    doDeadSweep(missingList);
+  }
+
+  function doDeadSweep (deadList) {
+    console.log('[Conference] :: Found dead nodes:' + deadList.join(', '));
+    while (deadList.length > 0) {
+      var id = deadList.shift();
+      var el = document.getElementById(id);
+      if (el) {
+        el.parentNode.removeChild(el);
+      }
+    }
   }
 
   var SubscriberItem = function (parent, configuration) {
@@ -389,7 +411,10 @@
       return;
     }
     if (this.nextItem) {
-      this.nextItem.load();
+      var timeout = setTimeout(function () {
+        clearTimeout(timeout);
+        this.nextItem.load();
+      }, 500);
     } else {
       setWaitTime();
     }
@@ -419,6 +444,12 @@
           }
           self.clear();
         });
+    } else {
+      try {
+        self.parent.removeChild(self.element);
+      } catch (e) {
+        console.warn(e);
+      }
     }
   }
   SubscriberItem.prototype.clear = function () {
