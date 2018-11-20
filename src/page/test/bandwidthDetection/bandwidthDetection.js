@@ -1,7 +1,12 @@
 
 //***DOWNLOAD***
 
+const CONCURRENT_CONNECTIONS = 4;
+
 function checkDownloadSpeed (baseURL, maxSeconds) {
+
+  const isSecure = window.location.protocol.includes("https");
+  baseURL = isSecure ? "https://" + baseURL : "http://" + baseURL + ":5080";
 
   return new Promise( (resolve, reject) => {
     const now = Date.now();
@@ -10,18 +15,18 @@ function checkDownloadSpeed (baseURL, maxSeconds) {
     const data = {
       beganAt: now,
       returnBy: now + maxMillis,
-      url: "http://" + baseURL + ":5080/bandwidthdetection/detect",
+      url: baseURL + "/bandwidthdetection/detect",
       downloadResults: [],
       requests:[],
       resolve: resolve,
       reject: reject
-    }
+    };
 
-    for (var i = 0; i < 4; i++) {
+    for (var i = 0; i < CONCURRENT_CONNECTIONS; i++) {
       createDownloader(data);
     }
 
-    data.intervalHandle = setInterval( () =>{ downloadLoop(data); }, 50 );
+    // data.intervalHandle = setInterval( () =>{ downloadLoop(data); }, 50 );
   });
 }
 
@@ -35,11 +40,14 @@ function createDownloader(data) {
         console.warn("Download detection failed with the following status: " + request.statusText);
       }
       removeRequest(data, request);
+      downloadLoop(data);
     }
   };
   request.ontimeout = () => { //Pencils down, time to give the data back.
+    console.warn("Download detection timed out");
     removeRequest(data, request);
-  }
+    downloadLoop(data);
+  };
 
   data.requests.push(request);
 
@@ -50,15 +58,15 @@ function createDownloader(data) {
 }
 
 function downloadLoop(data) {
-  const = now = Date.now();
+  const now = Date.now();
 
   if (now < data.returnBy) { //We have more time, keep downloading
-    while(data.requests.length < 4){
+    while(data.requests.length < CONCURRENT_CONNECTIONS){
       createDownloader(data);
     }
   } else { // Time's up. Once everything finishes, return the results
     if(data.requests.length < 1){
-      clearInterval(data.intervalHandle);
+      // clearInterval(data.intervalHandle);
       const totalSeconds = (Date.now() - data.beganAt) / 1000.0;
       let totalBytes = 0;
       for (var i = 0; i < data.downloadResults.length; i++) {
@@ -67,9 +75,10 @@ function downloadLoop(data) {
       if(totalBytes == 0){
         data.reject("There was a problem with the download test, the server sent no data");
       }
-      const kBpS = (totalBytes / 1024.0) / totalSeconds;
-      console.log("Download detection finished with speed result of " + kBpS + "KBpS");
-      data.resolve({ download: kBpS });
+      console.log("Downloaded " + totalBytes + " bytes in " + totalSeconds + " seconds");
+      const kbpS = ((totalBytes * 8) / 1024.0) / totalSeconds;
+      console.log("Download detection finished with speed result of " + kbpS + "KBpS");
+      data.resolve({ download: kbpS });
     }
   }
 }
@@ -77,6 +86,9 @@ function downloadLoop(data) {
 //***UPLOAD***
 
 function checkUploadSpeed (baseURL, maxSeconds) {
+  const isSecure = window.location.protocol.includes("https");
+  baseURL = isSecure ? "https://" + baseURL : "http://" + baseURL + ":5080";
+
   return new Promise( (resolve, reject) => {
     const fatString = fortyKiloString();
     const now = Date.now();
@@ -85,19 +97,19 @@ function checkUploadSpeed (baseURL, maxSeconds) {
     const data = {
       beganAt: now,
       returnBy: now + maxMillis,
-      url: "http://" + baseURL + ":5080/bandwidthdetection/detect",
-      upResults: [],
+      url: baseURL + "/bandwidthdetection/detect",
+      uploadResults: [],
       requests:[],
       resolve: resolve,
       reject: reject,
       payload: fatString
-    }
+    };
 
-    for (var i = 0; i < 4; i++) {
+    for (var i = 0; i < CONCURRENT_CONNECTIONS; i++) {
       createUploader(data);
     }
 
-    data.intervalHandle = setInterval( () =>{ uploadLoop(data); }, 50 );
+    // data.intervalHandle = setInterval( () =>{ uploadLoop(data); }, 50 );
   });
 }
 
@@ -106,23 +118,25 @@ function createUploader(data) {
   request.onreadystatechange = () => {
     if(request.readyState === 4){
       if(request.status === 200){ //successful - add up the speed results as appropriate
-        data.uploadResults.push(40 * 1024); //upload is always 40KB, might as well re-use logic
+        data.uploadResults.push(40 * 1024); //upload is always 40KB, might as well re-use logic from download
       } else{ //unsuccesful, ignore the attempt, we'll try again plenty
         console.warn("Upload detection failed with the following status: " + request.statusText);
       }
       removeRequest(data, request);
+      uploadLoop(data);
     }
   };
   request.ontimeout = () => {
+    console.warn("Upload detection timed out");
     removeRequest(data, request);
-  }
+    uploadLoop(data);
+  };
 
   data.requests.push(request);
 
-  request.open("GET", data.url, true);
-  request.responseType = "blob";
+  request.open("POST", data.url, true);
   request.timeout = 5000;
-  //prefix keeps the data unique, saved bulk spares us the ~160ms generation time
+  //prefix keeps the data unique, saved bulk spares us the generation time
   request.send( [uploadPrefix(), data.payload, uploadPrefix()].join('') );
 }
 
@@ -130,12 +144,12 @@ function uploadLoop(data) {
   const now = Date.now();
 
   if (now < data.returnBy) { //We have more time, keep uploading
-    while(data.requests.length < 4){
+    while(data.requests.length < CONCURRENT_CONNECTIONS){
       createUploader(data);
     }
   } else { // Time's up. Once everything finishes, return the results
     if(data.requests.length < 1){
-      clearInterval(data.intervalHandle);
+      // clearInterval(data.intervalHandle);
       const totalSeconds = (Date.now() - data.beganAt) / 1000.0;
       let totalBytes = 0;
       for (var i = 0; i < data.uploadResults.length; i++) {
@@ -144,9 +158,10 @@ function uploadLoop(data) {
       if(totalBytes == 0){
         data.reject("There was a problem with the upload test, no data reached the server");
       }
-      const kBpS = (totalBytes / 1024.0) / totalSeconds;
-      console.log("Upload detection finished with speed result of " + kBpS + "KBpS");
-      data.resolve({ upload: kBpS });
+      console.log("Uploaded " + totalBytes + " bytes in " + totalSeconds + " seconds");
+      const kbpS = ((totalBytes * 8) / 1024.0) / totalSeconds;
+      console.log("Upload detection finished with speed result of " + kbpS + "KbpS");
+      data.resolve({ upload: kbpS });
     }
   }
 }
@@ -162,16 +177,16 @@ function checkSpeeds (baseURL, maxSeconds) {
 
     checkDownloadSpeed(baseURL, halfMaxSeconds)
       .then(result => {
-        ret.download = result;
+        ret.download = result.download;
         return checkUploadSpeed(baseURL, halfMaxSeconds);
       })
       .then(result => {
-        ret.upload = result;
+        ret.upload = result.upload;
         resolve(ret);
       })
       .catch(error => {
         reject(error);
-      })
+      });
   });
 }
 

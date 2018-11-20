@@ -148,29 +148,30 @@
   checkSpeeds(config.host, 5.0)
     .then( result => {
       document.getElementById("speed-check-print").innerText = "Bandwidth Detection complete," +
-        "Uploading at: " + result.upload + " and downloading at: " + result.download;
-      
+        "Uploading at: " + (Math.round(result.upload*100)/100.0) + "KbpS and downloading at: " +
+        (Math.round(result.download*100)/100.0) + "KbpS";
+
       var publisher = new red5prosdk.Red5ProPublisher();
-      return publisher.setPublishOrder(publishOrder)
-    })
-    .init({
-      rtc: rtcConfig,
-      rtmp: rtmpConfig
-    })
-    .then(function (publisherImpl) {
-      streamTitle.innerText = configuration.stream1;
-      targetPublisher = publisherImpl;
-      targetPublisher.on('*', onPublisherEvent);
-      return targetPublisher.publish();
-    })
-    .then(function () {
-      onPublishSuccess(targetPublisher);
-    })
-    .catch(function (error) {
-      var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
-      console.error('[Red5ProPublisher] :: Error in publishing - ' + jsonError);
-      onPublishFail(jsonError);
-     });
+      publisher.setPublishOrder(publishOrder)
+        .init({
+          rtc: rtcConfig,
+          rtmp: rtmpConfig
+        })
+        .then(function (publisherImpl) {
+          streamTitle.innerText = configuration.stream1;
+          targetPublisher = publisherImpl;
+          targetPublisher.on('*', onPublisherEvent);
+          return targetPublisher.publish();
+        })
+        .then(function () {
+          onPublishSuccess(targetPublisher);
+        })
+        .catch(function (error) {
+          var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
+          console.error('[Red5ProPublisher] :: Error in publishing - ' + jsonError);
+          onPublishFail(jsonError);
+         });
+    });
 
   window.addEventListener('beforeunload', function() {
     function clearRefs () {
