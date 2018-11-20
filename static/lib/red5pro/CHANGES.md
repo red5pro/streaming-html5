@@ -1,6 +1,6 @@
 # Changes
 
-## 5.2.0-RC5
+## 5.2.0
 
 - moving ws.error invoke to promise.reject on timeout of ws connect. (bustardcelly)
 - change to warn on capture of exceptions for play on pause. (bustardcelly)
