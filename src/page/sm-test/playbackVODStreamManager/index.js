@@ -25,6 +25,7 @@
   red5prosdk.setLogLevel(configuration.verboseLogging ? red5prosdk.LOG_LEVELS.TRACE : red5prosdk.LOG_LEVELS.WARN);
 
   var targetSubscriber;
+  var edgeData;
 
   var streamTitle = document.getElementById('stream-title');
   var nameInput = document.getElementById('name-input');
@@ -108,6 +109,43 @@
     });
   }
 
+  function forceFallback (type) {
+    if (type.toLowerCase() === 'hls') {
+      throw new Error('HLS not supported natively by browser.');
+    } else {
+      useFLVFallback(edgeData.serverAddress, edgeData.scope, edgeData.name);
+    }
+  }
+
+  /*
+   * Quick FLV embed fallback if Flash not explicitly allowed in browser.
+   */
+  function addPlayer(tmpl, container) {
+    var $el = document.importNode(tmpl.content, true);
+    container.appendChild($el);
+    return $el;
+  }
+
+  function useFLVFallback (host, app, streamName) {
+    var container = document.getElementById('red5pro-subscriber')
+    if (container && container.parentNode) {
+      container.parentNode.removeChild(container);
+    }
+    addPlayer(document.getElementById('flash-playback'), document.getElementById('video-container'));
+    var flashObject = document.getElementById('red5pro-subscriber');
+      var flashvars = document.createElement('param');
+      flashvars.name = 'flashvars';
+      flashvars.value = 'stream='+streamName+'&'+
+                        'app='+app+'&'+
+                        'host='+host+'&'+
+                        'muted=false&'+
+                        'autoplay=true&'+
+                        'backgroundColor=#000000&'+
+                        'buffer=0.5&'+
+                        'autosize=true';
+    flashObject.appendChild(flashvars);
+  }
+
   function determineSubscriber (jsonResponse) {
     var host = jsonResponse.serverAddress;
     var name = jsonResponse.name;
@@ -119,7 +157,6 @@
       protocol: 'rtmp',
       port: serverSettings.rtmpport,
       streamName: name,
-      mimeType: 'rtmp/flv',
       backgroundColor: '#000000',
       width: config.cameraWidth,
       height: config.cameraHeight,
@@ -136,12 +173,16 @@
       mimeType: 'application/x-mpegURL'
     })
 
-    var subscriber = new red5prosdk.Red5ProSubscriber();
-    return subscriber.setPlaybackOrder(['rtmp', 'hls'])
-      .init({
-        rtmp: rtmpConfig,
-        hls: hlsConfig
-      });
+    var subscriber;
+    var selectedConfig;
+    if (configuration.subscriberFailoverOrder === 'hls') {
+      subscriber = new red5prosdk.HLSSubscriber();
+      selectedConfig = hlsConfig;
+    } else {
+      subscriber = new red5prosdk.RTMPSubscriber();
+      selectedConfig = rtmpConfig;
+    }
+    return subscriber.init(selectedConfig);
   }
 
   // Request to unsubscribe.
@@ -193,6 +234,7 @@
   var retryCount = 0;
   var retryLimit = 3;
   function respondToEdge (response) {
+    edgeData = response;
     determineSubscriber(response)
       .then(function (subscriberImpl) {
         streamTitle.innerText = configuration.stream1;
@@ -204,10 +246,16 @@
       .then(function () {
         onSubscribeSuccess();
       })
-      .catch(function (error) {
-        var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
-        console.error('[Red5ProSubscriber] :: Error in subscribing - ' + jsonError);
-        onSubscribeFail(jsonError);
+      .catch(function (error) { // eslint-disable-line no-unused-vars
+        try {
+          forceFallback(configuration.subscriberFailoverOrder)
+        } catch (e) {
+          console.error('[Red5ProSubscriber] :: Error in subscribing - ' + e.message);
+          onSubscribeFail(e.message);
+        }
+        //        var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
+        //        console.error('[Red5ProSubscriber] :: Error in subscribing - ' + jsonError);
+        //        onSubscribeFail(jsonError);
       });
   }
 
@@ -231,20 +279,12 @@
       .catch(respondToEdgeFailure);
   }
 
-  function playback(filename) {
+  function playback (filename) {
     configuration.subscriberFailoverOrder = determineFailoverOrderFromFilename(filename);
     configuration.stream1 = determineStreamNameFromFilename(filename);
 
     if (typeof targetSubscriber !== 'undefined') {
-      var reset = function reset() {
-        var container = document.getElementById('video-container');
-        while (container.hasChildNodes()) {
-          container.removeChild(container.lastChild);
-        }
-        container.innerHTML = '<video id="red5pro-subscriber-video" controls class="video-element"></video>';
-        startup();
-      }
-      unsubscribe().then(reset).catch(reset);
+      unsubscribe().then(startup).catch(startup);
     }
     else {
       startup();
