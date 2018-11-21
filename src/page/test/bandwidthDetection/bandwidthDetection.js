@@ -25,8 +25,6 @@ function checkDownloadSpeed (baseURL, maxSeconds) {
     for (var i = 0; i < CONCURRENT_CONNECTIONS; i++) {
       createDownloader(data);
     }
-
-    // data.intervalHandle = setInterval( () =>{ downloadLoop(data); }, 50 );
   });
 }
 
@@ -66,7 +64,6 @@ function downloadLoop(data) {
     }
   } else { // Time's up. Once everything finishes, return the results
     if(data.requests.length < 1){
-      // clearInterval(data.intervalHandle);
       const totalSeconds = (Date.now() - data.beganAt) / 1000.0;
       let totalBytes = 0;
       for (var i = 0; i < data.downloadResults.length; i++) {
@@ -86,11 +83,11 @@ function downloadLoop(data) {
 //***UPLOAD***
 
 function checkUploadSpeed (baseURL, maxSeconds) {
+  
   const isSecure = window.location.protocol.includes("https");
   baseURL = isSecure ? "https://" + baseURL : "http://" + baseURL + ":5080";
 
   return new Promise( (resolve, reject) => {
-    const fatString = fortyKiloString();
     const now = Date.now();
     const maxMillis = Math.floor(maxSeconds * 1000);
 
@@ -101,15 +98,12 @@ function checkUploadSpeed (baseURL, maxSeconds) {
       uploadResults: [],
       requests:[],
       resolve: resolve,
-      reject: reject,
-      payload: fatString
+      reject: reject
     };
 
     for (var i = 0; i < CONCURRENT_CONNECTIONS; i++) {
       createUploader(data);
     }
-
-    // data.intervalHandle = setInterval( () =>{ uploadLoop(data); }, 50 );
   });
 }
 
@@ -136,8 +130,8 @@ function createUploader(data) {
 
   request.open("POST", data.url, true);
   request.timeout = 5000;
-  //prefix keeps the data unique, saved bulk spares us the generation time
-  request.send( [uploadPrefix(), data.payload, uploadPrefix()].join('') );
+  //send 40kB of random data
+  request.send( fortyKiloString() );
 }
 
 function uploadLoop(data) {
@@ -149,7 +143,6 @@ function uploadLoop(data) {
     }
   } else { // Time's up. Once everything finishes, return the results
     if(data.requests.length < 1){
-      // clearInterval(data.intervalHandle);
       const totalSeconds = (Date.now() - data.beganAt) / 1000.0;
       let totalBytes = 0;
       for (var i = 0; i < data.uploadResults.length; i++) {
@@ -202,17 +195,9 @@ function removeRequest(data, request) {
 }
 
 var allowedChar = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-function fortyKiloString() { //not exactly 40KB - expected to have another random 30 to front and back
+function fortyKiloString() {
   const out = [];
-  for (let i = 0; i < 40900; i++){
-    out.push( allowedChar.charAt(Math.floor(Math.random() * allowedChar.length)) );
-  }
-  return out.join('');
-}
-
-function uploadPrefix() {
-  const out = [];
-  for (let i = 0; i < 30; i++){
+  for (let i = 0; i < 40960; i++){
     out.push( allowedChar.charAt(Math.floor(Math.random() * allowedChar.length)) );
   }
   return out.join('');
