@@ -32,8 +32,8 @@
     "httpport": port,
     "hlsport": 5080,
     "hlssport": 443,
-    "wsport": 8081,
-    "wssport": 8083,
+    "wsport": 5080,
+    "wssport": 443,
     "rtmpport": 1935,
     "rtmpsport": 1936
   };
