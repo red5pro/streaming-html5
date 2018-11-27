@@ -278,7 +278,7 @@ The following example demonstrates how to utilize the [Playback Controls API](#p
             gUM);
           var rtcConfig = Object.assign({}, config, {
             protocol: 'ws',
-            port: 8081
+            port: 5080
           });
           var rtmpConfig = Object.assign({}, config, {
             protocol: 'rtmp',

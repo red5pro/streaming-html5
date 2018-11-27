@@ -52,7 +52,7 @@ _It is *highly* recommended to include [adapter.js](https://github.com/webrtcHac
 | Property | Required | Default | Description |
 | :--- | :---: | :---: | :--- |
 | protocol | [x] | `wss` | The protocol for the WebSocket communication. |
-| port | [x] | `8083` | The port on the host that the WebSocket server resides on. |
+| port | [x] | `443` | The port on the host that the WebSocket server listens on; `5080` or `443` (insecure or secure, respectively). |
 | app | [x] | `live` | The webapp name that the WebSocket is listening on. |
 | host | [x] | *None* | The IP or address that the WebSocket server resides on. |
 | streamName | [x] | *None* | The name of the stream to subscribe to. |
@@ -120,7 +120,7 @@ _main.js_:
   // Initialize
   subscriber.init({
     protocol: 'ws',
-    port: 8081,
+    port: 5080,
     host: 'localhost',
     app: 'live',
     streamName: 'mystream',
