@@ -58,7 +58,8 @@ _It is *highly* recommended to include [adapter.js](https://github.com/webrtcHac
 | host | [x] | *None* | The IP or address that the WebSocket server resides on. |
 | streamName | [x] | *None* | The name of the stream to subscribe to. |
 | mediaElementId | [-] | `red5pro-publisher` | The target `video` or `audio` element `id` attribute which will display the preview media. |
-| iceServers | [x] | *None* ([Test](https://webrtc.github.io/samples/src/content/peerconnection/trickle-ice/)) | The list of ICE servers to use in requesting a Peer Connection. |
+| rtcConfiguration | [-] | *None* | The `RTCConfiguration` to user in setting up `RTCPeerConnection`. [RTCConfiguration](https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/RTCPeerConnection#RTCConfiguration_dictionary)|
+| iceServers | [x] | *None* ([Test](https://webrtc.github.io/samples/src/content/peerconnection/trickle-ice/)) | The list of ICE servers to use in requesting a Peer Connection. *Marked for Deprecation. Favor `rtcConfiguration`.* |
 | iceTransport | [-] | `UDP` | The transport type to use in ICE negotiation. Either `UDP` or `TCP` |
 | bandwidth | [-] |`{audio: 56, video: 512}` | A configuration object to setup bandwidth setting in publisher. |
 | connectionParams | [-] | `undefined` | An object of connection parameters to send to the server upon connection request. |
@@ -101,7 +102,11 @@ _main.js_:
       host: 'localhost',
       app: 'live',
       streamName: 'mystream',
-      iceServers: [{urls: 'stun:stun2.l.google.com:19302'}],
+      rtcConfiguration: {
+        iceServers: [{urls: 'stun:stun2.l.google.com:19302'}],
+        iceCandidatePoolSize: 2,
+        bundlePolicy: 'max-bundle'
+      }, // See https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/RTCPeerConnection#RTCConfiguration_dictionary
       streamMode: 'live',
       mediaElementId: 'red5pro-publisher',
       bandwidth: {
@@ -202,7 +207,11 @@ An example of providing `onGetUserMedia` as a configuration:
   protocol: "ws",
   port: 5080,
   streamName: "mystream",
-  iceServers: [{urls: 'stun:stun2.l.google.com:19302'}],
+  rtcConfiguration: {
+    iceServers: [{urls: 'stun:stun2.l.google.com:19302'}],
+    iceCandidatePoolSize: 2,
+    bundlePolicy: 'max-bundle'
+  }, // See https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/RTCPeerConnection#RTCConfiguration_dictionary
   onGetUserMedia: function () {
     return navigator.mediaDevices.getUserMedia({
       audio: true,

@@ -44,11 +44,13 @@ The following subscriber types / protocols are supported:
 Additionally, the **Red5 Pro HTML SDK** allows for automatic detection and failover to determine the correct playback option to use based on desired order and browser support. To learn more, visit the [Auto Failover](#auto-failover-and-order) section.
 
 ## WebRTC
+
 The Red5 Pro HTML SDK WebRTC Subscriber solution utilizes WebSockets and WebRTC support in modern browsers.
 
 _It is *highly* recommended to include [adapter.js](https://github.com/webrtcHacks/adapter) when targeting the WebRTC subscriber._
 
 ### WebRTC Configuration Properties
+
 | Property | Required | Default | Description |
 | :--- | :---: | :---: | :--- |
 | protocol | [x] | `wss` | The protocol for the WebSocket communication. |
@@ -57,7 +59,8 @@ _It is *highly* recommended to include [adapter.js](https://github.com/webrtcHac
 | host | [x] | *None* | The IP or address that the WebSocket server resides on. |
 | streamName | [x] | *None* | The name of the stream to subscribe to. |
 | mediaElementId | [-] | `red5pro-subscriber` | The target `video` or `audio` element `id` attribute which will display the stream. |
-| iceServers | [x] | *None* ([Test](https://webrtc.github.io/samples/src/content/peerconnection/trickle-ice/)) | The list of ICE servers to use in requesting a Peer Connection. |
+| rtcConfiguration | [-] | *None* | The `RTCConfiguration` to user in setting up `RTCPeerConnection`. [RTCConfiguration](https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/RTCPeerConnection#RTCConfiguration_dictionary)|
+| iceServers | [x] | *None* ([Test](https://webrtc.github.io/samples/src/content/peerconnection/trickle-ice/)) | The list of ICE servers to use in requesting a Peer Connection. *Marked for Deprecation. Favor `rtcConfiguration`.* |
 | iceTransport | [-] | `UDP` | The transport type to use in ICE negotiation. Either `UDP` or `TCP` |
 | subscriptionId | [x] | auto-generated | A unique string representing the requesting client. |
 | connectionParams | [-] | `undefined` | An object of connection parameters to send to the server upon connection request. |
@@ -124,7 +127,11 @@ _main.js_:
     host: 'localhost',
     app: 'live',
     streamName: 'mystream',
-    iceServers: [{urls: 'stun:stun2.l.google.com:19302'}],
+    rtcConfiguration: {
+      iceServers: [{urls: 'stun:stun2.l.google.com:19302'}],
+      iceCandidatePoolSize: 2,
+      bundlePolicy: 'max-bundle'
+    }, // See https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/RTCPeerConnection#RTCConfiguration_dictionary
     mediaElementId: 'red5pro-subscriber',
     subscriptionId: 'mystream' + Math.floor(Math.random() * 0x10000).toString(16),
     videoEncoding: 'NONE',
