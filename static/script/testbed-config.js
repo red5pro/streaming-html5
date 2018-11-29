@@ -52,9 +52,10 @@
       "embedHeight": 480,
       "buffer": 0.5,
       "bandwidth": {
-        "audio": 50,
-        "video": 256
+        "audio": 56,
+        "video": 512
       },
+      "keyFramerate": 3000,
       "useAudio": true,
       "useVideo": true,
       "mediaConstraints": {
@@ -99,8 +100,13 @@
       ],
       "iceTransport": "udp",
       "verboseLogging": true,
-      "streamManagerAPI": "3.0",
-      "streamManagerAccessToken": "xyz123"
+      "streamManagerAPI": "3.1",
+      "streamManagerAccessToken": "xyz123",
+      "authentication": {
+        "enabled": false,
+        "username": "user",
+        "password": "pass"
+      }
     };
     /**
     if (isMoz) {

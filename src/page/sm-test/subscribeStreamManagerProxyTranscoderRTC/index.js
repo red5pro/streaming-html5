@@ -91,6 +91,18 @@
     updateStatistics(bitrate, packetsReceived, frameWidth, frameHeight);
   }
 
+  function getAuthenticationParams () {
+    var auth = configuration.authentication;
+    return auth && auth.enabled
+      ? {
+        connectionParams: {
+          username: auth.username,
+          password: auth.password
+        }
+      }
+      : {};
+  }
+
   function displayServerAddress (serverAddress, proxyAddress) {
     proxyAddress = (typeof proxyAddress === 'undefined') ? 'N/A' : proxyAddress;
     addressField.innerText = ' Proxy Address: ' + proxyAddress + ' | ' + ' Edge Address: ' + serverAddress;
@@ -126,7 +138,7 @@
     var port = serverSettings.httpport.toString();
     var portURI = (port.length > 0 ? ':' + port : '');
     var baseUrl = isSecure ? protocol + '://' + host : protocol + '://' + host + portURI;
-    var apiVersion = configuration.streamManagerAPI || '3.0';
+    var apiVersion = configuration.streamManagerAPI || '3.1';
     var url = baseUrl + '/streammanager/api/' + apiVersion + '/event/' + app + '/' + streamName + '?action=subscribe';
       return new Promise(function (resolve, reject) {
         fetch(url)
@@ -156,7 +168,7 @@
     var port = serverSettings.httpport.toString();
     var portURI = (port.length > 0 ? ':' + port : '');
     var baseUrl = isSecure ? protocol + '://' + host : protocol + '://' + host + portURI;
-    var apiVersion = configuration.streamManagerAPI || '3.0';
+    var apiVersion = configuration.streamManagerAPI || '3.1';
     var url = baseUrl + '/streammanager/api/' + apiVersion + '/admin/event/meta/' + app + '/' + streamName + '?action=subscribe&accessToken=' + configuration.streamManagerAccessToken;
     return new Promise(function (resolve, reject) {
       fetch(url)
@@ -196,7 +208,10 @@
       },
       subscriptionId: 'subscriber-' + Math.floor(Math.random() * 0x10000).toString(16),
       streamName: name
-    })
+    });
+
+    // Merge in possible authentication params.
+    rtcConfig.connectionParams = Object.assign(getAuthenticationParams(), rtcConfig.connectionParams);
 
     if (!config.useVideo) {
       rtcConfig.videoEncoding = 'NONE';
@@ -273,7 +288,7 @@
     if (retryCount++ < retryLimit) {
       var retryTimer = setTimeout(function () {
         clearTimeout(retryTimer);
-        startup();
+        startup(streamSelect.value);
       }, 1000);
     }
     else {

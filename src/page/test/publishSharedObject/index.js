@@ -75,6 +75,18 @@
     console.log('[Red5ProPublisher] Unpublish Complete.');
   }
 
+  function getAuthenticationParams () {
+    var auth = configuration.authentication;
+    return auth && auth.enabled
+      ? {
+        connectionParams: {
+          username: auth.username,
+          password: auth.password
+        }
+      }
+      : {};
+  }
+
   function getUserMediaConfiguration () {
     return {
       mediaConstraints: {
@@ -149,13 +161,16 @@
   function determinePublisher () {
 
     var config = Object.assign({},
-                   configuration,
-                   getUserMediaConfiguration());
+                      configuration,
+                      getAuthenticationParams(),
+                      getUserMediaConfiguration());
+
     var rtcConfig = Object.assign({}, config, {
                       protocol: getSocketLocationFromProtocol().protocol,
                       port: getSocketLocationFromProtocol().port,
                       streamName: config.stream1
                    });
+
     var rtmpConfig = Object.assign({}, config, {
                       protocol: 'rtmp',
                       port: serverSettings.rtmpport,
@@ -165,6 +180,7 @@
                       swfobjectURL: '../../lib/swfobject/swfobject.js',
                       productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
                     }, getRTMPMediaConfiguration());
+
     var publishOrder = config.publisherFailoverOrder
                             .split(',')
                             .map(function (item) {

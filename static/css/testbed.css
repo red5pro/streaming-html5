@@ -132,6 +132,14 @@ code {
   color: #fff;
 }
 
+.auth-alert {
+  background-color: #bae4fb;
+}
+
+.auth-link {
+  margin-left: 0.6rem;
+}
+
 .video-element {
   width: 100%;
   max-width: 640px;
