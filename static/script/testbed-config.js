@@ -23,7 +23,7 @@
   protocol = protocol.substring(0, protocol.lastIndexOf(':'));
 
   var isMoz = !!navigator.mozGetUserMedia;
-  var isEdge = adapter && adapter.browserDetails.browser.toLowerCase() === 'edge';
+  var isEdge = window.navigator.userAgent.indexOf('Edge') > -1;
   var isiPod = !!navigator.platform && /iPod/.test(navigator.platform);
   var config = sessionStorage.getItem('r5proTestBed');
   var json;
@@ -102,6 +102,7 @@
         "password": "pass"
       }
     };
+
     /**
     if (isMoz) {
       json.iceServers = json.mozIce;
@@ -145,4 +146,3 @@
   return json;
 
 })(this, window.adapter);
-
