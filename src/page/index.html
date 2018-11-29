@@ -99,11 +99,7 @@
         <hr class="paddedHR" />
         <h2 class="centered">Stream Manager Specific</h2>
         <p class="settings-field">
-          <label class="settings-label">Version:</label>
-          <input id="sm-version-field" name="sm-version-field" placeholder="e.g., 3.0">
-        </p>
-        <p class="settings-field">
-          <label class="settings-label">Access Token:</label>
+          <label class="settings-label">Stream Manager Access Token:</label>
           <input id="sm-access-field" name="sm-access-field" placeholder="e.g., abc123">
         </p>
         <p class="settings-field">
@@ -176,7 +172,6 @@
         var videoField = document.getElementById('video-active-field');
         var audioField = document.getElementById('audio-active-field');
         var streamSwapButton = document.getElementById('stream-swap-btn');
-        var smVersionField = document.getElementById('sm-version-field');
         var smAccessField = document.getElementById('sm-access-field');
         var smAPIField = document.getElementById('sm-api-field');
         var authEnabledField = document.getElementById('auth-enabled-field');
@@ -303,11 +298,6 @@
           seal(configuration);
         });
 
-        smVersionField.addEventListener('blur', function () {
-          configuration.streamManagerAPI = smVersionField.value;
-          seal(configuration);
-        });
-
         smAccessField.addEventListener('blur', function () {
           configuration.streamManagerAccessToken = smAccessField.value;
           seal(configuration);
@@ -339,7 +329,6 @@
           loggingField.checked = config.verboseLogging ? true : false;
           videoField.checked = config.useVideo ? true : false;
           audioField.checked = config.useAudio ? true : false;
-          smVersionField.value = config.streamManagerAPI;
           smAccessField.value = config.streamManagerAccessToken;
           smAPIField.value = config.streamManagerAPI;
           authEnabledField.checked = config.authentication.enabled ? true : false;
