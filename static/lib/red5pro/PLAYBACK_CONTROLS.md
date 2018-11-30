@@ -267,11 +267,9 @@ The following example demonstrates how to utilize the [Playback Controls API](#p
               "audio": 50,
               "video": 256
             },
-            iceServers: [
-              {
-                "urls": "stun:stun2.l.google.com:19302"
-              }
-            ],
+            rtcConfiguration: {
+              iceServers: [{"urls": "stun:stun2.l.google.com:19302"}]
+            }
           };
           var config = Object.assign({},
             configuration,

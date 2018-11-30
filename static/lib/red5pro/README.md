@@ -72,7 +72,9 @@ In a browser:
           port: 5080,
           app: 'live',
           streamName: 'mystream',
-          iceServers: [{urls: 'stun:stun2.l.google.com:19302'}]
+          rtcConfiguration: {
+            iceServers: [{urls: 'stun:stun2.l.google.com:19302'}]
+          }
         };
 
         function subscribe () {
