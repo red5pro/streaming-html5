@@ -85,7 +85,7 @@ When requesting to playback a stream using failover, you will need to provide an
 
 ```js
 var config = {
-  rtcport: 8081,
+  rtcport: 5080,
   rtmpport: 1935,
   hlsport: 5080
 };
