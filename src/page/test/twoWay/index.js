@@ -44,11 +44,7 @@
   var defaultSubscriberConfiguration = (function(useVideo, useAudio) {
     var c = {
       protocol: getSocketLocationFromProtocol().protocol,
-      port: getSocketLocationFromProtocol().port,
-      bandwidth: {
-        audio: 50,
-        video: 256
-      }
+      port: getSocketLocationFromProtocol().port
     };
     if (!useVideo) {
       c.videoEncoding = red5prosdk.PlaybackVideoEncoder.NONE;
@@ -95,6 +91,18 @@
     console.log('[Red5ProSubsriber] Unsubscribe Complete.');
   }
 
+  function getAuthenticationParams () {
+    var auth = configuration.authentication;
+    return auth && auth.enabled
+      ? {
+        connectionParams: {
+          username: auth.username,
+          password: auth.password
+        }
+      }
+      : {};
+  }
+
   function getUserMediaConfiguration () {
     return {
       mediaConstraints: {
@@ -108,25 +116,33 @@
   function determinePublisher () {
 
     var config = Object.assign({},
-                   configuration,
-                   getUserMediaConfiguration());
+                      configuration,
+                      getAuthenticationParams(),
+                      getUserMediaConfiguration());
+
     var rtcConfig = Object.assign({}, config, {
                       protocol: getSocketLocationFromProtocol().protocol,
                       port: getSocketLocationFromProtocol().port,
                       streamName: config.stream1,
                       streamType: 'webrtc'
                    });
+
     var rtmpConfig = Object.assign({}, config, {
                       protocol: 'rtmp',
                       port: serverSettings.rtmpport,
                       streamName: config.stream1,
-                      width: config.cameraWidth,
-                      height: config.cameraHeight,
                       backgroundColor: '#000000',
                       swf: '../../lib/red5pro/red5pro-publisher.swf',
                       swfobjectURL: '../../lib/swfobject/swfobject.js',
-                      productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
+                      productInstallURL: '../../lib/swfobject/playerProductInstall.swf',
+                      mediaConstraint: {
+                        video: {
+                          width: config.cameraWidth,
+                          height: config.cameraHeight,
+                        }
+                      }
                    });
+
     var publishOrder = config.publisherFailoverOrder
                             .split(',')
                             .map(function (item) {
@@ -162,9 +178,8 @@
   }
 
   function beginStreamListCall () {
-
     var host = configuration.host;
-    var port = serverSettings.httpport;
+    var port = serverSettings.hlsport.toString();
     var portURI = (port.length > 0 ? ':' + port : '');
     var baseUrl = isSecure ? protocol + '://' + host : protocol + '://' + host + portURI;
     var url = baseUrl + '/' + configuration.app + '/streams.jsp';
@@ -195,12 +210,10 @@
         console.error('[Two-Way] :: Error - Could not request Stream List. ' + jsonError);
         listError(error);
        });
-
   }
 
   function recieveList (listIn) {
     var found = false;
-
     for (var i = listIn.length - 1; i >= 0; i--) {
       found = listIn[i].name == configuration.stream2;
       if(found) break;
@@ -244,23 +257,23 @@
   }
 
   function determineSubscriber () {
-    var config = Object.assign({}, configuration, defaultSubscriberConfiguration);
+
+    var config = Object.assign({},
+      configuration,
+      defaultSubscriberConfiguration,
+      getAuthenticationParams());
+
     var rtcConfig = Object.assign({}, config, {
       protocol: getSocketLocationFromProtocol().protocol,
       port: getSocketLocationFromProtocol().port,
       subscriptionId: 'subscriber-' + instanceId,
-      streamName: config.stream2,
-      bandwidth: {
-        audio: 50,
-        video: 256,
-        data: 30 * 1000 * 1000
-      }
+      streamName: config.stream2
     })
+
     var rtmpConfig = Object.assign({}, config, {
       protocol: 'rtmp',
       port: serverSettings.rtmpport,
       streamName: config.stream2,
-      mimeType: 'rtmp/flv',
       useVideoJS: false,
       width: config.cameraWidth,
       height: config.cameraHeight,
@@ -268,6 +281,7 @@
       swfobjectURL: '../../lib/swfobject/swfobject.js',
       productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
     })
+
     var hlsConfig = Object.assign({}, config, {
       protocol: protocol,
       port: isSecure ? serverSettings.hlssport : serverSettings.hlsport,

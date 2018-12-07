@@ -67,6 +67,18 @@
     console.log('[Red5ProPublisher] Unpublish Complete.');
   }
 
+  function getAuthenticationParams () {
+    var auth = configuration.authentication;
+    return auth && auth.enabled
+      ? {
+        connectionParams: {
+          username: auth.username,
+          password: auth.password
+        }
+      }
+      : {};
+  }
+
   function getUserMediaConfiguration () {
     return {
       mediaConstraints: {
@@ -78,14 +90,15 @@
 
   function determinePublisher () {
     var config = Object.assign({},
-                    configuration,
-                    defaultConfiguration,
-                    getUserMediaConfiguration());
+                      configuration,
+                      defaultConfiguration,
+                      getAuthenticationParams(),
+                      getUserMediaConfiguration());
+
     var rtcConfig = Object.assign({}, config, {
                       protocol: getSocketLocationFromProtocol().protocol,
                       port: getSocketLocationFromProtocol().port,
-                      streamName: config.stream1,
-                      streamType: 'webrtc'
+                      streamName: config.stream1
                    });
     return new red5prosdk.RTCPublisher().init(rtcConfig);
   }

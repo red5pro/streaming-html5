@@ -30,6 +30,7 @@
   var streamTitle = document.getElementById('stream-title');
   var statisticsField = document.getElementById('statistics-field');
   var cameraSelect = document.getElementById('camera-select');
+  var publishButton = document.getElementById('publish-button');
 
   var protocol = serverSettings.protocol;
   var isSecure = protocol == 'https';
@@ -76,6 +77,18 @@
     console.log('[Red5ProPublisher] Unpublish Complete.');
   }
 
+  function getAuthenticationParams () {
+    var auth = configuration.authentication;
+    return auth && auth.enabled
+      ? {
+        connectionParams: {
+          username: auth.username,
+          password: auth.password
+        }
+      }
+      : {};
+  }
+
   function getUserMediaConfiguration () {
     return Object.assign({}, mediaConstraints);
   }
@@ -87,23 +100,27 @@
       return;
     }
 
-    if (selection && selection !== 'undefined' && selection !== SELECT_DEFAULT) {
-      // assign selected camera to defined UserMedia.
-      if (mediaConstraints.video && typeof mediaConstraints.video !== 'boolean') {
-        mediaConstraints.video.deviceId = { exact: selection }
-      }
-      else {
-        mediaConstraints.video = {
-          deviceId: { exact: selection }
-        };
-      }
-      // Kick off.
-      unpublish()
-        .then(startPublishSession)
-        .catch(function (error) {
-          console.error('[Red5ProPublisher] :: Error in publishing - ' + error);
-         });
+    var validSelection = selection && selection !== 'undefined' && selection !== SELECT_DEFAULT;
+    publishButton.disabled = !validSelection;
+  }
+
+  function onPublishRequest () {
+    var selection = cameraSelect.value;
+    if (mediaConstraints.video && typeof mediaConstraints.video !== 'boolean') {
+      mediaConstraints.video.deviceId = { exact: selection }
     }
+    else {
+      mediaConstraints.video = {
+        deviceId: { exact: selection }
+      };
+    }
+    // Kick off.
+    unpublish()
+      .then(startPublishSession)
+      .catch(function (error) {
+        console.error('[Red5ProPublisher] :: Error in unpublishing - ' + error);
+        startPublishSession();
+       });
   }
 
   function waitForSelect () {
@@ -121,6 +138,9 @@
         cameraSelect.innerHTML = options.join(' ');
         cameraSelect.addEventListener('change', function () {
           onCameraSelect(cameraSelect.value);
+        });
+        publishButton.addEventListener('click', function() {
+          onPublishRequest();
         });
       })
       .catch(function (error) {
@@ -150,9 +170,11 @@
 
   function determinePublisher () {
     var config = Object.assign({},
-                    configuration,
-                    defaultConfiguration,
-                    getUserMediaConfiguration());
+                      configuration,
+                      defaultConfiguration,
+                      getAuthenticationParams(),
+                      getUserMediaConfiguration());
+
     var rtcConfig = Object.assign({}, config, {
                       protocol: getSocketLocationFromProtocol().protocol,
                       port: getSocketLocationFromProtocol().port,
@@ -163,16 +185,22 @@
 
   function unpublish () {
     return new Promise(function (resolve, reject) {
-      targetPublisher.unpublish()
-        .then(function () {
-          onUnpublishSuccess();
-          resolve();
-        })
-        .catch(function (error) {
-          var jsonError = typeof error === 'string' ? error : JSON.stringify(error, 2, null);
-          onUnpublishFail('Unmount Error ' + jsonError);
-          reject(error);
-        });
+      if (targetPublisher) {
+        targetPublisher.unpublish()
+          .then(function () {
+            onUnpublishSuccess();
+            resolve();
+          })
+          .catch(function (error) {
+            var jsonError = typeof error === 'string' ? error : JSON.stringify(error, 2, null);
+            onUnpublishFail('Unmount Error ' + jsonError);
+            reject(error);
+          });
+      }
+      else {
+        resolve();
+      }
+
     });
   }
 

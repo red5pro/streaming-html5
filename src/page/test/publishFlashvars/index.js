@@ -77,32 +77,32 @@
     console.log('[Red5ProPublisher] Unpublish Complete.');
   }
 
+  function getAuthenticationParams () {
+    var auth = configuration.authentication;
+    return auth && auth.enabled
+      ? {
+        connectionParams: {
+          username: auth.username,
+          password: auth.password
+        }
+      }
+      : {};
+  }
+
   function getUserMediaConfiguration () {
     return {
-      audio: configuration.useAudio ? configuration.mediaConstraints.audio : false,
-      video: configuration.useVideo ? configuration.mediaConstraints.video : false,
-      frameRate: configuration.frameRate
+      mediaConstraints: {
+        audio: configuration.useAudio ? configuration.mediaConstraints.audio : false,
+        video: configuration.useVideo ? configuration.mediaConstraints.video : false,
+        frameRate: configuration.frameRate
+      }
     };
   }
 
   var config = Object.assign({},
-                 configuration,
-                 getUserMediaConfiguration());
-  var rtmpConfig = Object.assign({}, config, {
-                    protocol: 'rtmp',
-                    port: serverSettings.rtmpport,
-                    streamName: config.stream1,
-                    width: config.cameraWidth,
-                    height: config.cameraHeight,
-                    swf: '../../lib/red5pro/red5pro-publisher.swf',
-                    swfobjectURL: '../../lib/swfobject/swfobject.js',
-                    productInstallURL: '../../lib/swfobject/playerProductInstall.swf',
-                    framerate: getParam('framerate'),
-                    bandwidth: getParam('bandwidth'),
-                    quality: getParam('quality'),
-                    profile: getParam('profile'),
-                    level: getParam('level')
-  });
+                  configuration,
+                  getAuthenticationParams(),
+                  getUserMediaConfiguration());
 
   function unpublish () {
     return new Promise(function (resolve, reject) {
@@ -121,6 +121,26 @@
   }
 
   document.getElementById('publish-button').addEventListener('click', function () {
+  var rtmpConfig = Object.assign({}, config, {
+                    protocol: 'rtmp',
+                    port: serverSettings.rtmpport,
+                    streamName: config.stream1,
+                    swf: '../../lib/red5pro/red5pro-publisher.swf',
+                    swfobjectURL: '../../lib/swfobject/swfobject.js',
+                    productInstallURL: '../../lib/swfobject/playerProductInstall.swf',
+                    mediaConstraints: {
+                      video: configuration.useVideo ? {
+                        width: config.cameraWidth,
+                        height: config.cameraHeight,
+                        framerate: getParam('framerate'),
+                        bandwidth: getParam('bandwidth'),
+                        quality: getParam('quality'),
+                        profile: getParam('profile'),
+                        level: getParam('level')
+                      } : false,
+                      audio: configuration.useAudio
+                    }
+    });
     // Kick off.
     targetPublisher = new red5prosdk.RTMPPublisher();
     targetPublisher.init(rtmpConfig)

@@ -46,23 +46,25 @@ Additionally, the **Red5 Pro HTML SDK** allows for automatic detection and failo
 ## WebRTC
 The Red5 Pro HTML SDK WebRTC Subscriber solution utilizes WebSockets and WebRTC support in modern browsers.
 
-_It is *highly* recommended to include [adapter.js](https://github.com/webrtc/adapter) when targeting the WebRTC subscriber._
+_It is *highly* recommended to include [adapter.js](https://github.com/webrtcHacks/adapter) when targeting the WebRTC subscriber._
 
 ### WebRTC Configuration Properties
 | Property | Required | Default | Description |
 | :--- | :---: | :---: | :--- |
-| protocol | [x] | `rtmp` | The protocol for the WebSocket communication. |
-| port | [x] | `1935` | The port on the host that the WebSocket server resides on. |
+| protocol | [x] | `wss` | The protocol for the WebSocket communication. |
+| port | [x] | `8083` | The port on the host that the WebSocket server resides on. |
 | app | [x] | `live` | The webapp name that the WebSocket is listening on. |
 | host | [x] | *None* | The IP or address that the WebSocket server resides on. |
 | streamName | [x] | *None* | The name of the stream to subscribe to. |
 | mediaElementId | [-] | `red5pro-subscriber` | The target `video` or `audio` element `id` attribute which will display the stream. |
 | iceServers | [x] | *None* ([Test](https://webrtc.github.io/samples/src/content/peerconnection/trickle-ice/)) | The list of ICE servers to use in requesting a Peer Connection. |
+| iceTransport | [-] | `UDP` | The transport type to use in ICE negotiation. Either `UDP` or `TCP` |
 | subscriptionId | [x] | auto-generated | A unique string representing the requesting client. |
-| bandwidth | [-] | `{audio: 56, video: 512}` | A configuration object to setup playback. |
 | connectionParams | [-] | `undefined` | An object of connection parameters to send to the server upon connection request. |
 | videoEncoding | [-] | *None* | Specifies target video encoder. |
 | audio Encoding | [-] | *None* | Specifies target audio encoder. |
+| autoLayoutOrientation | [-] | `true` | Flag to allow SDK to auto-orientation the layout of `video` element based on broadcast metadata. _Mobile publishers broadcast with orientation._ |
+| maintainConnectionOnSubscribeErrors | [-] | `false` | Flag to maintain previously established `WebSocket` connection on any failure within the `subscribe` request flow. [Example](https://github.com/red5pro/streaming-html5/tree/master/src/page/test/subscribeRetryOnInvalidName) |
 
 #### Video Encoding Configuration
 By not providing the `videoEncoding` attribute in the WebRTC Subscriber configuration, the server will choose the default encoder to use. If you do not wish for the server to default, you can provide the following values for the property:
@@ -88,7 +90,7 @@ _index.html_:
 <html>
   <head>
     <!-- Recommended shim for cross-browser WebRTC support. -->
-    <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
+    <script src="https://webrtchacks.github.io/adapter/adapter-latest.js"></script>
     <!-- Default Red5 Pro Playback Control styles. -->
     <link href="lib/red5pro/red5pro-media.css" rel="stylesheet">
     <!-- Fullscreen shim. -->
@@ -123,10 +125,10 @@ _main.js_:
     app: 'live',
     streamName: 'mystream',
     iceServers: [{urls: 'stun:stun2.l.google.com:19302'}],
-    bandwidth: {
-      audio: 56,
-      video: 512
-    }
+    mediaElementId: 'red5pro-subscriber',
+    subscriptionId: 'mystream' + Math.floor(Math.random() * 0x10000).toString(16),
+    videoEncoding: 'NONE',
+    audioEncoding: 'NONE'
   })
   .then(function(subscriber) {
     // `subcriber` is the WebRTC Subscriber instance.
@@ -163,7 +165,6 @@ The **Red5 Pro HTML SDK** supports the following SWF integration:
 | streamName | [x] | *None* | The stream name to subscribe to. |
 | mediaElementId | [-] | `red5pro-subscriber` | The target `video` or `audio` element `id` attribute which will display the stream. |
 | buffer | [-] | `1` | The amount ot buffer the stream (in seconds). |
-| mimeType | [x] | `rtmp/flv` | The __mimeType__ to assign the source added to the `video` or `audio` element |
 | connectionParams | [-] | `undefined` | An object of connection parameters to send to the server upon connection request. |
 | width | [x] | `640` | The width of the video element within the SWF movie. |
 | height | [x] | `480` | The height of the video element within the SWF movie. |
@@ -216,6 +217,13 @@ _main.js_:
     app: 'live',
     streamName: 'mystream',
     swf: 'lib/red5pro-subscriber.swf'
+    productInstallURL: 'lib/swfobject/playerProductInstall.swf',
+    minFlashVersion: '10.0.0',
+    buffer: 1,
+    width: 640,
+    height: 480,
+    embedWidth: '100%',
+    embedHeight: '100%'
   })
   .then(function(subscriber) {
     // `subcriber` is the Flash/RTMP Subscriber instance.
@@ -247,6 +255,9 @@ The Red5 Pro HTML SDK HLS Subscriber.
 | streamName | [x] | *None* | The stream name to subscribe to. |
 | mediaElementId | [-] | `red5pro-subscriber` | The target `video` or `audio` element `id` attribute which will display the stream. |
 | mimeType | [x] | `application/x-mpegURL` | The mime-type of the stream source. |
+| autoLayoutOrientation | [-] | `true` | Flag to allow SDK to auto-orientation the layout of `video` element based on broadcast metadata. _Mobile publishers broadcast with orientation._ |
+| socketParams | [-] | `undefined` | By providing a `socketParams` property, you turn on a verification system that will pass the provided `connectionParams` to a WebSocket endpoint (much like how the WebRTC subscriber does in verification). |
+| connectionParams | [-] |  `undefined` | An object of connection parameters to send to the server upon connection request. |
 
 ### HLS Example
 _index.html_:
@@ -288,7 +299,8 @@ _main.js_:
     app: 'live',
     host: 'localhost',
     streamName: 'mystream',
-    mimeType: 'application/x-mpegURL'
+    mimeType: 'application/x-mpegURL',
+    mediaElementId: 'red5pro-subscriber'
   })
   .then(function(subscriber) {
     // `subcriber` is the HLS Subscriber instance.
@@ -310,6 +322,18 @@ _main.js_:
 # Auto Failover and Order
 While you can specifically target a player - as described in the previous sections - you may want to let the library select the optimal player based on browser compatibility per support flavors.
 
+## Important Note
+
+It is important to note that the failover mechanism of the SDK is driven by browser support and does not depend on any third-party libraries.
+
+As such, specific failover targets - such as HLS - require native browser support. In the case of HLS, this means failover and playback are limited to Safari Mobile and Safari Desktop when using our SDK.
+
+It is entirely possible to playback streams in HLS using a 3rd-Party library (such as [VideoJS](https://videojs.com/)), but you will not be able to do so while utilizing the Red5 Pro HTML SDK.
+
+> For more information on how to playback HLS in browsers without native support, please refer to the *Using VideoJS for Playback* section of the [Migration Guide](https://www.red5pro.com/docs/streaming/migrationguide.html#migrating-from-350-to-400).
+
+## Initialization
+
 As you may have noticed form the previous section, the source configuration for each player has differing property requirements. This is due simply to the technologies and playback strategies that each use:
 
 * The **WebRTC** player utilizes [WebSockets](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API) and [WebRTC](https://developer.mozilla.org/en-US/docs/Glossary/WebRTC) to subscribe to a video to be displayed in an [HTML5 video](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/video) element.
@@ -325,7 +349,7 @@ _index.html_:
 <html>
   <head>
     <!-- WebRTC Shim -->
-    <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
+    <script src="https://webrtchacks.github.io/adapter/adapter-latest.js"></script>
     <!-- Default Red5 Pro Playback Control styles. -->
     <link href="lib/red5pro/red5pro-media.css" rel="stylesheet">
     <!-- Fullscreen shim. -->

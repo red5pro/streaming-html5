@@ -10,13 +10,16 @@ Additionally, it is currently not possible (as of the time of this writing, *Nov
 
 > You will need to use the [Subscribe Screen Share](../subscribeScreenShare) test in order to check this test is working.
 
-### Example Code
+**Please refer to the [Basic Publisher Documentation](../publish/README.md) to learn more about the basic setup.**
+
+## Example Code
+
 - **[index.html](index.html)**
 - **[index.js](index.js)**
 
-## How to Publish a Screen Share
+# How to Publish a Screen Share
 
-Utilize the `onGetUserMedia` configuration attribute to provide the constraints returned from the [getScreenId](https://www.webrtc-experiment.com/getScreenId/) library:
+Utilize the `onGetUserMedia` configuration attribute to provide the constraints returned from the [getScreenId](https://www.webrtc-experiment.com/getScreenId/) library, and include any custom defined fallback values:
 
 ```js
 function capture (cb) {
@@ -26,12 +29,39 @@ function capture (cb) {
 }
 
 function setupPublisher (constraints) {
+  var vw = parseInt(cameraWidthField.value);
+  var vh = parseInt(cameraHeightField.value);
+  var fr = parseInt(framerateField.value);
+
   var config = {
     protocol: 'https',
     port: '8083',
     streamName: 'mystream',
     onGetUserMedia: function () {
-      return navigator.mediaDevices.getUserMedia(constraints)
+      var c = Object.assign({}, constraints);
+      if (c.video.optional) {
+        // chrome
+        c.video.optional.push({
+          maxWidth: vw
+        }, {
+          maxHeight: vh
+        }, {
+          maxFrameRate: fr
+        });
+      }
+      else if (c.video.mediaSource === 'window') {
+        // moz
+        c.video.width = {
+          exact: vw
+        };
+        c.video.height = {
+          exact: vh
+        };
+        c.video.frameRate = {
+          exact: fr
+        }
+      }
+      return navigator.mediaDevices.getUserMedia(c);
     }
   };
 
@@ -48,6 +78,10 @@ function setupPublisher (constraints) {
 capture(setupPublisher);
 ```
 
-### View Your Stream
+# Settings
+
+Included in the test is a form to provide any custom settings you would prefer. We attempt to override these settings for the media where applicable, but it is the plugin and/or browser that will most likely determine which to use.
+
+# View Your Stream
 
 Launch the [Subscriber Screen Share Test](../subscribeScreenShare) in another tab!

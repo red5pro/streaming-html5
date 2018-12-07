@@ -65,6 +65,7 @@ In a browser:
 
         var rtcPublisher = new red5prosdk.RTCPublisher();
         var rtcSubscriber = new red5prosdk.RTCSubscriber();
+
         var config = {
           protocol: 'ws',
           host: 'localhost',

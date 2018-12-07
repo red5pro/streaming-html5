@@ -43,7 +43,7 @@ Additionally, the **Red5 Pro HTML SDK** allows for automatic detection and failo
 ## WebRTC
 The Red5 Pro HTML SDK WebRTC Publisher solution utilizes WebSockets and WebRTC support in modern browsers.
 
-_It is *highly* recommended to include [adapter.js](https://github.com/webrtc/adapter) when targeting the WebRTC publisher._
+_It is *highly* recommended to include [adapter.js](https://github.com/webrtcHacks/adapter) when targeting the WebRTC publisher._
 
 > WebRTC-based Publishers need to be delivered over HTTPS due to browser security restrictions related to `getUserMedia` which accesses the Camera and Microphone of your machine. [Read more here](https://sites.google.com/a/chromium.org/dev/Home/chromium-security/deprecating-powerful-features-on-insecure-origins).
 
@@ -51,13 +51,15 @@ _It is *highly* recommended to include [adapter.js](https://github.com/webrtc/ad
 | Property | Required | Default | Description |
 | :--- | :---: | :---: | :--- |
 | protocol | [x] | `wss` | The protocol for the WebSocket communication; `ws` or `wss`. |
-| port | [x] | `8033` | The port on the host that the WebSocket server resides on; `8081` or `8083`. |
+| port | [x] | `8083` | The port on the host that the WebSocket server resides on; `8081` or `8083`. |
 | app | [x] | `live` | The webapp name that the WebSocket is listening on. |
 | streamMode | [x] | `live` | The mode to broadcast; `live`, `record` or `append`. |
+| keyFramerate | [-] | `3000` | The framerate (in milliseconds) between sending key frames in broadcast. |
 | host | [x] | *None* | The IP or address that the WebSocket server resides on. |
 | streamName | [x] | *None* | The name of the stream to subscribe to. |
 | mediaElementId | [-] | `red5pro-publisher` | The target `video` or `audio` element `id` attribute which will display the preview media. |
 | iceServers | [x] | *None* ([Test](https://webrtc.github.io/samples/src/content/peerconnection/trickle-ice/)) | The list of ICE servers to use in requesting a Peer Connection. |
+| iceTransport | [-] | `UDP` | The transport type to use in ICE negotiation. Either `UDP` or `TCP` |
 | bandwidth | [-] |`{audio: 56, video: 512}` | A configuration object to setup bandwidth setting in publisher. |
 | connectionParams | [-] | `undefined` | An object of connection parameters to send to the server upon connection request. |
 | mediaConstraints | [x] | [see below](#webrtc-mediaconstraints) | A object representative of the [Media Constraints](https://developer.mozilla.org/en-US/docs/Web/API/MediaStreamConstraints) to use while setting up the Media (via `getUserMedia` internally to the SDK). |
@@ -71,7 +73,7 @@ _index.html_:
 <html>
   <head>
     <!-- Recommended shim for cross-browser WebRTC support. -->
-    <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
+    <script src="https://webrtchacks.github.io/adapter/adapter-latest.js"></script>
   </head>
   <body>
     <!-- `autoplay` will immediately show preview video. `muted` will mute the audio to avoid feedback noise. -->
@@ -99,7 +101,28 @@ _main.js_:
       host: 'localhost',
       app: 'live',
       streamName: 'mystream',
-      iceServers: [{urls: 'stun:stun2.l.google.com:19302'}]
+      iceServers: [{urls: 'stun:stun2.l.google.com:19302'}],
+      streamMode: 'live',
+      mediaElementId: 'red5pro-publisher',
+      bandwidth: {
+        audio: 56,
+        video: 512
+      },
+      mediaConstraints: {
+        audio: true,
+        video: {
+          width: {
+            exact: 640
+          },
+          height: {
+            exact: 480
+          },
+          frameRate: {
+            min: 8
+            max: 24
+          }
+        }
+      }
     })
     .then(function() {
       // Invoke the publish action.
@@ -176,7 +199,7 @@ An example of providing `onGetUserMedia` as a configuration:
 ```js
 {
   host: "localhost",
-  protocol: 8083,
+  protocol: "ws",
   port: 8081,
   streamName: "mystream",
   iceServers: [{urls: 'stun:stun2.l.google.com:19302'}],
@@ -262,7 +285,25 @@ _main.js_:
       host: 'localhost',
       app: 'live',
       streamName: 'mystream',
-      swf: 'lib/red5pro/red5pro-publisher.swf'
+      swf: 'lib/red5pro/red5pro-publisher.swf',
+      productInstallURL: 'lib/swfobject/playerProductInstall.swf',
+      minFlashVersion: '10.0.0',
+      streamMode: 'live',
+      mediaElementId: 'red5pro-publisher',
+      embedWidth: '100%',
+      embedHeight: '100%',
+      mediaConstraints: {
+        audio: true,
+        video: {
+          width: 640,
+          height: 480,
+          framerate: 15,
+          bandwidth: 50000,
+          quality: 80,
+          profile: 'baseline',
+          level: '3.1'
+        }
+      }
     })
     .then(function() {
       // Invoke the publish action.
@@ -334,7 +375,7 @@ _index.html_:
 <html>
   <head>
     <!-- Recommended shim for cross-browser WebRTC support. -->
-    <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
+    <script src="https://webrtchacks.github.io/adapter/adapter-latest.js"></script>
   </head>
   <body>
     <video id="red5pro-publisher" autoplay muted></video>

@@ -16,6 +16,7 @@
       </div>
       {{> test-info testTitle='Subscriber Screen Share Test'}}
       {{> status-field-subscriber}}
+      {{> statistics-field}}
       <div class="centered">
         <video id="red5pro-subscriber"
                 controls="controls" autoplay="autoplay" playsinline
@@ -23,7 +24,7 @@
                 width="640" height="480">
         </video>
         <audio id="red5pro-audio"
-                controls autoplay
+                controls autoplay="autoplay" playsinline
                 style="display: none;"></audio>
       </div>
     </div>

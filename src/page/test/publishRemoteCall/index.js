@@ -77,6 +77,18 @@
     console.log('[Red5ProPublisher] Unpublish Complete.');
   }
 
+  function getAuthenticationParams () {
+    var auth = configuration.authentication;
+    return auth && auth.enabled
+      ? {
+        connectionParams: {
+          username: auth.username,
+          password: auth.password
+        }
+      }
+      : {};
+  }
+
   function getUserMediaConfiguration () {
     return {
       mediaConstraints: {
@@ -86,27 +98,41 @@
     };
   }
 
+  function getRTMPMediaConfiguration () {
+    return {
+      mediaConstraints: {
+        audio: configuration.useAudio ? configuration.mediaConstraints.audio : false,
+        video: configuration.useVideo ? {
+                width: configuration.cameraWidth,
+                height: configuration.cameraHeight
+              } : false
+      }
+    }
+  }
+
   function determinePublisher () {
 
     var config = Object.assign({},
-                   configuration,
-                   getUserMediaConfiguration());
+                     configuration,
+                      getAuthenticationParams(),
+                     getUserMediaConfiguration());
+
     var rtcConfig = Object.assign({}, config, {
                       protocol: getSocketLocationFromProtocol().protocol,
                       port: getSocketLocationFromProtocol().port,
                       streamName: config.stream1
                    });
+
     var rtmpConfig = Object.assign({}, config, {
                       protocol: 'rtmp',
                       port: serverSettings.rtmpport,
                       streamName: config.stream1,
-                      width: config.cameraWidth,
-                      height: config.cameraHeight,
                       backgroundColor: '#000000',
                       swf: '../../lib/red5pro/red5pro-publisher.swf',
                       swfobjectURL: '../../lib/swfobject/swfobject.js',
                       productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
-                   });
+                    }, getRTMPMediaConfiguration());
+
     var publishOrder = config.publisherFailoverOrder
                             .split(',')
                             .map(function (item) {

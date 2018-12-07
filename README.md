@@ -6,14 +6,13 @@
   <a href="#publishing">publishing</a> &bull;
   <a href="#subscribing">subscribing</a>
 </p>
--------
 
 # Red5 Pro HTML5 Streaming Testbed
 This repository contains a simple project with a number of examples that can be used for testing and reference for the Red5 Pro HTML SDK.
 
 > These examples are also shipped with the [Red5 Pro Server](https://account.red5pro.com/download) and can be found in the webapp `webrtcexamples`.
 
-##Requirements
+## Requirements
 
 You will need a functional, running Red5 Pro server web- (or locally-) accessible for the client browser (mobile & desktop) to connect to.
 
@@ -52,7 +51,7 @@ To define the **Host** with the server instance's IP, click the _Host_ field f t
 
 ## Examples
 
-### [Publishing](src/page/test/publish)
+### Publishing
 
 | **[Publisher](src/page/test/publish)**
 | :-----
@@ -70,6 +69,10 @@ To define the **Host** with the server instance's IP, click the _Host_ field f t
 | :-----
 | *Demonstrates selecting the desired camera to publish with.*
 
+| **[MediaStream Swap](src/page/test/publishMediaStreamCamera)**
+| :-----
+| *Demonstrates using `replaceTrack` to swap in a different Camera source dynamically for WebRTC-based Publishers.*
+
 | **[Image Capture](src/page/test/publishImageCapture)**
 | :-----
 | *Demonstrates capturing an image of a live video being published.*
@@ -77,14 +80,6 @@ To define the **Host** with the server instance's IP, click the _Host_ field f t
 | **[Mute](src/page/test/publishMute)**
 | :-----
 | *Muting and unmuting audio for a live video being published.*
-
-| **[Stream Manager](src/page/test/publishStreamManager)**
-| :-----
-| *Demonstrates utilizing the Red5 Pro Stream Manager API to publish to an autoscaling cluster's origin.*
-
-| **[Stream Manager Proxy](src/page/test/publishStreamManagerProxy)**
-| :-----
-| *Demonstrates utilizing the Red5 Pro Stream Manager as an SSL WebSocket Proxy to publish WebRTC to an autoscaling cluster's origin.*
 
 | **[Record](src/page/test/publishRecord)**
 | :-----
@@ -98,20 +93,54 @@ To define the **Host** with the server instance's IP, click the _Host_ field f t
 | :-----
 | *Demonstrates sending a remote message to all subscribed clients.*
 
+| **[Round Trip Authentication](src/page/test/publishRoundTripAuth)**
+| :-----
+| *An example of utilizing round-trip authentication with Red5 Pro.*
+
 | **[Shared Object](src/page/test/publishSharedObject)**
 | :-----
 | *Demonstrates using remote Shared Object to send and recieve information between connected clients.*
-
-| **[Two-Way](src/page/test/twoWay)**
-| :-----
-| *Demonstrates simultaneously publishing while subscribing - allowing a conversation. Includes stream detection and auto-connection.*
 
 | **[Screen Share](src/page/test/publishScreenShare)**
 | :-----
 | *An example of utilizing the screen sharing capabilities of* **Chrome** *and* **Firefox**.<br> For use with Subscribe Screen Share example.
 
+| **[Two-Way](src/page/test/twoWay)**
+| :-----
+| *Demonstrates simultaneously publishing while subscribing - allowing a conversation. Includes stream detection and auto-connection.*
 
-### [Subscribing](src/page/test/subscribe)
+### Publishing - Stream Manager Examples
+
+| **[Stream Manager](src/page/sm-test/publishStreamManager)**
+| :-----
+| *Demonstrates utilizing the Red5 Pro Stream Manager API to publish to an autoscaling cluster's origin.*
+
+| **[Stream Manager Proxy](src/page/sm-test/publishStreamManagerProxy)**
+| :-----
+| *Demonstrates utilizing the Red5 Pro Stream Manager as an SSL WebSocket Proxy to publish WebRTC to an autoscaling cluster's origin.*
+
+| **[Stream Manager Provision Form](src/page/sm-test/publishStreamManagerProvisionForm)**
+| :-----
+| *Provides an easy form to POST a new Provision to the Stream Manager for ABR broadcasts. Once the provision is POSTed, use your favorite Media Encoder to broadcast the variants.*
+
+| **[Stream Manager Proxy Round Trip Authenticaion](src/page/sm-test/publishStreamManagerProxyRoundTripAuth)**
+| :-----
+| *An example of utilizing round-trip authentication with Red5 Pro over Stream Manager Proxy.*
+
+| **[Stream Manager Proxy Screen Share](src/page/sm-test/publishStreamManagerProxyScreenShare)**
+| :-----
+| *An example of utilizing the screen sharing capabilities of* **Chrome** *and* **Firefox**. *For use with Stream Manager Proxy Subscribe Screen Share example.*
+
+| **[Stream Manager Proxy Transcoder](src/page/sm-test/publishStreamManagerProxyTranscoderPOST)**
+| :-----
+| *Provides an easy form to POST a new Provision to the Stream Manager for ABR broadcasts and to start a single variant broadcast using the Transcoder.*
+
+| **[Two-Way Stream Manager Proxy](src/page/sm-test/TwoWayStreamManagerProxy)**
+| :-----
+| *The Two-Way example through a Stream Manager - including use of a proxy. Includes stream detection and auto-connection.*
+
+
+### Subscribing
 
 | **[Subscriber](src/page/test/subscribe)**
 | :-----
@@ -137,17 +166,13 @@ To define the **Host** with the server instance's IP, click the _Host_ field f t
 | :-----
 | *Demonstrates the failover mechanism of the Red5 Pro HTML SDK to select a subscriber based on browser support and to auto-reconnect on close of broadcast or loss of connection.*
 
-| **[Stream Manager](src/page/test/subscribeStreamManager)**
-| :-----
-| *Demonstrates utilizing the Red5 Pro Stream Manager API, and acting as SSL WebSocket Proxy, to access an Edge server IP to subscribe to a live stream.*
-
-| **[Stream Manager Proxy](src/page/test/subscribeStreamManagerProxy)**
-| :-----
-| *Demonstrates utilizing the Red5 Pro Stream Manager API to access an Edge server IP to subscribe to a live stream.*
-
 | **[Remote Call](src/page/test/subscribeRemoteCall)**
 | :-----
 | *Demonstrates receiving a remote message from broadcaster.*
+
+| **[Round Trip Authentication](src/page/test/subscribeRoundTripAuth)**
+| :-----
+| *An example of utilizing round-trip authentication with Red5 Pro over Stream Manager Proxy*
 
 | **[Shared Object](src/page/test/subscribeSharedObject)**
 | :-----
@@ -155,7 +180,37 @@ To define the **Host** with the server instance's IP, click the _Host_ field f t
 
 | **[Screen Share](src/page/test/subscribeScreenShare)**
 | :-----
-| *An example of utilizing the screen sharing capabilities of* **Chrome** *and* **Firefox**.<br> For use with Publish Screen Share example.
+| *An example of utilizing the screen sharing capabilities of* **Chrome** *and* **Firefox**. *For use with Publish Screen Share example.*
+
+### Subscribing - Stream Manager Examples
+
+| **[Stream Manager](src/page/sm-test/subscribeStreamManager)**
+| :-----
+| *Demonstrates utilizing the Red5 Pro Stream Manager API, and acting as SSL WebSocket Proxy, to access an Edge server IP to subscribe to a live stream.*
+
+| **[Stream Manager Proxy](src/page/sm-test/subscribeStreamManagerProxy)**
+| :-----
+| *Demonstrates utilizing the Red5 Pro Stream Manager API to access an Edge server IP to subscribe to a live stream.*
+
+| **[Stream Manager Proxy Round Trip Authentication](src/page/sm-test/subscribeStreamManagerProxyRoundTripAuth)**
+| :-----
+| *Demonstrates subscribing using round trip authentication.*
+
+| **[Stream Manager Proxy Transcoder (RTC)](src/page/sm-test/subscribeStreamManagerProxyTranscoder)**
+| :-----
+| *Demonstrates utilizing the Red5 Pro Stream Manager API to access Provisions and an Edge server IP to subscribe to a live WebRTC-based stream with Adaptive Bitrate Control.*
+
+| **[Stream Manager Proxy Transcoder (RTMP)](src/page/sm-test/subscribeStreamManagerProxyTranscoderRTMP)**
+| :-----
+| *Demonstrates utilizing the Red5 Pro Stream Manager API to access Provisions and an Edge server IP to subscribe to a live Flash-based stream with Adaptive Bitrate Control.*
+
+| **[Stream Manager Proxy Transcoder (HLS)](src/page/sm-test/subscribeStreamManagerProxyTranscoderHLS)**
+| :-----
+| *Demonstrates utilizing the Red5 Pro Stream Manager API to access Provisions and an Edge server IP to subscribe to a live HLS-based stream with Adaptive Bitrate Control.*
+
+| **[Stream Manager Proxy Screen Share](src/page/sm-test/subscribeStreamManagerProxyScreenShare)**
+| :-----
+| *An example of utilizing the screen sharing capabilities of* **Chrome** *and* **Firefox**. *For use with Publish Screen Share example.*
 
 ## Notes
 
