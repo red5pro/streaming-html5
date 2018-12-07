@@ -135,7 +135,7 @@
     console.log('[Red5ProPublisher] Unpublish Complete.');
     publishing = false;
   }
-  
+
   // Local lifecycle notifications.
   function onSubscriberEvent (event, name) {
     if (event.type !== 'Subscribe.Time.Update') {
@@ -200,11 +200,11 @@
         return targetPublisher.publish();
       })
       .then(function () {
-        if (!videoCheck.checked) { 
-          targetPublisher.muteVideo(); 
+        if (!videoCheck.checked) {
+          targetPublisher.muteVideo();
         }
         if (!audioCheck.checked) {
-          targetPublisher.muteAudio(); 
+          targetPublisher.muteAudio();
         }
         onPublishSuccess();
       })
@@ -391,7 +391,7 @@
         }
         self.subscriber = subscriber;
         subscriber.on('*', function(event){
-          onSubscriberEvent(event, self.getName()); 
+          onSubscriberEvent(event, self.getName());
         });
         return subscriber.subscribe();
       })
@@ -411,9 +411,10 @@
       return;
     }
     if (this.nextItem) {
+      var self = this;
       var timeout = setTimeout(function () {
         clearTimeout(timeout);
-        this.nextItem.load();
+        self.nextItem.load();
       }, 500);
     } else {
       setWaitTime();
@@ -461,7 +462,7 @@
     this.subscriber = undefined;
   }
   SubscriberItem.prototype.getName = function () {
-    return this.configuration.streamName;
+    return this.configuration ? this.configuration.streamName : undefined;
   }
 
   function loadNewSubscribers (list) {
