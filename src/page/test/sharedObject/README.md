@@ -1,16 +1,15 @@
-# Publish & Subscribe Shared Object
+# Shared Object
 
 This example demonstrates the use of Remote Shared Objects, which provides a mechanism to share and persist information across mutiple clients in real time, as well as sending messages to all clients that are connected to the object.
 
-**Please refer to the [Basic Subscriber Documentation](../subscribe/README.md) and [Basic Publisher Documentation](../publisher/README.md) to learn more about the basic setup.**
-
 ## Example Code
+
 - **[index.html](index.html)**
 - **[index.js](index.js)**
 
 # Setup
 
-Use of Shared objects requires an active stream - either publishing or subscribing. The content of the stream isn't important to the shared object itself, even a muted audio-only stream will be enough. Also, which stream you are connected to isn't important to which shared object you access, meaning that clients across multiple streams can use the same object, or there could be multiple overlapping objects in the same stream.
+This example demonstrates the use of Shared Objects while utilizing an already active stream connection; in this example, a Subscriber client. The content of the stream isn't important to the shared object itself, even a muted audio-only stream will be enough. Also, which stream you are connected to isn't important to which shared object you access, meaning that clients across multiple streams can use the same object, or there could be multiple overlapping objects in the same stream.
 
 To run the test, you will need at least two clients running the `Shared Object` example. This example searches active streams for the stream name set as `stream1`.
 

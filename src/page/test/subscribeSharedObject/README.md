@@ -4,6 +4,8 @@ This example demonstrates the use of Remote Shared Objects, which provides a mec
 
 **Please refer to the [Basic Subscriber Documentation](../subscribe/README.md) and [Basic Publisher Documentation](../publisher/README.md) to learn more about the basic setup.**
 
+> This example demonstrates how to reuse the underlying client connection for a Publisher to establish a SharedObject communication channel. It is possible to use Shared Objects without having a Publisher; please refer to [../sharedObject/README.md](../sharedObject/README.md) for more information.
+
 ## Example Code
 - **[index.html](index.html)**
 - **[index.js](index.js)**

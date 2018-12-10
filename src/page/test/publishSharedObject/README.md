@@ -4,6 +4,8 @@ This example demonstrates the use of Remote Shared Objects, which provides a mec
 
 **Please refer to the [Basic Publisher Documentation](../publish/README.md) to learn more about the basic setup.**
 
+> This example demonstrates how to reuse the underlying client connection for a Publisher to establish a SharedObject communication channel. It is possible to use Shared Objects without having a Publisher; please refer to [../sharedObject/README.md](../sharedObject/README.md) for more information.
+
 ## Example Code
 
 - **[index.html](index.html)**
@@ -11,7 +13,7 @@ This example demonstrates the use of Remote Shared Objects, which provides a mec
 
 # Setup
 
-Use of Shared objects requires an active stream - either publishing or subscribing. The content of the stream isn't important to the shared object itself, even a muted audio-only stream will be enough. Also, which stream you are connected to isn't important to which shared object you access, meaning that clients across multiple streams can use the same object, or there could be multiple overlapping objects in the same stream.
+This example demonstrates the use of Shared Objects while utilizing an already active stream connection; in this example, a Publisher client. The content of the stream isn't important to the shared object itself, even a muted audio-only stream will be enough. Also, which stream you are connected to isn't important to which shared object you access, meaning that clients across multiple streams can use the same object, or there could be multiple overlapping objects in the same stream.
 
 To run the test, you will need at least two clients running the `Shared Object` example. This example searches active streams for the stream name set as `stream1`.
 
