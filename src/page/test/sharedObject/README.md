@@ -15,14 +15,14 @@ To run the test, you will need at least two clients running the `Shared Object` 
 
 # Connection
 
-> Shared Objects require a successfully opened Web Socket.
+> Shared Objects require a successfully opened WebSocket.
 
-The first important piece to communication with a Shared Object is having an established WebSocket connection. In order to handle the communication complexities between the Red5 Pro Server and WebSocket, the Red5 Pro HTML SDK provides a `Socket` class to be used and provided to a `Red5ProSharedObject` instance.
+The first important piece to communication with a Shared Object is having an established WebSocket connection. In order to handle the communication complexities between the Red5 Pro Server and WebSocket, the Red5 Pro HTML SDK provides a `Red5ProSharedObjectSocket` class to be used and provided to a `Red5ProSharedObject` instance.
 
 To make a WebSocket connection to the Red5 Pro Server that will be used in communication with a Shared Object:
 
 ```js
-var socket = new Socket()
+var socket = new red5prosdk.Red5ProSharedObjectSocket()
 socket.init(config)
  .then(function(socket) {
     onSubscribeSuccess(socket);
