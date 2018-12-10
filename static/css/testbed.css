@@ -30,6 +30,10 @@ code {
   padding-bottom: 2rem;
 }
 
+.hidden {
+  display: none;
+}
+
 .red5pro-media-container {
   text-align: justify;
 }
@@ -66,6 +70,12 @@ code {
   padding: 0.8rem 0;
   background-color: #eee;
   border-top: 1px solid black;
+}
+
+.error-field {
+  padding: 0.8rem 0;
+  background-color: rgb(255, 240, 240);
+  color: rgb(251, 19, 33);
 }
 
 .subscriber-status-field {
