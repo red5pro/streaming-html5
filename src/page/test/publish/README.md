@@ -74,7 +74,7 @@ When requesting to publish a stream using failover, you will need to provide an 
 
 ```js
 var config = {
-  rtcport: 8081,
+  rtcport: 5080,
   rtmpport: 1935
 };
 var rtcConfig = Object.assign({}, config, {
