@@ -283,19 +283,6 @@
       });
   }
 
-  function shutdown () {
-    function clearRefs () {
-      if (targetSubscriber) {
-        targetSubscriber.off('*', onSubscriberEvent);
-      }
-      targetSubscriber = undefined;
-      validationSubmit.innerText = 'Start Subscribing';
-      validationSubmit.disabled = false;
-    }
-    unsubscribe().then(clearRefs).catch(clearRefs);
-    window.untrackbitrate();
-  }
-
   validationAddButton.addEventListener('click', getNewValidationParamForm);
   validationSubmit.addEventListener('click', function() {
     var wasSubscribing = targetSubscriber !== undefined;
@@ -306,6 +293,24 @@
     }
   });
 
+  var shuttingDown = false;
+  function shutdown() {
+    if (shuttingDown) return;
+    shuttingDown = true;
+    function clearRefs () {
+      if (targetSubscriber) {
+        targetSubscriber.off('*', onSubscriberEvent);
+      }
+      targetSubscriber = undefined;
+      validationSubmit.innerText = 'Start Subscribing';
+      validationSubmit.disabled = false;
+    }
+    unsubscribe().then(clearRefs).then(function () {
+      shuttingDown = false;
+    }).catch(clearRefs);
+    window.untrackBitrate();
+  }
+  window.addEventListener('pagehide', shutdown);
   window.addEventListener('beforeunload', shutdown);
 
 })(this, document, window.red5prosdk, window.red5prosdk_ext_stream_manager);
