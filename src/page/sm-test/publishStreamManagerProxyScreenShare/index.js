@@ -240,6 +240,7 @@
         audio: parseInt(bandwidthAudioField.value)
       }
     });
+    audioConfig.connectionParams = Object.assign(getAuthenticationParams(), audioConfig.connectionParams);
     new red5prosdk.RTCPublisher()
       .init(audioConfig)
       .then(function (publisherImpl) {
@@ -304,6 +305,7 @@
                           return navigator.mediaDevices.getUserMedia(c);
                         }
                     });
+    rtcConfig.connectionParams = Object.assign(getAuthenticationParams(), rtcConfig.connectionParams);
 
     new red5prosdk.RTCPublisher()
       .init(rtcConfig)
@@ -332,7 +334,10 @@
       .catch(respondToOriginFailure);
   }
 
-  window.addEventListener('beforeunload', function() {
+  var shuttingDown = false;
+  function shutdown() {
+    if (shuttingDown) return;
+    shuttingDown = true;
     function clearRefs () {
       if (targetPublisher) {
         targetPublisher.off('*', onPublisherEvent);
@@ -352,7 +357,9 @@
       })
       .then(clearRefs).catch(clearRefs);
     window.untrackBitrate();
-  });
+  }
+  window.addEventListener('pagehide', shutdown);
+  window.addEventListener('beforeunload', shutdown);
 
 })(this, document, window.red5prosdk, window.getScreenId);
 
