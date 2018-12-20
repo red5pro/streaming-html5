@@ -28,17 +28,9 @@
   var edgeData;
 
   var streamTitle = document.getElementById('stream-title');
-  var nameInput = document.getElementById('name-input');
-  var submitButton = document.getElementById('submit-button');
-  submitButton.addEventListener('click', function () {
-    var filename = nameInput.value;
-    if (filename.split('.').length < 2) {
-      alert('Expecting filename to have an extension (e.g., "filname.flv" or "filename.m3u8").');
-    }
-    else {
-      playback(filename);
-    }
-  });
+  var errorNotification = document.getElementById('error-notification');
+  var mediaListing = document.getElementById('media-file-listing');
+  var playlistListing = document.getElementById('playlist-listing');
 
   var protocol = serverSettings.protocol;
   var isSecure = protocol === 'https';
@@ -69,6 +61,7 @@
   }
   function onSubscribeFail (message) {
     console.error('[Red5ProSubsriber] Subscribe Error :: ' + message);
+    showErrorNotification(message);
   }
   function onSubscribeSuccess () {
     console.log('[Red5ProSubsriber] Subscribe Complete.');
@@ -80,14 +73,22 @@
     console.log('[Red5ProSubsriber] Unsubscribe Complete.');
   }
 
-  function requestPlaylist (configuration, vod) {
+  function showErrorNotification (message) {
+    errorNotification.innerText = message;
+    errorNotification.classList.remove('hidden');
+  }
+  function hideErrorNotification () {
+    errorNotification.classList.add('hidden');
+  }
+
+  function requestVOD (configuration, vodType /* mediafiles | playlists */) {
     var host = configuration.host;
     var app = configuration.app;
     var port = serverSettings.httpport.toString();
     var portURI = (port.length > 0 ? ':' + port : '');
     var baseUrl = isSecure ? protocol + '://' + host : protocol + '://' + host + portURI;
     var apiVersion = configuration.streamManagerAPI || '3.1';
-    var url = baseUrl + '/streammanager/api/' + apiVersion + '/media/' + app + '/playlists';
+    var url = baseUrl + '/streammanager/api/' + apiVersion + '/media/' + app + '/' + vodType;
     return new Promise(function (resolve, reject) {
         fetch(url)
           .then(function (res) {
@@ -96,35 +97,23 @@
                 return res.json();
             }
             else {
-              throw new TypeError('Could not properly parse response.');
+              throw new TypeError('[RequestVOD] :: Could not properly parse response.');
             }
           })
           .then(function (json) {
             if (json.errorMessage) {
               throw new Error(json.errorMessage);
             } else {
-              if (json.playlists && json.playlists.length > 0) {
-                var i = json.playlists.length;
-                var fileInfo;
-                while (--i > -1) {
-                  if (json.playlists[i].name === vod) {
-                    fileInfo = json.playlists[i];
-                    break;
-                  }
-                }
-                if (fileInfo) {
-                  resolve(fileInfo);
-                } else {
-                  throw new Error('File not found');
-                }
+              if (json[vodType]) {
+                resolve(json[vodType]);
               } else {
-                throw new Error('File not found.');
+                throw new Error('[RequestVOD] :: File not found');
               }
             }
           })
           .catch(function (error) {
-            var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
-            console.error('[SubscribeStreamManagerTest] :: Error - Could not request Edge IP from Stream Manager. ' + jsonError)
+            console.error('[SubscribeStreamManagerTest] :: Error - Could not request Playlists from Stream Manager. ' + error.message)
+            showErrorNotification(error.message);
             reject(error)
           });
     });
@@ -146,7 +135,7 @@
                 return res.json();
             }
             else {
-              throw new TypeError('Could not properly parse response.');
+              throw new TypeError('[RequestVOD] :: Could not properly parse response.');
             }
           })
           .then(function (json) {
@@ -157,15 +146,106 @@
             }
           })
           .catch(function (error) {
-            var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
-            console.error('[SubscribeStreamManagerTest] :: Error - Could not request Edge IP from Stream Manager. ' + jsonError)
+            console.error('[SubscribeStreamManagerTest] :: Error - Could not request Edge IP from Stream Manager. ' + error.message)
+            showErrorNotification(error.message);
             reject(error)
           });
     });
   }
 
+  var mediafiles = [];
+  var playlists = [];
+
+  function handlePlaylistSelect (event) {
+    hideErrorNotification();
+    var el = event.target;
+    var index = parseInt(el.dataset.index, 10);
+    if (!isNaN(index) && playlists.length > index) {
+      var next = function () {
+        respondToPlaylist(playlists[index]);
+      }
+      unsubscribe().then(next).catch(next);
+    }
+  }
+
+  function handleMediafileSelect (event) {
+    hideErrorNotification();
+    var el = event.target;
+    var index = parseInt(el.dataset.index, 10);
+    if (!isNaN(index) && mediafiles.length > index) {
+      var next = function () {
+        requestEdge(configuration, mediafiles[index].name)
+          .then(respondToEdge)
+          .catch(function (error) {
+            console.error(error);
+            showErrorNotification(error);
+          });
+      }
+      unsubscribe().then(next).catch(next);
+     }
+  }
+
+  function displayPlaylists (list) {
+    playlists = list;
+    var i, length = list.length;
+    var element;
+    var textNode;
+    while (playlistListing.firstChild) {
+      playlistListing.removeChild(playlistListing.firstChild);
+    }
+    if (length > 0) {
+      for (i = 0; i < length; i++) {
+        element = document.createElement('p');
+        textNode = document.createTextNode(list[i].name);
+        element.dataset.index = i;
+        element.appendChild(textNode);
+        playlistListing.appendChild(element);
+        if (i < length -1) {
+          element.classList.add('item-separator')
+        }
+        element.addEventListener('click', handlePlaylistSelect);
+      }
+    } else {
+      element = document.createElement('p');
+      element.classList.add('load-listing');
+      textNode = document.createTextNode('None found.');
+      element.appendChild(textNode);
+      playlistListing.appendChild(element);
+    }
+  }
+
+  function displayMediaFiles (list) {
+    mediafiles = list;
+    var i, length = list.length;
+    var element;
+    var textNode;
+    while (mediaListing.firstChild) {
+      mediaListing.removeChild(mediaListing.firstChild);
+    }
+    if (length > 0) {
+      for (i = 0; i < length; i++) {
+        element = document.createElement('p');
+        textNode = document.createTextNode(list[i].name);
+        element.dataset.index = i;
+        element.appendChild(textNode);
+        mediaListing.appendChild(element);
+        if (i < length -1) {
+          element.classList.add('item-separator')
+        }
+        element.addEventListener('click', handleMediafileSelect);
+      }
+    } else {
+      element = document.createElement('p');
+      element.classList.add('load-listing');
+      textNode = document.createTextNode('None found.');
+      element.appendChild(textNode);
+      mediaListing.appendChild(element);
+    }
+  }
+
   function forceFallback (type) {
     if (type.toLowerCase() === 'hls') {
+      showErrorNotification('HLS not supported natively by browser.');
       throw new Error('HLS not supported natively by browser.');
     } else {
       useFLVFallback(edgeData.serverAddress, edgeData.scope, edgeData.name);
@@ -205,6 +285,10 @@
   function unsubscribe () {
     return new Promise(function(resolve, reject) {
       var subscriber = targetSubscriber
+      if (!subscriber) {
+        resolve();
+        return;
+      }
       subscriber.unsubscribe()
         .then(function () {
           targetSubscriber.off('*', onSubscriberEvent);
@@ -219,27 +303,6 @@
         });
     });
   }
-
-  var formats = {
-    rtmp: ['mp4', 'flv'],
-    hls: ['m3u8']
-  }
-
-  function determineFailoverOrderFromFilename (filename) {
-    var ext = filename.split('.')[1];
-    for (var key in formats) {
-      var i = formats[key].length;
-      while (--i > -1) {
-        if (formats[key][i] === ext) {
-          return key;
-        }
-      }
-    }
-    return configuration.subscriberFailoverOrder;
-  }
-
-  var retryCount = 0;
-  var retryLimit = 3;
 
   function respondToPlaylist (response) {
     var pathReg = /([^/]+)/g;
@@ -269,7 +332,7 @@
     });
     new red5prosdk.HLSSubscriber().init(hlsConfig)
       .then(function (subscriberImpl) {
-        streamTitle.innerText = configuration.stream1;
+        streamTitle.innerText = name;
         targetSubscriber = subscriberImpl;
         // Subscribe to events.
         targetSubscriber.on('*', onSubscriberEvent);
@@ -281,6 +344,7 @@
       .catch(function (error) {
         var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
         console.error('[Red5ProSubscriber] :: Error in HLS playback. ' + jsonError)
+        showErrorNotification('[Red5ProSubscriber] :: Error in HLS playback. ' + jsonError);
       });
   }
 
@@ -325,44 +389,33 @@
       });
   }
 
-  function respondToEdgeFailure (error) {
-    if (retryCount++ < retryLimit) {
-      var retryTimer = setTimeout(function () {
-        clearTimeout(retryTimer);
-        startup();
-      }, 1000);
-    }
-    else {
-      var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
-      console.error('[Red5ProSubscriber] :: Retry timeout in subscribing - ' + jsonError);
-    }
+  function getPlaylists () {
+    requestVOD(configuration, 'playlists')
+      .then(function (listing) {
+        displayPlaylists(listing);
+      })
+      .catch(function (error) {
+        displayPlaylists([]);
+        console.info(error);
+      });
   }
 
-  function startup () {
-    // Kick off.
-    if (configuration.subscriberFailoverOrder.toLowerCase() === 'hls') {
-      requestPlaylist(configuration, configuration.stream1)
-        .then(respondToPlaylist)
-        .catch(respondToEdgeFailure)
-    } else {
-      requestEdge(configuration, configuration.stream1)
-        .then(respondToEdge)
-        .catch(respondToEdgeFailure);
-    }
+  function getMediaFiles () {
+    requestVOD(configuration, 'mediafiles')
+      .then(function (listing) {
+        displayMediaFiles(listing);
+        getPlaylists();
+      })
+      .catch(function (error) {
+        displayMediaFiles([]);
+        getPlaylists();
+        console.info(error);
+      });
   }
 
-  function playback (filename) {
-
-    configuration.subscriberFailoverOrder = determineFailoverOrderFromFilename(filename);
-    configuration.stream1 = filename;
-
-    if (typeof targetSubscriber !== 'undefined') {
-      unsubscribe().then(startup).catch(startup);
-    }
-    else {
-      startup();
-    }
-  }
+  // start.
+  getMediaFiles();
+  // getPlaylists();
 
   // Clean up.
   window.addEventListener('beforeunload', function() {

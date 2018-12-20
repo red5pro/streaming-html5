@@ -234,7 +234,7 @@ Your initialization configuration for an `RTCPublisher` will look like the follo
     app: 'streammanager',
     streamName: 'mystream_1',
     protocol: 'wss',
-    port: 8083,
+    port: 443,
     mediaConstraints: {
       audio: true,
       video: {
@@ -362,7 +362,7 @@ Your initialization configuration for an `RTCSubscriber` will look like the foll
     app: 'streammanager',
     streamName: 'mystream_2',
     protocol: 'wss',
-    port: 8083,
+    port: 443,
     connectionParams: {
       host: '10.0.0.0',
       app: 'live'
