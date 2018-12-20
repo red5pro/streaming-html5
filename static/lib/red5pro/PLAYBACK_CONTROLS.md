@@ -268,8 +268,10 @@ The following example demonstrates how to utilize the [Playback Controls API](#p
               "video": 256
             },
             rtcConfiguration: {
-              iceServers: [{"urls": "stun:stun2.l.google.com:19302"}]
-            }
+              iceServers: [{urls: 'stun:stun2.l.google.com:19302'}],
+              iceCandidatePoolSize: 2,
+              bundlePolicy: 'max-bundle'
+            } // See https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/RTCPeerConnection#RTCConfiguration_dictionary
           };
           var config = Object.assign({},
             configuration,
