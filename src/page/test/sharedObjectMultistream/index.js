@@ -96,18 +96,6 @@
     };
   }
 
-  function getRTMPMediaConfiguration () {
-    return {
-      mediaConstraints: {
-        audio: configuration.useAudio ? configuration.mediaConstraints.audio : false,
-        video: configuration.useVideo ? {
-                width: configuration.cameraWidth,
-                height: configuration.cameraHeight
-              } : false
-      }
-    }
-  }
-
   var hasRegistered = false;
   function appendMessage (message) {
     soField.value = [message, soField.value].join('\n');
@@ -134,14 +122,17 @@
       console.log(JSON.stringify(event.data, null, 2));
       if (event.data.hasOwnProperty('streams')) {
         appendMessage('Stream list is: ' + event.data.streams + '.');
+        var streams = event.data.streams.length > 0 ? event.data.streams.split(',') : [];
         if (!hasRegistered) {
           hasRegistered = true;
-          so.setProperty('streams', event.data.streams + ',' + configuration.stream1);
+          so.setProperty('streams', streams.concat([configuration.stream1]).join(','));
         }
-        processStreams(event.data.streams.split(','), configuration.stream1);
+        streamsPropertyList = streams;
+        processStreams(streamsPropertyList, configuration.stream1);
       }
       else if (!hasRegistered) {
         hasRegistered = true;
+        streamsPropertyList = [configuration.stream1];
         so.setProperty('streams', configuration.stream1);
       }
     });
@@ -178,7 +169,13 @@
   }
 
   function unpublish () {
-    if (so !== undefined) {
+    if (so !== undefined)  {
+      var name = configuration.stream1;
+      var updateList = streamsPropertyList.filter(function (item) {
+        return item !== name;
+      });
+      streamsPropertyList = updateList;
+      so.setProperty('streams', updateList.join(','));
       so.close();
     }
     return new Promise(function (resolve, reject) {
@@ -214,7 +211,10 @@
       onPublishFail(jsonError);
      });
 
-  window.addEventListener('beforeunload', function() {
+  var shuttingDown = false;
+  function shutdown () {
+    if (shuttingDown) return;
+    shuttingDown = true;
     function clearRefs () {
       if (targetPublisher) {
         targetPublisher.off('*', onPublisherEvent);
@@ -223,9 +223,12 @@
     }
     unpublish().then(clearRefs).catch(clearRefs);
     window.untrackBitrate();
-  });
+  }
+  window.addEventListener('beforeunload', shutdown);
+  window.addEventListener('pagehide', shutdown);
 
   var subscriberMap = {};
+  var streamsPropertyList = [];
   var subscribersEl = document.getElementById('subscribers');
   function processStreams (streamlist, exclusion) {
     var list = streamlist.filter(function (name, index, self) {
@@ -233,47 +236,64 @@
         (index == self.indexOf(name)) &&
         !document.getElementById(getSubscriberElementId(name));
     });
-    var subscribers = list.map(function (name) {
-      return new SubscriberItem(name, subscribersEl);
+    var subscribers = list.map(function (name, index) {
+      return new SubscriberItem(name, subscribersEl, index);
     });
     var i, length = subscribers.length - 1;
     var sub;
     for(i = 0; i < length; i++) {
       sub = subscribers[i];
-      sub.next = subscribers[i+1];
+      sub.next = subscribers[sub.index+1];
     }
-    subscribers[0].execute();
+    if (subscribers.length > 0) {
+      subscribers[0].execute();
+    }
   }
   function getSubscriberElementId (streamName) {
     return ['red5pro', 'subscriber', streamName].join('-');
   }
   function generateNewSubscriberDOM (streamName) {
     var div = document.createElement('div');
+    var p = document.createElement('p');
+    var title = document.createTextNode(streamName);
+    p.appendChild(title);
+    div.appendChild(p);
     var video = document.createElement('video');
-    div.appendChild(video);
     video.width = 320;
     video.height = 240;
-    video.muted = true;
     video.autoplay = true;
-    video.playsinline = true;
     video.controls = true;
+    video.muted = true;
+    video.setAttribute('playsinline', true);
     video.id = getSubscriberElementId(streamName);
-    return div;
+    div.id = video.id + '-container';
+    div.appendChild(video);
+    var log = document.createElement('p');
+    log.style = 'max-width:320px;max-height:240px;border:1 solid black;overflow:scroll;font-size:12px;';
+    div.appendChild(log);
+    return [div, log];
   }
 
-  var SubscriberItem = function (streamName, parent) {
+  var SubscriberItem = function (streamName, parent, index) {
     this.streamName = streamName;
+    this.index = index;
     this.next = undefined;
-    parent.appendChild(generateNewSubscriberDOM(this.streamName));
+    var elems = generateNewSubscriberDOM(this.streamName);
+    this.log = elems[1];
+    parent.appendChild(elems[0]);
   }
   SubscriberItem.prototype.resolve = function () {
+    this.log.innerText += '[subscriber:' + name + '] success.\r\n'
     if (this.next) {
+      this.log.innerText += '[subscriber:' + name + '] next() =>\r\n'
       this.next.execute();
     }
   }
   SubscriberItem.prototype.reject = function (event) {
     console.error(event);
+    this.log.innerText += '[subscriber:' + name + '] failed. ' + event.type + '.\r\n';
     if (this.next) {
+      this.log.innerText += '[subscriber:' + name + '] next() =>\r\n'
       this.next.execute();
     }
   }
@@ -290,18 +310,34 @@
                     streamName: this.streamName,
                     mediaElementId: getSubscriberElementId(name) });
 
-    var subscriber = new red5prosdk.RTCSubscriber();
-    subscriber.on('Connect.Success', this.resolve);
-    subscriber.on('Connect.Failure', this.reject);
+    this.subscriber = new red5prosdk.RTCSubscriber();
+    this.subscriber.on('Connect.Success', this.resolve.bind(this));
+    this.subscriber.on('Connect.Failure', this.reject.bind(this));
+    var sub = this.subscriber;
+    var log = this.log;
+    var reject = this.reject.bind(this);
+    this.subscriber.on('Subscribe.Connection.Closed', function () {
+      function cleanup () {
+        var el = document.getElementById(getSubscriberElementId(name) + '-container')
+        el.parentNode.removeChild(el);
+      }
+      sub.unsubscribe().then(cleanup).catch(cleanup);
+      delete subscriberMap[name];
+    });
+    this.subscriber.on('*', function (event) {
+      if (event.type === 'Subscribe.Time.Update') return;
+      console.log('[subscriber:' + name + '] ' + event.type);
+      log.innerText += '[subscriber:' + name + '] ' + event.type + '\r\n';
+    });
     //      subscriber.on('Subscribe.Fail', reject);
-    subscriber.init(rtcConfig)
+    this.subscriber.init(rtcConfig)
       .then(function (subscriber) {
         subscriberMap[name] = subscriber;
         return subscriber.subscribe();
        })
       .catch(function (error) {
         console.log('[subscriber:' + name + '] Error');
-        this.reject(error);
+        reject(error);
       });
   }
 
