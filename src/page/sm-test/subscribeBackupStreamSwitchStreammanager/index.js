@@ -254,7 +254,11 @@
         },
         streamName: edgeList[i].name
       });
-      subConfig.connectionParams = Object.assign(getAuthenticationParams(), subConfig.connectionParams);
+
+      subConfig.connectionParams = Object.assign({}, 
+        getAuthenticationParams().connectionParams,
+        subConfig.connectionParams);
+
       generateSubscriber(subConfig)
         .then(onSubscriberResolve(id))
         .catch(handleGenerateSubscriberError);
