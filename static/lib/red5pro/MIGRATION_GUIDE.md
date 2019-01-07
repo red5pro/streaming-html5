@@ -1,10 +1,12 @@
 # Red5 Pro HTML SDK Migration Guide
+
 This documentation serves as a guide in migrating client-side code where a breaking change to the API has been made in a distribution.
+
 * [5.0.0 to 5.4.0](#migrating-from-500-to-540)
 * [4.0.0 to 5.0.0](#migrating-from-400-to-500)
 * [3.5.0 to 4.0.0](#migrating-from-350-to-400)
 
-# Migrating from `4.0.0` to `5.0.0`
+# Migrating from `5.0.0` to `5.4.0`
 
 The `5.4.0` release of the Red5 Pro HTML SDK saw some minor changes related to WebRTC clients, and in particular how WebSoskcet and RTCPeerConnections are made:
 
@@ -13,6 +15,10 @@ The `5.4.0` release of the Red5 Pro HTML SDK saw some minor changes related to W
   * To support backward compatiibilty for webapps out in the wild, the HTML SDK will recognize previously defaulted values and silently change the values to new default values.
 * The `iceServers` configuration property has been deprecated in favor of the new `rtcConfiguration` configuration property.
   * [Refer to section: RTCConfiguration](#rtcconfiguration)
+* The `SharedObject` API has been decoupled from requiring previously established stream clients (Publisher and/or Subscriber).
+  * By decoupling the previous *requirement* to use a established stream client, `SharedObjects` can now be used with establishing a  `WebSocket` connection and providing that as the connection to communicate over `SharedObjects`.
+  * The Red5 Pro HTML SDK provides a `Red5ProSharedObjectSocket` class to serve as a proxy to an underlying `WebSocket` and convenience in communicating to and from the Red5 Pro Server when using `SharedObjects`.
+  * The `SharedObject` API can still be employed using a stream client connection as was possible in previous SDK versions.
 
 ## RTCConfiguration
 
@@ -121,6 +127,7 @@ The `4.0.0` release of the Red5 Pro HTML SDK saw some major changes in the follo
   * [Refer to section: Removal of VideoJS](#removal-of-videojs)
 
 # Internalizing gUM Requests
+
 > This change affects the WebRTC-based Publisher instances.
 
 * [Defining mediaConstraints](#defining-mediaconstraints)
@@ -152,7 +159,7 @@ The default `MediaConstraint` used - if not provided on the `mediaConstraint` in
 
 The following sections show the code required to start a broadcast session between `3.5.0` and `4.0.0` using media constraints:
 
-### 3.5.0 SDK
+### MediaConstraints in 3.5.0 SDK
 
 The `getUserMedia` request was required as an intermediary step prior to broadcasting:
 
@@ -190,7 +197,7 @@ The `getUserMedia` request was required as an intermediary step prior to broadca
 })(window.red5prosdk);
 ```
 
-### 4.0.0 SDK
+### MediaConstraints in 4.0.0 SDK
 
 The `getUserMedia` request is internalized and executed using the `mediaConstraints` property of the initialization configuration.
 
@@ -219,6 +226,7 @@ The `getUserMedia` request is internalized and executed using the `mediaConstrai
 ```
 
 ## Override Default Request
+
 While the `getUserMedia` request has been internalized by default, the Red5 Pro HTML SDK also allows developers to override that default behavior if they wish to explicitly access and provide the `MediaSteam` instance for WebRTC-based publishers to use.
 
 The `4.0.0` SDK release exposes a `onGetUserMedia` initialization configuration property that can be used to override the internalized `gUM` request.
@@ -257,6 +265,7 @@ The following example utilizes the `onGetUserMedia` override to request the `Med
 ```
 
 # Removal of View Attachment
+
 > This change affects all **Publisher** and **Subscriber** types.
 
 * [Defining mediaElementId](#defining-mediaelementid)
@@ -277,7 +286,7 @@ A default value is used in the SDK, if one is not provided on the initialization
 
 The following sections show the code required to have a DOM element display the broadcast and subscription streams:
 
-### 3.5.0 SDK
+### Element `id` usage in 3.5.0 SDK
 
 In the `3.5.0` version of the Red5 Pro HTML SDK, a view was required in order to display the broadcast and subscription streams.
 
@@ -323,7 +332,7 @@ In the `3.5.0` version of the Red5 Pro HTML SDK, a view was required in order to
 </html>
 ```
 
-### 4.0.0 SDK
+### Element `id` usage in 4.0.0 SDK
 
 The requirement for creating a view and attaching either the **Publisher** or **Subscriber** instance has been removed. Instead, a `mediaElementId` property on the initialization configuration is recognized and used in establishing playback in a DOM element:
 
@@ -407,6 +416,7 @@ By defining the `id` attribute of the target [HTMLMediaElement](https://develope
 ```
 
 # Red5 Pro HTML SDK Playback Controls
+
 > This change affects all **Subscriber** types.
 
 In response to numerous requests, we have unified the playback controls of the various **Subscriber** types - WebRTC, Flash and HLS.
@@ -415,9 +425,10 @@ This feature provides consistent cross-browser, cross-player UI and functionalit
 
 The Playback Controls are "turned on" by declaring a `controls` property and the class assignment of `red5pro-media` on the target [HTMLMediaElement](https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement). If either of these are not present on the element, the default behaviour of the browser is utilized.
 
-> Please refer to the [Playback Controls Document](PLAYBACK_CONTROLS.md) for more information on this feature.
+> Please refer to the [Playback Controls Document](playbackcontrols.md) for more information on this feature.
 
 # Subscriber API Changes
+
 > This change affects all **Subscriber** types.
 
 Several API changes have been made for **Subscribers** in the `4.0.0` version of the Red5 Pro HTML SDK. In particular, the method names for requesting to start and stop a subscription have been changed in accordance to the nomenclature of the API for [Red5 Pro HTML SDK Playback Controls](#red5-pro-html-sdk-playback-controls) and the automatic playback of streams has been removed and made dependent on DOM element attributes.
@@ -429,9 +440,11 @@ You can find more information about these changes in the following sections:
 * [Autoplay Change](#autoplay-change)
 
 ## Start Subscription API Change
+
 In the `3.5.0` version of the Red5 Pro HTML SDK, the request to start subscription and playback was made by invoking the API call of `play()`. The `4.0.0` version of the SDK introduces the custom [Playback Controls](#red5-pro-html-sdk-playback-controls), and with it, an API to control the playback of a stream. As such, the request to start playback was moved to the `play` method of the Playback Controls API, and the request to start subscription was changed to `subscribe`.
 
-### 3.5.0 SDK
+### Subscription start in 3.5.0 SDK
+
 In the `3.5.0` version of the SDK, subscription request and playback where bundled together in the `play()` invocation on a **Subscriber**:
 
 ```html
@@ -464,7 +477,8 @@ In the `3.5.0` version of the SDK, subscription request and playback where bundl
 </html>
 ```
 
-### 4.0.0 SDK
+### Subscription start in 4.0.0 SDK
+
 In the `4.0.0` version of the SDK, subscription request is made by invoking `subscribe()` and playback is delegated to the Red5 Pro HTML SDK Playback Controls and element attributes:
 
 ```html
@@ -499,9 +513,11 @@ In the `4.0.0` version of the SDK, subscription request is made by invoking `sub
 ```
 
 ## Stop Subscription API Change
+
 In the `3.5.0` version of the Red5 Pro HTML SDK, the requests to stop subscription and playback were made by invoking the API call of `stop()`. The `4.0.0` version of the SDK introduces the custom [Playback Controls](#red5-pro-html-sdk-playback-controls), and with it, an API to control the playback of a stream. As such, the request to stop playback was moved to the `stop` method of the Playback Controls API, and the request to stop subscription was changed to `unsubscribe`.
 
-### 3.5.0 SDK
+### Subscription stop in 3.5.0 SDK
+
 In the `3.5.0` version of the SDK, unsubscription request and stop of playback where bundled together in the `stop()` invocation on a **Subscriber**:
 
 ```html
@@ -547,7 +563,8 @@ In the `3.5.0` version of the SDK, unsubscription request and stop of playback w
 </html>
 ```
 
-### 4.0.0 SDK
+### Subscription stop in 4.0.0 SDK
+
 In the `4.0.0` version of the SDK, unsubscription request is made by invoking `unsubscribe()` and request to stop playback is delegated to the Red5 Pro HTML SDK Playback Controls API:
 
 ```html
@@ -593,11 +610,13 @@ In the `4.0.0` version of the SDK, unsubscription request is made by invoking `u
 ```
 
 ## Autoplay Change
+
 In the `3.5.0` version of the Red5 Pro HTML SDK, playback started automatically in the bundle of subscription request and playback from the `play` method incocation. Essentially, a request to connect and subscribe to a stream was a request to start playback immediately once the stream is received.
 
 In the `4.0.0` version, the separation of subscription request and playback od stream has been introduced. Instead, the auto-playback feature can be turned on by defining the `autoplay` attribute on the target [HTMLMediaElement](https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement).
 
-### 3.5.0 SDK
+### Autoplay capability in 3.5.0 SDK
+
 In the `3.5.0` version of the SDK, subscription request and playback where bundled together in the `play()` invocation on a **Subscriber**, which resulted in auto-playback of the stream upon successful subscription:
 
 ```html
@@ -630,7 +649,8 @@ In the `3.5.0` version of the SDK, subscription request and playback where bundl
 </html>
 ```
 
-### 4.0.0 SDK
+### Autoplay capability in 4.0.0 SDK
+
 In the `4.0.0` version of the SDK, a separation of subscription and playback is introduced. Auto-playback is possible through defining the `autoplay` attribute on the target **HTMLMediaElement**:
 
 ```html
@@ -662,6 +682,7 @@ In the `4.0.0` version of the SDK, a separation of subscription and playback is 
 ```
 
 # Removal of VideoJS
+
 In the `3.5.0` version of the Red5 Pro HTML SDK, the option to utilize the [VideoJS](http://videojs.com/) as a HLS/Flash failover was provided.
 
 Additionally, if **VideoJS** was used, it provided custom playback controls.  With the release of version `4.0.0`, we have provided the ability to display and customize playback controls. _[Refer to section: Red5 Pro HTML SDK Playback Controls](#red5-pro-html-sdk-playback-controls)_.
@@ -671,6 +692,7 @@ For these reasons, the inclusion of [VideoJS](http://videojs.com/) as a dependen
 However, it does not mean that you are not permitted to use *VideoJS* for playback. It is entirely possible and detailed in the following example. Do note that if you use *VideoJS* for playback, you are not encorporating the Red5 Pro HTML SDK and will not benefit from all that brings - such as: stream message communication, Shared Objects, etc.
 
 ## Using VideoJS for Playback
+
 Playback of a stream being broadcast to a Red5 Pro Server is possible using [VideoJS](http://videojs.com/). All that is required is knowledge of the stream endpoint URL to provide:
 
 ```html
@@ -716,6 +738,9 @@ Playback of a stream being broadcast to a Red5 Pro Server is possible using [Vid
             'use strict';
             var videoElement = document.getElementById('my-player');
             var v;
+            function getVJS() {
+              return v;
+            }
             v = new VideoJS(videoElement, {
               techOrder: ['html5', 'flash']
             }, function () {
@@ -738,5 +763,5 @@ The file extension will change for each `source` based on the container mime typ
 This example demonstrates the use of [VideoJS](http://videojs.com/) for live and VOD stream playback from Red5 Pro Server. Please note that the Red5 Pro HTML SDK is not used at all in this example. As such, WebRTC playback is not supported and various other features provided by the SDK are not available; the purpose of this example was to demonstrate how to still use *VideoJS* for playback if that is your current requirement, as it has been removed from the Red5 Pro HTML SDK.
 
 ## More Information
-> Please refer to the [VideoJS](http://videojs.com/) documentation for further information.
 
+> Please refer to the [VideoJS](http://videojs.com/) documentation for further information.
