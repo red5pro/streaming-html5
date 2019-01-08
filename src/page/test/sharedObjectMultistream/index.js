@@ -252,10 +252,10 @@
   function getSubscriberElementId (streamName) {
     return ['red5pro', 'subscriber', streamName].join('-');
   }
-  function generateNewSubscriberDOM (streamName) {
+  function generateNewSubscriberDOM (streamName, subId) {
     var div = document.createElement('div');
     var p = document.createElement('p');
-    var title = document.createTextNode(streamName);
+    var title = document.createTextNode(streamName + ' (' + subId + ')');
     p.appendChild(title);
     div.appendChild(p);
     var video = document.createElement('video');
@@ -275,14 +275,17 @@
   }
 
   var SubscriberItem = function (streamName, parent, index) {
+    var uid = Math.floor(Math.random() * 0x10000).toString(16);
+    this.subscriptionId = [configuration.stream1, 'sub', uid].join('-')
     this.streamName = streamName;
     this.index = index;
     this.next = undefined;
-    var elems = generateNewSubscriberDOM(this.streamName);
+    var elems = generateNewSubscriberDOM(this.streamName, this.subscriptionId);
     this.log = elems[1];
     parent.appendChild(elems[0]);
   }
   SubscriberItem.prototype.resolve = function () {
+    var name = this.streamName;
     this.log.innerText += '[subscriber:' + name + '] success.\r\n'
     if (this.next) {
       this.log.innerText += '[subscriber:' + name + '] next() =>\r\n'
@@ -291,6 +294,7 @@
   }
   SubscriberItem.prototype.reject = function (event) {
     console.error(event);
+    var name = this.streamName;
     this.log.innerText += '[subscriber:' + name + '] failed. ' + event.type + '.\r\n';
     if (this.next) {
       this.log.innerText += '[subscriber:' + name + '] next() =>\r\n'
@@ -308,6 +312,7 @@
                     protocol: getSocketLocationFromProtocol().protocol,
                     port: getSocketLocationFromProtocol().port,
                     streamName: this.streamName,
+                    subscriptionId: this.subscriptionId,
                     mediaElementId: getSubscriberElementId(name) });
 
     this.subscriber = new red5prosdk.RTCSubscriber();
