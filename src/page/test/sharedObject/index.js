@@ -4,6 +4,7 @@
   var Socket = red5prosdk.Red5ProSharedObjectSocket;
   var SharedObject = red5prosdk.Red5ProSharedObject;
   var so = undefined; // @see onSubscribeSuccess
+  var socket = undefined;
 
   var serverSettings = (function() {
     var settings = sessionStorage.getItem('r5proServerSettings');
@@ -28,11 +29,53 @@
   })();
   red5prosdk.setLogLevel(configuration.verboseLogging ? red5prosdk.LOG_LEVELS.TRACE : red5prosdk.LOG_LEVELS.WARN);
 
+  var disconnectButton = document.getElementById('disconnect-button');
+  var connectButton = document.getElementById('connect-button');
+  var connectField = document.getElementById('connect-field');
+  var inputField = document.getElementById('input-field');
   var sendButton = document.getElementById('send-button');
   var soField = document.getElementById('so-field');
-  sendButton.addEventListener('click', function () {
-    sendMessageOnSharedObject(document.getElementById('input-field').value);
-  });
+
+  disconnectButton.addEventListener('click', deEstablishSharedObject);
+  connectButton.addEventListener('click', startConnection);
+
+  function reEnableConnection () {
+    hideDisconnect();
+  }
+
+  function showDisconnect () {
+    disconnectButton.classList.remove('hidden');
+    connectButton.classList.add('hidden');
+  }
+
+  function hideDisconnect () {
+    disconnectButton.classList.add('hidden');
+    connectButton.classList.remove('hidden');
+  }
+
+  function enableConnection () {
+    disconnectButton.classList.add('hidden');
+    connectButton.classList.remove('hidden');
+    connectButton.removeAttribute('disabled');
+  }
+
+  function sendMessage () {
+    sendMessageOnSharedObject(inputField.value);
+  }
+
+  function enableSend () {
+    sendButton.removeAttribute('disabled');
+    inputField.removeAttribute('disabled');
+    sendButton.addEventListener('click', sendMessage);
+  }
+
+  function disableSend () {
+    sendButton.setAttribute('disabled', true);
+    inputField.setAttribute('disabled', true);
+    inputField.value = '';
+    sendButton.removeEventListener('click', sendMessage);
+  }
+
   var protocol = serverSettings.protocol;
   var isSecure = protocol === 'https';
 
@@ -51,14 +94,23 @@
   })();
 
   // Local lifecycle notifications.
-  function onSubscribeFail (message) {
+  function onSocketFail (message) {
     document.getElementById('status-field').innerText = 'SharedObject failed: ' + message;
-    console.error('[Red5ProSubsriber] Subscribe Error :: ' + message);
+    console.error('[Red5ProSocket] Socket Error :: ' + message);
   }
-  function onSubscribeSuccess (socket) {
-    console.log('[Red5ProSubsriber] Subscribe Complete.');
+  function onSocketSuccess () {
+    console.log('[Red5ProScoket] Socket Complete.');
     document.getElementById('status-field').innerText = 'SharedObject connected.';
-    establishSharedObject(socket);
+  }
+  function onSocketEvent (event) {
+    console.log('[Red5ProSocket] :: Event - ' + event.type);
+    if (event.type.toLowerCase() === 'websocket.close') {
+      // enable reconnect;
+      socket.off('*', onSocketEvent);
+      socket = undefined;
+      document.getElementById('status-field').innerText = 'SharedObject closed (' + event.data.event.code + ').';
+      reEnableConnection();
+    }
   }
 
   function getAuthenticationParams () {
@@ -81,15 +133,27 @@
   function messageTransmit (message) { // eslint-disable-line no-unused-vars
     soField.value = ['User "' + message.user + '": ' + message.message, soField.value].join('\n');
   }
-  function establishSharedObject (socket) {
+
+  function deEstablishSharedObject () {
+    disableSend();
+    unsubscribe();
+    closeSocket();
+  }
+
+  function establishSharedObject () {
+    disableSend();
+    var name = connectField.value;
+
     // Create new shared object.
-    so = new SharedObject('sharedChatTest', socket);
+    so = new SharedObject(name, socket);
     var soCallback = {
       messageTransmit: messageTransmit
     };
     so.on(red5prosdk.SharedObjectEventTypes.CONNECT_SUCCESS, function (event) { // eslint-disable-line no-unused-vars
       console.log('[Red5ProSubscriber] SharedObject Connect.');
-      appendMessage('Connected.');
+      appendMessage('Connected to ' + event.name + '.');
+      showDisconnect();
+      enableSend();
     });
     so.on(red5prosdk.SharedObjectEventTypes.CONNECT_FAILURE, function (event) { // eslint-disable-line no-unused-vars
       console.log('[Red5ProSubscriber] SharedObject Fail.');
@@ -127,27 +191,45 @@
   function unsubscribe () {
     if (so !== undefined) {
       so.close();
+      so = undefined;
     }
   }
 
-  var config = Object.assign({},
-    configuration,
-    defaultConfiguration,
-    getAuthenticationParams());
-  var socket = new Socket()
-  socket.init(config)
-   .then(function(socket) {
-      onSubscribeSuccess(socket);
-    })
-    .catch(function (error) {
-      var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
-      console.error('[Red5ProSubscriber] :: Error in subscribing - ' + jsonError);
-      onSubscribeFail(jsonError);
-    });
+  function openSocket () {
+    var config = Object.assign({},
+      configuration,
+      defaultConfiguration,
+      getAuthenticationParams());
+    socket = new Socket()
+    socket.on('*', onSocketEvent);
+    socket.init(config)
+      .then(function(socket) {
+        onSocketSuccess(socket);
+        establishSharedObject();
+      })
+      .catch(function (error) {
+        var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
+        console.error('[Red5ProSocket] :: Error in socket - ' + jsonError);
+        onSocketFail(jsonError);
+      });
+  }
+
+  function closeSocket () {
+    if (socket !== undefined) {
+      socket.close();
+    }
+  }
+
+  function startConnection () {
+    openSocket();
+  }
+
+  enableConnection();
 
   // Clean up.
   window.addEventListener('beforeunload', function() {
     unsubscribe();
+    closeSocket();
     window.untrackbitrate();
   });
 

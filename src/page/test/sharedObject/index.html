@@ -4,6 +4,11 @@
     {{> meta title='Shared Object'}}
     {{> header-scripts}}
     {{> header-stylesheets}}
+    <style>
+      .hidden {
+        display: none;
+      }
+    </style>
   </head>
   <body>
     <div id="app">
@@ -12,9 +17,14 @@
       <h1 class="centered">Shared Object</h1>
       {{> status-field-subscriber}}
       <div class="centered status-field">
+          <input type="text" id="connect-field" value="sharedChatTest" />
+          <button id="connect-button" disabled>connect</button>
+          <button id="disconnect-button" class="hidden">disconnect</button>
+      </div>
+      <div class="centered status-field">
         <p>
-          <input type="text" id="input-field" />
-          <button id="send-button">send</button>
+          <input type="text" id="input-field" disabled />
+          <button id="send-button" disabled>send</button>
         </p>
         <hr>
         <p>
