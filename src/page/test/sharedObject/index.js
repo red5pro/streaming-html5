@@ -220,7 +220,6 @@
   function closeSocket () {
     if (socket !== undefined) {
       socket.close();
-      socket = undefined;
     }
   }
 
