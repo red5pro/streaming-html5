@@ -25,23 +25,23 @@ To make a WebSocket connection to the Red5 Pro Server that will be used in commu
 var socket = new red5prosdk.Red5ProSharedObjectSocket()
 socket.init(config)
  .then(function(socket) {
-    onSubscribeSuccess(socket);
+    onSocketSuccess(socket);
   })
 ```
 
-[index.js #137](index.js#L137)
+[index.js #199](index.js#L199)
 
 Instantiating a new `Red5ProSharedObject` requires a name and the previously established connection. Using the underlying connection, the SDK will make an additional connection to a specified Shared Object.
 
 ```js
-var so = new red5pro.Red5ProSharedObject('sharedChatTest', publisher);
+var so = new red5pro.Red5ProSharedObject('sharedChatTest', socket);
 so.on(red5prosdk.SharedObjectEventTypes.CONNECT_SUCCESS, handleSuccess);
 so.on(red5prosdk.SharedObjectEventTypes.CONNECT_FAILURE, handleFailure);
 so.on(red5pro.SharedObjectEventTypes.PROPERTY_UPDATE, handlePropertyUpdate);
 so.on(red5pro.SharedObjectEventTypes.METHOD_UPDATE, handleMethodUpdate);
 ```
 
-[index.js #86](index.js#L86)
+[index.js #148](index.js#L148)
 
 > To disconnect from a `SharedObject`, simply call `close` on the instance.
 
@@ -60,6 +60,7 @@ The `SharedObject` instance dispatches the following events:
 | `Connect.Failure` | Failure in connection of SharedObject on the publisher or subscriber instance. |
 | `SharedObject.PropertyUpdate` | Update to a peristed property on the remote SharedObject. |
 | `SharedObject.MethodUpdate` | Remote SharedObject invocation of method to be received on connected clients. |
+| `SharedObject.Connection.Closed` | Dispatched on successful disconnect from server upon `close` request. |
 
 ## Persistent Information
 
@@ -83,7 +84,7 @@ so.on(red5pro.SharedObjectEventTypes.PROPERTY_UPDATE, function (event) {
 });
 ```
 
-[index.js #97](index#L97)
+[index.js #161](index#L161)
 
 ## Messages
 
@@ -98,7 +99,7 @@ function sendMessageOnSharedObject (message) {
 }
 ```
 
-[index.js #119](index.js#L119)
+[index.js #183](index.js#L183)
 
 Like with the parameters of the object, as long as the Object sent parses into JSON, the structure of the object is up to you, and it will reach the other clients in whole as it was sent.
 
@@ -113,7 +114,7 @@ function messageTransmit (message) { // eslint-disable-line no-unused-vars
 }
 ```
 
-[index.js #81](index.js#L81)
+[index.js #133](index.js#L133)
 
 ```js
 so.on(red5pro.SharedObjectEventTypes.METHOD_UPDATE, function (event) {
@@ -121,7 +122,7 @@ so.on(red5pro.SharedObjectEventTypes.METHOD_UPDATE, function (event) {
 });
 ```
 
-[index.js #112](index.js#L112)
+[index.js #176](index.js#L176)
 
 # Shared Objects and Streaming
 
