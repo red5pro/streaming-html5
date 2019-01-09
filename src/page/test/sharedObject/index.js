@@ -187,14 +187,6 @@
     });
   }
 
-  // Request to unsubscribe.
-  function unsubscribe () {
-    if (so !== undefined) {
-      so.close();
-      so = undefined;
-    }
-  }
-
   function openSocket () {
     var config = Object.assign({},
       configuration,
@@ -214,14 +206,22 @@
       });
   }
 
-  function closeSocket () {
-    if (socket !== undefined) {
-      socket.close();
+  function startConnection () {
+    openSocket();
+  }
+
+  function unsubscribe () {
+    if (so !== undefined) {
+      so.close();
+      so = undefined;
     }
   }
 
-  function startConnection () {
-    openSocket();
+  function closeSocket () {
+    if (socket !== undefined) {
+      socket.close();
+      socket = undefined;
+    }
   }
 
   enableConnection();
