@@ -23,7 +23,7 @@
   protocol = protocol.substring(0, protocol.lastIndexOf(':'));
 
   var isMoz = !!navigator.mozGetUserMedia;
-  var isEdge = adapter && adapter.browserDetails.browser.toLowerCase() === 'edge';
+  var isEdge = window.navigator.userAgent.indexOf('Edge') > -1;
   var isiPod = !!navigator.platform && /iPod/.test(navigator.platform);
   var config = sessionStorage.getItem('r5proTestBed');
   var json;
@@ -32,8 +32,8 @@
     "httpport": port,
     "hlsport": 5080,
     "hlssport": 443,
-    "wsport": 8081,
-    "wssport": 8083,
+    "wsport": 5080,
+    "wssport": 443,
     "rtmpport": 1935,
     "rtmpsport": 1936
   };
@@ -77,11 +77,17 @@
       },
       "publisherFailoverOrder": "rtc,rtmp",
       "subscriberFailoverOrder": "rtc,rtmp,hls",
-      "iceServers": [
-        {
-          "urls": "stun:stun2.l.google.com:19302"
-        }
-      ],
+      "rtcConfiguration": {
+        "iceServers": [
+          {
+            "urls": "stun:stun2.l.google.com:19302"
+          }
+        ],
+        "bundlePolicy": "max-bundle",
+        "iceCandidatePoolSize": 2,
+        "iceTransportPolicy": "all",
+        "rtcpMuxPolicy": "require"
+      },
       "googleIce": [
         {
           "urls": "stun:stun2.l.google.com:19302"
@@ -102,9 +108,10 @@
         "password": "pass"
       }
     };
+
     /**
     if (isMoz) {
-      json.iceServers = json.mozIce;
+      json.rtcConfiguration.iceServers = json.mozIce;
     }
     */
     sessionStorage.setItem('r5proTestBed', JSON.stringify(json));
@@ -114,12 +121,12 @@
     var param = getParameterByName('ice');
     if (param) {
       if (param === 'moz') {
-        json.iceServers = json.mozIce;
+        json.rtcConfiguration.iceServers = json.mozIce;
       }
       else {
-        json.iceServers = json.googleIce;
+        json.rtcConfiguration.iceServers = json.googleIce;
       }
-      console.log('ICE server provided in query param: ' + JSON.stringify(json.iceServers, null, 2));
+      console.log('ICE server provided in query param: ' + JSON.stringify(json.rtcConfiguration.iceServers, null, 2));
     }
   }
 
@@ -145,4 +152,3 @@
   return json;
 
 })(this, window.adapter);
-

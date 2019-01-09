@@ -35,7 +35,7 @@ function setupPublisher (constraints) {
 
   var config = {
     protocol: 'https',
-    port: '8083',
+    port: 443,
     streamName: 'mystream',
     onGetUserMedia: function () {
       var c = Object.assign({}, constraints);
