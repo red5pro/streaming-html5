@@ -230,7 +230,6 @@
   window.addEventListener('beforeunload', function() {
     unsubscribe();
     closeSocket();
-    window.untrackbitrate();
   });
 
 })(this, document, window.red5prosdk);
