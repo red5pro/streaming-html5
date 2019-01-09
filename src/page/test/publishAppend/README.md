@@ -17,7 +17,7 @@ To record a published stream, modify the `streamMode` configuration attribute pr
 ```js
 var defaultConfiguration = {
   protocol: 'ws',
-  port: 8081,
+  port: 5080,
   app: 'live',
   streamMode: 'append'
 };
