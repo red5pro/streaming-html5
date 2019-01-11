@@ -116,6 +116,9 @@
   }
   function onSubscribeSuccess (subscriber) {
     console.log('[Red5ProSubsriber] Subscribe Complete.');
+    if (window.exposeSubscriberGlobally) {
+      window.exposeSubscriberGlobally(subscriber);
+    }
     if (subscriber.getType().toLowerCase() === 'rtc') {
       try {
         window.trackBitrate(subscriber.getPeerConnection(), onBitrateUpdate, onResolutionUpdate, true);

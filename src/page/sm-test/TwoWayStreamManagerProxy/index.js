@@ -81,8 +81,11 @@
   function onSubscribeFail (message) {
     console.error('[Red5ProSubsriber] Subscribe Error :: ' + message);
   }
-  function onSubscribeSuccess () {
+  function onSubscribeSuccess (subscriber) {
     console.log('[Red5ProSubsriber] Subscribe Complete.');
+    if (window.exposeSubscriberGlobally) {
+      window.exposeSubscriberGlobally(subscriber);
+    }
   }
   function onUnsubscribeFail (message) {
     console.error('[Red5ProSubsriber] Unsubscribe Error :: ' + message);
@@ -146,6 +149,7 @@
                         host: serverAddress,
                         app: configuration.app
                       }
+    });
     var rtmpConfig = Object.assign({}, config, {
                       host: serverAddress,
                       protocol: 'rtmp',
@@ -268,7 +272,7 @@
         return targetSubscriber.subscribe();
       })
       .then(function() {
-        onSubscribeSuccess();
+        onSubscribeSuccess(targetSubscriber);
       })
       .catch(function (error) {
         var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);

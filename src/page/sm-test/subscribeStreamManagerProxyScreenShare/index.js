@@ -33,7 +33,6 @@
   var streamTitle = document.getElementById('stream-title');
   var statisticsField = document.getElementById('statistics-field');
 
-  var protocol = serverSettings.protocol;
   var protocol = proxyLocal ? 'https' : serverSettings.protocol;
   var isSecure = protocol === 'https';
 
@@ -148,6 +147,9 @@
   }
   function onSubscribeSuccess (subscriber) {
     console.log('[Red5ProSubsriber] Subscribe Complete.');
+    if (window.exposeSubscriberGlobally) {
+      window.exposeSubscriberGlobally(subscriber);
+    }
     if (subscriber.getType().toLowerCase() === 'rtc') {
       try {
         window.trackBitrate(subscriber.getPeerConnection(), onBitrateUpdate, onResolutionUpdate, true);

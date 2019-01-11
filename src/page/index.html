@@ -132,6 +132,10 @@
           <label class="settings-label">Audio Active:</label>
           <input type="checkbox" id="audio-active-field" name="audio-active-field" style="vertical-align: middle;">
         </p>
+        <p class="settings-field">
+          <label class="settings-label">Mute on Autoplay Restriction:</label>
+          <input type="checkbox" id="mute-autoplay-field" name="mute-autoplay-field" style="vertical-align: middle;">
+        </p>
       </div>
     </div>
     <script>
@@ -171,6 +175,7 @@
         var loggingField = document.getElementById('logging-field');
         var videoField = document.getElementById('video-active-field');
         var audioField = document.getElementById('audio-active-field');
+        var muteAutoplayField = document.getElementById('mute-autoplay-field');
         var streamSwapButton = document.getElementById('stream-swap-btn');
         var smAccessField = document.getElementById('sm-access-field');
         var smAPIField = document.getElementById('sm-api-field');
@@ -298,6 +303,11 @@
           seal(configuration);
         });
 
+        muteAutoplayField.addEventListener('change', function () {
+          configuration.muteOnAutoplayRestriction = !configuration.muteOnAutoplayRestriction;
+          seal(configuration);
+        });
+
         smAccessField.addEventListener('blur', function () {
           configuration.streamManagerAccessToken = smAccessField.value;
           seal(configuration);
@@ -329,6 +339,7 @@
           loggingField.checked = config.verboseLogging ? true : false;
           videoField.checked = config.useVideo ? true : false;
           audioField.checked = config.useAudio ? true : false;
+          muteAutoplayField.checked = config.muteOnAutoplayRestriction ? true : false;
           smAccessField.value = config.streamManagerAccessToken;
           smAPIField.value = config.streamManagerAPI;
           authEnabledField.checked = config.authentication.enabled ? true : false;

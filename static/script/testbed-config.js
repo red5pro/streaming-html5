@@ -18,6 +18,7 @@
     return decodeURIComponent(results[2].replace(/\+/g, " "));
   }
 
+  var build_version = '$VERSION';
   var protocol = window.location.protocol;
   var port = window.location.port;
   protocol = protocol.substring(0, protocol.lastIndexOf(':'));
@@ -39,6 +40,7 @@
   };
   function assignStorage () {
     json = {
+      "version": build_version,
       "host": "localhost",
       "port": 8554, // rtsp
       "stream1": "stream1",
@@ -102,6 +104,7 @@
       "verboseLogging": true,
       "streamManagerAPI": "3.1",
       "streamManagerAccessToken": "xyz123",
+      "muteOnAutoplayRestriction": true,
       "authentication": {
         "enabled": false,
         "username": "user",
@@ -133,6 +136,15 @@
   if (config) {
     try {
       json = JSON.parse(config);
+      if (json.version && json.version !== build_version) {
+        console.log('We have replaced your stale session version: ' + json.version + ' with ' + build_version + '. Have fun streaming!');
+        sessionStorage.removeItem('r5proTestBed');
+        assignStorage();
+      } else if (!json.version) {
+        console.log('We recently added session swaps with the latest version: ' + build_version + '. Have fun streaming!');
+        sessionStorage.removeItem('r5proTestBed');
+        assignStorage();
+      }
     }
     catch (e) {
       assignStorage();

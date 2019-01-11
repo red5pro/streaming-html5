@@ -111,8 +111,11 @@
     console.error('[Red5ProSubsriber] Subscribe Error :: ' + message);
     disableCallButton();
   }
-  function onSubscribeSuccess () {
+  function onSubscribeSuccess (subscriber) {
     console.log('[Red5ProSubsriber] Subscribe Complete.');
+    if (window.exposeSubscriberGlobally) {
+      window.exposeSubscriberGlobally(subscriber);
+    }
   }
   function onUnsubscribeFail (message) {
     console.error('[Red5ProSubsriber] Unsubscribe Error :: ' + message);
@@ -193,11 +196,11 @@
         targetSubscriber.on('*', onSubscriberEvent);
         return targetSubscriber.subscribe()
       })
-      .then(function () {
-        onSubscribeSuccess();
-      if (targetSubscriber.getType().toLowerCase() === 'rtc') {
-        enableCallButton();
-      }
+      .then(function (subscriber) {
+        onSubscribeSuccess(subscriber);
+        if (targetSubscriber.getType().toLowerCase() === 'rtc') {
+          enableCallButton();
+        }
       })
       .catch(function (error) {
         var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
