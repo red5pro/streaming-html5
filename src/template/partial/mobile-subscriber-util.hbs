@@ -17,24 +17,59 @@
   top: 50%;
   left: 30%;
   transform: translate(-20%, -50%);
-  padding: 2em;
+  padding: 2.5em 2em 2em 2em;
   background: #ffffff;
   color: #333333;
+}
+.modal-close {
+  color: #000;
+  line-height: 40px;
+  font-size: 80%;
+  position: absolute;
+  right: 0;
+  text-align: center;
+  top: 0;
+  width: 60px;
 }
 </style>
 <script>
   (function (red5prosdk) {
+    /**
+      * https://developers.google.com/web/updates/2017/09/autoplay-policy-changes
+      * https://webkit.org/blog/6784/new-video-policies-for-ios/
+    */
     var fn = window.exposeSubscriberGlobally;
     function showModal (content) {
       var div = document.createElement('div');
       div.classList.add('modal');
-      div.appendChild(content);
+      var container = document.createElement('div');
+      var button = document.createElement('a');
+      var close = document.createTextNode('close');
+      button.href = "#";
+      button.appendChild(close);
+      button.classList.add('modal-close');
+      container.appendChild(button);
+      container.appendChild(content);
+      div.appendChild(container);
       document.body.appendChild(div);
+      button.addEventListener('click', function () {
+        document.body.removeChild(div);
+      });
     }
     function generateLine (text) {
       var p = document.createElement('p');
       var t = document.createTextNode(text);
       p.appendChild(t);
+      return p;
+    }
+    function generateInfoLink () {
+      var p = document.createElement('p');
+      var a1 = document.createElement('a');
+      a1.target = '_blank';
+      a1.href = 'https://developers.google.com/web/updates/2017/09/autoplay-policy-changes';
+      var a1t = document.createTextNode('More Info');
+      a1.appendChild(a1t);
+      p.appendChild(a1);
       return p;
     }
     window.exposeSubscriberGlobally = function (subscriber) {
@@ -46,6 +81,8 @@
         content.appendChild(generateLine('Auto playback failed.'));
         content.appendChild(document.createElement('br'));
         content.appendChild(generateLine('Close this modal and click the play button.'));
+        content.appendChild(document.createElement('br'));
+        content.appendChild(generateInfoLink());
         showModal(content);
       });
       subscriber.on(red5prosdk.SubscriberEventTypes.AUTO_PLAYBACK_MUTED, function () {
@@ -53,6 +90,8 @@
         content.appendChild(generateLine('Auto playback muted.'));
         content.appendChild(document.createElement('br'));
         content.appendChild(generateLine('Close this modal and click the mute button for audio.'));
+        content.appendChild(document.createElement('br'));
+        content.appendChild(generateInfoLink());
         showModal(content);
       });
     }
