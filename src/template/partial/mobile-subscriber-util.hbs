@@ -53,8 +53,10 @@
       container.appendChild(content);
       div.appendChild(container);
       document.body.appendChild(div);
-      button.addEventListener('click', function () {
+      button.addEventListener('click', function (event) {
+        event.preventDefault();
         document.body.removeChild(div);
+        return false;
       });
     }
     function generateLine (text) {
