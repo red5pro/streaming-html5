@@ -1,0 +1,259 @@
+(function(window, document, red5prosdk) {
+  'use strict';
+
+  var serverSettings = (function() {
+    var settings = sessionStorage.getItem('r5proServerSettings');
+    try {
+      return JSON.parse(settings);
+    }
+    catch (e) {
+      console.error('Could not read server settings from sessionstorage: ' + e.message);
+    }
+    return {};
+  })();
+
+  var configuration = (function () {
+    var conf = sessionStorage.getItem('r5proTestBed');
+    try {
+      return JSON.parse(conf);
+    }
+    catch (e) {
+      console.error('Could not read testbed configuration from sessionstorage: ' + e.message);
+    }
+    return {};
+  })();
+  red5prosdk.setLogLevel(configuration.verboseLogging ? red5prosdk.LOG_LEVELS.TRACE : red5prosdk.LOG_LEVELS.WARN);
+
+  var targetSubscriber1;
+  var targetSubscriber2;
+
+  var updateStatusFromEvent = window.red5proHandleSubscriberEvent; // defined in src/template/partial/status-field-subscriber.hbs
+  var instanceId = Math.floor(Math.random() * 0x10000).toString(16);
+  var streamTitle1 = document.getElementById('stream1-title');
+  var streamTitle2 = document.getElementById('stream2-title');
+  var statisticsField = [ document.getElementById('stream1-status'), document.getElementById('stream2-status') ];
+
+  var protocol = serverSettings.protocol;
+  var isSecure = protocol === 'https';
+
+  var bitrate = [0, 0];
+  var packetsReceived = [0, 0];
+  var frameWidth = [0, 0];
+  var frameHeight = [0, 0];
+  function updateStatistics (b, p, w, h, i) {
+    statisticsField[i].innerText = 'Bitrate: ' + Math.floor(b) + '. Packets Received: ' + p + '.' + ' Resolution: ' + w + ', ' + h + '.';
+  }
+
+  function bitUpdate (b, p, i) {
+    bitrate[i] = b;
+    packetsReceived[i] = p;
+    updateStatistics(bitrate[i], packetsReceived[i], frameWidth[i], frameHeight[i], i);
+  }
+  var onBitrateUpdate = [
+    function (b, p) { bitUpdate(b, p, 0); },
+    function (b, p) { bitUpdate(b, p, 1); }
+  ];
+
+  function resUpdate (w, h, i) {
+    frameWidth[i] = w;
+    frameHeight[i] = h;
+    updateStatistics(bitrate[i], packetsReceived[i], frameWidth[i], frameHeight[i], i);
+  }
+  var onResolutionUpdate = [
+    function (w, h) { resUpdate(w, h, 0); },
+    function (w, h) { resUpdate(w, h, 1); }
+  ];
+
+  // Determines the ports and protocols based on being served over TLS.
+  function getSocketLocationFromProtocol () {
+    return !isSecure
+      ? {protocol: 'ws', port: serverSettings.wsport}
+      : {protocol: 'wss', port: serverSettings.wssport};
+  }
+
+  // Base configuration to extend in ptoviding specific tech failover configurations.
+  var defaultConfiguration = (function(useVideo, useAudio) {
+    var c = {
+      protocol: getSocketLocationFromProtocol().protocol,
+      port: getSocketLocationFromProtocol().port
+    };
+    if (!useVideo) {
+      c.videoEncoding = red5prosdk.PlaybackVideoEncoder.NONE;
+    }
+    if (!useAudio) {
+      c.audioEncoding = red5prosdk.PlaybackAudioEncoder.NONE;
+    }
+    return c;
+  })(configuration.useVideo, configuration.useAudio);
+
+  // Local lifecycle notifications.
+  function onSubscriberEvent (event, field) {
+    if (event.type !== 'Subscribe.Time.Update') {
+      console.log('[Red5ProSubscriber] ' + event.type + '.');
+      updateStatusFromEvent(event, field);
+    }
+  }
+  function onSubscribeFail (message) {
+    console.error('[Red5ProSubsriber] Subscribe Error :: ' + message);
+  }
+  function onSubscribeSuccess (subscriber, id) {
+    console.log('[Red5ProSubsriber] Subscribe ' + id + ' Complete.');
+    if (subscriber.getType().toLowerCase() === 'rtc') {
+      try {
+        window.trackBitrate(subscriber.getPeerConnection(), onBitrateUpdate[id], onResolutionUpdate[id], true);
+      }
+      catch (e) {
+        //
+      }
+    }
+  }
+  function onUnsubscribeFail (message) {
+    console.error('[Red5ProSubsriber] Unsubscribe Error :: ' + message);
+  }
+  function onUnsubscribeSuccess ( targ ) {
+    console.log('[Red5ProSubsriber] Unsubscribe ' + targ + ' Complete.');
+  }
+
+  function getAuthenticationParams () {
+    var auth = configuration.authentication;
+    return auth && auth.enabled
+      ? {
+        connectionParams: {
+          username: auth.username,
+          password: auth.password
+        }
+      }
+      : {};
+  }
+
+  // Request to unsubscribe.
+  function unsubscribe () {
+    return new Promise(function(resolve, reject) {
+      targetSubscriber1.unsubscribe()
+        .then(function () {
+          targetSubscriber1.off('*', sub1Event);
+          targetSubscriber1 = undefined;
+          onUnsubscribeSuccess("stream1");
+          return targetSubscriber2.unsubscribe();
+        })
+        .then(function () {
+          targetSubscriber2.off('*', sub2Event);
+          targetSubscriber2 = undefined;
+          onUnsubscribeSuccess("stream2");
+          resolve();
+        })
+        .catch(function (error) {
+          var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
+          onUnsubscribeFail(jsonError);
+          reject(error);
+        });
+    });
+  }
+
+  // Define tech spefific configurations for each failover item.
+  var config = Object.assign({},
+    configuration,
+    defaultConfiguration,
+    getAuthenticationParams());
+  var rtcConfig = Object.assign({}, config, {
+    protocol: getSocketLocationFromProtocol().protocol,
+    port: getSocketLocationFromProtocol().port,
+    subscriptionId: 'subscriber-' + instanceId,
+    streamName: config.stream1
+  });
+  var rtmpConfig = Object.assign({}, config, {
+    protocol: 'rtmp',
+    port: serverSettings.rtmpport,
+    streamName: config.stream1,
+    width: config.cameraWidth,
+    height: config.cameraHeight,
+    backgroundColor: '#000000',
+    swf: '../../lib/red5pro/red5pro-subscriber.swf',
+    swfobjectURL: '../../lib/swfobject/swfobject.js',
+    productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
+  });
+  var hlsConfig = Object.assign({}, config, {
+    protocol: protocol,
+    port: isSecure ? serverSettings.hlssport : serverSettings.hlsport,
+    streamName: config.stream1,
+    mimeType: 'application/x-mpegURL'
+  });
+
+  // Define failover order.
+  var subscribeOrder = config.subscriberFailoverOrder
+        .split(',').map(function (item) {
+          return item.trim();
+        });
+
+  // Override for providing ?view= query param.
+  if (window.query('view')) {
+    subscribeOrder = [window.query('view')];
+  }
+
+  // Request to initialization and start subscribing through failover support.
+  var subscriber1 = new red5prosdk.Red5ProSubscriber();
+  var sub1Event = function(e) { onSubscriberEvent(e, 'stream1'); };
+  subscriber1.setPlaybackOrder(subscribeOrder)
+    .init({
+      rtc: Object.assign({}, rtcConfig, {streamName: configuration.stream1, mediaElementId: "red5pro-stream1"}),
+      rtmp: Object.assign({}, rtmpConfig, {streamName: configuration.stream1, mediaElementId: "red5pro-stream1"}),
+      hls: Object.assign({}, hlsConfig, {streamName: configuration.stream1, mediaElementId: "red5pro-stream1"})
+    })
+    .then(function (subscriberImpl) {
+      streamTitle1.innerText = configuration.stream1;
+      targetSubscriber1 = subscriberImpl;
+      // Subscribe to events.
+      targetSubscriber1.on( '*', sub1Event );
+      return targetSubscriber1.subscribe();
+    })
+    .then(function () {
+      onSubscribeSuccess(targetSubscriber1, 0);
+    })
+    .catch(function (error) {
+      var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
+      console.error('[Red5ProSubscriber] :: Error in subscribing (1) - ' + jsonError);
+      onSubscribeFail(jsonError);
+    });
+
+  var subscriber2 = new red5prosdk.Red5ProSubscriber();
+  var sub2Event = function(e) { onSubscriberEvent(e, 'stream2'); };
+  subscriber2.setPlaybackOrder(subscribeOrder)
+    .init({
+      rtc: Object.assign({}, rtcConfig, {streamName: configuration.stream2, mediaElementId: "red5pro-stream2"}),
+      rtmp: Object.assign({}, rtmpConfig, {streamName: configuration.stream2, mediaElementId: "red5pro-stream2"}),
+      hls: Object.assign({}, hlsConfig, {streamName: configuration.stream2, mediaElementId: "red5pro-stream2"})
+    })
+    .then(function (subscriberImpl) {
+      streamTitle2.innerText = configuration.stream2;
+      targetSubscriber2 = subscriberImpl;
+      // Subscribe to events.
+      targetSubscriber2.on( '*', sub2Event );
+      return targetSubscriber2.subscribe();
+    })
+    .then(function () {
+      onSubscribeSuccess(targetSubscriber2, 1);
+    })
+    .catch(function (error) {
+      var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
+      console.error('[Red5ProSubscriber] :: Error in subscribing (2) - ' + jsonError);
+      onSubscribeFail(jsonError);
+    });
+
+  // Clean up.
+  window.addEventListener('beforeunload', function() {
+    function clearRefs () {
+      if (targetSubscriber1) {
+        targetSubscriber1.off('*', sub1Event);
+      }
+      targetSubscriber1 = undefined;
+
+      if (targetSubscriber2) {
+        targetSubscriber2.off('*', sub2Event);
+      }
+      targetSubscriber2 = undefined;
+    }
+    unsubscribe().then(clearRefs).catch(clearRefs);
+    window.untrackBitrate();
+  });
+
+})(this, document, window.red5prosdk);
