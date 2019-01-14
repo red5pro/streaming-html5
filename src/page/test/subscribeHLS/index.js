@@ -61,11 +61,8 @@
   function onSubscribeFail (message) {
     console.error('[Red5ProSubsriber] Subscribe Error :: ' + message);
   }
-  function onSubscribeSuccess (subscriber) {
+  function onSubscribeSuccess () {
     console.log('[Red5ProSubsriber] Subscribe Complete.');
-    if (window.exposeSubscriberGlobally) {
-      window.exposeSubscriberGlobally(subscriber);
-    }
  }
   function onUnsubscribeFail (message) {
     console.error('[Red5ProSubsriber] Unsubscribe Error :: ' + message);
@@ -141,6 +138,9 @@
         targetSubscriber = subscriberImpl
         // Subscribe to events.
         targetSubscriber.on('*', onSubscriberEvent);
+        if (window.exposeSubscriberGlobally) {
+          window.exposeSubscriberGlobally(targetSubscriber);
+        }
         return targetSubscriber.subscribe()
       })
       .then(function () {
