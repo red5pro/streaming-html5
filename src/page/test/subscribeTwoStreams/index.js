@@ -31,7 +31,6 @@
   var instanceId = Math.floor(Math.random() * 0x10000).toString(16);
   var streamTitle1 = document.getElementById('stream1-title');
   var streamTitle2 = document.getElementById('stream2-title');
-  var statisticsField = [ document.getElementById('stream1-status'), document.getElementById('stream2-status') ];
 
   var protocol = serverSettings.protocol;
   var isSecure = protocol === 'https';
@@ -40,29 +39,6 @@
   var packetsReceived = [0, 0];
   var frameWidth = [0, 0];
   var frameHeight = [0, 0];
-  function updateStatistics (b, p, w, h, i) {
-    statisticsField[i].innerText = 'Bitrate: ' + Math.floor(b) + '. Packets Received: ' + p + '.' + ' Resolution: ' + w + ', ' + h + '.';
-  }
-
-  function bitUpdate (b, p, i) {
-    bitrate[i] = b;
-    packetsReceived[i] = p;
-    updateStatistics(bitrate[i], packetsReceived[i], frameWidth[i], frameHeight[i], i);
-  }
-  var onBitrateUpdate = [
-    function (b, p) { bitUpdate(b, p, 0); },
-    function (b, p) { bitUpdate(b, p, 1); }
-  ];
-
-  function resUpdate (w, h, i) {
-    frameWidth[i] = w;
-    frameHeight[i] = h;
-    updateStatistics(bitrate[i], packetsReceived[i], frameWidth[i], frameHeight[i], i);
-  }
-  var onResolutionUpdate = [
-    function (w, h) { resUpdate(w, h, 0); },
-    function (w, h) { resUpdate(w, h, 1); }
-  ];
 
   // Determines the ports and protocols based on being served over TLS.
   function getSocketLocationFromProtocol () {
@@ -90,7 +66,9 @@
   function onSubscriberEvent (event, field) {
     if (event.type !== 'Subscribe.Time.Update') {
       console.log('[Red5ProSubscriber] ' + event.type + '.');
-      updateStatusFromEvent(event, field);
+      if(typeof updateStatusFromEvent === 'function'){
+        updateStatusFromEvent(event, document.getElementById(field));
+      }
     }
   }
   function onSubscribeFail (message) {
@@ -98,14 +76,6 @@
   }
   function onSubscribeSuccess (subscriber, id) {
     console.log('[Red5ProSubsriber] Subscribe ' + id + ' Complete.');
-    if (subscriber.getType().toLowerCase() === 'rtc') {
-      try {
-        window.trackBitrate(subscriber.getPeerConnection(), onBitrateUpdate[id], onResolutionUpdate[id], true);
-      }
-      catch (e) {
-        //
-      }
-    }
   }
   function onUnsubscribeFail (message) {
     console.error('[Red5ProSubsriber] Unsubscribe Error :: ' + message);
@@ -158,7 +128,6 @@
   var rtcConfig = Object.assign({}, config, {
     protocol: getSocketLocationFromProtocol().protocol,
     port: getSocketLocationFromProtocol().port,
-    subscriptionId: 'subscriber-' + instanceId,
     streamName: config.stream1
   });
   var rtmpConfig = Object.assign({}, config, {
@@ -192,10 +161,14 @@
 
   // Request to initialization and start subscribing through failover support.
   var subscriber1 = new red5prosdk.Red5ProSubscriber();
-  var sub1Event = function(e) { onSubscriberEvent(e, 'stream1'); };
+  var sub1Event = function(e) { onSubscriberEvent(e, 'stream1-status'); };
+  var subscriber2 = new red5prosdk.Red5ProSubscriber  ();
+  var sub2Event = function(e) { onSubscriberEvent(e, 'stream2-status'); };
+
   subscriber1.setPlaybackOrder(subscribeOrder)
     .init({
-      rtc: Object.assign({}, rtcConfig, {streamName: configuration.stream1, mediaElementId: "red5pro-stream1"}),
+      rtc: Object.assign({}, rtcConfig, {streamName: configuration.stream1, mediaElementId: "red5pro-stream1",
+      subscriptionId: 'subscriber1-' + instanceId}),
       rtmp: Object.assign({}, rtmpConfig, {streamName: configuration.stream1, mediaElementId: "red5pro-stream1"}),
       hls: Object.assign({}, hlsConfig, {streamName: configuration.stream1, mediaElementId: "red5pro-stream1"})
     })
@@ -208,20 +181,16 @@
     })
     .then(function () {
       onSubscribeSuccess(targetSubscriber1, 0);
+      //then the second sub
+      return subscriber2.setPlaybackOrder(subscribeOrder)
     })
-    .catch(function (error) {
-      var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
-      console.error('[Red5ProSubscriber] :: Error in subscribing (1) - ' + jsonError);
-      onSubscribeFail(jsonError);
-    });
-
-  var subscriber2 = new red5prosdk.Red5ProSubscriber();
-  var sub2Event = function(e) { onSubscriberEvent(e, 'stream2'); };
-  subscriber2.setPlaybackOrder(subscribeOrder)
-    .init({
-      rtc: Object.assign({}, rtcConfig, {streamName: configuration.stream2, mediaElementId: "red5pro-stream2"}),
-      rtmp: Object.assign({}, rtmpConfig, {streamName: configuration.stream2, mediaElementId: "red5pro-stream2"}),
-      hls: Object.assign({}, hlsConfig, {streamName: configuration.stream2, mediaElementId: "red5pro-stream2"})
+    .then(function(sub){
+      return sub.init({
+        rtc: Object.assign({}, rtcConfig, {streamName: configuration.stream2, mediaElementId: "red5pro-stream2",
+        subscriptionId: 'subscriber2-' + instanceId}),
+        rtmp: Object.assign({}, rtmpConfig, {streamName: configuration.stream2, mediaElementId: "red5pro-stream2"}),
+        hls: Object.assign({}, hlsConfig, {streamName: configuration.stream2, mediaElementId: "red5pro-stream2"})
+      });
     })
     .then(function (subscriberImpl) {
       streamTitle2.innerText = configuration.stream2;
@@ -235,7 +204,7 @@
     })
     .catch(function (error) {
       var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
-      console.error('[Red5ProSubscriber] :: Error in subscribing (2) - ' + jsonError);
+      console.error('[Red5ProSubscriber] :: Error in subscribing (1) - ' + jsonError);
       onSubscribeFail(jsonError);
     });
 
