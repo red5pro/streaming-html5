@@ -280,6 +280,7 @@
     this.streamName = streamName;
     this.index = index;
     this.next = undefined;
+    this.parent = parent;
     var elems = generateNewSubscriberDOM(this.streamName, this.subscriptionId);
     this.log = elems[1];
     parent.appendChild(elems[0]);
@@ -302,6 +303,7 @@
     }
   }
   SubscriberItem.prototype.execute = function () {
+    var self = this;
     var name = this.streamName;
     var config = Object.assign({},
                     configuration,
@@ -321,20 +323,34 @@
     var sub = this.subscriber;
     var log = this.log;
     var reject = this.reject.bind(this);
-    this.subscriber.on('Subscribe.Connection.Closed', function () {
+    var close = function () {
       function cleanup () {
         var el = document.getElementById(getSubscriberElementId(name) + '-container')
         el.parentNode.removeChild(el);
+        sub.off('*', respond);
+        sub.off('Subscribe.Fail', fail);
       }
+      sub.off('Subscribe.Connection.Closed', close);
       sub.unsubscribe().then(cleanup).catch(cleanup);
       delete subscriberMap[name];
-    });
-    this.subscriber.on('*', function (event) {
+    };
+    var fail = function () {
+      close();
+      var t = setTimeout(function () {
+        clearTimeout(t);
+        new SubscriberItem(self.streamName, self.parent, self.index).execute();
+      }, 2000);
+    };
+    var respond = function () {
       if (event.type === 'Subscribe.Time.Update') return;
       console.log('[subscriber:' + name + '] ' + event.type);
       log.innerText += '[subscriber:' + name + '] ' + event.type + '\r\n';
-    });
-    //      subscriber.on('Subscribe.Fail', reject);
+    };
+
+    this.subscriber.on('Subscribe.Connection.Closed', close);
+    this.subscriber.on('Subscribe.Fail', fail);
+    this.subscriber.on('*', respond);
+
     this.subscriber.init(rtcConfig)
       .then(function (subscriber) {
         subscriberMap[name] = subscriber;
