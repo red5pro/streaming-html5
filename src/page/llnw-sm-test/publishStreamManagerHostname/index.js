@@ -137,7 +137,7 @@
                     getUserMediaConfiguration());
     var rtcConfig = Object.assign({}, config, {
                       protocol: isSecureHost ? 'wss' : getSocketLocationFromProtocol().protocol,
-                      port: isSecureHost ? 8083 : getSocketLocationFromProtocol().port,
+                      port: isSecureHost ? 443 : getSocketLocationFromProtocol().port,
                       streamName: response.name
                    });
     var rtmpConfig = Object.assign({}, config, {

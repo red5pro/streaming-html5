@@ -90,7 +90,9 @@
   }
 
   function getUserMediaConfiguration () {
-    return Object.assign({}, mediaConstraints);
+    return Object.assign({}, {
+      mediaConstraints: mediaConstraints
+    });
   }
 
   var SELECT_DEFAULT = 'Select a camera...';

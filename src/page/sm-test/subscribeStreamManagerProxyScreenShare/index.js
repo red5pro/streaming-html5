@@ -149,7 +149,7 @@
     console.log('[Red5ProSubsriber] Subscribe Complete.');
     if (subscriber.getType().toLowerCase() === 'rtc') {
       try {
-        window.trackBitrate(subscriber.getPeerConnection(), onBitrateUpdate, onResolutionUpdate);
+        window.trackBitrate(subscriber.getPeerConnection(), onBitrateUpdate, onResolutionUpdate, true);
       }
       catch (e) {
         //
@@ -217,6 +217,10 @@
     });
     rtcConfig.connectionParams = Object.assign(getAuthenticationParams(), rtcConfig.connectionParams);
 
+    rtcConfig.connectionParams = Object.assign({}, 
+      getAuthenticationParams().connectionParams,
+      rtcConfig.connectionParams);
+
     new red5prosdk.RTCSubscriber()
       .init(rtcConfig)
       .then(function (subscriberImpl) {
@@ -280,6 +284,10 @@
       mediaElementId: 'red5pro-audio'
     });
     audioConfig.connectionParams = Object.assign(getAuthenticationParams(), audioConfig.connectionParams);
+
+    audioConfig.connectionParams = Object.assign({}, 
+      getAuthenticationParams().connectionParams,
+      audioConfig.connectionParams);
 
     new red5prosdk.RTCSubscriber()
       .init(audioConfig)
