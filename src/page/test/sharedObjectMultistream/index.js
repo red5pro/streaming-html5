@@ -323,7 +323,7 @@
     var sub = this.subscriber;
     var log = this.log;
     var reject = this.reject.bind(this);
-    var close = function () {
+    var close = function (event) { // eslint-disable-line no-unused-vars
       function cleanup () {
         var el = document.getElementById(getSubscriberElementId(name) + '-container')
         el.parentNode.removeChild(el);
@@ -334,14 +334,14 @@
       sub.unsubscribe().then(cleanup).catch(cleanup);
       delete subscriberMap[name];
     };
-    var fail = function () {
+    var fail = function (event) { // eslint-disable-line no-unused-vars
       close();
       var t = setTimeout(function () {
         clearTimeout(t);
         new SubscriberItem(self.streamName, self.parent, self.index).execute();
       }, 2000);
     };
-    var respond = function () {
+    var respond = function (event) {
       if (event.type === 'Subscribe.Time.Update') return;
       console.log('[subscriber:' + name + '] ' + event.type);
       log.innerText += '[subscriber:' + name + '] ' + event.type + '\r\n';
