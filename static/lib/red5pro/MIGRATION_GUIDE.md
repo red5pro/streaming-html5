@@ -15,6 +15,10 @@ The `5.4.0` release of the Red5 Pro HTML SDK saw some minor changes related to W
   * To support backward compatiibilty for webapps out in the wild, the HTML SDK will recognize previously defaulted values and silently change the values to new default values.
 * The `iceServers` configuration property has been deprecated in favor of the new `rtcConfiguration` configuration property.
   * [Refer to section: RTCConfiguration](#rtcconfiguration)
+* The `SharedObject` API has been decoupled from requiring previously established stream clients (Publisher and/or Subscriber).
+  * By decoupling the previous *requirement* to use a established stream client, `SharedObjects` can now be used with establishing a  `WebSocket` connection and providing that as the connection to communicate over `SharedObjects`.
+  * The Red5 Pro HTML SDK provides a `Red5ProSharedObjectSocket` class to serve as a proxy to an underlying `WebSocket` and convenience in communicating to and from the Red5 Pro Server when using `SharedObjects`.
+  * The `SharedObject` API can still be employed using a stream client connection as was possible in previous SDK versions.
 
 ## RTCConfiguration
 
