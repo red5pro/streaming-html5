@@ -40,6 +40,7 @@
 
   var protocol = serverSettings.protocol;
   var isSecure = protocol == 'https';
+
   function getSocketLocationFromProtocol () {
     return !isSecure
       ? {protocol: 'ws', port: serverSettings.wsport}
@@ -160,6 +161,23 @@
     var rtcConfig = Object.assign({}, config, {
                       protocol: getSocketLocationFromProtocol().protocol,
                       port: getSocketLocationFromProtocol().port,
+                      bandwidth: {
+                        video: 256
+                      },
+                      mediaConstraints: {
+                        audio: true,
+                        video: {
+                          width: {
+                            exact: 320
+                          },
+                          height: {
+                            exact: 240
+                          },
+                          frameRate: {
+                            exact: 15
+                          }
+                        }
+                      },
                       streamName: config.stream1
                    });
 
