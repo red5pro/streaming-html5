@@ -27,19 +27,61 @@
   })();
   red5prosdk.setLogLevel(configuration.verboseLogging ? red5prosdk.LOG_LEVELS.TRACE : red5prosdk.LOG_LEVELS.WARN);
 
-  var targetPublisher;
-
   var updateStatusFromEvent = window.red5proHandlePublisherEvent; // defined in src/template/partial/status-field-publisher.hbs
-  var streamTitle = document.getElementById('stream-title');
+  var updateSuscriberStatusFromEvent = window.red5proHandleSubscriberEvent;
+
+  var targetPublisher;
+  var roomName = window.query('room') || 'red5pro'; // eslint-disable-line no-unused-vars
+  var streamName = window.query('streamName') || ['publisher', Math.floor(Math.random() * 0x10000).toString(16)].join('-');
+
+  var roomField = document.getElementById('room-field');
+  var publisherSession = document.getElementById('publisher-session');
+  var publisherNameField = document.getElementById('publisher-name-field');
+  var streamNameField = document.getElementById('streamname-field');
+  var audioCheck = document.getElementById('audio-check');
+  var videoCheck = document.getElementById('video-check');
+  var joinButton = document.getElementById('join-button');
   var statisticsField = document.getElementById('statistics-field');
-  var sendButton = document.getElementById('send-button');
-  var soField = document.getElementById('so-field');
-  sendButton.addEventListener('click', function () {
-    sendMessageOnSharedObject(document.getElementById('input-field').value);
+
+  roomField.value = roomName;
+  streamNameField.value = streamName;
+  audioCheck.checked = configuration.useAudio;
+  videoCheck.checked = configuration.useVideo;
+
+  joinButton.addEventListener('click', function () {
+    saveSettings();
+    doPublish(streamName);
+    setPublishingUI(streamName);
   });
+
+  audioCheck.addEventListener('change', function() {
+    if (targetPublisher) {
+      if (audioCheck.checked) { 
+        targetPublisher.unmuteAudio(); 
+      } else { 
+        targetPublisher.muteAudio(); 
+      }
+    }
+  });
+  videoCheck.addEventListener('change', function() {
+    if (targetPublisher) {
+      if (videoCheck.checked)
+      { targetPublisher.unmuteVideo();
+      } else { 
+        targetPublisher.muteVideo(); 
+      }
+    }
+  });
+
+  var soField = document.getElementById('so-field');
 
   var protocol = serverSettings.protocol;
   var isSecure = protocol == 'https';
+
+  function saveSettings () {
+    streamName = streamNameField.value;
+    roomName = roomField.value;
+  }
 
   function getSocketLocationFromProtocol () {
     return !isSecure
@@ -60,8 +102,7 @@
   }
   function onPublishSuccess (publisher) {
     console.log('[Red5ProPublisher] Publish Complete.');
-
-    establishSharedObject(publisher);
+    establishSharedObject(publisher, roomField.value, streamNameField.value);
     try {
       window.trackBitrate(publisher.getPeerConnection(), onBitrateUpdate);
     }
@@ -97,6 +138,16 @@
     };
   }
 
+  function setPublishingUI (streamName) {
+    publisherNameField.innerText = streamName;
+    roomField.setAttribute('disabled', true);
+    publisherSession.classList.remove('hidden');
+    publisherNameField.classList.remove('hidden');
+    Array.prototype.forEach.call(document.getElementsByClassName('remove-on-broadcast'), function (el) {
+      el.classList.add('hidden');
+    });
+  }
+
   var hasRegistered = false;
   function appendMessage (message) {
     soField.value = [message, soField.value].join('\n');
@@ -105,9 +156,9 @@
   function messageTransmit (message) { // eslint-disable-line no-unused-vars
     soField.value = ['User "' + message.user + '": ' + message.message, soField.value].join('\n');
   }
-  function establishSharedObject (publisher) {
+  function establishSharedObject (publisher, roomName, streamName) {
     // Create new shared object.
-    so = new SharedObject('sharedStreamTest', publisher)
+    so = new SharedObject(roomName, publisher)
     var soCallback = {
       messageTransmit: messageTransmit
     };
@@ -126,28 +177,21 @@
         var streams = event.data.streams.length > 0 ? event.data.streams.split(',') : [];
         if (!hasRegistered) {
           hasRegistered = true;
-          so.setProperty('streams', streams.concat([configuration.stream1]).join(','));
+          so.setProperty('streams', streams.concat([streamName]).join(','));
         }
         streamsPropertyList = streams;
-        processStreams(streamsPropertyList, configuration.stream1);
+        processStreams(streamsPropertyList, streamName);
       }
       else if (!hasRegistered) {
         hasRegistered = true;
-        streamsPropertyList = [configuration.stream1];
-        so.setProperty('streams', configuration.stream1);
+        streamsPropertyList = [streamName];
+        so.setProperty('streams', streamName);
       }
     });
     so.on(red5prosdk.SharedObjectEventTypes.METHOD_UPDATE, function (event) {
       console.log('[Red5ProPublisher] SharedObject Method Update.');
       console.log(JSON.stringify(event.data, null, 2));
       soCallback[event.data.methodName].call(null, event.data.message);
-    });
-  }
-
-  function sendMessageOnSharedObject (message) {
-    so.send('messageTransmit', {
-      user: configuration.stream1,
-      message: message
     });
   }
 
@@ -178,7 +222,7 @@
                           }
                         }
                       },
-                      streamName: config.stream1
+                      streamName: streamName
                    });
 
     var publisher = new red5prosdk.RTCPublisher();
@@ -186,8 +230,8 @@
 
   }
 
-  function doPublish () {
-    targetPublisher.publish()
+  function doPublish (name) {
+    targetPublisher.publish(name)
       .then(function () {
         onPublishSuccess(targetPublisher);
       })
@@ -201,7 +245,7 @@
 
   function unpublish () {
     if (so !== undefined)  {
-      var name = configuration.stream1;
+      var name = streamName;
       var updateList = streamsPropertyList.filter(function (item) {
         return item !== name;
       });
@@ -227,7 +271,6 @@
   // Kick off.
   determinePublisher()
     .then(function (publisherImpl) {
-      streamTitle.innerText = configuration.stream1;
       targetPublisher = publisherImpl;
       targetPublisher.on('*', onPublisherEvent);
       return targetPublisher.preview();
@@ -304,7 +347,7 @@
 
   var SubscriberItem = function (streamName, parent, index) {
     var uid = Math.floor(Math.random() * 0x10000).toString(16);
-    this.subscriptionId = [configuration.stream1, 'sub', uid].join('-')
+    this.subscriptionId = [streamNameField.value, 'sub', uid].join('-')
     this.streamName = streamName;
     this.index = index;
     this.next = undefined;

@@ -10,14 +10,18 @@
         height: 240px;
         background-color: #000;
       }
+      #publisher-name-field {
+        font-weight: bold;
+        margin-right: 1.2em;
+      }
       .auto-margined {
-        margin: 1rem auto;
+        margin: 1em auto;
       }
       .float-left {
         float: left;
       }
       .spaced {
-        margin: 1rem;
+        margin: 1em;
       }
       .publisher-container, .subscriber-container {
         width: 320px;
@@ -32,7 +36,7 @@
         background-color: #eee;
       }
       .publisher-settings > p {
-        padding: 0.6rem 0;
+        padding: 0.6em 0;
       }
       .dark-background {
         background-color: #999;
@@ -46,7 +50,7 @@
     <div id="app">
       {{> version }}
       {{> settings-link}}
-      {{> test-info testTitle='Conference'}}
+      {{> test-title title='Conference'}}
       <div class="centered status-field">
         <p>
           <label for="room-field">Room:</label>
@@ -60,17 +64,18 @@
         </div>
         <video id="red5pro-publisher" autoplay playsinline muted width="320" height="240"></video>
         <div id="publisher-settings" class="publisher-settings">
-          <p class="centered">
+          <p class="centered remove-on-broadcast">
             <label for="streamname-field">Stream Name:</label>
             <input id="streamname-field" name="streamname-field">
           </p>
           <p class="centered">
+            <span id="publisher-name-field" class="hidden"></span>
             <label for="video-check">Video: </label>
             <input type="checkbox" id="video-check" name="video-check" checked>
             <label for="audio-check">Audio: </label>
             <input type="checkbox" id="audio-check" name="audio-check" checked>
           </p>
-          <p class="centered dark-background"><button id="join-button">Join!</button></p>
+          <p class="centered dark-background remove-on-broadcast"><button id="join-button">Join!</button></p>
         </div>
       </div>
       <div id="subscribers"></div>
