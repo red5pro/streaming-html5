@@ -1,55 +1,91 @@
 <!doctype html>
 <html>
   <head>
-    {{> meta title='Conference Test'}}
+    {{> meta title='Conference'}}
     {{> header-scripts}}
     {{> header-stylesheets}}
+    <style>
+      #publisher {
+        width: 320px;
+        height: 240px;
+        background-color: #000;
+      }
+      .auto-margined {
+        margin: 1rem auto;
+      }
+      .float-left {
+        float: left;
+      }
+      .spaced {
+        margin: 1rem;
+      }
+      .publisher-container, .subscriber-container {
+        width: 320px;
+        background-color: #333;
+        border: 2px solid #999;
+      }
+      .publisher-session {
+        width: 100%;
+      }
+      .publisher-settings {
+        width: 100%;
+        background-color: #eee;
+      }
+      .publisher-settings > p {
+        padding: 0.6rem 0;
+      }
+      .dark-background {
+        background-color: #999;
+      }
+      .hidden {
+        display: none;
+      }
+    </style>
   </head>
   <body>
-    <div class="proto">
-      <div class="float-left-conf" id="FILLNAME">
-        <h2 class="centered"><em>Subscriber Stream</em>: FILLNAME</h2>
-        <p id="FILLNAME-status" class="centered status-field">On hold.</p>
-        <div class="centered">
-          <video id="FILLNAME-video"
-                  controls autoplay playsinline
-                  class="red5pro-media red5pro-media-background"
-                  width="480" height="360"></video>
-        </div>
-      </div>
-    </div>
     <div id="app">
       {{> version }}
       {{> settings-link}}
-      <div class="ice-background">
-      <div class="test-notification">
-        <p>The Conference example requires access to a service that returns a stream listing. You may run into Cross-Origin Resource Sharing (<strong>CORS</strong>) issues if trying to use this example without the proper <strong>CORS</strong> settings provided by the server.</p>
-        <br/>
-        <p>It is recommended to view this example as part of the <code>webrtcexamples</code> webapp shipped with the <a href="https://account.red5pro.com/download" target="_blank">Red5 Pro Server</a>.</p>
+      {{> test-info testTitle='Conference'}}
+      <div class="centered status-field">
+        <p>
+          <label for="room-field">Room:</label>
+          <input id="room-field" name="room-field">
+        </p>
       </div>
-      </div>
-      {{> test-info testTitle='Conference Test'}}
-      <hr />
-      <div>
-        <label for="roomTxt">Room - </label><input type="text" id="roomTxt">
-        <label for="nameTxt">Name - </label><input type="text" id="nameTxt">
-        <label for="videoCheck">Video - </label><input type="checkbox" id="videoCheck" checked>
-        <label for="audioCheck">Audio - </label><input type="checkbox" id="audioCheck" checked>
-        <input type="submit" value="Connect" id="submitBtn">
-      </div>
-      <div class="float-left-conf publisher">
-        <h2 class="centered"><em>Publisher Stream</em>: <span id="pub-stream-title"></span></h2>
-        <p id="pub-status-field" class="centered status-field">On hold.</p>
-        <div class="centered">
-          <video id="red5pro-publisher-video"
-                controls autoplay muted playsinline
-                width="480" height="360"></video>
+      <div class="publisher-container auto-margined">
+        <div id="publisher-session" class="publisher-session hidden">
+          {{> status-field-publisher}}
+          {{> statistics-field}}
         </div>
+        <video id="red5pro-publisher" autoplay playsinline muted width="320" height="240"></video>
+        <div id="publisher-settings" class="publisher-settings">
+          <p class="centered">
+            <label for="streamname-field">Stream Name:</label>
+            <input id="streamname-field" name="streamname-field">
+          </p>
+          <p class="centered">
+            <label for="video-check">Video: </label>
+            <input type="checkbox" id="video-check" name="video-check" checked>
+            <label for="audio-check">Audio: </label>
+            <input type="checkbox" id="audio-check" name="audio-check" checked>
+          </p>
+          <p class="centered dark-background"><button id="join-button">Join!</button></p>
+        </div>
+      </div>
+      <div id="subscribers"></div>
+      <div class="centered status-field hidden">
+        <p>
+          <input type="text" id="input-field" />
+          <button id="send-button">send</button>
+        </p>
+        <hr>
+        <p>
+          <textarea id="so-field" disabled style="width: 50%; min-height: 240px; min-width: 320px"></textarea>
+        </p>
       </div>
     </div>
     {{> body-scripts}}
-    <script src="../../script/publisher-status.js"></script>
-    <script src="../../script/subscription-status.js"></script>
     <script src="index.js"></script>
   </body>
 </html>

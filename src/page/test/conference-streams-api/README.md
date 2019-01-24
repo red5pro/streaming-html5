@@ -1,3 +1,7 @@
+# WARNING: DEPRECATED
+
+> This example uses the streams API to recognize updated subscriber listings. The latest conference example - which uses Shared Objects to determine subscriber listings - can be found in [conference](../conference)
+
 # Conference Chat
 This example demonstrates multi-party communication using Red5 Pro. It also demonstrates using servlet requests on the server.
 
