@@ -1,52 +1,61 @@
 <!doctype html>
-<html>
+<html lang="eng">
   <head>
     {{> meta title='Conference'}}
     {{> header-scripts}}
     {{> header-stylesheets}}
+    <link rel="stylesheet" href="../../css/conference.css">
     <style>
-      #publisher {
-        width: 320px;
-        height: 240px;
-        background-color: #000;
-      }
-      #publisher-name-field {
-        font-weight: bold;
-        margin-right: 1.2em;
-      }
-      .auto-margined {
-        margin: 1em auto;
-      }
-      .float-left {
-        float: left;
-      }
-      .spaced {
-        margin: 1em;
-      }
-      .publisher-container, .subscriber-container {
-        width: 320px;
-        background-color: #333;
-        border: 2px solid #999;
-      }
-      .publisher-session {
-        width: 100%;
-      }
-      .publisher-settings {
-        width: 100%;
-        background-color: #eee;
-      }
-      .publisher-settings > p {
-        padding: 0.6em 0;
-      }
-      .dark-background {
-        background-color: #999;
-      }
-      .hidden {
-        display: none;
-      }
-    </style>
+       template { display: none }
+   </style>
+    <script>
+      /* POLYFILL */
+      // https://jsfiddle.net/brianblakely/h3EmY/
+      (function templatePolyfill(d) {
+        if('content' in d.createElement('template')) {
+          return false;
+        }
+
+        var qPlates = d.getElementsByTagName('template'),
+          plateLen = qPlates.length,
+          elPlate,
+          qContent,
+          contentLen,
+          docContent;
+
+        for(var x=0; x<plateLen; ++x) {
+          elPlate = qPlates[x];
+          qContent = elPlate.childNodes;
+          contentLen = qContent.length;
+          docContent = d.createDocumentFragment();
+
+          while(qContent[0]) {
+            docContent.appendChild(qContent[0]);
+          }
+
+          elPlate.content = docContent;
+        }
+      })(document);
+      // Shim so we can style in IE6/7/8
+      document.createElement('template');
+    </script>
+    <script src="../../script/subscription-status.js"></script>
   </head>
   <body>
+    <template id="subscriber-template">
+      <div class="subscriber-container float-left spaced">
+        <div class="subscriber-session centered status-field">
+          <p>On hold.</p>
+        </div>
+        <video autoplay controls playsinline class="red5pro-media red5pro-background"></video>
+        <div class="centered status-field">
+          <p>
+            <span class="subscriber-name-field"></span>
+            <span class="subscriber-id-field"></span>
+          </p>
+        </div>
+     </div>
+    </template>
     <div id="app">
       {{> version }}
       {{> settings-link}}
@@ -57,7 +66,7 @@
           <input id="room-field" name="room-field">
         </p>
       </div>
-      <div class="publisher-container auto-margined">
+      <div class="publisher-container spaced auto-margined">
         <div id="publisher-session" class="publisher-session hidden">
           {{> status-field-publisher}}
           {{> statistics-field}}

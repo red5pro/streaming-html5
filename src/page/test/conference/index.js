@@ -73,6 +73,7 @@
     }
   });
 
+  var subscriberTemplate = document.querySelector('#subscriber-template');
   var soField = document.getElementById('so-field');
 
   var protocol = serverSettings.protocol;
@@ -146,6 +147,17 @@
     Array.prototype.forEach.call(document.getElementsByClassName('remove-on-broadcast'), function (el) {
       el.classList.add('hidden');
     });
+  }
+
+  function templateContent (template, templateHTML) {
+    if("content" in document.createElement("template")) {
+      return document.importNode(template.content, true);
+    }
+    else {
+      var div = document.createElement('div');
+      div.innerHTML = templateHTML;
+      return div;
+    }
   }
 
   var hasRegistered = false;
@@ -323,53 +335,47 @@
   function getSubscriberElementId (streamName) {
     return ['red5pro', 'subscriber', streamName].join('-');
   }
-  function generateNewSubscriberDOM (streamName, subId) {
-    var div = document.createElement('div');
-    var p = document.createElement('p');
-    var title = document.createTextNode(streamName + ' (' + subId + ')');
-    p.appendChild(title);
-    div.appendChild(p);
-    var video = document.createElement('video');
-    video.width = 320;
-    video.height = 240;
-    video.autoplay = true;
-    video.controls = true;
-    video.muted = true;
-    video.setAttribute('playsinline', true);
-    video.id = getSubscriberElementId(streamName);
-    div.id = video.id + '-container';
-    div.appendChild(video);
-    var log = document.createElement('p');
-    log.style = 'max-width:320px;max-height:240px;border:1 solid black;overflow:scroll;font-size:12px;';
-    div.appendChild(log);
-    return [div, log];
+  function addSubscriberUI (container) {
+    var el = templateContent(subscriberTemplate, '<p>Template not supported.</p>');
+    return el;
+  }
+  function generateNewSubscriberDOM (streamName, subId, parent) {
+    var card = addSubscriberUI(parent);
+    var videoId = getSubscriberElementId(streamName);
+    var videoElement = card.querySelectorAll('.red5pro-media')[0];
+    var subscriberNameField = card.querySelectorAll('.subscriber-name-field')[0];
+    var subscriberIdField = card.querySelectorAll('.subscriber-id-field')[0];
+    subscriberNameField.innerText = streamName;
+    subscriberIdField.innerText = '(' + subId + ')';
+    videoElement.id = videoId;
+    card.id = [videoId, 'container'].join('-');
+    parent.appendChild(card);
+    return card;
   }
 
-  var SubscriberItem = function (streamName, parent, index) {
+  var SubscriberItem = function (subStreamName, parent, index) {
     var uid = Math.floor(Math.random() * 0x10000).toString(16);
     this.subscriptionId = [streamNameField.value, 'sub', uid].join('-')
-    this.streamName = streamName;
+    this.streamName = subStreamName;
     this.index = index;
     this.next = undefined;
     this.parent = parent;
-    var elems = generateNewSubscriberDOM(this.streamName, this.subscriptionId);
-    this.log = elems[1];
-    parent.appendChild(elems[0]);
+    this.card = generateNewSubscriberDOM(this.streamName, this.subscriptionId, this.parent);
   }
   SubscriberItem.prototype.resolve = function () {
     var name = this.streamName;
-    this.log.innerText += '[subscriber:' + name + '] success.\r\n'
+    // this.log.innerText += '[subscriber:' + name + '] success.\r\n'
     if (this.next) {
-      this.log.innerText += '[subscriber:' + name + '] next() =>\r\n'
+      //      this.log.innerText += '[subscriber:' + name + '] next() =>\r\n'
       this.next.execute();
     }
   }
   SubscriberItem.prototype.reject = function (event) {
     console.error(event);
     var name = this.streamName;
-    this.log.innerText += '[subscriber:' + name + '] failed. ' + event.type + '.\r\n';
+    //    this.log.innerText += '[subscriber:' + name + '] failed. ' + event.type + '.\r\n';
     if (this.next) {
-      this.log.innerText += '[subscriber:' + name + '] next() =>\r\n'
+      //      this.log.innerText += '[subscriber:' + name + '] next() =>\r\n'
       this.next.execute();
     }
   }
@@ -392,7 +398,7 @@
     this.subscriber.on('Connect.Success', this.resolve.bind(this));
     this.subscriber.on('Connect.Failure', this.reject.bind(this));
     var sub = this.subscriber;
-    var log = this.log;
+    //    var log = this.log;
     var reject = this.reject.bind(this);
     var close = function (event) { // eslint-disable-line no-unused-vars
       function cleanup () {
@@ -415,7 +421,7 @@
     var respond = function (event) {
       if (event.type === 'Subscribe.Time.Update') return;
       console.log('[subscriber:' + name + '] ' + event.type);
-      log.innerText += '[subscriber:' + name + '] ' + event.type + '\r\n';
+      //      log.innerText += '[subscriber:' + name + '] ' + event.type + '\r\n';
     };
 
     this.subscriber.on('Subscribe.Connection.Closed', close);
