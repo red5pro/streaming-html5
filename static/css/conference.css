@@ -3,7 +3,7 @@
   height: 240px;
   background-color: #000;
 }
-#publisher-name-field {
+#publisher-name-field, .subscriber-name-field {
   font-weight: bold;
   margin-right: 1.2em;
 }

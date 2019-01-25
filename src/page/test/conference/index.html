@@ -5,57 +5,9 @@
     {{> header-scripts}}
     {{> header-stylesheets}}
     <link rel="stylesheet" href="../../css/conference.css">
-    <style>
-       template { display: none }
-   </style>
-    <script>
-      /* POLYFILL */
-      // https://jsfiddle.net/brianblakely/h3EmY/
-      (function templatePolyfill(d) {
-        if('content' in d.createElement('template')) {
-          return false;
-        }
-
-        var qPlates = d.getElementsByTagName('template'),
-          plateLen = qPlates.length,
-          elPlate,
-          qContent,
-          contentLen,
-          docContent;
-
-        for(var x=0; x<plateLen; ++x) {
-          elPlate = qPlates[x];
-          qContent = elPlate.childNodes;
-          contentLen = qContent.length;
-          docContent = d.createDocumentFragment();
-
-          while(qContent[0]) {
-            docContent.appendChild(qContent[0]);
-          }
-
-          elPlate.content = docContent;
-        }
-      })(document);
-      // Shim so we can style in IE6/7/8
-      document.createElement('template');
-    </script>
     <script src="../../script/subscription-status.js"></script>
   </head>
   <body>
-    <template id="subscriber-template">
-      <div class="subscriber-container float-left spaced">
-        <div class="subscriber-session centered status-field">
-          <p>On hold.</p>
-        </div>
-        <video autoplay controls playsinline class="red5pro-media red5pro-background"></video>
-        <div class="centered status-field">
-          <p>
-            <span class="subscriber-name-field"></span>
-            <span class="subscriber-id-field"></span>
-          </p>
-        </div>
-     </div>
-    </template>
     <div id="app">
       {{> version }}
       {{> settings-link}}
@@ -66,12 +18,14 @@
           <input id="room-field" name="room-field">
         </p>
       </div>
-      <div class="publisher-container spaced auto-margined">
+      <div id="publisher-container" class="publisher-container auto-margined">
         <div id="publisher-session" class="publisher-session hidden">
           {{> status-field-publisher}}
           {{> statistics-field}}
         </div>
-        <video id="red5pro-publisher" autoplay playsinline muted width="320" height="240"></video>
+        <video id="red5pro-publisher" autoplay playsinline muted
+               placeholder="../../css/assets/red5pro_logo.png"
+               width="320" height="240"></video>
         <div id="publisher-settings" class="publisher-settings">
           <p class="centered remove-on-broadcast">
             <label for="streamname-field">Stream Name:</label>
@@ -87,7 +41,7 @@
           <p class="centered dark-background remove-on-broadcast"><button id="join-button">Join!</button></p>
         </div>
       </div>
-      <div id="subscribers"></div>
+      <div id="subscribers" class="float-left"></div>
       <div class="centered status-field hidden">
         <p>
           <input type="text" id="input-field" />
