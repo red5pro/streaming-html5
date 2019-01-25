@@ -230,7 +230,10 @@
                         });
 
     // Merge in possible authentication params.
-    rtcConfig.connectionParams = Object.assign(getAuthenticationParams(), rtcConfig.connectionParams);
+    rtcConfig.connectionParams = Object.assign({}, 
+      getAuthenticationParams().connectionParams,
+      rtcConfig.connectionParams);
+
 
     if(window.query('view')) {
       publishOrder = [window.query('view')];

@@ -267,18 +267,18 @@ The following example demonstrates how to utilize the [Playback Controls API](#p
               "audio": 50,
               "video": 256
             },
-            iceServers: [
-              {
-                "urls": "stun:stun2.l.google.com:19302"
-              }
-            ],
+            rtcConfiguration: {
+              iceServers: [{urls: 'stun:stun2.l.google.com:19302'}],
+              iceCandidatePoolSize: 2,
+              bundlePolicy: 'max-bundle'
+            } // See https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/RTCPeerConnection#RTCConfiguration_dictionary
           };
           var config = Object.assign({},
             configuration,
             gUM);
           var rtcConfig = Object.assign({}, config, {
             protocol: 'ws',
-            port: 8081
+            port: 5080
           });
           var rtmpConfig = Object.assign({}, config, {
             protocol: 'rtmp',

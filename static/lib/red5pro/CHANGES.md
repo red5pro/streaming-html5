@@ -1,6 +1,28 @@
 # Changes
 
-## 5.2.0-RC5
+## 5.4.0
+
+- screenfull dep update. (bustardcelly)
+- gum rejection capture. (bustardcelly)
+- improper pass of of metadata in webrtc publisher. (bustardcelly)
+- allow for backward compatiblity on default websocket ports. (bustardcelly)
+- updating documentation on websocket ports. (bustardcelly)
+- trailing slash and change to default ports for WebSocket connections. (bustardcelly)
+- hotfix for handling promise rejection on sub availability. (bustardcelly)
+- Adding send invoke support on publisher side socket messaging. (bustardcelly)
+- ortc support. (bustardcelly)
+- adding keyFramerate init attribute. (bustardcelly)
+- fix for promise resolve on peer connection setup. (bustardcelly)
+- subscribe start event for hls subscriber. (bustardcelly)
+- fix for DOM cleanup on unsubscribe. (bustardcelly)
+- Adding `rtcConfiguration` support (bustardcelly)
+
+    > * WebRTC Publisher
+    > * WebRTC Subscriber
+    > * defaults to `iceServers` if rtcConfiguration is undefined
+    > * Provides a default rtcConfiguration
+
+## 5.2.0
 
 - moving ws.error invoke to promise.reject on timeout of ws connect. (bustardcelly)
 - change to warn on capture of exceptions for play on pause. (bustardcelly)

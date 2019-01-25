@@ -53,6 +53,20 @@ To build the testbed project:
 $ npm run build
 ```
 
+Windows users should execute the following command(s) assuming `nodejs` is in environment path.
+
+To set environment to `development `:
+
+```sh
+SET NODE_ENV=development
+```
+
+To build:
+
+```sh
+./node_modules/.bin/gulp build
+```
+
 ## Releasing
 To build a release with updated versioning:
 

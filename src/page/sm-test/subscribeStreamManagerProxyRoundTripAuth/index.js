@@ -46,6 +46,7 @@
   var tokenField = document.getElementById('token-field');
   var tokenCheckBox = document.getElementById('token-required-field');  
   var submitButton = document.getElementById('submit-button');
+  var proxyAuthConfiguration = {};
   
   
   var protocol = serverSettings.protocol;
@@ -117,7 +118,7 @@
     console.log('[Red5ProSubsriber] Subscribe Complete.');
     if (subscriber.getType().toLowerCase() === 'rtc') {
       try {
-        window.trackBitrate(subscriber.getPeerConnection(), onBitrateUpdate, onResolutionUpdate);
+        window.trackBitrate(subscriber.getPeerConnection(), onBitrateUpdate, onResolutionUpdate, true);
       }
       catch (e) {
         //
@@ -170,7 +171,7 @@
 	if (tokenCheckBox.checked == true)
 	{
 		console.log("Token required. Creating auth object");
-		configuration.connectionParams = {
+		proxyAuthConfiguration = {
 		  host: host,
 		  app: app,
 		  username: usernameField.value,
@@ -181,7 +182,7 @@
 	else
 	{
 		console.log("Token not required. Creating auth object");
-		configuration.connectionParams = {
+		proxyAuthConfiguration = {
 		  host: host,
 		  app: app,
 		  username: usernameField.value,
@@ -195,6 +196,7 @@
       protocol: getSocketLocationFromProtocol().protocol,
       port: getSocketLocationFromProtocol().port,
       app: configuration.proxy,
+      connectionParams: proxyAuthConfiguration,
       subscriptionId: 'subscriber-' + instanceId,
       streamName: config.stream1
     })
@@ -210,6 +212,8 @@
       swfobjectURL: '../../lib/swfobject/swfobject.js',
       productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
     })
+	Object.assign(rtmpConfig, proxyAuthConfiguration);
+	
     var hlsConfig = Object.assign({}, config, {
       host: host,
       app: app,
@@ -243,7 +247,7 @@
         hls: hlsConfig
        });
   }
-
+  
   function showServerAddress (subscriber) {
     var config = subscriber.getOptions();
     console.log("Host = " + config.host + " | " + "app = " + config.app);
