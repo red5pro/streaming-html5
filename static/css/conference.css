@@ -16,6 +16,12 @@
 .spaced {
   margin: 1em;
 }
+.video-holder {
+  width: 320px;
+  height: 240px;
+  background:url(../../css/assets/red5pro_logo.png) no-repeat center center;
+  background-size: contain;
+}
 .publisher-container, .subscriber-container {
   width: 320px;
   background-color: #333;
@@ -29,11 +35,26 @@
   background-color: #eee;
 }
 .publisher-settings > p {
-  padding: 0.6em 0;
+  padding: 0.8em 0;
 }
 .dark-background {
   background-color: #999;
 }
+.status-field-gray {
+  padding: 0.4rem 0;
+  background-color: #ccc;
+  border-top: 1px solid black;
+}
 .hidden {
   display: none;
 }
+/*
+.logo-placeholder {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 310px;
+}
+*/
+

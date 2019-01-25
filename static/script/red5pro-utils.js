@@ -1,13 +1,24 @@
 (function (window) {
   'use strict';
 
-  var bitrateInterval = 0;
-
-  // Based on https://github.com/webrtc/samples/blob/gh-pages/src/content/peerconnection/bandwidth/js/main.js
-  window.trackBitrate = function (connection, cb, resolutionCb, isSubscriber) {
-    window.untrackBitrate(cb);
+  // global bitrate - legacy
+  var globalBitrateTicket = undefined;
+  // ticket system
+  var bitrateTickets = [];
+  var BitrateTicket = function (connection, cb, resolutionCb, isSubscriber) {
+    this.connection = connection;
+    this.cb = cb;
+    this.resolutionCb = resolutionCb;
+    this.isSubscriber = isSubscriber;
+    this.bitrateInterval = 0;
+  };
+  BitrateTicket.prototype.start = function () {
     var lastResult;
-    bitrateInterval = setInterval(function () {
+    var connection = this.connection;
+    var cb = this.cb;
+    var resolutionCb = this.resolutionCb;
+    var isSubscriber = this.isSubscriber;
+    this.bitrateInterval = setInterval(function () {
       connection.getStats(null).then(function(res) {
         res.forEach(function(report) {
           var bytes;
@@ -48,10 +59,33 @@
         lastResult = res;
       });
     }, 1000);
+  };
+  BitrateTicket.prototype.stop = function  () {
+    clearInterval(this.bitrateInterval);
+  };
+
+  // Based on https://github.com/webrtc/samples/blob/gh-pages/src/content/peerconnection/bandwidth/js/main.js
+  window.trackBitrate = function (connection, cb, resolutionCb, isSubscriber, withTicket) {
+    var t = new BitrateTicket(connection, cb, resolutionCb, isSubscriber);
+    if (withTicket) {
+      var ticket = ['bitrateTicket', Math.floor(Math.random() * 0x10000).toString(16)].join('-');
+      bitrateTickets[ticket] = t;
+      t.start();
+      return ticket;
+    } else if (globalBitrateTicket) {
+      globalBitrateTicket.stop();
+    }
+    globalBitrateTicket = t;
+    t.start();
   }
 
-  window.untrackBitrate = function() {
-    clearInterval(bitrateInterval);
+  window.untrackBitrate = function(ticket) {
+    if (!ticket && globalBitrateTicket) {
+      globalBitrateTicket.stop();
+    } else if (bitrateTickets[ticket]) {
+      bitrateTickets[ticket].stop();
+      delete bitrateTickets[ticket];
+    }
   }
 
   // easy access query variables.

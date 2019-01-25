@@ -40,6 +40,7 @@
   var publisherSession = document.getElementById('publisher-session');
   var publisherNameField = document.getElementById('publisher-name-field');
   var streamNameField = document.getElementById('streamname-field');
+  var publisherVideo = document.getElementById('red5pro-publisher');
   var audioCheck = document.getElementById('audio-check');
   var videoCheck = document.getElementById('video-check');
   var joinButton = document.getElementById('join-button');
@@ -63,11 +64,12 @@
         '<div class="subscriber-session centered">' +
           '<p class="subscriber-status-field">On hold.</p>' +
         '</div>' +
-        '<video autoplay controls playsinline class="red5pro-media red5pro-background"></video>' +
-        '<div class="centered status-field">' +
-          '<p>' +
-            '<span class="subscriber-name-field"></span>' +
-            '<span class="subscriber-id-field"></span>' +
+        '<div class="video-holder centered">' +
+          '<video autoplay controls playsinline class="red5pro-media red5pro-background"></video>' +
+        '</div>' +
+        '<div class="centered">' +
+          '<p class="status-field"><span class="subscriber-name-field"></span></p>' +
+          '<p class="status-field-gray"><span class="subscriber-id-field"></span></p>' +
           '</p>' +
         '</div>';
 
@@ -93,12 +95,22 @@
 
   function updateMutedVideoOnPublisher () {
     if (targetPublisher && isPublishing) {
-      if (videoCheck.checked)
-      { targetPublisher.unmuteVideo();
+      if (videoCheck.checked){ 
+        targetPublisher.unmuteVideo();
       } else { 
         targetPublisher.muteVideo(); 
       }
     }
+    !videoCheck.checked && showVideoPoster();
+    videoCheck.checked && hideVideoPoster();
+  }
+
+  function showVideoPoster () {
+    publisherVideo.classList.add('hidden');
+  }
+
+  function hideVideoPoster () {
+    publisherVideo.classList.remove('hidden');
   }
 
   function getSocketLocationFromProtocol () {
@@ -107,6 +119,7 @@
       : {protocol: 'wss', port: serverSettings.wssport};
   }
 
+  var bitrateTrackingTicket;
   function onBitrateUpdate (bitrate, packetsSent) {
     statisticsField.innerText = 'Bitrate: ' + Math.floor(bitrate) + '. Packets Sent: ' + packetsSent + '.';
   }
@@ -124,7 +137,7 @@
     console.log('[Red5ProPublisher] Publish Complete.');
     establishSharedObject(publisher, roomField.value, streamNameField.value);
     try {
-      window.trackBitrate(publisher.getPeerConnection(), onBitrateUpdate);
+      bitrateTrackingTicket = window.trackBitrate(publisher.getPeerConnection(), onBitrateUpdate, null, null, true);
     }
     catch (e) {
       // no tracking for you!
@@ -336,7 +349,7 @@
       targetPublisher = undefined;
     }
     unpublish().then(clearRefs).catch(clearRefs);
-    window.untrackBitrate();
+    window.untrackBitrate(bitrateTrackingTicket);
   }
   window.addEventListener('beforeunload', shutdown);
   window.addEventListener('pagehide', shutdown);
@@ -394,21 +407,24 @@
     this.parent = parent;
     this.card = generateNewSubscriberDOM(this.streamName, this.subscriptionId, this.parent);
     this.statusField = this.card.getElementsByClassName('subscriber-status-field')[0];
+    this.toggleVideoPoster = this.toggleVideoPoster.bind(this);
+  }
+  SubscriberItem.prototype.toggleVideoPoster = function (showPoster) {
+    var video = document.getElementById(getSubscriberElementId(this.streamName));
+    if (showPoster) {
+      video.classList.add('hidden');
+    } else {
+      video.classList.remove('hidden');
+    }
   }
   SubscriberItem.prototype.resolve = function () {
-    //    var name = this.streamName;
-    //    this.log.innerText += '[subscriber:' + name + '] success.\r\n'
     if (this.next) {
-      //      this.log.innerText += '[subscriber:' + name + '] next() =>\r\n'
       this.next.execute();
     }
   }
   SubscriberItem.prototype.reject = function (event) {
     console.error(event);
-    //    var name = this.streamName;
-    //    this.log.innerText += '[subscriber:' + name + '] failed. ' + event.type + '.\r\n';
     if (this.next) {
-      //      this.log.innerText += '[subscriber:' + name + '] next() =>\r\n'
       this.next.execute();
     }
   }
@@ -431,8 +447,8 @@
     this.subscriber.on('Connect.Success', this.resolve.bind(this));
     this.subscriber.on('Connect.Failure', this.reject.bind(this));
     var sub = this.subscriber;
+    var toggleVideoPoster = this.toggleVideoPoster;
     var statusField = this.statusField;
-    //    var log = this.log;
     var reject = this.reject.bind(this);
     var close = function (event) { // eslint-disable-line no-unused-vars
       function cleanup () {
@@ -456,7 +472,11 @@
       if (event.type === 'Subscribe.Time.Update') return;
       console.log('[subscriber:' + name + '] ' + event.type);
       updateSuscriberStatusFromEvent(event, statusField);
-      //      log.innerText += '[subscriber:' + name + '] ' + event.type + '\r\n';
+      if (event.type === 'Subscribe.Metadata') {
+        if (event.data.streamingMode) {
+          toggleVideoPoster(!event.data.streamingMode.match(/Video/));
+        }
+      }
     };
 
     this.subscriber.on('Subscribe.Connection.Closed', close);
