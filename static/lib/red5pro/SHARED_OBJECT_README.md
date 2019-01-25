@@ -234,3 +234,4 @@ The following events are common across all SharedObject implementations from the
 | CONNECT_FAILURE | 'Connect.Failure' | When the shared object has failed to establish a required remote connection. |
 | PROPERTY_UPDATE | 'SharedObject.PropertyUpdate' | When an update to a property held on the shared object has been updated. |
 | METHOD_UPDATE | 'SharedObject.MethodUpdate' | When a client has invoked a message to be received on connected clients. |
+| CONNECTION_CLOSED | 'SharedObject.Connection.Closed' | When the Shared Object is successfully `close`d on the server. |

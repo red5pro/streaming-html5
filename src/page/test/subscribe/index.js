@@ -61,7 +61,7 @@
       : {protocol: 'wss', port: serverSettings.wssport};
   }
 
-  // Base configuration to extend in ptoviding specific tech failover configurations.
+  // Base configuration to extend in providing specific tech failover configurations.
   var defaultConfiguration = (function(useVideo, useAudio) {
     var c = {
       protocol: getSocketLocationFromProtocol().protocol,
@@ -88,6 +88,9 @@
   }
   function onSubscribeSuccess (subscriber) {
     console.log('[Red5ProSubsriber] Subscribe Complete.');
+    if (window.exposeSubscriberGlobally) {
+      window.exposeSubscriberGlobally(subscriber);
+    }
     if (subscriber.getType().toLowerCase() === 'rtc') {
       try {
         window.trackBitrate(subscriber.getPeerConnection(), onBitrateUpdate, onResolutionUpdate, true);

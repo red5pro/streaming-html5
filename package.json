@@ -1,6 +1,6 @@
 {
   "name": "red5pro-html-sdk-testbed",
-  "version": "5.5.0-RC4",
+  "version": "5.5.0-RC6",
   "description": "Testbed examples for Red5 Pro HTML SDK",
   "main": "src/js/index.js",
   "repository": {
@@ -25,7 +25,8 @@
     "gulp": "^3.9.1",
     "gulp-bump": "^2.4.0",
     "gulp-compile-handlebars": "^0.6.1",
-    "gulp-rename": "^1.2.2"
+    "gulp-rename": "^1.2.2",
+    "gulp-replace": "^1.0.0"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",

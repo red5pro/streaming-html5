@@ -118,6 +118,9 @@
   }
   function onSubscribeSuccess (subscriber) {
     console.log('[Red5ProSubsriber] Subscribe Complete.');
+    if (window.exposeSubscriberGlobally) {
+      window.exposeSubscriberGlobally(subscriber);
+    }
     try {
       window.trackBitrate(subscriber.getPeerConnection(), onBitrateUpdate, onResolutionUpdate, true);
     }

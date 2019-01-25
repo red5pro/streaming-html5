@@ -63,7 +63,7 @@
   }
   function onSubscribeSuccess () {
     console.log('[Red5ProSubsriber] Subscribe Complete.');
-  }
+ }
   function onUnsubscribeFail (message) {
     console.error('[Red5ProSubsriber] Unsubscribe Error :: ' + message);
   }
@@ -138,10 +138,13 @@
         targetSubscriber = subscriberImpl
         // Subscribe to events.
         targetSubscriber.on('*', onSubscriberEvent);
+        if (window.exposeSubscriberGlobally) {
+          window.exposeSubscriberGlobally(targetSubscriber);
+        }
         return targetSubscriber.subscribe()
       })
       .then(function () {
-        onSubscribeSuccess();
+        onSubscribeSuccess(targetSubscriber);
       })
       .catch(function (error) {
         var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
