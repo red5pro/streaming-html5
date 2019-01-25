@@ -86,7 +86,14 @@
   function updateMutedAudioOnPublisher () {
     if (targetPublisher && isPublishing) {
       if (audioCheck.checked) { 
-        targetPublisher.unmuteAudio(); 
+        if (videoTrackClone) {
+          var c = targetPublisher.getPeerConnection();
+          var senders = c.getSenders();
+          senders[0].replaceTrack(audioTrackClone);
+          audioTrackClone = undefined;
+        } else {
+          targetPublisher.unmuteAudio();
+        }
       } else { 
         targetPublisher.muteAudio(); 
       }
@@ -95,14 +102,43 @@
 
   function updateMutedVideoOnPublisher () {
     if (targetPublisher && isPublishing) {
-      if (videoCheck.checked){ 
-        targetPublisher.unmuteVideo();
+      if (videoCheck.checked) {
+        if (videoTrackClone) {
+          var c = targetPublisher.getPeerConnection();
+          var senders = c.getSenders();
+          senders[1].replaceTrack(videoTrackClone);
+          videoTrackClone = undefined;
+        } else {
+          targetPublisher.unmuteVideo();
+        }
       } else { 
         targetPublisher.muteVideo(); 
       }
     }
     !videoCheck.checked && showVideoPoster();
     videoCheck.checked && hideVideoPoster();
+  }
+
+  var audioTrackClone;
+  var videoTrackClone;
+  function updateInitialMediaOnPublisher () {
+    var t = setTimeout(function () {
+      // If we have requested no audio and/or no video in our initial broadcast,
+      // whipe the track from the connection.
+      var audioTrack = targetPublisher.getMediaStream().getAudioTracks()[0];
+      var videoTrack = targetPublisher.getMediaStream().getVideoTracks()[0];
+      var connection = targetPublisher.getPeerConnection();
+      if (!videoCheck.checked) {
+        videoTrackClone = videoTrack.clone();
+        connection.getSenders()[1].replaceTrack(null);
+      }
+      if (!audioCheck.checked) {
+        audioTrackClone = audioTrack.clone();
+        connection.getSenders()[0].replaceTrack(null);
+      }
+      clearTimeout(t);
+    }, 2000); 
+    // a bit of a hack. had to put a timeout to ensure the video track bits at least started flowing :/
   }
 
   function showVideoPoster () {
@@ -126,6 +162,9 @@
 
   function onPublisherEvent (event) {
     console.log('[Red5ProPublisher] ' + event.type + '.');
+    if (event.type === 'WebSocket.Message.Unhandled') {
+      console.log(event);
+    }
     updateStatusFromEvent(event);
   }
   function onPublishFail (message) {
@@ -134,6 +173,7 @@
   }
   function onPublishSuccess (publisher) {
     isPublishing = true;
+    window.red5propublisher = publisher;
     console.log('[Red5ProPublisher] Publish Complete.');
     establishSharedObject(publisher, roomField.value, streamNameField.value);
     try {
@@ -288,8 +328,7 @@
     targetPublisher.publish(name)
       .then(function () {
         onPublishSuccess(targetPublisher);
-        updateMutedAudioOnPublisher();
-        updateMutedVideoOnPublisher();
+        updateInitialMediaOnPublisher();
       })
       .catch(function (error) {
         var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);

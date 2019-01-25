@@ -18,6 +18,7 @@
     var cb = this.cb;
     var resolutionCb = this.resolutionCb;
     var isSubscriber = this.isSubscriber;
+    // Based on https://github.com/webrtc/samples/blob/gh-pages/src/content/peerconnection/bandwidth/js/main.js
     this.bitrateInterval = setInterval(function () {
       connection.getStats(null).then(function(res) {
         res.forEach(function(report) {
@@ -64,7 +65,6 @@
     clearInterval(this.bitrateInterval);
   };
 
-  // Based on https://github.com/webrtc/samples/blob/gh-pages/src/content/peerconnection/bandwidth/js/main.js
   window.trackBitrate = function (connection, cb, resolutionCb, isSubscriber, withTicket) {
     var t = new BitrateTicket(connection, cb, resolutionCb, isSubscriber);
     if (withTicket) {
