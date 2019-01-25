@@ -351,7 +351,10 @@
       onPublishFail(jsonError);
      });
 
-  window.addEventListener('beforeunload', function() {
+  var shuttingDown = false;
+  function shutdown() {
+    if (shuttingDown) return;
+    shuttingDown = true;
     function clearRefs () {
       if (targetPublisher) {
         targetPublisher.off('*', onPublisherEvent);
@@ -363,7 +366,9 @@
       targetSubscriber = undefined;
     }
     unpublish().then(unsubscribe).then(clearRefs).catch(clearRefs);
-  });
+  }
+  window.addEventListener('pagehide', shutdown);
+  window.addEventListener('beforeunload', shutdown);
 
 })(this, document, window.red5prosdk);
 

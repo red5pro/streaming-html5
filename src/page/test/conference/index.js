@@ -135,7 +135,7 @@
 
   function preview () {
     // var gUM = getUserMediaConfiguration;
-    return new Promise(function (resolve, reject) {
+    return new Promise(function (resolve, reject) { // eslint-disable-line no-unused-vars
 
       targetPublisher = new red5prosdk.Red5ProPublisher();
 
@@ -249,7 +249,7 @@
     return new Promise(function (resolve, reject) {
       clearPublish();
 
-      var view = targetPubView;
+      var view = targetPubView; // eslint-disable-line no-unused-vars
       var publisher = targetPublisher;
       if (publisher) {
         publisher.unpublish()
@@ -581,23 +581,29 @@
         if(subBlock.id != "" && ( subBlock.id == subscribeName || callList.indexOf(subBlock.id) < 0 ) && subBlock.parentNode != null){
           subBlock.parentNode.removeChild(subBlock);
         }
-      };
+      }
     }
     subscribers.splice(callList.indexOf(subscribeName), 1);
     callList.splice(callList.indexOf(subscribeName), 1);
     popQueueObject(subscribeName);
   }
 
-  window.addEventListener('beforeunload', function() {
+  var shuttingDown = false;
+  function shutdown() {
     delayedSubs = [];
+    if (shuttingDown) return;
+    shuttingDown = true;
     function clearRefs () {
       if (targetPublisher) {
         targetPublisher.off('*', onPublisherEvent);
       }
-      targetPubView = targetPublisher = undefined;
+      targetPublisher = undefined;
     }
     unpublish().then(unsubscribeAll).then(clearRefs).catch(clearRefs);
-  });
+    window.untrackBitrate();
+  }
+  window.addEventListener('pagehide', shutdown);
+  window.addEventListener('beforeunload', shutdown);
 
   preview();
   beginStreamListCall();
