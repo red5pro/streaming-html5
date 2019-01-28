@@ -101,5 +101,11 @@
     return undefined;
   }
   window.query = getQueryVariable;
+  window.exposePublisherGlobally = function (publisher) {
+    window.r5pro_publisher = publisher;
+  }
+  window.exposeSubscriberGlobally = function (subscriber) {
+    window.r5pro_subscriber = subscriber;
+  }
 
 })(this);
