@@ -63,7 +63,7 @@
   }
   function onSubscribeSuccess () {
     console.log('[Red5ProSubsriber] Subscribe Complete.');
-  }
+ }
   function onUnsubscribeFail (message) {
     console.error('[Red5ProSubsriber] Unsubscribe Error :: ' + message);
   }
@@ -108,7 +108,7 @@
   function unsubscribe () {
     return new Promise(function(resolve, reject) {
       var subscriber = targetSubscriber
-      subscriber.unscubscribe()
+      subscriber.unsubscribe()
         .then(function () {
           targetSubscriber.off('*', onSubscriberEvent);
           targetSubscriber = undefined;
@@ -138,10 +138,13 @@
         targetSubscriber = subscriberImpl
         // Subscribe to events.
         targetSubscriber.on('*', onSubscriberEvent);
+        if (window.exposeSubscriberGlobally) {
+          window.exposeSubscriberGlobally(targetSubscriber);
+        }
         return targetSubscriber.subscribe()
       })
       .then(function () {
-        onSubscribeSuccess();
+        onSubscribeSuccess(targetSubscriber);
       })
       .catch(function (error) {
         var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
@@ -151,7 +154,10 @@
       });
 
   // Clean up.
-  window.addEventListener('beforeunload', function() {
+  var shuttingDown = false;
+  function shutdown() {
+    if (shuttingDown) return;
+    shuttingDown = true;
     function clearRefs () {
       if (targetSubscriber) {
         targetSubscriber.off('*', onSubscriberEvent);
@@ -159,7 +165,10 @@
       targetSubscriber = undefined;
     }
     unsubscribe().then(clearRefs).catch(clearRefs);
-  });
+    window.untrackBitrate();
+  }
+  window.addEventListener('pagehide', shutdown);
+  window.addEventListener('beforeunload', shutdown);
 
 })(this, document, window.red5prosdk, window.Hls);
 

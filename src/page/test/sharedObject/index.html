@@ -1,0 +1,38 @@
+<!doctype html>
+<html>
+  <head>
+    {{> meta title='Shared Object'}}
+    {{> header-scripts}}
+    {{> header-stylesheets}}
+    <style>
+      .hidden {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      {{> version }}
+      {{> settings-link}}
+      <h1 class="centered">Shared Object</h1>
+      {{> status-field-subscriber}}
+      <div class="centered status-field">
+          <input type="text" id="connect-field" value="sharedChatTest" />
+          <button id="connect-button" disabled>connect</button>
+          <button id="disconnect-button" class="hidden">disconnect</button>
+      </div>
+      <div class="centered status-field">
+        <p>
+          <input type="text" id="input-field" disabled />
+          <button id="send-button" disabled>send</button>
+        </p>
+        <hr>
+        <p>
+          <textarea id="so-field" disabled style="width: 50%; min-height: 240px; min-width: 320px"></textarea>
+        </p>
+      </div>
+    </div>
+    {{> body-scripts}}
+    <script src="index.js"></script>
+  </body>
+</html>
