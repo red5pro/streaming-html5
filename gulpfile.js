@@ -2,6 +2,7 @@
 var path = require('path');
 var gulp = require('gulp');
 var bump = require('gulp-bump');
+var replace = require('gulp-replace');
 var handlebars = require('gulp-compile-handlebars');
 var mkdir = require('mkdirp');
 
@@ -44,6 +45,7 @@ gulp.task('move-scripts', ['compile'], function (cb) {
 gulp.task('move-static', ['compile', 'move-scripts'], function (cb) {
 
   gulp.src(path.join(staticDirectory, '**'))
+    .pipe(replace('$VERSION', version))
     .pipe(gulp.dest(buildDirectory))
     .on('end', cb);
 
