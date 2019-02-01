@@ -1,0 +1,24 @@
+<!doctype html>
+<html>
+  <head>
+    {{> meta title='Bandwidth Detection Test'}}
+    {{> header-scripts}}
+    {{> header-stylesheets}}
+  </head>
+  <body>
+    <div id="app">
+      {{> version }}
+      {{> settings-link}}
+      {{> test-info testTitle='Bandwidth Detection Test'}}
+      {{> status-field-publisher}}
+      {{> statistics-field}}
+      <div class="centered">
+        <video id="red5pro-publisher" controls autoplay playsinline muted></video>
+      </div>
+    </div>
+    <p id="speed-check-print">Speed test in progress...</p>
+    {{> body-scripts}}
+    <script src="bandwidthDetection.js"></script>
+    <script src="index.js"></script>
+  </body>
+</html>
