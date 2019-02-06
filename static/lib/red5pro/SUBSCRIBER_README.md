@@ -27,8 +27,6 @@ This document describes how to use the Red5 Pro HTML SDK to subscribe to a broad
 * [Auto Failover](#auto-failover-and-order)
 * [Lifecycle Events](#lifecycle-events)
 * [Playback Controls](#playback-controls)
-* [Other Information](#other-information)
-  * [Autoplay Restrictions](#autoplay-restrictions)
 
 # Requirements
 
@@ -73,7 +71,6 @@ _It is *highly* recommended to include [adapter.js](https://github.com/webrtcHac
 | videoEncoding | [-] | *None* | Specifies target video encoder. |
 | audio Encoding | [-] | *None* | Specifies target audio encoder. |
 | autoLayoutOrientation | [-] | `true` | Flag to allow SDK to auto-orientation the layout of `video` element based on broadcast metadata. _Mobile publishers broadcast with orientation._ |
-| muteOnAutoplayRestriction | [-] | `true` | Flag to attempt to mute the `video` element when `autoplay` is restricted in the browser. [See section on Autoplay Restrictions](#autoplay-restrictions) |
 | maintainConnectionOnSubscribeErrors | [-] | `false` | Flag to maintain previously established `WebSocket` connection on any failure within the `subscribe` request flow. [Example](https://github.com/red5pro/streaming-html5/tree/master/src/page/test/subscribeRetryOnInvalidName) |
 
 #### Video Encoding Configuration
@@ -278,7 +275,6 @@ The Red5 Pro HTML SDK HLS Subscriber.
 | mediaElementId | [-] | `red5pro-subscriber` | The target `video` or `audio` element `id` attribute which will display the stream. |
 | mimeType | [x] | `application/x-mpegURL` | The mime-type of the stream source. |
 | autoLayoutOrientation | [-] | `true` | Flag to allow SDK to auto-orientation the layout of `video` element based on broadcast metadata. _Mobile publishers broadcast with orientation._ |
-| muteOnAutoplayRestriction | [-] | `true` | Flag to attempt to mute the `video` element when `autoplay` is restricted in the browser. [See section on Autoplay Restrictions](#autoplay-restrictions) |
 | socketParams | [-] | `undefined` | By providing a `socketParams` property, you turn on a verification system that will pass the provided `connectionParams` to a WebSocket endpoint (much like how the WebRTC subscriber does in verification). |
 | connectionParams | [-] |  `undefined` | An object of connection parameters to send to the server upon connection request. |
 
@@ -495,8 +491,6 @@ The following events are common across all Subscriber implementations from the R
 | PLAYBACK_TIME_UPDATE | 'Subscribe.Time.Update' | Invoked when a change in playhead time is detected during playback. _In seconds._ |
 | PLAYBACK_STATE_CHANGE | 'Subscribe.Playback.Change' | Invoked when a change in playback state has occured, such as when going from a `Playback.PAUSED` state to `Playback.PLAYING` state. |
 | FULL_SCREEN_STATE_CHANGE | 'Subscribe.FullScreen.Change' | Invoked when a change in fullscreen state occurs during playback. |
-| AUTO_PLAYBACK_FAILURE | 'Subscribe.Autoplay.Failure' | Invoked when an attempt to `autoplay` on a media element throws a browser exception; typically due to browser security restrictions and their autoplay policies. (WebRTC and HLS, only) [See section on Autoplay Restrictions](#autoplay-restrictions) |
-| AUTO_PLAYBACK_MUTED | 'Subscribe.Autoplay.Muted' | Invoked when an attempt to `autoplay` on a media element throws a browser exception and is muted based on the `muteOnAutoplayRestriction` config property; typically due to browser security restrictions and their autoplay policies. (WebRTC and HLS, only) [See section on Autoplay Restrictions](#autoplay-restrictions) |
 
 ## WebRTC Subscriber Events
 
@@ -529,120 +523,3 @@ The following events are specific to the `RTMPSubscriber` implementation and acc
 # Playback Controls
 
 The `4.0.0` release of the SDK introduces Playback API and Default Controls for all subscriber techs with the ability to customize logic and UI for your own branding. To learn more, please refer to the [Playback Controls Documentation](playbackcontrols.md).
-
-# Other Information
-
-## Autoplay Restrictions
-
-In an attempt to provide a more pleasing user experience and reduce data consumption on mobile devices, browsers are continuing to evolve their `autoplay` policies. While generally and attempt to keep websites (read: *ads*) from playing back unwanted and/or unsolicited video and audio, these policies also affect those sites in which the sole intent _is to_ playback video and/or audio - such as from a conference web application built utilizing [Red5 Pro](https://red5pro.com).
-
-Naturally, this can cause some confusion and frustration as `autoplay` may have worked as expected prior to latest browser updates. Thankfully, you do have options when using the *Red5 Pro HTML SDK* to provide a better user experience.
-
-> It should be noted that the recent `autoplay` policies only affect the WebRTC and HLS subscribers from the Red5 Pro HTML SDK.
-
-### Using autoplay with the SDK
-
-If supporting autoplay is a requirement for your web application integrating the *Red5 Pro HTML SDK*, you have three implementation choices to choose from:
-
-1. Declaring the `autoplay` and `muted` attributes of the target video element in tandem.
-2. Declaring the `autoplay` attribute of the target video element and setting the `muteOnAutoplayRestriction` initialization property to `true`.
-3. Delcaring the `autoplay` attribute of the target video element and setting the `muteOnAutoplayRestriction` initialization property to `false`.
-
-#### Solution 1
-
-> Declaring the `autoplay` and `muted` attributes of the target video element in tandem.
-
-By declaring the `autoplay` and `muted` attribute together for a video element, the autoplay functionality will work - the video will begin playback with muted audio.
-
-```html
-<video id="red5pro-subscriber" class="red5pro-media" controls autoplay muted playsinline />
-```
-
-This is the general recommendation to allow for auto-playback and allow the user to unmute the audio.
-
-> The `controls` and `playsinline` attributes have no correlation to the autoplay policy, but are included for better user experience.
-
-#### Solution 2
-
-> Declaring the `autoplay` attribute of the target video element and setting the `muteOnAutoplayRestriction` initialization property to `true`.
-
-By declaring only the `autoplay` attribute on the video element and setting the `muteOnAutoplayRestriction` initialization property to `true` in the configuration, you can instruct the HTML SDK to:
-
-* first attempt `autoplay` unmuted
-* subsequently attempt to `autoplay` muted, if first attempt fails
-* send event notification of `Subscribe.Autoplay.Muted`, if auto-playback is muted
-
-Using this solution, `autoplay` can work as desired for browsers that do not enforce the policy (e.g., the policy may differ between desktop and mobile versions of the same browser). For those browsers that do enforce the policy, the *Red5 Pro HTML SDK* will attempt to autoplay the stream. If an exception is thrown on the `play` request of the video element, the SDK will then declare the `muted` attribute on the element on the video element and make a subsequent attempt to autoplay.
-
-If the muted autoplay happens without exception, a `Subscribe.Autoplay.Muted` event is dispatched from the subscriber instance (refer to [Common Events](#common-events)). As a developer, you can handle this method as per your specifications - such as displaying an alert notifying the user that audio has been muted and instructing them to unmute to hear audio.
-
-_declaration of video element in html:_
-
-```html
-<video id="red5pro-subscriber" class="red5pro-media" controls autoplay playsinline />
-```
-
-_usage of muteOnAutoplayRestriction in initialization:_
-
-```js
-var subscriber = new red5prosdk.RTCSubscriber()
-subscriber.init({
-    protocol: 'ws',
-    port: 5080,
-    host: 'localhost',
-    app: 'live',
-    streamName: 'mystream',
-    muteOnAutoRestriction: true
-  })
-  .then(subscriber => {
-    subscriber.on(red5prosdk.SubscriberEventTypes.AUTO_PLAYBACK_MUTED, () => {
-      alert('Audio has been muted.')
-    })
-    return subscriber.subscribe()
-  })
-  .then(subscriber => {
-    subscriber.
-  })
-```
-
-> The `muteOnAutoplayRestriction` property is `true` by default.
-
-#### Solution 3
-
-> Declaring the `autoplay` attribute of the target video element and setting the `muteOnAutoplayRestriction` initialization property to `false`.
-
-By declaring only the `autoplay` attribute on the video element and setting the `muteOnAutoplayRestriction` initialization property to `false` in the configuration, you instruct the HTML SDK to not attempt to:
-
-* first attempt `autoplay` unmuted
-* send event notification of `Subscribe.Autoplay.Failed`, if first attempt fails
-
-Using this solution, `autoplay` can work as desired for browsers that do not enforce the policy (e.g., the policy may differ between desktop and mobile versions of the same browser). For those browsers that do enforce the policy, the *Red5 Pro HTML SDK* will dispatch a `Subscribe.Autoplay.Failed` event from the subscriber instance (refer to [Common Events](#common-events)). As a developer, you can handle this method as per your specifications - such as displaying an alert notifying the user that autoplay did not occur and they will need to press the play button to begin playback.
-
-_declaration of video element in html:_
-
-```html
-<video id="red5pro-subscriber" class="red5pro-media" controls autoplay playsinline />
-```
-
-_usage of muteOnAutoplayRestriction in initialization:_
-
-```js
-var subscriber = new red5prosdk.RTCSubscriber()
-subscriber.init({
-    protocol: 'ws',
-    port: 5080,
-    host: 'localhost',
-    app: 'live',
-    streamName: 'mystream',
-    muteOnAutoRestriction: false
-  })
-  .then(subscriber => {
-    subscriber.on(red5prosdk.SubscriberEventTypes.AUTO_PLAYBACK_MUTED, () => {
-      alert('Audio has been muted.')
-    })
-    return subscriber.subscribe()
-  })
-  .then(subscriber => {
-    subscriber.
-  })
-```

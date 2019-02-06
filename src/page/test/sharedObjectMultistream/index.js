@@ -3,7 +3,6 @@
 
   var SharedObject = red5prosdk.Red5ProSharedObject;
   var so = undefined; // @see onPublishSuccess
-  var isPublishing = false;
 
   var serverSettings = (function() {
     var settings = sessionStorage.getItem('r5proServerSettings');
@@ -28,126 +27,19 @@
   })();
   red5prosdk.setLogLevel(configuration.verboseLogging ? red5prosdk.LOG_LEVELS.TRACE : red5prosdk.LOG_LEVELS.WARN);
 
-  var updateStatusFromEvent = window.red5proHandlePublisherEvent; // defined in src/template/partial/status-field-publisher.hbs
-  var updateSuscriberStatusFromEvent = window.red5proHandleSubscriberEvent;
-
   var targetPublisher;
-  var roomName = window.query('room') || 'red5pro'; // eslint-disable-line no-unused-vars
-  var streamName = window.query('streamName') || ['publisher', Math.floor(Math.random() * 0x10000).toString(16)].join('-');
 
-  var roomField = document.getElementById('room-field');
-  var publisherContainer = document.getElementById('publisher-container');
-  var publisherSession = document.getElementById('publisher-session');
-  var publisherNameField = document.getElementById('publisher-name-field');
-  var streamNameField = document.getElementById('streamname-field');
-  var publisherVideo = document.getElementById('red5pro-publisher');
-  var audioCheck = document.getElementById('audio-check');
-  var videoCheck = document.getElementById('video-check');
-  var joinButton = document.getElementById('join-button');
+  var updateStatusFromEvent = window.red5proHandlePublisherEvent; // defined in src/template/partial/status-field-publisher.hbs
+  var streamTitle = document.getElementById('stream-title');
   var statisticsField = document.getElementById('statistics-field');
-
-  roomField.value = roomName;
-  streamNameField.value = streamName;
-  audioCheck.checked = configuration.useAudio;
-  videoCheck.checked = configuration.useVideo;
-
-  joinButton.addEventListener('click', function () {
-    saveSettings();
-    doPublish(streamName);
-    setPublishingUI(streamName);
-  });
-
-  audioCheck.addEventListener('change', updateMutedAudioOnPublisher);
-  videoCheck.addEventListener('change', updateMutedVideoOnPublisher);
-
-  var subscriberTemplate = '' +
-        '<div class="subscriber-session centered">' +
-          '<p class="subscriber-status-field">On hold.</p>' +
-        '</div>' +
-        '<div class="video-holder centered">' +
-          '<video autoplay controls playsinline class="red5pro-media red5pro-background"></video>' +
-        '</div>' +
-        '<div class="centered">' +
-          '<p class="status-field"><span class="subscriber-name-field"></span></p>' +
-          '<p class="status-field-gray"><span class="subscriber-id-field"></span></p>' +
-          '</p>' +
-        '</div>';
-
+  var sendButton = document.getElementById('send-button');
   var soField = document.getElementById('so-field');
+  sendButton.addEventListener('click', function () {
+    sendMessageOnSharedObject(document.getElementById('input-field').value);
+  });
 
   var protocol = serverSettings.protocol;
   var isSecure = protocol == 'https';
-
-  function saveSettings () {
-    streamName = streamNameField.value;
-    roomName = roomField.value;
-  }
-
-  function updateMutedAudioOnPublisher () {
-    if (targetPublisher && isPublishing) {
-      if (audioCheck.checked) { 
-        if (videoTrackClone) {
-          var c = targetPublisher.getPeerConnection();
-          var senders = c.getSenders();
-          senders[0].replaceTrack(audioTrackClone);
-          audioTrackClone = undefined;
-        } else {
-          targetPublisher.unmuteAudio();
-        }
-      } else { 
-        targetPublisher.muteAudio(); 
-      }
-    }
-  }
-
-  function updateMutedVideoOnPublisher () {
-    if (targetPublisher && isPublishing) {
-      if (videoCheck.checked) {
-        if (videoTrackClone) {
-          var c = targetPublisher.getPeerConnection();
-          var senders = c.getSenders();
-          senders[1].replaceTrack(videoTrackClone);
-          videoTrackClone = undefined;
-        } else {
-          targetPublisher.unmuteVideo();
-        }
-      } else { 
-        targetPublisher.muteVideo(); 
-      }
-    }
-    !videoCheck.checked && showVideoPoster();
-    videoCheck.checked && hideVideoPoster();
-  }
-
-  var audioTrackClone;
-  var videoTrackClone;
-  function updateInitialMediaOnPublisher () {
-    var t = setTimeout(function () {
-      // If we have requested no audio and/or no video in our initial broadcast,
-      // whipe the track from the connection.
-      var audioTrack = targetPublisher.getMediaStream().getAudioTracks()[0];
-      var videoTrack = targetPublisher.getMediaStream().getVideoTracks()[0];
-      var connection = targetPublisher.getPeerConnection();
-      if (!videoCheck.checked) {
-        videoTrackClone = videoTrack.clone();
-        connection.getSenders()[1].replaceTrack(null);
-      }
-      if (!audioCheck.checked) {
-        audioTrackClone = audioTrack.clone();
-        connection.getSenders()[0].replaceTrack(null);
-      }
-      clearTimeout(t);
-    }, 2000); 
-    // a bit of a hack. had to put a timeout to ensure the video track bits at least started flowing :/
-  }
-
-  function showVideoPoster () {
-    publisherVideo.classList.add('hidden');
-  }
-
-  function hideVideoPoster () {
-    publisherVideo.classList.remove('hidden');
-  }
 
   function getSocketLocationFromProtocol () {
     return !isSecure
@@ -155,40 +47,32 @@
       : {protocol: 'wss', port: serverSettings.wssport};
   }
 
-  var bitrateTrackingTicket;
   function onBitrateUpdate (bitrate, packetsSent) {
     statisticsField.innerText = 'Bitrate: ' + Math.floor(bitrate) + '. Packets Sent: ' + packetsSent + '.';
   }
 
   function onPublisherEvent (event) {
     console.log('[Red5ProPublisher] ' + event.type + '.');
-    if (event.type === 'WebSocket.Message.Unhandled') {
-      console.log(event);
-    }
     updateStatusFromEvent(event);
   }
   function onPublishFail (message) {
-    isPublishing = false;
     console.error('[Red5ProPublisher] Publish Error :: ' + message);
   }
   function onPublishSuccess (publisher) {
-    isPublishing = true;
-    window.red5propublisher = publisher;
     console.log('[Red5ProPublisher] Publish Complete.');
-    establishSharedObject(publisher, roomField.value, streamNameField.value);
+
+    establishSharedObject(publisher);
     try {
-      bitrateTrackingTicket = window.trackBitrate(publisher.getPeerConnection(), onBitrateUpdate, null, null, true);
+      window.trackBitrate(publisher.getPeerConnection(), onBitrateUpdate);
     }
     catch (e) {
       // no tracking for you!
     }
   }
   function onUnpublishFail (message) {
-    isPublishing = false;
     console.error('[Red5ProPublisher] Unpublish Error :: ' + message);
   }
   function onUnpublishSuccess () {
-    isPublishing = false;
     console.log('[Red5ProPublisher] Unpublish Complete.');
   }
 
@@ -213,35 +97,6 @@
     };
   }
 
-  function setPublishingUI (streamName) {
-    publisherNameField.innerText = streamName;
-    roomField.setAttribute('disabled', true);
-    publisherSession.classList.remove('hidden');
-    publisherNameField.classList.remove('hidden');
-    Array.prototype.forEach.call(document.getElementsByClassName('remove-on-broadcast'), function (el) {
-      el.classList.add('hidden');
-    });
-  }
-
-  function updatePublishingUIOnStreamCount (streamCount) {
-    if (streamCount > 0) {
-      publisherContainer.classList.remove('auto-margined');
-      publisherContainer.classList.add('spaced');
-      publisherContainer.classList.add('float-left');
-    } else {
-      publisherContainer.classList.add('auto-margined');
-      publisherContainer.classList.remove('spaced');
-      publisherContainer.classList.remove('float-left');
-    }
-  }
-
-  function templateContent (templateHTML) {
-    var div = document.createElement('div');
-    div.classList.add('subscriber-container', 'float-left', 'spaced');
-    div.innerHTML = templateHTML;
-    return div;
-  }
-
   var hasRegistered = false;
   function appendMessage (message) {
     soField.value = [message, soField.value].join('\n');
@@ -250,9 +105,9 @@
   function messageTransmit (message) { // eslint-disable-line no-unused-vars
     soField.value = ['User "' + message.user + '": ' + message.message, soField.value].join('\n');
   }
-  function establishSharedObject (publisher, roomName, streamName) {
+  function establishSharedObject (publisher) {
     // Create new shared object.
-    so = new SharedObject(roomName, publisher)
+    so = new SharedObject('sharedStreamTest', publisher)
     var soCallback = {
       messageTransmit: messageTransmit
     };
@@ -271,21 +126,28 @@
         var streams = event.data.streams.length > 0 ? event.data.streams.split(',') : [];
         if (!hasRegistered) {
           hasRegistered = true;
-          so.setProperty('streams', streams.concat([streamName]).join(','));
+          so.setProperty('streams', streams.concat([configuration.stream1]).join(','));
         }
         streamsPropertyList = streams;
-        processStreams(streamsPropertyList, streamName);
+        processStreams(streamsPropertyList, configuration.stream1);
       }
       else if (!hasRegistered) {
         hasRegistered = true;
-        streamsPropertyList = [streamName];
-        so.setProperty('streams', streamName);
+        streamsPropertyList = [configuration.stream1];
+        so.setProperty('streams', configuration.stream1);
       }
     });
     so.on(red5prosdk.SharedObjectEventTypes.METHOD_UPDATE, function (event) {
       console.log('[Red5ProPublisher] SharedObject Method Update.');
       console.log(JSON.stringify(event.data, null, 2));
       soCallback[event.data.methodName].call(null, event.data.message);
+    });
+  }
+
+  function sendMessageOnSharedObject (message) {
+    so.send('messageTransmit', {
+      user: configuration.stream1,
+      message: message
     });
   }
 
@@ -316,7 +178,7 @@
                           }
                         }
                       },
-                      streamName: streamName
+                      streamName: config.stream1
                    });
 
     var publisher = new red5prosdk.RTCPublisher();
@@ -324,23 +186,9 @@
 
   }
 
-  function doPublish (name) {
-    targetPublisher.publish(name)
-      .then(function () {
-        onPublishSuccess(targetPublisher);
-        updateInitialMediaOnPublisher();
-      })
-      .catch(function (error) {
-        var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
-        console.error('[Red5ProPublisher] :: Error in publishing - ' + jsonError);
-        console.error(error);
-        onPublishFail(jsonError);
-       });
-  }
-
   function unpublish () {
     if (so !== undefined)  {
-      var name = streamName;
+      var name = configuration.stream1;
       var updateList = streamsPropertyList.filter(function (item) {
         return item !== name;
       });
@@ -366,9 +214,13 @@
   // Kick off.
   determinePublisher()
     .then(function (publisherImpl) {
+      streamTitle.innerText = configuration.stream1;
       targetPublisher = publisherImpl;
       targetPublisher.on('*', onPublisherEvent);
-      return targetPublisher.preview();
+      return targetPublisher.publish();
+    })
+    .then(function () {
+      onPublishSuccess(targetPublisher);
     })
     .catch(function (error) {
       var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
@@ -388,7 +240,7 @@
       targetPublisher = undefined;
     }
     unpublish().then(clearRefs).catch(clearRefs);
-    window.untrackBitrate(bitrateTrackingTicket);
+    window.untrackBitrate();
   }
   window.addEventListener('beforeunload', shutdown);
   window.addEventListener('pagehide', shutdown);
@@ -397,11 +249,9 @@
   var streamsPropertyList = [];
   var subscribersEl = document.getElementById('subscribers');
   function processStreams (streamlist, exclusion) {
-    var nonPublishers = streamlist.filter(function (name) {
-      return name !== exclusion;
-    });
-    var list = nonPublishers.filter(function (name, index, self) {
-      return (index == self.indexOf(name)) &&
+    var list = streamlist.filter(function (name, index, self) {
+      return name !== exclusion &&
+        (index == self.indexOf(name)) &&
         !document.getElementById(getSubscriberElementId(name));
     });
     var subscribers = list.map(function (name, index) {
@@ -416,54 +266,57 @@
     if (subscribers.length > 0) {
       subscribers[0].execute();
     }
-
-    updatePublishingUIOnStreamCount(nonPublishers.length);
   }
-
   function getSubscriberElementId (streamName) {
     return ['red5pro', 'subscriber', streamName].join('-');
   }
-  function generateNewSubscriberDOM (streamName, subId, parent) {
-    var card = templateContent(subscriberTemplate);
-    parent.appendChild(card);
-    var videoId = getSubscriberElementId(streamName);
-    var videoElement = card.getElementsByClassName('red5pro-media')[0];
-    var subscriberNameField = card.getElementsByClassName('subscriber-name-field')[0];
-    var subscriberIdField = card.getElementsByClassName('subscriber-id-field')[0];
-    subscriberNameField.innerText = streamName;
-    subscriberIdField.innerText = '(' + subId + ')';
-    videoElement.id = videoId;
-    card.id = [videoId, 'container'].join('-');
-    return card;
+  function generateNewSubscriberDOM (streamName, subId) {
+    var div = document.createElement('div');
+    var p = document.createElement('p');
+    var title = document.createTextNode(streamName + ' (' + subId + ')');
+    p.appendChild(title);
+    div.appendChild(p);
+    var video = document.createElement('video');
+    video.width = 320;
+    video.height = 240;
+    video.autoplay = true;
+    video.controls = true;
+    video.muted = true;
+    video.setAttribute('playsinline', true);
+    video.id = getSubscriberElementId(streamName);
+    div.id = video.id + '-container';
+    div.appendChild(video);
+    var log = document.createElement('p');
+    log.style = 'max-width:320px;max-height:240px;border:1 solid black;overflow:scroll;font-size:12px;';
+    div.appendChild(log);
+    return [div, log];
   }
 
-  var SubscriberItem = function (subStreamName, parent, index) {
+  var SubscriberItem = function (streamName, parent, index) {
     var uid = Math.floor(Math.random() * 0x10000).toString(16);
-    this.subscriptionId = [streamNameField.value, 'sub', uid].join('-')
-    this.streamName = subStreamName;
+    this.subscriptionId = [configuration.stream1, 'sub', uid].join('-')
+    this.streamName = streamName;
     this.index = index;
     this.next = undefined;
     this.parent = parent;
-    this.card = generateNewSubscriberDOM(this.streamName, this.subscriptionId, this.parent);
-    this.statusField = this.card.getElementsByClassName('subscriber-status-field')[0];
-    this.toggleVideoPoster = this.toggleVideoPoster.bind(this);
-  }
-  SubscriberItem.prototype.toggleVideoPoster = function (showPoster) {
-    var video = document.getElementById(getSubscriberElementId(this.streamName));
-    if (showPoster) {
-      video.classList.add('hidden');
-    } else {
-      video.classList.remove('hidden');
-    }
+    var elems = generateNewSubscriberDOM(this.streamName, this.subscriptionId);
+    this.log = elems[1];
+    parent.appendChild(elems[0]);
   }
   SubscriberItem.prototype.resolve = function () {
+    var name = this.streamName;
+    this.log.innerText += '[subscriber:' + name + '] success.\r\n'
     if (this.next) {
+      this.log.innerText += '[subscriber:' + name + '] next() =>\r\n'
       this.next.execute();
     }
   }
   SubscriberItem.prototype.reject = function (event) {
     console.error(event);
+    var name = this.streamName;
+    this.log.innerText += '[subscriber:' + name + '] failed. ' + event.type + '.\r\n';
     if (this.next) {
+      this.log.innerText += '[subscriber:' + name + '] next() =>\r\n'
       this.next.execute();
     }
   }
@@ -486,8 +339,7 @@
     this.subscriber.on('Connect.Success', this.resolve.bind(this));
     this.subscriber.on('Connect.Failure', this.reject.bind(this));
     var sub = this.subscriber;
-    var toggleVideoPoster = this.toggleVideoPoster;
-    var statusField = this.statusField;
+    var log = this.log;
     var reject = this.reject.bind(this);
     var close = function (event) { // eslint-disable-line no-unused-vars
       function cleanup () {
@@ -510,12 +362,7 @@
     var respond = function (event) {
       if (event.type === 'Subscribe.Time.Update') return;
       console.log('[subscriber:' + name + '] ' + event.type);
-      updateSuscriberStatusFromEvent(event, statusField);
-      if (event.type === 'Subscribe.Metadata') {
-        if (event.data.streamingMode) {
-          toggleVideoPoster(!event.data.streamingMode.match(/Video/));
-        }
-      }
+      log.innerText += '[subscriber:' + name + '] ' + event.type + '\r\n';
     };
 
     this.subscriber.on('Subscribe.Connection.Closed', close);
