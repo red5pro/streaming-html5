@@ -203,7 +203,7 @@
     var sendClientHandler = function (event) {
       var eventData = event.data;
       var msg = eventData.data;
-      var methodName = eventData.methodName;
+      var methodName = eventData.methodName || eventData.method;
       if (methodName === 'whateverFunctionName') {
         var elem = document.getElementById('red5pro-subscriber');
         console.log('[Red5ProSubscriber] :: whateverFunctionName received!');
