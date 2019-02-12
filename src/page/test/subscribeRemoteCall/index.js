@@ -206,14 +206,17 @@
       var methodName = eventData.methodName || eventData.method;
       if (methodName === 'whateverFunctionName') {
         var elem = document.getElementById('red5pro-subscriber');
+        var rect = elem.getBoundingClientRect();
+        var bodyRect = document.body.getBoundingClientRect()
         console.log('[Red5ProSubscriber] :: whateverFunctionName received!');
         console.log('[Red5ProSubscriber] :: message - ' + JSON.stringify(msg, null, 2));
         messageCallout.innerText = msg.message;
-        messageCallout.style.left = (elem.offsetLeft + (elem.clientWidth * msg.touchX)) + 'px';
-        messageCallout.style.top = (elem.offsetTop + (elem.clientHeight * msg.touchY)) + 'px';
+        messageCallout.style.left = (rect.left - bodyRect.left + (elem.clientWidth * msg.touchX)) + 'px';
+        messageCallout.style.top = (rect.top - bodyRect.top + (elem.clientHeight * msg.touchY)) + 'px';
+        messageCallout.classList.remove('hidden');
       }
-    };
-
+    }; 
+  
   // Clean up.
   var shuttingDown = false;
   function shutdown() {
