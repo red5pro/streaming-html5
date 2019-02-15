@@ -4,6 +4,13 @@
     {{> meta title='Subscriber Test'}}
     {{> header-scripts}}
     {{> header-stylesheets}}
+    <style>
+        .broadcast-status-field {
+            padding: 0.8rem 0;
+            background-color: #bcd298;
+            border-top: 1px solid black;
+        }
+    </style>
   </head>
   <body>
     <div id="app">
@@ -12,6 +19,7 @@
       {{> test-info testTitle='Subscriber Test'}}
       {{> status-field-subscriber}}
       {{> statistics-field}}
+      <p id="broadcast-status" class="centered broadcast-status-field hidden"></p>
       <div class="centered">
         <video id="red5pro-subscriber"
                 controls="controls" autoplay="autoplay" playsinline

@@ -30,6 +30,7 @@
   var instanceId = Math.floor(Math.random() * 0x10000).toString(16);
   var streamTitle = document.getElementById('stream-title');
   var statisticsField = document.getElementById('statistics-field');
+  var broadcastStatus = document.getElementById('broadcast-status');
 
   var protocol = serverSettings.protocol;
   var isSecure = protocol === 'https';
@@ -112,6 +113,23 @@
 
   function handleStreamingModeChange (metadata) {
     console.log('[Red5ProSubscriber] Broadcast Streaming Mode changed from (' + metadata.previousStreamingMode + ') to (' + metadata.streamingMode + ').');
+    switch (metadata.streamingMode) {
+      case 'Empty':
+        broadcastStatus.innerText = 'Publisher has turned off their Camera and Microphone.'
+        broadcastStatus.classList.remove('hidden');
+        break;
+      case 'Audio':
+        broadcastStatus.innerText = 'Publisher has turned off their Camera.'
+        broadcastStatus.classList.remove('hidden');
+        break;
+      case 'Video':
+        broadcastStatus.innerText = 'Publisher has turned off their Microphone.'
+        broadcastStatus.classList.remove('hidden');
+        break;
+      default:
+        broadcastStatus.classList.add('hidden');
+        break;
+    }
   }
 
   function getAuthenticationParams () {
