@@ -1,6 +1,11 @@
 (function(window, document, red5prosdk) {
   'use strict';
 
+  var isMoz = false;
+  if (window.adapter) {
+    isMoz = window.adapter.browserDetails.browser.toLowerCase() === 'firefox';
+  }
+
   var serverSettings = (function() {
     var settings = sessionStorage.getItem('r5proServerSettings');
     try {
@@ -175,6 +180,8 @@
   var streamingMode;
   var audioSubscriberDecoy;
   function handleStreamingModeMetadata (metadata) {
+    if (isMoz) return; // It works in Firefox!
+
     var volumeHandler = function (event) {
       if (audioSubscriberDecoy) {
         audioSubscriberDecoy.setVolume(event.data.volume)
