@@ -1,0 +1,47 @@
+<!doctype html>
+<html>
+  <head>
+    {{> meta title='Publish RoundTrip Auth Test'}}
+    {{> header-scripts}}
+    {{> header-stylesheets}}
+    <style>
+      .hidden {
+        display: none;
+      }
+      #login-form {
+        padding: 10px 0;
+        background-color: #afafaf;
+      }
+      #login-form p {
+        margin: 10px 0;
+      }
+      #login-form p label {
+        margin-right: 6px;
+        width: 100%;
+        text-align: right;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      {{> version }}
+      {{> settings-link}}
+      {{> test-info testTitle='Publish RoundTrip Auth Test'}}
+      {{> status-field-publisher}}
+      {{> statistics-field}}
+      <div id="login-form" class="centered">
+        <p>Log In to begin your Broadcast:</p>
+        <p><label for="username-field">username:</label><input id="username-field" name="username-field"></p>
+        <p><label for="password-field">password:</label><input id="password-field" name="password-field"></p>
+		<p><label for="token-field">token:</label><input id="token-field" name="token-field"></p>
+		<p><input type="checkbox" id="token-required-field" name="token-required-field" checked>Token Required</p>
+        <button id="submit-button">submit</button>
+      </div>
+      <div class="centered">
+        <video id="red5pro-publisher" controls autoplay playasinline muted></video>
+      </div>
+    </div>
+    {{> body-scripts}}
+    <script src="index.js"></script>
+  </body>
+</html>

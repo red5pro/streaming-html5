@@ -71,6 +71,18 @@
     callButton.setAttribute('disabled', 'disabled');
   }
 
+  function getAuthenticationParams () {
+    var auth = configuration.authentication;
+    return auth && auth.enabled
+      ? {
+        connectionParams: {
+          username: auth.username,
+          password: auth.password
+        }
+      }
+      : {};
+  }
+
   var defaultConfiguration = (function(useVideo, useAudio) {
     var c = {
       protocol: getSocketLocationFromProtocol().protocol,
@@ -115,7 +127,7 @@
   function unsubscribe () {
     return new Promise(function(resolve, reject) {
       var subscriber = targetSubscriber
-      subscriber.unscubscribe()
+      subscriber.unsubscribe()
         .then(function () {
           targetSubscriber.off('*', onSubscriberEvent);
           targetSubscriber = undefined;
@@ -130,7 +142,10 @@
     });
   }
 
-    var config = Object.assign({}, configuration, defaultConfiguration);
+    var config = Object.assign({},
+      configuration,
+      defaultConfiguration,
+      getAuthenticationParams());
     var rtcConfig = Object.assign({}, config, {
       protocol: getSocketLocationFromProtocol().protocol,
       port: getSocketLocationFromProtocol().port,

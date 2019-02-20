@@ -1,5 +1,42 @@
 # Changes
 
+## 5.4.0
+
+- screenfull dep update. (bustardcelly)
+- gum rejection capture. (bustardcelly)
+- improper pass of of metadata in webrtc publisher. (bustardcelly)
+- allow for backward compatiblity on default websocket ports. (bustardcelly)
+- updating documentation on websocket ports. (bustardcelly)
+- trailing slash and change to default ports for WebSocket connections. (bustardcelly)
+- hotfix for handling promise rejection on sub availability. (bustardcelly)
+- Adding send invoke support on publisher side socket messaging. (bustardcelly)
+- ortc support. (bustardcelly)
+- adding keyFramerate init attribute. (bustardcelly)
+- fix for promise resolve on peer connection setup. (bustardcelly)
+- subscribe start event for hls subscriber. (bustardcelly)
+- fix for DOM cleanup on unsubscribe. (bustardcelly)
+- Adding `rtcConfiguration` support (bustardcelly)
+
+    > * WebRTC Publisher
+    > * WebRTC Subscriber
+    > * defaults to `iceServers` if rtcConfiguration is undefined
+    > * Provides a default rtcConfiguration
+
+## 5.2.0
+
+- moving ws.error invoke to promise.reject on timeout of ws connect. (bustardcelly)
+- change to warn on capture of exceptions for play on pause. (bustardcelly)
+- update to SDK to properly mute with UI update on controls. (bustardcelly)
+- removal of socket retry to socket check on ready state. (bustardcelly)
+- removal of onaddstream delegate for deprecation. (bustardcelly)
+- remove of duplicate event handler. (bustardcelly)
+- Adding check for empty candidate from server (bustardcelly)
+
+    > * Server at times (depending on client) will send a `candidate` object as empty during the negotiation process.
+    > * A new event type has been added to notify listeners of this empty candidate
+
+- Pub/Sub support for mobile device orientation recognition. (bustardcelly)
+
 ## 5.0.0
 
 - removing onbeforeunload hook to dismantle sockets. (bustardcelly)
@@ -16,6 +53,8 @@
 
     > Defaulted to true.
     > When set to false, it is up to the developer to assign transitions as related to orientation of broadcasts.
+
+## 4.5.0
 
 - docs update. (bustardcelly)
 

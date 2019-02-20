@@ -98,7 +98,7 @@
     establishSharedObject(subscriber);
     if (subscriber.getType().toLowerCase() === 'rtc') {
       try {
-        window.trackBitrate(subscriber.getPeerConnection(), onBitrateUpdate, onResolutionUpdate);
+        window.trackBitrate(subscriber.getPeerConnection(), onBitrateUpdate, onResolutionUpdate, true);
       }
       catch (e) {
         //
@@ -110,6 +110,18 @@
   }
   function onUnsubscribeSuccess () {
     console.log('[Red5ProSubsriber] Unsubscribe Complete.');
+  }
+
+  function getAuthenticationParams () {
+    var auth = configuration.authentication;
+    return auth && auth.enabled
+      ? {
+        connectionParams: {
+          username: auth.username,
+          password: auth.password
+        }
+      }
+      : {};
   }
 
   var hasRegistered = false;
@@ -183,18 +195,22 @@
     });
   }
 
-  var config = Object.assign({}, configuration, defaultConfiguration);
+  var config = Object.assign({},
+    configuration,
+    defaultConfiguration,
+    getAuthenticationParams());
+
   var rtcConfig = Object.assign({}, config, {
     protocol: getSocketLocationFromProtocol().protocol,
     port: getSocketLocationFromProtocol().port,
     subscriptionId: 'subscriber-' + instanceId,
     streamName: config.stream1
   })
+
   var rtmpConfig = Object.assign({}, config, {
     protocol: 'rtmp',
     port: serverSettings.rtmpport,
     streamName: config.stream1,
-    mimeType: 'rtmp/flv',
     backgroundColor: '#000000',
     width: config.cameraWidth,
     height: config.cameraHeight,
@@ -202,12 +218,14 @@
     swfobjectURL: '../../lib/swfobject/swfobject.js',
     productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
   })
+
   var hlsConfig = Object.assign({}, config, {
     protocol: protocol,
     port: isSecure ? serverSettings.hlssport : serverSettings.hlsport,
     streamName: config.stream1,
     mimeType: 'application/x-mpegURL'
   })
+
   var subscribeOrder = config.subscriberFailoverOrder
                       .split(',').map(function (item) {
                         return item.trim();

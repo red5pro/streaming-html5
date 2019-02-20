@@ -45,6 +45,18 @@
     streamMode: 'record'
   };
 
+  function getAuthenticationParams () {
+    var auth = configuration.authentication;
+    return auth && auth.enabled
+      ? {
+        connectionParams: {
+          username: auth.username,
+          password: auth.password
+        }
+      }
+      : {};
+  }
+
   function displayServerAddress (serverAddress, proxyAddress) 
   {
   proxyAddress = (typeof proxyAddress === 'undefined') ? 'N/A' : proxyAddress;
@@ -85,7 +97,7 @@
     var port = serverSettings.httpport.toString();
     var portURI = (port.length > 0 ? ':' + port : '');
     var baseUrl = isSecure ? protocol + '://' + host : protocol + '://' + host + portURI;
-    var apiVersion = configuration.streamManagerAPI || '3.0';
+    var apiVersion = configuration.streamManagerAPI || '3.1';
     var url = baseUrl + '/streammanager/api/' + apiVersion + '/event/' + app + '/' + streamName + '?action=broadcast';
       return new Promise(function (resolve, reject) {
         fetch(url)
@@ -158,12 +170,19 @@
                       swf: '../../lib/red5pro/red5pro-publisher.swf',
                       swfobjectURL: '../../lib/swfobject/swfobject.js',
                       productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
-                   }, getRTMPMediaConfiguration());
+                    }, 
+                    getAuthenticationParams(),
+                    getRTMPMediaConfiguration());
     var publishOrder = config.publisherFailoverOrder
                             .split(',')
                             .map(function (item) {
                               return item.trim()
                         });
+
+    // Merge in possible authentication params.
+    rtcConfig.connectionParams = Object.assign({}, 
+      getAuthenticationParams().connectionParams,
+      rtcConfig.connectionParams);
 
     if(window.query('view')) {
       publishOrder = [window.query('view')];

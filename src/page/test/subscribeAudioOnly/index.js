@@ -69,6 +69,18 @@
       : {protocol: 'wss', port: serverSettings.wssport};
   }
 
+  function getAuthenticationParams () {
+    var auth = configuration.authentication;
+    return auth && auth.enabled
+      ? {
+        connectionParams: {
+          username: auth.username,
+          password: auth.password
+        }
+      }
+      : {};
+  }
+
   var defaultConfiguration = (function(useVideo, useAudio) {
     var c = {
       protocol: getSocketLocationFromProtocol().protocol,
@@ -103,7 +115,7 @@
     console.log('[Red5ProSubsriber] Subscribe Complete.');
     if (subscriber.getType().toLowerCase() === 'rtc') {
       try {
-        window.trackBitrate(subscriber.getPeerConnection(), onBitrateUpdate, onResolutionUpdate);
+        window.trackBitrate(subscriber.getPeerConnection(), onBitrateUpdate, onResolutionUpdate, true);
       }
       catch (e) {
         //
@@ -121,7 +133,7 @@
   function unsubscribe () {
     return new Promise(function(resolve, reject) {
       var subscriber = targetSubscriber
-      subscriber.unscubscribe()
+      subscriber.unsubscribe()
         .then(function () {
           targetSubscriber.off('*', onSubscriberEvent);
           targetSubscriber = undefined;
@@ -136,7 +148,10 @@
     });
   }
 
-  var config = Object.assign({}, configuration, defaultConfiguration);
+  var config = Object.assign({},
+    configuration,
+    defaultConfiguration,
+    getAuthenticationParams());
   config.streamName = config.stream1;
   config.subscriptionId = instanceId;
 

@@ -107,7 +107,7 @@
     console.log('[Red5ProSubsriber] Subscribe Complete.');
     if (subscriber.getType().toLowerCase() === 'rtc') {
       try {
-        window.trackBitrate(subscriber.getPeerConnection(), onBitrateUpdate, onResolutionUpdate);
+        window.trackBitrate(subscriber.getPeerConnection(), onBitrateUpdate, onResolutionUpdate, true);
       }
       catch (e) {
         //
@@ -119,6 +119,18 @@
   }
   function onUnsubscribeSuccess () {
     console.log('[Red5ProSubsriber] Unsubscribe Complete.');
+  }
+
+  function getAuthenticationParams () {
+    var auth = configuration.authentication;
+    return auth && auth.enabled
+      ? {
+        connectionParams: {
+          username: auth.username,
+          password: auth.password
+        }
+      }
+      : {};
   }
 
   function requestEdge (configuration) {
@@ -150,7 +162,11 @@
 
   function determineSubscriber (host) {
     displayServerAddress(host);
-    var config = Object.assign({}, configuration, defaultConfiguration);
+    var config = Object.assign({},
+      configuration,
+      defaultConfiguration,
+      getAuthenticationParams());
+
     var rtcConfig = Object.assign({}, config, {
       host: host,
       protocol: 'ws', // cluster is not over secure, at this time
@@ -158,6 +174,7 @@
       subscriptionId: 'subscriber-' + instanceId,
       streamName: config.stream1
     })
+
     var rtmpConfig = Object.assign({}, config, {
       host: host,
       protocol: 'rtmp',
@@ -170,6 +187,7 @@
       swfobjectURL: '../../lib/swfobject/swfobject.js',
       productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
     })
+
     var hlsConfig = Object.assign({}, config, {
       host: host,
       protocol: protocol,

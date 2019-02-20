@@ -77,8 +77,22 @@
     console.log('[Red5ProPublisher] Unpublish Complete.');
   }
 
+  function getAuthenticationParams () {
+    var auth = configuration.authentication;
+    return auth && auth.enabled
+      ? {
+        connectionParams: {
+          username: auth.username,
+          password: auth.password
+        }
+      }
+      : {};
+  }
+
   function getUserMediaConfiguration () {
-    return Object.assign({}, mediaConstraints);
+    return Object.assign({}, {
+      mediaConstraints: mediaConstraints
+    });
   }
 
   var SELECT_DEFAULT = 'Select a camera...';
@@ -158,9 +172,11 @@
 
   function determinePublisher () {
     var config = Object.assign({},
-                    configuration,
-                    defaultConfiguration,
-                    getUserMediaConfiguration());
+                      configuration,
+                      defaultConfiguration,
+                      getAuthenticationParams(),
+                      getUserMediaConfiguration());
+
     var rtcConfig = Object.assign({}, config, {
                       protocol: getSocketLocationFromProtocol().protocol,
                       port: getSocketLocationFromProtocol().port,

@@ -42,6 +42,18 @@
       : {protocol: 'wss', port: serverSettings.wssport};
   }
 
+  function getAuthenticationParams () {
+    var auth = configuration.authentication;
+    return auth && auth.enabled
+      ? {
+        connectionParams: {
+          username: auth.username,
+          password: auth.password
+        }
+      }
+      : {};
+  }
+
   var defaultConfiguration = {
     protocol: getSocketLocationFromProtocol().protocol,
     port: getSocketLocationFromProtocol().port,
@@ -105,7 +117,7 @@
     var port = serverSettings.httpport.toString();
     var portURI = (port.length > 0 ? ':' + port : '');
     var baseUrl = isSecure ? protocol + '://' + host : protocol + '://' + host + portURI;
-    var apiVersion = configuration.streamManagerAPI || '2.0';
+    var apiVersion = configuration.streamManagerAPI || '3.1';
     var url = baseUrl + '/streammanager/api/' + apiVersion + '/event/' + app + '/' + streamName + '?action=broadcast';
       return new Promise(function (resolve, reject) {
         fetch(url)
@@ -209,12 +221,19 @@
                           height: config.cameraHeight,
                         }
                       }
-                   });
+                    },
+                    getAuthenticationParams());
     var publishOrder = config.publisherFailoverOrder
                             .split(',')
                             .map(function (item) {
                               return item.trim()
                         });
+
+    // Merge in possible authentication params.
+    rtcConfig.connectionParams = Object.assign({}, 
+      getAuthenticationParams().connectionParams,
+      rtcConfig.connectionParams);
+
 
     if(window.query('view')) {
       publishOrder = [window.query('view')];

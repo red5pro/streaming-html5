@@ -105,7 +105,7 @@
     console.log('[Red5ProSubsriber] Subscribe Complete.');
     if (subscriber.getType().toLowerCase() === 'rtc') {
       try {
-        window.trackBitrate(subscriber.getPeerConnection(), onBitrateUpdate, onResolutionUpdate);
+        window.trackBitrate(subscriber.getPeerConnection(), onBitrateUpdate, onResolutionUpdate, true);
       }
       catch (e) {
         //
@@ -117,6 +117,18 @@
   }
   function onUnsubscribeSuccess () {
     console.log('[Red5ProSubsriber] Unsubscribe Complete.');
+  }
+
+  function getAuthenticationParams () {
+    var auth = configuration.authentication;
+    return auth && auth.enabled
+      ? {
+        connectionParams: {
+          username: auth.username,
+          password: auth.password
+        }
+      }
+      : {};
   }
 
   // Request to unsubscribe.
@@ -151,8 +163,12 @@
   }
 
   // Kick off.
-  var config = Object.assign({}, configuration, defaultConfiguration);
+  var config = Object.assign({},
+    configuration,
+    defaultConfiguration,
+    getAuthenticationParams());
   config.streamName = config.stream1;
+
   var subscriber = new red5prosdk.RTCSubscriber()
   subscriber.init(config)
     .then(function (subscriberImpl) {

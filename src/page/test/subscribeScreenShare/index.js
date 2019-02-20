@@ -97,7 +97,7 @@
     console.log('[Red5ProSubsriber] Subscribe Complete.');
     if (subscriber.getType().toLowerCase() === 'rtc') {
       try {
-        window.trackBitrate(subscriber.getPeerConnection(), onBitrateUpdate, onResolutionUpdate);
+        window.trackBitrate(subscriber.getPeerConnection(), onBitrateUpdate, onResolutionUpdate, true);
       }
       catch (e) {
         //
@@ -111,10 +111,22 @@
     console.log('[Red5ProSubsriber] Unsubscribe Complete.');
   }
 
+  function getAuthenticationParams () {
+    var auth = configuration.authentication;
+    return auth && auth.enabled
+      ? {
+        connectionParams: {
+          username: auth.username,
+          password: auth.password
+        }
+      }
+      : {};
+  }
+
   // Request to unsubscribe.
   function unsubscribe (subscriber) {
     return new Promise(function(resolve, reject) {
-      subscriber.unscubscribe()
+      subscriber.unsubscribe()
         .then(function () {
           targetSubscriber.off('*', onSubscriberEvent);
           targetSubscriber = undefined;
@@ -129,8 +141,12 @@
     });
   }
 
-  var config = Object.assign({}, configuration, defaultConfiguration);
+  var config = Object.assign({},
+    configuration,
+    defaultConfiguration,
+    getAuthenticationParams());
   config.mediaConstraints.audio = false;
+
   var rtcConfig = Object.assign({}, config, {
     protocol: getSocketLocationFromProtocol().protocol,
     port: getSocketLocationFromProtocol().port,
@@ -194,12 +210,29 @@
       .then(function () {
         console.log('[Red5ProSubscriber:AUDIO] :: Complete');
         marshalMuteOperation(audioSubscriber);
+        checkForAudioMuteSafari(targetSubscriber, audioSubscriber);
       })
       .catch(function (error) {
         var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
         console.error('[Red5ProSubscriber] :: Error in subscribing - ' + jsonError);
         onSubscribeFail(jsonError);
       });
+  }
+
+  function checkForAudioMuteSafari (videoSubscriber, audioSubscriber) {
+    var videoElement = videoSubscriber.getPlayer()
+    var audioElement = audioSubscriber.getPlayer()
+    var timeout = setTimeout(function () {
+      clearTimeout(timeout);
+      if (videoElement.played.length === 0) {
+        checkForAudioMuteSafari(videoSubscriber, audioSubscriber);
+      } else {
+        if (videoElement.played.length !== audioElement.played.length) {
+          audioElement.muted = true;
+          videoSubscriber.mute();
+        }
+      }
+    }, 1000);
   }
 
   // Clean up.

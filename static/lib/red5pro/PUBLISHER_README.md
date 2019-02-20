@@ -10,6 +10,7 @@
 ---
 
 # Publishing Live Streams with Red5 Pro HTML SDK
+
 This document describes how to use the Red5 Pro HTML SDK to start a broadcast session.
 
 > Grab the lastest Red5 Pro HTML SDK [here](https://account.red5pro.com/download).
@@ -26,6 +27,7 @@ This document describes how to use the Red5 Pro HTML SDK to start a broadcast se
 * [Lifecycle Events](#lifecycle-events)
 
 # Requirements
+
 The **Red5 Pro HTML SDK** is intended to communicate with a [Red5 Pro Server](https://www.red5pro.com/), which allows for broadcasting and consuming live streams utilizing [WebRTC](https://developer.mozilla.org/en-US/docs/Web/Guide/API/WebRTC) and other protocols, including [RTMP](https://en.wikipedia.org/wiki/Real_Time_Messaging_Protocol) and [HLS](https://en.wikipedia.org/wiki/HTTP_Live_Streaming).
 
 As such, you will need a distribution of the [Red5 Pro Server](https://www.red5pro.com/) running locally or accessible from the web, such as [Amazon Web Services](https://www.red5pro.com/docs/server/awsinstall/).
@@ -33,6 +35,7 @@ As such, you will need a distribution of the [Red5 Pro Server](https://www.red5p
 > **[Click here to start using the Red5 Pro Server today!](https://account.red5pro.com/login)**
 
 # Publisher Types
+
 The following publisher types / protocols are supported:
 
 * [WebRTC](#webrtc) (using [WebSockets](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API), [WebRTC](https://developer.mozilla.org/en-US/docs/Web/Guide/API/WebRTC), [getUserMedia](https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia) and the HTML5 [video](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/video) Element)
@@ -41,23 +44,27 @@ The following publisher types / protocols are supported:
 Additionally, the **Red5 Pro HTML SDK** allows for automatic detection and failover to determine the correct publisher option to use based on desired order and browser support. To learn more, visit the [Auto Failover](#failover-publisher) section.
 
 ## WebRTC
+
 The Red5 Pro HTML SDK WebRTC Publisher solution utilizes WebSockets and WebRTC support in modern browsers.
 
-_It is *highly* recommended to include [adapter.js](https://github.com/webrtc/adapter) when targeting the WebRTC publisher._
+_It is *highly* recommended to include [adapter.js](https://github.com/webrtcHacks/adapter) when targeting the WebRTC publisher._
 
 > WebRTC-based Publishers need to be delivered over HTTPS due to browser security restrictions related to `getUserMedia` which accesses the Camera and Microphone of your machine. [Read more here](https://sites.google.com/a/chromium.org/dev/Home/chromium-security/deprecating-powerful-features-on-insecure-origins).
 
 ### WebRTC Configuration Properties
+
 | Property | Required | Default | Description |
 | :--- | :---: | :---: | :--- |
 | protocol | [x] | `wss` | The protocol for the WebSocket communication; `ws` or `wss`. |
-| port | [x] | `8083` | The port on the host that the WebSocket server resides on; `8081` or `8083`. |
+| port | [x] | `443` | The port on the host that the WebSocket listens on; `5080` or `443` (insecure or secure, respectively). |
 | app | [x] | `live` | The webapp name that the WebSocket is listening on. |
 | streamMode | [x] | `live` | The mode to broadcast; `live`, `record` or `append`. |
+| keyFramerate | [-] | `3000` | The framerate (in milliseconds) between sending key frames in broadcast. |
 | host | [x] | *None* | The IP or address that the WebSocket server resides on. |
 | streamName | [x] | *None* | The name of the stream to subscribe to. |
 | mediaElementId | [-] | `red5pro-publisher` | The target `video` or `audio` element `id` attribute which will display the preview media. |
-| iceServers | [x] | *None* ([Test](https://webrtc.github.io/samples/src/content/peerconnection/trickle-ice/)) | The list of ICE servers to use in requesting a Peer Connection. |
+| rtcConfiguration | [-] | *None* | The `RTCConfiguration` to user in setting up `RTCPeerConnection`. [RTCConfiguration](https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/RTCPeerConnection#RTCConfiguration_dictionary)|
+| iceServers | [x] | *None* ([Test](https://webrtc.github.io/samples/src/content/peerconnection/trickle-ice/)) | The list of ICE servers to use in requesting a Peer Connection. *Marked for Deprecation. Favor `rtcConfiguration`.* |
 | iceTransport | [-] | `UDP` | The transport type to use in ICE negotiation. Either `UDP` or `TCP` |
 | bandwidth | [-] |`{audio: 56, video: 512}` | A configuration object to setup bandwidth setting in publisher. |
 | connectionParams | [-] | `undefined` | An object of connection parameters to send to the server upon connection request. |
@@ -65,6 +72,7 @@ _It is *highly* recommended to include [adapter.js](https://github.com/webrtc/ad
 | onGetUserMedia | [-] | [see below](#using-mediaconstraints-and-ongetusermedia) | An override method for performing your own `getUserMedia` request. |
 
 ### WebRTC Example
+
 _index.html_:
 
 ```html
@@ -72,7 +80,7 @@ _index.html_:
 <html>
   <head>
     <!-- Recommended shim for cross-browser WebRTC support. -->
-    <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
+    <script src="https://webrtchacks.github.io/adapter/adapter-latest.js"></script>
   </head>
   <body>
     <!-- `autoplay` will immediately show preview video. `muted` will mute the audio to avoid feedback noise. -->
@@ -96,11 +104,15 @@ _main.js_:
   // Initialize
   publisher.init({
       protocol: 'ws',
-      port: 8081,
+      port: 5080,
       host: 'localhost',
       app: 'live',
       streamName: 'mystream',
-      iceServers: [{urls: 'stun:stun2.l.google.com:19302'}],
+      rtcConfiguration: {
+        iceServers: [{urls: 'stun:stun2.l.google.com:19302'}],
+        iceCandidatePoolSize: 2,
+        bundlePolicy: 'max-bundle'
+      }, // See https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/RTCPeerConnection#RTCConfiguration_dictionary
       streamMode: 'live',
       mediaElementId: 'red5pro-publisher',
       bandwidth: {
@@ -135,7 +147,7 @@ _main.js_:
 })(window.red5prosdk);
 ```
 
-Because this example demonstrates publishing to a Red5 Pro Server located on `localhost`, we set the *protocol* to `ws` and *port* to `8081`, which are the default values for non-secure socket connection. If you are publishing to a remote Red5 Pro Server, it will need to be delivered securely - upon which you can rely on the default property values of `wss` and `8083`, respectively.
+Because this example demonstrates publishing to a Red5 Pro Server located on `localhost`, we set the *protocol* to `ws` and *port* to `5080`, which are the default values for non-secure socket connection. If you are publishing to a remote Red5 Pro Server, it will need to be delivered securely - upon which you can rely on the default property values of `wss` and `443`, respectively.
 
 The `video` or `audio` element has the `autoplay` and `muted` attributes defined. This will ensure:
 
@@ -143,10 +155,13 @@ The `video` or `audio` element has the `autoplay` and `muted` attributes defined
 * `muted`: You don't get noise feedback when you start publishing, since it will mute your _playback_ volume. Your publishing session will still have audio.
 
 ### Using mediaConstraints and onGetUserMedia
+
 The Red5 Pro HTML SDK will handle the `getUserMedia` requirements internally to set up your Camera and/or Microphone for a broadcast. As such, you can provide the [Media Constraint](https://developer.mozilla.org/en-US/docs/Web/API/MediaStreamConstraints) object to be used.
 
 #### WebRTC mediaConstraints
+
 _The `mediaConstraints` default configuration property for WebRTC Publishers._
+
 ```js
 {
   audio: true,
@@ -184,6 +199,7 @@ For example, if you provide the following for `mediaConstraints`:
 > If you would like to bypass the internal determination of resolution, you can use the `onGetUserMedia` override of the configuration properties.
 
 #### onGetUserMedia
+
 The `onGetUserMedia` method - when defined on the configuration provide to a WebRTC-based Publisher - will override the internal call to `getUserMedia` in the Red5 Pro HTML SDK.
 
 You can provide your own logic on how `getUserMedia` is invoked and a [Media Stream](https://developer.mozilla.org/en-US/docs/Web/API/MediaStream) attained by setting the `onGetUserMedia` attribute to a method that conforms to the following guidelines:
@@ -198,10 +214,14 @@ An example of providing `onGetUserMedia` as a configuration:
 ```js
 {
   host: "localhost",
-  protocol: 8083,
-  port: 8081,
+  protocol: "ws",
+  port: 5080,
   streamName: "mystream",
-  iceServers: [{urls: 'stun:stun2.l.google.com:19302'}],
+  rtcConfiguration: {
+    iceServers: [{urls: 'stun:stun2.l.google.com:19302'}],
+    iceCandidatePoolSize: 2,
+    bundlePolicy: 'max-bundle'
+  }, // See https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/RTCPeerConnection#RTCConfiguration_dictionary
   onGetUserMedia: function () {
     return navigator.mediaDevices.getUserMedia({
       audio: true,
@@ -229,9 +249,11 @@ Be aware that overriding `onGetUserMedia` you are losing the logic from the Red5
 > To read more about `getUserMedia` please read the following document from Mozilla Developer Network: [https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia](https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia)
 
 ## Flash/RTMP
+
 The Red5 Pro HTML SDK Flash-based Publisher embeds a SWF file - utilizing [swfobject](https://github.com/swfobject/swfobject) - to publish over RTMP.
 
 ### Flash Configuration Properties
+
 | Property | Required | Default | Description |
 | :--- | :---: | :---: | :--- |
 | protocol | [x] | `rtmp` | The protocol of the RTMP streaming endpoint; `rtmp` or `rtmps` |
@@ -252,6 +274,7 @@ The Red5 Pro HTML SDK Flash-based Publisher embeds a SWF file - utilizing [swfob
 | mediaConstraints | [x] | [see below](#flash-mediaconstraints) | An object representative of the desired broadcast constraints. |
 
 ### Flash Example
+
 _index.html_:
 
 ```html
@@ -292,13 +315,16 @@ _main.js_:
       embedWidth: '100%',
       embedHeight: '100%',
       mediaConstraints: {
-        width: 640,
-        height: 480,
-        framerate: 15,
-        bandwidth: 50000,
-        quality: 80,
-        profile: 'baseline',
-        level: '3.1'
+        audio: true,
+        video: {
+          width: 640,
+          height: 480,
+          framerate: 15,
+          bandwidth: 50000,
+          quality: 80,
+          profile: 'baseline',
+          level: '3.1'
+        }
       }
     })
     .then(function() {
@@ -314,12 +340,13 @@ _main.js_:
 ```
 
 ### Flash mediaConstraints
+
 The `mediaConstraints` object of the configuration for the Flash-base Publisher has the following attributes:
 
 * `audio` - Either `true` or `false`.
 * `video` - An object defining the broadcast video constraints, as described in the table below:
 
-#### `mediaConstraints.video` attributes:
+#### `mediaConstraints.video` attributes
 
 | Property | Required | Default | Description |
 | :--- | :---: | :---: | :--- |
@@ -331,7 +358,7 @@ The `mediaConstraints` object of the configuration for the Flash-base Publisher 
 | profile | [-] | `baseline` | The H264 Profile. [More Info](http://help.adobe.com/en_US/FlashPlatform/reference/actionscript/3/flash/media/H264Profile.html) |
 | level | [-] | `3.1` | The H264 Level. [More Info](http://help.adobe.com/en_US/FlashPlatform/reference/actionscript/3/flash/media/H264Level.html) |
 
-#### Configuration with mediaConstraints example:
+#### Configuration with mediaConstraints example
 
 ```js
 publisher.init({
@@ -342,19 +369,23 @@ publisher.init({
   streamName: 'mystream',
   swf: 'lib/red5pro/red5pro-publisher.swf',
   mediaConstraints: {
-    width: 640,
-    height: 480,
-    framerate: 15,
-    bandwidth: 50000,
-    quality: 80,
-    profile: 'baseline',
-    level: '3.1'
+    audio: true,
+    video: {
+      width: 640,
+      height: 480,
+      framerate: 15,
+      bandwidth: 50000,
+      quality: 80,
+      profile: 'baseline',
+      level: '3.1'
+    }
   }
 });
 
 ```
 
 # Auto Failover and Order
+
 While you can specifically target a publisher - as described in the previous sections for [WebRTC Publisher](#webrtc-publisher) and [Flash/RTMP Publisher](#flashrtmp-publisher) - you may want to let the Red5 Pro HTML SDK select the optimal publisher based on browser support for the technologies.
 
 As you may have noticed form the previous sections, the source configuration for each publisher has differing property requirements. This is due simply to the technologies and broadcast strategies that each use:
@@ -371,7 +402,7 @@ _index.html_:
 <html>
   <head>
     <!-- Recommended shim for cross-browser WebRTC support. -->
-    <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
+    <script src="https://webrtchacks.github.io/adapter/adapter-latest.js"></script>
   </head>
   <body>
     <video id="red5pro-publisher" autoplay muted></video>
@@ -404,6 +435,7 @@ _main.js_:
       }
     })
     .then(function(selectedPublisher) {
+
       // Publisher implementation determined based on order and browser support.
       return selectedPublisher.publish();
     })
@@ -418,6 +450,7 @@ _main.js_:
 ```
 
 # Lifecycle Events
+
 This section describes the events dispatched from the Publisher of the Red5 Pro HTML SDK.
 
 * [Listening to Publisher Events](#listening-to-publisher-events)
@@ -426,6 +459,7 @@ This section describes the events dispatched from the Publisher of the Red5 Pro 
 * [RTMP Publisher Events](#rtmp-publisher-events)
 
 ## Listening to Publisher Events
+
 The Publisher(s) included in the SDK are event emitters that have a basic API to subscribing and unsubscribing to events either by name or by wildcard.
 
 To subscribe to all events from a publisher:
@@ -455,6 +489,7 @@ publisher.off('*', handlePublisherEvent);
 The following sections of this document describe the event types that can also be listened to directly, instead of using the `*` wildcard.
 
 ## Common Events
+
 The following events are common across all Publisher implementations from the Red5 Pro HTML SDK. They can be accessed from the global `red5prosdk` object from the `PublisherEventTypes` attribute.
 
 | Access | Name | Meaning |
@@ -470,8 +505,8 @@ The following events are common across all Publisher implementations from the Re
 | DIMENSION_CHANGE | 'Publisher.Video.DimensionChange' | Notification when the Camera resolution has been set or change. |
 
 ## WebRTC Publisher Events
-The following events are specific to the `RTCPublisher` implementation and accessible on the global `red5prosdk` object from the `RTCPublisherEventTypes` attribute. These events are dispatched during the lifecycle of thre trickle ICE functionality required to start a broadcast:
 
+The following events are specific to the `RTCPublisher` implementation and accessible on the global `red5prosdk` object from the `RTCPublisherEventTypes` attribute. These events are dispatched during the lifecycle of thre trickle ICE functionality required to start a broadcast:
 | Access | Name | Meaning |
 | :--- | :---: | :--- |
 | MEDIA_STREAM_AVAILABLE | 'WebRTC.MediaStream.Available' | When the negotation process has returned a `MediaStream` object to use. |
@@ -481,10 +516,10 @@ The following events are specific to the `RTCPublisher` implementation and acces
 | ICE_TRICKLE_COMPLETE | 'WebRTC.IceTrickle.Complete' | When the negotaiton process (a.k.a. trickle) has completed and the publisher will attempt at opening a broadcast stream. |
 
 ## RTMP Publisher Events
+
 The following events are specific to the `RTMPPublisher` implementation and accessible on the global `red5prosk` object from the `RTMPPublisherTypes` attribute:
 
 | Access | Name | Meaning |
 | :--- | :---: | :--- |
 | EMBED_SUCCESS | 'FlashPlayer.Embed.Success' | When the publisher-based SWF is successfully embedded in the page. |
 | EMBED_FAILURE | 'FlashPlayer.Embed.Failure' | When the publisher-based SWF fails to be embedded properly in the page. |
-

@@ -67,6 +67,18 @@
     console.log('[Red5ProPublisher] Unpublish Complete.');
   }
 
+  function getAuthenticationParams () {
+    var auth = configuration.authentication;
+    return auth && auth.enabled
+      ? {
+        connectionParams: {
+          username: auth.username,
+          password: auth.password
+        }
+      }
+      : {};
+  }
+
   function getUserMediaConfiguration () {
     return {
       mediaConstraints: {
@@ -106,6 +118,7 @@
 
   var config = Object.assign({},
     configuration,
+    getAuthenticationParams(),
     getUserMediaConfiguration());
 
   var rtcConfig = Object.assign({}, config, {
