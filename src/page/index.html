@@ -133,6 +133,10 @@
           <input type="checkbox" id="audio-active-field" name="audio-active-field" style="vertical-align: middle;">
         </p>
         <p class="settings-field">
+          <label class="settings-label">Record Broadcast:</label>
+          <input type="checkbox" id="record-field" name="record-field" style="vertical-align: middle;">
+        </p>
+        <p class="settings-field">
           <label class="settings-label">Mute on Autoplay Restriction:</label>
           <input type="checkbox" id="mute-autoplay-field" name="mute-autoplay-field" style="vertical-align: middle;">
         </p>
@@ -173,6 +177,7 @@
         var rtcTransportPolicySelect = document.getElementById('rtc-transport-policy');
         var rtcpMuxPolicySelect = document.getElementById('rtc-mux-policy');
         var loggingField = document.getElementById('logging-field');
+        var recordField = document.getElementById('record-field');
         var videoField = document.getElementById('video-active-field');
         var audioField = document.getElementById('audio-active-field');
         var muteAutoplayField = document.getElementById('mute-autoplay-field');
@@ -293,6 +298,11 @@
           seal(configuration);
         });
 
+        recordField.addEventListener('change', function () {
+          configuration.recordBroadcast = !configuration.recordBroadcast;
+          seal(configuration);
+        });
+
         videoField.addEventListener('change', function () {
           configuration.useVideo = !configuration.useVideo;
           seal(configuration);
@@ -337,6 +347,7 @@
           iceCredential.value = config.rtcConfiguration.iceServers[0].credential || '';
           rtcCandidatePoolSize.value = config.rtcConfiguration.iceCandidatePoolSize || 0;
           loggingField.checked = config.verboseLogging ? true : false;
+          recordField.checked = config.recordBroadcast ? true : false;
           videoField.checked = config.useVideo ? true : false;
           audioField.checked = config.useAudio ? true : false;
           muteAutoplayField.checked = config.muteOnAutoplayRestriction ? true : false;

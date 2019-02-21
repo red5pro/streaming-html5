@@ -157,6 +157,9 @@
 
   var config = Object.assign({},
                       configuration,
+                      {
+                        streamMode: configuration.recordBroadcast ? 'record' : 'live'
+                      },
                       getAuthenticationParams(),
                       getUserMediaConfiguration());
 

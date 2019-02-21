@@ -51,7 +51,8 @@
 
   var defaultConfiguration = {
     protocol: getSocketLocationFromProtocol().protocol,
-    port: getSocketLocationFromProtocol().port
+    port: getSocketLocationFromProtocol().port,
+    streamMode: configuration.recordBroadcast ? 'record' : 'live'
   };
 
   var validationParamCount = 1;

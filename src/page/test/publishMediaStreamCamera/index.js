@@ -183,6 +183,7 @@
                       protocol: getSocketLocationFromProtocol().protocol,
                       port: getSocketLocationFromProtocol().port,
                       streamName: config.stream1,
+                      streamMode: configuration.recordBroadcast ? 'record' : 'live'
                    });
 
   var publisher = new red5prosdk.RTCPublisher()

@@ -168,6 +168,7 @@
         protocol: getSocketLocationFromProtocol().protocol,
         port: getSocketLocationFromProtocol().port,
         streamName: configuration.stream1 + '_audio',
+        streamMode: configuration.recordBroadcast ? 'record' : 'live',
         mediaConstraints: {
           audio: true,
           video: false
@@ -201,6 +202,9 @@
 
     var config = Object.assign({},
                         configuration,
+                        {
+                          streamMode: configuration.recordBroadcast ? 'record' : 'live'
+                        },
                         getAuthenticationParams());
 
     var rtcConfig = Object.assign({}, config, {
