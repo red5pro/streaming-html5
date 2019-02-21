@@ -44,7 +44,8 @@
   var defaultSubscriberConfiguration = (function(useVideo, useAudio) {
     var c = {
       protocol: getSocketLocationFromProtocol().protocol,
-      port: getSocketLocationFromProtocol().port
+      port: getSocketLocationFromProtocol().port,
+      streamMode: configuration.recordBroadcast ? 'record' : 'live'
     };
     if (!useVideo) {
       c.videoEncoding = red5prosdk.PlaybackVideoEncoder.NONE;
