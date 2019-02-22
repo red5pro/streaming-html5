@@ -1,0 +1,37 @@
+<!doctype html>
+<html>
+  <head>
+    {{> meta title='Subscriber Video Mute Test'}}
+    {{> header-scripts}}
+    {{> header-stylesheets}}
+    <style>
+      .hidden {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      {{> version }}
+      {{> settings-link}}
+      {{> test-info testTitle='Subscriber Video Mute Test'}}
+      {{> status-field-subscriber}}
+      {{> statistics-field}}
+      <div class="centered">
+        <video id="red5pro-subscriber"
+                controls="controls" autoplay="autoplay" playsinline
+                class="red5pro-media red5pro-media-background"
+                width="640" height="480">
+        </video>
+      </div>
+      <div class="centered hidden">
+        <audio id="red5pro-audio-subscriber"
+               autoplay="autoplay" playsinline>
+        </video>
+      </div>
+    </div>
+    {{> body-scripts}}
+    {{> mobile-subscriber-util}}
+    <script src="index.js"></script>
+  </body>
+</html>
