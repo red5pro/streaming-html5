@@ -103,6 +103,11 @@ function processStreams (streamlist, exclusion) {
 
 [index #382](index.js#L382)
 
-New room entries (subscribers) are determined based on previous lists and the current publisher, resulting in a linked-list of Subsceiber instances to instantiate and start playing back streams.
+New room entries (a.k.a., "Subscribers") are determined based current subscribers and the current publisher, resulting in a linked-list of Subscriber instances to instantiate and start playing back streams.
 
 > The `ConferenceSubscriberItem` is defined in [conference-subscriber.js](conference-subscriber.js).
+
+# Notes
+
+1. Video and Audio - at the time of this writing - cannot be "muted" prior to broadcast. This is because it is not possible to turn either "muted" track **on** after having started playback of the stream. They need to both be initially present in the `MediaStream` generated prior to being "muted" at a later time. _You can mute the Camera and Microphone after starting a broadcast._
+2. A "decoy" audio player is added to subscribers whose initial stream is missing a video track. The issue appears to be browser specific (notably, Chrome and Safari) in which playback of a `video` element cannot occur if the video track is not active, and yet the audio track is.
