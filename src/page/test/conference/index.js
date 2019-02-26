@@ -36,6 +36,7 @@
 
   var roomField = document.getElementById('room-field');
   var publisherContainer = document.getElementById('publisher-container');
+  var publisherMuteControls = document.getElementById('publisher-mute-controls');
   var publisherSession = document.getElementById('publisher-session');
   var publisherNameField = document.getElementById('publisher-name-field');
   var streamNameField = document.getElementById('streamname-field');
@@ -204,6 +205,7 @@
     roomField.setAttribute('disabled', true);
     publisherSession.classList.remove('hidden');
     publisherNameField.classList.remove('hidden');
+    publisherMuteControls.classList.remove('hidden');
     Array.prototype.forEach.call(document.getElementsByClassName('remove-on-broadcast'), function (el) {
       el.classList.add('hidden');
     });
@@ -396,6 +398,11 @@
     }
     if (subscribers.length > 0) {
       var baseSubscriberConfig = Object.assign({},
+                                  configuration,
+                                  {
+                                    protocol: getSocketLocationFromProtocol().protocol,
+                                    port: getSocketLocationFromProtocol().port
+                                  },
                                   getAuthenticationParams(),
                                   getUserMediaConfiguration());
       subscribers[0].execute(baseSubscriberConfig);
