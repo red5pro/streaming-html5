@@ -5,6 +5,7 @@
     {{> header-scripts}}
     {{> header-stylesheets}}
     <link rel="stylesheet" href="../../css/conference.css">
+    </style>
     <script src="../../script/subscription-status.js"></script>
   </head>
   <body>
@@ -32,7 +33,10 @@
             <label for="streamname-field">Stream Name:</label>
             <input id="streamname-field" name="streamname-field">
           </p>
-          <p class="centered">
+          <p id="publisher-mute-notice" class="centered remove-on-broadcast">
+            <span>Video and Audio can be turned on after publish has started.</span>
+          </p>
+          <p id="publisher-mute-controls" class="centered hidden">
             <span id="publisher-name-field" class="hidden"></span>
             <label for="video-check">Video: </label>
             <input type="checkbox" id="video-check" name="video-check" checked>
@@ -55,6 +59,7 @@
       </div>
     </div>
     {{> body-scripts}}
+    <script src="conference-subscriber.js"></script>
     <script src="index.js"></script>
   </body>
 </html>

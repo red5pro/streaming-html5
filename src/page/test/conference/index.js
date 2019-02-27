@@ -29,7 +29,6 @@
   red5prosdk.setLogLevel(configuration.verboseLogging ? red5prosdk.LOG_LEVELS.TRACE : red5prosdk.LOG_LEVELS.WARN);
 
   var updateStatusFromEvent = window.red5proHandlePublisherEvent; // defined in src/template/partial/status-field-publisher.hbs
-  var updateSuscriberStatusFromEvent = window.red5proHandleSubscriberEvent;
 
   var targetPublisher;
   var roomName = window.query('room') || 'red5pro'; // eslint-disable-line no-unused-vars
@@ -37,6 +36,7 @@
 
   var roomField = document.getElementById('room-field');
   var publisherContainer = document.getElementById('publisher-container');
+  var publisherMuteControls = document.getElementById('publisher-mute-controls');
   var publisherSession = document.getElementById('publisher-session');
   var publisherNameField = document.getElementById('publisher-name-field');
   var streamNameField = document.getElementById('streamname-field');
@@ -59,19 +59,6 @@
 
   audioCheck.addEventListener('change', updateMutedAudioOnPublisher);
   videoCheck.addEventListener('change', updateMutedVideoOnPublisher);
-
-  var subscriberTemplate = '' +
-        '<div class="subscriber-session centered">' +
-          '<p class="subscriber-status-field">On hold.</p>' +
-        '</div>' +
-        '<div class="video-holder centered">' +
-          '<video autoplay controls playsinline class="red5pro-media red5pro-background"></video>' +
-        '</div>' +
-        '<div class="centered">' +
-          '<p class="status-field"><span class="subscriber-name-field"></span></p>' +
-          '<p class="status-field-gray"><span class="subscriber-id-field"></span></p>' +
-          '</p>' +
-        '</div>';
 
   var soField = document.getElementById('so-field');
 
@@ -218,6 +205,7 @@
     roomField.setAttribute('disabled', true);
     publisherSession.classList.remove('hidden');
     publisherNameField.classList.remove('hidden');
+    publisherMuteControls.classList.remove('hidden');
     Array.prototype.forEach.call(document.getElementsByClassName('remove-on-broadcast'), function (el) {
       el.classList.add('hidden');
     });
@@ -233,13 +221,6 @@
       publisherContainer.classList.remove('spaced');
       publisherContainer.classList.remove('float-left');
     }
-  }
-
-  function templateContent (templateHTML) {
-    var div = document.createElement('div');
-    div.classList.add('subscriber-container', 'float-left', 'spaced');
-    div.innerHTML = templateHTML;
-    return div;
   }
 
   var hasRegistered = false;
@@ -396,7 +377,6 @@
   window.addEventListener('beforeunload', shutdown);
   window.addEventListener('pagehide', shutdown);
 
-  var subscriberMap = {};
   var streamsPropertyList = [];
   var subscribersEl = document.getElementById('subscribers');
   function processStreams (streamlist, exclusion) {
@@ -405,10 +385,10 @@
     });
     var list = nonPublishers.filter(function (name, index, self) {
       return (index == self.indexOf(name)) &&
-        !document.getElementById(getSubscriberElementId(name));
+        !document.getElementById(window.getConferenceSubscriberElementId(name));
     });
     var subscribers = list.map(function (name, index) {
-      return new SubscriberItem(name, subscribersEl, index);
+      return new window.ConferenceSubscriberItem(name, subscribersEl, index);
     });
     var i, length = subscribers.length - 1;
     var sub;
@@ -417,123 +397,18 @@
       sub.next = subscribers[sub.index+1];
     }
     if (subscribers.length > 0) {
-      subscribers[0].execute();
+      var baseSubscriberConfig = Object.assign({},
+                                  configuration,
+                                  {
+                                    protocol: getSocketLocationFromProtocol().protocol,
+                                    port: getSocketLocationFromProtocol().port
+                                  },
+                                  getAuthenticationParams(),
+                                  getUserMediaConfiguration());
+      subscribers[0].execute(baseSubscriberConfig);
     }
 
     updatePublishingUIOnStreamCount(nonPublishers.length);
-  }
-
-  function getSubscriberElementId (streamName) {
-    return ['red5pro', 'subscriber', streamName].join('-');
-  }
-  function generateNewSubscriberDOM (streamName, subId, parent) {
-    var card = templateContent(subscriberTemplate);
-    parent.appendChild(card);
-    var videoId = getSubscriberElementId(streamName);
-    var videoElement = card.getElementsByClassName('red5pro-media')[0];
-    var subscriberNameField = card.getElementsByClassName('subscriber-name-field')[0];
-    var subscriberIdField = card.getElementsByClassName('subscriber-id-field')[0];
-    subscriberNameField.innerText = streamName;
-    subscriberIdField.innerText = '(' + subId + ')';
-    videoElement.id = videoId;
-    card.id = [videoId, 'container'].join('-');
-    return card;
-  }
-
-  var SubscriberItem = function (subStreamName, parent, index) {
-    var uid = Math.floor(Math.random() * 0x10000).toString(16);
-    this.subscriptionId = [streamNameField.value, 'sub', uid].join('-')
-    this.streamName = subStreamName;
-    this.index = index;
-    this.next = undefined;
-    this.parent = parent;
-    this.card = generateNewSubscriberDOM(this.streamName, this.subscriptionId, this.parent);
-    this.statusField = this.card.getElementsByClassName('subscriber-status-field')[0];
-    this.toggleVideoPoster = this.toggleVideoPoster.bind(this);
-  }
-  SubscriberItem.prototype.toggleVideoPoster = function (showPoster) {
-    var video = document.getElementById(getSubscriberElementId(this.streamName));
-    if (showPoster) {
-      video.classList.add('hidden');
-    } else {
-      video.classList.remove('hidden');
-    }
-  }
-  SubscriberItem.prototype.resolve = function () {
-    if (this.next) {
-      this.next.execute();
-    }
-  }
-  SubscriberItem.prototype.reject = function (event) {
-    console.error(event);
-    if (this.next) {
-      this.next.execute();
-    }
-  }
-  SubscriberItem.prototype.execute = function () {
-    var self = this;
-    var name = this.streamName;
-    var config = Object.assign({},
-                    configuration,
-                    getAuthenticationParams(),
-                    getUserMediaConfiguration());
-
-    var rtcConfig = Object.assign({}, config, {
-                    protocol: getSocketLocationFromProtocol().protocol,
-                    port: getSocketLocationFromProtocol().port,
-                    streamName: this.streamName,
-                    subscriptionId: this.subscriptionId,
-                    mediaElementId: getSubscriberElementId(name) });
-
-    this.subscriber = new red5prosdk.RTCSubscriber();
-    this.subscriber.on('Connect.Success', this.resolve.bind(this));
-    this.subscriber.on('Connect.Failure', this.reject.bind(this));
-    var sub = this.subscriber;
-    var toggleVideoPoster = this.toggleVideoPoster;
-    var statusField = this.statusField;
-    var reject = this.reject.bind(this);
-    var close = function (event) { // eslint-disable-line no-unused-vars
-      function cleanup () {
-        var el = document.getElementById(getSubscriberElementId(name) + '-container')
-        el.parentNode.removeChild(el);
-        sub.off('*', respond);
-        sub.off('Subscribe.Fail', fail);
-      }
-      sub.off('Subscribe.Connection.Closed', close);
-      sub.unsubscribe().then(cleanup).catch(cleanup);
-      delete subscriberMap[name];
-    };
-    var fail = function (event) { // eslint-disable-line no-unused-vars
-      close();
-      var t = setTimeout(function () {
-        clearTimeout(t);
-        new SubscriberItem(self.streamName, self.parent, self.index).execute();
-      }, 2000);
-    };
-    var respond = function (event) {
-      if (event.type === 'Subscribe.Time.Update') return;
-      console.log('[subscriber:' + name + '] ' + event.type);
-      updateSuscriberStatusFromEvent(event, statusField);
-      if (event.type === 'Subscribe.Metadata') {
-        if (event.data.streamingMode) {
-          toggleVideoPoster(!event.data.streamingMode.match(/Video/));
-        }
-      }
-    };
-
-    this.subscriber.on('Subscribe.Connection.Closed', close);
-    this.subscriber.on('Subscribe.Fail', fail);
-    this.subscriber.on('*', respond);
-
-    this.subscriber.init(rtcConfig)
-      .then(function (subscriber) {
-        subscriberMap[name] = subscriber;
-        return subscriber.subscribe();
-       })
-      .catch(function (error) {
-        console.log('[subscriber:' + name + '] Error');
-        reject(error);
-      });
   }
 
 })(this, document, window.red5prosdk);
