@@ -11,11 +11,12 @@
     return targetPublisher.getPeerConnection();
   }
   */
-  function updateMediaStreamTrack (constraints, trackKind, connection, element) {
+  function updateMediaStreamTrack (constraints, trackKind, publisher, element) {
+    var connection = publisher.getPeerConnection();
     // 1. Grap new MediaStream from updated constraints.
     navigator.mediaDevices.getUserMedia(constraints)
       .then(function (stream) {
-        // 2. Update the media tracks on senders through connection.
+        // 2. Update the media tracks on senders through connection, if available (i.e., currently streaming).
         if (connection) {
           var senders = connection.getSenders();
           var tracks = stream.getTracks();
@@ -25,8 +26,13 @@
               senders[i].replaceTrack(tracks[i]);
             }
           }
+        } else {
+          // 3. Else, swap in new media constraints to publisher preview before stream start.
+          publisher.init(Object.assign(publisher.getOptions(), {
+            mediaConstraints: constraints
+          }));
         }
-        // 3. Update the video display with new stream.
+        // 4. Update the video display with new stream.
         element.srcObject = stream;
       })
       .catch (function (error) {
@@ -44,7 +50,7 @@
         deviceId: { exact: camera }
       };
     }
-    updateMediaStreamTrack(newConstraints, 'video', publisher.getPeerConnection(), element);
+    updateMediaStreamTrack(newConstraints, 'video', publisher, element);
   }
 
   function onMicrophoneSelect (microphone, constraints, publisher, element) {
@@ -57,7 +63,7 @@
         deviceId: { exact: microphone }
       };
     }
-    updateMediaStreamTrack(newConstraints, 'audio', publisher.getPeerConnection(), element);
+    updateMediaStreamTrack(newConstraints, 'audio', publisher, element);
   }
 
   function setSelectedCameraIndexFromTrack (track, deviceList) {
@@ -136,7 +142,10 @@
     }
   }
 
+  var hasBegunMonitor = false;
   window.allowMediaStreamSwap = function (publisher, constraints, viewElement) {
+    if (hasBegunMonitor) return;
+    hasBegunMonitor = true;
     targetPublisher = publisher;
     mediaConstraints = constraints;
     beginMediaMonitor(targetPublisher, mediaConstraints, viewElement);
