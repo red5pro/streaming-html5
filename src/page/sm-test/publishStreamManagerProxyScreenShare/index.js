@@ -225,6 +225,7 @@
         protocol: getSocketLocationFromProtocol().protocol,
         port: getSocketLocationFromProtocol().port,
         streamName: name + '_audio',
+        streamMode: configuration.recordBroadcast ? 'record' : 'live',
         app: configuration.proxy,
         connectionParams: {
           host: host,
@@ -273,6 +274,7 @@
                         protocol: getSocketLocationFromProtocol().protocol,
                         port: getSocketLocationFromProtocol().port,
                         streamName: name,
+                        streamMode: configuration.recordBroadcast ? 'record' : 'live',
                         app: configuration.proxy,
                         connectionParams: {
                           host: host,
@@ -341,7 +343,10 @@
       .catch(respondToOriginFailure);
   }
 
-  window.addEventListener('beforeunload', function() {
+  var shuttingDown = false;
+  function shutdown() {
+    if (shuttingDown) return;
+    shuttingDown = true;
     function clearRefs () {
       if (targetPublisher) {
         targetPublisher.off('*', onPublisherEvent);
@@ -361,7 +366,9 @@
       })
       .then(clearRefs).catch(clearRefs);
     window.untrackBitrate();
-  });
+  }
+  window.addEventListener('pagehide', shutdown);
+  window.addEventListener('beforeunload', shutdown);
 
 })(this, document, window.red5prosdk, window.getScreenId);
 

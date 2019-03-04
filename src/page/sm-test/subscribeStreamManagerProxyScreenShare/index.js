@@ -33,7 +33,6 @@
   var streamTitle = document.getElementById('stream-title');
   var statisticsField = document.getElementById('statistics-field');
 
-  var protocol = serverSettings.protocol;
   var protocol = proxyLocal ? 'https' : serverSettings.protocol;
   var isSecure = protocol === 'https';
 
@@ -148,6 +147,9 @@
   }
   function onSubscribeSuccess (subscriber) {
     console.log('[Red5ProSubsriber] Subscribe Complete.');
+    if (window.exposeSubscriberGlobally) {
+      window.exposeSubscriberGlobally(subscriber);
+    }
     if (subscriber.getType().toLowerCase() === 'rtc') {
       try {
         window.trackBitrate(subscriber.getPeerConnection(), onBitrateUpdate, onResolutionUpdate, true);
@@ -216,6 +218,7 @@
       subscriptionId: 'subscriber-' + instanceId,
       streamName: name
     });
+    rtcConfig.connectionParams = Object.assign(getAuthenticationParams(), rtcConfig.connectionParams);
 
     rtcConfig.connectionParams = Object.assign({}, 
       getAuthenticationParams().connectionParams,
@@ -283,6 +286,7 @@
       streamName: name + '_audio',
       mediaElementId: 'red5pro-audio'
     });
+    audioConfig.connectionParams = Object.assign(getAuthenticationParams(), audioConfig.connectionParams);
 
     audioConfig.connectionParams = Object.assign({}, 
       getAuthenticationParams().connectionParams,
@@ -332,7 +336,10 @@
   startup();
 
   // Clean up.
-  window.addEventListener('beforeunload', function() {
+  var shuttingDown = false;
+  function shutdown() {
+    if (shuttingDown) return;
+    shuttingDown = true;
     function clearRefs () {
       if (targetSubscriber) {
         targetSubscriber.off('*', onSubscriberEvent);
@@ -351,8 +358,10 @@
         return true;
       })
       .then(clearRefs).catch(clearRefs);
-    window.untrackbitrate();
-  });
+    window.untrackBitrate();
+  }
+  window.addEventListener('pagehide', shutdown);
+  window.addEventListener('beforeunload', shutdown);
 
 })(this, document, window.red5prosdk);
 

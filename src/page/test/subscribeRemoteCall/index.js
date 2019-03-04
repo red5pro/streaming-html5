@@ -85,6 +85,9 @@
   }
   function onSubscribeSuccess (subscriber) {
     console.log('[Red5ProSubsriber] Subscribe Complete.');
+    if (window.exposeSubscriberGlobally) {
+      window.exposeSubscriberGlobally(subscriber);
+    }
     if (subscriber.getType().toLowerCase() === 'rtc') {
       try {
         window.trackBitrate(subscriber.getPeerConnection(), onBitrateUpdate, onResolutionUpdate, true);
@@ -200,19 +203,25 @@
     var sendClientHandler = function (event) {
       var eventData = event.data;
       var msg = eventData.data;
-      var methodName = eventData.methodName;
+      var methodName = eventData.methodName || eventData.method;
       if (methodName === 'whateverFunctionName') {
         var elem = document.getElementById('red5pro-subscriber');
+        var rect = elem.getBoundingClientRect();
+        var bodyRect = document.body.getBoundingClientRect()
         console.log('[Red5ProSubscriber] :: whateverFunctionName received!');
         console.log('[Red5ProSubscriber] :: message - ' + JSON.stringify(msg, null, 2));
         messageCallout.innerText = msg.message;
-        messageCallout.style.left = (elem.offsetLeft + (elem.clientWidth * msg.touchX)) + 'px';
-        messageCallout.style.top = (elem.offsetTop + (elem.clientHeight * msg.touchY)) + 'px';
+        messageCallout.style.left = (rect.left - bodyRect.left + (elem.clientWidth * msg.touchX)) + 'px';
+        messageCallout.style.top = (rect.top - bodyRect.top + (elem.clientHeight * msg.touchY)) + 'px';
+        messageCallout.classList.remove('hidden');
       }
-    };
-
+    }; 
+  
   // Clean up.
-  window.addEventListener('beforeunload', function() {
+  var shuttingDown = false;
+  function shutdown() {
+    if (shuttingDown) return;
+    shuttingDown = true;
     function clearRefs () {
       if (targetSubscriber) {
         targetSubscriber.off('*', onSubscriberEvent);
@@ -220,8 +229,10 @@
       targetSubscriber = undefined;
     }
     unsubscribe().then(clearRefs).catch(clearRefs);
-    window.untrackbitrate();
-  });
+    window.untrackBitrate();
+  }
+  window.addEventListener('pagehide', shutdown);
+  window.addEventListener('beforeunload', shutdown);
 
 })(this, document, window.red5prosdk);
 

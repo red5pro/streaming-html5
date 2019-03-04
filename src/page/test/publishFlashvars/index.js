@@ -125,6 +125,7 @@
                     protocol: 'rtmp',
                     port: serverSettings.rtmpport,
                     streamName: config.stream1,
+                    streamMode: configuration.recordBroadcast ? 'record' : 'live',
                     swf: '../../lib/red5pro/red5pro-publisher.swf',
                     swfobjectURL: '../../lib/swfobject/swfobject.js',
                     productInstallURL: '../../lib/swfobject/playerProductInstall.swf',
@@ -159,15 +160,21 @@
        });
   });
 
-  window.addEventListener('beforeunload', function() {
+  var shuttingDown = false;
+  function shutdown() {
+    if (shuttingDown) return;
+    shuttingDown = true;
     function clearRefs () {
       if (targetPublisher) {
         targetPublisher.off('*', onPublisherEvent);
       }
+      targetPublisher = undefined;
     }
     unpublish().then(clearRefs).catch(clearRefs);
     window.untrackBitrate();
-  });
+  }
+  window.addEventListener('pagehide', shutdown);
+  window.addEventListener('beforeunload', shutdown);
 
 })(this, document, window.red5prosdk);
 

@@ -44,7 +44,8 @@
   var defaultSubscriberConfiguration = (function(useVideo, useAudio) {
     var c = {
       protocol: getSocketLocationFromProtocol().protocol,
-      port: getSocketLocationFromProtocol().port
+      port: getSocketLocationFromProtocol().port,
+      streamMode: configuration.recordBroadcast ? 'record' : 'live'
     };
     if (!useVideo) {
       c.videoEncoding = red5prosdk.PlaybackVideoEncoder.NONE;
@@ -81,8 +82,11 @@
   function onSubscribeFail (message) {
     console.error('[Red5ProSubsriber] Subscribe Error :: ' + message);
   }
-  function onSubscribeSuccess () {
+  function onSubscribeSuccess (subscriber) {
     console.log('[Red5ProSubsriber] Subscribe Complete.');
+    if (window.exposeSubscriberGlobally) {
+      window.exposeSubscriberGlobally(subscriber);
+    }
   }
   function onUnsubscribeFail (message) {
     console.error('[Red5ProSubsriber] Unsubscribe Error :: ' + message);
@@ -146,6 +150,7 @@
                         host: serverAddress,
                         app: configuration.app
                       }
+    });
     var rtmpConfig = Object.assign({}, config, {
                       host: serverAddress,
                       protocol: 'rtmp',
@@ -268,7 +273,7 @@
         return targetSubscriber.subscribe();
       })
       .then(function() {
-        onSubscribeSuccess();
+        onSubscribeSuccess(targetSubscriber);
       })
       .catch(function (error) {
         var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
@@ -378,7 +383,10 @@
       onPublishFail(jsonError);
      });
 
-  window.addEventListener('beforeunload', function() {
+  var shuttingDown = false;
+  function shutdown() {
+    if (shuttingDown) return;
+    shuttingDown = true;
     function clearRefs () {
       if (targetPublisher) {
         targetPublisher.off('*', onPublisherEvent);
@@ -390,6 +398,7 @@
       targetSubscriber = undefined;
     }
     unpublish().then(unsubscribe).then(clearRefs).catch(clearRefs);
-  });
-
+  }
+  window.addEventListener('pagehide', shutdown);
+  window.addEventListener('beforeunload', shutdown);
 })(this, document, window.red5prosdk);
