@@ -109,6 +109,10 @@ To define the **Host** with the server instance's IP, click the _Host_ field f t
 | :-----
 | *Demonstrates simultaneously publishing while subscribing - allowing a conversation. Includes stream detection and auto-connection.*
 
+| **[Conference](src/page/test/conference)**
+| :-----
+| *Demonstrates multi-party communication using Red5 Pro. It also demonstrates using Shared Objects as notifications to recognize the addition and removal of parties broadcasting.*
+
 ### Publishing - Stream Manager Examples
 
 | **[Stream Manager](src/page/sm-test/publishStreamManager)**
@@ -181,6 +185,10 @@ To define the **Host** with the server instance's IP, click the _Host_ field f t
 | **[Screen Share](src/page/test/subscribeScreenShare)**
 | :-----
 | *An example of utilizing the screen sharing capabilities of* **Chrome** *and* **Firefox**. *For use with Publish Screen Share example.*
+
+| **[Video Mute](src/page/test/subscribeVideoMute)**
+| :-----
+| *Example to demonstrate subscribing to a broadcast which has its video stream "muted".*
 
 ### Subscribing - Stream Manager Examples
 
