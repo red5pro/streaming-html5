@@ -111,7 +111,7 @@
   function updateInitialMediaOnPublisher () {
     var t = setTimeout(function () {
       // If we have requested no audio and/or no video in our initial broadcast,
-      // whipe the track from the connection.
+      // wipe the track from the connection.
       var audioTrack = targetPublisher.getMediaStream().getAudioTracks()[0];
       var videoTrack = targetPublisher.getMediaStream().getVideoTracks()[0];
       var connection = targetPublisher.getPeerConnection();
@@ -151,6 +151,8 @@
     console.log('[Red5ProPublisher] ' + event.type + '.');
     if (event.type === 'WebSocket.Message.Unhandled') {
       console.log(event);
+    } else if (event.type === red5prosdk.RTCPublisherEventTypes.MEDIA_STREAM_AVAILABLE) {
+      window.allowMediaStreamSwap(targetPublisher, targetPublisher.getOptions().mediaConstraints, document.getElementById('red5pro-publisher'));
     }
     updateStatusFromEvent(event);
   }
