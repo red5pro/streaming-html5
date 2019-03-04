@@ -1,0 +1,36 @@
+<!doctype html>
+<html>
+  <head>
+    {{> meta title='Subscriber Two Streams Test'}}
+    {{> header-scripts}}
+    {{> header-stylesheets}}
+  </head>
+  <body>
+    <div id="app">
+      {{> version }}
+      {{> settings-link}}
+      {{> test-info testTitle='Subscriber Two Stream Test'}}
+      <div class="float-left-conf">
+        <h2 class="centered"><em>stream</em>: <span id="stream1-title"></span></h2>
+        <p id="stream1-status" class="centered status-field">On hold.</p>
+        <video id="red5pro-stream1"
+                controls="controls" autoplay="autoplay" playsinline
+                class="red5pro-media red5pro-media-background"
+                width="640" height="480">
+        </video>
+      </div>
+      <div class="float-left-conf">
+        <h2 class="centered"><em>stream</em>: <span id="stream2-title"></span></h2>
+        <p id="stream2-status" class="centered status-field">On hold.</p>
+        <video id="red5pro-stream2"
+                controls="controls" autoplay="autoplay" playsinline
+                class="red5pro-media red5pro-media-background"
+                width="640" height="480">
+        </video>
+      </div>
+    </div>
+    {{> body-scripts}}
+    <script src="../../script/subscription-status.js"></script>
+    <script src="index.js"></script>
+  </body>
+</html>
