@@ -1,5 +1,17 @@
 # Changes
 
+## 5.5.0
+
+- default to srcObject in try...catch for modern browsers. (bustardcelly)
+- fix for bandwidth inject in latest chrome browser. (bustardcelly)
+- adding notification and retry support for autoplay restriction of subscribers. (bustardcelly)
+
+    > * WebRTC, RTMP and HLS Subscriber support
+    > * muteOnAutoplayRestriction configuration property added
+    > * Additional subscriber events for client-side notifications of autoplay restrictions
+
+- allowing for decoupled socket for sharedobject connections. (bustardcelly)
+
 ## 5.4.0
 
 - screenfull dep update. (bustardcelly)
