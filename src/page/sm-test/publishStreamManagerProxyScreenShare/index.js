@@ -225,6 +225,7 @@
         protocol: getSocketLocationFromProtocol().protocol,
         port: getSocketLocationFromProtocol().port,
         streamName: name + '_audio',
+        streamMode: configuration.recordBroadcast ? 'record' : 'live',
         app: configuration.proxy,
         connectionParams: {
           host: host,
@@ -273,6 +274,7 @@
                         protocol: getSocketLocationFromProtocol().protocol,
                         port: getSocketLocationFromProtocol().port,
                         streamName: name,
+                        streamMode: configuration.recordBroadcast ? 'record' : 'live',
                         app: configuration.proxy,
                         connectionParams: {
                           host: host,

@@ -99,6 +99,7 @@ When using an already established client connection, the content of the stream i
 ```
 
 ## Creating a Shared Object with Subscriber Stream
+
 ```js
 (function (red5prosdk) {
 

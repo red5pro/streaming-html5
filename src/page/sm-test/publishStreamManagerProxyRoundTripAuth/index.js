@@ -48,7 +48,8 @@
 
   var defaultConfiguration = {
     protocol: getSocketLocationFromProtocol().protocol,
-    port: getSocketLocationFromProtocol().port
+    port: getSocketLocationFromProtocol().port,
+    streamMode: configuration.recordBroadcast ? 'record' : 'live'
   };
 
   function displayServerAddress (serverAddress, proxyAddress) 
@@ -140,30 +141,30 @@
     var host = jsonResponse.serverAddress;
     var app = jsonResponse.scope;
     var name = jsonResponse.name;
-	
-	if (tokenCheckBox.checked == true)
-	{
-		console.log("Token required. Creating auth object");
-		configuration.connectionParams = {
-		  host: host,
-		  app: app,
-		  username: usernameField.value,
-		  password: passwordField.value,
-		  token: tokenField.value
-		};
-	}
-	else
-	{
-		console.log("Token not required. Creating auth object");
-		configuration.connectionParams = {
-		  host: host,
-		  app: app,
-		  username: usernameField.value,
-		  password: passwordField.value
-		};
-	}
-	
-	
+  
+  if (tokenCheckBox.checked == true)
+  {
+    console.log("Token required. Creating auth object");
+    configuration.connectionParams = {
+      host: host,
+      app: app,
+      username: usernameField.value,
+      password: passwordField.value,
+      token: tokenField.value
+    };
+  }
+  else
+  {
+    console.log("Token not required. Creating auth object");
+    configuration.connectionParams = {
+      host: host,
+      app: app,
+      username: usernameField.value,
+      password: passwordField.value
+    };
+  }
+  
+  
     var config = Object.assign({},
                     configuration,
                     defaultConfiguration,
@@ -277,7 +278,7 @@
   }
 
   function startup () {
-	 loginForm.classList.add('hidden'); 
+   loginForm.classList.add('hidden'); 
     // Kick off.
     requestOrigin(configuration)
       .then(respondToOrigin)
@@ -285,7 +286,7 @@
   }
 
   submitButton.addEventListener('click', function () {
-	if (usernameField.value === "" || passwordField.value === "")
+  if (usernameField.value === "" || passwordField.value === "")
     {
         alert("Error: Wrong username or password supplied");
     }
@@ -293,10 +294,10 @@
     {
         alert("Error: Token field cannot be empty");
     }
-	else
-	{
-		startup();
-	}
+  else
+  {
+    startup();
+  }
   });
   
   var shuttingDown = false;

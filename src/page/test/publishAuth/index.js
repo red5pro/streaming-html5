@@ -93,8 +93,11 @@
   function determinePublisher () {
 
     var config = Object.assign({},
-                   configuration,
-                   getUserMediaConfiguration());
+                  configuration,
+                  {
+                    streamMode: configuration.recordBroadcast ? 'record' : 'live'
+                  },
+                  getUserMediaConfiguration());
     var rtcConfig = Object.assign({}, config, {
                       protocol: getSocketLocationFromProtocol().protocol,
                       port: getSocketLocationFromProtocol().port,

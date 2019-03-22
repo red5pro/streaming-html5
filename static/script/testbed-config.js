@@ -102,6 +102,7 @@
       ],
       "iceTransport": "udp",
       "verboseLogging": true,
+      "recordBroadcast": false,
       "streamManagerAPI": "3.1",
       "streamManagerAccessToken": "xyz123",
       "muteOnAutoplayRestriction": true,
