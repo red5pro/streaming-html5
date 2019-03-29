@@ -95,8 +95,11 @@
   function determinePublisher () {
 
     var config = Object.assign({},
-                   configuration,
-                   getUserMediaConfiguration());
+                    configuration,
+                    {
+                      streamMode: configuration.recordBroadcast ? 'record' : 'live'
+                    },
+                    getUserMediaConfiguration());
     var rtcConfig = Object.assign({}, config, {
                       protocol: getSocketLocationFromProtocol().protocol,
                       port: getSocketLocationFromProtocol().port,
@@ -167,8 +170,8 @@
   }
 
   submitButton.addEventListener('click', function () {
-	  
-	if (usernameField.value === "" || passwordField.value === "")
+    
+  if (usernameField.value === "" || passwordField.value === "")
     {
         alert("Error: Wrong username or password supplied");
     }
@@ -176,39 +179,46 @@
     {
         alert("Error: Token field cannot be empty");
     }
-	else
-	{
-		if (tokenCheckBox.checked == true)
-		{
-			console.log("Token required. Creating auth object");
-			configuration.connectionParams = {
-			  username: usernameField.value,
-			  password: passwordField.value,
-			  token: tokenField.value
-			};
-		}
-		else
-		{
-			console.log("Token not required. Creating auth object");
-			configuration.connectionParams = {
-			  username: usernameField.value,
-			  password: passwordField.value
-			};
-		}
-		
-		start();
-	}
+  else
+  {
+    if (tokenCheckBox.checked == true)
+    {
+      console.log("Token required. Creating auth object");
+      configuration.connectionParams = {
+        username: usernameField.value,
+        password: passwordField.value,
+        token: tokenField.value
+      };
+    }
+    else
+    {
+      console.log("Token not required. Creating auth object");
+      configuration.connectionParams = {
+        username: usernameField.value,
+        password: passwordField.value
+      };
+    }
+    
+    start();
+  }
     
   });
 
-  window.addEventListener('beforeunload', function() {
+  var shuttingDown = false;
+  function shutdown() {
+    if (shuttingDown) return;
+    shuttingDown = true;
     function clearRefs () {
-      targetPublisher.off('*', onPublisherEvent);
+      if (targetPublisher) {
+        targetPublisher.off('*', onPublisherEvent);
+      }
       targetPublisher = undefined;
     }
     unpublish().then(clearRefs).catch(clearRefs);
     window.untrackBitrate();
-  });
+  }
+  window.addEventListener('pagehide', shutdown);
+  window.addEventListener('beforeunload', shutdown);
 
 })(this, document, window.red5prosdk);
 

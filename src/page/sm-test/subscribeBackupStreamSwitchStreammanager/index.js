@@ -163,6 +163,7 @@
             document.getElementById(replacement.id).parentNode.classList.remove('hidden');
             document.getElementById(replacement.id).parentNode.dataset.activeVideo = replacement.id;
             replacement.isActive = true;
+            window.exposeSubscriberGlobally(replacement.subscriber);
             replacement.subscriber.play();
             replacement.subscriber.disableStandby();
             var options = replacement.subscriber._options;
@@ -218,6 +219,9 @@
       new red5prosdk.RTCSubscriber()
         .init(config)
         .then(function (subscriber) {
+          if (window.exposeSubscriberGlobally) {
+            window.exposeSubscriberGlobally(subscriber);
+          }
           return subscriber.subscribe();
         })
         .then(function (subscriber) {

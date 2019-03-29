@@ -61,7 +61,7 @@
       : {protocol: 'wss', port: serverSettings.wssport};
   }
 
-  // Base configuration to extend in ptoviding specific tech failover configurations.
+  // Base configuration to extend in providing specific tech failover configurations.
   var defaultConfiguration = (function(useVideo, useAudio) {
     var c = {
       protocol: getSocketLocationFromProtocol().protocol,
@@ -88,6 +88,9 @@
   }
   function onSubscribeSuccess (subscriber) {
     console.log('[Red5ProSubsriber] Subscribe Complete.');
+    if (window.exposeSubscriberGlobally) {
+      window.exposeSubscriberGlobally(subscriber);
+    }
     if (subscriber.getType().toLowerCase() === 'rtc') {
       try {
         window.trackBitrate(subscriber.getPeerConnection(), onBitrateUpdate, onResolutionUpdate, true);
@@ -200,7 +203,10 @@
     });
 
   // Clean up.
-  window.addEventListener('beforeunload', function() {
+  var shuttingDown = false;
+  function shutdown() {
+    if (shuttingDown) return;
+    shuttingDown = true;
     function clearRefs () {
       if (targetSubscriber) {
         targetSubscriber.off('*', onSubscriberEvent);
@@ -209,7 +215,9 @@
     }
     unsubscribe().then(clearRefs).catch(clearRefs);
     window.untrackBitrate();
-  });
+  }
+  window.addEventListener('pagehide', shutdown);
+  window.addEventListener('beforeunload', shutdown);
 
 })(this, document, window.red5prosdk);
 
