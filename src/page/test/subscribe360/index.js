@@ -83,6 +83,13 @@
       console.log('[Red5ProSubscriber] ' + event.type + '.');
       if (event.type === 'Subscribe.Start') {
         add360VideoView();
+      } else if (event.type === 'Subscribe.FullScreen.Change') {
+        var canvas = document.getElementById('canvas-container');
+        if (event.data) {
+          canvas.classList.add('red5pro-media-container-full-screen')
+        } else {
+          canvas.classList.remove('red5pro-media-container-full-screen')
+        }
       }
       updateStatusFromEvent(event);
     }
