@@ -36,8 +36,10 @@
   var statisticsField = document.getElementById('statistics-field');
   var cameraSelect = document.getElementById('camera-select');
   var swapButton = document.getElementById('swap-button');
+  var screenButton = document.getElementById('screen-button');
 
   swapButton.addEventListener('click', swapCamera);
+  screenButton.addEventListener('click', shareScreen);
 
   var SELECT_DEFAULT = 'Select a camera...';
   var deviceList;
@@ -63,7 +65,7 @@
         console.error('Could not access camera devices: ' + error);
       });
   })(cameraSelect);
-
+  /*
   function getSelectedIndexFromTrack (track) {
     var i = deviceList.length;
     while (--i > -1) {
@@ -75,6 +77,25 @@
     if (i > -1) {
       cameraSelect.selectedIndex = i;
     }
+  }
+  */
+
+  function shareScreen () {
+    navigator.mediaDevices.getDisplayMedia()
+      .then(function (stream) {
+        console.log(stream);
+        var ms = targetPublisher.getMediaStream();
+        console.log(ms);
+        ms.addTrack(stream.getVideoTracks()[0]);
+        console.log(ms);
+        return targetPublisher.publish();
+      })
+      .then(function () {
+        onPublishSuccess(targetPublisher);
+      })
+      .catch(function (error) {
+        console.error(error);
+      });
   }
 
   var protocol = serverSettings.protocol;
@@ -192,10 +213,11 @@
       streamTitle.innerText = configuration.stream1;
       targetPublisher = publisherImpl;
       targetPublisher.on('*', onPublisherEvent);
-      return targetPublisher.publish();
+      //      return targetPublisher.publish();
+      return targetPublisher.preview();
     })
     .then(function () {
-      onPublishSuccess(targetPublisher);
+      //      onPublishSuccess(targetPublisher);
     })
     .catch(function (error) {
       var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
