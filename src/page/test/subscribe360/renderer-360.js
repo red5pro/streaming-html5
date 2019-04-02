@@ -10,8 +10,8 @@
     return function (event) {
       event.preventDefault();
       mouseIsDown = true;
-      mouseX = event.clientX;
-      mouseY = event.clientY;
+      mouseX = event.targetTouches ? event.targetTouches[0].clientX : event.clientX;
+      mouseY = event.targetTouches ? event.targetTouches[0].clientY : event.clientY;
 
       if (!window.PointerEvent) {
         // Add Mouse Listeners
@@ -24,11 +24,18 @@
     return function (event) {
       event.preventDefault();
       if (!mouseIsDown) return;
-      
-      var deltaX = event.clientX - mouseX,
-          deltaY = event.clientY - mouseY;
-      mouseX = event.clientX;
-      mouseY = event.clientY;
+
+      var x = event.clientX;
+      var y = event.clientY;
+      if (event.targetTouches) {
+        x = event.targetTouches[0].clientX;
+        y = event.targetTouches[0].clientY;
+      }
+
+      var deltaX = x - mouseX,
+          deltaY = y - mouseY;
+      mouseX = x;
+      mouseY = y;
       renderer.rotateScene.call(renderer, -deltaX, -deltaY);
     }
   }
