@@ -185,6 +185,7 @@
   function setScene (canvas, video) {
     renderer360 = new Renderer360(canvas, video)
       .setUp()
+      .addPanGesture()
       .start();
   }
 
