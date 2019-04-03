@@ -1,10 +1,38 @@
 // gratiously adopted from https://github.com/gbentaieb/simple360Player/blob/master/360-player.js
-(function (window, THREE) {
+(function (window, THREE, GyroNorm) {
   'use strict';
 
   var mouseIsDown = false;
   var mouseX = 0;
   var mouseY = 0;
+  var lastGamma = 0;
+  var lastBeta = 0;
+
+  var gn = new GyroNorm();
+  gn.init({frequency:200})
+    .then(function () {
+      // hooray!
+    })
+    .catch(function (error) {
+      console.warn('[Use of GryoNorm unsupported] :: ' + error);
+      gn = null;
+    });
+
+  var average = 0;
+  var smooth = 0.2;
+  function generateGyroscopeHandler (renderer) {
+    return function (data) {
+      var currentGamma = data.do.gamma
+      var currentBeta = data.do.beta - 90;
+      var deltaX = currentGamma - lastGamma;
+      var deltaY = currentBeta - lastBeta;
+      var isRotated = window.innerHeight < window.innerWidth
+      average = (currentGamma * smooth) + (average * (1.0 - smooth))
+      renderer.rotateScene.call(renderer, isRotated ? (-deltaY * 15) : (-deltaX * 15), 0);// -deltaY * 10);
+      lastGamma = currentGamma;
+      lastBeta = currentBeta;
+    }
+  }
 
   function generatePanDownHandler (renderer) { // eslint-disable-line no-unused-vars
     return function (event) {
@@ -59,7 +87,7 @@
 
   Renderer360.prototype.setUp = function () {
     this.scene = new THREE.Scene();
-    this.camera = new THREE.PerspectiveCamera(75, this.canvas.clientWidth / this.canvas.clientHeight, 1, 1000);
+    this.camera = new THREE.PerspectiveCamera(60, this.canvas.clientWidth / this.canvas.clientHeight, 1, 100);
     this.renderer = new THREE.WebGLRenderer({canvas: this.canvas});
     this.renderer.setSize(this.canvas.clientWidth, this.canvas.clientHeight, false);
 
@@ -119,6 +147,13 @@
     return this;
   }
 
+  Renderer360.prototype.addGyroGesture = function () {
+    if (gn) {
+      gn.start(generateGyroscopeHandler(this));
+    }
+    return this;
+  }
+
   window.Renderer360 = Renderer360;
 
-})(window, window.THREE);
+})(window, window.THREE, window.GyroNorm);
