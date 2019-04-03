@@ -114,7 +114,7 @@
     }
   }
 
-  Renderer360.prototype.touchUpHandler = function (event) {
+  Renderer360.prototype.touchDownHandler = function (event) {
     event.preventDefault();
     mouseIsDown = true;
     mouseX = event.targetTouches ? event.targetTouches[0].clientX : event.clientX;
@@ -160,11 +160,11 @@
 
   Renderer360.prototype.addPanGesture = function () {
     if (window.PointerEvent) {
-      this.canvas.addEventListener('pointerdown', this.touchUpHandler, true);
+      this.canvas.addEventListener('pointerdown', this.touchDownHandler, true);
       this.canvas.addEventListener('pointermove', this.touchMoveHandler, true);
       this.canvas.addEventListener('pointerup', this.touchUpHandler, true);
     } else {
-      this.canvas.addEventListener('touchstart', this.touchUpHandler, true);
+      this.canvas.addEventListener('touchstart', this.touchDownHandler, true);
       this.canvas.addEventListener('touchmove', this.touchMoveHandler, true);
       this.canvas.addEventListener('touchend', this.touchUpHandler, true);
 
