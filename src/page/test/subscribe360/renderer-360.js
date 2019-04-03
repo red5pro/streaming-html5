@@ -1,5 +1,5 @@
 // gratiously adopted from https://github.com/gbentaieb/simple360Player/blob/master/360-player.js
-(function (window, THREE, GyroNorm) {
+(function (window, THREE) {
   'use strict';
 
   var mouseIsDown = false;
@@ -8,69 +8,35 @@
   var lastGamma = 0;
   var lastBeta = 0;
 
-  var gn = new GyroNorm();
-  gn.init({frequency:200})
-    .then(function () {
-      // hooray!
-    })
-    .catch(function (error) {
-      console.warn('[Use of GryoNorm unsupported] :: ' + error);
-      gn = null;
-    });
-
   var average = 0;
   var smooth = 0.2;
+  function clampOrientation (value) {
+    if (value > 90) {
+      value = 90;
+    } else if (value < -90) {
+      value = -90;
+    }
+    return value;
+  }
   function generateGyroscopeHandler (renderer) {
-    return function (data) {
-      var currentGamma = data.do.gamma
-      var currentBeta = data.do.beta - 90;
+    return function (event) {
+      var currentGamma = clampOrientation(event.gamma);
+      var currentBeta = clampOrientation(event.beta);
       var deltaX = currentGamma - lastGamma;
       var deltaY = currentBeta - lastBeta;
-      var isRotated = window.innerHeight < window.innerWidth
+      var w = window.innerWidth;
+      var h = window.innerHeight;
+      var isRotated = h < w;
+      var vDims = renderer.getVideoDimensions();
+      var cDims = renderer.getCanvasDimensions();
+      var wPerc = (vDims.width - cDims.width) / 180;
+      var hPerc = (vDims.height - cDims.height) / 180;
       average = (currentGamma * smooth) + (average * (1.0 - smooth))
-      renderer.rotateScene.call(renderer, isRotated ? (-deltaY * 15) : (-deltaX * 15), 0);// -deltaY * 10);
+      var dx = isRotated ? (-deltaY * wPerc) : (-deltaX * wPerc);
+      var dy = isRotated ? (-deltaX * hPerc) : (-deltaY * hPerc)
+      renderer.rotateScene.call(renderer, dx, dy);
       lastGamma = currentGamma;
       lastBeta = currentBeta;
-    }
-  }
-
-  function generatePanDownHandler (renderer) { // eslint-disable-line no-unused-vars
-    return function (event) {
-      event.preventDefault();
-      mouseIsDown = true;
-      mouseX = event.targetTouches ? event.targetTouches[0].clientX : event.clientX;
-      mouseY = event.targetTouches ? event.targetTouches[0].clientY : event.clientY;
-
-      if (!window.PointerEvent) {
-        // Add Mouse Listeners
-        document.addEventListener('mousemove', generatePanMoveHandler(renderer), true);
-        document.addEventListener('mouseup', generatePanUpHandler(renderer), true);
-      }
-    }
-  }
-  function generatePanMoveHandler (renderer) {
-    return function (event) {
-      event.preventDefault();
-      if (!mouseIsDown) return;
-
-      var x = event.clientX;
-      var y = event.clientY;
-      if (event.targetTouches) {
-        x = event.targetTouches[0].clientX;
-        y = event.targetTouches[0].clientY;
-      }
-
-      var deltaX = x - mouseX,
-          deltaY = y - mouseY;
-      mouseX = x;
-      mouseY = y;
-      renderer.rotateScene.call(renderer, -deltaX, -deltaY);
-    }
-  }
-  function generatePanUpHandler (renderer) { // eslint-disable-line no-unused-vars
-    return function (event) {
-      event.preventDefault();
-      mouseIsDown = false;
     }
   }
 
@@ -83,7 +49,24 @@
     this.sphere = undefined;
     this.renderer = undefined;
     this.render = this.render.bind(this);
+    this.touchDownHandler = this.touchDownHandler.bind(this);
+    this.touchMoveHandler = this.touchMoveHandler.bind(this);
+    this.touchUpHandler = this.touchUpHandler.bind(this);
   };
+
+  Renderer360.prototype.getCanvasDimensions = function () {
+    return {
+      width: this.canvas.clientWidth,
+      height: this.canvas.clientHeight
+    };
+  }
+
+  Renderer360.prototype.getVideoDimensions = function () {
+    return {
+      width: this.video.videoWidth,
+      height: this.video.videoHeight
+    };
+  }
 
   Renderer360.prototype.setUp = function () {
     this.scene = new THREE.Scene();
@@ -131,29 +114,73 @@
     }
   }
 
+  Renderer360.prototype.touchUpHandler = function (event) {
+    event.preventDefault();
+    mouseIsDown = true;
+    mouseX = event.targetTouches ? event.targetTouches[0].clientX : event.clientX;
+    mouseY = event.targetTouches ? event.targetTouches[0].clientY : event.clientY;
+
+    if (!window.PointerEvent) {
+      // Add Mouse Listeners
+      document.addEventListener('mousemove', this.touchMoveHandler, true);
+      document.addEventListener('mouseup', this.touchUpHandler, true);
+    } else {
+      event.target.setPointerCapture(event.pointerId);
+    }
+  }
+
+  Renderer360.prototype.touchMoveHandler = function () {
+    event.preventDefault();
+    if (!mouseIsDown) return;
+
+    var x = event.clientX;
+    var y = event.clientY;
+    if (event.targetTouches) {
+      x = event.targetTouches[0].clientX;
+      y = event.targetTouches[0].clientY;
+    }
+
+    var deltaX = x - mouseX;
+    var deltaY = y - mouseY;
+    mouseX = x;
+    mouseY = y;
+    this.rotateScene.call(this, -deltaX, -deltaY);
+  }
+
+  Renderer360.prototype.touchUpHandler =  function () {
+    event.preventDefault();
+    mouseIsDown = false;
+    if (!window.PointerEvent) {
+      document.removeEventListener('mousemove', this.touchMoveHandler);
+      document.removeEventListener('mouseup', this.touchUpHandler);
+    } else {
+      event.target.releasePointerCapture(event.pointerId);
+    }
+  }
+
   Renderer360.prototype.addPanGesture = function () {
     if (window.PointerEvent) {
-      this.canvas.addEventListener('pointerdown', generatePanDownHandler(this), true);
-      this.canvas.addEventListener('pointermove', generatePanMoveHandler(this), true);
-      this.canvas.addEventListener('pointerup', generatePanUpHandler(this), true);
+      this.canvas.addEventListener('pointerdown', this.touchUpHandler, true);
+      this.canvas.addEventListener('pointermove', this.touchMoveHandler, true);
+      this.canvas.addEventListener('pointerup', this.touchUpHandler, true);
     } else {
-      this.canvas.addEventListener('touchstart', generatePanDownHandler(this), true);
-      this.canvas.addEventListener('touchmove', generatePanMoveHandler(this), true);
-      this.canvas.addEventListener('touchend', generatePanUpHandler(this), true);
+      this.canvas.addEventListener('touchstart', this.touchUpHandler, true);
+      this.canvas.addEventListener('touchmove', this.touchMoveHandler, true);
+      this.canvas.addEventListener('touchend', this.touchUpHandler, true);
 
-      this.canvas.addEventListener('mousedown', generatePanDownHandler(this), true);
+      this.canvas.addEventListener('mousedown', this.touchDownHandler, true);
 
     }
     return this;
   }
 
   Renderer360.prototype.addGyroGesture = function () {
-    if (gn) {
-      gn.start(generateGyroscopeHandler(this));
+    if (window.DeviceOrientationEvent) {
+      window.addEventListener('deviceorientation', generateGyroscopeHandler(this), true);
     }
     return this;
   }
 
   window.Renderer360 = Renderer360;
 
-})(window, window.THREE, window.GyroNorm);
+})(window, window.THREE);
