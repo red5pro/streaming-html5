@@ -192,8 +192,13 @@
   function setScene (canvas, video) {
     renderer360 = new Renderer360(canvas, video)
       .setUp()
-      .addPanGesture()
-      .start();
+      .addPanGesture();
+
+    if (window.query('gyro')) {
+      renderer360.addGyroGesture();
+    }
+
+    renderer360.start();
   }
 
   // Define tech spefific configurations for each failover item.
