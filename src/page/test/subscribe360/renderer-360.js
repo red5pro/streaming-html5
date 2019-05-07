@@ -10,6 +10,10 @@
 
   var average = 0;
   var smooth = 0.2;
+  var fov = window.query('fov') ? Number(window.query('fov')) : 60;
+  var near = window.query('near') ? Number(window.query('near')) : 1;
+  var far = window.query('far') ? Number(window.query('far')) : 100;
+  var autopan = window.query('autopan') ? Number(window.query('autopan')) : NaN;
   function clampOrientation (value) {
     if (value > 90) {
       value = 90;
@@ -48,6 +52,7 @@
     this.camera = undefined;
     this.sphere = undefined;
     this.renderer = undefined;
+    this.autopanInterval = 0;
     this.render = this.render.bind(this);
     this.touchDownHandler = this.touchDownHandler.bind(this);
     this.touchMoveHandler = this.touchMoveHandler.bind(this);
@@ -70,7 +75,7 @@
 
   Renderer360.prototype.setUp = function () {
     this.scene = new THREE.Scene();
-    this.camera = new THREE.PerspectiveCamera(60, this.canvas.clientWidth / this.canvas.clientHeight, 1, 100);
+    this.camera = new THREE.PerspectiveCamera(fov, this.video.videoWidth / this.video.videoHeight, near, far);
     this.renderer = new THREE.WebGLRenderer({canvas: this.canvas});
     this.renderer.setSize(this.canvas.clientWidth, this.canvas.clientHeight, false);
 
@@ -102,6 +107,17 @@
     return this;
   }
 
+  Renderer360.prototype.startAutopan = function (value) {
+    var self = this;
+    this.autopanInterval = setInterval(function () {
+      self.rotateScene.call(self, -(value), 0);
+    }, 50);
+  }
+
+  Renderer360.prototype.stopAutopan = function () {
+    clearInterval(this.autopanInterval);
+  }
+
   Renderer360.prototype.rotateScene = function (deltaX, deltaY) {
     this.sphere.rotation.y += deltaX / 300;
     this.sphere.rotation.x += deltaY / 300;
@@ -119,6 +135,10 @@
     mouseIsDown = true;
     mouseX = event.targetTouches ? event.targetTouches[0].clientX : event.clientX;
     mouseY = event.targetTouches ? event.targetTouches[0].clientY : event.clientY;
+
+    if (!isNaN(autopan)) {
+      this.stopAutopan(autopan);
+    }
 
     if (!window.PointerEvent) {
       // Add Mouse Listeners
@@ -150,6 +170,10 @@
   Renderer360.prototype.touchUpHandler =  function () {
     event.preventDefault();
     mouseIsDown = false;
+    if (!isNaN(autopan)) {
+      this.startAutopan(autopan);
+    }
+
     if (!window.PointerEvent) {
       document.removeEventListener('mousemove', this.touchMoveHandler);
       document.removeEventListener('mouseup', this.touchUpHandler);
@@ -169,7 +193,9 @@
       this.canvas.addEventListener('touchend', this.touchUpHandler, true);
 
       this.canvas.addEventListener('mousedown', this.touchDownHandler, true);
-
+    }
+    if (!isNaN(autopan)) {
+      this.startAutopan(autopan)
     }
     return this;
   }
