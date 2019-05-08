@@ -191,6 +191,10 @@ To define the **Host** with the server instance's IP, click the _Host_ field f t
 | :-----
 | *An example of utilizing the screen sharing capabilities of* **Chrome** *and* **Firefox**. *For use with Publish Screen Share example.*
 
+| **[Two Streams](src/page/test/subscribeTwoStreams)**
+| :-----
+| *An example that subscribes to two streams, using the `Stream1 Name` and `Stream 2 Name` variables from the settings page.*
+
 | **[Video Mute](src/page/test/subscribeVideoMute)**
 | :-----
 | *Example to demonstrate subscribing to a broadcast which has its video stream "muted".*
