@@ -33,6 +33,7 @@
   var bandwidthAudioField = document.getElementById('audio-bitrate-field');
   var bandwidthVideoField = document.getElementById('video-bitrate-field');
   var keyFramerateField = document.getElementById('key-framerate-field');
+  var cameraSelect = document.getElementById('camera-select');
   var cameraWidthField = document.getElementById('camera-width-field');
   var cameraHeightField = document.getElementById('camera-height-field');
   var framerateField =document.getElementById('framerate-field');
@@ -98,6 +99,7 @@
       mediaConstraints: {
         audio: configuration.useAudio ? configuration.mediaConstraints.audio : false,
         video: configuration.useVideo ? {
+          deviceId: { exact: cameraSelect.value },
           width: { exact: parseInt(cameraWidthField.value) },
           height: { exact: parseInt(cameraHeightField.value) },
           framerate: { exact: parseInt(framerateField.value) }
@@ -177,6 +179,25 @@
       publishButton.setAttribute('disabled', 'disabled');
     }
   }
+
+  function fillCameraSelect () {
+    navigator.mediaDevices.enumerateDevices()
+      .then(function (devices) {
+        var videoCameras = devices.filter(function (item) {
+          return item.kind === 'videoinput';
+        })
+        var cameras = videoCameras;
+        var options = cameras.map(function (camera, index) {
+          return '<option value="' + camera.deviceId + '"' + (index === 0 ? ' selected' : '' ) + '>' + (camera.label || 'camera ' + index) + '</option>';
+        });
+        cameraSelect.innerHTML = options.join(' ');
+      })
+      .catch(function (error) {
+        console.error('Could not access camera devices: ' + error);
+      });
+  }
+  // Fill in Camera options.
+  fillCameraSelect()
 
   publishButton.addEventListener('click', function () {
     if (targetPublisher === undefined) {
