@@ -24,7 +24,33 @@
       </div>
       {{> test-info testTitle='Publish Stream Manager Proxy Test'}}
       <div class="clearfix centered ice-background" style="padding-bottom: 24px; border-top: 1px solid #ddd;">
-        {{> transcoder-form id="broadcast-settings" category="Broadcast Settings:" width="640" height="360" bitrate="512000"}}
+        <div id="broadcast-settings" style="display: inline-block; padding: 0 16px;">
+          <h2>Broadcast Settings:</h2>
+          <p style="inline; margin: 16px 0">
+            <p style="display: inline-block; width: 60px; text-align: right">Camera: </p>
+            <select id="camera-select"
+                    class="bitrate-field"
+                    style="min-width: 70px"></select>
+          </p>
+          <p style="inline; margin: 16px 0">
+            <p style="display: inline-block; width: 60px; text-align: right">Bitrate: </p>
+            <input class="bitrate-field"
+              style="max-width: 60px"
+              value="512000">
+          </p>
+          <p style="inline; margin: 16px 0">
+            <p style="display: inline-block; width: 60px; text-align: right">Width:</p>
+            <input class="width-field"
+              style="max-width: 60px"
+              value="640">
+          </p>
+          <p style="margin: 16px 0">
+            <p style="display: inline-block; width: 60px; text-align: right">Height:</p>
+            <input class="height-field"
+              style="max-width: 60px"
+              value="360">
+          </p>
+        </div>
         <p style="padding-top: 20px;">
           <button id="submit-button">Start Publishing</button>
         </p>
