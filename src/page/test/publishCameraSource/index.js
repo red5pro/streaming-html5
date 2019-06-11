@@ -199,6 +199,7 @@
             track.stop();
           }
         }
+        document.getElementById('red5pro-publisher').srcObject = null;
         targetPublisher.unpublish()
           .then(function () {
             onUnpublishSuccess();
