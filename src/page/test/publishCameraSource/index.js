@@ -189,6 +189,17 @@
   function unpublish () {
     return new Promise(function (resolve, reject) {
       if (targetPublisher) {
+        var stream = targetPublisher.getMediaStream();
+        if (stream) {
+          var i;
+          var track;
+          var tracks = stream.getTracks();
+          for (i = 0; i < tracks.length; i++) {
+            track = tracks[i];
+            track.stop();
+          }
+        }
+        document.getElementById('red5pro-publisher').srcObject = null;
         targetPublisher.unpublish()
           .then(function () {
             onUnpublishSuccess();
