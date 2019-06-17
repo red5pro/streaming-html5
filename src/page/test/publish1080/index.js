@@ -41,6 +41,7 @@
   var defaultConfiguration = {
     protocol: getSocketLocationFromProtocol().protocol,
     port: getSocketLocationFromProtocol().port,
+    streamMode: configuration.recordBroadcast ? 'record' : 'live',
     bandwidth: {
       video: 2500
     }

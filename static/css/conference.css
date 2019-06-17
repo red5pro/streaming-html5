@@ -19,9 +19,13 @@
 .video-holder {
   width: 320px;
   height: 240px;
+}
+/*
+.video-holder {
   background:url(../../css/assets/red5pro_logo.png) no-repeat center center;
   background-size: contain;
 }
+*/
 .publisher-container, .subscriber-container {
   width: 320px;
   background-color: #333;

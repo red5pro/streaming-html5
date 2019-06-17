@@ -5,6 +5,22 @@
     {{> header-scripts}}
     {{> header-stylesheets}}
     <link rel="stylesheet" href="../../css/conference.css">
+    <style>
+      hr {
+        margin: 0;
+      }
+      .device-label {
+        width: 45%;
+        text-align: right;
+        display: inline-block;
+      }
+      .device-control {
+        max-width: 142px;
+      }
+      .device-info {
+        font-size: 0.7em;
+      }
+    </style>
     <script src="../../script/subscription-status.js"></script>
   </head>
   <body>
@@ -32,7 +48,20 @@
             <label for="streamname-field">Stream Name:</label>
             <input id="streamname-field" name="streamname-field">
           </p>
-          <p class="centered">
+          <hr />
+          <p style="padding-bottom: 0em;">
+            <label class="device-label" for="camera-select">Camera:</label>
+            <select class="control device-control" name="camera-select" id="camera-select"></select>
+          </p>
+          <p  style="padding-bottom: 0.8em;">
+            <label class="device-label" for="microphone-select">Microphone:</label>
+            <select class="control device-control" name="microphone-select" id="microphone-select"></select>
+          </p>
+          <p id="publisher-mute-notice" class="centered remove-on-broadcast">
+            <span class="device-info">Video and Audio can be turned off after publish has started.</span>
+          </p>
+          <hr />
+          <p id="publisher-mute-controls" class="centered hidden">
             <span id="publisher-name-field" class="hidden"></span>
             <label for="video-check">Video: </label>
             <input type="checkbox" id="video-check" name="video-check" checked>
@@ -55,6 +84,8 @@
       </div>
     </div>
     {{> body-scripts}}
+    <script src="conference-subscriber.js"></script>
+    <script src="device-selector-util.js"></script>
     <script src="index.js"></script>
   </body>
 </html>

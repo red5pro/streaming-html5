@@ -105,10 +105,6 @@ To define the **Host** with the server instance's IP, click the _Host_ field f t
 | :-----
 | *An example of utilizing the screen sharing capabilities of* **Chrome** *and* **Firefox**.<br> For use with Subscribe Screen Share example.
 
-| **[Two-Way](src/page/test/twoWay)**
-| :-----
-| *Demonstrates simultaneously publishing while subscribing - allowing a conversation. Includes stream detection and auto-connection.*
-
 ### Publishing - Stream Manager Examples
 
 | **[Stream Manager](src/page/sm-test/publishStreamManager)**
@@ -139,6 +135,19 @@ To define the **Host** with the server instance's IP, click the _Host_ field f t
 | :-----
 | *The Two-Way example through a Stream Manager - including use of a proxy. Includes stream detection and auto-connection.*
 
+### Multi
+
+| **[Two-Way](src/page/test/twoWay)**
+| :-----
+| *Demonstrates simultaneously publishing while subscribing - allowing a conversation. Includes stream detection and auto-connection.*
+
+| **[Conference](src/page/test/conference)**
+| :-----
+| *Demonstrates multi-party communication using Red5 Pro. It also demonstrates using Shared Objects as notifications to recognize the addition and removal of parties broadcasting.*
+
+| **[Shared Object (websockets only)](src/page/test/sharedObject)**
+| :-----
+| *Demonstrates the use of Shared Objects through a WebSocket proxy from the Red5 Pro HTML SDK.*
 
 ### Subscribing
 
@@ -181,6 +190,14 @@ To define the **Host** with the server instance's IP, click the _Host_ field f t
 | **[Screen Share](src/page/test/subscribeScreenShare)**
 | :-----
 | *An example of utilizing the screen sharing capabilities of* **Chrome** *and* **Firefox**. *For use with Publish Screen Share example.*
+
+| **[Two Streams](src/page/test/subscribeTwoStreams)**
+| :-----
+| *An example that subscribes to two streams, using the `Stream1 Name` and `Stream 2 Name` variables from the settings page.*
+
+| **[Video Mute](src/page/test/subscribeVideoMute)**
+| :-----
+| *Example to demonstrate subscribing to a broadcast which has its video stream "muted".*
 
 ### Subscribing - Stream Manager Examples
 

@@ -125,6 +125,7 @@
                     protocol: 'rtmp',
                     port: serverSettings.rtmpport,
                     streamName: config.stream1,
+                    streamMode: configuration.recordBroadcast ? 'record' : 'live',
                     swf: '../../lib/red5pro/red5pro-publisher.swf',
                     swfobjectURL: '../../lib/swfobject/swfobject.js',
                     productInstallURL: '../../lib/swfobject/playerProductInstall.swf',
