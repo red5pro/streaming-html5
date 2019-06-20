@@ -92,6 +92,9 @@
       window.exposeSubscriberGlobally(subscriber);
     }
     if (subscriber.getType().toLowerCase() === 'rtc') {
+      if (window.red5proMonitorGetStats) {
+        window.red5proMonitorGetStats(subscriber.getOptions().subscriptionId, subscriber.getPeerConnection());
+      }
       try {
         window.trackBitrate(subscriber.getPeerConnection(), onBitrateUpdate, onResolutionUpdate, true);
       }
