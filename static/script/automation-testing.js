@@ -20,7 +20,8 @@
     var i = pending.length;
     while (--i > -1) {
       var id = pending[i];
-      monitorGetStats(id, pendingMonitors[id]);
+      var obj =  pendingMonitors[id];
+      monitorGetStats(id, obj.name, obj.connection);
       delete pendingMonitors[id];
     }
     pendingMonitors = undefined;
@@ -92,12 +93,13 @@
     return payload;
   };
 
-  var postResults = function (subscriberId, result) {
+  var postResults = function (subscriberId, streamName, result) {
     var results = result.results;
     var data = gatherDataFromResults(results);
     data = Object.assign(data, {
       id: subscriberId,
-      event: 'clientStats'
+      event: 'clientStats',
+      streamName: streamName
     });
     if (typeof window.adapter !== 'undefined') {
       data = Object.assign(data, window.adapter.browserDetails);
@@ -122,22 +124,25 @@
       });
   };
 
-  var startMonitor = function (id, connection) {
+  var startMonitor = function (id, name, connection) {
     window.getStats(connection, function (result) {
       if (monitors.indexOf(id) <= -1) {
         return;
       }
-      postResults(id, result);
+      postResults(id, name, result);
       console.log(result);
     }, sampleTime);
   };
-  var monitorGetStats = function (id, connection) {
+  var monitorGetStats = function (id, name, connection) {
     if (!hasStatsScript) {
-      pendingMonitors[id] = connection;
+      pendingMonitors[id] = {
+        name: name,
+        connection: connection
+      };
       return;
     }
     monitors.push(id);
-    startMonitor(id, connection);
+    startMonitor(id, name, connection);
   };
   var unmonitorGetStats = function (id) {
     var index = monitors.indexOf(id);

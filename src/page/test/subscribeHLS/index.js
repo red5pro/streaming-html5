@@ -108,6 +108,9 @@
   function unsubscribe () {
     return new Promise(function(resolve, reject) {
       var subscriber = targetSubscriber
+      if (window.handleSubscriberTeardownGlobally) {
+        window.handleSubscriberTeardownGlobally(subscriber);
+      }
       subscriber.unsubscribe()
         .then(function () {
           targetSubscriber.off('*', onSubscriberEvent);
@@ -138,8 +141,8 @@
         targetSubscriber = subscriberImpl
         // Subscribe to events.
         targetSubscriber.on('*', onSubscriberEvent);
-        if (window.exposeSubscriberGlobally) {
-          window.exposeSubscriberGlobally(targetSubscriber);
+        if (window.handleSubscriberSetupGlobally) {
+          window.handleSubscriberSetupGlobally(targetSubscriber);
         }
         return targetSubscriber.subscribe()
       })

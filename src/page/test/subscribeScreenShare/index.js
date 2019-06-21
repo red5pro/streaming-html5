@@ -95,8 +95,8 @@
   }
   function onSubscribeSuccess (subscriber) {
     console.log('[Red5ProSubsriber] Subscribe Complete.');
-    if (window.exposeSubscriberGlobally) {
-      window.exposeSubscriberGlobally(subscriber);
+    if (window.handleSubscriberSetupGlobally) {
+      window.handleSubscriberSetupGlobally(subscriber);
     }
     if (subscriber.getType().toLowerCase() === 'rtc') {
       try {
@@ -129,6 +129,9 @@
   // Request to unsubscribe.
   function unsubscribe (subscriber) {
     return new Promise(function(resolve, reject) {
+      if (window.handleSubscriberTeardownGlobally) {
+        window.handleSubscriberTeardownGlobally(subscriber);
+      }
       subscriber.unsubscribe()
         .then(function () {
           targetSubscriber.off('*', onSubscriberEvent);
