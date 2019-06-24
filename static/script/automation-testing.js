@@ -85,7 +85,7 @@
         while (--j > -1) {
           key = resultKeys[j];
           if (data.indexOf(key) > -1) {
-            payload[key] = result[key];
+            payload[key] = parseInt(result[key], 10);
           }
         }
       }
@@ -105,7 +105,8 @@
       data = Object.assign(data, window.adapter.browserDetails);
     }
     console.log(JSON.stringify(data, null, 2));
-    fetch(inspectorEndpoint + '/inspector/streamapi.js', {
+    var dataJSON = encodeURIComponent(JSON.stringify(data));
+    fetch(inspectorEndpoint + '/inspector/streamapi.js?clientstats=' + dataJSON, {
         method: 'post',
         headers: {
           'Accept': 'application/json, text/plain, */*',
