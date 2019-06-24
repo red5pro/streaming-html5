@@ -113,11 +113,8 @@
         },
         body: JSON.stringify(data)
       })
-      .then(function (res) {
-        return res.json();
-      })
-      .then(function (res) {
-        console.log(res)
+      .then(function (res) { // eslint-disable-line no-unused-vars
+        // console.log(res)
       })
       .catch(function (error) {
         console.error(error);
