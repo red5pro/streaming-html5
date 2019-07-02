@@ -96,8 +96,8 @@
   function onSubscribeSuccess (subscriber) {
     console.log('[Red5ProSubsriber] Subscribe Complete.');
     establishSharedObject(subscriber);
-    if (window.exposeSubscriberGlobally) {
-      window.exposeSubscriberGlobally(subscriber);
+    if (window.handleSubscriberSetupGlobally) {
+      window.handleSubscriberSetupGlobally(subscriber);
     }
     if (subscriber.getType().toLowerCase() === 'rtc') {
       try {
@@ -183,6 +183,9 @@
       so.close();
     }
     return new Promise(function(resolve, reject) {
+      if (window.handleSubscriberTeardownGlobally) {
+        window.handleSubscriberTeardownGlobally(targetSubscriber);
+      }
       targetSubscriber.unsubscribe()
         .then(function () {
           targetSubscriber.off('*', onSubscriberEvent);

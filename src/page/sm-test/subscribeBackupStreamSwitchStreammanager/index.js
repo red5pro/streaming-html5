@@ -163,7 +163,9 @@
             document.getElementById(replacement.id).parentNode.classList.remove('hidden');
             document.getElementById(replacement.id).parentNode.dataset.activeVideo = replacement.id;
             replacement.isActive = true;
-            window.exposeSubscriberGlobally(replacement.subscriber);
+            if (window.handleSubscriberSetupGlobally) {
+              window.handleSubscriberSetupGlobally(replacement.subscriber);
+            }
             replacement.subscriber.play();
             replacement.subscriber.disableStandby();
             var options = replacement.subscriber._options;
@@ -219,8 +221,8 @@
       new red5prosdk.RTCSubscriber()
         .init(config)
         .then(function (subscriber) {
-          if (window.exposeSubscriberGlobally) {
-            window.exposeSubscriberGlobally(subscriber);
+          if (window.handleSubscriberSetupGlobally) {
+            window.handleSubscriberSetupGlobally(subscriber);
           }
           return subscriber.subscribe();
         })

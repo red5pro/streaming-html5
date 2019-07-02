@@ -41,5 +41,24 @@
       testBody.parentNode.insertBefore(node, testBody);
     }
 
+    // Handle all successful setup of subscribers here to forward on to other operations.
+    window.handleSubscriberSetupGlobally = function (subscriber) {
+      if (window.exposeSubscriberGlobally) {
+        window.exposeSubscriberGlobally(subscriber);
+      }
+      if (subscriber.getType().toLowerCase() === 'rtc') {
+        if (window.red5proMonitorGetStats) {
+          var opt = subscriber.getOptions();
+          window.red5proMonitorGetStats(opt.subscriptionId, opt.streamName, subscriber.getPeerConnection());
+        }
+      }
+    };
+    // Handle any teardown of successfully setup subscribers.
+    window.handleSubscriberTeardownGlobally = function (subscriber) {
+      if (window.red5proUnmonitorGetStats) {
+        window.red5proUnmonitorGetStats(subscriber.getOptions().subscriptionId);
+      }
+    }
+
   })(this);
 </script>

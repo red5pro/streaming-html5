@@ -118,8 +118,8 @@
   }
   function onSubscribeSuccess (subscriber) {
     console.log('[Red5ProSubsriber] Subscribe Complete.');
-    if (window.exposeSubscriberGlobally) {
-      window.exposeSubscriberGlobally(subscriber);
+    if (window.handleSubscriberSetupGlobally) {
+      window.handleSubscriberSetupGlobally(subscriber);
     }
     try {
       window.trackBitrate(subscriber.getPeerConnection(), onBitrateUpdate, onResolutionUpdate, true);
@@ -252,6 +252,9 @@
   function unsubscribe () {
     return new Promise(function(resolve, reject) {
       var subscriber = targetSubscriber
+      if (window.handleSubscriberTeardownGlobally) {
+        window.handleSubscriberTeardownGlobally(subscriber);
+      }
       subscriber.unsubscribe()
         .then(function () {
           targetSubscriber.off('*', onSubscriberEvent);
