@@ -112,7 +112,7 @@
           'Accept': 'application/json, text/plain, */*',
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(data)
+        body: JSON.stringify({clientstats: data})
       })
       .then(function (res) { // eslint-disable-line no-unused-vars
         // console.log(res)
