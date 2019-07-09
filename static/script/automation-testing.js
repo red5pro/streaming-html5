@@ -21,7 +21,7 @@
     while (--i > -1) {
       var id = pending[i];
       var obj =  pendingMonitors[id];
-      monitorGetStats(id, obj.name, obj.connection);
+      monitorGetStats(id, obj.name, obj.elementId, obj.connection);
       delete pendingMonitors[id];
     }
     pendingMonitors = undefined;
@@ -93,13 +93,14 @@
     return payload;
   };
 
-  var postResults = function (subscriberId, streamName, result) {
+  var postResults = function (subscriberId, streamName, streamTime, result) {
     var results = result.results;
     var data = gatherDataFromResults(results);
     data = Object.assign(data, {
       id: subscriberId,
       event: 'clientStats',
-      streamName: streamName
+      streamName: streamName,
+      streamTime: streamTime
     });
     if (typeof window.adapter !== 'undefined') {
       data = Object.assign(data, window.adapter.browserDetails);
@@ -122,25 +123,27 @@
       });
   };
 
-  var startMonitor = function (id, name, connection) {
+  var startMonitor = function (id, name, elementId, connection) {
     window.getStats(connection, function (result) {
       if (monitors.indexOf(id) <= -1) {
         return;
       }
-      postResults(id, name, result);
+      var streamTime = document.getElementById(elementId).currentTime*1000;
+      postResults(id, name, streamTime, result);
       console.log(result);
     }, sampleTime);
   };
-  var monitorGetStats = function (id, name, connection) {
+  var monitorGetStats = function (id, name, elementId, connection) {
     if (!hasStatsScript) {
       pendingMonitors[id] = {
         name: name,
+        elementId: elementId,
         connection: connection
       };
       return;
     }
     monitors.push(id);
-    startMonitor(id, name, connection);
+    startMonitor(id, name, elementId, connection);
   };
   var unmonitorGetStats = function (id) {
     var index = monitors.indexOf(id);

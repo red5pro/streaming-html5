@@ -49,7 +49,7 @@
       if (subscriber.getType().toLowerCase() === 'rtc') {
         if (window.red5proMonitorGetStats) {
           var opt = subscriber.getOptions();
-          window.red5proMonitorGetStats(opt.subscriptionId, opt.streamName, subscriber.getPeerConnection());
+          window.red5proMonitorGetStats(opt.subscriptionId, opt.streamName, opt.mediaElementId, subscriber.getPeerConnection());
         }
       }
     };
