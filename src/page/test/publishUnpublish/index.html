@@ -1,0 +1,38 @@
+<!doctype html>
+<html>
+  <head>
+    {{> meta title='Publish Test'}}
+    {{> header-scripts}}
+    {{> header-stylesheets}}
+        <style>
+          .controls {
+            padding: 10px;
+            background-color: #eee;
+            margin: 10px 0;
+          }
+        </style>
+  </head>
+  <body>
+    <div id="app">
+      {{> version }}
+      {{> settings-link}}
+      {{> test-info testTitle='Publish Test'}}
+      {{> status-field-publisher}}
+      {{> statistics-field}}
+      <div class="centered">
+        <video id="red5pro-publisher" controls autoplay playsinline muted></video>
+      </div>
+      <div class="centered controls">
+        <p>
+          <span id="remove-preview-control" class="hidden">
+            <input type="checkbox" name="remove-preview-check" id="remove-preview-check" checked disabled>
+            <label for="remove-preview-check" style="margin-right: 10px; font-size: 0.8em">Remove Preview on Unpublish</label>
+          </span>
+          <button id="publish-unpublish-btn" disabled>Unpublish</button>
+        </p>
+      </div>
+    </div>
+    {{> body-scripts}}
+    <script src="index.js"></script>
+  </body>
+</html>
