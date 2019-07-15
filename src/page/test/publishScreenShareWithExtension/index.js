@@ -1,5 +1,8 @@
 // Chrome & Firefox
-(function(window, document, red5prosdk) {
+// Firefox needs to be over https - no localhost support.
+// Required: https://www.webrtc-experiment.com/getScreenId/
+// @see https://medium.com/@chris_82106/implementing-webrtc-screen-sharing-in-a-web-app-late-2016-51c1a2642e4
+(function(window, document, red5prosdk, getScreenId) {
   'use strict';
 
   var serverSettings = (function() {
@@ -114,26 +117,30 @@
   }
 
   function capture (cb) {
-    var vw = parseInt(cameraWidthField.value);
-    var vh = parseInt(cameraHeightField.value);
-    var fr = parseInt(framerateField.value);
-    var config = {
-        audio: false,
-        video: {
-          width: { maxWidth: vw },
-          height: { maxHeight: vh },
-          frameRate: { maxFrameRate: fr }
-        }
-    };
-    // Edge has getDisplayMedia on navigator and not media devices?
-    var p = undefined
-    if (navigator.getDisplayMedia) {
-      p = navigator.getDisplayMedia(config)
-    } else {
-      p = navigator.mediaDevices.getDisplayMedia(config)
-    }
-    p.then(cb).catch(function (error) {
-      console.error(error);
+    getScreenId(function(error, sourceId, screen_constraints) {
+      if (error) {
+        console.error('[Red5ProPublisher] Desktop Capture Error: ' + error);
+        return;
+      }
+      navigator.mediaDevices.enumerateDevices()
+        .then(function (devices) { // eslint-disable-line no-unused-vars
+          // Can't send audio along with constraints for desktop.
+          /*
+          var device, i = devices.length;
+          while(--i > -1) {
+            device = devices[i];
+            if (device.kind.toLowerCase() === 'audioinput') {
+              screen_constraints.audio = {
+                optional: [
+                    {deviceId: device.label || 'microphone1'}
+                  ]
+                }
+              break;
+            }
+            }
+          */
+          cb(screen_constraints);
+        });
     });
   }
 
@@ -180,7 +187,6 @@
         return audioPublisher.publish();
       })
       .then(function () {
-        console.debug('[Red5ProPublisher:AUDIO] :: established.')
       })
       .catch(function (error) {
         var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
@@ -188,7 +194,11 @@
       });
   }
 
-  function setupPublisher (mediaStream) {
+  function setupPublisher (constraints) {
+
+    var vw = parseInt(cameraWidthField.value);
+    var vh = parseInt(cameraHeightField.value);
+    var fr = parseInt(framerateField.value);
 
     var config = Object.assign({},
                         configuration,
@@ -204,11 +214,37 @@
                         bandwidth: {
                           video: parseInt(bandwidthVideoField.value)
                         },
-                        keyFramerate: parseInt(keyFramerateField.value)
-                      });
+                        keyFramerate: parseInt(keyFramerateField.value),
+                        onGetUserMedia: function () {
+                          var c = Object.assign({}, constraints);
+                          if (c.video.optional) {
+                            // chrome
+                            c.video.optional.push({
+                              maxWidth: vw
+                            }, {
+                              maxHeight: vh
+                            }, {
+                              maxFrameRate: fr
+                            });
+                          }
+                          else if (c.video.mediaSource === 'window') {
+                            // moz
+                            c.video.width = {
+                              exact: vw
+                            };
+                            c.video.height = {
+                              exact: vh
+                            };
+                            c.video.frameRate = {
+                              exact: fr
+                            }
+                          }
+                          return navigator.mediaDevices.getUserMedia(c);
+                        }
+                    });
 
     new red5prosdk.RTCPublisher()
-      .initWithStream(rtcConfig, mediaStream)
+      .init(rtcConfig)
       .then(function (publisherImpl) {
         streamTitle.innerText = configuration.stream1;
         targetPublisher = publisherImpl;
@@ -254,5 +290,5 @@
   window.addEventListener('pagehide', shutdown);
   window.addEventListener('beforeunload', shutdown);
 
-})(this, document, window.red5prosdk);
+})(this, document, window.red5prosdk, window.getScreenId);
 
