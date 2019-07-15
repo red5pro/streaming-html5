@@ -31,12 +31,13 @@
 
   var updateStatusFromEvent = window.red5proHandleSubscriberEvent; // defined in src/template/partial/status-field-subscriber.hbs
   var instanceId = Math.floor(Math.random() * 0x10000).toString(16);
+  var subscriptionId = 'subscriber-' + instanceId
   var streamTitle = document.getElementById('stream-title');
   var statisticsField = document.getElementById('statistics-field');
   var sendButton = document.getElementById('send-button');
   var soField = document.getElementById('so-field');
   sendButton.addEventListener('click', function () {
-    sendMessageOnSharedObject(document.getElementById('input-field').value);
+    sendMessageOnSharedObject(subscriptionId, document.getElementById('input-field').value);
   });
   var protocol = serverSettings.protocol;
   var isSecure = protocol === 'https';
@@ -128,6 +129,24 @@
   }
 
   var hasRegistered = false;
+  var userList = undefined;
+  function findNewUsers (oldList, newList) {
+    var length = newList.length;
+    while (--length > -1) {
+      if (oldList.indexOf(newList[length]) === -1) {
+        //        appendMessage(newList[length] + " has joined the chat room.");
+      }
+    }
+  }
+  function findLostUsers (oldList, newList) {
+    var length = oldList.length;
+    while(--length > -1) {
+      if (newList.indexOf(oldList[length]) === -1) {
+        //        appendMessage(oldList[length] + " has left the chat room.");
+      }
+    }
+  }
+
   function appendMessage (message) {
     soField.value = [message, soField.value].join('\n');
   }
@@ -151,16 +170,23 @@
     so.on(red5prosdk.SharedObjectEventTypes.PROPERTY_UPDATE, function (event) {
       console.log('[Red5ProPublisher] SharedObject Property Update.');
       console.log(JSON.stringify(event.data, null, 2));
-      if (event.data.hasOwnProperty('count')) {
-        appendMessage('User count is: ' + event.data.count + '.');
+      if (event.data.hasOwnProperty('userList')) {
+        if (userList !== undefined) {
+          findNewUsers(userList, event.data.userList);
+          findLostUsers(userList, event.data.userList);
+        }
+        userList = event.data.userList;
         if (!hasRegistered) {
           hasRegistered = true;
-          so.setProperty('count', parseInt(event.data.count) + 1);
+          userList = userList.concat([subscriptionId])
+          so.setProperty('userList', userList);
+//          so.setProperty('count', parseInt(event.data.count) + 1);
         }
-      else if (!hasRegistered) {
-          hasRegistered = true;
-          so.setProperty('count', 1);
-        }
+      } else if (!hasRegistered) {
+        userList = [subscriptionId];
+        hasRegistered = true;
+//          so.setProperty('count', 1);
+        so.setProperty('userList', userList);
       }
     });
     so.on(red5prosdk.SharedObjectEventTypes.METHOD_UPDATE, function (event) {
@@ -170,9 +196,9 @@
     });
   }
 
-  function sendMessageOnSharedObject (message) {
+  function sendMessageOnSharedObject (id, message) {
     so.send('messageTransmit', {
-      user: [configuration.stream1, 'subscriber'].join(' '),
+      user: id,
       message: message
     });
   }
@@ -180,6 +206,12 @@
   // Request to unsubscribe.
   function unsubscribe () {
     if (so !== undefined) {
+      var index = userList.indexOf(subscriptionId);
+      if (index > -1) {
+        userList.splice(index, 1)
+        so.setProperty('userList', userList)
+      }
+      hasRegistered = false;
       so.close();
     }
     return new Promise(function(resolve, reject) {
@@ -206,7 +238,7 @@
   var rtcConfig = Object.assign({}, config, {
     protocol: getSocketLocationFromProtocol().protocol,
     port: getSocketLocationFromProtocol().port,
-    subscriptionId: 'subscriber-' + instanceId,
+    subscriptionId: subscriptionId,
     streamName: config.stream1
   })
 

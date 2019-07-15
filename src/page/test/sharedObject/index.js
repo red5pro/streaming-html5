@@ -29,6 +29,8 @@
   })();
   red5prosdk.setLogLevel(configuration.verboseLogging ? red5prosdk.LOG_LEVELS.TRACE : red5prosdk.LOG_LEVELS.WARN);
 
+  var subscriptionId = 'N/A';
+
   var disconnectButton = document.getElementById('disconnect-button');
   var connectButton = document.getElementById('connect-button');
   var connectField = document.getElementById('connect-field');
@@ -60,7 +62,7 @@
   }
 
   function sendMessage () {
-    sendMessageOnSharedObject(inputField.value);
+    sendMessageOnSharedObject(subscriptionId, inputField.value);
   }
 
   function enableSend () {
@@ -126,6 +128,23 @@
   }
 
   var hasRegistered = false;
+  var userList = undefined;
+  function findNewUsers (oldList, newList) {
+    var length = newList.length;
+    while (--length > -1) {
+      if (oldList.indexOf(newList[length]) === -1) {
+        //        appendMessage(newList[length] + " has joined the chat room.");
+      }
+    }
+  }
+  function findLostUsers (oldList, newList) {
+    var length = oldList.length;
+    while(--length > -1) {
+      if (newList.indexOf(oldList[length]) === -1) {
+        //        appendMessage(oldList[length] + " has left the chat room.");
+      }
+    }
+  }
   function appendMessage (message) {
     soField.value = [message, soField.value].join('\n');
   }
@@ -143,7 +162,6 @@
   function establishSharedObject () {
     disableSend();
     var name = connectField.value;
-
     // Create new shared object.
     so = new SharedObject(name, socket);
     var soCallback = {
@@ -161,16 +179,24 @@
     so.on(red5prosdk.SharedObjectEventTypes.PROPERTY_UPDATE, function (event) {
       console.log('[Red5ProPublisher] SharedObject Property Update.');
       console.log(JSON.stringify(event.data, null, 2));
-      if (event.data.hasOwnProperty('count')) {
-        appendMessage('User count is: ' + event.data.count + '.');
+      if (event.data.hasOwnProperty('userList')) {
+        if (userList !== undefined) {
+          findNewUsers(userList, event.data.userList);
+          findLostUsers(userList, event.data.userList);
+        }
+        userList = event.data.userList;
         if (!hasRegistered) {
           hasRegistered = true;
-          so.setProperty('count', parseInt(event.data.count) + 1);
+          subscriptionId = [name, event.data.userList.length + 1].join('-');
+          userList = userList.concat([subscriptionId])
+          so.setProperty('userList', userList);
         }
+      }
       else if (!hasRegistered) {
-          hasRegistered = true;
-          so.setProperty('count', 1);
-        }
+        subscriptionId = [name, '1'].join('-');
+        userList = userList ? userList.concat([subscriptionId]) : [subscriptionId];
+        hasRegistered = true;
+        so.setProperty('userList', userList);
       }
     });
     so.on(red5prosdk.SharedObjectEventTypes.METHOD_UPDATE, function (event) {
@@ -180,9 +206,9 @@
     });
   }
 
-  function sendMessageOnSharedObject (message) {
+  function sendMessageOnSharedObject (id, message) {
     so.send('messageTransmit', {
-      user: [configuration.stream1, 'subscriber'].join(' '),
+      user: id,
       message: message
     });
   }
@@ -212,6 +238,12 @@
 
   function unsubscribe () {
     if (so !== undefined) {
+      var index = userList.indexOf(subscriptionId);
+      if (index > -1) {
+        userList.splice(index, 1)
+        so.setProperty('userList', userList)
+      }
+      hasRegistered = false;
       so.close();
       so = undefined;
     }
