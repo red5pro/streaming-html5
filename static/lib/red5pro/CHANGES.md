@@ -1,5 +1,13 @@
 # Changes
 
+## 5.7.0
+
+- fix for WebRTC API deprecation of addStream. (bustardcelly)
+
+## 5.6.0
+
+- No Changes.
+
 ## 5.5.0
 
 - default to srcObject in try...catch for modern browsers. (bustardcelly)
