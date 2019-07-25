@@ -1,10 +1,10 @@
 <!doctype html>
-<html>
+<html lang="eng">
   <head>
-    <title>Conference Test</title>
+    <title>Conference</title>
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
     <meta content="width=device-width, initial-scale=1, user-scalable=no" name="viewport">
-    <script src="//webrtc.github.io/adapter/adapter-latest.js"></script>
+    <script src="//webrtchacks.github.io/adapter/adapter-latest.js"></script>
     <script src="../../lib/screenfull/screenfull.min.js"></script>
     <script src="../../script/testbed-config.js"></script>
     <script src="../../script/red5pro-utils.js"></script>
@@ -12,49 +12,84 @@
     <link rel="stylesheet" href="../../css/reset.css">
     <link rel="stylesheet" href="../../css/testbed.css">
     <link rel="stylesheet" href="../../lib/red5pro/red5pro-media.css">
+    <link rel="stylesheet" href="../../css/conference.css">
+    <style>
+      hr {
+        margin: 0;
+      }
+      .device-label {
+        width: 45%;
+        text-align: right;
+        display: inline-block;
+      }
+      .device-control {
+        max-width: 142px;
+      }
+      .device-info {
+        font-size: 0.7em;
+      }
+    </style>
+    <script src="../../script/subscription-status.js"></script>
   </head>
   <body>
-    <div class="proto">
-      <div class="float-left-conf" id="FILLNAME">
-        <h2 class="centered"><em>Subscriber Stream</em>: <span id="FILLNAME-title"></span></h2>
-        <p id="FILLNAME-status" class="centered status-field">On hold.</p>
-        <div class="centered">
-          <video id="FILLNAME-video"
-                  controls autoplay playsinline
-                  class="red5pro-media red5pro-media-background"
-                  width="480" height="360"></video>
-        </div>
-      </div>
-    </div>
     <div id="app">
-      <p class="version-field">Testbed Version: 5.2.0&nbsp;&nbsp;&nbsp;&nbsp;<a href="https://red5pro.github.io/red5pro-html-sdk-testbed/red5pro-html-testbed-latest.zip">download</a></p>
+      <p class="version-field">Testbed Version: 5.7.0</p>
       <div id="back-link-container" style="text-align: left;"><p id="back-link"><a href="../../index.html">&lt; Settings</a></p></div>
-      <div class="ice-background">
-      <div class="test-notification">
-        <p>The Conference example requires access to a service that returns a stream listing. You may run into Cross-Origin Resource Sharing (<strong>CORS</strong>) issues if trying to use this example without the proper <strong>CORS</strong> settings provided by the server.</p>
-        <br/>
-        <p>It is recommended to view this example as part of the <code>webrtcexamples</code> webapp shipped with the <a href="https://account.red5pro.com/download" target="_blank">Red5 Pro Server</a>.</p>
+      <h1 class="centered">Conference</h1>
+      <div class="centered status-field">
+        <p>
+          <label for="room-field">Room:</label>
+          <input id="room-field" name="room-field">
+        </p>
       </div>
-      </div>
-      <h1 class="centered">Conference Test</h1>
-      <hr />
-      <h2 class="centered"><em>stream</em>: <span id="stream-title"></span></h2>
-      <hr />
-      <div>
-        <label for="roomTxt">Room - </label><input type="text" id="roomTxt">
-        <label for="nameTxt">Name - </label><input type="text" id="nameTxt">
-        <label for="videoCheck">Video - </label><input type="checkbox" id="videoCheck" checked>
-        <label for="audioCheck">Audio - </label><input type="checkbox" id="audioCheck" checked>
-        <input type="submit" value="Connect" id="submitBtn">
-      </div>
-      <div class="float-left-conf">
-        <h2 class="centered"><em>Publisher Stream</em>: <span id="pub-stream-title"></span></h2>
-        <p id="pub-status-field" class="centered status-field">On hold.</p>
-        <div class="centered">
-          <video id="red5pro-publisher-video"
-                controls autoplay muted playsinline
-                width="480" height="360"></video>
+      <div id="publisher-container" class="publisher-container auto-margined">
+        <div id="publisher-session" class="publisher-session hidden">
+          <p id="status-field" class="centered status-field">On hold.</p>
+          <script src="../../script/publisher-status.js"></script>
+          <p id="statistics-field" class="centered status-field"></p>
         </div>
+        <div class="centered video-holder">
+          <video id="red5pro-publisher" autoplay playsinline muted
+                 width="320" height="240"></video>
+        </div>
+        <div id="publisher-settings" class="publisher-settings">
+          <p class="centered remove-on-broadcast">
+            <label for="streamname-field">Stream Name:</label>
+            <input id="streamname-field" name="streamname-field">
+          </p>
+          <hr />
+          <p style="padding-bottom: 0em;">
+            <label class="device-label" for="camera-select">Camera:</label>
+            <select class="control device-control" name="camera-select" id="camera-select"></select>
+          </p>
+          <p  style="padding-bottom: 0.8em;">
+            <label class="device-label" for="microphone-select">Microphone:</label>
+            <select class="control device-control" name="microphone-select" id="microphone-select"></select>
+          </p>
+          <p id="publisher-mute-notice" class="centered remove-on-broadcast">
+            <span class="device-info">Video and Audio can be turned off after publish has started.</span>
+          </p>
+          <hr />
+          <p id="publisher-mute-controls" class="centered hidden">
+            <span id="publisher-name-field" class="hidden"></span>
+            <label for="video-check">Video: </label>
+            <input type="checkbox" id="video-check" name="video-check" checked>
+            <label for="audio-check">Audio: </label>
+            <input type="checkbox" id="audio-check" name="audio-check" checked>
+          </p>
+          <p class="centered dark-background remove-on-broadcast"><button id="join-button">Join!</button></p>
+        </div>
+      </div>
+      <div id="subscribers" class="float-left"></div>
+      <div class="centered status-field hidden">
+        <p>
+          <input type="text" id="input-field" />
+          <button id="send-button">send</button>
+        </p>
+        <hr>
+        <p>
+          <textarea id="so-field" disabled style="width: 50%; min-height: 240px; min-width: 320px"></textarea>
+        </p>
       </div>
     </div>
     <script src="../../lib/es6/es6-promise.min.js"></script>
@@ -102,8 +137,8 @@
     
       })(this);
     </script>
-    <script src="../../script/publisher-status.js"></script>
-    <script src="../../script/subscription-status.js"></script>
+    <script src="conference-subscriber.js"></script>
+    <script src="device-selector-util.js"></script>
     <script src="index.js"></script>
   </body>
 </html>

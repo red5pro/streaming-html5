@@ -163,6 +163,7 @@
             document.getElementById(replacement.id).parentNode.classList.remove('hidden');
             document.getElementById(replacement.id).parentNode.dataset.activeVideo = replacement.id;
             replacement.isActive = true;
+            window.exposeSubscriberGlobally(replacement.subscriber);
             replacement.subscriber.play();
             replacement.subscriber.disableStandby();
             var options = replacement.subscriber._options;
@@ -218,6 +219,9 @@
       new red5prosdk.RTCSubscriber()
         .init(config)
         .then(function (subscriber) {
+          if (window.exposeSubscriberGlobally) {
+            window.exposeSubscriberGlobally(subscriber);
+          }
           return subscriber.subscribe();
         })
         .then(function (subscriber) {
@@ -254,7 +258,11 @@
         },
         streamName: edgeList[i].name
       });
-      subConfig.connectionParams = Object.assign(getAuthenticationParams(), subConfig.connectionParams);
+
+      subConfig.connectionParams = Object.assign({}, 
+        getAuthenticationParams().connectionParams,
+        subConfig.connectionParams);
+
       generateSubscriber(subConfig)
         .then(onSubscriberResolve(id))
         .catch(handleGenerateSubscriberError);

@@ -1,0 +1,202 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Subscribe - Stream Manager Proxy With RoundTrip Authentication Test</title>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+    <meta content="width=device-width, initial-scale=1, user-scalable=no" name="viewport">
+    <script src="//webrtchacks.github.io/adapter/adapter-latest.js"></script>
+    <script src="../../lib/screenfull/screenfull.min.js"></script>
+    <script src="../../script/testbed-config.js"></script>
+    <script src="../../script/red5pro-utils.js"></script>
+    <script src="../../script/reachability.js"></script>
+    <link rel="stylesheet" href="../../css/reset.css">
+    <link rel="stylesheet" href="../../css/testbed.css">
+    <link rel="stylesheet" href="../../lib/red5pro/red5pro-media.css">
+    <style>
+      .hidden {
+        display: none;
+      }
+      #login-form {
+        padding: 10px 0;
+        background-color: #afafaf;
+      }
+      #login-form p {
+        margin: 10px 0;
+      }
+      #login-form p label {
+        margin-right: 6px;
+        width: 100%;
+        text-align: right;
+      }
+	  #address-field {
+        padding: 6px;
+        background-color: #ccc;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <p class="version-field">Testbed Version: 5.7.0</p>
+      <div id="back-link-container" style="text-align: left;"><p id="back-link"><a href="../../index.html">&lt; Settings</a></p></div>
+      <div class="ice-background">
+      <div class="test-notification">
+        <p>In order to properly run the Stream Manager examples, you will need to configure you server for cluster infrastructure as described in the following documentation:</p>
+        <p><a href="https://www.red5pro.com/docs/server/autoscale/" target="_blank">https://www.red5pro.com/docs/server/autoscale/</a></p>
+		<p>Additionally to use this example stream manager proxy gateway should be enabled and `Simple Authentication Plugin` with `RoundTripValidator` should be enabled on your webapp.</p>
+      </div>
+      </div>
+      <h1 class="centered">Subscribe Stream Manager Proxy With RoundTrip Authentication Test</h1>
+      <hr />
+      <h2 class="centered"><em>stream</em>: <span id="stream-title"></span></h2>
+      <script>
+      (function() {
+        try {
+          var conf = JSON.parse(sessionStorage.getItem('r5proTestBed'));
+          document.getElementById('stream-title').innerText = conf ? conf.stream1 : 'N/A';
+        } catch (e) {
+          // it's alright.
+        }
+      })();
+      </script>
+      <p id="status-field" class="centered status-field">On hold.</p>
+      <script src="../../script/subscription-status.js"></script>
+      <p id="statistics-field" class="centered status-field"></p>
+      <div class="centered"><p id="address-field">Edge Address: N/A</p></div>
+      <div id="login-form" class="centered">
+        <p>Log In to begin playback:</p>
+        <p><label for="username-field">username:</label><input id="username-field" name="username-field"></p>
+        <p><label for="password-field">password:</label><input id="password-field" name="password-field"></p>
+        <p><label for="token-field">token:</label><input id="token-field" name="token-field"></p>
+		<p><input type="checkbox" id="token-required-field" name="token-required-field" checked>Token Required</p>
+         
+       <button id="submit-button">submit</button>
+      </div>
+      <div class="centered">
+        <video id="red5pro-subscriber"
+                controls autoplay playsinline
+                class="red5pro-media red5pro-media-background"
+                width="640" height="480">
+        </video>
+      </div>
+    </div>
+    <script src="../../lib/es6/es6-promise.min.js"></script>
+    <script src="../../lib/es6/es6-bind.js"></script>
+    <script src="../../lib/es6/es6-array.js"></script>
+    <script src="../../lib/es6/es6-object-assign.js"></script>
+    <script src="../../lib/es6/es6-fetch.js"></script>
+    <script src="../../lib/red5pro/red5pro-sdk.min.js"></script>
+    <script>
+      (function(window) {
+        var configuration = (function () {
+          var conf = sessionStorage.getItem('r5proTestBed');
+          try {
+            return JSON.parse(conf);
+          }
+          catch (e) {
+            console.error('Could not read testbed configuration from sessionstorage: ' + e.message);
+          }
+          return {}
+        })();
+    
+        if (configuration.verboseLogging) {
+          window.publisherLog = function (message) {
+            console.log('[Red5ProRTMPPublisher:SWF] - ' + message);
+          };
+          window.subscriberLog = function (message) {
+            console.log('[Red5ProRTMPSubscriber:SWF] - ' + message);
+          };
+        }
+    
+        if (configuration.authentication.enabled) {
+          var node = document.createElement('div');
+          node.classList.add('hint-block', 'auth-alert');
+          var note = document.createElement('span');
+          note.innerHTML = '*<strong>Authentication is Enabled</strong>*';
+          var link = document.createElement('a');
+          link.innerText = 'Click here to disable.';
+          link.href= '../../index.html';
+          link.classList.add('auth-link');
+          node.appendChild(note);
+          node.appendChild(link);
+          var testBody = document.getElementById('back-link-container').nextElementSibling;
+          testBody.parentNode.insertBefore(node, testBody);
+        }
+    
+      })(this);
+    </script>
+    <link rel="stylesheet" href="../../css/modal.css" />
+    <script>
+      (function (red5prosdk) {
+        /**
+          * https://developers.google.com/web/updates/2017/09/autoplay-policy-changes
+          * https://webkit.org/blog/6784/new-video-policies-for-ios/
+        */
+        var hasShownModal = false;
+        var fn = window.exposeSubscriberGlobally;
+        function showModal (content) {
+          var div = document.createElement('div');
+          div.classList.add('modal');
+          var container = document.createElement('div');
+          var button = document.createElement('a');
+          var close = document.createTextNode('close');
+          button.href = "#";
+          button.appendChild(close);
+          button.classList.add('modal-close');
+          container.appendChild(button);
+          container.appendChild(content);
+          div.appendChild(container);
+          document.body.appendChild(div);
+          button.addEventListener('click', function (event) {
+            event.preventDefault();
+            document.body.removeChild(div);
+            return false;
+          });
+        }
+        function generateLine (text) {
+          var p = document.createElement('p');
+          var t = document.createTextNode(text);
+          p.appendChild(t);
+          return p;
+        }
+        function generateInfoLink () {
+          var p = document.createElement('p');
+          var a1 = document.createElement('a');
+          a1.target = '_blank';
+          a1.href = 'https://developers.google.com/web/updates/2017/09/autoplay-policy-changes';
+          var a1t = document.createTextNode('More Info');
+          a1.appendChild(a1t);
+          p.appendChild(a1);
+          return p;
+        }
+        window.exposeSubscriberGlobally = function (subscriber) {
+          if (fn) {
+            fn.call(window, subscriber);
+          }
+          subscriber.on(red5prosdk.SubscriberEventTypes.AUTO_PLAYBACK_FAILURE, function () {
+            if (hasShownModal ) return;
+            var content = document.createElement('div');
+            content.appendChild(generateLine('Auto playback failed.'));
+            content.appendChild(document.createElement('br'));
+            content.appendChild(generateLine('Close this modal and click the play button.'));
+            content.appendChild(document.createElement('br'));
+            content.appendChild(generateInfoLink());
+            hasShownModal = true;
+            showModal(content);
+          });
+          subscriber.on(red5prosdk.SubscriberEventTypes.AUTO_PLAYBACK_MUTED, function () {
+            if (hasShownModal ) return;
+            var content = document.createElement('div');
+            content.appendChild(generateLine('Auto playback muted.'));
+            content.appendChild(document.createElement('br'));
+            content.appendChild(generateLine('Close this modal and click the mute button for audio.'));
+            content.appendChild(document.createElement('br'));
+            content.appendChild(generateInfoLink());
+            hasShownModal = true;
+            showModal(content);
+          });
+        }
+      })(window.red5prosdk);
+    </script>
+    <script src="index.js"></script>
+  </body>
+</html>

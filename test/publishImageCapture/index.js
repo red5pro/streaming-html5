@@ -42,7 +42,8 @@
   }
   var defaultConfiguration = {
     protocol: getSocketLocationFromProtocol().protocol,
-    port: getSocketLocationFromProtocol().port
+    port: getSocketLocationFromProtocol().port,
+    streamMode: configuration.recordBroadcast ? 'record' : 'live'
   };
 
   function onBitrateUpdate (bitrate, packetsSent) {
@@ -122,14 +123,14 @@
   function clearCanvas (targetElement, canvasElement) {
     var context = canvasElement.getContext('2d');
     context.fillStyle = '#a1a1a1';
-    context.fillRect(0, 0, targetElement.offsetWidth, targetElement.offsetHeight);
+    context.fillRect(0, 0, targetElement.videoWidth, targetElement.videoHeight);
   }
 
   function drawOnCanvas (targetElement, canvasElement) {
     var context = canvasElement.getContext('2d');
-    canvasElement.width = targetElement.offsetWidth;
-    canvasElement.height = targetElement.offsetHeight;
-    context.drawImage(targetElement, 0, 0, targetElement.offsetWidth, targetElement.offsetHeight);
+    canvasElement.width = targetElement.videoWidth;
+    canvasElement.height = targetElement.videoHeight;
+    context.drawImage(targetElement, 0, 0, targetElement.videoWidth, targetElement.videoHeight);
   }
 
   // Kick off.
@@ -155,7 +156,10 @@
   });
   clearCanvas(videoElement, canvasElement);
 
-  window.addEventListener('beforeunload', function() {
+  var shuttingDown = false;
+  function shutdown() {
+    if (shuttingDown) return;
+    shuttingDown = true;
     function clearRefs () {
       if (targetPublisher) {
         targetPublisher.off('*', onPublisherEvent);
@@ -164,6 +168,9 @@
     }
     unpublish().then(clearRefs).catch(clearRefs);
     window.untrackBitrate();
-  });
+  }
+  window.addEventListener('pagehide', shutdown);
+  window.addEventListener('beforeunload', shutdown);
+
 })(this, document, window.red5prosdk);
 

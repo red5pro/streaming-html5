@@ -1,0 +1,91 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Shared Object</title>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+    <meta content="width=device-width, initial-scale=1, user-scalable=no" name="viewport">
+    <script src="//webrtchacks.github.io/adapter/adapter-latest.js"></script>
+    <script src="../../lib/screenfull/screenfull.min.js"></script>
+    <script src="../../script/testbed-config.js"></script>
+    <script src="../../script/red5pro-utils.js"></script>
+    <script src="../../script/reachability.js"></script>
+    <link rel="stylesheet" href="../../css/reset.css">
+    <link rel="stylesheet" href="../../css/testbed.css">
+    <link rel="stylesheet" href="../../lib/red5pro/red5pro-media.css">
+    <style>
+      .hidden {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <p class="version-field">Testbed Version: 5.7.0</p>
+      <div id="back-link-container" style="text-align: left;"><p id="back-link"><a href="../../index.html">&lt; Settings</a></p></div>
+      <h1 class="centered">Shared Object</h1>
+      <p id="status-field" class="centered status-field">On hold.</p>
+      <script src="../../script/subscription-status.js"></script>
+      <div class="centered status-field">
+          <input type="text" id="connect-field" value="sharedChatTest" />
+          <button id="connect-button" disabled>connect</button>
+          <button id="disconnect-button" class="hidden">disconnect</button>
+      </div>
+      <div class="centered status-field">
+        <p>
+          <input type="text" id="input-field" disabled />
+          <button id="send-button" disabled>send</button>
+        </p>
+        <hr>
+        <p>
+          <textarea id="so-field" disabled style="width: 50%; min-height: 240px; min-width: 320px"></textarea>
+        </p>
+      </div>
+    </div>
+    <script src="../../lib/es6/es6-promise.min.js"></script>
+    <script src="../../lib/es6/es6-bind.js"></script>
+    <script src="../../lib/es6/es6-array.js"></script>
+    <script src="../../lib/es6/es6-object-assign.js"></script>
+    <script src="../../lib/es6/es6-fetch.js"></script>
+    <script src="../../lib/red5pro/red5pro-sdk.min.js"></script>
+    <script>
+      (function(window) {
+        var configuration = (function () {
+          var conf = sessionStorage.getItem('r5proTestBed');
+          try {
+            return JSON.parse(conf);
+          }
+          catch (e) {
+            console.error('Could not read testbed configuration from sessionstorage: ' + e.message);
+          }
+          return {}
+        })();
+    
+        if (configuration.verboseLogging) {
+          window.publisherLog = function (message) {
+            console.log('[Red5ProRTMPPublisher:SWF] - ' + message);
+          };
+          window.subscriberLog = function (message) {
+            console.log('[Red5ProRTMPSubscriber:SWF] - ' + message);
+          };
+        }
+    
+        if (configuration.authentication.enabled) {
+          var node = document.createElement('div');
+          node.classList.add('hint-block', 'auth-alert');
+          var note = document.createElement('span');
+          note.innerHTML = '*<strong>Authentication is Enabled</strong>*';
+          var link = document.createElement('a');
+          link.innerText = 'Click here to disable.';
+          link.href= '../../index.html';
+          link.classList.add('auth-link');
+          node.appendChild(note);
+          node.appendChild(link);
+          var testBody = document.getElementById('back-link-container').nextElementSibling;
+          testBody.parentNode.insertBefore(node, testBody);
+        }
+    
+      })(this);
+    </script>
+    <script src="index.js"></script>
+  </body>
+</html>

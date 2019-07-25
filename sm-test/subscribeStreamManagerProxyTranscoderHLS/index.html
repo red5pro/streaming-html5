@@ -4,7 +4,7 @@
     <title>Subscriber Stream Manager Proxy Test</title>
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
     <meta content="width=device-width, initial-scale=1, user-scalable=no" name="viewport">
-    <script src="//webrtc.github.io/adapter/adapter-latest.js"></script>
+    <script src="//webrtchacks.github.io/adapter/adapter-latest.js"></script>
     <script src="../../lib/screenfull/screenfull.min.js"></script>
     <script src="../../script/testbed-config.js"></script>
     <script src="../../script/red5pro-utils.js"></script>
@@ -21,7 +21,7 @@
   </head>
   <body>
     <div id="app">
-      <p class="version-field">Testbed Version: 5.2.0&nbsp;&nbsp;&nbsp;&nbsp;<a href="https://red5pro.github.io/red5pro-html-sdk-testbed/red5pro-html-testbed-latest.zip">download</a></p>
+      <p class="version-field">Testbed Version: 5.7.0</p>
       <div id="back-link-container" style="text-align: left;"><p id="back-link"><a href="../../index.html">&lt; Settings</a></p></div>
       <div class="ice-background">
       <div class="test-notification">
@@ -33,6 +33,16 @@
       <h1 class="centered">Subscriber SM Transcoder Proxy Test (HLS)</h1>
       <hr />
       <h2 class="centered"><em>stream</em>: <span id="stream-title"></span></h2>
+      <script>
+      (function() {
+        try {
+          var conf = JSON.parse(sessionStorage.getItem('r5proTestBed'));
+          document.getElementById('stream-title').innerText = conf ? conf.stream1 : 'N/A';
+        } catch (e) {
+          // it's alright.
+        }
+      })();
+      </script>
       <p id="status-field" class="centered status-field">On hold.</p>
       <script src="../../script/subscription-status.js"></script>
       <p id="statistics-field" class="centered status-field"></p>
@@ -89,6 +99,79 @@
         }
     
       })(this);
+    </script>
+    <link rel="stylesheet" href="../../css/modal.css" />
+    <script>
+      (function (red5prosdk) {
+        /**
+          * https://developers.google.com/web/updates/2017/09/autoplay-policy-changes
+          * https://webkit.org/blog/6784/new-video-policies-for-ios/
+        */
+        var hasShownModal = false;
+        var fn = window.exposeSubscriberGlobally;
+        function showModal (content) {
+          var div = document.createElement('div');
+          div.classList.add('modal');
+          var container = document.createElement('div');
+          var button = document.createElement('a');
+          var close = document.createTextNode('close');
+          button.href = "#";
+          button.appendChild(close);
+          button.classList.add('modal-close');
+          container.appendChild(button);
+          container.appendChild(content);
+          div.appendChild(container);
+          document.body.appendChild(div);
+          button.addEventListener('click', function (event) {
+            event.preventDefault();
+            document.body.removeChild(div);
+            return false;
+          });
+        }
+        function generateLine (text) {
+          var p = document.createElement('p');
+          var t = document.createTextNode(text);
+          p.appendChild(t);
+          return p;
+        }
+        function generateInfoLink () {
+          var p = document.createElement('p');
+          var a1 = document.createElement('a');
+          a1.target = '_blank';
+          a1.href = 'https://developers.google.com/web/updates/2017/09/autoplay-policy-changes';
+          var a1t = document.createTextNode('More Info');
+          a1.appendChild(a1t);
+          p.appendChild(a1);
+          return p;
+        }
+        window.exposeSubscriberGlobally = function (subscriber) {
+          if (fn) {
+            fn.call(window, subscriber);
+          }
+          subscriber.on(red5prosdk.SubscriberEventTypes.AUTO_PLAYBACK_FAILURE, function () {
+            if (hasShownModal ) return;
+            var content = document.createElement('div');
+            content.appendChild(generateLine('Auto playback failed.'));
+            content.appendChild(document.createElement('br'));
+            content.appendChild(generateLine('Close this modal and click the play button.'));
+            content.appendChild(document.createElement('br'));
+            content.appendChild(generateInfoLink());
+            hasShownModal = true;
+            showModal(content);
+          });
+          subscriber.on(red5prosdk.SubscriberEventTypes.AUTO_PLAYBACK_MUTED, function () {
+            if (hasShownModal ) return;
+            var content = document.createElement('div');
+            content.appendChild(generateLine('Auto playback muted.'));
+            content.appendChild(document.createElement('br'));
+            content.appendChild(generateLine('Close this modal and click the mute button for audio.'));
+            content.appendChild(document.createElement('br'));
+            content.appendChild(generateInfoLink());
+            hasShownModal = true;
+            showModal(content);
+          });
+        }
+      })(window.red5prosdk);
     </script>
     <script src="index.js"></script>
   </body>

@@ -44,7 +44,7 @@ In a browser:
 <html>
   <head>
     <!-- *Recommended WebRTC Shim -->
-    <script src="http://webrtc.github.io/adapter/adapter-latest.js"></script>
+    <script src="https://webrtchacks.github.io/adapter/adapter-latest.js"></script>
   </head>
   <body>
     <!-- video containers -->
@@ -65,14 +65,17 @@ In a browser:
 
         var rtcPublisher = new red5prosdk.RTCPublisher();
         var rtcSubscriber = new red5prosdk.RTCSubscriber();
-
         var config = {
           protocol: 'ws',
           host: 'localhost',
-          port: 8081,
+          port: 5080,
           app: 'live',
           streamName: 'mystream',
-          iceServers: [{urls: 'stun:stun2.l.google.com:19302'}]
+          rtcConfiguration: {
+            iceServers: [{urls: 'stun:stun2.l.google.com:19302'}],
+            iceCandidatePoolSize: 2,
+            bundlePolicy: 'max-bundle'
+          } // See https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/RTCPeerConnection#RTCConfiguration_dictionary
         };
 
         function subscribe () {

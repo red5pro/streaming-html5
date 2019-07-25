@@ -1,0 +1,163 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Playback SM VOD Listing Test</title>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+    <meta content="width=device-width, initial-scale=1, user-scalable=no" name="viewport">
+    <script src="//webrtchacks.github.io/adapter/adapter-latest.js"></script>
+    <script src="../../lib/screenfull/screenfull.min.js"></script>
+    <script src="../../script/testbed-config.js"></script>
+    <script src="../../script/red5pro-utils.js"></script>
+    <script src="../../script/reachability.js"></script>
+    <link rel="stylesheet" href="../../css/reset.css">
+    <link rel="stylesheet" href="../../css/testbed.css">
+    <link rel="stylesheet" href="../../lib/red5pro/red5pro-media.css">
+    <style>
+      .status-field > p {
+        padding: 12px;
+      }
+      .clear-container {
+        width: 100%;
+        overflow: hidden;
+      }
+      .file-listing-container {
+        margin-top: 1em;
+        width: 48%;
+      }
+      .file-listing-title {
+        padding-bottom: 0.5em;
+      }
+      .flc-left {
+        float: left;
+        padding-left: 2%;
+      }
+      .flc-right {
+        float: right;
+        padding-right: 2%;
+      }
+      .file-listing {
+        margin: .8em;
+        background-color: #fff;
+        border: 1px solid gray;
+        overflow: scroll;
+        max-height: 200px;
+      }
+      .file-listing > p {
+        padding: .8em;
+        text-align: left;
+        cursor: pointer;
+      }
+      .file-listing > p.load-listing {
+        cursor: default;
+      }
+      .file-listing > p.item-separator {
+        border-bottom: 1px solid gray; 
+      }
+    </style>
+  </head>
+  <body>
+    <template id="flash-playback">
+      <object type="application/x-shockwave-flash" id="red5pro-subscriber" name="red5pro-subscriber" align="middle" data="../../lib/red5pro/red5pro-subscriber.swf" width="100%" height="480" class="red5pro-media-background red5pro-media">
+        <param name="quality" value="high">
+        <param name="wmode" value="opaque">
+        <param name="bgcolor" value="#000000">
+        <param name="allowscriptaccess" value="always">
+        <param name="allowfullscreen" value="true">
+        <param name="allownetworking" value="all">
+      </object>
+    </template>
+    <div id="app">
+      <p class="version-field">Testbed Version: 5.7.0</p>
+      <div id="back-link-container" style="text-align: left;"><p id="back-link"><a href="../../index.html">&lt; Settings</a></p></div>
+      <h1 class="centered">Playback SM VOD Listing Test</h1>
+      <hr />
+      <h2 class="centered"><em>stream</em>: <span id="stream-title"></span></h2>
+      <script>
+      (function() {
+        try {
+          var conf = JSON.parse(sessionStorage.getItem('r5proTestBed'));
+          document.getElementById('stream-title').innerText = conf ? conf.stream1 : 'N/A';
+        } catch (e) {
+          // it's alright.
+        }
+      })();
+      </script>
+      <div class="centered status-field">
+        <p>
+          To use this test, you must have first published a recorded broadcast using the <a href="../publishStreamManagerProxyRecord" target="_blank">Publish - Stream Manager Proxy Record</a> test.
+        </p>
+        <hr />
+        <div class="centered clear-container">
+          <div class="file-listing-container flc-left">
+            <p class="file-listing-title"><strong>Media Files (FLV &amp; MP4)</strong></p>
+            <p>Once loaded, select for playback.</p>
+            <div id="media-file-listing" class="file-listing">
+              <p class="load-listing">Loading...</p>
+            </div>
+          </div>
+          <div class="file-listing-container flc-right">
+            <p class="file-listing-title"><strong>Playlists (HLS)</strong></p>
+            <p>Once loaded, select for playback.</p>
+            <div id="playlist-listing" class="file-listing">
+              <p class="load-listing">Loading...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div><p id="error-notification" class="centered error-field hidden"></p></div>
+      <div id="video-container" class="centered">
+        <video id="red5pro-subscriber"
+                controls autoplay playsinline
+                class="red5pro-media red5pro-media-background"
+                width="640" height="480">
+        </video>
+      </div>
+    </div>
+    <script src="../../lib/es6/es6-promise.min.js"></script>
+    <script src="../../lib/es6/es6-bind.js"></script>
+    <script src="../../lib/es6/es6-array.js"></script>
+    <script src="../../lib/es6/es6-object-assign.js"></script>
+    <script src="../../lib/es6/es6-fetch.js"></script>
+    <script src="../../lib/red5pro/red5pro-sdk.min.js"></script>
+    <script>
+      (function(window) {
+        var configuration = (function () {
+          var conf = sessionStorage.getItem('r5proTestBed');
+          try {
+            return JSON.parse(conf);
+          }
+          catch (e) {
+            console.error('Could not read testbed configuration from sessionstorage: ' + e.message);
+          }
+          return {}
+        })();
+    
+        if (configuration.verboseLogging) {
+          window.publisherLog = function (message) {
+            console.log('[Red5ProRTMPPublisher:SWF] - ' + message);
+          };
+          window.subscriberLog = function (message) {
+            console.log('[Red5ProRTMPSubscriber:SWF] - ' + message);
+          };
+        }
+    
+        if (configuration.authentication.enabled) {
+          var node = document.createElement('div');
+          node.classList.add('hint-block', 'auth-alert');
+          var note = document.createElement('span');
+          note.innerHTML = '*<strong>Authentication is Enabled</strong>*';
+          var link = document.createElement('a');
+          link.innerText = 'Click here to disable.';
+          link.href= '../../index.html';
+          link.classList.add('auth-link');
+          node.appendChild(note);
+          node.appendChild(link);
+          var testBody = document.getElementById('back-link-container').nextElementSibling;
+          testBody.parentNode.insertBefore(node, testBody);
+        }
+    
+      })(this);
+    </script>
+    <script src="index.js"></script>
+  </body>
+</html>

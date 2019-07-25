@@ -4,7 +4,7 @@
     <title>Playback VOD Test</title>
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
     <meta content="width=device-width, initial-scale=1, user-scalable=no" name="viewport">
-    <script src="//webrtc.github.io/adapter/adapter-latest.js"></script>
+    <script src="//webrtchacks.github.io/adapter/adapter-latest.js"></script>
     <script src="../../lib/screenfull/screenfull.min.js"></script>
     <script src="../../script/testbed-config.js"></script>
     <script src="../../script/red5pro-utils.js"></script>
@@ -19,12 +19,32 @@
     </style>
   </head>
   <body>
+    <template id="flash-playback">
+      <object type="application/x-shockwave-flash" id="red5pro-subscriber" name="red5pro-subscriber" align="middle" data="../../lib/red5pro/red5pro-subscriber.swf" width="100%" height="480" class="red5pro-media-background red5pro-media">
+        <param name="quality" value="high">
+        <param name="wmode" value="opaque">
+        <param name="bgcolor" value="#000000">
+        <param name="allowscriptaccess" value="always">
+        <param name="allowfullscreen" value="true">
+        <param name="allownetworking" value="all">
+      </object>
+    </template>
     <div id="app">
-      <p class="version-field">Testbed Version: 5.2.0&nbsp;&nbsp;&nbsp;&nbsp;<a href="https://red5pro.github.io/red5pro-html-sdk-testbed/red5pro-html-testbed-latest.zip">download</a></p>
+      <p class="version-field">Testbed Version: 5.7.0</p>
       <div id="back-link-container" style="text-align: left;"><p id="back-link"><a href="../../index.html">&lt; Settings</a></p></div>
       <h1 class="centered">Playback VOD Test</h1>
       <hr />
       <h2 class="centered"><em>stream</em>: <span id="stream-title"></span></h2>
+      <script>
+      (function() {
+        try {
+          var conf = JSON.parse(sessionStorage.getItem('r5proTestBed'));
+          document.getElementById('stream-title').innerText = conf ? conf.stream1 : 'N/A';
+        } catch (e) {
+          // it's alright.
+        }
+      })();
+      </script>
       <div class="centered status-field">
         <p>
           To use this test, you must have first published a recorded broadcast using the <a href="../publishStreamManagerProxyRecord" target="_blank">Publish - Stream Manager Proxy Record</a> test.

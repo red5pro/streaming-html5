@@ -32,7 +32,9 @@
   var statisticsField = document.getElementById('statistics-field');
   var addressField = document.getElementById('address-field');
   var broadcastSettings = document.getElementById('broadcast-settings');
-  var submitButton = document.getElementById('submit-button');  var bitrateField = broadcastSettings.getElementsByClassName('bitrate-field')[0];
+  var submitButton = document.getElementById('submit-button');  
+  var cameraSelect = document.getElementById('camera-select');
+  var bitrateField = broadcastSettings.getElementsByClassName('bitrate-field')[0];
   var widthField = broadcastSettings.getElementsByClassName('width-field')[0];
   var heightField = broadcastSettings.getElementsByClassName('height-field')[0];
 
@@ -52,6 +54,7 @@
   var defaultConfiguration = {
     protocol: getSocketLocationFromProtocol().protocol,
     port: getSocketLocationFromProtocol().port,
+    streamMode: configuration.recordBroadcast ? 'record' : 'live',
     bandwidth: {
       video: parseInt(bitrateField.value, 10)
     }
@@ -192,7 +195,9 @@
                         });
 
     // Merge in possible authentication params.
-    rtcConfig.connectionParams = Object.assign(getAuthenticationParams(), rtcConfig.connectionParams);
+    rtcConfig.connectionParams = Object.assign({}, 
+      getAuthenticationParams().connectionParams,
+      rtcConfig.connectionParams);
 
     if(window.query('view')) {
       publishOrder = [window.query('view')];
@@ -281,6 +286,25 @@
     }
   }
 
+  function fillCameraSelect () {
+    navigator.mediaDevices.enumerateDevices()
+      .then(function (devices) {
+        var videoCameras = devices.filter(function (item) {
+          return item.kind === 'videoinput';
+        })
+        var cameras = videoCameras;
+        var options = cameras.map(function (camera, index) {
+          return '<option value="' + camera.deviceId + '"' + (index === 0 ? ' selected' : '' ) + '>' + (camera.label || 'camera ' + index) + '</option>';
+        });
+        cameraSelect.innerHTML = options.join(' ');
+      })
+      .catch(function (error) {
+        console.error('Could not access camera devices: ' + error);
+      });
+  }
+  // Fill in Camera options.
+  fillCameraSelect()
+
   function startup () {
     // Kick off.
     requestOrigin(configuration)
@@ -291,13 +315,17 @@
   submitButton.addEventListener('click', function () {
     defaultConfiguration.bandwidth.video = bitrateField.value / 1000;
     userDefinedVideoSettings = {
+      deviceId: { exact: cameraSelect.value },
       width: { exact: parseInt(widthField.value, 10) },
       height: { exact: parseInt(heightField.value, 10) }
     }
     startup();
   });
 
-  window.addEventListener('beforeunload', function() {
+  var shuttingDown = false;
+  function shutdown() {
+    if (shuttingDown) return;
+    shuttingDown = true;
     function clearRefs () {
       if (targetPublisher) {
         targetPublisher.off('*', onPublisherEvent);
@@ -306,6 +334,9 @@
     }
     unpublish().then(clearRefs).catch(clearRefs);
     window.untrackBitrate();
-  });
+  }
+  window.addEventListener('pagehide', shutdown);
+  window.addEventListener('beforeunload', shutdown);
+
 })(this, document, window.red5prosdk);
 

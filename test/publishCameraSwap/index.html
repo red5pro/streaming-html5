@@ -4,7 +4,7 @@
     <title>WebRTC Publish Camera Swap Test</title>
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
     <meta content="width=device-width, initial-scale=1, user-scalable=no" name="viewport">
-    <script src="//webrtc.github.io/adapter/adapter-latest.js"></script>
+    <script src="//webrtchacks.github.io/adapter/adapter-latest.js"></script>
     <script src="../../lib/screenfull/screenfull.min.js"></script>
     <script src="../../script/testbed-config.js"></script>
     <script src="../../script/red5pro-utils.js"></script>
@@ -15,11 +15,21 @@
   </head>
   <body>
     <div id="app">
-      <p class="version-field">Testbed Version: 5.2.0&nbsp;&nbsp;&nbsp;&nbsp;<a href="https://red5pro.github.io/red5pro-html-sdk-testbed/red5pro-html-testbed-latest.zip">download</a></p>
+      <p class="version-field">Testbed Version: 5.7.0</p>
       <div id="back-link-container" style="text-align: left;"><p id="back-link"><a href="../../index.html">&lt; Settings</a></p></div>
       <h1 class="centered">WebRTC Publish Camera Swap Test</h1>
       <hr />
       <h2 class="centered"><em>stream</em>: <span id="stream-title"></span></h2>
+      <script>
+      (function() {
+        try {
+          var conf = JSON.parse(sessionStorage.getItem('r5proTestBed'));
+          document.getElementById('stream-title').innerText = conf ? conf.stream1 : 'N/A';
+        } catch (e) {
+          // it's alright.
+        }
+      })();
+      </script>
       <p id="support-field" class="hint-alert"><em>The browser you are using </em><strong>does not support</strong><em> the </em><code>facingMode</code><em> video constraint require for this test.</em></p>
       <p id="status-field" class="centered status-field">On hold.</p>
       <script src="../../script/publisher-status.js"></script>

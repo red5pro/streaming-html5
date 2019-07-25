@@ -40,6 +40,7 @@
   swapButton.addEventListener('click', swapCamera);
 
   var SELECT_DEFAULT = 'Select a camera...';
+  var deviceList;
   // Fill Camera listing.
   (function (cameraSelect) {
     navigator.mediaDevices.enumerateDevices()
@@ -53,12 +54,28 @@
         var options = cameras.map(function (camera, index) {
           return '<option value="' + camera.deviceId + '">' + (camera.label || 'camera ' + index) + '</option>';
         });
+        deviceList = cameras.map(function (camera) {
+          return camera.deviceId;
+        });
         cameraSelect.innerHTML = options.join(' ');
       })
       .catch(function (error) {
         console.error('Could not access camera devices: ' + error);
       });
   })(cameraSelect);
+
+  function getSelectedIndexFromTrack (track) {
+    var i = deviceList.length;
+    while (--i > -1) {
+      var option = deviceList[i];
+      if (option.value === track.id) {
+        break;
+      }
+    }
+    if (i > -1) {
+      cameraSelect.selectedIndex = i;
+    }
+  }
 
   var protocol = serverSettings.protocol;
   var isSecure = protocol == 'https';
@@ -75,6 +92,10 @@
   function onPublisherEvent (event) {
     console.log('[Red5ProPublisher] ' + event.type + '.');
     updateStatusFromEvent(event);
+    if (event.type === 'WebRTC.MediaStream.Available') {
+      // var stream = event.data;
+      // TODO: set cameraSelect.selectedIndex from getSelectedIndexFromTrack(data.getVideoTracks[0]);
+    }
   }
   function onPublishFail (message) {
     console.error('[Red5ProPublisher] Publish Error :: ' + message);
@@ -162,6 +183,7 @@
                       protocol: getSocketLocationFromProtocol().protocol,
                       port: getSocketLocationFromProtocol().port,
                       streamName: config.stream1,
+                      streamMode: configuration.recordBroadcast ? 'record' : 'live'
                    });
 
   var publisher = new red5prosdk.RTCPublisher()
@@ -181,7 +203,10 @@
       onPublishFail(jsonError);
      });
 
-  window.addEventListener('beforeunload', function() {
+  var shuttingDown = false;
+  function shutdown() {
+    if (shuttingDown) return;
+    shuttingDown = true;
     function clearRefs () {
       if (targetPublisher) {
         targetPublisher.off('*', onPublisherEvent);
@@ -190,7 +215,9 @@
     }
     unpublish().then(clearRefs).catch(clearRefs);
     window.untrackBitrate();
-  });
+  }
+  window.addEventListener('pagehide', shutdown);
+  window.addEventListener('beforeunload', shutdown);
 
 })(this, document, window.red5prosdk);
 

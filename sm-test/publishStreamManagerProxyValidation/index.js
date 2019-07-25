@@ -51,7 +51,8 @@
 
   var defaultConfiguration = {
     protocol: getSocketLocationFromProtocol().protocol,
-    port: getSocketLocationFromProtocol().port
+    port: getSocketLocationFromProtocol().port,
+    streamMode: configuration.recordBroadcast ? 'record' : 'live'
   };
 
   var validationParamCount = 1;
@@ -96,7 +97,7 @@
     port: (isSecure || proxyLocal) ? undefined : serverSettings.httpport.toString(),
     scope: configuration.app,
     streamName: configuration.stream1,
-    apiVersion: configuration.streamManagerAPI || '3.0',
+    apiVersion: configuration.streamManagerAPI || '3.1',
     retryLimit: retryLimit,
     retryDelay: retryDelay,
     useProxy: true 
@@ -264,7 +265,10 @@
   validationAddButton.addEventListener('click', getNewValidationParamForm);
   validationSubmit.addEventListener('click', startup);
 
-  window.addEventListener('beforeunload', function() {
+  var shuttingDown = false;
+  function shutdown() {
+    if (shuttingDown) return;
+    shuttingDown = true;
     function clearRefs () {
       if (targetPublisher) {
         targetPublisher.off('*', onPublisherEvent);
@@ -273,6 +277,9 @@
     }
     unpublish().then(clearRefs).catch(clearRefs);
     window.untrackBitrate();
-  });
+  }
+  window.addEventListener('pagehide', shutdown);
+  window.addEventListener('beforeunload', shutdown);
+
 })(this, document, window.red5prosdk, window.red5prosdk_ext_stream_manager);
 

@@ -4,7 +4,7 @@
     <title>Publish Stream Manager Proxy Test</title>
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
     <meta content="width=device-width, initial-scale=1, user-scalable=no" name="viewport">
-    <script src="//webrtc.github.io/adapter/adapter-latest.js"></script>
+    <script src="//webrtchacks.github.io/adapter/adapter-latest.js"></script>
     <script src="../../lib/screenfull/screenfull.min.js"></script>
     <script src="../../script/testbed-config.js"></script>
     <script src="../../script/red5pro-utils.js"></script>
@@ -21,7 +21,7 @@
   </head>
   <body>
     <div id="app">
-      <p class="version-field">Testbed Version: 5.2.0&nbsp;&nbsp;&nbsp;&nbsp;<a href="https://red5pro.github.io/red5pro-html-sdk-testbed/red5pro-html-testbed-latest.zip">download</a></p>
+      <p class="version-field">Testbed Version: 5.7.0</p>
       <div id="back-link-container" style="text-align: left;"><p id="back-link"><a href="../../index.html">&lt; Settings</a></p></div>
       <div class="ice-background">
       <div class="test-notification">
@@ -33,9 +33,25 @@
       <h1 class="centered">Publish Stream Manager Proxy Test</h1>
       <hr />
       <h2 class="centered"><em>stream</em>: <span id="stream-title"></span></h2>
+      <script>
+      (function() {
+        try {
+          var conf = JSON.parse(sessionStorage.getItem('r5proTestBed'));
+          document.getElementById('stream-title').innerText = conf ? conf.stream1 : 'N/A';
+        } catch (e) {
+          // it's alright.
+        }
+      })();
+      </script>
       <div class="clearfix centered ice-background" style="padding-bottom: 24px; border-top: 1px solid #ddd;">
         <div id="broadcast-settings" style="display: inline-block; padding: 0 16px;">
           <h2>Broadcast Settings:</h2>
+          <p style="inline; margin: 16px 0">
+            <p style="display: inline-block; width: 60px; text-align: right">Camera: </p>
+            <select id="camera-select"
+                    class="bitrate-field"
+                    style="min-width: 70px"></select>
+          </p>
           <p style="inline; margin: 16px 0">
             <p style="display: inline-block; width: 60px; text-align: right">Bitrate: </p>
             <input class="bitrate-field"

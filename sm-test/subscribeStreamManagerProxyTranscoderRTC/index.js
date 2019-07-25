@@ -118,8 +118,11 @@
   }
   function onSubscribeSuccess (subscriber) {
     console.log('[Red5ProSubsriber] Subscribe Complete.');
+    if (window.exposeSubscriberGlobally) {
+      window.exposeSubscriberGlobally(subscriber);
+    }
     try {
-      window.trackBitrate(subscriber.getPeerConnection(), onBitrateUpdate, onResolutionUpdate);
+      window.trackBitrate(subscriber.getPeerConnection(), onBitrateUpdate, onResolutionUpdate, true);
     }
     catch (e) {
       //
@@ -168,7 +171,7 @@
     var port = serverSettings.httpport.toString();
     var portURI = (port.length > 0 ? ':' + port : '');
     var baseUrl = isSecure ? protocol + '://' + host : protocol + '://' + host + portURI;
-    var apiVersion = configuration.streamManagerAPI || '3.0';
+    var apiVersion = configuration.streamManagerAPI || '3.1';
     var url = baseUrl + '/streammanager/api/' + apiVersion + '/admin/event/meta/' + app + '/' + streamName + '?action=subscribe&accessToken=' + configuration.streamManagerAccessToken;
     return new Promise(function (resolve, reject) {
       fetch(url)
@@ -211,7 +214,9 @@
     });
 
     // Merge in possible authentication params.
-    rtcConfig.connectionParams = Object.assign(getAuthenticationParams(), rtcConfig.connectionParams);
+    rtcConfig.connectionParams = Object.assign({}, 
+      getAuthenticationParams().connectionParams,
+      rtcConfig.connectionParams);
 
     if (!config.useVideo) {
       rtcConfig.videoEncoding = 'NONE';
@@ -328,7 +333,10 @@
   });
 
   // Clean up.
-  window.addEventListener('beforeunload', function() {
+  var shuttingDown = false;
+  function shutdown() {
+    if (shuttingDown) return;
+    shuttingDown = true;
     function clearRefs () {
       if (targetSubscriber) {
         targetSubscriber.off('*', onSubscriberEvent);
@@ -336,7 +344,10 @@
       targetSubscriber = undefined;
     }
     unsubscribe().then(clearRefs).catch(clearRefs);
-  });
+    window.untrackBitrate();
+  }
+  window.addEventListener('pagehide', shutdown);
+  window.addEventListener('beforeunload', shutdown);
 
 })(this, document, window.red5prosdk);
 

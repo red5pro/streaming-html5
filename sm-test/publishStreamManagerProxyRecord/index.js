@@ -180,7 +180,9 @@
                         });
 
     // Merge in possible authentication params.
-    rtcConfig.connectionParams = Object.assign(getAuthenticationParams(), rtcConfig.connectionParams);
+    rtcConfig.connectionParams = Object.assign({}, 
+      getAuthenticationParams().connectionParams,
+      rtcConfig.connectionParams);
 
     if(window.query('view')) {
       publishOrder = [window.query('view')];
@@ -278,7 +280,10 @@
   }
   startup();
 
-  window.addEventListener('beforeunload', function() {
+  var shuttingDown = false;
+  function shutdown() {
+    if (shuttingDown) return;
+    shuttingDown = true;
     function clearRefs () {
       if (targetPublisher) {
         targetPublisher.off('*', onPublisherEvent);
@@ -287,6 +292,9 @@
     }
     unpublish().then(clearRefs).catch(clearRefs);
     window.untrackBitrate();
-  });
+  }
+  window.addEventListener('pagehide', shutdown);
+  window.addEventListener('beforeunload', shutdown);
+
 })(this, document, window.red5prosdk);
 
