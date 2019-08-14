@@ -170,7 +170,12 @@
     videoElement.insertAdjacentElement('afterEnd', canvasParent);
     // Control
     var isToggled = false;
+    var hasToggled = false;
     button.addEventListener('click', function () {
+      if (!hasToggled) {
+        setScene(canvasElement, videoElement);
+      }
+      hasToggled = true;
       isToggled = !isToggled;
       var a = 'z-order-above';
       var b = 'z-order-below';
@@ -186,7 +191,6 @@
         videoElement.classList.add(a);
       }
     });
-    setScene(canvasElement, videoElement);
   }
 
   function setScene (canvas, video) {
