@@ -1,6 +1,6 @@
 {
   "name": "red5pro-html-sdk-testbed",
-  "version": "5.7.0",
+  "version": "5.7.2",
   "description": "Testbed examples for Red5 Pro HTML SDK",
   "main": "src/js/index.js",
   "repository": {
@@ -15,7 +15,7 @@
     "SDK"
   ],
   "author": "Infrared5, Inc.",
-  "license": "MIT",
+  "license": "LICENSE.USAGE",
   "bugs": {
     "url": "https://github.com/infrared5/red5pro-html-sdk-testbed/issues"
   },
@@ -32,8 +32,9 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "clean:build": "rm -rf build",
     "clean:dist": "rm -rf dist",
+    "prebuild": "./scripts/inject-license.sh",
     "build": "NODE_ENV=develop gulp build",
-    "predist": "npm run clean:dist",
+    "predist": "npm run clean:dist && npm run prebuild",
     "dist": "gulp bump-version && NODE_ENV=production gulp build",
     "dist:webapp": "NODE_ENV=production gulp build:webapp"
   }
