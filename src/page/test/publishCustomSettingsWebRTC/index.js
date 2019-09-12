@@ -232,4 +232,3 @@
   window.addEventListener('beforeunload', shutdown);
 
 })(this, document, window.red5prosdk);
-

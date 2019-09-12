@@ -5,6 +5,22 @@
     {{> header-scripts}}
     {{> header-stylesheets}}
     <style>
+      .capture-container {
+        visibility: visible;
+        position: absolute;
+        padding: 1rem;
+        color: #333333;
+        width: 100%;
+        text-align: center;
+      }
+      .settings-field, .settings-field > input {
+        font-size: 1em;
+      }
+      #publish-button {
+        padding: 0.6em;
+        font-size: 1em;
+        cursor: pointer;
+      }
       #address-field {
         padding: 6px;
         background-color: #ccc;
@@ -69,4 +85,3 @@
     <script src="index.js"></script>
   </body>
 </html>
-

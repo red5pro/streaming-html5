@@ -211,7 +211,7 @@
     var host = configuration.origin;
     var app = configuration.app;
     var streamName = configuration.stream1;
-    var port = serverSettings.httpport;
+    var port = serverSettings.httpport.toString();
     var portURI = (port.length > 0 ? ':' + port : '');
     var baseUrl = isSecure ? protocol + '://' + host : protocol + '://' + host + portURI;
     var apiVersion = configuration.streamManagerAPI || '3.1';
@@ -243,7 +243,7 @@
   function respondToOrigin (response) {
     displayServerAddress(response.serverAddress);
     configuration.host = response.serverAddress;
-    configuration.app = response.app;
+    configuration.app = response.scope;
     determinePublisher(response.name)
       .then(function (publisherImpl) {
         streamTitle.innerText = configuration.stream1;
@@ -327,4 +327,3 @@
   window.addEventListener('beforeunload', shutdown);
 
 })(this, document, window.red5prosdk);
-
