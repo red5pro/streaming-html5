@@ -61,8 +61,10 @@
     streamMode: configuration.recordBroadcast ? 'record' : 'live'
   };
 
-  function displayServerAddress (serverAddress) {
-    addressField.innerText = 'Origin Address: ' + serverAddress;
+  function displayServerAddress (serverAddress, proxyAddress)
+  {
+    proxyAddress = (typeof proxyAddress === 'undefined') ? 'N/A' : proxyAddress;
+    addressField.innerText = ' Proxy Address: ' + proxyAddress + ' | ' + ' Origin Address: ' + serverAddress;
   }
 
   function onBitrateUpdate (bitrate, packetsSent) {
@@ -113,11 +115,17 @@
     };
   }
 
-  function determinePublisher (streamName) {
+  function determinePublisher (jsonResponse) {
+    console.log("hammer 1");
+    var host = jsonResponse.serverAddress;
+      console.log("hammer 2");
+    var app = jsonResponse.scope;
+      console.log("hammer 3");
+    var name = jsonResponse.name;
+      console.log("hammer 4");
     var config = Object.assign({},
                       configuration,
                       defaultConfiguration,
-                      getAuthenticationParams(),
                       getUserMediaConfiguration(),
                       {
                         keyFramerate: parseInt(keyFramerateField.value),
@@ -126,15 +134,28 @@
                           video: parseInt(bandwidthVideoField.value)
                         }
                       });
-
-    console.log('-----');
-    console.log(JSON.stringify(config, null, 2));
-    console.log('-----');
+                        console.log("hammer 5");
     var rtcConfig = Object.assign({}, config, {
                       protocol: getSocketLocationFromProtocol().protocol,
                       port: getSocketLocationFromProtocol().port,
-                      streamName: streamName
+                      streamName: name,
+                      app: configuration.proxy,
+                      connectionParams: {
+                        host: host,
+                        app: app
+                      }
                    });
+                     console.log("hammer 6");
+
+    // Merge in possible authentication params.
+    rtcConfig.connectionParams = Object.assign({},
+      getAuthenticationParams().connectionParams,
+      rtcConfig.connectionParams);
+        console.log("hammer 7");
+
+    displayServerAddress(host, config.host);
+      console.log("hammer 7.5");
+
     return new red5prosdk.RTCPublisher().init(rtcConfig);
   }
 
@@ -153,28 +174,6 @@
         });
       targetPublisher = undefined;
     });
-  }
-
-  function startPublish () {
-    // Kick off.
-    enablePublishButton(false);
-    determinePublisher()
-      .then(function (publisherImpl) {
-        streamTitle.innerText = configuration.stream1;
-        targetPublisher = publisherImpl;
-        targetPublisher.on('*', onPublisherEvent);
-        return targetPublisher.publish();
-      })
-      .then(function () {
-        onPublishSuccess(targetPublisher);
-        publishButton.innerText = 'Unpublish';
-        enablePublishButton(true);
-      })
-      .catch(function (error) {
-        var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
-        console.error('[Red5ProPublisher] :: Error in publishing - ' + jsonError);
-        onPublishFail(jsonError);
-       });
   }
 
   function enablePublishButton (flag) {
@@ -205,10 +204,7 @@
   fillCameraSelect();
 
   function requestOrigin (configuration) {
-    if(configuration.origin == null){
-      configuration.origin = configuration.host;
-    }
-    var host = configuration.origin;
+    var host = configuration.host;
     var app = configuration.app;
     var streamName = configuration.stream1;
     var port = serverSettings.httpport.toString();
@@ -241,14 +237,16 @@
   var retryCount = 0;
   var retryLimit = 3;
   function respondToOrigin (response) {
-    displayServerAddress(response.serverAddress);
-    configuration.host = response.serverAddress;
-    configuration.app = response.scope;
-    determinePublisher(response.name)
+    console.log("hammer 0");
+    determinePublisher(response)
       .then(function (publisherImpl) {
+        console.log("hammer 8");
         streamTitle.innerText = configuration.stream1;
+          console.log("hammer 9");
         targetPublisher = publisherImpl;
+          console.log("hammer 10");
         targetPublisher.on('*', onPublisherEvent);
+          console.log("hammer 11");
         return targetPublisher.publish();
       })
       .then(function () {
