@@ -1,0 +1,123 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Publish Validation Test</title>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+    <meta content="width=device-width, initial-scale=1, user-scalable=no" name="viewport">
+    <script src="//webrtchacks.github.io/adapter/adapter-latest.js"></script>
+    <script src="../../lib/screenfull/screenfull.min.js"></script>
+    <script src="../../script/testbed-config.js"></script>
+    <script src="../../script/red5pro-utils.js"></script>
+    <script src="../../script/reachability.js"></script>
+    <link rel="stylesheet" href="../../css/reset.css">
+    <link rel="stylesheet" href="../../css/testbed.css">
+    <link rel="stylesheet" href="../../lib/red5pro/red5pro-media.css">
+    <style>
+      #address-field {
+        padding: 6px;
+        background-color: #ccc;
+      }
+      #validation-container {
+        padding-bottom: 1.4rem;
+      }
+      #validation-container > h2 {
+        margin: 0;
+        padding: 1.4rem;
+      }
+      #validation-container > p {
+        max-width: 320px;
+        margin: 0 auto 1.4rem auto;
+      }
+      #validation-form > div {
+        margin: 1.2rem;
+      }
+      #validation-form > div > input {
+        margin: 0 0.6rem;
+      }
+      #add-param-btn {
+        font-size: 1rem;
+        background-color: lightsteelblue
+      }
+
+      .hidden {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <p class="version-field">Testbed Version: 5.4.0&nbsp;&nbsp;&nbsp;&nbsp;<a href="https://red5pro.github.io/red5pro-html-sdk-testbed/red5pro-html-testbed-latest.zip">download</a></p>
+      <div id="back-link-container" style="text-align: left;"><p id="back-link"><a href="../../index.html">&lt; Settings</a></p></div>
+      <h1 class="centered">Publish Validation Test</h1>
+      <hr />
+      <div id="validation-container" class="centered ice-background">
+        <h2>Validation Parameters</h2>
+        <p>Provide validation parameters to be used in the connection requests.</p>
+        <form id="validation-form" action="#" method="post">
+          <div id="param-field1">
+            <label for="param-name1">Param Name:</label>
+            <input type="text" id="param-name1" name="param_name1">
+            <label for="param-value1">Param Value:</label>
+            <input type="text" id="param-value1" name="param_value1">
+            <button id="add-param-btn" type="button">+</button>
+          </div>
+        </form>
+        <button id="validation-submit-btn">Start Publishing</button>
+      </div>
+      <hr />
+      <h2 class="centered"><em>stream</em>: <span id="stream-title"></span></h2>
+      <p id="status-field" class="centered status-field">On hold.</p>
+      <script src="../../script/publisher-status.js"></script>
+      <p id="statistics-field" class="centered status-field"></p>
+      <div class="centered">
+        <video id="red5pro-publisher" controls autoplay playsinline muted></video>
+      </div>
+    </div>
+    <script src="../../lib/es6/es6-promise.min.js"></script>
+    <script src="../../lib/es6/es6-bind.js"></script>
+    <script src="../../lib/es6/es6-array.js"></script>
+    <script src="../../lib/es6/es6-object-assign.js"></script>
+    <script src="../../lib/es6/es6-fetch.js"></script>
+    <script src="../../lib/red5pro/red5pro-sdk.min.js"></script>
+    <script>
+      (function(window) {
+        var configuration = (function () {
+          var conf = sessionStorage.getItem('r5proTestBed');
+          try {
+            return JSON.parse(conf);
+          }
+          catch (e) {
+            console.error('Could not read testbed configuration from sessionstorage: ' + e.message);
+          }
+          return {}
+        })();
+    
+        if (configuration.verboseLogging) {
+          window.publisherLog = function (message) {
+            console.log('[Red5ProRTMPPublisher:SWF] - ' + message);
+          };
+          window.subscriberLog = function (message) {
+            console.log('[Red5ProRTMPSubscriber:SWF] - ' + message);
+          };
+        }
+    
+        if (configuration.authentication.enabled) {
+          var node = document.createElement('div');
+          node.classList.add('hint-block', 'auth-alert');
+          var note = document.createElement('span');
+          note.innerHTML = '*<strong>Authentication is Enabled</strong>*';
+          var link = document.createElement('a');
+          link.innerText = 'Click here to disable.';
+          link.href= '../../index.html';
+          link.classList.add('auth-link');
+          node.appendChild(note);
+          node.appendChild(link);
+          var testBody = document.getElementById('back-link-container').nextElementSibling;
+          testBody.parentNode.insertBefore(node, testBody);
+        }
+    
+      })(this);
+    </script>
+    <script src="index.js"></script>
+  </body>
+</html>
