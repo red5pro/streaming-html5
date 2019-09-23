@@ -160,7 +160,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     var config = Object.assign({},
                     configuration,
                     {
-                      streamMode: configuration.recordBroadcast ? 'record' : 'live'
+                      streamMode: 'record'
                     },
                     getUserMediaConfiguration());
     var rtcConfig = Object.assign({}, config, {
