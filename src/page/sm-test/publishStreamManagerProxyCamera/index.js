@@ -157,7 +157,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             }
           })
           .then(function (json) {
-            resolve(json.serverAddress);
+            if (json.errorMessage) {
+              throw new Error(json.errorMessage);
+            } else {
+              resolve(json.serverAddress);
+            }
           })
           .catch(function (error) {
             var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)

@@ -117,7 +117,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           }
         })
         .then(function (json) {
-          resolve(json);
+          if (json.errorMessage) {
+            throw new Error(json.errorMessage);
+          } else {
+            resolve(json);
+          }
           provisionLink.href = url;
           provisionLink.innerText = url;
         })

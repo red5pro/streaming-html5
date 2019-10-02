@@ -150,7 +150,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           }
         })
         .then(function (json) {
-          resolve(json.serverAddress);
+            if (json.errorMessage) {
+              throw new Error(json.errorMessage);
+            } else {
+              resolve(json);
+            }
         })
         .catch(function (error) {
           var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
@@ -230,7 +234,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     var port = serverSettings.hlsport.toString();
     var portURI = (port.length > 0 ? ':' + port : '');
     var baseUrl = isSecure ? protocol + '://' + host : protocol + '://' + host + portURI;
-    var url = baseUrl + '/streammanager/api/2.0/event/list';
+    var apiVersion = configuration.streamManagerAPI || '2.0';
+    var url = baseUrl + '/streammanager/api/' + apiVersion + '/event/list';
     fetch(url)
       .then(function (res) {
         if (res.headers.get('content-type') &&

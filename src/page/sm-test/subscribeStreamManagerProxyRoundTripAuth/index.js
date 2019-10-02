@@ -181,7 +181,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             }
           })
           .then(function (json) {
-            resolve(json);
+            if (json.errorMessage) {
+              throw new Error(json.errorMessage);
+            } else {
+              resolve(json);
+            }
           })
           .catch(function (error) {
             var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
@@ -195,29 +199,29 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     var host = jsonResponse.serverAddress;
     var name = jsonResponse.name;
     var app = jsonResponse.scope;
-	
-	if (tokenCheckBox.checked == true)
-	{
-		console.log("Token required. Creating auth object");
-		proxyAuthConfiguration = {
-		  host: host,
-		  app: app,
-		  username: usernameField.value,
-		  password: passwordField.value,
-		  token: tokenField.value
-		};
-	}
-	else
-	{
-		console.log("Token not required. Creating auth object");
-		proxyAuthConfiguration = {
-		  host: host,
-		  app: app,
-		  username: usernameField.value,
-		  password: passwordField.value
-		};
-	}
-	
+  
+  if (tokenCheckBox.checked == true)
+  {
+    console.log("Token required. Creating auth object");
+    proxyAuthConfiguration = {
+      host: host,
+      app: app,
+      username: usernameField.value,
+      password: passwordField.value,
+      token: tokenField.value
+    };
+  }
+  else
+  {
+    console.log("Token not required. Creating auth object");
+    proxyAuthConfiguration = {
+      host: host,
+      app: app,
+      username: usernameField.value,
+      password: passwordField.value
+    };
+  }
+  
     var config = Object.assign({}, configuration, defaultConfiguration);
     var rtcConfig = Object.assign({}, config, {
       host: configuration.host,
@@ -240,8 +244,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       swfobjectURL: '../../lib/swfobject/swfobject.js',
       productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
     })
-	Object.assign(rtmpConfig, proxyAuthConfiguration);
-	
+  Object.assign(rtmpConfig, proxyAuthConfiguration);
+  
     var hlsConfig = Object.assign({}, config, {
       host: host,
       app: app,
@@ -350,7 +354,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   function startup () {
-	  loginForm.classList.add('hidden'); 
+    loginForm.classList.add('hidden'); 
     // Kick off.
     requestEdge(configuration)
       .then(respondToEdge)
@@ -366,10 +370,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     {
         alert("Error: Token field cannot be empty");
     }
-	else
-	{
-		startup();
-	}
+  else
+  {
+    startup();
+  }
   });
   
 
