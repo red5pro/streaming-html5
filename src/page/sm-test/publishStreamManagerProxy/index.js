@@ -127,8 +127,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       return new Promise(function (resolve, reject) {
         fetch(url)
           .then(function (res) {
-            if(res.status == 200)
-			{
+            if(res.status == 200){
                 if (res.headers.get("content-type") && res.headers.get("content-type").toLowerCase().indexOf("application/json") >= 0) {
                     return res.json();
                 }
@@ -136,8 +135,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
                   throw new TypeError('Could not properly parse response.');
                 }
             }
-            else
-			{
+            else{
 				var msg = "";
 				if(res.status == 400)
 				{
