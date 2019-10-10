@@ -84,7 +84,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   function displayServerAddress (serverAddress, proxyAddress) 
   {
-  proxyAddress = (typeof proxyAddress === 'undefined') ? 'N/A' : proxyAddress;
+    proxyAddress = (typeof proxyAddress === 'undefined') ? 'N/A' : proxyAddress;
     addressField.innerText = ' Proxy Address: ' + proxyAddress + ' | ' + ' Origin Address: ' + serverAddress;
   }
 
@@ -205,7 +205,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
                         });
 
     // Merge in possible authentication params.
-    rtcConfig.connectionParams = Object.assign({}, 
+    rtcConfig.connectionParams = Object.assign({},
       getAuthenticationParams().connectionParams,
       rtcConfig.connectionParams);
 
@@ -321,4 +321,3 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   window.addEventListener('beforeunload', shutdown);
 
 })(this, document, window.red5prosdk);
-
