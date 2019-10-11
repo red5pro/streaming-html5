@@ -55,10 +55,11 @@ gulp.task('build', gulp.series('move-static', function (cb) {
   cb();
 }));
 
-gulp.task('set-build-directory', function () {
+gulp.task('set-build-directory', function (cb) {
   buildDirectory = webappBuildDirectory;
+  cb()
 });
-gulp.task('build:webapp', gulp.series('set-build-directory', 'build'));
+gulp.task('build:webapp', gulp.series(['set-build-directory', 'build']));
 
 gulp.task('bump-version', function() {
   var versionType = process.env.BUMP !== undefined ? process.env.BUMP : 'patch';
