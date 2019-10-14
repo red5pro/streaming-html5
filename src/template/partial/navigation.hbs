@@ -1,178 +1,13 @@
-<link rel='stylesheet' href='//fonts.googleapis.com/css?family=Lato%3A100%2C200%2C300%2C400%2C500%2C600%2C700%2C800%2C900%2C100i%2C200i%2C300i%2C400i%2C500i%2C600i%2C700i%2C800i%2C900i&#038;subset=latin&#038;ver=5.2.3' type='text/css' media='all' />
+{{#if isTestPage}}
+<script src="../../lib/smartmenus-1.1.0/libs/jquery/jquery.js"></script>
+<link rel="stylesheet" href="../../lib/smartmenus-1.1.0/css/sm-core-css.css" />
+<link rel="stylesheet" href="../../lib/smartmenus-1.1.0/css/sm-clean/sm-clean.css" />
+{{else}}
 <script src="lib/smartmenus-1.1.0/libs/jquery/jquery.js"></script>
 <link rel="stylesheet" href="lib/smartmenus-1.1.0/css/sm-core-css.css" />
 <link rel="stylesheet" href="lib/smartmenus-1.1.0/css/sm-clean/sm-clean.css" />
-<style type="text/css">
-/* General CSS */
-a:hover, a.light:hover, .theme-heading .text::before, #top-bar-content >a:hover, #site-header.medium-header #medium-searchform button:hover, ul.meta li a:hover, .dropcap, .single nav.post-navigation .nav-links .title, #footer-widgets .footer-box a:hover, #footer-bottom a:hover, #footer-bottom #footer-bottom-menu a:hover, .sidr a:hover, .sidr-class-dropdown-toggle:hover, .sidr-class-menu-item-has-children.active >a, .sidr-class-menu-item-has-children.active >a >.sidr-class-dropdown-toggle, input[type=checkbox]:checked:before {
-    color: #ff0000;
-}
-.button, #site-navigation-wrap .dropdown-menu >li.btn >a >span, .thumbnail:hover i {
-    border-color: #ff0000;
-}
-blockquote {
-    border-color: #ff0000;
-}
-.dropdown-menu .sub-menu {
-    border-color: #ff0000;
-}
-.button:hover, #site-navigation-wrap .dropdown-menu >li.btn >a:hover >span {
-    background-color: #d14242;
-}
-a {
-    color: #1e73be;
-}
-a:hover {
-    color: #6595bf;
-}
-.page-header, .has-transparent-header .page-header {
-    padding: 0;
-}
-.page-header .page-header-title, .page-header.background-image-page-header .page-header-title {
-    color: #ffffff;
-}
-.site-breadcrumbs, .background-image-page-header .site-breadcrumbs {
-    color: #efefef;
-}
-.site-breadcrumbs ul li .breadcrumb-sep {
-    color: #efefef;
-}
-.site-breadcrumbs a, .background-image-page-header .site-breadcrumbs a {
-    color: #ffffff;
-}
-.site-breadcrumbs a:hover, .background-image-page-header .site-breadcrumbs a:hover {
-    color: #fe5252;
-}
-#scroll-top {
-    border-radius: 40px;
-}
-#scroll-top:hover {
-    background-color: #fe5252;
-}
-form input[type="text"], form input[type="password"], form input[type="email"], form input[type="url"], form input[type="date"], form input[type="month"], form input[type="time"], form input[type="datetime"], form input[type="datetime-local"], form input[type="week"], form input[type="number"], form input[type="search"], form input[type="tel"], form input[type="color"], form select, form textarea {
-    border-color: #ececec;
-}
-form input[type="text"]:focus, form input[type="password"]:focus, form input[type="email"]:focus, form input[type="tel"]:focus, form input[type="url"]:focus, form input[type="search"]:focus, form textarea:focus {
-    border-color: #dddddd;
-}
-form input[type="text"], form input[type="password"], form input[type="email"], form input[type="url"], form input[type="date"], form input[type="month"], form input[type="time"], form input[type="datetime"], form input[type="datetime-local"], form input[type="week"], form input[type="number"], form input[type="search"], form input[type="tel"], form input[type="color"], form select, form textarea {
-    color: #666666;
-}
-/* Top Bar CSS */
-#top-bar {
-    padding: 16px 0 16px 0;
-}
-#top-bar-wrap {
-    background-color: #3b3b3b;
-}
-#top-bar-wrap {
-    border-color: #999999;
-}
-#top-bar-wrap, #top-bar-content strong {
-    color: #dbdbdb;
-}
-#top-bar-content a, #top-bar-social-alt a {
-    color: #dbdbdb;
-}
-#top-bar-content a:hover, #top-bar-social-alt a:hover {
-    color: #db1f26;
-}
-.container {
-    width: 1200px;
-    max-width: 90%;
-    margin: 0 auto;
-}
-@media only screen and (min-width: 1024px) {
-  #top-bar-content {
-    float: none;
-    text-align: right;
-  }
-}
-@media only screen and (max-width: 1023px) {
-  #top-bar-content {
-    float: none;
-    text-align: center;
-  }
-}
-#menu-top-menu {
-  letter-spacing: .6px;
-  box-sizing: border-box;
-  border: 0;
-  outline: 0;
-  vertical-align: baseline;
-  font-size: 100%;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  touch-action: pan-y;
-}
-
-.menu-item {
-  color: #dbdbdb;
-  letter-spacing: .6px;
-  box-sizing: border-box;
-  border: 0;
-  outline: 0;
-  vertical-align: baseline;
-  font-size: 100%;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  position: relative;
-  white-space: normal;
-  display: inline-block;
-  float: none;
-  margin-right: 15px;
-}
-
-/* Header CSS */
-#site-navigation-wrap .dropdown-menu >li >a, .after-header-content-inner >a {
-    line-height: 80px;
-}
-#site-header, .has-transparent-header .is-sticky #site-header, .has-vh-transparent .is-sticky #site-header.vertical-header, #searchform-header-replace {
-    background-color: #3b3b3b;
-}
-#site-header {
-    border-color: #3b3b3b;
-}
-#site-header.has-header-media .overlay-header-media {
-    background-color: rgba(0, 0, 0, 0.5);
-}
-.dropdown-menu .sub-menu {
-    min-width: 150px;
-}
-.mobile-menu .hamburger-inner, .mobile-menu .hamburger-inner::before, .mobile-menu .hamburger-inner::after {
-    background-color: #000000;
-}
-#ocn-cookie-wrap .ocn-btn:hover {
-    background-color: #0b7cac;
-}
-#ocn-cookie-wrap .ocn-icon svg {
-    fill: #777;
-}
-#ocn-cookie-wrap .ocn-icon:hover svg {
-    fill: #333;
-}
-/* Typography CSS */body {
-    font-family: Lato;
-}
-#top-bar-content, #top-bar-social-alt {
-    font-size: 13px;
-    letter-spacing: .6px;
-}
-#site-navigation-wrap .dropdown-menu >li >a, #site-header.full_screen-header .fs-dropdown-menu >li >a, #site-header.top-header #site-navigation-wrap .dropdown-menu >li >a, #site-header.center-header #site-navigation-wrap .dropdown-menu >li >a, #site-header.medium-header #site-navigation-wrap .dropdown-menu >li >a {
-    font-weight: 600;
-    font-size: 12px;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-}
-.dropdown-menu ul li a.menu-link, #site-header.full_screen-header .fs-dropdown-menu ul.sub-menu li a {
-    font-size: 13px;
-    line-height: 1.8;
-}
-</style>
-<!-- /top-nev -->
-<!-- smart menu clean -->
+{{/if}}
+<!-- smart menu clean overrides -->
 <style>
 @media (min-width: 1024px) {
   /* Switch to desktop layout
@@ -410,8 +245,7 @@ form input[type="text"], form input[type="password"], form input[type="email"], 
     background: #fff;
   }
 }
-</style>
-<style>
+
 .main-nav {
   background: #3b3b3b;
   padding: 0 20px;
@@ -467,7 +301,6 @@ form input[type="text"], form input[type="password"], form input[type="email"], 
   }
 }
 
-
 /* Mobile menu toggle button */
 
 .main-menu-btn {
@@ -511,7 +344,6 @@ form input[type="text"], form input[type="password"], form input[type="email"], 
   top: 7px;
   left: 0;
 }
-
 
 /* x icon */
 
@@ -631,39 +463,7 @@ form input[type="text"], form input[type="password"], form input[type="email"], 
 .sm-clean a .sub-arrow {
   background: 0;
 }
-
-/*
-@media (max-width: 1023px) {
-  .sm-clean a .sub-arrow {
-    background-color: #3b3b3b;
-    background-alpha: 0;
-    color: #dbdbdb;
-  }
-  .sm-clean a .sub-arrow:hover, .sm-clean a .sub-arrow:focus, .sm-clean a .sub-arrow:active {
-    color: #db1f26;
-  }
-  .sm-clean a .sub-arrow::before {
-      content: '+';
-  }
-}
-*/
 </style>
-<div id="top-bar-wrap" class="clr">
-  <div id="top-bar" class="clr container has-no-content">
-    <div id="top-bar-inner" class="clr">
-      <div id="top-bar-content" class="clr top-bar-right">
-        <div id="top-bar-nav" class="navigation clr">
-          <ul id="menu-top-menu" class="top-bar-menu dropdown-menu sf-menu sf-js-enabled" style="touch-action: pan-y;">
-            <li id="menu-item-801" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-801"><a href="https://account.red5pro.com/register" class="menu-link">Sign Up</a></li>
-            <li id="menu-item-802" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-802"><a href="https://account.red5pro.com/login" class="menu-link">Log In</a></li>
-            <li id="menu-item-3017" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-3017"><a href="https://red5pro.com/contact-information/" class="menu-link">Contact Us</a></li>
-            <li id="menu-item-2150" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-2150"><a href="https://calendly.com/red5-pro/15-minute-phone-call" class="menu-link">Let’s Talk!</a></li>
-          </ul>
-        </div>
-      </div><!-- #top-bar-content -->
-    </div><!-- #top-bar-inner -->
-  </div><!-- #top-bar -->
-</div>
 <nav class="main-nav" role="navigation">
 
   <!-- Mobile menu toggle button (hamburger/x icon) -->
@@ -672,11 +472,17 @@ form input[type="text"], form input[type="password"], form input[type="email"], 
     <span class="main-menu-btn-icon"></span> Toggle main menu visibility
   </label>
 
-  <div class="nav-brand" href="/" data-elementor-open-lightbox="">
+  <div class="nav-brand" href="https://www.red5pro.com" data-elementor-open-lightbox="">
     <a href="https://www.red5pro.com">
+      {{#if isTestPage}}
+      <img alt="Red5 Pro" class="brand-icon" src="../../css/assets/Red5Pro_logo_white_red.svg">
+        <noscript><img alt="Red5 Pro" data-src="../../css/assets/Red5Pro_logo_white_red.svg" class="brand-icon" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" />
+        <noscript><img src="../../css/assets/Red5Pro_logo_white_red.svg" class="brand-icon" alt="Red5 Pro" /></noscript>
+      {{else}}
       <img alt="Red5 Pro" class="brand-icon" src="css/assets/Red5Pro_logo_white_red.svg">
         <noscript><img alt="Red5 Pro" data-src="css/assets/Red5Pro_logo_white_red.svg" class="brand-icon" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" />
         <noscript><img src="css/assets/Red5Pro_logo_white_red.svg" class="brand-icon" alt="Red5 Pro" /></noscript>
+      {{/if}}
     </a>
 </div>
 
@@ -774,7 +580,11 @@ form input[type="text"], form input[type="password"], form input[type="email"], 
     </li>
   </ul>
 </nav>
-<script src="lib/smartmenus-1.1.0/jquery.smartmenus.js"></script>
+{{#if isTestPage}}
+  <script src="../../lib/smartmenus-1.1.0/jquery.smartmenus.js"></script>
+{{else}}
+  <script src="lib/smartmenus-1.1.0/jquery.smartmenus.js"></script>
+{{/if}}
 <script>
 // SmartMenus init
 $(function() {
