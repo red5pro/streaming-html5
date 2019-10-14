@@ -77,6 +77,11 @@ form input[type="text"], form input[type="password"], form input[type="email"], 
 #top-bar-content a:hover, #top-bar-social-alt a:hover {
     color: #db1f26;
 }
+.container {
+    width: 1200px;
+    max-width: 90%;
+    margin: 0 auto;
+}
 @media only screen and (min-width: 1024px) {
   #top-bar-content {
     float: none;
@@ -410,15 +415,7 @@ form input[type="text"], form input[type="password"], form input[type="email"], 
 .main-nav {
   background: #3b3b3b;
   padding: 0 20px;
-  border-top: #dbdbdb solid 1px;
-  display: -ms-flexbox;
-  display: -webkit-flex;
-  display: flex;
-  -ms-flex-align: center;
-  -webkit-align-items: center;
-  -webkit-box-align: center;
-  align-items: center;
-  justify-content: space-between;
+  border-top: rgb(146, 146, 146) solid 1px;
 }
 
 .main-nav:after {
@@ -457,6 +454,16 @@ form input[type="text"], form input[type="password"], form input[type="email"], 
   #main-menu {
     float: right;
     clear: none;
+  }
+  .main-nav {
+    display: -ms-flexbox;
+    display: -webkit-flex;
+    display: flex;
+    -ms-flex-align: center;
+    -webkit-align-items: center;
+    -webkit-box-align: center;
+    align-items: center;
+    justify-content: space-between;
   }
 }
 
@@ -583,30 +590,46 @@ form input[type="text"], form input[type="password"], form input[type="email"], 
     border-radius: 0px !important;
     color: #dbdbdb;
   }
+  .sm-clean li {
+    padding: 0 8px;
+  }
+  .sm-clean a .sub-arrow {
+    margin-top: 0px;
+    right: 6px;
+  }
 }
 
 .sm-clean {
   background-color: #3b3b3b;
 }
+
 .sm-clean a, .sm-clean ul a {
   color: #dbdbdb;
   font-family: Lato;
   font-size: 16px;
-  font-weight: 500;
+  font-weight: 400;
+}
+
+.sm-clean a .sub-arrow, .sm-clean ul a .sub-arrow {
+  border-color: #dbdbdb transparent transparent transparent;
 }
 
 .sm-clean a:hover {
   color: #db1f26;
   font-family: Lato;
   font-size: 16px;
-  font-weight: 500;
+  font-weight: 400;
 }
 
 .sm-clean a:focus, sm-clean a:active {
   color: #db1f26;
   font-family: Lato;
   font-size: 16px;
-  font-weight: 500;
+  font-weight: 400;
+}
+
+.sm-clean a .sub-arrow {
+  background: 0;
 }
 
 /*
@@ -643,6 +666,12 @@ form input[type="text"], form input[type="password"], form input[type="email"], 
 </div>
 <nav class="main-nav" role="navigation">
 
+  <!-- Mobile menu toggle button (hamburger/x icon) -->
+  <input id="main-menu-state" type="checkbox" />
+  <label class="main-menu-btn" for="main-menu-state">
+    <span class="main-menu-btn-icon"></span> Toggle main menu visibility
+  </label>
+
   <div class="nav-brand" href="/" data-elementor-open-lightbox="">
     <a href="https://www.red5pro.com">
       <img alt="Red5 Pro" class="brand-icon" src="css/assets/Red5Pro_logo_white_red.svg">
@@ -650,12 +679,6 @@ form input[type="text"], form input[type="password"], form input[type="email"], 
         <noscript><img src="css/assets/Red5Pro_logo_white_red.svg" class="brand-icon" alt="Red5 Pro" /></noscript>
     </a>
 </div>
-
-  <!-- Mobile menu toggle button (hamburger/x icon) -->
-  <input id="main-menu-state" type="checkbox" />
-  <label class="main-menu-btn" for="main-menu-state">
-    <span class="main-menu-btn-icon"></span> Toggle main menu visibility
-  </label>
 
   <!-- Sample menu definition -->
   <ul id="main-menu" class="sm sm-clean">
