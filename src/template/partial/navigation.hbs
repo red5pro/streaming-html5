@@ -411,6 +411,14 @@ form input[type="text"], form input[type="password"], form input[type="email"], 
   background: #3b3b3b;
   padding: 0 20px;
   border-top: #dbdbdb solid 1px;
+  display: -ms-flexbox;
+  display: -webkit-flex;
+  display: flex;
+  -ms-flex-align: center;
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .main-nav:after {
@@ -635,12 +643,6 @@ form input[type="text"], form input[type="password"], form input[type="email"], 
 </div>
 <nav class="main-nav" role="navigation">
 
-  <!-- Mobile menu toggle button (hamburger/x icon) -->
-  <input id="main-menu-state" type="checkbox" />
-  <label class="main-menu-btn" for="main-menu-state">
-    <span class="main-menu-btn-icon"></span> Toggle main menu visibility
-  </label>
-
   <div class="nav-brand" href="/" data-elementor-open-lightbox="">
     <a href="https://www.red5pro.com">
       <img alt="Red5 Pro" class="brand-icon" src="css/assets/Red5Pro_logo_white_red.svg">
@@ -648,6 +650,12 @@ form input[type="text"], form input[type="password"], form input[type="email"], 
         <noscript><img src="css/assets/Red5Pro_logo_white_red.svg" class="brand-icon" alt="Red5 Pro" /></noscript>
     </a>
 </div>
+
+  <!-- Mobile menu toggle button (hamburger/x icon) -->
+  <input id="main-menu-state" type="checkbox" />
+  <label class="main-menu-btn" for="main-menu-state">
+    <span class="main-menu-btn-icon"></span> Toggle main menu visibility
+  </label>
 
   <!-- Sample menu definition -->
   <ul id="main-menu" class="sm sm-clean">
