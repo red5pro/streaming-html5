@@ -35,12 +35,16 @@ html {
 }
 
 h1 {
-  font-size: 3rem;
+  font-size: 2rem;
+  font-weight: 500;
+  text-transform: uppercase;
   margin: 1rem 0;
 }
 
 h2 {
-  font-size: 2rem;
+  font-size: 1.5rem;
+  font-weight: 500;
+  text-transform: uppercase;
   margin: 1.4rem 0;
 }
 
@@ -96,9 +100,9 @@ a, a:hover, a:focus {
 }
 
 .version-field {
-  text-align: right;
+  float: right;
+  margin-right: 1.4rem; /* container is padded 1.4rem */
   font-size: 0.75rem;
-  padding: 0.4rem;
  }
 
 .centered {
@@ -129,12 +133,16 @@ a, a:hover, a:focus {
   color: white;
 }
 
+#settings-container {
+  padding: 20px;
+}
+
 .settings-field {
   margin: 1rem;
 }
 
 .settings-label {
-  width: 50%;
+  width: 45%;
   display: inline-block;
   margin-right: 1rem;
   text-align: right;
@@ -142,7 +150,6 @@ a, a:hover, a:focus {
 
 .settings-field > input {
   height: 1.5rem;
-  min-width: 240px;
   font-size: 1rem;
   padding-left: 0.8rem;
 }
@@ -154,10 +161,14 @@ a, a:hover, a:focus {
 }
 
 .swap-streams-link {
-  color: #00a9ff;
+  color: #3580A2;
   cursor: pointer;
-  margin-left: 50%;
+  margin-left: 47%;
   padding-left: 1rem;
+}
+
+.swap-streams-link > span {
+  text-decoration: underline;
 }
 
 .instructions-block {
@@ -222,26 +233,29 @@ a, a:hover, a:focus {
 #back-link-container {
   cursor: pointer;
   width: 100%;
+  padding: 1.4rem 0;
   text-align: center;
-  border-bottom: 1px #ccc solid;
-  background-color: #eee;
+  border-bottom: 1px #999999 solid;
+  background-color: #fff;
+  border-top: 3px #db1f26 solid;
+  color: #3b3b3b;
+  overflow: auto;
 }
 
-#back-link {
-  padding-left: 0.8rem;
-  line-height: 4rem;
-  color: #00a9ff;
+.back-link {
+  float: left;
+  margin-left: 1.4rem;
 }
 
-#back-link > a {
+.back-link > a {
   margin: 0;
   text-decoration: none;
   display: block;
-  color: #00a9ff;
+  color: #3580A2;
 }
 
-#back-link > a:focus {
-  color: #00a9ff;
+.back-link > a:focus, .back-link > a:hover {
+  color: #db1f26;
 }
 
 #test-list {
@@ -276,6 +290,9 @@ a, a:hover, a:focus {
 @media (max-width:510px) {
   .red5pro-media-volume-slider {
     width: 65px;
+  }
+  .settings-field {
+    margin: 2rem 1rem;
   }
   .settings-field > input {
     width: 90%;

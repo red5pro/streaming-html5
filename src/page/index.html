@@ -23,9 +23,11 @@
     {{> top-bar }}
     {{> navigation isTestPage=false }}
     <div id="app">
-      {{> version }}
-      <div id="back-link-container" style="text-align: left;"><p id="back-link"><a href="testbed-menu.html">&lt; Testbed Menu</a></p></div>
-      <div class="ice-background">
+      <div id="back-link-container" style="text-align: left;">
+        <p class="back-link"><a href="testbed-menu.html">&lt; Testbed Menu</a></p>
+        <p class="version-field">Testbed Version: {{ version }}</p>
+      </div>
+      <div class="ice-background hidden">
         <div class="test-notification">
         <p>If these example pages are served over HTTPS, it is required that the target <code>host</code> is also accessible over HTTPS.</p>
         <br/>
@@ -36,6 +38,8 @@
       </div>
       <div id="settings-container">
         <h1 class="centered">Settings</h1>
+        <hr class="paddedHR" />
+        <h2 class="centered">General</h2>
         <p class="settings-field">
           <label class="settings-label">Host:</label>
           <input id="host-field" name="host-field" value="localhost">
@@ -111,6 +115,7 @@
           <input id="sm-api-field" name="sm-api-field" placeholder="e.g., 3.1">
         </p>
         <hr class="paddedHR" />
+        <h2 class="centered">Authentication</h2>
         <p class="settings-field">
           <label class="settings-label">Authentication Enabled:</label>
           <input type="checkbox" id="auth-enabled-field" name="auth-enabled-field" style="vertical-align: middle;">
