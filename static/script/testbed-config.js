@@ -66,7 +66,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   function assignStorage () {
     json = {
       "version": build_version,
-      "host": window.location.host,
+      "host": window.location.hostname,
       "port": 8554, // rtsp
       "stream1": "stream1",
       "stream2": "stream2",
