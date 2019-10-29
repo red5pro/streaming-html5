@@ -39,6 +39,7 @@ h1 {
   font-weight: 500;
   text-transform: uppercase;
   margin: 1rem 0;
+  line-height: 1.5em;
 }
 
 h2 {
@@ -86,6 +87,14 @@ a, a:hover, a:focus {
   background-color: #eef7ff;
 }
 
+.paddedHR {
+  margin: 2rem 0;
+  display: block;
+  height: 1px;
+  border: 0;
+  border-top: 1px solid #dbdbdb;
+}
+
 .test-notification {
   padding: 20px;
   line-height: 20px;
@@ -100,7 +109,6 @@ a, a:hover, a:focus {
 }
 
 .version-field {
-  float: right;
   margin-right: 1.4rem; /* container is padded 1.4rem */
   font-size: 0.75rem;
  }
@@ -233,18 +241,18 @@ a, a:hover, a:focus {
 #back-link-container {
   cursor: pointer;
   width: 100%;
-  padding: 1.4rem 0;
   text-align: center;
   border-bottom: 1px #999999 solid;
   background-color: #fff;
   border-top: 3px #db1f26 solid;
   color: #3b3b3b;
-  overflow: auto;
+  display: flex;
+  align-items: center;
 }
 
 .back-link {
-  float: left;
   margin-left: 1.4rem;
+  flex: 1;  
 }
 
 .back-link > a {
@@ -252,6 +260,7 @@ a, a:hover, a:focus {
   text-decoration: none;
   display: block;
   color: #3580A2;
+  padding: 1.4rem 0;
 }
 
 .back-link > a:focus, .back-link > a:hover {

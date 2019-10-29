@@ -12,11 +12,14 @@
     {{> top-bar }}
     {{> navigation isTestPage=false }}
     <div id="app">
-        {{> version }}
-        <div id="back-link-container" style="text-align: left;"><p id="back-link"><a href="index.html">&lt; Settings</a></p></div>
+      <div id="back-link-container" style="text-align: left;">
+        <p class="back-link"><a href="index.html">&lt; Settings</a></p>
+        <p class="version-field">Testbed Version: {{ version }}</p>
+      </div>
+      <div id="settings-container">
         <h1 class="centered">Red5 Pro HTML Testbed</h1>
-        <hr style="margin-bottom: 0px" />
-          <ul id="test-list">
+        <hr class="paddedHR" />
+        <ul id="test-list">
             <li class="top-level-listing"><a href="testbed-menu-sm.html">Stream Manager Tests</a></li>
             <li><a href="test/publish">Publish</a></li>
             <li><a href="test/publish1080">Publish - 1080p</a></li>
