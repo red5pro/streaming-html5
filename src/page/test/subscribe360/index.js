@@ -65,6 +65,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var frameWidth = 0;
   var frameHeight = 0;
   function updateStatistics (b, p, w, h) {
+    statisticsField.classList.remove('hidden');
     statisticsField.innerText = 'Bitrate: ' + Math.floor(b) + '. Packets Received: ' + p + '.' + ' Resolution: ' + w + ', ' + h + '.';
   }
 

@@ -63,7 +63,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var packetsReceived = 0;
   var frameWidth = 0;
   var frameHeight = 0;
+
   function updateStatistics (b, p, w, h) {
+    statisticsField.classList.remove('hidden');
     statisticsField.innerText = 'Bitrate: ' + Math.floor(b) + '. Packets Received: ' + p + '.' + ' Resolution: ' + w + ', ' + h + '.';
   }
 
@@ -167,17 +169,17 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var config = Object.assign({},
     configuration,
     defaultConfiguration,
-    getAuthenticationParams());
+    getAuthenticationParams(), {
+      streamName: config.stream1
+    });
   var rtcConfig = Object.assign({}, config, {
     protocol: getSocketLocationFromProtocol().protocol,
     port: getSocketLocationFromProtocol().port,
-    subscriptionId: 'subscriber-' + instanceId,
-    streamName: config.stream1,
+    subscriptionId: 'subscriber-' + instanceId
   })
   var rtmpConfig = Object.assign({}, config, {
     protocol: 'rtmp',
     port: serverSettings.rtmpport,
-    streamName: config.stream1,
     width: config.cameraWidth,
     height: config.cameraHeight,
     backgroundColor: '#000000',
@@ -187,9 +189,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   })
   var hlsConfig = Object.assign({}, config, {
     protocol: protocol,
-    port: isSecure ? serverSettings.hlssport : serverSettings.hlsport,
-    streamName: config.stream1,
-    mimeType: 'application/x-mpegURL'
+    port: isSecure ? serverSettings.hlssport : serverSettings.hlsport
   })
 
   // Define failover order.

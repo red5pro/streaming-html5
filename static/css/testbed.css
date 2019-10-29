@@ -54,7 +54,7 @@ em {
 }
 
 strong {
-  font-weight: bold;
+  font-weight: 700;
 }
 
 code {
@@ -77,6 +77,14 @@ a, a:hover, a:focus {
 
 .hidden {
   display: none;
+}
+
+.strong {
+  font-weight: 700;
+}
+
+.red-text {
+  color: #db1f26;
 }
 
 .red5pro-media-container {
@@ -103,6 +111,10 @@ a, a:hover, a:focus {
   text-align: justify;
 }
 
+.test-title {
+  font-size: 1.2rem;
+}
+
 .loading-text {
   padding: 2rem;
   font-size: 1.2rem;
@@ -119,20 +131,31 @@ a, a:hover, a:focus {
 }
 
 .status-field {
-  padding: 0.8rem 0;
-  background-color: #eee;
-  border-top: 1px solid black;
+  padding: 1rem 0;
+  background-color: #dbdbdb;
+  border-top: 1px solid #999;
+}
+
+.statistics-field {
+  background-color: #3b3b3b;
+  color: #dbdbdb;
+}
+
+.test-info_stream-title {
+  text-align: center;
+  margin-top: -10px;
+  margin-bottom: 20px;
 }
 
 .error-field {
-  padding: 0.8rem 0;
-  background-color: rgb(255, 240, 240);
-  color: rgb(251, 19, 33);
+  padding: 1rem 0;
+  background-color: #db1f26;;
+  color: #fff;
 }
 
 .subscriber-status-field {
-  padding: 0.8rem;
-  background-color: #eee;
+  padding: 1rem;
+  background-color: #dbdbdb;
 }
 
 .failover-detected-field {
@@ -202,11 +225,15 @@ a, a:hover, a:focus {
 }
 
 .auth-alert {
-  background-color: #bae4fb;
+  font-weight: 300;
+  background-color: #3580a2;
+  color: #fff;
 }
 
 .auth-link {
   margin-left: 0.6rem;
+  color: #fff;
+  text-decoration: underline;
 }
 
 .video-element {

@@ -43,16 +43,12 @@
       .red5pro-media-control-bar {
         z-index: 100;
       }
-      /*
-      .red5pro-media-fullscreen-button {
-        display: none;
-      }
-      */
     </style>
   </head>
   <body>
+    {{> top-bar }}
+    {{> navigation isTestPage=true }}
     <div id="app">
-      {{> version }}
       {{> settings-link}}
       {{> test-info testTitle='Subscriber 360 Test'}}
       {{> status-field-subscriber}}

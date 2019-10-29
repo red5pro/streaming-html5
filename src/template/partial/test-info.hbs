@@ -1,13 +1,4 @@
-<h1 class="centered">{{ testTitle }}</h1>
-<hr />
-<h2 class="centered"><em>stream</em>: <span id="stream-title">{{ streamName }}</span></h2>
-<script>
-(function() {
-  try {
-    var conf = JSON.parse(sessionStorage.getItem('r5proTestBed'));
-    document.getElementById('stream-title').innerText = conf ? conf.stream1 : 'N/A';
-  } catch (e) {
-    // it's alright.
-  }
-})();
-</script>
+<div class="test-info">
+  <h1 class="centered test-title red-text">{{ testTitle }}</h1>
+  <p id="stream-title" class="centered test-info_stream-title">UNKOWN</p>
+</div>

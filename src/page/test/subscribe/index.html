@@ -7,8 +7,9 @@
     {{> header-stylesheets}}
   </head>
   <body>
+    {{> top-bar }}
+    {{> navigation isTestPage=true }}
     <div id="app">
-      {{> version }}
       {{> settings-link}}
       {{> test-info testTitle='Subscriber Test'}}
       {{> status-field-subscriber}}
