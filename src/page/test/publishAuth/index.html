@@ -6,17 +6,17 @@
     {{> header-scripts}}
     {{> header-stylesheets}}
     <style>
-      #login-form {
-        padding: 10px 0;
-        background-color: #afafaf;
+      .settings-area {
+        background-color: #eeee;
       }
-      #login-form p {
-        margin: 10px 0;
+      .settings-field, .settings-field > input {
+        font-size: 1em;
       }
-      #login-form p label {
-        margin-right: 6px;
-        width: 100%;
-        text-align: right;
+      .info-title {
+        padding: 20px 0;
+      }
+      .paddedHR {
+        margin: 0!important;
       }
     </style>
   </head>
@@ -25,14 +25,20 @@
       {{> settings-link}}
       {{> test-info testTitle='Publish Authentication Test'}}
       <div class="stream-section">
+        <div id="login-form" class="settings-area">
+          <h3 class="centered info-title">Log In to begin your Broadcast:</h3>
+          <hr class="paddedHR">
+          <p class="settings-field settings-collapsable">
+            <label for="username-field" class="settings-label">Username:</label>
+            <input id="username-field" name="username-field">
+          </p>
+          <p class="settings-field settings-collapsable">
+            <label for="password-field" class="settings-label">Password:</label>
+            <input id="password-field" name="password-field"></p>
+          <button id="submit-button" class="ui-button">Submit</button>
+        </div>
         {{> status-field-publisher}}
         {{> statistics-field}}
-        <div id="login-form" class="centered">
-          <p>Log In to begin your Broadcast:</p>
-          <p><label for="username-field">username:</label><input id="username-field" name="username-field"></p>
-          <p><label for="password-field">password:</label><input id="password-field" name="password-field"></p>
-          <button id="submit-button">submit</button>
-        </div>
         <div class="centered">
           <video id="red5pro-publisher" class="red5pro-publisher"
                  controls autoplay playsinline muted>

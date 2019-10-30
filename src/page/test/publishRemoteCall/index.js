@@ -53,8 +53,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   var updateStatusFromEvent = window.red5proHandlePublisherEvent; // defined in src/template/partial/status-field-publisher.hbs
   var streamTitle = document.getElementById('stream-title');
+  var sendButton = document.getElementById('send-button');
+  var messageInput = document.getElementById('message-input');
   var statisticsField = document.getElementById('statistics-field');
-  var captureTarget = document.getElementById('video-container');
   var bitrateField = document.getElementById('bitrate-field');
   var packetsField = document.getElementById('packets-field');
   var resolutionField = document.getElementById('resolution-field');
@@ -84,11 +85,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
 
-  captureTarget.addEventListener('click', function (event) {
-    var elem = event.currentTarget.children[0];
+  sendButton.addEventListener('click', function (event) {
+    var elem = document.getElementById('red5pro-publisher');
     if (targetPublisher !== undefined) {
       targetPublisher.send("whateverFunctionName", {
-        message: "The publisher wants your attention",
+        message: messageInput.value === '' ? 'The publisher wants your attention.' : messageInput.value,
         touchX: event.offsetX / elem.clientWidth,
         touchY: event.offsetY / elem.clientHeight
       });

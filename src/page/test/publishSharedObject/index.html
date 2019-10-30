@@ -5,6 +5,24 @@
     {{> meta title='Publish Shared Object'}}
     {{> header-scripts}}
     {{> header-stylesheets}}
+    <style>
+      .settings-area {
+        padding: 5px;
+        background-color: #eeee;
+      }
+      .settings-field, .settings-field > input {
+        font-size: 1em;
+      }
+      .so-container {
+        width: 50%; 
+        min-width: 320px;
+        margin: 0 auto;
+      }
+      #so-field {
+        width: 100%;
+        min-height: 240px;
+      }
+    </style>
   </head>
   <body>
     {{> top-bar }}
@@ -20,14 +38,15 @@
                  controls autoplay playsinline muted>
           </video>
         </div>
-        <div class="centered status-field">
-          <p>
-            <input type="text" id="input-field" />
-            <button id="send-button">send</button>
+        <div class="settings-area">
+          <p class="settings-field settings-collapsable">
+            <label class="settings-label" for="message-input">Message:</label>
+            <input id="input-field" name="input-field" type="text"></input>
           </p>
-          <hr>
-          <p>
-            <textarea id="so-field" disabled style="width: 50%; min-height: 240px; min-width: 320px"></textarea>
+          <p><button class="ui-button" id="send-button">Send</button></p>
+          <hr class="paddedHR">
+          <p class="so-container">
+            <textarea id="so-field" disabled></textarea>
           </p>
         </div>
       </div>

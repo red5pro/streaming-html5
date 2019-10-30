@@ -88,6 +88,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     updateStatistics(bitrate, packetsSent, frameWidth, frameHeight);
   }
 
+  streamTitle.innerText = configuration.stream1;
 
   var protocol = serverSettings.protocol;
   var isSecure = protocol == 'https';
