@@ -101,8 +101,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   function addMuteListener (publisher) {
     muteAudioButton.addEventListener('click', function () {
-      var wasMuted = muteAudioButton.innerText === 'unmute audio';
-      muteAudioButton.innerText = wasMuted ? 'mute audio' : 'unmute audio';
+      var wasMuted = muteAudioButton.innerText === 'Unmute Audio';
+      muteAudioButton.innerText = wasMuted ? 'Mute audio' : 'Unmute Audio';
       if (wasMuted) {
         publisher.unmuteAudio();
       }
@@ -111,8 +111,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       }
     });
     muteVideoButton.addEventListener('click', function () {
-      var wasMuted = muteVideoButton.innerText === 'unmute video';
-      muteVideoButton.innerText = wasMuted ? 'mute video' : 'unmute video';
+      var wasMuted = muteVideoButton.innerText === 'Unmute Video';
+      muteVideoButton.innerText = wasMuted ? 'Mute Video' : 'Unmute Video';
       if (wasMuted) {
         publisher.unmuteVideo();
       }

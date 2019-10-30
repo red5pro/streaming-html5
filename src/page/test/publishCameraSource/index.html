@@ -5,20 +5,6 @@
     {{> meta title='WebRTC Publish Camera Source Test'}}
     {{> header-scripts}}
     {{> header-stylesheets}}
-    <style>
-      .camera-select-form {
-        text-align: center;
-        padding: 10px;
-      }
-      #camera-select {
-        height: 1.5rem;
-        font-size: 1rem;
-        margin-left: 1em;
-      }
-      #publish-button {
-        margin-top: 10px;
-      }
-    </style>
   </head>
   <body>
     {{> top-bar }}
@@ -28,12 +14,12 @@
       {{> test-info testTitle='Publish Camera Source Test (WebRTC)'}}
       <div class="stream-section">
         <div class="instructions-block">
-          <p class="camera-select-field camera-select-form">
-            <label for="camera-select" class="label-style">Select a Camera:</label>
+          <p class="camera-select-field camera-select-form settings-field settings-collapsable">
+            <label for="camera-select" class="label-style settings-label">Select a Camera:</label>
             <select id="camera-select" class="control"></select>
           </p>
           <p>
-            <button id="publish-button" class="control ui-button" disabled>Publish</button>          
+            <button id="publish-button" class="control ui-button" disabled>Publish</button>
           </p>
         </div>
         {{> status-field-publisher}}

@@ -163,6 +163,7 @@ a, a:hover, a:focus {
 
 .ui-button:disabled {
   opacity: 0.5;
+  cursor: auto;
 }
 
 .test-info_stream-title {
@@ -227,13 +228,8 @@ a, a:hover, a:focus {
 }
 
 .instructions-block {
-  margin: 1rem;
+  padding-top: 10px;
   background-color: #eee;
-  border: 1px #ccc solid;
-}
-
-.instructions-block > p {
-  margin: 0.75rem;
 }
 
 .hint-block {
@@ -359,6 +355,7 @@ a, a:hover, a:focus {
   }
   .settings-field.settings-collapsable > select {
     width: 90%;
+    display: block;
   }
   .settings-collapsable > .settings-label {
     width: 100%;

@@ -94,7 +94,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   var SELECT_DEFAULT = 'Select a camera...';
   var current_selection = SELECT_DEFAULT;
-  var deviceList;
   // Fill Camera listing.
   (function (cameraSelect) {
     navigator.mediaDevices.enumerateDevices()
@@ -108,29 +107,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         var options = cameras.map(function (camera, index) {
           return '<option value="' + camera.deviceId + '">' + (camera.label || 'camera ' + index) + '</option>';
         });
-        deviceList = cameras.map(function (camera) {
-          return camera.deviceId;
-        });
         cameraSelect.innerHTML = options.join(' ');
       })
       .catch(function (error) {
         console.error('Could not access camera devices: ' + error);
       });
   })(cameraSelect);
-
-  // eslint-disable-next-line no-unused-vars
-  function getSelectedIndexFromTrack (track) {
-    var i = deviceList.length;
-    while (--i > -1) {
-      var option = deviceList[i];
-      if (option.value === track.id) {
-        break;
-      }
-    }
-    if (i > -1) {
-      cameraSelect.selectedIndex = i;
-    }
-  }
 
   var protocol = serverSettings.protocol;
   var isSecure = protocol == 'https';
@@ -144,8 +126,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     console.log('[Red5ProPublisher] ' + event.type + '.');
     updateStatusFromEvent(event);
     if (event.type === 'WebRTC.MediaStream.Available') {
-      // var stream = event.data;
-      // TODO: set cameraSelect.selectedIndex from getSelectedIndexFromTrack(data.getVideoTracks[0]);
+      var tracks = publisher.getMediaStream().getVideoTracks();
+      tracks.forEach(function (track) {
+        cameraSelect.value = track.getSettings().deviceId;
+      });
     }
   }
   function onPublishFail (message) {
