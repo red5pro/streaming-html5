@@ -113,11 +113,32 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     muteVideoButton.addEventListener('click', function () {
       var wasMuted = muteVideoButton.innerText === 'Unmute Video';
       muteVideoButton.innerText = wasMuted ? 'Mute Video' : 'Unmute Video';
+      var videoElement = document.getElementById('red5pro-publisher');
       if (wasMuted) {
         publisher.unmuteVideo();
+        var connection = publisher.getPeerConnection();
+        navigator.mediaDevices.getUserMedia(getUserMediaConfiguration())
+          .then(function (stream) {
+            var senders = connection.getSenders();
+            var tracks = stream.getTracks();
+            var i = tracks.length;
+            while ( --i > -1) {
+              if (tracks[i].kind === 'video') {
+                senders[i].replaceTrack(tracks[i]);
+              }
+            }
+            videoElement.srcObject = stream;
+          })
+          .catch (function (error) {
+            console.error('Could not replace track : ' + error.message);
+          });
       }
       else {
         publisher.muteVideo();
+        var stream = videoElement.srcObject
+        stream.getVideoTracks().forEach(track => {
+          track.stop();
+        })
       }
     });
   }
