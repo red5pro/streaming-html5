@@ -330,13 +330,13 @@ a, a:hover, a:focus {
   .settings-field {
     margin: 2rem 1rem;
   }
-  .settings-field > input {
+  .settings-field.settings-collapsable > input {
     width: 90%;
   }
-  .settings-field > select {
+  .settings-field.settings-collapsable > select {
     width: 90%;
   }
-  .settings-label {
+  .settings-collapsable > .settings-label {
     width: 100%;
     text-align: left;
     margin-left: 0.3rem;
