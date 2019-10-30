@@ -112,6 +112,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     updateStatistics(bitrate, packetsSent, frameWidth, frameHeight);
   }
 
+  streamTitle.innerText = configuration.stream1;
 
   var protocol = serverSettings.protocol;
   var isSecure = protocol == 'https';
@@ -132,6 +133,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   function onPublishFail (message) {
     console.error('[Red5ProPublisher] Publish Error :: ' + message);
+    captureButton.disabled = false;
+    updateStatusFromEvent({
+      type: 'ERROR',
+      data: message
+    });
   }
 
   function onPublishSuccess (publisher) {
@@ -170,6 +176,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   function capture (cb) {
+    captureButton.disabled = true;
     var vw = parseInt(cameraWidthField.value);
     var vh = parseInt(cameraHeightField.value);
     var fr = parseInt(framerateField.value);
@@ -189,7 +196,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       p = navigator.mediaDevices.getDisplayMedia(config)
     }
     p.then(cb).catch(function (error) {
+      captureButton.disabled = false;
       console.error(error);
+      updateStatusFromEvent({
+        type: 'ERROR',
+        data: error.message
+      });
     });
   }
 
