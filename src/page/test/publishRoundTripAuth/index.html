@@ -6,9 +6,6 @@
     {{> header-scripts}}
     {{> header-stylesheets}}
     <style>
-      .hidden {
-        display: none;
-      }
       #login-form {
         padding: 10px 0;
         background-color: #afafaf;
@@ -24,22 +21,27 @@
     </style>
   </head>
   <body>
+    {{> top-bar }}
+    {{> navigation isTestPage=true }}
     <div id="app">
-      {{> version }}
       {{> settings-link}}
       {{> test-info testTitle='Publish RoundTrip Auth Test'}}
-      {{> status-field-publisher}}
-      {{> statistics-field}}
-      <div id="login-form" class="centered">
-        <p>Log In to begin your Broadcast:</p>
-        <p><label for="username-field">username:</label><input id="username-field" name="username-field"></p>
-        <p><label for="password-field">password:</label><input id="password-field" name="password-field"></p>
-		<p><label for="token-field">token:</label><input id="token-field" name="token-field"></p>
-		<p><input type="checkbox" id="token-required-field" name="token-required-field" checked>Token Required</p>
-        <button id="submit-button">submit</button>
-      </div>
-      <div class="centered">
-        <video id="red5pro-publisher" controls autoplay playasinline muted></video>
+      <div class="stream-section">
+        {{> status-field-publisher}}
+        {{> statistics-field}}
+        <div id="login-form" class="centered">
+          <p>Log In to begin your Broadcast:</p>
+          <p><label for="username-field">username:</label><input id="username-field" name="username-field"></p>
+          <p><label for="password-field">password:</label><input id="password-field" name="password-field"></p>
+          <p><label for="token-field">token:</label><input id="token-field" name="token-field"></p>
+          <p><input type="checkbox" id="token-required-field" name="token-required-field" checked>Token Required</p>
+          <button id="submit-button">submit</button>
+        </div>
+        <div class="centered">
+          <video id="red5pro-publisher" class="red5pro-publisher"
+                 controls autoplay playsinline muted>
+          </video>
+        </div>
       </div>
     </div>
     {{> body-scripts}}

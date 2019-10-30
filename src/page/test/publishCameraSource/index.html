@@ -6,39 +6,43 @@
     {{> header-scripts}}
     {{> header-stylesheets}}
     <style>
-      .camera-select-field {
-        background-color: #ffffff;
-        padding: 0.8rem;
+      .camera-select-form {
+        text-align: center;
+        padding: 10px;
       }
-      .label-style {
-        margin-right: 0.5rem;
-      }
-      .control {
-        margin: 0.5rem;
-        font-size: 14px;
+      #camera-select {
+        height: 1.5rem;
+        font-size: 1rem;
+        margin-left: 1em;
       }
       #publish-button {
-        width: 100px;
+        margin-top: 10px;
       }
     </style>
   </head>
   <body>
+    {{> top-bar }}
+    {{> navigation isTestPage=true }}
     <div id="app">
-      {{> version }}
       {{> settings-link}}
-      {{> test-info testTitle='WebRTC Publish Camera Source Test'}}
-      <div class="instructions-block">
-        <p>Select a camera from the following selections and click Publish:</p>
-        <p class="camera-select-field">
-          <label for="camera-select" style="label-style"></label>
-          <select id="camera-select" class="control"></select>
-          <button id="publish-button" class="control" disabled>Publish</button>
-        </p>
-      </div>
-      {{> status-field-publisher}}
-      {{> statistics-field}}
-      <div class="centered">
-        <video id="red5pro-publisher" controls autoplay playsinline muted playsinline></video>
+      {{> test-info testTitle='Publish Camera Source Test (WebRTC)'}}
+      <div class="stream-section">
+        <div class="instructions-block">
+          <p class="camera-select-field camera-select-form">
+            <label for="camera-select" class="label-style">Select a Camera:</label>
+            <select id="camera-select" class="control"></select>
+          </p>
+          <p>
+            <button id="publish-button" class="control ui-button" disabled>Publish</button>          
+          </p>
+        </div>
+        {{> status-field-publisher}}
+        {{> statistics-field}}
+        <div class="centered">
+          <video id="red5pro-publisher" class="red5pro-publisher"
+                 controls autoplay playsinline muted>
+          </video>
+        </div>
       </div>
     </div>
     {{> body-scripts}}

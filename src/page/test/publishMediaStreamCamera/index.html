@@ -7,18 +7,23 @@
     {{> header-stylesheets}}
   </head>
   <body>
+    {{> top-bar }}
+    {{> navigation isTestPage=true }}
     <div id="app">
-      {{> version }}
       {{> settings-link}}
       {{> test-info testTitle='Publish MediaStream Swap Test (WebRTC)'}}
-      {{> status-field-publisher}}
-      {{> statistics-field}}
-      <div class="centered">
-        <video id="red5pro-publisher" controls autoplay playsinline muted></video>
-      </div>
-      <div class="centered">
-        <select id="camera-select" class="control"></select>
-        <button id="swap-button">Swap Stream Source</button>
+      <div class="stream-section">
+        {{> status-field-publisher}}
+        {{> statistics-field}}
+        <div class="centered">
+          <video id="red5pro-publisher" class="red5pro-publisher"
+                 controls autoplay playsinline muted>
+          </video>
+        </div>
+        <div class="centered">
+          <select id="camera-select" class="control"></select>
+          <button id="swap-button">Swap Stream Source</button>
+        </div>
       </div>
     </div>
     {{> body-scripts}}

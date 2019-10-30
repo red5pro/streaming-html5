@@ -7,18 +7,23 @@
     {{> header-stylesheets}}
   </head>
   <body>
+    {{> top-bar }}
+    {{> navigation isTestPage=true }}
     <div id="app">
-      {{> version }}
       {{> settings-link}}
       {{> test-info testTitle='WebRTC Publish Mute Test'}}
-      {{> status-field-publisher}}
-      {{> statistics-field}}
-      <div class="centered">
-        <video id="red5pro-publisher" autoplay playsinline muted></video>
-      </div>
-      <div class="centered">
-        <button id="mute-audio-button">mute audio</button>
-        <button id="mute-video-button">mute video</button>
+      <div class="stream-section">
+        {{> status-field-publisher}}
+        {{> statistics-field}}
+        <div class="centered">
+          <video id="red5pro-publisher" class="red5pro-publisher"
+                 controls autoplay playsinline muted>
+          </video>
+        </div>
+        <div class="centered">
+          <button id="mute-audio-button">mute audio</button>
+          <button id="mute-video-button">mute video</button>
+        </div>
       </div>
     </div>
     {{> body-scripts}}

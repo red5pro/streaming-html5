@@ -2,13 +2,10 @@
 {{> license}}
 <html>
   <head>
-    {{> meta title='Publish Auth Test'}}
+    {{> meta title='Publish Authentication Test'}}
     {{> header-scripts}}
     {{> header-stylesheets}}
     <style>
-      .hidden {
-        display: none;
-      }
       #login-form {
         padding: 10px 0;
         background-color: #afafaf;
@@ -25,19 +22,22 @@
   </head>
   <body>
     <div id="app">
-      {{> version }}
       {{> settings-link}}
-      {{> test-info testTitle='Publish Auth Test'}}
-      {{> status-field-publisher}}
-      {{> statistics-field}}
-      <div id="login-form" class="centered">
-        <p>Log In to begin your Broadcast:</p>
-        <p><label for="username-field">username:</label><input id="username-field" name="username-field"></p>
-        <p><label for="password-field">password:</label><input id="password-field" name="password-field"></p>
-        <button id="submit-button">submit</button>
-      </div>
-      <div class="centered">
-        <video id="red5pro-publisher" controls autoplay playasinline muted></video>
+      {{> test-info testTitle='Publish Authentication Test'}}
+      <div class="stream-section">
+        {{> status-field-publisher}}
+        {{> statistics-field}}
+        <div id="login-form" class="centered">
+          <p>Log In to begin your Broadcast:</p>
+          <p><label for="username-field">username:</label><input id="username-field" name="username-field"></p>
+          <p><label for="password-field">password:</label><input id="password-field" name="password-field"></p>
+          <button id="submit-button">submit</button>
+        </div>
+        <div class="centered">
+          <video id="red5pro-publisher" class="red5pro-publisher"
+                 controls autoplay playsinline muted>
+          </video>
+        </div>
       </div>
     </div>
     {{> body-scripts}}

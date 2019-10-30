@@ -20,18 +20,23 @@
     </style>
   </head>
   <body>
+    {{> top-bar }}
+    {{> navigation isTestPage=true }}
     <div id="app">
-      {{> version }}
       {{> settings-link}}
       {{> test-info testTitle='Publish Server Call Test'}}
-      {{> status-field-publisher}}
-      {{> statistics-field}}
-      <div class="centered">
-        <video id="red5pro-publisher" controls autoplay muted></video>
-      </div>
-      <div class="centered" style="padding: 20px; background-color: #eee">
-        <p><button id="call-button" disabled>Get Live Streams</button></p>
-        <ul id="call-list"></ul>
+      <div class="stream-section">
+        {{> status-field-publisher}}
+        {{> statistics-field}}
+        <div class="centered">
+          <video id="red5pro-publisher" class="red5pro-publisher"
+                 controls autoplay playsinline muted>
+          </video>
+        </div>
+        <div class="centered" style="padding: 20px; background-color: #eee">
+          <p><button id="call-button" disabled>Get Live Streams</button></p>
+          <ul id="call-list"></ul>
+        </div>
       </div>
     </div>
     {{> body-scripts}}
