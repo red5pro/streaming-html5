@@ -55,6 +55,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var instanceId = Math.floor(Math.random() * 0x10000).toString(16);
   var streamTitle = document.getElementById('stream-title');
   var statisticsField = document.getElementById('statistics-field');
+  var bitrateField = document.getElementById('bitrate-field');
+  var packetsField = document.getElementById('packets-field');
+  var resolutionField = document.getElementById('resolution-field');
 
   var protocol = serverSettings.protocol;
   var isSecure = protocol === 'https';
@@ -66,7 +69,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   function updateStatistics (b, p, w, h) {
     statisticsField.classList.remove('hidden');
-    statisticsField.innerText = 'Bitrate: ' + Math.floor(b) + '. Packets Received: ' + p + '.' + ' Resolution: ' + w + ', ' + h + '.';
+    bitrateField.innerText = Math.floor(b);
+    packetsField.innerText = p;
+    resolutionField.innerText = (w || 0) + 'x' + (h || 0);
   }
 
   function onBitrateUpdate (b, p) {
@@ -170,7 +175,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     configuration,
     defaultConfiguration,
     getAuthenticationParams(), {
-      streamName: config.stream1
+      streamName: configuration.stream1
     });
   var rtcConfig = Object.assign({}, config, {
     protocol: getSocketLocationFromProtocol().protocol,

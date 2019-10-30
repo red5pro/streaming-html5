@@ -134,6 +134,7 @@ a, a:hover, a:focus {
   padding: 1rem 0;
   background-color: #dbdbdb;
   border-top: 1px solid #999;
+  line-height: 1.5em;
 }
 
 .statistics-field {
