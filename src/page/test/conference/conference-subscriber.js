@@ -42,7 +42,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           '<p class="subscriber-status-field">On hold.</p>' +
         '</div>' +
         '<div class="video-holder centered">' +
-          '<video autoplay controls playsinline class="red5pro-media red5pro-background"></video>' +
+          '<video autoplay controls playsinline class="red5pro-subscriber red5pro-media red5pro-background"></video>' +
         '</div>' +
         '<div class="audio-holder centered hidden">' + 
           '<audio autoplay playsinline class="red5pro-media"></audio>' +
@@ -55,7 +55,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   function templateContent (templateHTML) {
     var div = document.createElement('div');
-    div.classList.add('subscriber-container', 'float-left', 'spaced');
+    div.classList.add('subscriber-container');
     div.innerHTML = templateHTML;
     return div;
   }

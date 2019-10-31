@@ -183,11 +183,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     var config = {
         audio: false,
         video: {
-          width: { maxWidth: vw },
-          height: { maxHeight: vh },
-          frameRate: { maxFrameRate: fr }
+          width: vw, //{ maxWidth: vw },
+          height: vh, //{ maxHeight: vh },
+          frameRate: fr//{ maxFrameRate: fr }
         }
     };
+    console.log('Using Capture Configuration:\r\n' + JSON.stringify(config, null, 2));
     // Edge has getDisplayMedia on navigator and not media devices?
     var p = undefined
     if (navigator.getDisplayMedia) {

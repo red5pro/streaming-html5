@@ -23,15 +23,35 @@ NONINFRINGEMENT.   IN  NO  EVENT  SHALL INFRARED5, INC. BE LIABLE FOR ANY CLAIM,
 WHETHER IN  AN  ACTION  OF  CONTRACT,  TORT  OR  OTHERWISE,  ARISING  FROM,  OUT  OF  OR  IN CONNECTION 
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
-#publisher {
-  width: 320px;
-  height: 240px;
-  background-color: #000;
+
+.conference-section {
+  width: 100%;
+  margin: 0 20px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
 }
-#publisher-name-field, .subscriber-name-field {
-  font-weight: bold;
-  margin-right: 1.2em;
+
+.subscribers {
+  display: flex;
+  flex-direction: row;
 }
+
+.publisher-name-field, .subscriber-name-field {
+  text-align: center;
+  background-color: #3580A2;
+  color: #fff;
+}
+
+.publisher-mute-notice {
+  text-align: center;
+}
+
+.publisher-mute-controls {
+  text-align: center;
+  border-top: 1px solid #dbdbdb;
+}
+
 .auto-margined {
   margin: 1em auto;
 }
@@ -54,7 +74,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 .publisher-container, .subscriber-container {
   width: 320px;
   background-color: #333;
-  border: 2px solid #999;
 }
 .publisher-session {
   width: 100%;
@@ -64,7 +83,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   background-color: #eee;
 }
 .publisher-settings > p {
-  padding: 0.8em 0;
+  padding: 10px;
 }
 .dark-background {
   background-color: #999;

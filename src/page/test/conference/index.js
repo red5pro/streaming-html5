@@ -70,6 +70,33 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var videoCheck = document.getElementById('video-check');
   var joinButton = document.getElementById('join-button');
   var statisticsField = document.getElementById('statistics-field');
+  var bitrateField = document.getElementById('bitrate-field');
+  var packetsField = document.getElementById('packets-field');
+  var resolutionField = document.getElementById('resolution-field');
+  var bitrateTrackingTicket;
+  var bitrate = 0;
+  var packetsSent = 0;
+  var frameWidth = 0;
+  var frameHeight = 0;
+
+  function updateStatistics (b, p, w, h) {
+    statisticsField.classList.remove('hidden');
+    bitrateField.innerText = Math.floor(b);
+    packetsField.innerText = p;
+    resolutionField.innerText = (w || 0) + 'x' + (h || 0);
+  }
+
+  function onBitrateUpdate (b, p) {
+    bitrate = b;
+    packetsSent = p;
+    updateStatistics(bitrate, packetsSent, frameWidth, frameHeight);
+  }
+
+  function onResolutionUpdate (w, h) {
+    frameWidth = w;
+    frameHeight = h;
+    updateStatistics(bitrate, packetsSent, frameWidth, frameHeight);
+  }
 
   roomField.value = roomName;
   streamNameField.value = streamName;
@@ -167,11 +194,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       : {protocol: 'wss', port: serverSettings.wssport};
   }
 
-  var bitrateTrackingTicket;
-  function onBitrateUpdate (bitrate, packetsSent) {
-    statisticsField.innerText = 'Bitrate: ' + Math.floor(bitrate) + '. Packets Sent: ' + packetsSent + '.';
-  }
-
   function onPublisherEvent (event) {
     console.log('[Red5ProPublisher] ' + event.type + '.');
     if (event.type === 'WebSocket.Message.Unhandled') {
@@ -191,7 +213,14 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     console.log('[Red5ProPublisher] Publish Complete.');
     establishSharedObject(publisher, roomField.value, streamNameField.value);
     try {
-      bitrateTrackingTicket = window.trackBitrate(publisher.getPeerConnection(), onBitrateUpdate, null, null, true);
+      var pc = publisher.getPeerConnection();
+      var stream = publisher.getMediaStream();
+      bitrateTrackingTicket = window.trackBitrate(pc, onBitrateUpdate, null, null, true);
+      statisticsField.classList.remove('hidden');
+      stream.getVideoTracks().forEach(function (track) {
+        var settings = track.getSettings();
+        onResolutionUpdate(settings.width, settings.height);
+      });
     }
     catch (e) {
       // no tracking for you!
@@ -239,6 +268,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   function updatePublishingUIOnStreamCount (streamCount) {
+    /*
     if (streamCount > 0) {
       publisherContainer.classList.remove('auto-margined');
       publisherContainer.classList.add('spaced');
@@ -248,6 +278,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       publisherContainer.classList.remove('spaced');
       publisherContainer.classList.remove('float-left');
     }
+    */
   }
 
   var hasRegistered = false;
