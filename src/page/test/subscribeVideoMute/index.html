@@ -2,33 +2,31 @@
 {{> license}}
 <html>
   <head>
-    {{> meta title='Subscriber Video Mute Test'}}
+    {{> meta title='WebRTC Subscriber Video Mute Test'}}
     {{> header-scripts}}
     {{> header-stylesheets}}
-    <style>
-      .hidden {
-        display: none;
-      }
-    </style>
   </head>
   <body>
+    {{> top-bar }}
+    {{> navigation isTestPage=true }}
     <div id="app">
-      {{> version }}
       {{> settings-link}}
-      {{> test-info testTitle='Subscriber Video Mute Test'}}
-      {{> status-field-subscriber}}
-      {{> statistics-field}}
-      <div class="centered">
-        <video id="red5pro-subscriber"
-                controls="controls" autoplay="autoplay" playsinline
-                class="red5pro-media red5pro-media-background"
-                width="640" height="480">
-        </video>
-      </div>
-      <div class="centered hidden">
-        <audio id="red5pro-audio-subscriber"
-               autoplay="autoplay" playsinline>
-        </audio>
+      {{> test-info testTitle='Subscriber Video Mute Test (WebRTC)'}}
+      <div class="stream-section">
+        {{> status-field-subscriber}}
+        {{> statistics-field}}
+        <div class="centered">
+          <video id="red5pro-subscriber"
+                  controls="controls" autoplay="autoplay" playsinline
+                  class="red5pro-subscriber red5pro-media red5pro-media-background"
+                  width="640" height="480">
+          </video>
+        </div>
+        <div class="centered hidden">
+          <audio id="red5pro-audio-subscriber"
+                 autoplay="autoplay" playsinline>
+          </audio>
+        </div>
       </div>
     </div>
     {{> body-scripts}}

@@ -12,8 +12,9 @@
     </style>
   </head>
   <body>
+    {{> top-bar }}
+    {{> navigation isTestPage=true }}
     <div id="app">
-      {{> version }}
       {{> settings-link}}
       {{> test-info testTitle='Playback VOD Test'}}
       <div class="centered status-field">
