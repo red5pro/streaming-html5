@@ -7,25 +7,29 @@
     {{> header-stylesheets}}
     <style>
       #address-field {
-        padding: 6px;
-        background-color: #ccc;
+        padding: 10px;
+        background-color: #dbdbdb;
+        border-top: 1px solid #999;
       }
     </style>
   </head>
   <body>
+    {{> top-bar }}
+    {{> navigation isTestPage=true }}
     <div id="app">
-      {{> version }}
       {{> settings-link}}
       {{> test-info testTitle='Subscriber Cluster Test'}}
-      {{> status-field-subscriber}}
-      {{> statistics-field}}
-      <div class="centered"><p id="address-field">Edge Address: N/A</p></div>
-      <div class="centered">
-        <video id="red5pro-subscriber"
-                controls autoplay playsinline
-                class="red5pro-media red5pro-media-background"
-                width="640" height="480">
-        </video>
+      <div class="stream-section">
+        {{> status-field-subscriber}}
+        {{> statistics-field}}
+        <div class="centered"><p id="address-field">Edge Address: N/A</p></div>
+        <div class="centered">
+          <video id="red5pro-subscriber"
+                  controls autoplay playsinline
+                  class="red5pro-subscriber red5pro-media red5pro-media-background"
+                  width="640" height="480">
+          </video>
+        </div>
       </div>
     </div>
     {{> body-scripts}}

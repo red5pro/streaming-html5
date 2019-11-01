@@ -5,12 +5,18 @@
     {{> meta title='Publish Image Capture Test'}}
     {{> header-scripts}}
     {{> header-stylesheets}}
+    <style>
+      .stream-section {
+        position: relative;
+      }
+      #capture-canvas {
+        position: absolute;
+        top: 160px;
+        left: 10px;
+        width: 180px;
+      }
+    </style>
   </head>
-  <style>
-    #capture-canvas {
-      width: 100%;
-    }
-  </style>
   <body>
     {{> top-bar }}
     {{> navigation isTestPage=true }}
