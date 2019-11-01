@@ -12,14 +12,16 @@
     <div id="app">
       {{> settings-link}}
       {{> test-info testTitle='Subscriber Test'}}
-      {{> status-field-subscriber}}
-      {{> statistics-field}}
-      <div class="centered">
-        <video id="red5pro-subscriber"
-                controls="controls" autoplay="autoplay" playsinline
-                class="red5pro-media red5pro-media-background"
-                width="640" height="480">
-        </video>
+      <div class="stream-section">
+        {{> status-field-subscriber}}
+        {{> statistics-field}}
+        <div class="centered">
+          <video id="red5pro-subscriber"
+                  controls="controls" autoplay="autoplay" playsinline
+                  class="red5pro-subscriber red5pro-media red5pro-media-background"
+                  width="640" height="480">
+          </video>
+        </div>
       </div>
     </div>
     {{> body-scripts}}

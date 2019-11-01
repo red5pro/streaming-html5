@@ -26,6 +26,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 (function (window) {
   'use strict';
 
+  var vRegex = /VideoStream/;
+  var aRegex = /AudioStream/;
+
   // global bitrate - legacy
   var globalBitrateTicket = undefined;
   // ticket system
@@ -36,9 +39,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     this.resolutionCb = resolutionCb;
     this.isSubscriber = isSubscriber;
     this.bitrateInterval = 0;
+    this.audioOnly = false;
   };
   BitrateTicket.prototype.start = function () {
     var lastResult;
+    var ticket = this;
     var connection = this.connection;
     var cb = this.cb;
     var resolutionCb = this.resolutionCb;
@@ -57,11 +62,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
               (report.type === 'ssrc' && report.bytesSent))) {
             bytes = report.bytesSent;
             packets = report.packetsSent;
-            if (report.mediaType === 'video' && lastResult && lastResult.get(report.id)) {
-              // calculate bitrate
-              bitrate = 8 * (bytes - lastResult.get(report.id).bytesSent) /
-                  (now - lastResult.get(report.id).timestamp);
-              cb(bitrate, packets);
+            if (report.mediaType === 'video' || report.id.match(vRegex)) {
+              if (lastResult && lastResult.get(report.id)) {
+                // calculate bitrate
+                bitrate = 8 * (bytes - lastResult.get(report.id).bytesSent) /
+                    (now - lastResult.get(report.id).timestamp);
+                cb(bitrate, packets);
+              }
             }
           }
           // playback.
@@ -71,11 +78,21 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
               (report.type === 'ssrc' && report.bytesReceived))) {
             bytes = report.bytesReceived;
             packets = report.packetsReceived;
-            if (report.mediaType === 'video' && lastResult && lastResult.get(report.id)) {
-              // calculate bitrate
-              bitrate = 8 * (bytes - lastResult.get(report.id).bytesReceived) /
-                (now - lastResult.get(report.id).timestamp);
-              cb(bitrate, packets);
+            if (ticket.audioOnly && (report.mediaType === 'audio' || report.id.match(aRegex))) {
+              if (lastResult && lastResult.get(report.id)) {
+                // calculate bitrate
+                bitrate = 8 * (bytes - lastResult.get(report.id).bytesReceived) /
+                  (now - lastResult.get(report.id).timestamp);
+                cb(bitrate, packets);
+              }
+            }
+            else if (!ticket.audioOnly && (report.mediaType === 'video' || report.id.match(vRegex))) {
+              if (lastResult && lastResult.get(report.id)) {
+                // calculate bitrate
+                bitrate = 8 * (bytes - lastResult.get(report.id).bytesReceived) /
+                  (now - lastResult.get(report.id).timestamp);
+                cb(bitrate, packets);
+              }
             }
           }
           else if (resolutionCb && report.type === 'track' && report.kind === 'video') {
@@ -88,6 +105,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   };
   BitrateTicket.prototype.stop = function  () {
     clearInterval(this.bitrateInterval);
+  };
+  BitrateTicket.prototype.audioOnly = function () {
+    this.audioOnly = true;
   };
 
   window.trackBitrate = function (connection, cb, resolutionCb, isSubscriber, withTicket) {
@@ -102,6 +122,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
     globalBitrateTicket = t;
     t.start();
+    return globalBitrateTicket;
   }
 
   window.untrackBitrate = function(ticket) {
