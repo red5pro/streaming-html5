@@ -96,7 +96,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             }
           }
           else if (resolutionCb && report.type === 'track' && report.kind === 'video') {
-            resolutionCb(report.frameWidth, report.frameHeight);
+            if (report.frameWidth > 0 || report.frameHeight > 0) {
+              resolutionCb(report.frameWidth, report.frameHeight);
+            }
           }
         });
         lastResult = res;

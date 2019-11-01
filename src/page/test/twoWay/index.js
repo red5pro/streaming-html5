@@ -56,6 +56,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var targetSubscriber;
   var subStatusField = document.getElementById('sub-status-field');
   var subStreamTitle = document.getElementById('sub-stream-title');
+  var statisticsFields = document.getElementsByClassName('statistics-field');
 
   var instanceId = Math.floor(Math.random() * 0x10000).toString(16);
   var protocol = serverSettings.protocol;
@@ -90,8 +91,50 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   function onPublishFail (message) {
     console.error('[Red5ProPublisher] Publish Error :: ' + message);
   }
-  function onPublishSuccess () {
+  function onPublishSuccess (publisher) {
     console.log('[Red5ProPublisher] Publish Complete.');
+    if (window.exposePublisherGlobally) {
+      window.exposePublisherGlobally(publisher);
+    }
+    (function (pub, index) {
+      if (pub.getType().toLowerCase() === 'rtc') {
+        try {
+          var bitrate = 0;
+          var packets = 0;
+          var frameWidth = 0;
+          var frameHeight = 0;
+          var bitrateField = statisticsFields[index].getElementsByClassName('bitrate-field')[0];
+          var packetsField = statisticsFields[index].getElementsByClassName('packets-field')[0];
+          var resolutionField = statisticsFields[index].getElementsByClassName('resolution-field')[0];
+
+          var updateStatisticsField = function (b, p, w, h) {
+            statisticsFields[index].classList.remove('hidden');
+            bitrateField.innerText =  Math.floor(b);
+            packetsField.innerText = p;
+            resolutionField.innerText = w + 'x' + h;
+          }
+          var onBitrateUpdate = function (b, p) {
+            bitrate = b;
+            packets = p
+            updateStatisticsField(bitrate, packets, frameWidth, frameHeight);
+          }
+          var onResolutionUpdate = function (w, h) {
+            frameWidth = w;
+            frameHeight = h;
+            updateStatisticsField(bitrate, packets, frameWidth, frameHeight);
+          }
+          var pc = pub.getPeerConnection();
+          var stream = pub.getMediaStream();
+          window.trackBitrate(pc, onBitrateUpdate, null, false, true);
+          stream.getVideoTracks().forEach(function (track) {
+          var settings = track.getSettings();
+            onResolutionUpdate(settings.width, settings.height);
+          });
+        } catch (e) {
+          //
+        }
+      }
+    })(publisher, 0);
   }
   function onUnpublishFail (message) {
     console.error('[Red5ProPublisher] Unpublish Error :: ' + message);
@@ -111,6 +154,39 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     if (window.exposeSubscriberGlobally) {
       window.exposeSubscriberGlobally(subscriber);
     }
+    (function (sub, index) {
+      if (sub.getType().toLowerCase() === 'rtc') {
+        try {
+          var bitrate = 0;
+          var packets = 0;
+          var frameWidth = 0;
+          var frameHeight = 0;
+          var bitrateField = statisticsFields[index].getElementsByClassName('bitrate-field')[0];
+          var packetsField = statisticsFields[index].getElementsByClassName('packets-field')[0];
+          var resolutionField = statisticsFields[index].getElementsByClassName('resolution-field')[0];
+
+          var updateStatisticsField = function (b, p, w, h) {
+            statisticsFields[index].classList.remove('hidden');
+            bitrateField.innerText =  Math.floor(b);
+            packetsField.innerText = p;
+            resolutionField.innerText = w + 'x' + h;
+          }
+          var onBitrateUpdate = function (b, p) {
+            bitrate = b;
+            packets = p
+            updateStatisticsField(bitrate, packets, frameWidth, frameHeight);
+          }
+          var onResolutionUpdate = function (w, h) {
+            frameWidth = w;
+            frameHeight = h;
+            updateStatisticsField(bitrate, packets, frameWidth, frameHeight);
+          }
+          window.trackBitrate(sub.getPeerConnection(), onBitrateUpdate, onResolutionUpdate, true, true);
+        } catch (e) {
+          //
+        }
+      }
+    })(subscriber, 1);
  }
   function onUnsubscribeFail (message) {
     console.error('[Red5ProSubsriber] Unsubscribe Error :: ' + message);
@@ -397,7 +473,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       targetSubscriber = undefined;
     }
     unpublish().then(unsubscribe).then(clearRefs).catch(clearRefs);
+      window.untrackBitrate();
   }
+
   window.addEventListener('pagehide', shutdown);
   window.addEventListener('beforeunload', shutdown);
 
