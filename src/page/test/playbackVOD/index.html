@@ -6,42 +6,66 @@
     {{> header-scripts}}
     {{> header-stylesheets}}
     <style>
-      .status-field > p {
-        padding: 12px;
+      a {
+        color: #db1f26;
+        text-decoration: underline;
+      }
+      .test-notification {
+        text-align: center;
+        max-width: 1024px;
+      }
+      .settings-area {
+        background-color: #eeee;
+      }
+      .settings-field {
+        padding-top: 1rem;
+      }
+      .settings-field, .settings-field > input {
+        font-size: 1em;
+      }
+      .settings-label {
+        width: auto;
       }
     </style>
+    <link href="//vjs.zencdn.net/5.19/video-js.min.css" rel="stylesheet">
+    <script src="//unpkg.com/video.js/dist/video.js"></script>
+    <script src="//unpkg.com/videojs-contrib-hls/dist/videojs-contrib-hls.js"></script>
+    <script src="//unpkg.com/videojs-flash/dist/videojs-flash.js"></script>
   </head>
   <body>
     {{> top-bar }}
     {{> navigation isTestPage=true }}
     <div id="app">
       {{> settings-link}}
-      {{> test-info testTitle='Playback VOD Test'}}
-      <div class="centered status-field">
-        <p>
-          To use this test, you must have first published a recorded broadcast using the <a href="../publishRecord" target="_blank">Publish - Record</a> test.
-          <br>
-          <br>
-          You can view a list of available Videos on Demand (VODs), by requesting <a id="mediafiles-link" href="mediafiles" target="_blank">mediafiles</a> and <a id="playlists-link" href="playlists" target="_blank">playlists</a>.
-          <br>
-          <em>Assumes you are viewing this test served from the same location as the server.</em>
-        </p>
-        <hr/>
-        <p>
-          Once you have done so, enter the filename - <strong>with extension</strong> - name below:
-        </p>
-        <p>
-          <label for="name-input">Name:</label>
-          <input type="text" name="name-input" id="name-input">
-          <button id="submit-button">play file</button>
-        </p>
+      <div class="ice-background">
+        <div class="test-notification">
+          <p>
+            <span>To use this test, you must first published a recorded broadcast using the <a href="../publishRecord" target="_blank">Publish - Record</a> test.</span>
+            <br><br>
+            <span>You can view a list of available Videos on Demand (VODs), by requesting <a id="mediafiles-link" href="/live/mediafiles" target="_blank">mediafiles</a> and <a id="playlists-link" href="/live/playlists" target="_blank">playlists</a>.</span>
+            <hr class="paddedHR" />
+            <span>Once you have a recorded stream, enter the filename - </span><span class="strong">with extension</span><span> - name below:</span>
+          </p>
+        </div>
       </div>
-      <div id="video-container" class="centered">
-        <video id="red5pro-subscriber"
-                controls autoplay playsinline
-                class="red5pro-media red5pro-media-background"
-                width="640" height="480">
-        </video>
+      {{> test-title title='Playback VOD Test'}}
+      <div class="stream-section">
+        <div class="centered settings-area">
+          <p class="settings-field settings-collapsable">
+            <label for="name-input" class="settings-label">Name:</label>
+            <input type="text" name="name-input" id="name-input" placeholder="stream1.flv">
+          </p>
+          <p>
+            <button id="submit-button" class="ui-button">Play File</button>
+          </p>
+        </div>
+        <div id="video-container" class="centered">
+          <video id="red5pro-subscriber"
+                  controls autoplay playsinline
+                  class="red5pro-subscriber red5pro-media red5pro-media-background"
+                  width="640" height="480">
+          </video>
+        </div>
       </div>
     </div>
     {{> body-scripts}}
