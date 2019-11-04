@@ -6,6 +6,25 @@
     {{> header-scripts}}
     {{> header-stylesheets}}
     <style>
+      .quality-container {
+        text-align: center;
+        background-color: #dbdbdb;
+        color: #3b3b3b;
+        max-width: 1024px;
+        margin: 20px auto 0 auto;
+        padding: 20px;
+        line-height: 1.5em;
+      }
+      .quality-link {
+        text-decoration: underline;
+      }
+      .quality-subheader {
+        padding: 20px;
+      }
+      .quality-hr {
+        max-width: 480px;
+        margin: 20px auto;
+      }
       .stream-section {
         max-width: 1024px;
       }
@@ -83,21 +102,25 @@
             <p>
             <button id="submit-button" class="ui-button">Submit</button>
             </p>
+            <hr class="paddedHR">
+            {{> status-field-publisher}}
           </div>
-          <div id="quality-container" class="hidden">
-            <hr/>
-            <p><span class="strong">Transcoder Manifest submitted successfully!</span><p>
-            <p>Now you can visit</p>
-            <p><a id="provision-link" target="_blank"></a></p>
-            <p>to view your Provision.
-            <hr />
-            <div id="stream-listing">
-              <p><strong>Start the following streams with your Media Encoder:</strong></p>
-            </div>
-            <hr />
-            <div>
-              <p>Then visit the accompanying <a href="../subscribeStreamManagerProxyTranscoder">Subscriber</a>!</p>
-            </div>
+        </div>
+        <div id="quality-container" class="hidden quality-container">
+          <p class="quality-subheader">Transcoder Manifest submitted successfully!<p>
+          <p>
+            <span>Now you can visit</span>&nbsp;
+            <span><a id="provision-link" target="_blank" class="quality-link">URL HERE</a></span>
+            <span>to view your Provision.</span>
+          <hr class="quality-hr" />
+          <div id="stream-listing">
+            <p class="quality-subheader">
+              Start the following streams with your Media Encoder:
+            </p>
+          </div>
+          <hr class="quality-hr" />
+          <div>
+            <p>Then visit the accompanying <a href="../subscribeStreamManagerProxyTranscoder" class="quality-link">Subscriber</a>!</p>
           </div>
         </div>
       </div>

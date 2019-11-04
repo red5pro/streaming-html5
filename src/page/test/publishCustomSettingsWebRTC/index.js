@@ -268,7 +268,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     if (targetPublisher === undefined) {
       startPublish();
     } else {
-      function clearRefs () {
+      var clearRefs = function () {
         if (targetPublisher) {
           targetPublisher.off('*', onPublisherEvent);
         }

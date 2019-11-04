@@ -38,18 +38,12 @@
     </style>
   </head>
   <body>
+    {{> top-bar }}
+    {{> navigation isTestPage=true }}
     <div id="app">
-      {{> version }}
       {{> settings-link}}
-      <div class="ice-background">
-      <div class="test-notification">
-        <p>In order to properly run the Stream Manager examples, you will need to configure you server for cluster infrastructure as described in the following documentation:</p>
-        <p><a href="https://www.red5pro.com/docs/server/autoscale/" target="_blank">https://www.red5pro.com/docs/server/autoscale/</a></p>
-		<p>Additionally to use this example stream manager proxy gateway should be enabled.</p>
-      </div>
-      </div>
-      <h1 class="centered">Publish SM Proxy Validation Test</h1>
-      <hr />
+      {{> sm-proxy-notification}}
+      {{> test-info testTitle='Publish Stream Manager Proxy Validation Test'}}
       <div id="validation-container" class="centered ice-background">
         <h2>Validation Parameters</h2>
         <p>Provide validation parameters to be used in the Stream Manager request and Origin connection requests.</p>

@@ -6,61 +6,64 @@
     {{> header-scripts}}
     {{> header-stylesheets}}
     <style>
-      #address-field {
-        padding: 6px;
-        background-color: #ccc;
+      .settings-area {
+        padding-top: 20px;
+        background-color: #eeee;
+      }
+      .settings-field, .settings-field > input {
+        font-size: 1em;
       }
     </style>
   </head>
   <body>
+    {{> top-bar }}
+    {{> navigation isTestPage=true }}
     <div id="app">
-      {{> version }}
       {{> settings-link}}
-      <div class="ice-background">
-      <div class="test-notification">
-        <p>In order to properly run the Stream Manager examples, you will need to configure you server for cluster infrastructure as described in the following documentation:</p>
-        <p><a href="https://www.red5pro.com/docs/server/autoscale/" target="_blank">https://www.red5pro.com/docs/server/autoscale/</a></p>
-		<p>Additionally to use this example stream manager proxy gateway should be enabled.</p>
-      </div>
-      </div>
-      {{> test-info testTitle='Publish Stream Manager Proxy Test'}}
-      <div class="clearfix centered ice-background" style="padding-bottom: 24px; border-top: 1px solid #ddd;">
-        <div id="broadcast-settings" style="display: inline-block; padding: 0 16px;">
-          <h2>Broadcast Settings:</h2>
-          <p style="inline; margin: 16px 0">
-            <p style="display: inline-block; width: 60px; text-align: right">Camera: </p>
-            <select id="camera-select"
-                    class="bitrate-field"
-                    style="min-width: 70px"></select>
+      {{> sm-proxy-notification}}
+      {{> test-info testTitle='Publish Stream Manager Proxy Settings Test (WebRTC)'}}
+      <div class="stream-section">
+        <div class="settings-area">
+          <p class="settings-field settings-collapsable">
+            <Label class="settings-label">Camera:</label>
+            <select id="camera-select" class="control"></select>
           </p>
-          <p style="inline; margin: 16px 0">
-            <p style="display: inline-block; width: 60px; text-align: right">Bitrate: </p>
-            <input class="bitrate-field"
-              style="max-width: 60px"
-              value="512000">
+          <p class="settings-field settings-collapsable">
+            <label class="settings-label">Camera Width:</label>
+            <input id="camera-width-field" name="camera-width-field" value="0">
           </p>
-          <p style="inline; margin: 16px 0">
-            <p style="display: inline-block; width: 60px; text-align: right">Width:</p>
-            <input class="width-field"
-              style="max-width: 60px"
-              value="640">
+          <p class="settings-field settings-collapsable">
+            <label class="settings-label">Camera Height:</label>
+            <input id="camera-height-field" name="camera-height-field" value="0">
           </p>
-          <p style="margin: 16px 0">
-            <p style="display: inline-block; width: 60px; text-align: right">Height:</p>
-            <input class="height-field"
-              style="max-width: 60px"
-              value="360">
+          <p class="settings-field settings-collapsable">
+            <label class="settings-label">Camera Framerate:</label>
+            <input id="framerate-field" name="framerate-field" value="0">
+          </p>
+          <p class="settings-field settings-collapsable">
+            <label class="settings-label">Video Bitrate (Kbps):</label>
+            <input id="video-bitrate-field" name="video-bitrate-field" value="0">
+          </p>
+          <p class="settings-field settings-collapsable">
+            <label class="settings-label">Audio Bitrate (Kbps):</label>
+            <input id="audio-bitrate-field" name="audio-bitrate-field" value="0">
+          </p>
+          <p class="settings-field settings-collapsable">
+            <label class="settings-label">Key Framerate (ms):</label>
+            <input id="key-framerate-field" name="key-framerate-field" value="0">
+          </p>
+          <p>
+            <button id="publish-button" class="control ui-button">Publish</button>
           </p>
         </div>
-        <p style="padding-top: 20px;">
-          <button id="submit-button">Start Publishing</button>
-        </p>
-      </div>
-      {{> status-field-publisher}}
-      {{> statistics-field}}
-      <div class="centered"><p id="address-field">Origin Address: N/A</p></div>
-      <div class="centered">
-        <video id="red5pro-publisher" controls autoplay playsinline muted></video>
+        {{> status-field-publisher}}
+        {{> statistics-field}}
+        <div class="centered">
+          <p id="address-field" class="address-field">Origin Address: N/A</p>
+        </div>
+        <video id="red5pro-publisher" class="red5pro-publisher"
+               controls autoplay playsinline muted>
+        </video>
       </div>
     </div>
     {{> body-scripts}}

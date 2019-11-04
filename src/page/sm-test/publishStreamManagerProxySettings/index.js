@@ -50,23 +50,26 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   red5prosdk.setLogLevel(configuration.verboseLogging ? red5prosdk.LOG_LEVELS.TRACE : red5prosdk.LOG_LEVELS.WARN);
 
   var targetPublisher;
-  var userDefinedVideoSettings;
 
   var updateStatusFromEvent = window.red5proHandlePublisherEvent; // defined in src/template/partial/status-field-publisher.hbs
   var streamTitle = document.getElementById('stream-title');
   var statisticsField = document.getElementById('statistics-field');
   var addressField = document.getElementById('address-field');
-  var broadcastSettings = document.getElementById('broadcast-settings');
-  var submitButton = document.getElementById('submit-button');  
+  var bandwidthAudioField = document.getElementById('audio-bitrate-field');
+  var bandwidthVideoField = document.getElementById('video-bitrate-field');
+  var keyFramerateField = document.getElementById('key-framerate-field');
   var cameraSelect = document.getElementById('camera-select');
-  var bitrateField = broadcastSettings.getElementsByClassName('bitrate-field')[0];
-  var widthField = broadcastSettings.getElementsByClassName('width-field')[0];
-  var heightField = broadcastSettings.getElementsByClassName('height-field')[0];
+  var cameraWidthField = document.getElementById('camera-width-field');
+  var cameraHeightField = document.getElementById('camera-height-field');
+  var framerateField =document.getElementById('framerate-field');
+  var publishButton = document.getElementById('publish-button');
 
-  userDefinedVideoSettings = {
-    width: { exact: parseInt(widthField.value, 10) },
-    height: { exact: parseInt(heightField.value, 10) }
-  }
+  bandwidthAudioField.value = configuration.bandwidth.audio;
+  bandwidthVideoField.value = configuration.bandwidth.video;
+  keyFramerateField.value = configuration.keyFramerate || 3000;
+  cameraWidthField.value = configuration.mediaConstraints.video !== true ? configuration.mediaConstraints.video.width.max : 640;
+  cameraHeightField.value = configuration.mediaConstraints.video !== true ? configuration.mediaConstraints.video.height.max : 480;
+  framerateField.value = configuration.mediaConstraints.video !== true ? configuration.mediaConstraints.video.frameRate.max : 24;
 
   var protocol = serverSettings.protocol;
   var isSecure = protocol == 'https';
@@ -79,10 +82,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var defaultConfiguration = {
     protocol: getSocketLocationFromProtocol().protocol,
     port: getSocketLocationFromProtocol().port,
-    streamMode: configuration.recordBroadcast ? 'record' : 'live',
-    bandwidth: {
-      video: parseInt(bitrateField.value, 10)
-    }
+    streamMode: configuration.recordBroadcast ? 'record' : 'live'
   };
 
   function getAuthenticationParams () {
@@ -165,7 +165,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     return {
       mediaConstraints: {
         audio: configuration.useAudio ? configuration.mediaConstraints.audio : false,
-        video: configuration.useVideo ? userDefinedVideoSettings : false
+        video: configuration.useVideo ? {
+          deviceId: { exact: cameraSelect.value },
+          width: { exact: parseInt(cameraWidthField.value) },
+          height: { exact: parseInt(cameraHeightField.value) },
+          framerate: { exact: parseInt(framerateField.value) }
+        } : false
       }
     };
   }
@@ -189,7 +194,18 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     var config = Object.assign({},
                     configuration,
                     defaultConfiguration,
-                    getUserMediaConfiguration());
+                    getUserMediaConfiguration(),
+                    {
+                      keyFramerate: parseInt(keyFramerateField.value),
+                      bandwidth: {
+                        audio: parseInt(bandwidthAudioField.value),
+                        video: parseInt(bandwidthVideoField.value)
+                      }
+                    });
+    console.log('-----');
+    console.log(JSON.stringify(config, null, 2));
+    console.log('-----');
+
     var rtcConfig = Object.assign({}, config, {
                       protocol: getSocketLocationFromProtocol().protocol,
                       port: getSocketLocationFromProtocol().port,
@@ -337,13 +353,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       .catch(respondToOriginFailure);
   }
 
-  submitButton.addEventListener('click', function () {
-    defaultConfiguration.bandwidth.video = bitrateField.value / 1000;
-    userDefinedVideoSettings = {
-      deviceId: { exact: cameraSelect.value },
-      width: { exact: parseInt(widthField.value, 10) },
-      height: { exact: parseInt(heightField.value, 10) }
-    }
+  publishButton.addEventListener('click', function () {
     startup();
   });
 

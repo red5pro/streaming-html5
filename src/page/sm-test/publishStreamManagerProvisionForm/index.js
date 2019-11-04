@@ -167,7 +167,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     var length = transcoderManifest.length;
     for(i; i < length; i++) {
       var p = document.createElement('p');
-      p.style.margin = '12px 0';
+      p.style.margin = '10px 0';
       p.textContent = 'rtmp://' + response.serverAddress + ':1935/' + configuration.app + '/' + transcoderManifest[i].name;
       streamListing.appendChild(p);
     }

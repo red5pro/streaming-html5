@@ -56,8 +56,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var statisticsField = document.getElementById('statistics-field');
   var addressField = document.getElementById('address-field');
   var cameraSelect = document.getElementById('camera-select');
-  var startButton = document.getElementById('start-btn');
-  startButton.addEventListener('click', start);
+  var publishButton = document.getElementById('publish-button');
+  publishButton.addEventListener('click', start);
 
   var protocol = serverSettings.protocol;
   var isSecure = protocol == 'https';
@@ -174,7 +174,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       return;
     }
 
-    if (selection && selection !== 'undefined' && selection !== SELECT_DEFAULT) {
+    var validSelection = selection && selection !== 'undefined' && selection !== SELECT_DEFAULT;
+    publishButton.disabled = !validSelection;
+
+    if (validSelection) {
       // assign selected camera to defined UserMedia.
       if (mediaConstraints.video && typeof mediaConstraints.video !== 'boolean') {
         mediaConstraints.video.deviceId = { exact: selection }
