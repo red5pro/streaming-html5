@@ -112,6 +112,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       console.log('[Red5ProSubscriber] ' + event.type + '.');
       updateStatusFromEvent(event);
     }
+    if (event.type === 'Subscribe.VideoDimensions.Change') {
+      onResolutionUpdate(event.data.width, event.data.height);
+    }
   }
 
   function onSubscriberAudioEvent (event) {

@@ -117,6 +117,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   function onSubscriberEvent (event) {
     console.log('[Red5ProSubscriber] ' + event.type + '.');
     updateStatusFromEvent(event);
+    if (event.type === 'Subscribe.VideoDimensions.Change') {
+      onResolutionUpdate(event.data.width, event.data.height);
+    }
   }
   function onSubscribeFail (message) {
     console.error('[Red5ProSubsriber] Subscribe Error :: ' + message);

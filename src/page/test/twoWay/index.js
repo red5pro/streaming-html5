@@ -145,6 +145,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   function onSubscriberEvent (event) {
     console.log('[Red5ProSubsriber] ' + event.type + '.');
     updateStatusFromSubscribeEvent(event, subStatusField);
+    if (event.type === 'Subscribe.VideoDimensions.Change') {
+      var resolutionField = statisticsFields[1].getElementsByClassName('resolution-field')[0];
+      resolutionField.text = event.data.width + 'x' + event.data.height;
+    }
   }
   function onSubscribeFail (message) {
     console.error('[Red5ProSubsriber] Subscribe Error :: ' + message);

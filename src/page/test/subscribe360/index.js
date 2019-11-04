@@ -114,6 +114,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       console.log('[Red5ProSubscriber] ' + event.type + '.');
       if (event.type === 'Subscribe.Start') {
         add360VideoView();
+      } else if (event.type === 'Subscribe.VideoDimensions.Change') {
+        onResolutionUpdate(event.data.width, event.data.height);
       } else if (event.type === 'Subscribe.FullScreen.Change') {
         var canvas = document.getElementById('canvas-container');
         if (event.data) {
