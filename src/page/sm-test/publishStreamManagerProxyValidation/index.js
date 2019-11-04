@@ -85,10 +85,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     validationParamCount += 1;
     var form = document.createElement('div');
     form.id = 'param-field' + validationParamCount;
-    var innerForm = '<label for="param-name' + validationParamCount + '">Param Name:</label>' +
-        '<input type="text" id="param-name' + validationParamCount + '" name="param_name' + validationParamCount + '">' +
-        '<label for="param-value' + validationParamCount + '">Param Value:</label>' +
-        '<input type="text" id="param-value' + validationParamCount + '" name="param_value' + validationParamCount + '">';
+    form.classList.add('param-field');
+    var pName = 'param-name' + validationParamCount;
+    var pValue = 'param-value' + validationParamCount;
+    var innerForm = '<p class="param-setting"><label for="' + pName + '">Param Name:</label>' +
+      '<input type="text" id="' + pName + '" name="' + pName + '"></p>' +
+      '<p class="param-setting"><label for="' + pValue + '">Param Value:</label>' +
+      '<input type="text" id="' + pValue + '" name="' + pValue + '"></p>';
     form.innerHTML = innerForm;
     validationForm.appendChild(form);
     validationAddButton.parentElement.removeChild(validationAddButton);
