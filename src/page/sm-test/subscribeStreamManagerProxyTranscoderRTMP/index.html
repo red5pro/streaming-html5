@@ -5,38 +5,59 @@
     {{> meta title='Subscriber Stream Manager Proxy Test'}}
     {{> header-scripts}}
     {{> header-stylesheets}}
-    <style>
-      #address-field {
-        padding: 6px;
-        background-color: #ccc;
-      }
-    </style>
+<style>
+  .abr-control-field {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    margin: 10px;
+  }
+  .abr-control-field > button:nth-child(even) {
+    margin-left: 10px;
+  }
+  @media (max-width: 510px) {
+    .abr-control-field {
+      flex-direction: column;
+    }
+    .abr-control-field > button:nth-child(even) {
+      margin-left: 0px;
+      margin-top: 10px;
+    }
+  }
+</style>
   </head>
   <body>
+    {{> top-bar }}
+    {{> navigation isTestPage=true }}
     <div id="app">
-      {{> version }}
       {{> settings-link}}
-      <div class="ice-background">
-      <div class="test-notification">
-        <p>In order to properly run the Stream Manager examples, you will need to configure you server for cluster infrastructure as described in the following documentation:</p>
-        <p><a href="https://www.red5pro.com/docs/server/autoscale/" target="_blank">https://www.red5pro.com/docs/server/autoscale/</a></p>
-      <p>Additionally to use this example stream manager proxy gateway should be enabled.</p>
-      </div>
-      </div>
-      {{> test-info testTitle='Subscriber SM Transcoder (RTMP)'}}
-      {{> status-field-subscriber}}
-      <p id="stream-info-field" class="centered status-field"></p>
-      <div class="centered"><p id="address-field">Edge Address: N/A</p></div>
-      <div class="centered">
-        <video id="red5pro-subscriber"
-                controls autoplay playsinline
-                class="red5pro-media red5pro-media-background"
-                width="640" height="480">
-        </video>
-      </div>
-      <div class="centered status-field">
-        <p><button id="uplevel-btn" style="margin-right: 16px">upgrade</button><button id="downlevel-btn">downgrade</button></p>
-        <p style="margin-top: 16px;"><button id="stop-btn" style="margin-right: 16px">stop abr</button><button id="start-btn">start abr</button></p>
+      {{> sm-proxy-notification}}
+      {{> test-info testTitle='Subscriber Stream Manager Transcoder (RTMP)'}}
+      <div class="stream-section">
+        {{> status-field-subscriber}}
+        <div class="centered">
+          <p id="stream-info-field" class="address-field">Stream Level: N/A</p>
+        </div>
+        <div class="centered"><p id="address-field" class="address-field">Edge Address: N/A</p></div>
+        <div class="centered">
+          <video id="red5pro-subscriber"
+                  controls autoplay playsinline
+                  class="red5pro-subscriber red5pro-media red5pro-media-background"
+                  width="640" height="480">
+          </video>
+        </div>
+        <div class="centered status-field">
+          <h3>ABR Level Control</h3>
+          <p class="abr-control-field">
+            <button id="uplevel-btn" class="ui-button">Upgrade</button>
+            <button id="downlevel-btn" class="ui-button">Downgrade</button></p>
+          <hr>
+          <h3>ABR Usage Control</h3>
+          <p class="abr-control-field">
+            <button id="stop-btn" class="ui-button">Stop ABR</button>
+            <button id="start-btn" class="ui-button">Start ABR</button>
+          </p>
+        </div>
       </div>
     </div>
     {{> body-scripts}}

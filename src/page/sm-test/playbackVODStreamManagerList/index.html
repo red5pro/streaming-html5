@@ -6,37 +6,45 @@
     {{> header-scripts}}
     {{> header-stylesheets}}
     <style>
-      .status-field > p {
-        padding: 12px;
+      a {
+        color: #db1f26;
+        text-decoration: underline;
       }
-      .clear-container {
-        width: 100%;
-        overflow: hidden;
+      .test-notification {
+        border-top: 1px solid #dbdbdb;
+      }
+      .file-listing-section {
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        background-color: #dbdbdb;
       }
       .file-listing-container {
-        margin-top: 1em;
-        width: 48%;
+        margin: 20px;
       }
-      .file-listing-title {
-        padding-bottom: 0.5em;
+      @media (max-width:510px) {
+        .file-listing-section {
+          flex-direction: column;
+        }
+        .file-listing-container {
+          width: 100%;
+          margin: 20px 0;
+        }
       }
-      .flc-left {
-        float: left;
-        padding-left: 2%;
-      }
-      .flc-right {
-        float: right;
-        padding-right: 2%;
+    </style>
+    <style>
+      .file-listing-container > p {
+        margin: 20px 0;
       }
       .file-listing {
-        margin: .8em;
+        margin: 12px;
         background-color: #fff;
-        border: 1px solid gray;
+        border: 1px solid #999;
         overflow: scroll;
         max-height: 200px;
       }
       .file-listing > p {
-        padding: .8em;
+        padding: 10px;
         text-align: left;
         cursor: pointer;
       }
@@ -44,9 +52,13 @@
         cursor: default;
       }
       .file-listing > p.item-separator {
-        border-bottom: 1px solid gray; 
+        border-bottom: 1px solid #999; 
       }
     </style>
+    <link href="//vjs.zencdn.net/5.19/video-js.min.css" rel="stylesheet">
+    <script src="//unpkg.com/video.js/dist/video.js"></script>
+    <script src="//unpkg.com/videojs-contrib-hls/dist/videojs-contrib-hls.js"></script>
+    <script src="//unpkg.com/videojs-flash/dist/videojs-flash.js"></script>
   </head>
   <body>
     <template id="flash-playback">
@@ -59,39 +71,43 @@
         <param name="allownetworking" value="all">
       </object>
     </template>
+    {{> top-bar }}
+    {{> navigation isTestPage=true }}
     <div id="app">
-      {{> version }}
       {{> settings-link}}
-      {{> test-info testTitle='Playback SM VOD Listing Test'}}
-      <div class="centered status-field">
-        <p>
-          To use this test, you must have first published a recorded broadcast using the <a href="../publishStreamManagerProxyRecord" target="_blank">Publish - Stream Manager Proxy Record</a> test.
-        </p>
-        <hr />
-        <div class="centered clear-container">
-          <div class="file-listing-container flc-left">
-            <p class="file-listing-title"><strong>Media Files (FLV &amp; MP4)</strong></p>
+      <div class="ice-background">
+        <div class="test-notification">
+          <p>
+            <span>To use this test, you must first published a recorded broadcast using the <a href="../publishStreamManagerProxyRecord" target="_blank">Publish - Stream Manager Proxy Record</a> test.</span>
+          </p>
+        </div>
+      </div>
+      {{> test-title title='Stream Manager Playback VOD Listing Test'}}
+      <div class="stream-section">
+        <div class="centered file-listing-section">
+          <div class="file-listing-container">
+            <p class="file-listing-title"><span class="strong">Media Files (FLV &amp; MP4)</span></p>
             <p>Once loaded, select for playback.</p>
             <div id="media-file-listing" class="file-listing">
               <p class="load-listing">Loading...</p>
             </div>
           </div>
-          <div class="file-listing-container flc-right">
-            <p class="file-listing-title"><strong>Playlists (HLS)</strong></p>
+          <div class="file-listing-container">
+            <p class="file-listing-title"><span class="strong">Playlists (HLS)</span></p>
             <p>Once loaded, select for playback.</p>
             <div id="playlist-listing" class="file-listing">
               <p class="load-listing">Loading...</p>
             </div>
           </div>
         </div>
-      </div>
-      {{> error-notification }}
-      <div id="video-container" class="centered">
-        <video id="red5pro-subscriber"
-                controls autoplay playsinline
-                class="red5pro-media red5pro-media-background"
-                width="640" height="480">
-        </video>
+        {{> error-notification }}
+        <div id="video-container" class="centered">
+          <video id="red5pro-subscriber"
+                  controls autoplay playsinline
+                  class="red5pro-subscriber red5pro-media red5pro-media-background"
+                  width="640" height="480">
+          </video>
+        </div>
       </div>
     </div>
     {{> body-scripts}}

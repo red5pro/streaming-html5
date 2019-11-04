@@ -67,6 +67,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       : {protocol: 'wss', port: serverSettings.wssport};
   }
 
+  streamTitle.innerText = configuration.stream1;
   var defaultConfiguration = {
     protocol: getSocketLocationFromProtocol().protocol,
     port: getSocketLocationFromProtocol().port,

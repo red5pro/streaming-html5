@@ -2,7 +2,7 @@
 {{> license}}
 <html>
   <head>
-    {{> meta title='Publish - Stream Manager Proxy With RoundTrip Authentication Test'}}
+    {{> meta title='Publish - Stream Manager Proxy RoundTrip Authentication Test'}}
     {{> header-scripts}}
     {{> header-stylesheets}}
     <style>
@@ -27,14 +27,14 @@
     <div id="app">
       {{> settings-link}}
       <div class="ice-background">
-      <div class="test-notification">
-        <p>In order to properly run the Stream Manager examples, you will need to configure you server for cluster infrastructure as described in the following documentation:</p>
-        <p><a href="https://www.red5pro.com/docs/server/autoscale/" target="_blank">https://www.red5pro.com/docs/server/autoscale/</a></p>
-        <br>
-        <p>Additionally to use this example stream manager proxy gateway should be enabled and `Simple Authentication Plugin` with `RoundTripValidator` should be enabled on your webapp.</p>
+        <div class="test-notification">
+          <p>In order to properly run the Stream Manager examples, you will need to configure you server for cluster infrastructure as described in the following documentation:</p>
+          <p><a href="https://www.red5pro.com/docs/server/autoscale/" target="_blank">https://www.red5pro.com/docs/server/autoscale/</a></p>
+          <br>
+          <p>Additionally to use this example stream manager proxy gateway should be enabled and `Simple Authentication Plugin` with `RoundTripValidator` should be enabled on your webapp.</p>
+        </div>
       </div>
-      </div>
-      {{> test-info testTitle='Publish Stream Manager Proxy With RoundTrip Authentication Test'}}
+      {{> test-info testTitle='Publish Stream Manager Proxy RoundTrip Authentication Test'}}
       <div class="stream-section">
         <div id="login-form" class="settings-area">
           <h3 class="centered info-title">Log In to begin your Broadcast:</h3>
@@ -48,7 +48,8 @@
         {{> status-field-publisher}}
         {{> statistics-field}}
         <div class="centered">
-          <p id="address-field" class="address-field">Origin Address: N/A</p></div>        
+          <p id="address-field" class="address-field">Origin Address: N/A</p>
+        </div>
         <div class="centered">
           <video id="red5pro-publisher" class="red5pro-publisher"
                  controls autoplay playsinline muted>
