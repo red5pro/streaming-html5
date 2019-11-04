@@ -23,11 +23,7 @@ NONINFRINGEMENT.   IN  NO  EVENT  SHALL INFRARED5, INC. BE LIABLE FOR ANY CLAIM,
 WHETHER IN  AN  ACTION  OF  CONTRACT,  TORT  OR  OTHERWISE,  ARISING  FROM,  OUT  OF  OR  IN CONNECTION 
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
-// Chrome & Firefox
-// Firefox needs to be over https - no localhost support.
-// Required: https://www.webrtc-experiment.com/getScreenId/
-// @see https://medium.com/@chris_82106/implementing-webrtc-screen-sharing-in-a-web-app-late-2016-51c1a2642e4
-(function(window, document, red5prosdk, getScreenId) {
+(function(window, document, red5prosdk) {
   'use strict';
 
   var serverSettings = (function() {
@@ -163,8 +159,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   function respondToOrigin (jsonResponse) {
-    capture(function (constraints) {
-      setupPublisher(jsonResponse, constraints);
+    capture(function (stream) {
+      setupPublisher(jsonResponse, stream);
     });
   }
 
@@ -197,30 +193,33 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   function capture (cb) {
-    getScreenId(function(error, sourceId, screen_constraints) {
-      if (error) {
-        console.error('[Red5ProPublisher] Desktop Capture Error: ' + error);
-        return;
-      }
-      navigator.mediaDevices.enumerateDevices()
-        .then(function (devices) { // eslint-disable-line no-unused-vars
-          // Can't send audio along with constraints for desktop.
-          /*
-          var device, i = devices.length;
-          while(--i > -1) {
-            device = devices[i];
-            if (device.kind.toLowerCase() === 'audioinput') {
-              screen_constraints.audio = {
-                optional: [
-                    {deviceId: device.label || 'microphone1'}
-                  ]
-                }
-              break;
-            }
-            }
-          */
-          cb(screen_constraints);
-        });
+    captureButton.disabled = true;
+    var vw = parseInt(cameraWidthField.value);
+    var vh = parseInt(cameraHeightField.value);
+    var fr = parseInt(framerateField.value);
+    var config = {
+        audio: false,
+        video: {
+          width: vw, //{ maxWidth: vw },
+          height: vh, //{ maxHeight: vh },
+          frameRate: fr//{ maxFrameRate: fr }
+        }
+    };
+    console.log('Using Capture Configuration:\r\n' + JSON.stringify(config, null, 2));
+    // Edge has getDisplayMedia on navigator and not media devices?
+    var p = undefined
+    if (navigator.getDisplayMedia) {
+      p = navigator.getDisplayMedia(config)
+    } else {
+      p = navigator.mediaDevices.getDisplayMedia(config)
+    }
+    p.then(cb).catch(function (error) {
+      captureButton.disabled = false;
+      console.error(error);
+      updateStatusFromEvent({
+        type: 'ERROR',
+        data: error.message
+      });
     });
   }
 
@@ -286,14 +285,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       });
   }
 
-  function setupPublisher (originData, constraints) {
+  function setupPublisher (originData, mediaStream) {
 
     var host = originData.serverAddress;
     var app = originData.scope;
     var name = originData.name;
-    var vw = parseInt(cameraWidthField.value);
-    var vh = parseInt(cameraHeightField.value);
-    var fr = parseInt(framerateField.value);
 
     var rtcConfig = Object.assign({}, configuration, {
                         protocol: getSocketLocationFromProtocol().protocol,
@@ -308,33 +304,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
                         bandwidth: {
                           video: parseInt(bandwidthVideoField.value)
                         },
-                        keyFramerate: parseInt(keyFramerateField.value),
-                        onGetUserMedia: function () {
-                          var c = Object.assign({}, constraints);
-                          if (c.video.optional) {
-                            // chrome
-                            c.video.optional.push({
-                              maxWidth: vw
-                            }, {
-                              maxHeight: vh
-                            }, {
-                              maxFrameRate: fr
-                            });
-                          }
-                          else if (c.video.mediaSource === 'window') {
-                            // moz
-                            c.video.width = {
-                              exact: vw
-                            };
-                            c.video.height = {
-                              exact: vh
-                            };
-                            c.video.frameRate = {
-                              exact: fr
-                            }
-                          }
-                          return navigator.mediaDevices.getUserMedia(c);
-                        }
+                        keyFramerate: parseInt(keyFramerateField.value)
                     });
 
     rtcConfig.connectionParams = Object.assign({}, 
@@ -342,7 +312,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       rtcConfig.connectionParams);
 
     new red5prosdk.RTCPublisher()
-      .init(rtcConfig)
+      .initWithStream(rtcConfig, mediaStream)
       .then(function (publisherImpl) {
         streamTitle.innerText = configuration.stream1;
         targetPublisher = publisherImpl;
@@ -395,5 +365,5 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   window.addEventListener('pagehide', shutdown);
   window.addEventListener('beforeunload', shutdown);
 
-})(this, document, window.red5prosdk, window.getScreenId);
+})(this, document, window.red5prosdk);
 
