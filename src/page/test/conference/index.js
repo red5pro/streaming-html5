@@ -60,6 +60,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var streamName = window.query('streamName') || ['publisher', Math.floor(Math.random() * 0x10000).toString(16)].join('-');
 
   var roomField = document.getElementById('room-field');
+  // eslint-disable-next-line no-unused-vars
   var publisherContainer = document.getElementById('publisher-container');
   var publisherMuteControls = document.getElementById('publisher-mute-controls');
   var publisherSession = document.getElementById('publisher-session');
@@ -267,16 +268,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     });
   }
 
+  // eslint-disable-next-line no-unused-vars
   function updatePublishingUIOnStreamCount (streamCount) {
     /*
     if (streamCount > 0) {
-      publisherContainer.classList.remove('auto-margined');
-      publisherContainer.classList.add('spaced');
-      publisherContainer.classList.add('float-left');
+      publisherContainer.classList.remove('margin-center');
     } else {
-      publisherContainer.classList.add('auto-margined');
-      publisherContainer.classList.remove('spaced');
-      publisherContainer.classList.remove('float-left');
+      publisherContainer.classList.add('margin-center');
     }
     */
   }

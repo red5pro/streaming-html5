@@ -48,8 +48,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           '<audio autoplay playsinline class="red5pro-media"></audio>' +
         '</div>' +
         '<div class="centered">' +
-          '<p class="status-field"><span class="subscriber-name-field"></span></p>' +
-          '<p class="status-field-gray"><span class="subscriber-id-field"></span></p>' +
+          '<p class="subscriber-name-field"></span></p>' +
+          '<p class="subscriber-id-field"></span></p>' +
           '</p>' +
         '</div>';
 

@@ -26,15 +26,18 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 .conference-section {
   width: 100%;
-  margin: 0 20px;
   display: flex;
   flex-direction: row;
-  justify-content: space-evenly;
+  justify-content: center;
+  align-items: baseline;
+  flex-flow: wrap;
 }
 
 .subscribers {
   display: flex;
   flex-direction: row;
+  flex-flow: wrap;
+  justify-content: center;
 }
 
 .publisher-name-field, .subscriber-name-field {
@@ -50,6 +53,15 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 .publisher-mute-controls {
   text-align: center;
   border-top: 1px solid #dbdbdb;
+}
+
+.publisher-mute-controls, .publisher-name-field, .subscriber-name-field {
+  padding: 20px 10px!important;
+}
+
+.subscriber-id-field {
+  padding: 20px 10px;
+  background-color: #dbdbdb;
 }
 
 .auto-margined {
@@ -73,7 +85,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 .publisher-container, .subscriber-container {
   width: 320px;
-  background-color: #333;
+  background-color: #3b3b3b;
+}
+.subscriber-container {
+  margin: 10px;
 }
 .publisher-session {
   width: 100%;
@@ -86,23 +101,53 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   padding: 10px;
 }
 .dark-background {
-  background-color: #999;
+  background-color: #3b3b3b;
 }
 .status-field-gray {
   padding: 0.4rem 0;
-  background-color: #ccc;
-  border-top: 1px solid black;
+  background-color: #999;
+  border-top: 1px solid #3b3b3b;
 }
 .hidden {
   display: none;
 }
-/*
-.logo-placeholder {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 310px;
+.device-label {
+  width: 40%;
+  text-align: right;
+  display: inline-block;
 }
-*/
+.device-control {
+  max-width: 140px;
+}
+.device-info {
+  font-size: 0.7em;
+}
+.publisher-section {
+  max-width: 320px;
+}
+.margin-center {
+  margin: 0 auto;
+}
+.settings-area {
+  background-color: #eeee;
+  padding: 10px;
+}
+.settings-label {
+  width: auto;
+}
+.settings-input {
+  font-size: 1em;
+  height: 1.5rem;
+  padding-left: 0.8rem;
+  max-width: 142px;
+}
+.info-title {
+  padding: 20px 0;
+}
+.paddedHR {
+  margin: 0!important;
+}
+.hidden {
+  display: auto;
+}
 
