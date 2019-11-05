@@ -52,7 +52,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var targetSubscriber;
   var edgeData;
 
-  var streamTitle = document.getElementById('stream-title');
   var nameInput = document.getElementById('name-input');
   var submitButton = document.getElementById('submit-button');
   submitButton.addEventListener('click', function () {
@@ -340,7 +339,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     });
     new red5prosdk.HLSSubscriber().init(hlsConfig)
       .then(function (subscriberImpl) {
-        streamTitle.innerText = configuration.stream1;
         targetSubscriber = subscriberImpl;
         // Subscribe to events.
         targetSubscriber.on('*', onSubscriberEvent);
@@ -369,8 +367,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       port: serverSettings.rtmpport,
       streamName: name,
       backgroundColor: '#000000',
-      width: config.cameraWidth,
-      height: config.cameraHeight,
+      width: 640,
+      height: 480,
       swf: '../../lib/red5pro/red5pro-subscriber.swf',
       swfobjectURL: '../../lib/swfobject/swfobject.js',
       productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
@@ -378,7 +376,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
     new red5prosdk.RTMPSubscriber().init(rtmpConfig)
       .then(function (subscriberImpl) {
-        streamTitle.innerText = configuration.stream1;
         targetSubscriber = subscriberImpl;
         // Subscribe to events.
         targetSubscriber.on('*', onSubscriberEvent);

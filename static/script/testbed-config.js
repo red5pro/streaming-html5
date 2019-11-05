@@ -73,7 +73,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       "app": "live",
       "proxy": "streammanager",
       "streamMode": "live",
-      "cameraWidth": 854,
+      "cameraWidth": 640,
       "cameraHeight": 480,
       "embedWidth": "100%",
       "embedHeight": 480,
