@@ -2,7 +2,7 @@
 {{> license}}
 <html>
   <head>
-    {{> meta title='Publish Stream Manager Proxy Test'}}
+    {{> meta title='Publish Stream Manager Proxy Settings Test'}}
     {{> header-scripts}}
     {{> header-stylesheets}}
     <style>
@@ -12,6 +12,26 @@
       }
       .settings-field, .settings-field > input {
         font-size: 1em;
+      }
+      .capture-container {
+        visibility: visible;
+        position: absolute;
+        padding: 1rem;
+        color: #333333;
+        width: 100%;
+        text-align: center;
+      }
+      .settings-field, .settings-field > input {
+        font-size: 1em;
+      }
+      #publish-button {
+        padding: 0.6em;
+        font-size: 1em;
+        cursor: pointer;
+      }
+      #address-field {
+        padding: 6px;
+        background-color: #ccc;
       }
     </style>
   </head>
@@ -70,4 +90,3 @@
     <script src="index.js"></script>
   </body>
 </html>
-

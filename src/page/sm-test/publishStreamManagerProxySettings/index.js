@@ -58,6 +58,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var bitrateField = document.getElementById('bitrate-field');
   var packetsField = document.getElementById('packets-field');
   var resolutionField = document.getElementById('resolution-field');
+
   var bandwidthAudioField = document.getElementById('audio-bitrate-field');
   var bandwidthVideoField = document.getElementById('video-bitrate-field');
   var keyFramerateField = document.getElementById('key-framerate-field');
@@ -76,6 +77,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   var protocol = serverSettings.protocol;
   var isSecure = protocol == 'https';
+
   function getSocketLocationFromProtocol () {
     return !isSecure
       ? {protocol: 'ws', port: serverSettings.wsport}
@@ -89,21 +91,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     streamMode: configuration.recordBroadcast ? 'record' : 'live'
   };
 
-  function getAuthenticationParams () {
-    var auth = configuration.authentication;
-    return auth && auth.enabled
-      ? {
-        connectionParams: {
-          username: auth.username,
-          password: auth.password
-        }
-      }
-      : {};
-  }
-
-  function displayServerAddress (serverAddress, proxyAddress) 
+  function displayServerAddress (serverAddress, proxyAddress)
   {
-  proxyAddress = (typeof proxyAddress === 'undefined') ? 'N/A' : proxyAddress;
+    proxyAddress = (typeof proxyAddress === 'undefined') ? 'N/A' : proxyAddress;
     addressField.innerText = ' Proxy Address: ' + proxyAddress + ' | ' + ' Origin Address: ' + serverAddress;
   }
 
@@ -206,16 +196,16 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     };
   }
 
-  function getRTMPMediaConfiguration () {
-    return {
-      mediaConstraints: {
-        audio: configuration.useAudio ? configuration.mediaConstraints.audio : false,
-        video: configuration.useVideo ? {
-                width: configuration.cameraWidth,
-                height: configuration.cameraHeight
-              } : false
+  function getAuthenticationParams () {
+    var auth = configuration.authentication;
+    return auth && auth.enabled
+      ? {
+        connectionParams: {
+          username: auth.username,
+          password: auth.password
+        }
       }
-    }
+      : {};
   }
 
   function determinePublisher (jsonResponse) {
@@ -247,59 +237,15 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
                         app: app
                       }
                    });
-    var rtmpConfig = Object.assign({}, config, {
-                      host: host,
-                      app: app,
-                      protocol: 'rtmp',
-                      port: serverSettings.rtmpport,
-                      streamName: name,
-                      backgroundColor: '#000000',
-                      swf: '../../lib/red5pro/red5pro-publisher.swf',
-                      swfobjectURL: '../../lib/swfobject/swfobject.js',
-                      productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
-                    }, 
-                    getAuthenticationParams(),
-                    getRTMPMediaConfiguration());
-    var publishOrder = config.publisherFailoverOrder
-                            .split(',')
-                            .map(function (item) {
-                              return item.trim()
-                        });
 
     // Merge in possible authentication params.
-    rtcConfig.connectionParams = Object.assign({}, 
+    rtcConfig.connectionParams = Object.assign({},
       getAuthenticationParams().connectionParams,
       rtcConfig.connectionParams);
 
-    if(window.query('view')) {
-      publishOrder = [window.query('view')];
-    }
+    displayServerAddress(host, config.host);
 
-    var publisher = new red5prosdk.Red5ProPublisher();
-    return publisher.setPublishOrder(publishOrder)
-            .init({
-                rtc: rtcConfig,
-                rtmp: rtmpConfig
-              });
-  }
-
-  function showAddress (publisher) {
-    var config = publisher.getOptions();
-    console.log("Host = " + config.host + " | " + "app = " + config.app);
-    if (publisher.getType().toLowerCase() === 'rtc') {
-      displayServerAddress(config.connectionParams.host, config.host);
-      console.log("Using streammanager proxy for rtc");
-      console.log("Proxy target = " + config.connectionParams.host + " | " + "Proxy app = " + config.connectionParams.app)
-      if(isSecure) {
-        console.log("Operating over secure connection | protocol: " + config.protocol + " | port: " +  config.port);
-      }
-      else {
-        console.log("Operating over unsecure connection | protocol: " + config.protocol + " | port: " +  config.port);
-      }
-    }
-    else {
-      displayServerAddress(config.host);
-    }
+    return new red5prosdk.RTCPublisher().init(rtcConfig);
   }
 
   function unpublish () {
@@ -315,8 +261,36 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           onUnpublishFail('Unmount Error ' + jsonError);
           reject(error);
         });
+      targetPublisher = undefined;
     });
   }
+    /*
+  function enablePublishButton (flag) {
+    if (flag) {
+      publishButton.removeAttribute('disabled');
+    } else {
+      publishButton.setAttribute('disabled', 'disabled');
+    }
+  }
+  */
+  function fillCameraSelect () {
+    navigator.mediaDevices.enumerateDevices()
+      .then(function (devices) {
+        var videoCameras = devices.filter(function (item) {
+          return item.kind === 'videoinput';
+        })
+        var cameras = videoCameras;
+        var options = cameras.map(function (camera, index) {
+          return '<option value="' + camera.deviceId + '"' + (index === 0 ? ' selected' : '' ) + '>' + (camera.label || 'camera ' + index) + '</option>';
+        });
+        cameraSelect.innerHTML = options.join(' ');
+      })
+      .catch(function (error) {
+        console.error('Could not access camera devices: ' + error);
+      });
+  }
+  // Fill in Camera options.
+  fillCameraSelect();
 
   var retryCount = 0;
   var retryLimit = 3;
@@ -326,7 +300,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         streamTitle.innerText = configuration.stream1;
         targetPublisher = publisherImpl;
         targetPublisher.on('*', onPublisherEvent);
-        showAddress(targetPublisher);
         return targetPublisher.publish();
       })
       .then(function () {
@@ -340,6 +313,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         });
         onPublishFail(jsonError);
       });
+
   }
 
   function respondToOriginFailure (error) {
@@ -358,34 +332,33 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
   }
 
-  function fillCameraSelect () {
-    navigator.mediaDevices.enumerateDevices()
-      .then(function (devices) {
-        var videoCameras = devices.filter(function (item) {
-          return item.kind === 'videoinput';
-        })
-        var cameras = videoCameras;
-        var options = cameras.map(function (camera, index) {
-          return '<option value="' + camera.deviceId + '"' + (index === 0 ? ' selected' : '' ) + '>' + (camera.label || 'camera ' + index) + '</option>';
-        });
-        cameraSelect.innerHTML = options.join(' ');
-      })
-      .catch(function (error) {
-        console.error('Could not access camera devices: ' + error);
-      });
-  }
-  // Fill in Camera options.
-  fillCameraSelect()
-
+  var startingUp = false;
   function startup () {
-    // Kick off.
+    if(startingUp) return;
+    startingUp = true;
+  // Kick off.
     requestOrigin(configuration)
-      .then(respondToOrigin)
+      .then( function (response) {
+        startingUp = false;
+        respondToOrigin(response);
+      })
       .catch(respondToOriginFailure);
   }
 
   publishButton.addEventListener('click', function () {
-    startup();
+    if (targetPublisher === undefined) {
+      startup();
+    } else {
+      var clearRefs = function () {
+        if (targetPublisher) {
+          targetPublisher.off('*', onPublisherEvent);
+        }
+        targetPublisher = undefined;
+      }
+      unpublish().then(clearRefs).catch(clearRefs);
+      document.getElementById('red5pro-publisher').srcObject = null;
+      publishButton.innerText = 'Publish';
+    }
   });
 
   var shuttingDown = false;
@@ -405,4 +378,3 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   window.addEventListener('beforeunload', shutdown);
 
 })(this, document, window.red5prosdk);
-
