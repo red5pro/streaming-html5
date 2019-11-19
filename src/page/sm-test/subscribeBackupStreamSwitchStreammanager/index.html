@@ -6,15 +6,11 @@
     {{> header-scripts}}
     {{> header-stylesheets}}
     <style>
-
-      button {
-        font-size: 14px;
-      }
-
       #stream-swap-container {
         width: 100%;
         height: 480px;
-        border: 1px solid black;
+        border: 1px solid #dbdbdb;
+        box-sizing: border-box;
       }
 
       #no-video-alert {
@@ -22,29 +18,22 @@
         margin-top: 10px;
       }
 
-      #info-field {
-        padding: 10px;
+      .info-field {
         text-align: center;
       }
-
-      .stream-form {
-        display: block;
-        padding: 10px;
-        width: 450px;
-        margin: 0 auto;
-        background-color: #eef7ff;
-        border: 1px solid #ddd;
+      .settings-area {
+        padding: 20px 0;
+        background-color: #eeee;
       }
-
-      .stream-form_fields {
-        width: 360px;
-        text-align: right;
+      .settings-field, .settings-field > input {
+        font-size: 1em;
       }
-
-      .stream-form_fields > p {
-        margin: 10px 0;
+      .settings-title {
+        font-size: 1.2em;
+        text-transform: uppercase;
+        color: #3b3b3b;
+        text-align: center;
       }
-
       .btn {
         height: 40px;
         width: 100%;
@@ -95,43 +84,37 @@
     </style>
   </head>
   <body>
+    {{> top-bar }}
+    {{> navigation isTestPage=true }}
     <div id="app">
-      {{> version }}
       {{> settings-link}}
-      <div class="ice-background">
-        <div class="test-notification">
-          <p>In order to properly run the Stream Manager examples, you will need to configure you server for cluster infrastructure as described in the following documentation:</p>
-          <p><a href="https://www.red5pro.com/docs/server/autoscale/" target="_blank">https://www.red5pro.com/docs/server/autoscale/</a></p>
+      {{> sm-proxy-notification}}
+      {{> test-title title='Subscriber Backup Stream Manager Switch Test'}}
+      <div class="stream-section">
+        <div class="settings-area">
+          <p class="settings-title">Stream Manager Override</p>
+          <p class="settings-field settings-collapsable">
+            <label for="stream-manager-address" class="settings-label">Stream Manager Host:</label>
+            <input id="stream-manager-address" name="stream-manager-address" value="FQDN HERE">
+          </p>
+           <p class="settings-field settings-collapsable">
+            <label for="stream-name" class="settings-label">Stream Name:</label>
+            <input id="stream-name" name="stream-name" value="stream1">
+          </p>
         </div>
-      </div>
-      <h1 class="centered">Subscriber Backup Stream Manager Switch Test</h1>
-      <hr />
-      <div class="clearfix centered">
-        <div class="stream-form">
-          <h1>Stream Manager Override</h1>
-          <div class="stream-form_fields">
-            <p>
-              <label for="stream-manager-address">Stream Manager address:</label>
-              <input id="stream-manager-address" name="stream-manager-address" value="FQDN HERE">
-            </p>
-            <p>
-              <label for="stream-name">Stream Name:</label>
-              <input id="stream-name" name="stream-name" value="stream1">
-            </p>
+         <div id="info-field" class="centered info-field status-field">...</div>
+         <div id="stream-swap-container" class="clearfix">
+            <div id="no-video-alert">
+              No videos to display.
+            </div>
+         </div>
+         <div>
+          <button id="start-button" class="ui-button">Start</button>
           </div>
-        </div>
-       </div>
-       <div id="info-field" class="centered status-field">...</div>
-       <div id="stream-swap-container" class="clearfix">
-        <div id="no-video-alert">
-          No videos to display.
-        </div>
-       </div>
-       <div style="text-align: center">
-        <button id="start-button" class="btn">Start</button>
-        </div>
-       <div style="text-align: center">
-        <button id="toggle-overlap" class="btn hidden">Toggle Overlap</button>   </div>
+         <div>
+          <button id="toggle-overlap" class="ui-button hidden">Toggle Overlap</button>   
+         </div>
+      </div>
        {{> body-scripts}}
        {{> mobile-subscriber-util}}
        <script src="index.js"></script>

@@ -53,14 +53,43 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   var updateStatusFromEvent = window.red5proHandlePublisherEvent; // defined in src/template/partial/status-field-publisher.hbs
   var streamTitle = document.getElementById('stream-title');
+  var sendButton = document.getElementById('send-button');
+  var messageInput = document.getElementById('message-input');
   var statisticsField = document.getElementById('statistics-field');
-  var captureTarget = document.getElementById('video-container');
+  var bitrateField = document.getElementById('bitrate-field');
+  var packetsField = document.getElementById('packets-field');
+  var resolutionField = document.getElementById('resolution-field');
 
-  captureTarget.addEventListener('click', function (event) {
-    var elem = event.currentTarget.children[0];
+  var bitrate = 0;
+  var packetsSent = 0;
+  var frameWidth = 0;
+  var frameHeight = 0;
+
+  function updateStatistics (b, p, w, h) {
+    statisticsField.classList.remove('hidden');
+    bitrateField.innerText = Math.floor(b);
+    packetsField.innerText = p;
+    resolutionField.innerText = (w || 0) + 'x' + (h || 0);
+  }
+
+  function onBitrateUpdate (b, p) {
+    bitrate = b;
+    packetsSent = p;
+    updateStatistics(bitrate, packetsSent, frameWidth, frameHeight);
+  }
+
+  function onResolutionUpdate (w, h) {
+    frameWidth = w;
+    frameHeight = h;
+    updateStatistics(bitrate, packetsSent, frameWidth, frameHeight);
+  }
+
+
+  sendButton.addEventListener('click', function (event) {
+    var elem = document.getElementById('red5pro-publisher');
     if (targetPublisher !== undefined) {
       targetPublisher.send("whateverFunctionName", {
-        message: "The publisher wants your attention",
+        message: messageInput.value === '' ? 'The publisher wants your attention.' : messageInput.value,
         touchX: event.offsetX / elem.clientWidth,
         touchY: event.offsetY / elem.clientHeight
       });
@@ -75,10 +104,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       : {protocol: 'wss', port: serverSettings.wssport};
   }
 
-  function onBitrateUpdate (bitrate, packetsSent) {
-    statisticsField.innerText = 'Bitrate: ' + Math.floor(bitrate) + '. Packets Sent: ' + packetsSent + '.';
-  }
-
   function onPublisherEvent (event) {
     console.log('[Red5ProPublisher] ' + event.type + '.');
     updateStatusFromEvent(event);
@@ -89,7 +114,14 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   function onPublishSuccess (publisher) {
     console.log('[Red5ProPublisher] Publish Complete.');
     try {
-      window.trackBitrate(publisher.getPeerConnection(), onBitrateUpdate);
+      var pc = publisher.getPeerConnection();
+      var stream = publisher.getMediaStream();
+      window.trackBitrate(pc, onBitrateUpdate);
+      statisticsField.classList.remove('hidden');
+      stream.getVideoTracks().forEach(function (track) {
+        var settings = track.getSettings();
+        onResolutionUpdate(settings.width, settings.height);
+      });
     }
     catch (e) {
       // no tracking for you!

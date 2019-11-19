@@ -55,6 +55,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var streamTitle = document.getElementById('stream-title');
   var statisticsField = document.getElementById('statistics-field');
   var addressField = document.getElementById('address-field');
+  var bitrateField = document.getElementById('bitrate-field');
+  var packetsField = document.getElementById('packets-field');
+  var resolutionField = document.getElementById('resolution-field');
 
   var bandwidthAudioField = document.getElementById('audio-bitrate-field');
   var bandwidthVideoField = document.getElementById('video-bitrate-field');
@@ -80,6 +83,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       ? {protocol: 'ws', port: serverSettings.wsport}
       : {protocol: 'wss', port: serverSettings.wssport};
   }
+
+  streamTitle.innerText = configuration.stream1;
   var defaultConfiguration = {
     protocol: getSocketLocationFromProtocol().protocol,
     port: getSocketLocationFromProtocol().port,
@@ -92,8 +97,28 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     addressField.innerText = ' Proxy Address: ' + proxyAddress + ' | ' + ' Origin Address: ' + serverAddress;
   }
 
-  function onBitrateUpdate (bitrate, packetsSent) {
-    statisticsField.innerText = 'Bitrate: ' + Math.floor(bitrate) + '. Packets Sent: ' + packetsSent + '.';
+  var bitrate = 0;
+  var packetsSent = 0;
+  var frameWidth = 0;
+  var frameHeight = 0;
+
+  function updateStatistics (b, p, w, h) {
+    statisticsField.classList.remove('hidden');
+    bitrateField.innerText = Math.floor(b);
+    packetsField.innerText = p;
+    resolutionField.innerText = (w || 0) + 'x' + (h || 0);
+  }
+
+  function onBitrateUpdate (b, p) {
+    bitrate = b;
+    packetsSent = p;
+    updateStatistics(bitrate, packetsSent, frameWidth, frameHeight);
+  }
+
+  function onResolutionUpdate (w, h) {
+    frameWidth = w;
+    frameHeight = h;
+    updateStatistics(bitrate, packetsSent, frameWidth, frameHeight);
   }
 
   function onPublisherEvent (event) {
@@ -105,7 +130,19 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
   function onPublishSuccess (publisher) {
     console.log('[Red5ProPublisher] Publish Complete.');
-    window.trackBitrate(publisher.getPeerConnection(), onBitrateUpdate);
+    try {
+      var pc = publisher.getPeerConnection();
+      var stream = publisher.getMediaStream();
+      window.trackBitrate(pc, onBitrateUpdate);
+      statisticsField.classList.remove('hidden');
+      stream.getVideoTracks().forEach(function (track) {
+        var settings = track.getSettings();
+        onResolutionUpdate(settings.width, settings.height);
+      });
+    }
+    catch (e) {
+      // no tracking for you!
+    }
   }
   function onUnpublishFail (message) {
     console.error('[Red5ProPublisher] Unpublish Error :: ' + message);
@@ -113,120 +150,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   function onUnpublishSuccess () {
     console.log('[Red5ProPublisher] Unpublish Complete.');
   }
-
-  function getAuthenticationParams () {
-    var auth = configuration.authentication;
-    return auth && auth.enabled
-      ? {
-        connectionParams: {
-          username: auth.username,
-          password: auth.password
-        }
-      }
-      : {};
-  }
-
-  function getUserMediaConfiguration () {
-    return {
-      mediaConstraints: {
-        audio: configuration.useAudio ? configuration.mediaConstraints.audio : false,
-        video: configuration.useVideo ? {
-          deviceId: { exact: cameraSelect.value },
-          width: { exact: parseInt(cameraWidthField.value) },
-          height: { exact: parseInt(cameraHeightField.value) },
-          framerate: { exact: parseInt(framerateField.value) }
-        } : false
-      }
-    };
-  }
-
-  function determinePublisher (jsonResponse) {
-    console.log("hammer 1");
-    var host = jsonResponse.serverAddress;
-      console.log("hammer 2");
-    var app = jsonResponse.scope;
-      console.log("hammer 3");
-    var name = jsonResponse.name;
-      console.log("hammer 4");
-    var config = Object.assign({},
-                      configuration,
-                      defaultConfiguration,
-                      getUserMediaConfiguration(),
-                      {
-                        keyFramerate: parseInt(keyFramerateField.value),
-                        bandwidth: {
-                          audio: parseInt(bandwidthAudioField.value),
-                          video: parseInt(bandwidthVideoField.value)
-                        }
-                      });
-                        console.log("hammer 5");
-    var rtcConfig = Object.assign({}, config, {
-                      protocol: getSocketLocationFromProtocol().protocol,
-                      port: getSocketLocationFromProtocol().port,
-                      streamName: name,
-                      app: configuration.proxy,
-                      connectionParams: {
-                        host: host,
-                        app: app
-                      }
-                   });
-                     console.log("hammer 6");
-
-    // Merge in possible authentication params.
-    rtcConfig.connectionParams = Object.assign({},
-      getAuthenticationParams().connectionParams,
-      rtcConfig.connectionParams);
-        console.log("hammer 7");
-
-    displayServerAddress(host, config.host);
-      console.log("hammer 7.5");
-
-    return new red5prosdk.RTCPublisher().init(rtcConfig);
-  }
-
-  function unpublish () {
-    return new Promise(function (resolve, reject) {
-      var publisher = targetPublisher;
-      publisher.unpublish()
-        .then(function () {
-          onUnpublishSuccess();
-          resolve();
-        })
-        .catch(function (error) {
-          var jsonError = typeof error === 'string' ? error : JSON.stringify(error, 2, null);
-          onUnpublishFail('Unmount Error ' + jsonError);
-          reject(error);
-        });
-      targetPublisher = undefined;
-    });
-  }
-
-  function enablePublishButton (flag) {
-    if (flag) {
-      publishButton.removeAttribute('disabled');
-    } else {
-      publishButton.setAttribute('disabled', 'disabled');
-    }
-  }
-
-  function fillCameraSelect () {
-    navigator.mediaDevices.enumerateDevices()
-      .then(function (devices) {
-        var videoCameras = devices.filter(function (item) {
-          return item.kind === 'videoinput';
-        })
-        var cameras = videoCameras;
-        var options = cameras.map(function (camera, index) {
-          return '<option value="' + camera.deviceId + '"' + (index === 0 ? ' selected' : '' ) + '>' + (camera.label || 'camera ' + index) + '</option>';
-        });
-        cameraSelect.innerHTML = options.join(' ');
-      })
-      .catch(function (error) {
-        console.error('Could not access camera devices: ' + error);
-      });
-  }
-  // Fill in Camera options.
-  fillCameraSelect();
 
   function requestOrigin (configuration) {
     var host = configuration.host;
@@ -259,19 +182,124 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     });
   }
 
+  function getUserMediaConfiguration () {
+    return {
+      mediaConstraints: {
+        audio: configuration.useAudio ? configuration.mediaConstraints.audio : false,
+        video: configuration.useVideo ? {
+          deviceId: { exact: cameraSelect.value },
+          width: { exact: parseInt(cameraWidthField.value) },
+          height: { exact: parseInt(cameraHeightField.value) },
+          framerate: { exact: parseInt(framerateField.value) }
+        } : false
+      }
+    };
+  }
+
+  function getAuthenticationParams () {
+    var auth = configuration.authentication;
+    return auth && auth.enabled
+      ? {
+        connectionParams: {
+          username: auth.username,
+          password: auth.password
+        }
+      }
+      : {};
+  }
+
+  function determinePublisher (jsonResponse) {
+    var host = jsonResponse.serverAddress;
+    var app = jsonResponse.scope;
+    var name = jsonResponse.name;
+    var config = Object.assign({},
+                    configuration,
+                    defaultConfiguration,
+                    getUserMediaConfiguration(),
+                    {
+                      keyFramerate: parseInt(keyFramerateField.value),
+                      bandwidth: {
+                        audio: parseInt(bandwidthAudioField.value),
+                        video: parseInt(bandwidthVideoField.value)
+                      }
+                    });
+    console.log('-----');
+    console.log(JSON.stringify(config, null, 2));
+    console.log('-----');
+
+    var rtcConfig = Object.assign({}, config, {
+                      protocol: getSocketLocationFromProtocol().protocol,
+                      port: getSocketLocationFromProtocol().port,
+                      streamName: name,
+                      app: configuration.proxy,
+                      connectionParams: {
+                        host: host,
+                        app: app
+                      }
+                   });
+
+    // Merge in possible authentication params.
+    rtcConfig.connectionParams = Object.assign({},
+      getAuthenticationParams().connectionParams,
+      rtcConfig.connectionParams);
+
+    displayServerAddress(host, config.host);
+
+    return new red5prosdk.RTCPublisher().init(rtcConfig);
+  }
+
+  function unpublish () {
+    return new Promise(function (resolve, reject) {
+      var publisher = targetPublisher;
+      publisher.unpublish()
+        .then(function () {
+          onUnpublishSuccess();
+          resolve();
+        })
+        .catch(function (error) {
+          var jsonError = typeof error === 'string' ? error : JSON.stringify(error, 2, null);
+          onUnpublishFail('Unmount Error ' + jsonError);
+          reject(error);
+        });
+      targetPublisher = undefined;
+    });
+  }
+    /*
+  function enablePublishButton (flag) {
+    if (flag) {
+      publishButton.removeAttribute('disabled');
+    } else {
+      publishButton.setAttribute('disabled', 'disabled');
+    }
+  }
+  */
+  function fillCameraSelect () {
+    navigator.mediaDevices.enumerateDevices()
+      .then(function (devices) {
+        var videoCameras = devices.filter(function (item) {
+          return item.kind === 'videoinput';
+        })
+        var cameras = videoCameras;
+        var options = cameras.map(function (camera, index) {
+          return '<option value="' + camera.deviceId + '"' + (index === 0 ? ' selected' : '' ) + '>' + (camera.label || 'camera ' + index) + '</option>';
+        });
+        cameraSelect.innerHTML = options.join(' ');
+      })
+      .catch(function (error) {
+        console.error('Could not access camera devices: ' + error);
+      });
+  }
+  // Fill in Camera options.
+  fillCameraSelect();
+
   var retryCount = 0;
   var retryLimit = 3;
   function respondToOrigin (response) {
-    console.log("hammer 0");
     determinePublisher(response)
       .then(function (publisherImpl) {
-        console.log("hammer 8");
         streamTitle.innerText = configuration.stream1;
-          console.log("hammer 9");
         targetPublisher = publisherImpl;
-          console.log("hammer 10");
         targetPublisher.on('*', onPublisherEvent);
-          console.log("hammer 11");
         return targetPublisher.publish();
       })
       .then(function () {
@@ -321,7 +349,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     if (targetPublisher === undefined) {
       startup();
     } else {
-      function clearRefs () {
+      var clearRefs = function () {
         if (targetPublisher) {
           targetPublisher.off('*', onPublisherEvent);
         }

@@ -98,6 +98,81 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     console.log('[Red5ProSubsriber] Unsubscribe Complete.');
   }
 
+
+  var generateFlashEmbedObject = function (id) {
+    var obj = document.createElement('object');
+    obj.type = 'application/x-shockwave-flash';
+    obj.id = id;
+    obj.name = id;
+    obj.align = 'middle';
+    obj.data = '../../lib/red5pro/red5pro-subscriber.swf';
+    obj.width = '100%';
+    obj.height = '480';
+    obj.classList.add('red5pro-subscriber', 'red5pro-media-background', 'red5pro-media');
+    obj.innerHTML = '<param name="quality" value="high">' +
+              '<param name="wmode" value="opaque">' +
+              '<param name="bgcolor" value="#000000">' +
+              '<param name="allowscriptaccess" value="always">' +
+              '<param name="allowfullscreen" value="true">' +
+              '<param name="allownetworking" value="all">';
+    return obj;
+  }
+
+  function isMP4File (url) {
+    return url.indexOf('.mp4') !== -1;
+  }
+
+  function useMP4Fallback (url) {
+    console.log('[subscribe] Playback MP4: ' + url);
+    if (url.indexOf('streams/') === -1) {
+      var paths = url.split('/');
+      paths.splice(paths.length - 1, 0, 'streams');
+      url = paths.join('/');
+    }
+    var element = document.getElementById('red5pro-subscriber');
+    var source = document.createElement('source');
+    source.type = 'video/mp4;codecs="avc1.42E01E, mp4a.40.2"';
+    source.src = url;
+    element.appendChild(source);
+  }
+
+  function useFLVFallback (host, app, streamName) {
+    console.log('[subscribe] Playback FLV: ' + streamName);
+    var container = document.getElementById('red5pro-subscriber');
+    var parent = container ? container.parentNode : document.getElementById('video-container');
+    if (container && parent) {
+      parent.removeChild(container);
+    }
+    var flashElement = generateFlashEmbedObject('red5pro-subscriber');
+    var flashvars = document.createElement('param');
+      flashvars.name = 'flashvars';
+      flashvars.value = 'stream='+streamName+'&'+
+                        'app='+app+'&'+
+                        'host='+host+'&'+
+                        'muted=false&'+
+                        'autoplay=true&'+
+                        'backgroundColor=#000000&'+
+                        'buffer=0.5&'+
+                        'autosize=true';
+    flashElement.appendChild(flashvars);
+    parent.appendChild(flashElement);
+  }
+
+  function useVideoJSFallback (url) {
+    console.log('[subscribe] Playback HLS: ' + url);
+    var videoElement = document.getElementById('red5pro-subscriber');
+    videoElement.classList.add('video-js');
+    var source = document.createElement('source');
+    source.type = 'application/x-mpegURL';
+    source.src = url;
+    videoElement.appendChild(source);
+    new window.videojs(videoElement, {
+      techOrder: ['html5', 'flash']
+    }, function () {
+      // success.
+    });
+  }
+
   function showErrorNotification (message) {
     errorNotification.innerText = message;
     errorNotification.classList.remove('hidden');
@@ -268,42 +343,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
   }
 
-  function forceFallback (type) {
-    if (type.toLowerCase() === 'hls') {
-      showErrorNotification('HLS not supported natively by browser.');
-      throw new Error('HLS not supported natively by browser.');
+  function forceFallback (edgeData) {
+    if (isMP4File(edgeData.url)) {
+      useMP4Fallback(edgeData.url);
     } else {
       useFLVFallback(edgeData.serverAddress, edgeData.scope, edgeData.name);
     }
-  }
-
-  /*
-   * Quick FLV embed fallback if Flash not explicitly allowed in browser.
-   */
-  function addPlayer(tmpl, container) {
-    var $el = document.importNode(tmpl.content, true);
-    container.appendChild($el);
-    return $el;
-  }
-
-  function useFLVFallback (host, app, streamName) {
-    var container = document.getElementById('red5pro-subscriber')
-    if (container && container.parentNode) {
-      container.parentNode.removeChild(container);
-    }
-    addPlayer(document.getElementById('flash-playback'), document.getElementById('video-container'));
-    var flashObject = document.getElementById('red5pro-subscriber');
-      var flashvars = document.createElement('param');
-      flashvars.name = 'flashvars';
-      flashvars.value = 'stream='+streamName+'&'+
-                        'app='+app+'&'+
-                        'host='+host+'&'+
-                        'muted=false&'+
-                        'autoplay=true&'+
-                        'backgroundColor=#000000&'+
-                        'buffer=0.5&'+
-                        'autosize=true';
-    flashObject.appendChild(flashvars);
   }
 
   // Request to unsubscribe.
@@ -368,8 +413,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       })
       .catch(function (error) {
         var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
-        console.error('[Red5ProSubscriber] :: Error in HLS playback. ' + jsonError)
-        showErrorNotification('[Red5ProSubscriber] :: Error in HLS playback. ' + jsonError);
+        console.error('[Red5ProSubscriber] :: Error in HLS playback. ' + jsonError);
+        useVideoJSFallback(response.url);
+        //        showErrorNotification('[Red5ProSubscriber] :: Error in HLS playback. ' + jsonError);
       });
   }
 
@@ -406,7 +452,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       })
       .catch(function (error) { // eslint-disable-line no-unused-vars
         try {
-          forceFallback(configuration.subscriberFailoverOrder)
+          forceFallback(edgeData)
         } catch (e) {
           console.error('[Red5ProSubscriber] :: Error in subscribing - ' + e.message);
           onSubscribeFail(e.message);

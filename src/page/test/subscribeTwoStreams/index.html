@@ -5,29 +5,68 @@
     {{> meta title='Subscriber Two Streams Test'}}
     {{> header-scripts}}
     {{> header-stylesheets}}
+    <style>
+      .red5pro-media-container {
+        height: auto;
+      }
+      .streams-container {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-evenly;
+      }
+      .stream-section {
+        flex: 1;
+      }
+      .stream-title {
+        border-bottom: 1px solid #999;
+      }
+      @media (max-width: 1023px) {
+        .stream-section {
+            width: 50%;
+            margin: 0 10px;
+         }
+      }
+      @media (max-width: 767px) {
+        .stream-section {
+            width: 100%;
+            margin: 0px auto;
+         }
+        .streams-container {
+          flex-direction: column;
+        }
+        .stream-section:nth-child(even) {
+          margin-top: 20px;
+        }
+      }
+    </style>
   </head>
   <body>
+    {{> top-bar }}
+    {{> navigation isTestPage=true }}
     <div id="app">
-      {{> version }}
       {{> settings-link}}
-      {{> test-info testTitle='Subscriber Two Stream Test'}}
-      <div class="float-left-conf">
-        <h2 class="centered"><em>stream</em>: <span id="stream1-title"></span></h2>
-        <p id="stream1-status" class="centered status-field">On hold.</p>
-        <video id="red5pro-stream1"
-                controls="controls" autoplay="autoplay" playsinline
-                class="red5pro-media red5pro-media-background"
-                width="640" height="480">
-        </video>
-      </div>
-      <div class="float-left-conf">
-        <h2 class="centered"><em>stream</em>: <span id="stream2-title"></span></h2>
-        <p id="stream2-status" class="centered status-field">On hold.</p>
-        <video id="red5pro-stream2"
-                controls="controls" autoplay="autoplay" playsinline
-                class="red5pro-media red5pro-media-background"
-                width="640" height="480">
-        </video>
+      {{> test-title title='Subscriber Two Stream Test'}}
+      <div class="streams-container">
+        <div class="stream-section">
+          <p id="stream1-title" class="centered status-field stream-title"></p>
+          <p id="stream1-status" class="centered status-field">On hold.</p>
+          {{> statistics-field}}
+          <video id="red5pro-stream1"
+                  controls="controls" autoplay="autoplay" playsinline
+                  class="red5pro-subscriber red5pro-media red5pro-media-background"
+                  width="640" height="480">
+          </video>
+        </div>
+        <div class="stream-section">
+          <p id="stream2-title" class="centered status-field stream-title"></p>
+          <p id="stream2-status" class="centered status-field">On hold.</p>
+          {{> statistics-field}}
+          <video id="red5pro-stream2"
+                  controls="controls" autoplay="autoplay" playsinline
+                  class="red5pro-subscriber red5pro-media red5pro-media-background"
+                  width="640" height="480">
+          </video>
+        </div>
       </div>
     </div>
     {{> body-scripts}}

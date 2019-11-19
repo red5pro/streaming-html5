@@ -30,7 +30,8 @@
       var node = document.createElement('div');
       node.classList.add('hint-block', 'auth-alert');
       var note = document.createElement('span');
-      note.innerHTML = '*<strong>Authentication is Enabled</strong>*';
+      note.classList.add('strong');
+      note.innerHTML = '*Authentication is Enabled*';
       var link = document.createElement('a');
       link.innerText = 'Click here to disable.';
       link.href= '../../index.html';

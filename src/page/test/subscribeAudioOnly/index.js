@@ -64,29 +64,21 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var streamTitle = document.getElementById('stream-title');
   var instanceId = Math.floor(Math.random() * 0x10000).toString(16);
   var statisticsField = document.getElementById('statistics-field');
-
-  var protocol = serverSettings.protocol;
-  var isSecure = protocol == 'https';
-
   var bitrate = 0;
   var packetsReceived = 0;
-  var frameWidth = 0;
-  var frameHeight = 0;
-  function updateStatistics (b, p, w, h) {
-    statisticsField.innerText = 'Bitrate: ' + Math.floor(b) + '. Packets Received: ' + p + '.' + ' Resolution: ' + w + ', ' + h + '.';
+  function updateStatistics (b, p) {
+    statisticsField.classList.remove('hidden');
+    statisticsField.innerText = 'Bitrate: ' + Math.floor(b) + '. Packets Received: ' + p + '.';
   }
 
   function onBitrateUpdate (b, p) {
     bitrate = b;
     packetsReceived = p;
-    updateStatistics(bitrate, packetsReceived, frameWidth, frameHeight);
+    updateStatistics(bitrate, packetsReceived);
   }
 
-  function onResolutionUpdate (w, h) {
-    frameWidth = w;
-    frameHeight = h;
-    updateStatistics(bitrate, packetsReceived, frameWidth, frameHeight);
-  }
+  var protocol = serverSettings.protocol;
+  var isSecure = protocol == 'https';
 
   function getSocketLocationFromProtocol () {
     return !isSecure
@@ -143,7 +135,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
     if (subscriber.getType().toLowerCase() === 'rtc') {
       try {
-        window.trackBitrate(subscriber.getPeerConnection(), onBitrateUpdate, onResolutionUpdate, true);
+        var ticket = window.trackBitrate(subscriber.getPeerConnection(), onBitrateUpdate, null, true)
+        ticket.audioOnly = true;
       }
       catch (e) {
         //
@@ -190,7 +183,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       targetSubscriber = subscriberImpl;
       // Subscribe to events.
       targetSubscriber.on('*', onSubscriberEvent);
-      document.getElementById('red5pro-subscriber').parentNode.style='border: 1px solid #595959; height:40px; margin: 10px;';
       return targetSubscriber.subscribe()
     })
     .then(function () {

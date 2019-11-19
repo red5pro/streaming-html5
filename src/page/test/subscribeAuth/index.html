@@ -2,45 +2,51 @@
 {{> license}}
 <html>
   <head>
-    {{> meta title='Subscriber Auth Test'}}
+    {{> meta title='Subscriber Authentication Test'}}
     {{> header-scripts}}
     {{> header-stylesheets}}
     <style>
-      .hidden {
-        display: none;
+      .settings-area {
+        background-color: #eeee;
       }
-      #login-form {
-        padding: 10px 0;
-        background-color: #afafaf;
+      .settings-field, .settings-field > input {
+        font-size: 1em;
       }
-      #login-form p {
-        margin: 10px 0;
+      .info-title {
+        padding: 20px 0;
       }
-      #login-form p label {
-        margin-right: 6px;
-        width: 100%;
-        text-align: right;
+      .paddedHR {
+        margin: 0!important;
       }
     </style>
   </head>
   <body>
+    {{> top-bar }}
+    {{> navigation isTestPage=true }}
     <div id="app">
-      {{> version }}
       {{> settings-link}}
-      {{> test-info testTitle='Subscriber Auth Test'}}
-      {{> status-field-subscriber}}
-      {{> statistics-field}}
-      <div id="login-form" class="centered">
-        <p>Log In to begin playback:</p>
-        <p><label for="username-field">username:</label><input id="username-field" name="username-field"></p>
-        <p><label for="password-field">password:</label><input id="password-field" name="password-field"></p>
-        <button id="submit-button">submit</button>
-      </div>
-      <div class="centered">
-        <video id="red5pro-subscriber"
-                controls autoplay playsinline
-                class="red5pro-media red5pro-media-background"
-                width="640" height="480"></video>
+      {{> test-info testTitle='Subscriber Authentication Test'}}
+      <div class="stream-section">
+        <div id="login-form" class="settings-area">
+          <h3 class="centered info-title">Log In to begin your Playback:</h3>
+          <hr class="paddedHR">
+          <p class="settings-field settings-collapsable">
+            <label for="username-field" class="settings-label">Username:</label>
+            <input id="username-field" name="username-field">
+          </p>
+          <p class="settings-field settings-collapsable">
+            <label for="password-field" class="settings-label">Password:</label>
+            <input id="password-field" name="password-field"></p>
+          <button id="submit-button" class="ui-button">Submit</button>
+        </div>
+        <div class="centered">
+          {{> status-field-subscriber}}
+          {{> statistics-field}}
+          <video id="red5pro-subscriber"
+                  controls autoplay playsinline
+                  class="red5pro-media red5pro-media-background"
+                  width="640" height="480"></video>
+        </div>
       </div>
     </div>
     {{> body-scripts}}

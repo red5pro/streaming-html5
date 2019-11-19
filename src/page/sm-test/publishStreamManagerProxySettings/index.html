@@ -6,6 +6,13 @@
     {{> header-scripts}}
     {{> header-stylesheets}}
     <style>
+      .settings-area {
+        padding-top: 20px;
+        background-color: #eeee;
+      }
+      .settings-field, .settings-field > input {
+        font-size: 1em;
+      }
       .capture-container {
         visibility: visible;
         position: absolute;
@@ -29,57 +36,54 @@
     </style>
   </head>
   <body>
+    {{> top-bar }}
+    {{> navigation isTestPage=true }}
     <div id="app">
-      {{> version }}
       {{> settings-link}}
-      <div class="ice-background">
-        <div class="test-notification">
-          <p>In order to properly run the Stream Manager examples, you will need to configure you server for cluster infrastructure as described in the following documentation:</p>
-          <p><a href="https://www.red5pro.com/docs/server/autoscale/" target="_blank">https://www.red5pro.com/docs/server/autoscale/</a></p>
-          <p>Additionally to use this example stream manager proxy gateway should be enabled.</p>
+      {{> sm-proxy-notification}}
+      {{> test-info testTitle='Publish Stream Manager Proxy Settings Test (WebRTC)'}}
+      <div class="stream-section">
+        <div class="settings-area">
+          <p class="settings-field settings-collapsable">
+            <Label class="settings-label">Camera:</label>
+            <select id="camera-select" class="control"></select>
+          </p>
+          <p class="settings-field settings-collapsable">
+            <label class="settings-label">Camera Width:</label>
+            <input id="camera-width-field" name="camera-width-field" value="0">
+          </p>
+          <p class="settings-field settings-collapsable">
+            <label class="settings-label">Camera Height:</label>
+            <input id="camera-height-field" name="camera-height-field" value="0">
+          </p>
+          <p class="settings-field settings-collapsable">
+            <label class="settings-label">Camera Framerate:</label>
+            <input id="framerate-field" name="framerate-field" value="0">
+          </p>
+          <p class="settings-field settings-collapsable">
+            <label class="settings-label">Video Bitrate (Kbps):</label>
+            <input id="video-bitrate-field" name="video-bitrate-field" value="0">
+          </p>
+          <p class="settings-field settings-collapsable">
+            <label class="settings-label">Audio Bitrate (Kbps):</label>
+            <input id="audio-bitrate-field" name="audio-bitrate-field" value="0">
+          </p>
+          <p class="settings-field settings-collapsable">
+            <label class="settings-label">Key Framerate (ms):</label>
+            <input id="key-framerate-field" name="key-framerate-field" value="0">
+          </p>
+          <p>
+            <button id="publish-button" class="control ui-button">Publish</button>
+          </p>
         </div>
-      </div>
-      {{> test-info testTitle='Publish Stream Manager Proxy Settings Test'}}
-      <hr/>
-      <div id="settings-container">
-        <p class="settings-field">
-          <Label class="settings-label">Camera:</label>
-          <select id="camera-select" class="control"></select>
-        </p>
-        <p class="settings-field">
-          <label class="settings-label">Camera Width:</label>
-          <input id="camera-width-field" name="camera-width-field" value="0">
-        </p>
-        <p class="settings-field">
-          <label class="settings-label">Camera Height:</label>
-          <input id="camera-height-field" name="camera-height-field" value="0">
-        </p>
-        <p class="settings-field">
-          <label class="settings-label">Camera Framerate:</label>
-          <input id="framerate-field" name="framerate-field" value="0">
-        </p>
-        <p class="settings-field">
-          <label class="settings-label">Video Bitrate (Kbps):</label>
-          <input id="video-bitrate-field" name="video-bitrate-field" value="0">
-        </p>
-        <p class="settings-field">
-          <label class="settings-label">Audio Bitrate (Kbps):</label>
-          <input id="audio-bitrate-field" name="audio-bitrate-field" value="0">
-        </p>
-        <p class="settings-field">
-          <label class="settings-label">Key Framerate (ms):</label>
-          <input id="key-framerate-field" name="key-framerate-field" value="0">
-        </p>
-        <p class="settings-field">
-          <label class="settings-label"></label>
-          <button id="publish-button" class="control">Publish</button>
-        </p>
-      </div>
-      {{> status-field-publisher}}
-      {{> statistics-field}}
-      <div class="centered"><p id="address-field">Origin Address: N/A</p></div>
-      <div class="centered">
-        <video id="red5pro-publisher" controls autoplay playsinline muted></video>
+        {{> status-field-publisher}}
+        {{> statistics-field}}
+        <div class="centered">
+          <p id="address-field" class="address-field">Origin Address: N/A</p>
+        </div>
+        <video id="red5pro-publisher" class="red5pro-publisher"
+               controls autoplay playsinline muted>
+        </video>
       </div>
     </div>
     {{> body-scripts}}
