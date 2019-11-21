@@ -224,7 +224,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         })
         .catch(function (error) {
             var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
-            console.error('[PublisherStreamManagerTest] :: Error - Could not POST transcode request. ' + jsonError)
+            console.error('[SubscriberStreamManagerTest] :: Error - Could not GET transcode request. ' + jsonError)
             reject(error)
         });
     });
