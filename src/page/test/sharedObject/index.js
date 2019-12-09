@@ -60,9 +60,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var inputField = document.getElementById('input-field');
   var sendButton = document.getElementById('send-button');
   var soField = document.getElementById('so-field');
+  var colorPicker = document.getElementById('color-picker');
 
   disconnectButton.addEventListener('click', deEstablishSharedObject);
   connectButton.addEventListener('click', startConnection);
+  colorPicker.addEventListener('change', handleColorChangeRequest);
 
   function reEnableConnection () {
     hideDisconnect();
@@ -91,12 +93,14 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   function enableSend () {
     sendButton.removeAttribute('disabled');
     inputField.removeAttribute('disabled');
+    colorPicker.removeAttribute('disabled');
     sendButton.addEventListener('click', sendMessage);
   }
 
   function disableSend () {
     sendButton.setAttribute('disabled', true);
     inputField.setAttribute('disabled', true);
+    colorPicker.setAttribute('disabled', true);
     inputField.value = '';
     sendButton.removeEventListener('click', sendMessage);
   }
@@ -150,13 +154,22 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       : {};
   }
 
-  var hasRegistered = false;
   function appendMessage (message) {
     soField.value = [message, soField.value].join('\n');
   }
   // Invoked from METHOD_UPDATE event on Shared Object instance.
   function messageTransmit (message) { // eslint-disable-line no-unused-vars
     soField.value = ['User "' + message.user + '": ' + message.message, soField.value].join('\n');
+  }
+
+  function handleColorChangeRequest (event) {
+    if (so) {
+      so.setProperty('color', event.target.value);
+      so.send('messageTransmit', {
+        user: configuration.stream1,
+        message: 'Color changed to: ' + event.target.value.toString()
+      });
+    }
   }
 
   function deEstablishSharedObject () {
@@ -186,16 +199,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     so.on(red5prosdk.SharedObjectEventTypes.PROPERTY_UPDATE, function (event) {
       console.log('[Red5ProPublisher] SharedObject Property Update.');
       console.log(JSON.stringify(event.data, null, 2));
-      if (event.data.hasOwnProperty('count')) {
-        appendMessage('User count is: ' + event.data.count + '.');
-        if (!hasRegistered) {
-          hasRegistered = true;
-          so.setProperty('count', parseInt(event.data.count) + 1);
-        }
-      else if (!hasRegistered) {
-          hasRegistered = true;
-          so.setProperty('count', 1);
-        }
+      if (event.data.hasOwnProperty('color')) {
+        soField.style.color = event.data.color;
+        colorPicker.value = event.data.color;
       }
     });
     so.on(red5prosdk.SharedObjectEventTypes.METHOD_UPDATE, function (event) {

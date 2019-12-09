@@ -22,6 +22,18 @@
         width: 100%;
         min-height: 240px;
       }
+      .color-picker-container {
+        text-align: center;
+        padding-bottom: 20px;
+        vertical-align: middle;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #3b3b3b;
+      }
+      #color-picker {
+        margin-left: 10px;
+      }
       @media (max-width:510px) {
         .so-container {
           width: 85%;
@@ -53,6 +65,11 @@
           </p>
           <p><button class="ui-button" id="send-button">Send</button></p>
           <hr class="paddedHR">
+          <p class="color-picker-container">
+            <label for="color">Set the text color of messages for all users:</label>
+            <input type="color" id="color-picker" name="color" disabled
+               value="#3b3b3b">
+          </p>
           <p class="so-container">
             <textarea id="so-field" disabled></textarea>
           </p>
