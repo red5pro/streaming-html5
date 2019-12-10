@@ -162,10 +162,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   function handleColorChangeRequest (event) {
     if (so) {
       so.setProperty('color', event.target.value);
+      /*
       so.send('messageTransmit', {
         user: configuration.stream1,
         message: 'Color changed to: ' + event.target.value.toString()
       });
+      */
     }
   }
 
