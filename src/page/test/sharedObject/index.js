@@ -64,7 +64,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   disconnectButton.addEventListener('click', deEstablishSharedObject);
   connectButton.addEventListener('click', startConnection);
-  colorPicker.addEventListener('change', handleColorChangeRequest);
+  colorPicker.addEventListener('input', handleColorChangeRequest);
 
   function reEnableConnection () {
     hideDisconnect();

@@ -158,7 +158,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       : {};
   }
 
-  colorPicker.addEventListener('change', handleColorChangeRequest);
+  colorPicker.addEventListener('input', handleColorChangeRequest);
   function handleColorChangeRequest (event) {
     if (so) {
       so.setProperty('color', event.target.value);
