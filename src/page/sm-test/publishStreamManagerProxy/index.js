@@ -84,7 +84,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   function displayServerAddress (serverAddress, proxyAddress) 
   {
-  proxyAddress = (typeof proxyAddress === 'undefined') ? 'N/A' : proxyAddress;
+    proxyAddress = (typeof proxyAddress === 'undefined') ? 'N/A' : proxyAddress;
     addressField.innerText = ' Proxy Address: ' + proxyAddress + ' | ' + ' Origin Address: ' + serverAddress;
   }
 
@@ -127,13 +127,36 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       return new Promise(function (resolve, reject) {
         fetch(url)
           .then(function (res) {
-            if (res.headers.get("content-type") &&
-              res.headers.get("content-type").toLowerCase().indexOf("application/json") >= 0) {
-                return res.json();
+            if(res.status == 200){
+                if (res.headers.get("content-type") && res.headers.get("content-type").toLowerCase().indexOf("application/json") >= 0) {
+                    return res.json();
+                }
+                else {
+                  throw new TypeError('Could not properly parse response.');
+                }
             }
-            else {
-              throw new TypeError('Could not properly parse response.');
-            }
+            else{
+				var msg = "";
+				if(res.status == 400)
+				{
+					msg = "An invalid request was detected";
+				}
+				else if(res.status == 404)
+				{
+					msg = "Data for the request could not be located/provided.";
+				}
+				else if(res.status == 500)
+				{
+					msg = "Improper server state error was detected.";
+				}
+				else
+				{
+					msg = "Unkown error";
+				}
+					
+				
+				throw new TypeError(msg);
+			}
           })
           .then(function (json) {
             resolve(json);
@@ -205,7 +228,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
                         });
 
     // Merge in possible authentication params.
-    rtcConfig.connectionParams = Object.assign({}, 
+    rtcConfig.connectionParams = Object.assign({},
       getAuthenticationParams().connectionParams,
       rtcConfig.connectionParams);
 
@@ -321,4 +344,3 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   window.addEventListener('beforeunload', shutdown);
 
 })(this, document, window.red5prosdk);
-
