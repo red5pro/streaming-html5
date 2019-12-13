@@ -21,7 +21,7 @@
   },
   "homepage": "https://github.com/infrared5/red5pro-html-sdk-testbed#readme",
   "devDependencies": {
-    "eslint": "^3.8.0",
+    "eslint": "^4.18.2",
     "gulp": "^3.9.1",
     "gulp-bump": "^2.4.0",
     "gulp-compile-handlebars": "^0.6.1",
