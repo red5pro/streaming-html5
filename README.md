@@ -213,7 +213,7 @@ To define the **Host** with the server instance's IP, click the _Host_ field f t
 | :-----
 | *Demonstrates subscribing using round trip authentication.*
 
-| **[Stream Manager Proxy Transcoder (RTC)](src/page/sm-test/subscribeStreamManagerProxyTranscoder)**
+| **[Stream Manager Proxy Transcoder (RTC)](src/page/sm-test/subscribeStreamManagerProxyTranscoderRTC)**
 | :-----
 | *Demonstrates utilizing the Red5 Pro Stream Manager API to access Provisions and an Edge server IP to subscribe to a live WebRTC-based stream with Adaptive Bitrate Control.*
 
