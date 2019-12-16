@@ -62,6 +62,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var packetsField = document.getElementById('packets-field');
   var resolutionField = document.getElementById('resolution-field');
   var sendButton = document.getElementById('send-button');
+  var colorPicker = document.getElementById('color-picker');
   var soField = document.getElementById('so-field');
   sendButton.addEventListener('click', function () {
     sendMessageOnSharedObject(document.getElementById('input-field').value);
@@ -157,7 +158,19 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       : {};
   }
 
-  var hasRegistered = false;
+  colorPicker.addEventListener('input', handleColorChangeRequest);
+  function handleColorChangeRequest (event) {
+    if (so) {
+      so.setProperty('color', event.target.value);
+      /*
+      so.send('messageTransmit', {
+        user: configuration.stream1,
+        message: 'Color changed to: ' + event.target.value.toString()
+      });
+      */
+    }
+  }
+
   function appendMessage (message) {
     soField.value = [message, soField.value].join('\n');
   }
@@ -174,6 +187,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     so.on(red5prosdk.SharedObjectEventTypes.CONNECT_SUCCESS, function (event) { // eslint-disable-line no-unused-vars
       console.log('[Red5ProSubscriber] SharedObject Connect.');
       appendMessage('Connected.');
+      colorPicker.removeAttribute('disabled');
     });
     so.on(red5prosdk.SharedObjectEventTypes.CONNECT_FAILURE, function (event) { // eslint-disable-line no-unused-vars
       console.log('[Red5ProSubscriber] SharedObject Fail.');
@@ -181,16 +195,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     so.on(red5prosdk.SharedObjectEventTypes.PROPERTY_UPDATE, function (event) {
       console.log('[Red5ProPublisher] SharedObject Property Update.');
       console.log(JSON.stringify(event.data, null, 2));
-      if (event.data.hasOwnProperty('count')) {
-        appendMessage('User count is: ' + event.data.count + '.');
-        if (!hasRegistered) {
-          hasRegistered = true;
-          so.setProperty('count', parseInt(event.data.count) + 1);
-        }
-      else if (!hasRegistered) {
-          hasRegistered = true;
-          so.setProperty('count', 1);
-        }
+      if (event.data.hasOwnProperty('color')) {
+        soField.style.color = event.data.color;
+        colorPicker.value = event.data.color;
       }
     });
     so.on(red5prosdk.SharedObjectEventTypes.METHOD_UPDATE, function (event) {

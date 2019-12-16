@@ -22,6 +22,18 @@
         width: 100%;
         min-height: 240px;
       }
+      .color-picker-container {
+        text-align: center;
+        padding-bottom: 20px;
+        vertical-align: middle;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #3b3b3b;
+      }
+      #color-picker {
+        margin-left: 10px;
+      }
       @media (max-width:510px) {
         .so-container {
           width: 85%;
@@ -40,7 +52,7 @@
         {{> status-field-subscriber}}
         <div class="settings-area">
           <p class="settings-field settings-collapsable">
-            <label class="settings-label" for="connect-field">Room:</label>
+            <label class="settings-label" for="connect-field">Shared Object Name:</label>
             <input type="text" id="connect-field" value="sharedChatTest" />
           </p>
           <p>
@@ -54,6 +66,11 @@
           </p>
           <p><button class="ui-button" id="send-button" disabled>Send</button></p>
           <hr class="paddedHR">
+          <p class="color-picker-container">
+            <label for="color">Set the text color of messages for all users:</label>
+            <input type="color" id="color-picker" name="color" disabled
+               value="#3b3b3b">
+          </p>
           <p class="so-container">
             <textarea id="so-field" disabled></textarea>
           </p>
