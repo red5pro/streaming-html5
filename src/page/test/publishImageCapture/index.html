@@ -1,39 +1,44 @@
 <!doctype html>
+{{> license}}
 <html>
   <head>
     {{> meta title='Publish Image Capture Test'}}
     {{> header-scripts}}
     {{> header-stylesheets}}
     <style>
-      .capture-container {
-        visibility: visible;
+      .stream-section {
+        position: relative;
+      }
+      #capture-canvas {
         position: absolute;
-        padding: 1rem;
-        color: #333333;
-        width: 100%;
-        text-align: center;
+        top: 160px;
+        left: 10px;
+        width: 180px;
       }
     </style>
   </head>
   <body>
+    {{> top-bar }}
+    {{> navigation isTestPage=true }}
     <div id="app">
-      {{> version }}
       {{> settings-link}}
       {{> test-info testTitle='Publish Image Capture Test'}}
-      {{> status-field-publisher}}
-      {{> statistics-field}}
-      <div id="video-container" class="centered">
-        <div class="centered">
-          <video id="red5pro-publisher" controls autoplay playsinline muted></video>
+      <div class="stream-section">
+        {{> status-field-publisher}}
+        {{> statistics-field}}
+        <div id="video-container" class="centered">
+          <div class="centered">
+            <video id="red5pro-publisher" class="red5pro-publisher"
+                 controls autoplay playsinline muted>
+            </video>
+          </div>
         </div>
-      </div>
-      <div class="centered">
-        <p class="capture-container">
-          <span>Click video to capture image.</span>
-          <br/>
-          <span>Your Image will appear here.</span>
-        </p>
-        <canvas id="capture-canvas"></canvas>
+        <div class="centered">
+          <p>
+            <button id="capture-button" class="control ui-button">Take Snapshot</button>
+          </p>
+          <canvas id="capture-canvas"></canvas>
+        </div>
       </div>
     </div>
     {{> body-scripts}}

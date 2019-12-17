@@ -1,23 +1,50 @@
 <!doctype html>
+{{> license}}
 <html>
   <head>
     {{> meta title='WebRTC Publish Mute Test'}}
     {{> header-scripts}}
     {{> header-stylesheets}}
+    <style>
+      .control-container {
+        display: flex;
+        flex-direction: row;
+        background-color: #dbdbdb;
+        padding: 20px;  }
+      .control-container > button:nth-child(even) {
+        margin-left: 20px;
+      }
+      @media (max-width:510px) {
+        .control-container {
+          flex-direction: column;
+        }
+        .control-container > button:nth-child(even) {
+          margin-left: 0px;
+          margin-top: 20px;
+        }
+      }
+    </style>
   </head>
   <body>
+    {{> top-bar }}
+    {{> navigation isTestPage=true }}
     <div id="app">
-      {{> version }}
       {{> settings-link}}
-      {{> test-info testTitle='WebRTC Publish Mute Test'}}
-      {{> status-field-publisher}}
-      {{> statistics-field}}
-      <div class="centered">
-        <video id="red5pro-publisher" autoplay playsinline muted></video>
-      </div>
-      <div class="centered">
-        <button id="mute-audio-button">mute audio</button>
-        <button id="mute-video-button">mute video</button>
+      {{> test-info testTitle='Publish Mute Test (WebRTC)'}}
+      <div class="stream-section">
+        {{> status-field-publisher}}
+        {{> statistics-field}}
+        <div class="centered">
+          <video id="red5pro-publisher" class="red5pro-publisher"
+                 controls autoplay playsinline muted>
+          </video>
+        </div>
+        <div class="centered">
+          <p class="control-container">
+            <button id="mute-audio-button" class="ui-button">Mute Audio</button>
+            <button id="mute-video-button" class="ui-button">Mute Video</button>
+          </p>
+        </div>
       </div>
     </div>
     {{> body-scripts}}

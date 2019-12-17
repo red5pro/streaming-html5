@@ -1,3 +1,28 @@
+/*
+Copyright © 2015 Infrared5, Inc. All rights reserved.
+
+The accompanying code comprising examples for use solely in conjunction with Red5 Pro (the "Example Code") 
+is  licensed  to  you  by  Infrared5  Inc.  in  consideration  of  your  agreement  to  the  following  
+license terms  and  conditions.  Access,  use,  modification,  or  redistribution  of  the  accompanying  
+code  constitutes your acceptance of the following license terms and conditions.
+
+Permission is hereby granted, free of charge, to you to use the Example Code and associated documentation 
+files (collectively, the "Software") without restriction, including without limitation the rights to use, 
+copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit 
+persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The Software shall be used solely in conjunction with Red5 Pro. Red5 Pro is licensed under a separate end 
+user  license  agreement  (the  "EULA"),  which  must  be  executed  with  Infrared5,  Inc.   
+An  example  of  the EULA can be found on our website at: https://account.red5pro.com/assets/LICENSE.txt.
+
+The above copyright notice and this license shall be included in all copies or portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,  INCLUDING  BUT  
+NOT  LIMITED  TO  THE  WARRANTIES  OF  MERCHANTABILITY, FITNESS  FOR  A  PARTICULAR  PURPOSE  AND  
+NONINFRINGEMENT.   IN  NO  EVENT  SHALL INFRARED5, INC. BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, 
+WHETHER IN  AN  ACTION  OF  CONTRACT,  TORT  OR  OTHERWISE,  ARISING  FROM,  OUT  OF  OR  IN CONNECTION 
+WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
 (function(window, document, red5prosdk) {
   'use strict';
 
@@ -31,6 +56,7 @@
   var targetSubscriber;
   var subStatusField = document.getElementById('sub-status-field');
   var subStreamTitle = document.getElementById('sub-stream-title');
+  var statisticsFields = document.getElementsByClassName('statistics-field');
 
   var instanceId = Math.floor(Math.random() * 0x10000).toString(16);
   var protocol = serverSettings.protocol;
@@ -65,8 +91,50 @@
   function onPublishFail (message) {
     console.error('[Red5ProPublisher] Publish Error :: ' + message);
   }
-  function onPublishSuccess () {
+  function onPublishSuccess (publisher) {
     console.log('[Red5ProPublisher] Publish Complete.');
+    if (window.exposePublisherGlobally) {
+      window.exposePublisherGlobally(publisher);
+    }
+    (function (pub, index) {
+      if (pub.getType().toLowerCase() === 'rtc') {
+        try {
+          var bitrate = 0;
+          var packets = 0;
+          var frameWidth = 0;
+          var frameHeight = 0;
+          var bitrateField = statisticsFields[index].getElementsByClassName('bitrate-field')[0];
+          var packetsField = statisticsFields[index].getElementsByClassName('packets-field')[0];
+          var resolutionField = statisticsFields[index].getElementsByClassName('resolution-field')[0];
+
+          var updateStatisticsField = function (b, p, w, h) {
+            statisticsFields[index].classList.remove('hidden');
+            bitrateField.innerText =  Math.floor(b);
+            packetsField.innerText = p;
+            resolutionField.innerText = w + 'x' + h;
+          }
+          var onBitrateUpdate = function (b, p) {
+            bitrate = b;
+            packets = p
+            updateStatisticsField(bitrate, packets, frameWidth, frameHeight);
+          }
+          var onResolutionUpdate = function (w, h) {
+            frameWidth = w;
+            frameHeight = h;
+            updateStatisticsField(bitrate, packets, frameWidth, frameHeight);
+          }
+          var pc = pub.getPeerConnection();
+          var stream = pub.getMediaStream();
+          window.trackBitrate(pc, onBitrateUpdate, null, false, true);
+          stream.getVideoTracks().forEach(function (track) {
+          var settings = track.getSettings();
+            onResolutionUpdate(settings.width, settings.height);
+          });
+        } catch (e) {
+          //
+        }
+      }
+    })(publisher, 0);
   }
   function onUnpublishFail (message) {
     console.error('[Red5ProPublisher] Unpublish Error :: ' + message);
@@ -77,6 +145,10 @@
   function onSubscriberEvent (event) {
     console.log('[Red5ProSubsriber] ' + event.type + '.');
     updateStatusFromSubscribeEvent(event, subStatusField);
+    if (event.type === 'Subscribe.VideoDimensions.Change') {
+      var resolutionField = statisticsFields[1].getElementsByClassName('resolution-field')[0];
+      resolutionField.text = event.data.width + 'x' + event.data.height;
+    }
   }
   function onSubscribeFail (message) {
     console.error('[Red5ProSubsriber] Subscribe Error :: ' + message);
@@ -86,6 +158,39 @@
     if (window.handleSubscriberSetupGlobally) {
       window.handleSubscriberSetupGlobally(subscriber);
     }
+    (function (sub, index) {
+      if (sub.getType().toLowerCase() === 'rtc') {
+        try {
+          var bitrate = 0;
+          var packets = 0;
+          var frameWidth = 0;
+          var frameHeight = 0;
+          var bitrateField = statisticsFields[index].getElementsByClassName('bitrate-field')[0];
+          var packetsField = statisticsFields[index].getElementsByClassName('packets-field')[0];
+          var resolutionField = statisticsFields[index].getElementsByClassName('resolution-field')[0];
+
+          var updateStatisticsField = function (b, p, w, h) {
+            statisticsFields[index].classList.remove('hidden');
+            bitrateField.innerText =  Math.floor(b);
+            packetsField.innerText = p;
+            resolutionField.innerText = w + 'x' + h;
+          }
+          var onBitrateUpdate = function (b, p) {
+            bitrate = b;
+            packets = p
+            updateStatisticsField(bitrate, packets, frameWidth, frameHeight);
+          }
+          var onResolutionUpdate = function (w, h) {
+            frameWidth = w;
+            frameHeight = h;
+            updateStatisticsField(bitrate, packets, frameWidth, frameHeight);
+          }
+          window.trackBitrate(sub.getPeerConnection(), onBitrateUpdate, onResolutionUpdate, true, true);
+        } catch (e) {
+          //
+        }
+      }
+    })(subscriber, 1);
  }
   function onUnsubscribeFail (message) {
     console.error('[Red5ProSubsriber] Unsubscribe Error :: ' + message);
@@ -375,7 +480,9 @@
       targetSubscriber = undefined;
     }
     unpublish().then(unsubscribe).then(clearRefs).catch(clearRefs);
+      window.untrackBitrate();
   }
+
   window.addEventListener('pagehide', shutdown);
   window.addEventListener('beforeunload', shutdown);
 

@@ -1,35 +1,80 @@
 <!doctype html>
+{{> license}}
 <html>
   <head>
     {{> meta title='Shared Object'}}
     {{> header-scripts}}
     {{> header-stylesheets}}
     <style>
-      .hidden {
-        display: none;
+      .settings-area {
+        padding: 5px;
+        background-color: #eeee;
+      }
+      .settings-field, .settings-field > input {
+        font-size: 1em;
+      }
+      .so-container {
+        width: 50%; 
+        min-width: 320px;
+        margin: 0 auto;
+      }
+      #so-field {
+        width: 100%;
+        min-height: 240px;
+      }
+      .color-picker-container {
+        text-align: center;
+        padding-bottom: 20px;
+        vertical-align: middle;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #3b3b3b;
+      }
+      #color-picker {
+        margin-left: 10px;
+      }
+      @media (max-width:510px) {
+        .so-container {
+          width: 85%;
+          min-width: auto;
+        }
       }
     </style>
   </head>
   <body>
+    {{> top-bar }}
+    {{> navigation isTestPage=true }}
     <div id="app">
-      {{> version }}
       {{> settings-link}}
-      <h1 class="centered">Shared Object</h1>
-      {{> status-field-subscriber}}
-      <div class="centered status-field">
-          <input type="text" id="connect-field" value="sharedChatTest" />
-          <button id="connect-button" disabled>connect</button>
-          <button id="disconnect-button" class="hidden">disconnect</button>
-      </div>
-      <div class="centered status-field">
-        <p>
-          <input type="text" id="input-field" disabled />
-          <button id="send-button" disabled>send</button>
-        </p>
-        <hr>
-        <p>
-          <textarea id="so-field" disabled style="width: 50%; min-height: 240px; min-width: 320px"></textarea>
-        </p>
+      {{> test-title title='Stand-Alone Shared Object'}}
+      <div class="stream-section">
+        {{> status-field-subscriber}}
+        <div class="settings-area">
+          <p class="settings-field settings-collapsable">
+            <label class="settings-label" for="connect-field">Shared Object Name:</label>
+            <input type="text" id="connect-field" value="sharedChatTest" />
+          </p>
+          <p>
+            <button id="connect-button" disabled class="ui-button">Connect</button>
+            <button id="disconnect-button" class="hidden ui-button">Disconnect</button>
+          </p>
+          <hr class="paddedHR">
+          <p class="settings-field settings-collapsable">
+            <label class="settings-label" for="message-input">Message:</label>
+            <input id="input-field" name="input-field" type="text"></input>
+          </p>
+          <p><button class="ui-button" id="send-button" disabled>Send</button></p>
+          <hr class="paddedHR">
+          <p class="color-picker-container">
+            <label for="color">Set the text color of messages for all users:</label>
+            <input type="color" id="color-picker" name="color" disabled
+               value="#3b3b3b">
+          </p>
+          <p class="so-container">
+            <textarea id="so-field" disabled></textarea>
+          </p>
+        </div>
       </div>
     </div>
     {{> body-scripts}}

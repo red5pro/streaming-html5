@@ -1,73 +1,68 @@
 <!doctype html>
+{{> license}}
 <html>
   <head>
     {{> meta title='Publish Custom Settings WebRTC Test'}}
     {{> header-scripts}}
     {{> header-stylesheets}}
     <style>
-      .capture-container {
-        visibility: visible;
-        position: absolute;
-        padding: 1rem;
-        color: #333333;
-        width: 100%;
-        text-align: center;
+      .settings-area {
+        padding-top: 20px;
+        background-color: #eeee;
       }
       .settings-field, .settings-field > input {
         font-size: 1em;
       }
-      #publish-button {
-        padding: 0.6em;
-        font-size: 1em;
-        cursor: pointer;
-      }
     </style>
   </head>
   <body>
+    {{> top-bar }}
+    {{> navigation isTestPage=true }}
     <div id="app">
-      {{> version }}
       {{> settings-link}}
       {{> test-info testTitle='Publish Custom Settings Test (WebRTC)'}}
-      <hr/>
-      <div id="settings-container">
-        <p class="settings-field">
-          <Label class="settings-label">Camera:</label>
-          <select id="camera-select" class="control"></select>
-        </p>
-        <p class="settings-field">
-          <label class="settings-label">Camera Width:</label>
-          <input id="camera-width-field" name="camera-width-field" value="0">
-        </p>
-        <p class="settings-field">
-          <label class="settings-label">Camera Height:</label>
-          <input id="camera-height-field" name="camera-height-field" value="0">
-        </p>
-        <p class="settings-field">
-          <label class="settings-label">Camera Framerate:</label>
-          <input id="framerate-field" name="framerate-field" value="0">
-        </p>
-        <p class="settings-field">
-          <label class="settings-label">Video Bitrate (Kbps):</label>
-          <input id="video-bitrate-field" name="video-bitrate-field" value="0">
-        </p>
-        <p class="settings-field">
-          <label class="settings-label">Audio Bitrate (Kbps):</label>
-          <input id="audio-bitrate-field" name="audio-bitrate-field" value="0">
-        </p>
-        <p class="settings-field">
-          <label class="settings-label">Key Framerate (ms):</label>
-          <input id="key-framerate-field" name="key-framerate-field" value="0">
-        </p>
-        <p class="settings-field">
-          <label class="settings-label"></label>
-          <button id="publish-button" class="control">Publish</button>
-        </p>
-      </div>
-      {{> status-field-publisher}}
-      {{> statistics-field}}
-      <div id="video-container" class="centered">
-        <div class="centered">
-          <video id="red5pro-publisher" controls autoplay playsinline muted></video>
+      <div class="stream-section">
+        <div class="settings-area">
+          <p class="settings-field settings-collapsable">
+            <Label class="settings-label">Camera:</label>
+            <select id="camera-select" class="control"></select>
+          </p>
+          <p class="settings-field settings-collapsable">
+            <label class="settings-label">Camera Width:</label>
+            <input id="camera-width-field" name="camera-width-field" value="0">
+          </p>
+          <p class="settings-field settings-collapsable">
+            <label class="settings-label">Camera Height:</label>
+            <input id="camera-height-field" name="camera-height-field" value="0">
+          </p>
+          <p class="settings-field settings-collapsable">
+            <label class="settings-label">Camera Framerate:</label>
+            <input id="framerate-field" name="framerate-field" value="0">
+          </p>
+          <p class="settings-field settings-collapsable">
+            <label class="settings-label">Video Bitrate (Kbps):</label>
+            <input id="video-bitrate-field" name="video-bitrate-field" value="0">
+          </p>
+          <p class="settings-field settings-collapsable">
+            <label class="settings-label">Audio Bitrate (Kbps):</label>
+            <input id="audio-bitrate-field" name="audio-bitrate-field" value="0">
+          </p>
+          <p class="settings-field settings-collapsable">
+            <label class="settings-label">Key Framerate (ms):</label>
+            <input id="key-framerate-field" name="key-framerate-field" value="0">
+          </p>
+          <p>
+            <button id="publish-button" class="control ui-button">Publish</button>
+          </p>
+        </div>
+        {{> status-field-publisher}}
+        {{> statistics-field}}
+        <div id="video-container" class="centered">
+          <div class="centered">
+            <video id="red5pro-publisher" class="red5pro-publisher"
+                 controls autoplay playsinline muted>
+            </video>
+          </div>
         </div>
       </div>
     </div>

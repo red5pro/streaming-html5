@@ -20,6 +20,7 @@ Additionally, notification support for latest browser vendor restictions on the 
 
 * Utilize the `muteOnAutoplayRestriction` initialization configuration property for Subscriber clients in order to attempt auto-muting of subscribers to allow - at least - video auto-playback when browsers enforce the muted autoplay policy.
 * Listen for events related to `autoplay` restictions in order to provide a better User Experience for your customers.
+* Please refer to the `Autoplay Restictions` section from the *Subscriber* documentation.
 
 # Migrating from `5.0.0` to `5.4.0`
 

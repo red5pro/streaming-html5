@@ -1,21 +1,20 @@
-<div id="{{ id }}" style="display: inline-block; padding: 0 16px;">
+<div id="{{ id }}" class="transcoder-form">
   <h2>{{ category }}</h2>
-  <p style="inline; margin: 16px 0">
-    <p style="display: inline-block; width: 60px; text-align: right">Bitrate: </p>
+  <p class="settings-field settings-collapsable">
+    <label for="bitrate-field" class="settings-label">Bitrate:</label>
     <input class="bitrate-field"
-      style="max-width: 60px"
+      name="bitrate-field"
       value="{{ bitrate }}">
   </p>
-  <p style="inline; margin: 16px 0">
-    <p style="display: inline-block; width: 60px; text-align: right">Width:</p>
+  <p class="settings-field settings-collapsable">
+    <label for="width-field" class="settings-label">Width:</label>
     <input class="width-field"
-      style="max-width: 60px"
       value="{{ width }}">
   </p>
-  <p style="margin: 16px 0">
-    <p style="display: inline-block; width: 60px; text-align: right">Height:</p>
+  <p class="settings-field settings-collapsable">
+    <label for="height-field" class="settings-label">Height:</label>
     <input class="height-field"
-      style="max-width: 60px"
+      name="height-field"
       value="{{ height }}">
   </p>
 </div>

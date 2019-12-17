@@ -1,3 +1,28 @@
+/*
+Copyright © 2015 Infrared5, Inc. All rights reserved.
+
+The accompanying code comprising examples for use solely in conjunction with Red5 Pro (the "Example Code") 
+is  licensed  to  you  by  Infrared5  Inc.  in  consideration  of  your  agreement  to  the  following  
+license terms  and  conditions.  Access,  use,  modification,  or  redistribution  of  the  accompanying  
+code  constitutes your acceptance of the following license terms and conditions.
+
+Permission is hereby granted, free of charge, to you to use the Example Code and associated documentation 
+files (collectively, the "Software") without restriction, including without limitation the rights to use, 
+copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit 
+persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The Software shall be used solely in conjunction with Red5 Pro. Red5 Pro is licensed under a separate end 
+user  license  agreement  (the  "EULA"),  which  must  be  executed  with  Infrared5,  Inc.   
+An  example  of  the EULA can be found on our website at: https://account.red5pro.com/assets/LICENSE.txt.
+
+The above copyright notice and this license shall be included in all copies or portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,  INCLUDING  BUT  
+NOT  LIMITED  TO  THE  WARRANTIES  OF  MERCHANTABILITY, FITNESS  FOR  A  PARTICULAR  PURPOSE  AND  
+NONINFRINGEMENT.   IN  NO  EVENT  SHALL INFRARED5, INC. BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, 
+WHETHER IN  AN  ACTION  OF  CONTRACT,  TORT  OR  OTHERWISE,  ARISING  FROM,  OUT  OF  OR  IN CONNECTION 
+WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
 (function(window, document, red5prosdk) {
   'use strict';
 
@@ -36,11 +61,39 @@
   var statisticsField = document.getElementById('statistics-field');
   var cameraSelect = document.getElementById('camera-select');
   var swapButton = document.getElementById('swap-button');
+  var bitrateField = document.getElementById('bitrate-field');
+  var packetsField = document.getElementById('packets-field');
+  var resolutionField = document.getElementById('resolution-field');
+
+  var bitrate = 0;
+  var packetsSent = 0;
+  var frameWidth = 0;
+  var frameHeight = 0;
+
+  function updateStatistics (b, p, w, h) {
+    statisticsField.classList.remove('hidden');
+    bitrateField.innerText = Math.floor(b);
+    packetsField.innerText = p;
+    resolutionField.innerText = (w || 0) + 'x' + (h || 0);
+  }
+
+  function onBitrateUpdate (b, p) {
+    bitrate = b;
+    packetsSent = p;
+    updateStatistics(bitrate, packetsSent, frameWidth, frameHeight);
+  }
+
+  function onResolutionUpdate (w, h) {
+    frameWidth = w;
+    frameHeight = h;
+    updateStatistics(bitrate, packetsSent, frameWidth, frameHeight);
+  }
+
 
   swapButton.addEventListener('click', swapCamera);
 
   var SELECT_DEFAULT = 'Select a camera...';
-  var deviceList;
+  var current_selection = SELECT_DEFAULT;
   // Fill Camera listing.
   (function (cameraSelect) {
     navigator.mediaDevices.enumerateDevices()
@@ -54,28 +107,12 @@
         var options = cameras.map(function (camera, index) {
           return '<option value="' + camera.deviceId + '">' + (camera.label || 'camera ' + index) + '</option>';
         });
-        deviceList = cameras.map(function (camera) {
-          return camera.deviceId;
-        });
         cameraSelect.innerHTML = options.join(' ');
       })
       .catch(function (error) {
         console.error('Could not access camera devices: ' + error);
       });
   })(cameraSelect);
-
-  function getSelectedIndexFromTrack (track) {
-    var i = deviceList.length;
-    while (--i > -1) {
-      var option = deviceList[i];
-      if (option.value === track.id) {
-        break;
-      }
-    }
-    if (i > -1) {
-      cameraSelect.selectedIndex = i;
-    }
-  }
 
   var protocol = serverSettings.protocol;
   var isSecure = protocol == 'https';
@@ -85,16 +122,14 @@
       : {protocol: 'wss', port: serverSettings.wssport};
   }
 
-  function onBitrateUpdate (bitrate, packetsSent) {
-    statisticsField.innerText = 'Bitrate: ' + Math.floor(bitrate) + '. Packets Sent: ' + packetsSent + '.';
-  }
-
   function onPublisherEvent (event) {
     console.log('[Red5ProPublisher] ' + event.type + '.');
     updateStatusFromEvent(event);
     if (event.type === 'WebRTC.MediaStream.Available') {
-      // var stream = event.data;
-      // TODO: set cameraSelect.selectedIndex from getSelectedIndexFromTrack(data.getVideoTracks[0]);
+      var tracks = publisher.getMediaStream().getVideoTracks();
+      tracks.forEach(function (track) {
+        cameraSelect.value = track.getSettings().deviceId;
+      });
     }
   }
   function onPublishFail (message) {
@@ -103,7 +138,14 @@
   function onPublishSuccess (publisher) {
     console.log('[Red5ProPublisher] Publish Complete.');
     try {
-      window.trackBitrate(publisher.getPeerConnection(), onBitrateUpdate);
+      var pc = publisher.getPeerConnection();
+      var stream = publisher.getMediaStream();
+      window.trackBitrate(pc, onBitrateUpdate);
+      statisticsField.classList.remove('hidden');
+      stream.getVideoTracks().forEach(function (track) {
+        var settings = track.getSettings();
+        onResolutionUpdate(settings.width, settings.height);
+      });
     }
     catch (e) {
       // no tracking for you!
@@ -144,9 +186,10 @@
   function swapCamera () {
     var connection = targetPublisher.getPeerConnection();
     var selection = cameraSelect.value;
-    if (selection === SELECT_DEFAULT) {
+    if (selection === SELECT_DEFAULT || selection === current_selection) {
       return;
     }
+    current_selection = selection;
     if (mediaConstraints.video && typeof mediaConstraints.video !== 'boolean') {
       mediaConstraints.video.deviceId = { exact: selection }
     }
@@ -155,20 +198,34 @@
         deviceId: { exact: selection }
       };
     }
-    // 1. Grap new MediaStream from updated constraints.
+    // 1. Grab new MediaStream from updated constraints.
     navigator.mediaDevices.getUserMedia(mediaConstraints)
       .then(function (stream) {
         // 2. Update the media tracks on senders through connection.
         var senders = connection.getSenders();
         var tracks = stream.getTracks();
-        var i = tracks.length;
-        while ( --i > -1) {
-          if (tracks[i].kind === 'video') {
-            senders[i].replaceTrack(tracks[i]);
+        var i = senders.length;
+        var j = tracks.length;
+        while ( --i > -1) { // 3. Find the currently sending video stream
+          if (senders[i].track.kind === 'video') {
+            break;
+          }
+        }
+        if ( i < 0 ) {
+          console.error('Could not replace track : No video stream in connection');
+          return;
+        }
+        var replacePromise;
+        while ( --j > -1) { // 4. Get the new stream and apply it after cleaning up the previous one
+          if (tracks[j].kind === 'video') {
+            senders[i].track.stop();
+            replacePromise = senders[i].replaceTrack(tracks[j]);
+            break;
           }
         }
         // 3. Update the video display with new stream.
         document.getElementById('red5pro-publisher').srcObject = stream;
+        return replacePromise;
       })
       .catch (function (error) {
         console.error('Could not replace track : ' + error.message);

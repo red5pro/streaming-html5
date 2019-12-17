@@ -1,21 +1,30 @@
 <!doctype html>
+{{> license}}
 <html>
   <head>
     {{> meta title='WebRTC Subscriber Audio-Only Test'}}
     {{> header-scripts}}
     {{> header-stylesheets}}
+    <style>
+      .audio-subscriber {
+        width: 100%;
+      }
+    </style>
   </head>
   <body>
+    {{> top-bar }}
+    {{> navigation isTestPage=true }}
     <div id="app">
-      {{> version }}
       {{> settings-link}}
-      {{> test-info testTitle='WebRTC Subscriber Audio-Only Test'}}
-      {{> status-field-subscriber}}
-      {{> statistics-field}}
-      <div class="centered" style="height:40px">
-        <audio id="red5pro-subscriber"
-               autoplay playsinline controls
-               class="red5pro-media"></audio>
+      {{> test-info testTitle='Subscriber Audio-Only Test (WebRTC)'}}
+      <div class="stream-section">
+        {{> status-field-subscriber}}
+        {{> statistics-field}}
+        <div class="centered">
+          <audio id="red5pro-subscriber"
+                 autoplay playsinline controls
+                 class="red5pro-subscriber audio-subscriber"></audio>
+        </div>
       </div>
     </div>
     {{> body-scripts}}

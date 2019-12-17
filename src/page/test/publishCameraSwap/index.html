@@ -1,4 +1,5 @@
 <!doctype html>
+{{> license}}
 <html>
   <head>
     {{> meta title='WebRTC Publish Camera Swap Test'}}
@@ -6,16 +7,21 @@
     {{> header-stylesheets}}
   </head>
   <body>
+    {{> top-bar }}
+    {{> navigation isTestPage=true }}
     <div id="app">
-      {{> version }}
       {{> settings-link}}
-      {{> test-info testTitle='WebRTC Publish Camera Swap Test'}}
-      <p id="support-field" class="hint-alert"><em>The browser you are using </em><strong>does not support</strong><em> the </em><code>facingMode</code><em> video constraint require for this test.</em></p>
-      {{> status-field-publisher}}
-      {{> statistics-field}}
-      <div id="video-container" class="centered">
-        <div class="centered">
-          <video id="red5pro-publisher" controls autoplay playsinline muted></video>
+      {{> test-info testTitle='Publish Camera Swap Test (WebRTC)'}}
+      <div class="stream-section">
+        <p id="support-field" class="hint-alert"><em>The browser you are using </em><strong>does not support</strong><em> the </em><code>facingMode</code><em> video constraint require for this test.</em></p>
+        {{> status-field-publisher}}
+        {{> statistics-field}}
+        <div id="video-container" class="centered">
+          <div class="centered">
+          <video id="red5pro-publisher" class="red5pro-publisher"
+                 controls autoplay playsinline muted>
+          </video>
+          </div>
         </div>
       </div>
     </div>

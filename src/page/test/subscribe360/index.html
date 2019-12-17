@@ -1,0 +1,70 @@
+<!doctype html>
+{{> license}}
+<html>
+  <head>
+    {{> meta title='Subscriber 360 Test'}}
+    {{> header-scripts}}
+    {{> header-stylesheets}}
+    <style>
+      #red5pro-subscriber {
+        position: absolute;
+        left: 0;
+      }
+      #canvas-container {
+        position: absolute;
+        display: inline-block;
+        left: 0;
+        width: 100%;
+        height: 480px;
+        background-color: #000;
+      }
+      #button-control-container {
+        position: absolute;
+        box-sizing: border-box;
+        padding: 20px;
+        width: 100%;
+        text-align: right;
+        z-index: 101;
+      }
+      #canvas {
+        width: 100%;
+        height: 100%;
+      }
+
+      .z-order-below {
+        z-index: 0;
+      }
+      .z-order-above {
+        z-index: 1;
+      }
+      .fixed-height {
+        height: 480px;
+      }
+      .red5pro-media-control-bar {
+        z-index: 100;
+      }
+    </style>
+  </head>
+  <body>
+    {{> top-bar }}
+    {{> navigation isTestPage=true }}
+    <div id="app">
+      {{> settings-link}}
+      {{> test-info testTitle='Subscriber 360 Test'}}
+      {{> status-field-subscriber}}
+      {{> statistics-field}}
+      <div class="centered fixed-height">
+          <video id="red5pro-subscriber"
+                  controls="controls" autoplay="autoplay" playsinline
+                  class="red5pro-subscriber red5pro-media red5pro-media-background z-order-above"
+                  width="640" height="480">
+          </video>
+      </div>
+    </div>
+    {{> body-scripts}}
+    {{> mobile-subscriber-util}}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/103/three.min.js"></script>
+    <script src="renderer-360.js"></script>
+    <script src="index.js"></script>
+  </body>
+</html>
