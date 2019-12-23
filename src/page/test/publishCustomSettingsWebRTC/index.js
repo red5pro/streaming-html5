@@ -107,13 +107,30 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }  
   function contentFromConstraintInfo (info) {
     var content = document.createElement('div');
+    var video;
+    var findDim = function (dimObject) {
+      if (typeof dimObject === 'number') {
+        return dimObject;
+      }
+      if (dimObject.hasOwnProperty('exact')) {
+        return dimObject.exact;
+      }
+      return dimObject.min;
+    }
     if (info.accepted) {
-      const video = info.accepted.video;
+      video = info.accepted.video;
       content.appendChild(generateLine('Accepted!'))
       content.appendChild(document.createElement('br'));
       content.appendChild(generateLine('Resolution: ' + video.width + 'x' + video.height))
       content.appendChild(document.createElement('br'));
       content.appendChild(generateLine('Framerate: ' + video.frameRate));
+    } else if (info.constraints) {
+      video = info.constraints.video;
+      content.appendChild(generateLine('Rejected.'))
+      content.appendChild(document.createElement('br'));
+      content.appendChild(generateLine('Resolution: ' + findDim(video.width) + 'x' + findDim(video.height)))
+      content.appendChild(document.createElement('br'));
+      content.appendChild(generateLine('Framerate: ' + findDim(video.frameRate)));
     }
     return content;
   }
@@ -221,7 +238,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           deviceId: { exact: cameraSelect.value },
           width: { exact: parseInt(cameraWidthField.value) },
           height: { exact: parseInt(cameraHeightField.value) },
-          framerate: { exact: parseInt(framerateField.value) }
+          frameRate: { exact: parseInt(framerateField.value) }
         } : false
       }
     };
@@ -249,7 +266,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
                       port: getSocketLocationFromProtocol().port,
                       streamName: config.stream1
                    });
-    return new red5prosdk.RTCPublisher().init(rtcConfig);
+    var pub = new red5prosdk.RTCPublisher();
+    pub.on('*', onPublisherEvent);
+    return pub.init(rtcConfig);
   }
 
   function unpublish () {
@@ -276,7 +295,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       .then(function (publisherImpl) {
         streamTitle.innerText = configuration.stream1;
         targetPublisher = publisherImpl;
-        targetPublisher.on('*', onPublisherEvent);
         return targetPublisher.publish();
       })
       .then(function () {
