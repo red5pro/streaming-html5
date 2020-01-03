@@ -75,6 +75,72 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var packetsField = document.getElementById('packets-field');
   var resolutionField = document.getElementById('resolution-field');
 
+  var isShowingModal = false;
+  var constraintInfoNotices = [];
+  function showModal (content) {
+    isShowingModal = true;
+    var div = document.createElement('div');
+    div.classList.add('modal');
+    var container = document.createElement('div');
+    var button = document.createElement('a');
+    var close = document.createTextNode('close');
+    button.href = "#";
+    button.appendChild(close);
+    button.classList.add('modal-close');
+    container.appendChild(button);
+    container.appendChild(content);
+    div.appendChild(container);
+    document.body.appendChild(div);
+    button.addEventListener('click', function (event) {
+      event.preventDefault();
+      document.body.removeChild(div);
+      isShowingModal = false;
+      showConstraintInfo();
+      return false;
+    });
+  }
+  function generateLine (text) {
+    var p = document.createElement('p');
+    var t = document.createTextNode(text);
+    p.appendChild(t);
+    return p;
+  }  
+  function contentFromConstraintInfo (info) {
+    var content = document.createElement('div');
+    var video;
+    var findDim = function (dimObject) {
+      if (typeof dimObject === 'number') {
+        return dimObject;
+      }
+      if (dimObject.hasOwnProperty('exact')) {
+        return dimObject.exact;
+      }
+      return dimObject.min;
+    }
+    if (info.accepted) {
+      video = info.accepted.video;
+      content.appendChild(generateLine('Accepted!'))
+      content.appendChild(document.createElement('br'));
+      content.appendChild(generateLine('Resolution: ' + video.width + 'x' + video.height))
+      content.appendChild(document.createElement('br'));
+      content.appendChild(generateLine('Framerate: ' + video.frameRate));
+    } else if (info.constraints) {
+      video = info.constraints.video;
+      content.appendChild(generateLine('Rejected.'))
+      content.appendChild(document.createElement('br'));
+      content.appendChild(generateLine('Resolution: ' + findDim(video.width) + 'x' + findDim(video.height)))
+      content.appendChild(document.createElement('br'));
+      content.appendChild(generateLine('Framerate: ' + findDim(video.frameRate)));
+    }
+    return content;
+  }
+  function showConstraintInfo () {
+    if (!isShowingModal && constraintInfoNotices.length > 0) {
+      var info = constraintInfoNotices.shift();
+      showModal(contentFromConstraintInfo(info));
+    }
+  }
+
   var bitrate = 0;
   var packetsSent = 0;
   var frameWidth = 0;
@@ -118,6 +184,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   function onPublisherEvent (event) {
     console.log('[Red5ProPublisher] ' + event.type + '.');
     updateStatusFromEvent(event);
+    if (event.type === 'WebRTC.MediaConstraints.Accepted' ||
+      event.type === 'WebRTC.MediaConstraints.Rejected') {
+      constraintInfoNotices.push(event.data);
+      showConstraintInfo();
+    }
   }
   function onPublishFail (message) {
     console.error('[Red5ProPublisher] Publish Error :: ' + message);
@@ -167,7 +238,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           deviceId: { exact: cameraSelect.value },
           width: { exact: parseInt(cameraWidthField.value) },
           height: { exact: parseInt(cameraHeightField.value) },
-          framerate: { exact: parseInt(framerateField.value) }
+          frameRate: { exact: parseInt(framerateField.value) }
         } : false
       }
     };
@@ -195,7 +266,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
                       port: getSocketLocationFromProtocol().port,
                       streamName: config.stream1
                    });
-    return new red5prosdk.RTCPublisher().init(rtcConfig);
+    var pub = new red5prosdk.RTCPublisher();
+    pub.on('*', onPublisherEvent);
+    return pub.init(rtcConfig);
   }
 
   function unpublish () {
@@ -222,7 +295,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       .then(function (publisherImpl) {
         streamTitle.innerText = configuration.stream1;
         targetPublisher = publisherImpl;
-        targetPublisher.on('*', onPublisherEvent);
         return targetPublisher.publish();
       })
       .then(function () {

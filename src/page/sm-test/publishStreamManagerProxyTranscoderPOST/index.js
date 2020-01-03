@@ -74,9 +74,21 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var qualitySelect = document.getElementById('quality-select');
   var qualitySubmit = document.getElementById('quality-submit');
 
-  qualitySubmit.addEventListener('click', setQualityAndPublish);
   submitButton.addEventListener('click', submitTranscode);
   streamTitle.innerText = configuration.stream1;
+
+  function setQualitySubmitState (isPublishing) {
+    if (isPublishing) {
+      qualitySubmit.removeEventListener('click', setQualityAndPublish, false);
+      qualitySubmit.innerText = 'Stop Publishing';
+      qualitySubmit.addEventListener('click', unpublish, false);
+    } else {
+      qualitySubmit.removeEventListener('click', unpublish, false);
+      qualitySubmit.innerText = 'Start Publishing';
+      qualitySubmit.addEventListener('click', setQualityAndPublish, false);
+    }
+  }
+  setQualitySubmitState(false);
 
   var protocol = serverSettings.protocol;
   var isSecure = protocol == 'https';
@@ -164,6 +176,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
   function onPublishSuccess (publisher) {
     console.log('[Red5ProPublisher] Publish Complete.');
+    setQualitySubmitState(true);
     try {
       var pc = publisher.getPeerConnection();
       var stream = publisher.getMediaStream();
@@ -180,9 +193,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
   function onUnpublishFail (message) {
     console.error('[Red5ProPublisher] Unpublish Error :: ' + message);
+    setQualitySubmitState(false);
   }
   function onUnpublishSuccess () {
     console.log('[Red5ProPublisher] Unpublish Complete.');
+    setQualitySubmitState(false);
   }
 
   function postTranscode (transcode) {
