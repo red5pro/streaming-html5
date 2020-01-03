@@ -69,7 +69,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   function updateStatistics (b, p, w, h) {
     statisticsField.classList.remove('hidden');
-    bitrateField.innerText = Math.floor(b);
+    bitrateField.innerText = b === 0 ? 'N/A' : Math.floor(b);
     packetsField.innerText = p;
     resolutionField.innerText = (w || 0) + 'x' + (h || 0);
   }

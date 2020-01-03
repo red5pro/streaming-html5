@@ -88,7 +88,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var frameHeight = 0;
   function updateStatistics (b, p, w, h) {
     statisticsField.classList.remove('hidden');
-    bitrateField.innerText = Math.floor(b);
+    bitrateField.innerText = b === 0 ? 'N/A' : Math.floor(b);
     packetsField.innerText = p;
     resolutionField.innerText = (w || 0) + 'x' + (h || 0);
   }
@@ -142,6 +142,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   function onSubscriberEvent (event) {
     console.log('[Red5ProSubsriber] ' + event.type + '.');
     updateStatusFromEvent(event);
+    if (event.type === 'Subscribe.VideoDimensions.Change') {
+      onResolutionUpdate(event.data.width, event.data.height);
+    }  
   }
   function onSubscribeFail (message) {
     console.error('[Red5ProSubsriber] Subscribe Error :: ' + message);
