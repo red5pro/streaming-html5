@@ -1,8 +1,30 @@
+/*
+Copyright © 2015 Infrared5, Inc. All rights reserved.
+
+The accompanying code comprising examples for use solely in conjunction with Red5 Pro (the "Example Code") 
+is  licensed  to  you  by  Infrared5  Inc.  in  consideration  of  your  agreement  to  the  following  
+license terms  and  conditions.  Access,  use,  modification,  or  redistribution  of  the  accompanying  
+code  constitutes your acceptance of the following license terms and conditions.
+
+Permission is hereby granted, free of charge, to you to use the Example Code and associated documentation 
+files (collectively, the "Software") without restriction, including without limitation the rights to use, 
+copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit 
+persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The Software shall be used solely in conjunction with Red5 Pro. Red5 Pro is licensed under a separate end 
+user  license  agreement  (the  "EULA"),  which  must  be  executed  with  Infrared5,  Inc.   
+An  example  of  the EULA can be found on our website at: https://account.red5pro.com/assets/LICENSE.txt.
+
+The above copyright notice and this license shall be included in all copies or portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,  INCLUDING  BUT  
+NOT  LIMITED  TO  THE  WARRANTIES  OF  MERCHANTABILITY, FITNESS  FOR  A  PARTICULAR  PURPOSE  AND  
+NONINFRINGEMENT.   IN  NO  EVENT  SHALL INFRARED5, INC. BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, 
+WHETHER IN  AN  ACTION  OF  CONTRACT,  TORT  OR  OTHERWISE,  ARISING  FROM,  OUT  OF  OR  IN CONNECTION 
+WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
 // Chrome & Firefox
-// Firefox needs to be over https - no localhost support.
-// Required: https://www.webrtc-experiment.com/getScreenId/
-// @see https://medium.com/@chris_82106/implementing-webrtc-screen-sharing-in-a-web-app-late-2016-51c1a2642e4
-(function(window, document, red5prosdk, getScreenId) {
+(function(window, document, red5prosdk) {
   'use strict';
 
   var serverSettings = (function() {
@@ -62,6 +84,35 @@
     setupAudio();
   })
   */
+  var bitrateField = document.getElementById('bitrate-field');
+  var packetsField = document.getElementById('packets-field');
+  var resolutionField = document.getElementById('resolution-field');
+
+  var bitrate = 0;
+  var packetsSent = 0;
+  var frameWidth = 0;
+  var frameHeight = 0;
+
+  function updateStatistics (b, p, w, h) {
+    statisticsField.classList.remove('hidden');
+    bitrateField.innerText = b === 0 ? 'N/A' : Math.floor(b);
+    packetsField.innerText = p;
+    resolutionField.innerText = (w || 0) + 'x' + (h || 0);
+  }
+
+  function onBitrateUpdate (b, p) {
+    bitrate = b;
+    packetsSent = p;
+    updateStatistics(bitrate, packetsSent, frameWidth, frameHeight);
+  }
+
+  function onResolutionUpdate (w, h) {
+    frameWidth = w;
+    frameHeight = h;
+    updateStatistics(bitrate, packetsSent, frameWidth, frameHeight);
+  }
+
+  streamTitle.innerText = configuration.stream1;
 
   var protocol = serverSettings.protocol;
   var isSecure = protocol == 'https';
@@ -69,10 +120,6 @@
     return !isSecure
       ? {protocol: 'ws', port: serverSettings.wsport}
       : {protocol: 'wss', port: serverSettings.wssport};
-  }
-
-  function onBitrateUpdate (bitrate, packetsSent) {
-    statisticsField.innerText = 'Bitrate: ' + Math.floor(bitrate) + '. Packets Sent: ' + packetsSent + '.';
   }
 
   function onPublisherEvent (event) {
@@ -86,12 +133,24 @@
 
   function onPublishFail (message) {
     console.error('[Red5ProPublisher] Publish Error :: ' + message);
+    captureButton.disabled = false;
+    updateStatusFromEvent({
+      type: 'ERROR',
+      data: message
+    });
   }
 
   function onPublishSuccess (publisher) {
     console.log('[Red5ProPublisher] Publish Complete.');
     try {
-      window.trackBitrate(publisher.getPeerConnection(), onBitrateUpdate);
+      var pc = publisher.getPeerConnection();
+      var stream = publisher.getMediaStream();
+      window.trackBitrate(pc, onBitrateUpdate);
+      statisticsField.classList.remove('hidden');
+      stream.getVideoTracks().forEach(function (track) {
+        var settings = track.getSettings();
+        onResolutionUpdate(settings.width, settings.height);
+      });
     }
     catch (e) {
       // no tracking for you!
@@ -117,30 +176,33 @@
   }
 
   function capture (cb) {
-    getScreenId(function(error, sourceId, screen_constraints) {
-      if (error) {
-        console.error('[Red5ProPublisher] Desktop Capture Error: ' + error);
-        return;
-      }
-      navigator.mediaDevices.enumerateDevices()
-        .then(function (devices) { // eslint-disable-line no-unused-vars
-          // Can't send audio along with constraints for desktop.
-          /*
-          var device, i = devices.length;
-          while(--i > -1) {
-            device = devices[i];
-            if (device.kind.toLowerCase() === 'audioinput') {
-              screen_constraints.audio = {
-                optional: [
-                    {deviceId: device.label || 'microphone1'}
-                  ]
-                }
-              break;
-            }
-            }
-          */
-          cb(screen_constraints);
-        });
+    captureButton.disabled = true;
+    var vw = parseInt(cameraWidthField.value);
+    var vh = parseInt(cameraHeightField.value);
+    var fr = parseInt(framerateField.value);
+    var config = {
+        audio: false,
+        video: {
+          width: vw, //{ maxWidth: vw },
+          height: vh, //{ maxHeight: vh },
+          frameRate: fr//{ maxFrameRate: fr }
+        }
+    };
+    console.log('Using Capture Configuration:\r\n' + JSON.stringify(config, null, 2));
+    // Edge has getDisplayMedia on navigator and not media devices?
+    var p = undefined
+    if (navigator.getDisplayMedia) {
+      p = navigator.getDisplayMedia(config)
+    } else {
+      p = navigator.mediaDevices.getDisplayMedia(config)
+    }
+    p.then(cb).catch(function (error) {
+      captureButton.disabled = false;
+      console.error(error);
+      updateStatusFromEvent({
+        type: 'ERROR',
+        data: error.message
+      });
     });
   }
 
@@ -187,6 +249,7 @@
         return audioPublisher.publish();
       })
       .then(function () {
+        console.debug('[Red5ProPublisher:AUDIO] :: established.')
       })
       .catch(function (error) {
         var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
@@ -194,11 +257,7 @@
       });
   }
 
-  function setupPublisher (constraints) {
-
-    var vw = parseInt(cameraWidthField.value);
-    var vh = parseInt(cameraHeightField.value);
-    var fr = parseInt(framerateField.value);
+  function setupPublisher (mediaStream) {
 
     var config = Object.assign({},
                         configuration,
@@ -214,37 +273,11 @@
                         bandwidth: {
                           video: parseInt(bandwidthVideoField.value)
                         },
-                        keyFramerate: parseInt(keyFramerateField.value),
-                        onGetUserMedia: function () {
-                          var c = Object.assign({}, constraints);
-                          if (c.video.optional) {
-                            // chrome
-                            c.video.optional.push({
-                              maxWidth: vw
-                            }, {
-                              maxHeight: vh
-                            }, {
-                              maxFrameRate: fr
-                            });
-                          }
-                          else if (c.video.mediaSource === 'window') {
-                            // moz
-                            c.video.width = {
-                              exact: vw
-                            };
-                            c.video.height = {
-                              exact: vh
-                            };
-                            c.video.frameRate = {
-                              exact: fr
-                            }
-                          }
-                          return navigator.mediaDevices.getUserMedia(c);
-                        }
-                    });
+                        keyFramerate: parseInt(keyFramerateField.value)
+                      });
 
     new red5prosdk.RTCPublisher()
-      .init(rtcConfig)
+      .initWithStream(rtcConfig, mediaStream)
       .then(function (publisherImpl) {
         streamTitle.innerText = configuration.stream1;
         targetPublisher = publisherImpl;
@@ -290,5 +323,5 @@
   window.addEventListener('pagehide', shutdown);
   window.addEventListener('beforeunload', shutdown);
 
-})(this, document, window.red5prosdk, window.getScreenId);
+})(this, document, window.red5prosdk);
 

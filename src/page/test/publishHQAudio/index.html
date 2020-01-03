@@ -1,19 +1,25 @@
 <!doctype html>
+{{> license}}
 <html>
   <head>
-    {{> meta title='Publish Test'}}
+    {{> meta title='Publish HQ Audio Test'}}
     {{> header-scripts}}
     {{> header-stylesheets}}
   </head>
   <body>
+    {{> top-bar }}
+    {{> navigation isTestPage=true }}
     <div id="app">
-      {{> version }}
       {{> settings-link}}
-      {{> test-info testTitle='Publish Test'}}
-      {{> status-field-publisher}}
-      {{> statistics-field}}
-      <div class="centered">
-        <video id="red5pro-publisher" controls autoplay playsinline muted></video>
+      {{> test-info testTitle='Publish HQ Audio Test'}}
+      <div class="stream-section">
+        {{> status-field-publisher}}
+        {{> statistics-field}}
+        <div class="centered">
+          <video id="red5pro-publisher" class="red5pro-publisher"
+                 controls autoplay playsinline muted>
+          </video>
+        </div>
       </div>
     </div>
     {{> body-scripts}}

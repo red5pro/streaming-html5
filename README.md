@@ -61,6 +61,10 @@ To define the **Host** with the server instance's IP, click the _Host_ field f t
 | :-----
 | *A high quality publisher.*
 
+| **[Append](src/page/test/publishAppend)**
+| :-----
+| *Demonstrates recording a stream to the server with append option.*
+
 | **[Authentication](src/page/test/publishAuth)**
 | :-----
 | *Demonstrates authentication with the Simple-Auth-Plugin for publishing.*
@@ -68,6 +72,14 @@ To define the **Host** with the server instance's IP, click the _Host_ field f t
 | **[Camera Source](src/page/test/publishCameraSource)**
 | :-----
 | *Demonstrates selecting the desired camera to publish with.*
+
+| **[Camera Swap](src/page/test/publishCameraSwap)**
+| :-----
+| *Demonstrates a request for a `MediaStream` with a defined `video` source for the constraint based on the Rear and Front facing cameras of a mobile device and a browser that supports `facingMode` media contraints.*
+
+| **[Custom Settings](src/page/test/publishCustomSettingsWebRTC)**
+| :-----
+| *Allows you to customize the media broadcast settings for a WebRTC Publisher..*
 
 | **[MediaStream Swap](src/page/test/publishMediaStreamCamera)**
 | :-----
@@ -155,6 +167,10 @@ To define the **Host** with the server instance's IP, click the _Host_ field f t
 | :-----
 | *Basic subscriber example with failover.<br>* i.e, if no WebRTC browser support, then first Flash Player is detected, then HLS.
 
+| **[360](src/page/test/subscribe360)**
+| :-----
+| *Example for subscribing to a 360 camera stream*
+
 | **[Audio Only](src/page/test/subscribeAudioOnly)**
 | :-----
 | *Demonstrates playback of audio-only stream.*
@@ -171,6 +187,14 @@ To define the **Host** with the server instance's IP, click the _Host_ field f t
 | :-----
 | *Demonstrates accessing an IP from the Red5 Pro Cluster API to subcribe to a live stream.*
 
+| **[HLS](src/page/test/subscribeHLS)**
+| :-----
+| *This is an example of subscribing to a stream using HLS Only.* In the event that HLS is not supported natively by the browser, the [hls.js](https://video-dev.github.io/hls.js/) 3rd-party library is utilized.
+
+| **[Image Capture](src/page/test/subscribeImageCapture)**
+| :-----
+| *This example demonstrates capturing a still of the playback by using the `drawImage` API of `CanvasRenderingContext2D`.*
+
 | **[Reconnect](src/page/test/subscribeReconnect)**
 | :-----
 | *Demonstrates the failover mechanism of the Red5 Pro HTML SDK to select a subscriber based on browser support and to auto-reconnect on close of broadcast or loss of connection.*
@@ -179,17 +203,25 @@ To define the **Host** with the server instance's IP, click the _Host_ field f t
 | :-----
 | *Demonstrates receiving a remote message from broadcaster.*
 
+| **[Retry on Invalid Name](src/page/test/subscribeRetryOnInvalidName)**
+| :-----
+| *Demonstrates utilizing the `maintainConnectionOnSubscribeErrors` configuration property of a subscriber in order to maintain the WebSocket connection upon errors from the `subscribe` request after intializing..*
+
 | **[Round Trip Authentication](src/page/test/subscribeRoundTripAuth)**
 | :-----
 | *An example of utilizing round-trip authentication with Red5 Pro over Stream Manager Proxy*
+
+| **[Screen Share](src/page/test/subscribeScreenShare)**
+| :-----
+| *An example of utilizing the screen sharing capabilities of* **Chrome** *and* **Firefox**. *For use with Publish Screen Share example.*
 
 | **[Shared Object](src/page/test/subscribeSharedObject)**
 | :-----
 | *Demonstrates using remote Shared Object to send and recieve information between connected clients.*
 
-| **[Screen Share](src/page/test/subscribeScreenShare)**
+| **[Standby](src/page/test/subscribeStandby)**
 | :-----
-| *An example of utilizing the screen sharing capabilities of* **Chrome** *and* **Firefox**. *For use with Publish Screen Share example.*
+| *An example of using the Standby API to request a "pause" in receiving video and audio data on the MediaStream while also maintaining a connection of the client to the server.*
 
 | **[Two Streams](src/page/test/subscribeTwoStreams)**
 | :-----
@@ -198,6 +230,10 @@ To define the **Host** with the server instance's IP, click the _Host_ field f t
 | **[Video Mute](src/page/test/subscribeVideoMute)**
 | :-----
 | *Example to demonstrate subscribing to a broadcast which has its video stream "muted".*
+
+| **[VP8](src/page/test/subscribevp8)**
+| :-----
+| *Demonstrates requesting VP8 Video Encoding for a playback stream.*
 
 ### Subscribing - Stream Manager Examples
 

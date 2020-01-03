@@ -1,4 +1,5 @@
 <!doctype html>
+{{> license}}
 <html>
   <head>
     {{> meta title='Publish MediaStream Swap Test (WebRTC)'}}
@@ -6,18 +7,28 @@
     {{> header-stylesheets}}
   </head>
   <body>
+    {{> top-bar }}
+    {{> navigation isTestPage=true }}
     <div id="app">
-      {{> version }}
       {{> settings-link}}
       {{> test-info testTitle='Publish MediaStream Swap Test (WebRTC)'}}
-      {{> status-field-publisher}}
-      {{> statistics-field}}
-      <div class="centered">
-        <video id="red5pro-publisher" controls autoplay playsinline muted></video>
-      </div>
-      <div class="centered">
-        <select id="camera-select" class="control"></select>
-        <button id="swap-button">Swap Stream Source</button>
+      <div class="stream-section">
+        {{> status-field-publisher}}
+        {{> statistics-field}}
+        <div class="centered">
+          <video id="red5pro-publisher" class="red5pro-publisher"
+                 controls autoplay playsinline muted>
+          </video>
+        </div>
+        <div class="instructions-block">
+          <p class="camera-select-field camera-select-form settings-field settings-collapsable">
+            <label for="camera-select" class="label-style settings-label">Select a Camera:</label>
+            <select id="camera-select" class="control"></select>
+          </p>
+          <p>
+            <button id="swap-button" class="control ui-button">Swap</button>
+          </p>
+        </div>
       </div>
     </div>
     {{> body-scripts}}

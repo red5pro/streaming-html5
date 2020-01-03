@@ -1,31 +1,40 @@
 <!doctype html>
+{{> license}}
 <html>
   <head>
     {{> meta title='Subscriber Remote Call'}}
     {{> header-scripts}}
     {{> header-stylesheets}}
     <style>
+      .stream-section {
+        position: relative;
+      }
       .callout {
         position: absolute;
-        padding: 3px;
-        background-color: #eeeeee;
+        padding: 5px;
+        background-color: #dbdbdb;
+        top: 140px;
+        left: 10px;
       }
     </style>
   </head>
   <body>
+    {{> top-bar }}
+    {{> navigation isTestPage=true }}
     <div id="app">
-      {{> version }}
       {{> settings-link}}
       {{> test-info testTitle='Subscriber Remote Call'}}
-      {{> status-field-subscriber}}
-      {{> statistics-field}}
-      <div class="centered">
-        <video id="red5pro-subscriber"
-                controls autoplay playsinline
-                class="red5pro-media red5pro-media-background"
-                width="640" height="480">
-        </video>
-        <div id="message-callout" class="callout hidden"></div>
+      <div class="stream-section">
+        {{> status-field-subscriber}}
+        {{> statistics-field}}
+        <div class="centered">
+          <video id="red5pro-subscriber"
+                  controls autoplay playsinline
+                  class="red5pro-subscriber red5pro-media red5pro-media-background"
+                  width="640" height="480">
+          </video>
+          <div id="message-callout" class="callout hidden"></div>
+        </div>
       </div>
     </div>
     {{> body-scripts}}

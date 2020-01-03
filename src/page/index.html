@@ -1,14 +1,13 @@
 <!doctype html>
+{{> license}}
 <html>
   <head>
     {{> meta title='Red5 Pro HTML SDK Testbed'}}
     <link rel="stylesheet" href="css/reset.css">
     <link rel="stylesheet" href="css/testbed.css">
     <script src="script/testbed-config.js"></script>
+    <link rel='stylesheet' href='//fonts.googleapis.com/css?family=Lato%3A100%2C200%2C300%2C400%2C500%2C600%2C700%2C800%2C900%2C100i%2C200i%2C300i%2C400i%2C500i%2C600i%2C700i%2C800i%2C900i&#038;subset=latin&#038;ver=5.2.3' type='text/css' media='all' />
     <style>
-      .paddedHR {
-        margin: 2rem 0;
-      }
       .ice-option {
         margin-top: 1.2rem;
       }
@@ -18,40 +17,46 @@
     </style>
   </head>
   <body>
+    {{> top-bar }}
+    {{> navigation isTestPage=false }}
     <div id="app">
-      {{> version }}
-      <div id="back-link-container" style="text-align: left;"><p id="back-link"><a href="testbed-menu.html">&lt; Testbed Menu</a></p></div>
-      <div class="ice-background">
+      <div id="back-link-container" style="text-align: left;">
+        <p class="back-link"><a href="testbed-menu.html">&lt; Testbed Menu</a></p>
+        <p class="version-field">Testbed Version: {{ version }}</p>
+      </div>
+      <div class="ice-background hidden">
         <div class="test-notification">
         <p>If these example pages are served over HTTPS, it is required that the target <code>host</code> is also accessible over HTTPS.</p>
         <br/>
         <p>If you are viewing these examples from the <code>webrtcexamples</code> webapp shipped with the Red5 Pro Server, you should not have to worry about Cross Origin Resource Sharing (CORS) issues running from either <code>localhost</code> or on TLS from a remote deploy</p>
         <br/>
         <p>Otherwise, if you are viewing these examples from another origin other than the target Red5 Pro Server defined as <code>host</code> please be sure that the required CORS settings are in place to communicate properly. <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS" target="_blank">More info about CORS</a>.</p>
-      </div>
+        </div>
       </div>
       <div id="settings-container">
         <h1 class="centered">Settings</h1>
-        <p class="settings-field">
+        <hr class="paddedHR" />
+        <h2 class="centered">General</h2>
+        <p class="settings-field settings-collapsable">
           <label class="settings-label">Host:</label>
           <input id="host-field" name="host-field" value="localhost">
         </p>
-        <p class="settings-field">
+        <p class="settings-field settings-collapsable">
           <label class="settings-label">WebApp:</label>
           <input id="app-field" name="app-field" value="live">
         </p>
-        <p class="settings-field">
+        <p class="settings-field settings-collapsable">
           <label class="settings-label">Stream1 Name:</label>
           <input id="stream1-field" name="stream1-field" value="stream1">
         </p>
-        <p id="stream-swap-btn" class="settings-field swap-streams-link"><span>Swap Stream Names</span></p>
-        <p class="settings-field">
+        <p id="stream-swap-btn" class="settings-field settings-collapsable swap-streams-link"><span>Swap Stream Names</span></p>
+        <p class="settings-field settings-collapsable">
           <label class="settings-label">Stream2 Name:</label>
           <input id="stream2-field" name="stream2-field" value="stream2">
         </p>
         <hr class="paddedHR" />
         <h2 class="centered">WebRTC Specific</h2>
-        <p class="settings-field">
+        <p class="settings-field settings-collapsable">
           <label class="settings-label">ICE server:</label>
           <input id="ice-field" name="ice-field" value="stun:stun2.l.google.com:19302">
           <label class="settings-label ice-option hidden">ICE username:</label>
@@ -59,21 +64,21 @@
           <label class="settings-label ice-option hidden">ICE credential:</label>
           <input id="ice-credential" class="ice-option-field hidden" name="ice-crential" value="" placeholder="required for TURN">
         </p>
-        <p class="settings-field">
+        <p class="settings-field settings-collapsable">
           <label class="settings-label">Candidate Pool Size:</label>
           <input type="number" id="rtc-pool-size" name="rtc-pool-size"
             min="0" 
             value="0"
             style="min-width: 120px">
         </p>
-        <p class="settings-field">
+        <p class="settings-field settings-collapsable">
           <label class="settings-label">ICE Transport:</label>
           <select id="ice-transport" name="ice-transport" style="min-width: 120px">
             <option value="udp">UDP</option>
             <option value="tcp">TCP</option>
           </select>
         </p>
-        <p class="settings-field">
+        <p class="settings-field settings-collapsable">
           <label class="settings-label">Bundle Policy:</label>
           <select id="rtc-bundle-policy" name="rtc-bundle-policy" style="min-width: 120px">
             <option value="balanced">balanced</option>
@@ -81,7 +86,7 @@
             <option value="max-bundle">max-bundle</option>
           </select>
         </p>
-        <p class="settings-field">
+        <p class="settings-field settings-collapsable">
           <label class="settings-label">Transport Policy:</label>
           <select id="rtc-transport-policy" name="rtc-transport-policy" style="min-width: 120px">
             <option value="none">none</option>
@@ -89,7 +94,7 @@
             <option value="all">all</option>
           </select>
         </p>
-        <p class="settings-field">
+        <p class="settings-field settings-collapsable">
           <label class="settings-label">Mux Policy:</label>
           <select id="rtc-mux-policy" name="rtc-mux-policy" style="min-width: 120px">
             <option value="negotiate">negotiate</option>
@@ -98,23 +103,24 @@
         </p>
         <hr class="paddedHR" />
         <h2 class="centered">Stream Manager Specific</h2>
-        <p class="settings-field">
+        <p class="settings-field settings-collapsable">
           <label class="settings-label">Stream Manager Access Token:</label>
           <input id="sm-access-field" name="sm-access-field" placeholder="e.g., abc123">
         </p>
-        <p class="settings-field">
+        <p class="settings-field settings-collapsable">
           <label class="settings-label">Stream Manager API Level:</label>
           <input id="sm-api-field" name="sm-api-field" placeholder="e.g., 3.1">
         </p>
         <hr class="paddedHR" />
+        <h2 class="centered">Authentication</h2>
         <p class="settings-field">
           <label class="settings-label">Authentication Enabled:</label>
           <input type="checkbox" id="auth-enabled-field" name="auth-enabled-field" style="vertical-align: middle;">
-        <p class="settings-field">
+        <p class="settings-field settings-collapsable">
           <label class="settings-label">Username:</label>
           <input id="auth-username-field" name="auth-username-field" disabled>
         </p>
-        <p class="settings-field">
+        <p class="settings-field settings-collapsable">
           <label class="settings-label">Password:</label>
           <input id="auth-password-field" name="auth-password-field" disabled>
         </p>
