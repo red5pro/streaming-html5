@@ -108,6 +108,16 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   function onPublisherEvent (event) {
     console.log('[Red5ProPublisher] ' + event.type + '.');
     updateStatusFromEvent(event);
+    if (event.type === 'WebRTC.MediaStream.Available') {
+      navigator.mediaDevices.enumerateDevices()
+        .then(function (devices) {
+          waitForSelect(devices);
+          var stream = targetPublisher.getMediaStream();
+          stream.getVideoTracks().forEach(function (track) {
+            cameraSelect.value = track.getSettings().deviceId;
+          });
+        });
+    }
   }
   function onPublishFail (message) {
     console.error('[Red5ProPublisher] Publish Error :: ' + message);
@@ -184,29 +194,23 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
        });
   }
 
-  function waitForSelect () {
-    navigator.mediaDevices.enumerateDevices()
-      .then(function (devices) {
-        var videoCameras = devices.filter(function (item) {
-          return item.kind === 'videoinput';
-        })
-        var cameras = [{
-          label: SELECT_DEFAULT
-        }].concat(videoCameras);
-        var options = cameras.map(function (camera, index) {
-          return '<option value="' + camera.deviceId + '">' + (camera.label || 'camera ' + index) + '</option>';
-        });
-        cameraSelect.innerHTML = options.join(' ');
-        cameraSelect.addEventListener('change', function () {
-          onCameraSelect(cameraSelect.value);
-        });
-        publishButton.addEventListener('click', function() {
-          onPublishRequest();
-        });
-      })
-      .catch(function (error) {
-        console.error('Could not access camera devices: ' + error);
-      });
+  function waitForSelect (devices) {
+    var videoCameras = devices.filter(function (item) {
+      return item.kind === 'videoinput';
+    })
+    var cameras = [{
+      label: SELECT_DEFAULT
+    }].concat(videoCameras);
+    var options = cameras.map(function (camera, index) {
+      return '<option value="' + camera.deviceId + '">' + (camera.label || 'camera ' + index) + '</option>';
+    });
+    cameraSelect.innerHTML = options.join(' ');
+    cameraSelect.addEventListener('change', function () {
+      onCameraSelect(cameraSelect.value);
+    });
+    publishButton.addEventListener('click', function() {
+      onPublishRequest();
+    });
   }
 
   function startPublishSession () {
@@ -266,7 +270,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   // Kick off.
-  waitForSelect();
+  navigator.mediaDevices.enumerateDevices()
+    .then(waitForSelect)
+    .catch(function (error) {
+      console.error('Could not access devices: ' + error.message);
+    });
+
 
   var shuttingDown = false;
   function shutdown() {
