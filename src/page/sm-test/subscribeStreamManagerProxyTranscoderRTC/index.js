@@ -146,10 +146,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     updateStatusFromEvent(event);
   }
   function onSubscribeFail (message) {
+    setQualitySubmitState(false);
     console.error('[Red5ProSubsriber] Subscribe Error :: ' + message);
   }
   function onSubscribeSuccess (subscriber) {
     console.log('[Red5ProSubsriber] Subscribe Complete.');
+    setQualitySubmitState(true);
     if (window.exposeSubscriberGlobally) {
       window.exposeSubscriberGlobally(subscriber);
     }
@@ -161,9 +163,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
   }
   function onUnsubscribeFail (message) {
+    setQualitySubmitState(false);
     console.error('[Red5ProSubsriber] Unsubscribe Error :: ' + message);
   }
   function onUnsubscribeSuccess () {
+    setQualitySubmitState(false);
     console.log('[Red5ProSubsriber] Unsubscribe Complete.');
   }
 
@@ -358,11 +362,25 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
     });
 
-  streamSelectButton.addEventListener('click', function () {
+  function setQualityAndSubscribe() {
     if (streamSelect.value !== 'Select...') {
       startup(streamSelect.value);
     }
-  });
+  }
+
+  function setQualitySubmitState (isSubscribing) {
+    if (isSubscribing) {
+      streamSelectButton.removeEventListener('click', setQualityAndSubscribe, false);
+      streamSelectButton.innerText = 'Stop Subscribing';
+      streamSelectButton.addEventListener('click', unsubscribe, false);
+    } else {
+      updateStatistics(0, 0, 0, 0);
+      streamSelectButton.removeEventListener('click', unsubscribe, false);
+      streamSelectButton.innerText = 'Start Subscribing';
+      streamSelectButton.addEventListener('click', setQualityAndSubscribe, false);
+    }
+  }
+  setQualitySubmitState(false);
 
   // Clean up.
   var shuttingDown = false;
