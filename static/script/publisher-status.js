@@ -71,7 +71,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           inFailedState = true;
           break;
         case rtcTypes.MEDIA_STREAM_AVAILABLE:
-          status = 'Stream available...';
+          status = 'Media Source available...';
           inFailedState = false;
           break;
         case rtcTypes.PEER_CONNECTION_AVAILABLE:

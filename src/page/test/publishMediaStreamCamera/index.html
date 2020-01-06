@@ -5,6 +5,13 @@
     {{> meta title='Publish MediaStream Swap Test (WebRTC)'}}
     {{> header-scripts}}
     {{> header-stylesheets}}
+    <style>
+      .camera-select-block {
+        padding-top: 10px;
+        padding-bottom: 10px;
+        background-color: #eee;
+      }
+    </style>
   </head>
   <body>
     {{> top-bar }}
@@ -20,13 +27,10 @@
                  controls autoplay playsinline muted>
           </video>
         </div>
-        <div class="instructions-block">
+        <div class="camera-select-block">
           <p class="camera-select-field camera-select-form settings-field settings-collapsable">
-            <label for="camera-select" class="label-style settings-label">Select a Camera:</label>
+            <label for="camera-select" class="label-style settings-label">Swap Camera Source:</label>
             <select id="camera-select" class="control"></select>
-          </p>
-          <p>
-            <button id="swap-button" class="control ui-button">Swap</button>
           </p>
         </div>
       </div>

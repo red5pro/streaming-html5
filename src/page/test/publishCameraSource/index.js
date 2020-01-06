@@ -259,6 +259,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   function unpublish () {
     return new Promise(function (resolve, reject) {
       if (targetPublisher) {
+        targetPublisher.off('*', onPublisherEvent);
         targetPublisher.unpublish()
           .then(function () {
             onUnpublishSuccess();

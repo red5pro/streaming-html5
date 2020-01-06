@@ -161,6 +161,31 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     cameraSelect.innerHTML = options.join(' ');
   }
 
+  function onCameraSelect () {
+    if (!configuration.useVideo) {
+      return;
+    }
+    var selection = cameraSelect.value;
+    var mediaConstraints = configuration.mediaConstraints;
+    if (mediaConstraints.video && typeof mediaConstraints.video !== 'boolean') {
+      configuration.mediaConstraints.video.deviceId = { exact: selection }
+      delete configuration.mediaConstraints.video.frameRate
+    }
+    else {
+      configuration.mediaConstraints.video = {
+        deviceId: { exact: selection }
+      };
+    }
+    updateStatistics(0, 0, 0, 0);
+    statisticsField.classList.add('hidden');
+    unpublish()
+      .then(restart)
+      .catch(function (error) {
+        console.error('[Red5ProPublisher] :: Error in unpublishing - ' + error);
+        restart();
+       });
+  }
+
   function getAuthenticationParams () {
     var auth = configuration.authentication;
     return auth && auth.enabled
@@ -240,6 +265,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   function unpublish () {
     return new Promise(function (resolve, reject) {
       var publisher = targetPublisher;
+      publisher.off('*', onPublisherEvent);
       publisher.unpublish()
         .then(function () {
           onUnpublishSuccess();
@@ -260,8 +286,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     targetPublisher.publish()
       .then(function () {
         onPublishSuccess(targetPublisher);
-        publishButton.innerText = 'Unpublish';
-        enablePublishButton(true);
+        enablePublishButton(false);
       })
       .catch(function (error) {
         var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
@@ -278,31 +303,32 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
   }
 
-  navigator.mediaDevices.enumerateDevices().then(listDevices).catch(onDeviceError);
-  determinePublisher()
-    .then(function (publisherImpl) {
-      streamTitle.innerText = configuration.stream1;
-      targetPublisher = publisherImpl;
-      targetPublisher.on('*', onPublisherEvent);
+  function restart() {
+    determinePublisher()
+      .then(function (publisherImpl) {
+        streamTitle.innerText = configuration.stream1;
+        targetPublisher = publisherImpl;
+        targetPublisher.on('*', onPublisherEvent);
+        enablePublishButton(true);
+      })
+      .catch(function (error) {
+        console.error(error);
+      });
+  }
+
+  navigator.mediaDevices.enumerateDevices()
+    .then(function (devices) {
+      listDevices(devices);
+      restart();
     })
-    .catch(function (error) {
-      console.error(error);
-    });
+    .catch(onDeviceError);
+
+  cameraSelect.addEventListener('change', function () {
+    onCameraSelect(cameraSelect.value);
+  });
 
   publishButton.addEventListener('click', function () {
-    if (targetPublisher === undefined) {
-      startPublish();
-    } else {
-      var clearRefs = function () {
-        if (targetPublisher) {
-          targetPublisher.off('*', onPublisherEvent);
-        }
-        targetPublisher = undefined;
-      }
-      unpublish().then(clearRefs).catch(clearRefs);
-      document.getElementById('red5pro-publisher').srcObject = null;
-      publishButton.innerText = 'Publish'
-    }
+    startPublish();
   });
 
   var shuttingDown = false;

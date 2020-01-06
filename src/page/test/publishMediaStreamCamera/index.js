@@ -60,7 +60,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var streamTitle = document.getElementById('stream-title');
   var statisticsField = document.getElementById('statistics-field');
   var cameraSelect = document.getElementById('camera-select');
-  var swapButton = document.getElementById('swap-button');
   var bitrateField = document.getElementById('bitrate-field');
   var packetsField = document.getElementById('packets-field');
   var resolutionField = document.getElementById('resolution-field');
@@ -89,8 +88,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     updateStatistics(bitrate, packetsSent, frameWidth, frameHeight);
   }
 
-  swapButton.addEventListener('click', swapCamera);
-
   var current_selection = undefined;
   var protocol = serverSettings.protocol;
   var isSecure = protocol == 'https';
@@ -106,7 +103,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     if (event.type === 'WebRTC.MediaStream.Available') {
       var tracks = publisher.getMediaStream().getVideoTracks();
       tracks.forEach(function (track) {
-        cameraSelect.value = track.getSettings().deviceId;
+        var settings = track.getSettings();
+        setCameraSelection(settings.deviceId);
       });
     }
   }
@@ -148,8 +146,25 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       return '<option value="' + camera.deviceId + '">' + (camera.label || 'camera ' + index) + '</option>';
     });
     cameraSelect.innerHTML = options.join(' ');
+    if (targetPublisher && targetPublisher.getMediaStream()) {
+      var tracks = targetPublisher.getMediaStream().getVideoTracks();
+      tracks.forEach(function (track) {
+        var settings = track.getSettings();
+        setCameraSelection(settings.deviceId);
+      });
+    }
   }
 
+  function setCameraSelection (deviceId) {
+    var options = cameraSelect.childNodes;
+    var i = options.length;
+    while( --i > -1) {
+      if (options[i].value === deviceId) {
+        options[i].selected = true;
+        return
+      }
+    }
+  }
 
   function getUserMediaConfiguration () {
     return {
@@ -258,7 +273,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       onPublishFail(jsonError);
     });
 
-    navigator.mediaDevices.enumerateDevices().then(listDevices).catch(onDeviceError);
+  navigator.mediaDevices.enumerateDevices().then(listDevices).catch(onDeviceError);
+  cameraSelect.addEventListener('change', swapCamera);
 
   var shuttingDown = false;
   function shutdown() {
