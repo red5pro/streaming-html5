@@ -89,31 +89,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     updateStatistics(bitrate, packetsSent, frameWidth, frameHeight);
   }
 
-
   swapButton.addEventListener('click', swapCamera);
 
-  var SELECT_DEFAULT = 'Select a camera...';
-  var current_selection = SELECT_DEFAULT;
-  // Fill Camera listing.
-  (function (cameraSelect) {
-    navigator.mediaDevices.enumerateDevices()
-      .then(function (devices) {
-        var videoCameras = devices.filter(function (item) {
-          return item.kind === 'videoinput';
-        })
-        var cameras = [{
-          label: SELECT_DEFAULT
-        }].concat(videoCameras);
-        var options = cameras.map(function (camera, index) {
-          return '<option value="' + camera.deviceId + '">' + (camera.label || 'camera ' + index) + '</option>';
-        });
-        cameraSelect.innerHTML = options.join(' ');
-      })
-      .catch(function (error) {
-        console.error('Could not access camera devices: ' + error);
-      });
-  })(cameraSelect);
-
+  var current_selection = undefined;
   var protocol = serverSettings.protocol;
   var isSecure = protocol == 'https';
   function getSocketLocationFromProtocol () {
@@ -158,6 +136,21 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     console.log('[Red5ProPublisher] Unpublish Complete.');
   }
 
+  function onDeviceError (error) {
+    console.error('Could not access devices: ' + error);
+  }
+
+  function listDevices (devices) {
+    var cameras = devices.filter(function (item) {
+      return item.kind === 'videoinput';
+    })
+    var options = cameras.map(function (camera, index) {
+      return '<option value="' + camera.deviceId + '">' + (camera.label || 'camera ' + index) + '</option>';
+    });
+    cameraSelect.innerHTML = options.join(' ');
+  }
+
+
   function getUserMediaConfiguration () {
     return {
       mediaConstraints: {
@@ -186,12 +179,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   function swapCamera () {
     var connection = targetPublisher.getPeerConnection();
     var selection = cameraSelect.value;
-    if (selection === SELECT_DEFAULT || selection === current_selection) {
+    if (selection === current_selection) {
       return;
     }
     current_selection = selection;
     if (mediaConstraints.video && typeof mediaConstraints.video !== 'boolean') {
       mediaConstraints.video.deviceId = { exact: selection }
+      delete mediaConstraints.video.frameRate
     }
     else {
       mediaConstraints.video = {
@@ -252,13 +246,19 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       return targetPublisher.publish();
     })
     .then(function () {
+      return navigator.mediaDevices.enumerateDevices()
+    })
+    .then(listDevices)    
+    .then(function () {
       onPublishSuccess(targetPublisher);
     })
     .catch(function (error) {
       var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
       console.error('[Red5ProPublisher] :: Error in publishing - ' + jsonError);
       onPublishFail(jsonError);
-     });
+    });
+
+    navigator.mediaDevices.enumerateDevices().then(listDevices).catch(onDeviceError);
 
   var shuttingDown = false;
   function shutdown() {
