@@ -281,7 +281,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   function startPublish () {
-    // Kick off.
     enablePublishButton(false);
     targetPublisher.publish()
       .then(function () {
@@ -327,9 +326,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     onCameraSelect(cameraSelect.value);
   });
 
-  publishButton.addEventListener('click', function () {
-    startPublish();
-  });
+  publishButton.addEventListener('click', startPublish);
 
   var shuttingDown = false;
   function shutdown() {

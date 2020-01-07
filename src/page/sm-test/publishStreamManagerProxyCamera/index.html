@@ -7,8 +7,9 @@
     {{> header-stylesheets}}
   </head>
   <body>
+    {{> top-bar }}
+    {{> navigation isTestPage=true }}
     <div id="app">
-      {{> version }}
       {{> settings-link}}
       {{> sm-proxy-notification}}
       {{> test-info testTitle='Publish Stream Manager Proxy  Camera Source Test (WebRTC)'}}
@@ -19,7 +20,7 @@
             <select id="camera-select" class="control"></select>
           </p>
           <p>
-            <button id="publish-button" class="control ui-button" disabled>Publish</button>
+            <button id="publish-button" class="control ui-button">Publish</button>
           </p>
         </div>
         {{> status-field-publisher}}
