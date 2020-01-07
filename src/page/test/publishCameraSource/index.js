@@ -182,10 +182,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     publishButton.disabled = false;
   }
 
-  function onPublishRequest () {
-    startPublishSession();
-  }
-
   function onDeviceError (error) {
     console.error('Could not access devices: ' + error);
   }
@@ -279,7 +275,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   function restart() {
-    // Kick off.
     determinePublisher()
       .then(function (publisher) {
         targetPublisher = publisher;
@@ -298,9 +293,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   cameraSelect.addEventListener('change', function () {
     onCameraSelect(cameraSelect.value);
   });
-  publishButton.addEventListener('click', function() {
-    onPublishRequest();
-  });
+  publishButton.addEventListener('click', startPublishSession);
 
   var shuttingDown = false;
   function shutdown() {

@@ -60,7 +60,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var resolutionField = document.getElementById('resolution-field');
   var cameraSelect = document.getElementById('camera-select');
   var publishButton = document.getElementById('publish-button');
-  publishButton.addEventListener('click', start);
 
   var protocol = serverSettings.protocol;
   var isSecure = protocol == 'https';
@@ -154,6 +153,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         var settings = track.getSettings();
         onResolutionUpdate(settings.width, settings.height);
       });
+      publishButton.disabled = true;
     }
     catch (e) {
       // no tracking for you!
@@ -164,6 +164,34 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
   function onUnpublishSuccess () {
     console.log('[Red5ProPublisher] Unpublish Complete.');
+    publishButton.disabled = false;
+  }
+
+  function onDeviceError (error) {
+    console.error('Could not access devices: ' + error);
+  }
+
+  function listDevices (devices) {
+    var cameras = devices.filter(function (item) {
+      return item.kind === 'videoinput';
+    })
+    var options = cameras.map(function (camera, index) {
+      return '<option value="' + camera.deviceId + '">' + (camera.label || 'camera ' + index) + '</option>';
+    });
+    cameraSelect.innerHTML = options.join(' ');
+  }
+
+  function startPublishSession () {
+    targetPublisher.publish()
+      .then(function () {
+        onPublishSuccess(targetPublisher);
+      })
+      .catch(function (error) {
+        var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
+        console.error('[Red5ProPublisher] :: Error in publishing - ' + jsonError);
+        onPublishFail(jsonError);
+       });
+    return true;
   }
 
   function requestOrigin (configuration) {
@@ -197,57 +225,27 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     });
   }
 
-  var SELECT_DEFAULT = 'Select a camera...';
   function onCameraSelect (selection) {
-
     if (!configuration.useVideo) {
       return;
     }
 
-    var validSelection = selection && selection !== 'undefined' && selection !== SELECT_DEFAULT;
-    publishButton.disabled = !validSelection;
-
-    if (validSelection) {
-      // assign selected camera to defined UserMedia.
-      if (mediaConstraints.video && typeof mediaConstraints.video !== 'boolean') {
-        mediaConstraints.video.deviceId = { exact: selection }
-      }
-      else {
-        mediaConstraints.video = {
-          deviceId: { exact: selection }
-        };
-      }
-      // Kick off.
-      unpublish()
-        .then(function () {
-          console.log('unpublished.');
-        })
-        .catch(function (error) {
-          console.error('[Red5ProPublisher] :: Error in publishing - ' + error);
-         });
+    if (mediaConstraints.video && typeof mediaConstraints.video !== 'boolean') {
+      mediaConstraints.video.deviceId = { exact: selection }
+      delete mediaConstraints.video.frameRate
+ } else {
+      mediaConstraints.video = {
+        deviceId: { exact: selection }
+      };
     }
-  }
-
-  function waitForSelect () {
-    navigator.mediaDevices.enumerateDevices()
-      .then(function (devices) {
-        var videoCameras = devices.filter(function (item) {
-          return item.kind === 'videoinput';
-        })
-        var cameras = [{
-          label: SELECT_DEFAULT
-        }].concat(videoCameras);
-        var options = cameras.map(function (camera, index) {
-          return '<option value="' + camera.deviceId + '">' + (camera.label || 'camera ' + index) + '</option>';
-        });
-        cameraSelect.innerHTML = options.join(' ');
-        cameraSelect.addEventListener('change', function () {
-          onCameraSelect(cameraSelect.value);
-        });
-      })
+    updateStatistics(0, 0, 0, 0);
+    unpublish()
+      .then(restart)
       .catch(function (error) {
-        console.error('Could not access camera devices: ' + error);
-      });
+        console.error('[Red5ProPublisher] :: Error in publishing - ' + error);
+        restart();
+       });
+    publishButton.disabled = false;
   }
 
   function determinePublisher (serverAddress) {
@@ -332,6 +330,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         resolve();
         return;
       }
+      publisher.off('*', onPublisherEvent);
       publisher.unpublish()
         .then(function () {
           onUnpublishSuccess();
@@ -345,7 +344,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     });
   }
 
-  function start() {
+  function restart() {
     // Kick off.
     requestOrigin(configuration)
       .then(function (serverAddress) {
@@ -356,10 +355,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         targetPublisher = publisherImpl;
         targetPublisher.on('*', onPublisherEvent);
         showAddress(targetPublisher)
-        return targetPublisher.publish();
-      })
-      .then(function () {
-        onPublishSuccess(targetPublisher);
+        publishButton.disabled = false;
       })
       .catch(function (error) {
         var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
@@ -371,8 +367,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       });
   }
 
-  // Kick off.
-  waitForSelect();
+  navigator.mediaDevices.enumerateDevices().then(listDevices).catch(onDeviceError);
+  restart();
+
+  cameraSelect.addEventListener('change', function () {
+    onCameraSelect(cameraSelect.value);
+  });
+  publishButton.addEventListener('click', startPublishSession);
 
   var shuttingDown = false;
   function shutdown() {
