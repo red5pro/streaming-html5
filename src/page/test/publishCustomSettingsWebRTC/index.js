@@ -285,8 +285,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     if (mediaConstraints.video && typeof mediaConstraints.video !== 'boolean') {
       configuration.mediaConstraints.video.deviceId = { exact: selection }
       delete configuration.mediaConstraints.video.frameRate
-    }
-    else {
+    } else {
       configuration.mediaConstraints.video = {
         deviceId: { exact: selection }
       };
