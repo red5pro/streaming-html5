@@ -114,6 +114,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       if (typeof dimObject === 'number') {
         return dimObject;
       }
+      else if (typeof dimObject === 'undefined') {
+        return 'N/A';
+      }
       if (dimObject.hasOwnProperty('exact')) {
         return dimObject.exact;
       }
@@ -317,7 +320,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         deviceId: { exact: cameraSelect.value },
         width: { exact: parseInt(cameraWidthField.value) },
         height: { exact: parseInt(cameraHeightField.value) },
-        framerate: { exact: parseInt(framerateField.value) }
+        frameRate: { exact: parseInt(framerateField.value) }
       } : false
     };
   }
