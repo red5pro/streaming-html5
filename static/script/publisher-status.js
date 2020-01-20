@@ -86,6 +86,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         case rtcTypes.ICE_TRICKLE_COMPLETE:
           status = 'Negotiation complete. Waiting Publish Start...';
           break;
+        case pubTypes.UNPUBLISH_SUCCESS:
+          status = "Unpublished."
+          break;
       }
     if (status && status.length > 0) {
         statusField.innerText = ['STATUS', status].join(': ');

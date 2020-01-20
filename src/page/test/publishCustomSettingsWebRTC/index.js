@@ -64,6 +64,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var framerateField =document.getElementById('framerate-field');
   var publishButton = document.getElementById('publish-button');
 
+  var settingsControls = document.getElementsByClassName('settings-control');
+
   bandwidthAudioField.value = configuration.bandwidth.audio;
   bandwidthVideoField.value = configuration.bandwidth.video;
   keyFramerateField.value = configuration.keyFramerate || 3000;
@@ -170,6 +172,21 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var protocol = serverSettings.protocol;
   var isSecure = protocol == 'https';
 
+  var isPublishable = true;
+  function setPublishableState (isPublishableFlag) {
+    isPublishable = isPublishableFlag;
+    var i = settingsControls.length;
+    while (--i > -1) {
+      if (!isPublishable) {
+        settingsControls[i].setAttribute('disabled', 'disabled');
+      } else {
+        settingsControls[i].removeAttribute('disabled');
+      }
+    }
+    publishButton.innerText = isPublishable ? 'Start Publish' : 'Stop Publish';
+  }
+  setPublishableState(true);
+
   function getSocketLocationFromProtocol () {
     return !isSecure
       ? {protocol: 'ws', port: serverSettings.wsport}
@@ -192,9 +209,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
   function onPublishFail (message) {
     console.error('[Red5ProPublisher] Publish Error :: ' + message);
+    setPublishableState(true);
   }
   function onPublishSuccess (publisher) {
     console.log('[Red5ProPublisher] Publish Complete.');
+    setPublishableState(false);
     try {
       var pc = publisher.getPeerConnection();
       var stream = publisher.getMediaStream();
@@ -212,10 +231,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   function onUnpublishFail (message) {
     console.error('[Red5ProPublisher] Unpublish Error :: ' + message);
     statisticsField.classList.add('hidden');
+    setPublishableState(true);
   }
   function onUnpublishSuccess () {
     console.log('[Red5ProPublisher] Unpublish Complete.');
     statisticsField.classList.add('hidden');
+    setPublishableState(true);
   }
 
   function onDeviceError (error) {
@@ -230,6 +251,26 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       return '<option value="' + camera.deviceId + '">' + (camera.label || 'camera ' + index) + '</option>';
     });
     cameraSelect.innerHTML = options.join(' ');
+  }
+
+  function establishInitialStream () {
+    var stream;
+    var constraints = getUserMediaConfiguration();
+    navigator.mediaDevices.getUserMedia(constraints)
+      .then(function (mediastream) {
+        stream = mediastream;
+        return navigator.mediaDevices.enumerateDevices()
+      })
+      .then(function (devices) {
+        listDevices(devices);
+        stream.getVideoTracks().forEach(function (track) {
+          cameraSelect.value = track.getSettings().deviceId;
+        });
+        document.getElementById('red5pro-publisher').srcObject = stream;
+      })
+      .catch(function (error) {
+        console.error(error);
+      });
   }
 
   function onCameraSelect () {
@@ -291,35 +332,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
                         bandwidth: {
                           audio: parseInt(bandwidthAudioField.value),
                           video: parseInt(bandwidthVideoField.value)
-                        }
-                      },
-                      {
-                        onGetUserMedia: function () {
-                          return new Promise(function (resolve, reject) {
-                            if (targetPublisher && targetPublisher.getMediaStream()) {
-                              targetPublisher.getMediaStream().getTracks().forEach(function(track) {
-                                track.stop();
-                              });
-                            }
-                            var stream;
-                            var constraints = getUserMediaConfiguration();
-                            navigator.mediaDevices.getUserMedia(constraints)
-                              .then(function (mediastream) {
-                                stream = mediastream;
-                                return navigator.mediaDevices.enumerateDevices()
-                              })
-                              .then(function (devices) {
-                                listDevices(devices);
-                                stream.getVideoTracks().forEach(function (track) {
-                                  cameraSelect.value = track.getSettings().deviceId;
-                                });
-                                resolve(stream);
-                              })
-                              .catch(function (error) {
-                                reject(error);
-                              })
-                          });
-                        }
+                        },
+                        mediaConstraints: getUserMediaConfiguration()
                       });
 
     console.log('-----');
@@ -337,11 +351,15 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   function unpublish () {
     return new Promise(function (resolve, reject) {
+      if (!targetPublisher) {
+        resolve();
+        return;
+      }
       var publisher = targetPublisher;
-      publisher.off('*', onPublisherEvent);
       publisher.unpublish()
         .then(function () {
           onUnpublishSuccess();
+          publisher.off('*', onPublisherEvent);
           resolve();
         })
         .catch(function (error) {
@@ -353,45 +371,36 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     });
   }
 
-  function startPublish () {
-    enablePublishButton(false);
-    targetPublisher.publish()
-      .then(function () {
-        onPublishSuccess(targetPublisher);
-        enablePublishButton(false);
-      })
-      .catch(function (error) {
-        var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
-        console.error('[Red5ProPublisher] :: Error in publishing - ' + jsonError);
-        onPublishFail(jsonError);
-       });
-  }
-
-  function enablePublishButton (flag) {
-    if (flag) {
-      publishButton.removeAttribute('disabled');
+  function startStopPublish () {
+    if (isPublishable) {
+      setPublishableState(false);
+      determinePublisher()
+        .then(function (publisherImpl) {
+          streamTitle.innerText = configuration.stream1;
+          targetPublisher = publisherImpl;
+          return targetPublisher.publish()
+        })
+        .then(function () {
+          onPublishSuccess(targetPublisher);
+        })
+        .catch(function (error) {
+          var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
+          console.error('[Red5ProPublisher] :: Error in publishing - ' + jsonError);
+          onPublishFail(jsonError);
+        });
     } else {
-      publishButton.setAttribute('disabled', 'disabled');
+      shutdown(false);
     }
   }
 
   function restart() {
-    determinePublisher()
-      .then(function (publisherImpl) {
-        streamTitle.innerText = configuration.stream1;
-        targetPublisher = publisherImpl;
-        targetPublisher.on('*', onPublisherEvent);
-        enablePublishButton(true);
-      })
-      .catch(function (error) {
-        console.error(error);
-      });
+    establishInitialStream();
   }
 
   navigator.mediaDevices.enumerateDevices()
     .then(function (devices) {
       listDevices(devices);
-      restart();
+      establishInitialStream();
     })
     .catch(onDeviceError);
 
@@ -399,12 +408,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     onCameraSelect(cameraSelect.value);
   });
 
-  publishButton.addEventListener('click', startPublish);
+  publishButton.addEventListener('click', startStopPublish);
 
   var shuttingDown = false;
-  function shutdown() {
+  function shutdown (trackShutdown) {
     if (shuttingDown) return;
-    shuttingDown = true;
+    shuttingDown = (typeof trackShutdown === 'boolean') ? trackShutdown : true;
     function clearRefs () {
       if (targetPublisher) {
         targetPublisher.off('*', onPublisherEvent);
