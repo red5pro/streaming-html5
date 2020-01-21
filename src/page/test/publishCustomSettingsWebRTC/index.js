@@ -259,6 +259,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   function establishInitialStream () {
     var stream;
     var constraints = getUserMediaConfiguration();
+    var pubElement = document.getElementById('red5pro-publisher');
+    if (pubElement.srcObject) {
+      pubElement.srcObject.getTracks().forEach(function (track) {
+        track.stop();
+      });
+    }
     navigator.mediaDevices.getUserMedia(constraints)
       .then(function (mediastream) {
         stream = mediastream;
@@ -269,7 +275,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         stream.getVideoTracks().forEach(function (track) {
           cameraSelect.value = track.getSettings().deviceId;
         });
-        document.getElementById('red5pro-publisher').srcObject = stream;
+        pubElement.srcObject = stream;
       })
       .catch(function (error) {
         console.error(error);
@@ -284,7 +290,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     var mediaConstraints = configuration.mediaConstraints;
     if (mediaConstraints.video && typeof mediaConstraints.video !== 'boolean') {
       configuration.mediaConstraints.video.deviceId = { exact: selection }
-      delete configuration.mediaConstraints.video.frameRate
     } else {
       configuration.mediaConstraints.video = {
         deviceId: { exact: selection }
@@ -313,15 +318,19 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   function getUserMediaConfiguration () {
-    return {
+    var config = {
       audio: configuration.useAudio ? configuration.mediaConstraints.audio : false,
       video: configuration.useVideo ? {
-        deviceId: { exact: cameraSelect.value },
         width: { exact: parseInt(cameraWidthField.value) },
         height: { exact: parseInt(cameraHeightField.value) },
-        frameRate: { exact: parseInt(framerateField.value) }
+        frameRate: { min: parseInt(framerateField.value) }
       } : false
     };
+    if (cameraSelect.value && cameraSelect.value.length > 0) {
+      var v = Object.assign(config.video, {deviceId: { exact: cameraSelect.value }});
+      config.video = v;
+    }
+    return config;
   }
 
   function determinePublisher () {

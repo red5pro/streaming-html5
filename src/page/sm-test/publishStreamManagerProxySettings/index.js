@@ -290,7 +290,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     var mediaConstraints = configuration.mediaConstraints;
     if (mediaConstraints.video && typeof mediaConstraints.video !== 'boolean') {
       configuration.mediaConstraints.video.deviceId = { exact: selection }
-      delete configuration.mediaConstraints.video.frameRate
     } else {
       configuration.mediaConstraints.video = {
         deviceId: { exact: selection }
@@ -350,15 +349,19 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   function getUserMediaConfiguration () {
-    return {
+    var config = {
       audio: configuration.useAudio ? configuration.mediaConstraints.audio : false,
       video: configuration.useVideo ? {
-        deviceId: { exact: cameraSelect.value },
         width: { exact: parseInt(cameraWidthField.value) },
         height: { exact: parseInt(cameraHeightField.value) },
-        frameRate: { exact: parseInt(framerateField.value) }
+        frameRate: { min: parseInt(framerateField.value) }
       } : false
     };
+    if (cameraSelect.value && cameraSelect.value.length > 0) {
+      var v = Object.assign(config.video, {deviceId: { exact: cameraSelect.value }});
+      config.video = v;
+    }
+    return config;
   }
 
   function determinePublisher (jsonResponse) {
