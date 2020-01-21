@@ -98,7 +98,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           },
           "frameRate": {
             "min": 8,
-            "max": 24
+            "max": 30
           }
         }
       },

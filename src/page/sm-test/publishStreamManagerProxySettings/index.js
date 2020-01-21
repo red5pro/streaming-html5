@@ -75,7 +75,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   keyFramerateField.value = configuration.keyFramerate || 3000;
   cameraWidthField.value = configuration.mediaConstraints.video !== true ? configuration.mediaConstraints.video.width.max : 640;
   cameraHeightField.value = configuration.mediaConstraints.video !== true ? configuration.mediaConstraints.video.height.max : 480;
-  framerateField.value = configuration.mediaConstraints.video !== true ? configuration.mediaConstraints.video.frameRate.max : 24;
+  framerateField.value = configuration.mediaConstraints.video !== true ? configuration.mediaConstraints.video.frameRate.max : 30;
 
   var protocol = serverSettings.protocol;
   var isSecure = protocol == 'https';
@@ -166,6 +166,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       var info = constraintInfoNotices.shift();
       showModal(contentFromConstraintInfo(info));
     }
+  }
+  function showConstraintError (type, reason) {
+    var content = document.createElement('div');
+    content.appendChild(generateLine('Error'));
+    content.appendChild(document.createElement('br'));
+    content.appendChild(generateLine(type + ': ' + reason));
+    showModal(content);
   }
 
   var bitrate = 0;
@@ -265,6 +272,15 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   function establishInitialStream () {
     var stream;
     var constraints = getUserMediaConfiguration();
+    var pubElement = document.getElementById('red5pro-publisher');
+    if (pubElement.srcObject) {
+      pubElement.srcObject.getTracks().forEach(function (track) {
+        track.stop();
+      });
+    }
+    if (configuration.useVideo) {
+      delete constraints.video.frameRate;
+    }
     navigator.mediaDevices.getUserMedia(constraints)
       .then(function (mediastream) {
         stream = mediastream;
@@ -279,21 +295,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       })
       .catch(function (error) {
         console.error(error);
+        showConstraintError(error.message, error.constraint || 'N/A');
       });
   }
 
   function onCameraSelect () {
     if (!configuration.useVideo) {
       return;
-    }
-    var selection = cameraSelect.value;
-    var mediaConstraints = configuration.mediaConstraints;
-    if (mediaConstraints.video && typeof mediaConstraints.video !== 'boolean') {
-      configuration.mediaConstraints.video.deviceId = { exact: selection }
-    } else {
-      configuration.mediaConstraints.video = {
-        deviceId: { exact: selection }
-      };
     }
     updateStatistics(0, 0, 0, 0);
     statisticsField.classList.add('hidden');

@@ -71,7 +71,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   keyFramerateField.value = configuration.keyFramerate || 3000;
   cameraWidthField.value = configuration.mediaConstraints.video !== true ? configuration.mediaConstraints.video.width.max : 640;
   cameraHeightField.value = configuration.mediaConstraints.video !== true ? configuration.mediaConstraints.video.height.max : 480;
-  framerateField.value = configuration.mediaConstraints.video !== true ? configuration.mediaConstraints.video.frameRate.max : 24;
+  framerateField.value = configuration.mediaConstraints.video !== true ? configuration.mediaConstraints.video.frameRate.max : 30;
 
   var bitrateField = document.getElementById('bitrate-field');
   var packetsField = document.getElementById('packets-field');
@@ -144,6 +144,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       var info = constraintInfoNotices.shift();
       showModal(contentFromConstraintInfo(info));
     }
+  }
+  function showConstraintError (type, reason) {
+    var content = document.createElement('div');
+    content.appendChild(generateLine('Error'));
+    content.appendChild(document.createElement('br'));
+    content.appendChild(generateLine(type + ': ' + reason));
+    showModal(content);
   }
 
   var bitrate = 0;
@@ -265,6 +272,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         track.stop();
       });
     }
+    if (configuration.useVideo) {
+      delete constraints.video.frameRate;
+    }
     navigator.mediaDevices.getUserMedia(constraints)
       .then(function (mediastream) {
         stream = mediastream;
@@ -279,21 +289,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       })
       .catch(function (error) {
         console.error(error);
+        showConstraintError(error.message, error.constraint || 'N/A');
       });
   }
 
   function onCameraSelect () {
     if (!configuration.useVideo) {
       return;
-    }
-    var selection = cameraSelect.value;
-    var mediaConstraints = configuration.mediaConstraints;
-    if (mediaConstraints.video && typeof mediaConstraints.video !== 'boolean') {
-      configuration.mediaConstraints.video.deviceId = { exact: selection }
-    } else {
-      configuration.mediaConstraints.video = {
-        deviceId: { exact: selection }
-      };
     }
     updateStatistics(0, 0, 0, 0);
     statisticsField.classList.add('hidden');
@@ -326,7 +328,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         frameRate: { min: parseInt(framerateField.value) }
       } : false
     };
-    if (cameraSelect.value && cameraSelect.value.length > 0) {
+    if (configuration.useVideo && cameraSelect.value && cameraSelect.value.length > 0) {
       var v = Object.assign(config.video, {deviceId: { exact: cameraSelect.value }});
       config.video = v;
     }
