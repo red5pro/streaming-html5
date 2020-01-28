@@ -86,7 +86,6 @@ function determinePublisher (serverAddress) {
                       protocol: getSocketLocationFromProtocol().protocol,
                       port: getSocketLocationFromProtocol().port,
                       streamName: config.stream1,
-                      streamType: 'webrtc',
                       app: configuration.proxy,
                       connectionParams: {
                         host: serverAddress,
