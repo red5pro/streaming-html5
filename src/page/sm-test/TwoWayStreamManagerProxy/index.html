@@ -61,7 +61,7 @@
         <div class="stream-section">
           <p class="centered status-field stream-title">Publisher Stream: <span id="pub-stream-title">N/A</span></p>
           <p id="pub-status-field" class="centered status-field">On hold.</p>
-          {{> statistics-field}}
+          {{> statistics-field packets_field='Packets Sent'}}
           <video id="red5pro-publisher"
                  class="red5pro-publisher"
                  controls autoplay muted playsinline
@@ -71,7 +71,7 @@
         <div class="stream-section">
           <p class="centered status-field stream-title">Subscriber Stream: <span id="sub-stream-title">N/A</span></p>
           <p id="sub-status-field" class="centered status-field">On hold.</p>
-          {{> statistics-field}}
+          {{> statistics-field packets_field='Packets Received'}}
           <video id="red5pro-subscriber"
                   controls autoplay playsinline
                   class="red5pro-subscriber red5pro-media red5pro-media-background"
