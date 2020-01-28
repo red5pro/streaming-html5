@@ -195,8 +195,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
                       defaultConfiguration);
 
     var rtcConfig = Object.assign({}, config, {
-                      streamName: config.stream1,
-                      streamType: 'webrtc'
+                      streamName: config.stream1
                    });
 
     var rtmpConfig = Object.assign({}, config, {
