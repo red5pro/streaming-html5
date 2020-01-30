@@ -59,6 +59,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var profileField = document.getElementById('profile-field');
   var levelField = document.getElementById('level-field');
 
+  streamTitle.innerText = configuration.stream1;
+  
   function getParam (target) {
     switch (target) {
       case 'framerate':
@@ -85,6 +87,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
   function onPublishFail (message) {
     console.error('[Red5ProPublisher] Publish Error :: ' + message);
+    updateStatusFromEvent({
+      type: window.red5prosdk.PublisherEventTypes.PUBLISH_FAIL,
+      data: message
+    });
   }
   function onPublishSuccess (publisher) {
     console.log('[Red5ProPublisher] Publish Complete.');
@@ -150,6 +156,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
                     protocol: 'rtmp',
                     port: serverSettings.rtmpport,
                     streamName: config.stream1,
+                    backgroundColor: '#000000',
                     streamMode: configuration.recordBroadcast ? 'record' : 'live',
                     swf: '../../lib/red5pro/red5pro-publisher.swf',
                     swfobjectURL: '../../lib/swfobject/swfobject.js',

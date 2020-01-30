@@ -6,16 +6,21 @@
     <link rel="stylesheet" href="css/reset.css">
     <link rel="stylesheet" href="css/testbed.css">
     <script src="script/testbed-config.js"></script>
+    <link rel='stylesheet' href='//fonts.googleapis.com/css?family=Lato%3A100%2C200%2C300%2C400%2C500%2C600%2C700%2C800%2C900%2C100i%2C200i%2C300i%2C400i%2C500i%2C600i%2C700i%2C800i%2C900i&#038;subset=latin&#038;ver=5.2.3' type='text/css' media='all' />
   </head>
   <body>
+    {{> top-bar }}
+    {{> navigation isTestPage=false }}
     <div id="app">
-        {{> version }}
-        <div id="back-link-container" style="text-align: left;"><p id="back-link"><a href="index.html">&lt; Settings</a></p></div>
+      <div id="back-link-container" style="text-align: left;">
+        <p class="back-link"><a href="index.html">&lt; Settings</a></p>
+        <p class="version-field">Testbed Version: {{ version }}</p>
+      </div>
+      <div id="settings-container">
         <h1 class="centered">Red5 Pro HTML Testbed</h1>
-        <hr style="margin-bottom: 0px" />
-          <ul id="test-list">
+        <hr class="paddedHR" />
+        <ul id="test-list">
             <li class="top-level-listing"><a href="testbed-menu-sm.html">Stream Manager Tests</a></li>
-            <li class="top-level-listing"><a href="testbed-menu-sm-llnw.html">LLNW Stream Manager Tests</a></li>
             <li><a href="test/publish">Publish</a></li>
             <li><a href="test/publish1080">Publish - 1080p</a></li>
             <li><a href="test/publishAppend">Publish - Append</a></li>
@@ -27,10 +32,10 @@
             <li><a href="test/publishImageCapture">Publish - Image Capture (WebRTC)</a></li>
             <li><a href="test/publishMediaStreamCamera">Publish - Media Stream Source (WebRTC)</a></li>
             <li><a href="test/publishMute">Publish - Mute (WebRTC)</a></li>
-            <li><a href="test/publishRoundTripAuth">Publish - RoundTrip Authentication</a></li>
-            <li><a href="test/publishRemoteCall">Publish - Remote Call</a></li>
-            <li><a href="test/publishSharedObject">Publish - Shared Object</a></li>
             <li><a href="test/publishRecord">Publish - Record</a></li>
+            <li><a href="test/publishRemoteCall">Publish - Remote Call</a></li>
+            <li><a href="test/publishRoundTripAuth">Publish - RoundTrip Authentication</a></li>
+            <li><a href="test/publishSharedObject">Publish - Shared Object</a></li>
             <li><a href="test/publishScreenShare">Publish - ScreenShare (WebRTC)</a></li>
             <li><a href="test/publishCall">Publish - Server Call (WebRTC)</a></li>
             <li><a href="test/conference">Conference</a></li>

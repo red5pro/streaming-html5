@@ -5,39 +5,78 @@
     {{> meta title='Two-Way Test'}}
     {{> header-scripts}}
     {{> header-stylesheets}}
+    <style>
+      a {
+        color: #db1f26;
+        text-decoration: underline;
+      }
+      .red5pro-media-container {
+        height: auto;
+      }
+      .streams-container {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-evenly;
+      }
+      .stream-section {
+        flex: 1;
+      }
+      .stream-title {
+        border-bottom: 1px solid #999;
+      }
+      @media (max-width: 1023px) {
+        .stream-section {
+            width: 50%;
+            margin: 0 10px;
+         }
+      }
+      @media (max-width: 767px) {
+        .stream-section {
+            width: 100%;
+            margin: 0px auto;
+         }
+        .streams-container {
+          flex-direction: column;
+        }
+        .stream-section:nth-child(even) {
+          margin-top: 20px;
+        }
+      }
+    </style>
   </head>
   <body>
+    {{> top-bar }}
+    {{> navigation isTestPage=true }}
     <div id="app">
-      {{> version }}
       {{> settings-link}}
       <div class="ice-background">
-      <div class="test-notification">
-              <p>The Two-Way example requires access to a service that returns a stream listing. You may run into Cross-Origin Resource Sharing (<strong>CORS</strong>) issues if trying to use this example without the proper <strong>CORS</strong> settings provided by the server.</p>
+        <div class="test-notification">
+          <p>The Two-Way example requires access to a service that returns a stream listing. You may run into Cross-Origin Resource Sharing (<span class="strong">CORS</span>) issues if trying to use this example without the proper <span class="strong">CORS</span> settings provided by the server.</p>
         <br/>
-        <p>It is recommended to view this example as part of the <code>webrtcexamples</code> webapp shipped with the <a href="https://account.red5pro.com/download" target="_blank">Red5 Pro Server</a>.</p>
-      </div>
-      </div>
-      <h1 class="centered">Two-Way Test</h1>
-      <hr />
-      <div class="float-left float-left-two-way">
-        <h2 class="centered"><em>Publisher Stream</em>: <span id="pub-stream-title"></span></h2>
-        <p id="pub-status-field" class="centered status-field">On hold.</p>
-        <div class="centered red5pro-media-background">
-        <video id="red5pro-publisher"
-                controls autoplay muted playsinline
-                width="320" height="240">
-        </video>
+          <p>It is recommended to view this example as part of the <code>webrtcexamples</code> webapp shipped with the <a href="https://account.red5pro.com/download" target="_blank">Red5 Pro Server</a>.</p>
         </div>
       </div>
-      <div class="float-right float-right-two-way">
-        <h2 class="centered"><em>Subscriber Stream</em>: <span id="sub-stream-title"></span></h2>
-        <p id="sub-status-field" class="centered status-field">On hold.</p>
-        <div class="centered">
-        <video id="red5pro-subscriber"
-                controls autoplay playsinline
-                class="red5pro-media red5pro-media-background"
-                width="320" height="240">
-        </video>
+      {{> test-title title='Two-Way Test'}}
+      <div class="streams-container">
+        <div class="stream-section">
+          <p class="centered status-field stream-title">Publisher Stream: <span id="pub-stream-title">N/A</span></p>
+          <p id="pub-status-field" class="centered status-field">On hold.</p>
+          {{> statistics-field packets_field='Packets Sent'}}
+          <video id="red5pro-publisher"
+                 class="red5pro-publisher"
+                 controls autoplay muted playsinline
+                 width="640" height="480">
+          </video>
+        </div>
+        <div class="stream-section">
+          <p class="centered status-field stream-title">Subscriber Stream: <span id="sub-stream-title">N/A</span></p>
+          <p id="sub-status-field" class="centered status-field">On hold.</p>
+          {{> statistics-field packets_field='Packets Received'}}
+          <video id="red5pro-subscriber"
+                  controls autoplay playsinline
+                  class="red5pro-subscriber red5pro-media red5pro-media-background"
+                  width="640" height="480">
+          </video>
         </div>
       </div>
     </div>

@@ -58,6 +58,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var streamTitle = document.getElementById('stream-title');
   var statisticsField = document.getElementById('statistics-field');
   var addressField = document.getElementById('address-field');
+  var bitrateField = document.getElementById('bitrate-field');
+  var packetsField = document.getElementById('packets-field');
+  var resolutionField = document.getElementById('resolution-field');
   var validationForm = document.getElementById('validation-form');
   var validationSubmit = document.getElementById('validation-submit-btn');
   var validationAddButton = document.getElementById('add-param-btn');
@@ -74,6 +77,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       : {protocol: 'wss', port: serverSettings.wssport};
   }
 
+  streamTitle.innerText = configuration.stream1;
+
   var defaultConfiguration = {
     protocol: getSocketLocationFromProtocol().protocol,
     port: getSocketLocationFromProtocol().port,
@@ -85,10 +90,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     validationParamCount += 1;
     var form = document.createElement('div');
     form.id = 'param-field' + validationParamCount;
-    var innerForm = '<label for="param-name' + validationParamCount + '">Param Name:</label>' +
-        '<input type="text" id="param-name' + validationParamCount + '" name="param_name' + validationParamCount + '">' +
-        '<label for="param-value' + validationParamCount + '">Param Value:</label>' +
-        '<input type="text" id="param-value' + validationParamCount + '" name="param_value' + validationParamCount + '">';
+    form.classList.add('param-field');
+    var pName = 'param-name' + validationParamCount;
+    var pValue = 'param-value' + validationParamCount;
+    var innerForm = '<p class="param-setting"><label for="' + pName + '">Param Name:</label>' +
+      '<input type="text" id="' + pName + '" name="' + pName + '"></p>' +
+      '<p class="param-setting"><label for="' + pValue + '">Param Value:</label>' +
+      '<input type="text" id="' + pValue + '" name="' + pValue + '"></p>';
     form.innerHTML = innerForm;
     validationForm.appendChild(form);
     validationAddButton.parentElement.removeChild(validationAddButton);
@@ -133,8 +141,28 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     addressField.innerText = ' Proxy Address: ' + proxyAddress + ' | ' + ' Origin Address: ' + serverAddress;
   }
 
-  function onBitrateUpdate (bitrate, packetsSent) {
-    statisticsField.innerText = 'Bitrate: ' + Math.floor(bitrate) + '. Packets Sent: ' + packetsSent + '.';
+  var bitrate = 0;
+  var packetsSent = 0;
+  var frameWidth = 0;
+  var frameHeight = 0;
+
+  function updateStatistics (b, p, w, h) {
+    statisticsField.classList.remove('hidden');
+    bitrateField.innerText = b === 0 ? 'N/A' : Math.floor(b);
+    packetsField.innerText = p;
+    resolutionField.innerText = (w || 0) + 'x' + (h || 0);
+  }
+
+  function onBitrateUpdate (b, p) {
+    bitrate = b;
+    packetsSent = p;
+    updateStatistics(bitrate, packetsSent, frameWidth, frameHeight);
+  }
+
+  function onResolutionUpdate (w, h) {
+    frameWidth = w;
+    frameHeight = h;
+    updateStatistics(bitrate, packetsSent, frameWidth, frameHeight);
   }
 
   function onPublisherEvent (event) {
@@ -147,10 +175,17 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   function onPublishSuccess (publisher) {
     console.log('[Red5ProPublisher] Publish Complete.');
     try {
-      window.trackBitrate(publisher.getPeerConnection(), onBitrateUpdate);
+      var pc = publisher.getPeerConnection();
+      var stream = publisher.getMediaStream();
+      window.trackBitrate(pc, onBitrateUpdate);
+      statisticsField.classList.remove('hidden');
+      stream.getVideoTracks().forEach(function (track) {
+        var settings = track.getSettings();
+        onResolutionUpdate(settings.width, settings.height);
+      });
     }
     catch (e) {
-      //
+      // no tracking for you!
     }
   }
   function onUnpublishFail (message) {

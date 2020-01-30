@@ -6,84 +6,93 @@
     {{> header-scripts}}
     {{> header-stylesheets}}
     <style>
-        .param-form {
-                text-align: left;
-                margin: 20px;
-        }
-        .param-form > p {
-                padding: 10px;
-        }
-
-        #publish-button {
-                height: 24px;
-        }
+      .param-form {
+        text-align: left;
+      }
+      .settings-area {
+        padding-top: 20px;
+        background-color: #eeee;
+      }
+      .paddedHR {
+        margin: 0!important;
+      }
+      .more-info {
+        display: block;
+        font-size: 0.8em;
+        margin-top: 10px;
+        text-align: center;
+      }
+      .more-info > a {
+        color: #db1f26;
+      }
     </style>
   </head>
   <body>
+    {{> top-bar }}
+    {{> navigation isTestPage=true }}
     <div id="app">
-      {{> version }}
       {{> settings-link}}
       {{> test-info testTitle='Publish Flashvars Test (Flash Only)'}}
-      {{> status-field-publisher}}
-      <div class="centered status-field">
-              <br>
-              <p>Set the desired Publishing parameters, then press "Publish"</p>
-              <div class="param-form">
-                      <p>
-                        <label for="framerate-field">Framerate (integer):</label>
-                        <input name="framerate-field" id="framerate-field" value="15"></input>
-                      </p>
-                      <p>More info <a href="http://help.adobe.com/en_US/FlashPlatform/reference/actionscript/3/flash/media/Camera.html#setMode()" target="_blank">Camera FPS</a></p>
-                      <hr>
-                      <p>
-                        <label for="bandwidth-field">Bandwidth (integer):</label>
-                        <input name="bandwidth-field" id="bandwidth-field" value="50000"></input>
-                      </p>
-                      <p>More info <a href="http://help.adobe.com/en_US/FlashPlatform/reference/actionscript/3/flash/media/Camera.html#bandwidth" target="_blank">Camera bandwidth</a></p>
-                      <hr>
-                      <p>
-                        <label for="quality-field">Quality (integer):</label>
-                        <input name="quality-field" id="quality-field" value="80"></input>
-                      </p>
-                      <p> More Info <a href="http://help.adobe.com/en_US/FlashPlatform/reference/actionscript/3/flash/media/Camera.html#quality" target="_blank">Camera quality</a></p>
-                      <hr>
-                      <p>
-                        <label for="profile-field">Profile:</label>
-                        <select name="profile-field" id="profile-field" value="baseline">
-                                <option value="baseline" selected>baseline</option>
-                                <option value="main">main</option>
-                        </select>
-                      </p>
-                      <p> More Info <a href="http://help.adobe.com/en_US/FlashPlatform/reference/actionscript/3/flash/media/H264Profile.html" target="_blank">Profile</a></p>
-                      <hr>
-                      <p>
-                        <label for="level-field">Level:</label>
-                        <select name="level-field" id="level-field" value="3.1">
-                                <option value="1">1</option>
-                                <option value="1.1">1.1</option>
-                                <option value="1.2">1.2</option>
-                                <option value="1.3">1.3</option>
-                                <option value="1b">1b</option>
-                                <option value="2">2</option>
-                                <option value="2.1">2.1</option>
-                                <option value="2.2">2.2</option>
-                                <option value="2.3">3</option>
-                                <option value="3.1" selected>3.1</option>
-                                <option value="3.2">3.2</option>
-                                <option value="4">4</option>
-                                <option value="4.1">4.1</option>
-                                <option value="4.2">4.2</option>
-                                <option value="5">5</option>
-                                <option value="5.1">5.1</option>
-                        </select>
-                      </p>
-                      <p> More Info <a href="http://help.adobe.com/en_US/FlashPlatform/reference/actionscript/3/flash/media/H264Level.html" target="_blank">Level</a></p>
-                      <hr>
-                      <button class="centered" id="publish-button">Publish</button>
-              </div>
-      </div>
-      <div class="centered">
-        <video id="red5pro-publisher" controls class="video-element" muted></video>
+      <div class="stream-section">
+        <div class="centered settings-area">
+          <div class="param-form">
+            <p class="settings-field settings-collapsable">
+              <label class="settings-label" for="framerate-field">Framerate (integer):</label>
+              <input name="framerate-field" id="framerate-field" value="15"></input>
+              <span class="more-info">More Info:&nbsp;&nbsp;<a href="http://help.adobe.com/en_US/FlashPlatform/reference/actionscript/3/flash/media/Camera.html#setMode()" target="_blank">Camera FPS</a></span>
+              
+            </p>
+            <hr class="paddedHR">
+            <p class="settings-field settings-collapsable">
+              <label class="settings-label" for="bandwidth-field">Bandwidth (integer):</label>
+              <input name="bandwidth-field" id="bandwidth-field" value="50000"></input>
+              <span class="more-info">More Info:&nbsp;&nbsp;<a href="http://help.adobe.com/en_US/FlashPlatform/reference/actionscript/3/flash/media/Camera.html#bandwidth" target="_blank">Camera bandwidth</a></span>
+            </p>
+            <hr class="paddedHR">
+            <p class="settings-field settings-collapsable">
+              <label class="settings-label" for="quality-field">Quality (integer):</label>
+              <input name="quality-field" id="quality-field" value="80"></input>
+              <span class="more-info"> More Info:&nbsp;&nbsp;<a href="http://help.adobe.com/en_US/FlashPlatform/reference/actionscript/3/flash/media/Camera.html#quality" target="_blank">Camera quality</a></span>
+            </p>
+            <hr class="paddedHR">
+            <p class="settings-field settings-collapsable">
+              <label class="settings-label" for="profile-field">Profile:</label>
+              <select name="profile-field" id="profile-field" value="baseline">
+                <option value="baseline" selected>baseline</option>
+                <option value="main">main</option>
+              </select>
+              <span class="more-info"> More Info:&nbsp;&nbsp;<a href="http://help.adobe.com/en_US/FlashPlatform/reference/actionscript/3/flash/media/H264Profile.html" target="_blank">Profile</a></span>
+            </p>
+            <hr class="paddedHR">
+            <p class="settings-field settings-collapsable">
+              <label class="settings-label" for="level-field">Level:</label>
+              <select name="level-field" id="level-field" value="3.1">
+                <option value="1">1</option>
+                <option value="1.1">1.1</option>
+                <option value="1.2">1.2</option>
+                <option value="1.3">1.3</option>
+                <option value="1b">1b</option>
+                <option value="2">2</option>
+                <option value="2.1">2.1</option>
+                <option value="2.2">2.2</option>
+                <option value="2.3">3</option>
+                <option value="3.1" selected>3.1</option>
+                <option value="3.2">3.2</option>
+                <option value="4">4</option>
+                <option value="4.1">4.1</option>
+                <option value="4.2">4.2</option>
+                <option value="5">5</option>
+                <option value="5.1">5.1</option>
+              </select>
+              <span class="more-info"> More Info:&nbsp;&nbsp;<a href="http://help.adobe.com/en_US/FlashPlatform/reference/actionscript/3/flash/media/H264Level.html" target="_blank">Level</a></span>
+            </p>
+            <button class="ui-button" id="publish-button">Publish</button>
+          </div>
+        </div>
+        {{> status-field-publisher}}
+        <div class="centered">
+          <video id="red5pro-publisher" controls class="red5pro-publisher video-element" muted></video>
+        </div>
       </div>
     </div>
     {{> body-scripts}}

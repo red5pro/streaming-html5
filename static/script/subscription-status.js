@@ -44,6 +44,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         return;
       }
       switch (event.type) {
+        case 'ERROR':
+          inFailedState = true;
+          status = ['ERROR', event.data].join(': ');
+          break;
         case subTypes.CONNECTION_CLOSED:
           status = 'Connection closed.';
           window.untrackBitrate();

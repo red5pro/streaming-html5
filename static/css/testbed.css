@@ -23,18 +23,29 @@ NONINFRINGEMENT.   IN  NO  EVENT  SHALL INFRARED5, INC. BE LIABLE FOR ANY CLAIM,
 WHETHER IN  AN  ACTION  OF  CONTRACT,  TORT  OR  OTHERWISE,  ARISING  FROM,  OUT  OF  OR  IN CONNECTION 
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
+/*
+@font-face {
+  font-family: Lato;
+  src: url("https://fonts.gstatic.com/s/lato/v16/S6u9w4BMUTPHh7USSwiPGQ3q5d0.woff2") format("woff");
+}
+*/
 html {
-  font-family: Helvetica, Arial, _sans;
+  font-family: Lato, Helvetica, Arial, _sans;
   font-size: 100%;
 }
 
 h1 {
-  font-size: 3rem;
+  font-size: 2rem;
+  font-weight: 500;
+  text-transform: uppercase;
   margin: 1rem 0;
+  line-height: 1.5em;
 }
 
 h2 {
-  font-size: 2rem;
+  font-size: 1.5rem;
+  font-weight: 500;
+  text-transform: uppercase;
   margin: 1.4rem 0;
 }
 
@@ -43,12 +54,22 @@ em {
 }
 
 strong {
-  font-weight: bold;
+  font-weight: 700;
 }
 
 code {
   font-family: monospace;
   font-size: 1.2rem;
+}
+
+a, a:hover, a:focus {
+    text-decoration: none;
+    -webkit-transition: all 0.3s ease;
+    -moz-transition: all 0.3s ease;
+    -ms-transition: all 0.3s ease;
+    -o-transition: all 0.3s ease;
+    transition: all 0.3s ease;
+    color: #db1f26;
 }
 
 #app {
@@ -59,6 +80,14 @@ code {
   display: none;
 }
 
+.strong {
+  font-weight: 700;
+}
+
+.red-text {
+  color: #db1f26;
+}
+
 .red5pro-media-container {
   text-align: justify;
 }
@@ -67,12 +96,24 @@ code {
   background-color: #eef7ff;
 }
 
+.paddedHR {
+  margin: 2rem 0;
+  display: block;
+  height: 1px;
+  border: 0;
+  border-top: 1px solid #dbdbdb;
+}
+
 .test-notification {
   padding: 20px;
-  line-height: 20px;
+  line-height: 1.5em;
   margin: 0 auto;
   max-width: 600px;
   text-align: justify;
+}
+
+.test-title {
+  font-size: 1.2rem;
 }
 
 .loading-text {
@@ -81,31 +122,73 @@ code {
 }
 
 .version-field {
-  text-align: right;
+  margin-right: 1.4rem; /* container is padded 1.4rem */
   font-size: 0.75rem;
-  padding: 0.4rem;
  }
+
+.address-field {
+  padding: 10px;
+  background-color: #dfdfdf;
+  border-top: 1px solid #999;
+}
 
 .centered {
   width: 100%;
   text-align: center;
 }
 
+.stream-section {
+  max-width: 640px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.red5pro-publisher {
+  width: 100%;
+  background-color: #000;
+}
+
 .status-field {
-  padding: 0.8rem 0;
-  background-color: #eee;
-  border-top: 1px solid black;
+  padding: 1rem 0;
+  background-color: #dbdbdb;
+  line-height: 1.5em;
+}
+
+.statistics-field {
+  background-color: #3b3b3b;
+  color: #dbdbdb;
+}
+
+.ui-button {
+  background-color: #3580A2;
+  color: #fff;
+  width: 100%;
+  padding: 20px;
+  font-size: 1em;
+  border: none;
+  cursor: pointer;
+}
+
+.ui-button:disabled {
+  opacity: 0.5;
+  cursor: auto;
+}
+
+.test-info_stream-title {
+  text-align: center;
+  margin-top: -10px;
+  margin-bottom: 20px;
 }
 
 .error-field {
-  padding: 0.8rem 0;
-  background-color: rgb(255, 240, 240);
-  color: rgb(251, 19, 33);
+  padding: 1rem 0;
+  background-color: #db1f26;;
+  color: #fff;
 }
 
 .subscriber-status-field {
-  padding: 0.8rem;
-  background-color: #eee;
+  padding: 1rem;
+  background-color: #dbdbdb;
 }
 
 .failover-detected-field {
@@ -114,12 +197,16 @@ code {
   color: white;
 }
 
+#settings-container {
+  padding: 20px;
+}
+
 .settings-field {
   margin: 1rem;
 }
 
 .settings-label {
-  width: 50%;
+  width: 45%;
   display: inline-block;
   margin-right: 1rem;
   text-align: right;
@@ -127,7 +214,6 @@ code {
 
 .settings-field > input {
   height: 1.5rem;
-  min-width: 240px;
   font-size: 1rem;
   padding-left: 0.8rem;
 }
@@ -139,20 +225,19 @@ code {
 }
 
 .swap-streams-link {
-  color: #00a9ff;
+  color: #3580A2;
   cursor: pointer;
-  margin-left: 50%;
+  margin-left: 47%;
   padding-left: 1rem;
 }
 
-.instructions-block {
-  margin: 1rem;
-  background-color: #eee;
-  border: 1px #ccc solid;
+.swap-streams-link > span {
+  text-decoration: underline;
 }
 
-.instructions-block > p {
-  margin: 0.75rem;
+.instructions-block {
+  padding-top: 10px;
+  background-color: #eee;
 }
 
 .hint-block {
@@ -168,11 +253,15 @@ code {
 }
 
 .auth-alert {
-  background-color: #bae4fb;
+  font-weight: 300;
+  background-color: #3580a2;
+  color: #fff;
 }
 
 .auth-link {
   margin-left: 0.6rem;
+  color: #fff;
+  text-decoration: underline;
 }
 
 .video-element {
@@ -208,25 +297,29 @@ code {
   cursor: pointer;
   width: 100%;
   text-align: center;
-  border-bottom: 1px #ccc solid;
-  background-color: #eee;
+  border-bottom: 1px #999999 solid;
+  background-color: #fff;
+  border-top: 3px #db1f26 solid;
+  color: #3b3b3b;
+  display: flex;
+  align-items: center;
 }
 
-#back-link {
-  padding-left: 0.8rem;
-  line-height: 4rem;
-  color: #00a9ff;
+.back-link {
+  margin-left: 1.4rem;
+  flex: 1;  
 }
 
-#back-link > a {
+.back-link > a {
   margin: 0;
   text-decoration: none;
   display: block;
-  color: #00a9ff;
+  color: #3580A2;
+  padding: 1.4rem 0;
 }
 
-#back-link > a:focus {
-  color: #00a9ff;
+.back-link > a:focus, .back-link > a:hover {
+  color: #db1f26;
 }
 
 #test-list {
@@ -262,13 +355,17 @@ code {
   .red5pro-media-volume-slider {
     width: 65px;
   }
-  .settings-field > input {
+  .settings-field {
+    margin: 2rem 1rem;
+  }
+  .settings-field.settings-collapsable > input {
     width: 90%;
   }
-  .settings-field > select {
+  .settings-field.settings-collapsable > select {
     width: 90%;
+    display: block;
   }
-  .settings-label {
+  .settings-collapsable > .settings-label {
     width: 100%;
     text-align: left;
     margin-left: 0.3rem;

@@ -56,6 +56,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var streamTitle = document.getElementById('stream-title');
   var messageCallout = document.getElementById('message-callout');
   var statisticsField = document.getElementById('statistics-field');
+  var bitrateField = document.getElementById('bitrate-field');
+  var packetsField = document.getElementById('packets-field');
+  var resolutionField = document.getElementById('resolution-field');
 
   var protocol = serverSettings.protocol;
   var isSecure = protocol === 'https';
@@ -65,7 +68,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var frameWidth = 0;
   var frameHeight = 0;
   function updateStatistics (b, p, w, h) {
-    statisticsField.innerText = 'Bitrate: ' + Math.floor(b) + '. Packets Received: ' + p + '.' + ' Resolution: ' + w + ', ' + h + '.';
+    statisticsField.classList.remove('hidden');
+    bitrateField.innerText = b === 0 ? 'N/A' : Math.floor(b);
+    packetsField.innerText = p;
+    resolutionField.innerText = (w || 0) + 'x' + (h || 0);
   }
 
   function onBitrateUpdate (b, p) {
@@ -104,6 +110,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   function onSubscriberEvent (event) {
     console.log('[Red5ProSubscriber] ' + event.type + '.');
     updateStatusFromEvent(event);
+    if (event.type === 'Subscribe.VideoDimensions.Change') {
+      onResolutionUpdate(event.data.width, event.data.height);
+    }
   }
   function onSubscribeFail (message) {
     console.error('[Red5ProSubsriber] Subscribe Error :: ' + message);
@@ -230,14 +239,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       var msg = eventData.data;
       var methodName = eventData.methodName || eventData.method;
       if (methodName === 'whateverFunctionName') {
-        var elem = document.getElementById('red5pro-subscriber');
-        var rect = elem.getBoundingClientRect();
-        var bodyRect = document.body.getBoundingClientRect()
         console.log('[Red5ProSubscriber] :: whateverFunctionName received!');
         console.log('[Red5ProSubscriber] :: message - ' + JSON.stringify(msg, null, 2));
         messageCallout.innerText = msg.message;
-        messageCallout.style.left = (rect.left - bodyRect.left + (elem.clientWidth * msg.touchX)) + 'px';
-        messageCallout.style.top = (rect.top - bodyRect.top + (elem.clientHeight * msg.touchY)) + 'px';
         messageCallout.classList.remove('hidden');
       }
     }; 

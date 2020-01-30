@@ -56,6 +56,34 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var statisticsField = document.getElementById('statistics-field');
   var muteAudioButton = document.getElementById('mute-audio-button');
   var muteVideoButton = document.getElementById('mute-video-button');
+  var bitrateField = document.getElementById('bitrate-field');
+  var packetsField = document.getElementById('packets-field');
+  var resolutionField = document.getElementById('resolution-field');
+
+  var bitrate = 0;
+  var packetsSent = 0;
+  var frameWidth = 0;
+  var frameHeight = 0;
+
+  function updateStatistics (b, p, w, h) {
+    statisticsField.classList.remove('hidden');
+    bitrateField.innerText = b === 0 ? 'N/A' : Math.floor(b);
+    packetsField.innerText = p;
+    resolutionField.innerText = (w || 0) + 'x' + (h || 0);
+  }
+
+  function onBitrateUpdate (b, p) {
+    bitrate = b;
+    packetsSent = p;
+    updateStatistics(bitrate, packetsSent, frameWidth, frameHeight);
+  }
+
+  function onResolutionUpdate (w, h) {
+    frameWidth = w;
+    frameHeight = h;
+    updateStatistics(bitrate, packetsSent, frameWidth, frameHeight);
+  }
+
 
   var protocol = serverSettings.protocol;
   var isSecure = protocol == 'https';
@@ -73,8 +101,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   function addMuteListener (publisher) {
     muteAudioButton.addEventListener('click', function () {
-      var wasMuted = muteAudioButton.innerText === 'unmute audio';
-      muteAudioButton.innerText = wasMuted ? 'mute audio' : 'unmute audio';
+      var wasMuted = muteAudioButton.innerText === 'Unmute Audio';
+      muteAudioButton.innerText = wasMuted ? 'Mute audio' : 'Unmute Audio';
       if (wasMuted) {
         publisher.unmuteAudio();
       }
@@ -83,19 +111,36 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       }
     });
     muteVideoButton.addEventListener('click', function () {
-      var wasMuted = muteVideoButton.innerText === 'unmute video';
-      muteVideoButton.innerText = wasMuted ? 'mute video' : 'unmute video';
+      var wasMuted = muteVideoButton.innerText === 'Unmute Video';
+      muteVideoButton.innerText = wasMuted ? 'Mute Video' : 'Unmute Video';
+      var videoElement = document.getElementById('red5pro-publisher');
       if (wasMuted) {
         publisher.unmuteVideo();
+        var connection = publisher.getPeerConnection();
+        navigator.mediaDevices.getUserMedia(getUserMediaConfiguration())
+          .then(function (stream) {
+            var senders = connection.getSenders();
+            var tracks = stream.getTracks();
+            var i = tracks.length;
+            while ( --i > -1) {
+              if (tracks[i].kind === 'video') {
+                senders[i].replaceTrack(tracks[i]);
+              }
+            }
+            videoElement.srcObject = stream;
+          })
+          .catch (function (error) {
+            console.error('Could not replace track : ' + error.message);
+          });
       }
       else {
         publisher.muteVideo();
+        var stream = videoElement.srcObject
+        stream.getVideoTracks().forEach(track => {
+          track.stop();
+        })
       }
     });
-  }
-
-  function onBitrateUpdate (bitrate, packetsSent) {
-    statisticsField.innerText = 'Bitrate: ' + Math.floor(bitrate) + '. Packets Sent: ' + packetsSent + '.';
   }
 
   function onPublisherEvent (event) {
@@ -107,7 +152,19 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
   function onPublishSuccess (publisher) {
     console.log('[Red5ProPublisher] Publish Complete.');
-    window.trackBitrate(publisher.getPeerConnection(), onBitrateUpdate);
+    try {
+      var pc = publisher.getPeerConnection();
+      var stream = publisher.getMediaStream();
+      window.trackBitrate(pc, onBitrateUpdate);
+      statisticsField.classList.remove('hidden');
+      stream.getVideoTracks().forEach(function (track) {
+        var settings = track.getSettings();
+        onResolutionUpdate(settings.width, settings.height);
+      });
+    }
+    catch (e) {
+      // no tracking for you!
+    }
   }
   function onUnpublishFail (message) {
     console.error('[Red5ProPublisher] Unpublish Error :: ' + message);
@@ -146,8 +203,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     var rtcConfig = Object.assign({}, config, {
                       protocol: getSocketLocationFromProtocol().protocol,
                       port: getSocketLocationFromProtocol().port,
-                      streamName: config.stream1,
-                      streamType: 'webrtc'
+                      streamName: config.stream1
                    });
     return new red5prosdk.RTCPublisher().init(rtcConfig);
   }

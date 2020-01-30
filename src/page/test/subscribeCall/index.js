@@ -53,6 +53,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   var updateStatusFromEvent = window.red5proHandleSubscriberEvent; // defined in src/template/partial/status-field-subscriber.hbs
   var instanceId = Math.floor(Math.random() * 0x10000).toString(16);
+  var statisticsField = document.getElementById('statistics-field');
+  var bitrateField = document.getElementById('bitrate-field');
+  var packetsField = document.getElementById('packets-field');
+  var resolutionField = document.getElementById('resolution-field');
+
   var streamTitle = document.getElementById('stream-title');
   var callButton = document.getElementById('call-button');
   var callList = document.getElementById('call-list');
@@ -79,6 +84,30 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         console.error('getLiveStreams error: ' + e);
       });
   });
+
+  var bitrate = 0;
+  var packetsReceived = 0;
+  var frameWidth = 0;
+  var frameHeight = 0;
+
+  function updateStatistics (b, p, w, h) {
+    statisticsField.classList.remove('hidden');
+    bitrateField.innerText = b === 0 ? 'N/A' : Math.floor(b);
+    packetsField.innerText = p;
+    resolutionField.innerText = (w || 0) + 'x' + (h || 0);
+  }
+
+  function onBitrateUpdate (b, p) {
+    bitrate = b;
+    packetsReceived = p;
+    updateStatistics(bitrate, packetsReceived, frameWidth, frameHeight);
+  }
+
+  function onResolutionUpdate (w, h) {
+    frameWidth = w;
+    frameHeight = h;
+    updateStatistics(bitrate, packetsReceived, frameWidth, frameHeight);
+  }
 
   var protocol = serverSettings.protocol;
   var isSecure = protocol === 'https';
@@ -131,6 +160,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     if (event.type === 'Publisher.Connection.Closed') {
       disableCallButton();
     }
+    if (event.type === 'Subscribe.VideoDimensions.Change') {
+      onResolutionUpdate(event.data.width, event.data.height);
+    }
   }
   function onSubscribeFail (message) {
     console.error('[Red5ProSubsriber] Subscribe Error :: ' + message);
@@ -140,6 +172,14 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     console.log('[Red5ProSubsriber] Subscribe Complete.');
     if (window.exposeSubscriberGlobally) {
       window.exposeSubscriberGlobally(subscriber);
+    }
+    if (subscriber.getType().toLowerCase() === 'rtc') {
+      try {
+        window.trackBitrate(subscriber.getPeerConnection(), onBitrateUpdate, onResolutionUpdate, true);
+      }
+      catch (e) {
+        //
+      }
     }
   }
   function onUnsubscribeFail (message) {

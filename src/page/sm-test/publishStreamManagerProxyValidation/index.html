@@ -6,71 +6,87 @@
     {{> header-scripts}}
     {{> header-stylesheets}}
     <style>
-      #address-field {
-        padding: 6px;
-        background-color: #ccc;
+      .validation-container {
+        padding-top: 20px;
+        background-color: #eee;
+        text-align: center;
       }
-      #validation-container {
-        padding-bottom: 1.4rem;
+      .validation-form {
+        padding-bottom: 20px;
       }
-      #validation-container > h2 {
-        margin: 0;
-        padding: 1.4rem;
+      .param-field {
+        margin: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-around;
+        position: relative;
+        flex-direction: column;
       }
-      #validation-container > p {
-        max-width: 320px;
-        margin: 0 auto 1.4rem auto;
+      .param-field:nth-child(n+2) {
+        border-top: 1px solid #999;
+        padding-top: 20px;
       }
-      #validation-form > div {
-        margin: 1.2rem;
+      .param-setting {
+        margin: 5px;
       }
-      #validation-form > div > input {
-        margin: 0 0.6rem;
-      }
-      #add-param-btn {
+      .param-setting > input {
+        height: 1.5rem;
         font-size: 1rem;
-        background-color: lightsteelblue
+        padding-left: 10px;
+        margin-left: 10px;
       }
-
-      .hidden {
-        display: none;
+      .validation-subheader {
+        max-width: 400px;
+        margin: 0 auto 20px auto;
+        text-align: center;
+        line-height: 1.5em;
+      }
+      .add-param-btn {
+        font-size: 1rem;
+        background-color: #3580A2;
+        color: #fff;
+        position: absolute;
+        right: 20px;
+        cursor: pointer;
       }
     </style>
   </head>
   <body>
+    {{> top-bar }}
+    {{> navigation isTestPage=true }}
     <div id="app">
-      {{> version }}
       {{> settings-link}}
-      <div class="ice-background">
-      <div class="test-notification">
-        <p>In order to properly run the Stream Manager examples, you will need to configure you server for cluster infrastructure as described in the following documentation:</p>
-        <p><a href="https://www.red5pro.com/docs/server/autoscale/" target="_blank">https://www.red5pro.com/docs/server/autoscale/</a></p>
-		<p>Additionally to use this example stream manager proxy gateway should be enabled.</p>
-      </div>
-      </div>
-      <h1 class="centered">Publish SM Proxy Validation Test</h1>
-      <hr />
-      <div id="validation-container" class="centered ice-background">
-        <h2>Validation Parameters</h2>
-        <p>Provide validation parameters to be used in the Stream Manager request and Origin connection requests.</p>
-        <form id="validation-form" action="#" method="post">
-          <div id="param-field1">
-            <label for="param-name1">Param Name:</label>
-            <input type="text" id="param-name1" name="param_name1">
-            <label for="param-value1">Param Value:</label>
-            <input type="text" id="param-value1" name="param_value1">
-            <button id="add-param-btn" type="button">+</button>
-          </div>
-        </form>
-        <button id="validation-submit-btn">Start Publishing</button>
-      </div>
-      <hr />
-      <h2 class="centered"><em>stream</em>: <span id="stream-title"></span></h2>
-      {{> status-field-publisher}}
-      {{> statistics-field}}
-      <div class="centered"><p id="address-field">Origin Address: N/A</p></div>
-      <div class="centered">
-        <video id="red5pro-publisher" controls autoplay playsinline muted></video>
+      {{> sm-proxy-notification}}
+      {{> test-info testTitle='Publish Stream Manager Proxy Validation Test'}}
+      <div class="stream-section">
+        <div id="validation-container" class="validation-container">
+          <h2>Validation Parameters</h2>
+          <p class="validation-subheader">Provide validation parameters to be used in the Stream Manager request and Origin connection requests.</p>
+          <form id="validation-form" class="validation-form" action="#" method="post">
+            <div id="param-field1" class="param-field">
+              <p class="param-setting">
+                <label for="param-name1">Param Name:</label>
+                <input type="text" id="param-name1" name="param_name1">
+              </p>
+              <p class="param-setting">
+                <label for="param-value1">Param Value:</label>
+                <input type="text" id="param-value1" name="param_value1">
+              </p>
+              <button id="add-param-btn" class="add-param-btn" type="button">+</button>
+            </div>
+          </form>
+          <button id="validation-submit-btn" class="ui-button">Start Publishing</button>
+        </div>
+        {{> status-field-publisher}}
+        {{> statistics-field packets_field='Packets Sent'}}
+        <div class="centered">
+          <p id="address-field" class="address-field">Origin Address: N/A</p>
+        </div>
+        <div class="centered">
+          <video id="red5pro-publisher" class="red5pro-publisher"
+               controls autoplay playsinline muted>
+          </video>
+        </div>
       </div>
     </div>
     {{> body-scripts}}

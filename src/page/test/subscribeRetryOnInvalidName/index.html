@@ -2,31 +2,29 @@
 {{> license}}
 <html>
   <head>
-    {{> meta title='Subscriber Retry On Connection'}}
+    {{> meta title='WebRTC Subscriber Retry On Connection'}}
     {{> header-scripts}}
     {{> header-stylesheets}}
-    <style>
-      #retry-button {
-        margin-top: 1rem;
-      }
-    </style>
   </head>
   <body>
+    {{> top-bar }}
+    {{> navigation isTestPage=true }}
     <div id="app">
-      {{> version }}
       {{> settings-link}}
-      {{> test-info testTitle='Subscriber Retry On Connection'}}
-      {{> status-field-subscriber}}
-      {{> statistics-field}}
-      <div id="video-container" class="centered">
-        <video id="red5pro-subscriber"
-                controls autoplay playsinline
-                class="red5pro-media red5pro-media-background"
-                width="640" height="480">
-        </video>
-      </div>
-      <div class="centered">
-        <button id="retry-button" disabled>Retry Subscription</button>
+      {{> test-info testTitle='Subscriber Retry On Connection (WebRTC)'}}
+      <div class="stream-section">
+        {{> status-field-subscriber}}
+        {{> statistics-field packets_field='Packets Received'}}
+        <div id="video-container" class="centered">
+          <video id="red5pro-subscriber"
+                  controls autoplay playsinline
+                  class="red5pro-subscriber red5pro-media red5pro-media-background"
+                  width="640" height="480">
+          </video>
+        </div>
+        <div>
+          <button id="retry-button" class="ui-button" disabled>Retry Subscription</button>
+        </div>
       </div>
     </div>
     {{> body-scripts}}

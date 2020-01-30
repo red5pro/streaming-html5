@@ -63,6 +63,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   };
   var streamTitle = document.getElementById('stream-title');
   var statisticsField = document.getElementById('statistics-field');
+  var bitrateField = document.getElementById('bitrate-field');
+  var packetsField = document.getElementById('packets-field');
+  var resolutionField = document.getElementById('resolution-field');
   var addressField = document.getElementById('address-field');
   var streamSelect = document.getElementById('stream-select');
   var streamSelectContainer = document.getElementById('stream-select-container');
@@ -103,8 +106,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var frameWidth = 0;
   var frameHeight = 0;
   function updateStatistics (b, p, w, h) {
-    statisticsField.innerText = 'Bitrate: ' + Math.floor(b) + '. Packets Received: ' + p + '.' + ' Resolution: ' + w + ', ' + h + '.';
+    statisticsField.classList.remove('hidden');
+    bitrateField.innerText = b === 0 ? 'N/A' : Math.floor(b);
+    packetsField.innerText = p;
+    resolutionField.innerText = (w || 0) + 'x' + (h || 0);
   }
+
   function onBitrateUpdate (b, p) {
     bitrate = b;
     packetsReceived = p;
@@ -137,12 +144,17 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   function onSubscriberEvent (event) {
     console.log('[Red5ProSubsriber] ' + event.type + '.');
     updateStatusFromEvent(event);
+    if (event.type === 'Subscribe.VideoDimensions.Change') {
+      onResolutionUpdate(event.data.width, event.data.height);
+    }  
   }
   function onSubscribeFail (message) {
+    setQualitySubmitState(false);
     console.error('[Red5ProSubsriber] Subscribe Error :: ' + message);
   }
   function onSubscribeSuccess (subscriber) {
     console.log('[Red5ProSubsriber] Subscribe Complete.');
+    setQualitySubmitState(true);
     if (window.exposeSubscriberGlobally) {
       window.exposeSubscriberGlobally(subscriber);
     }
@@ -154,9 +166,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
   }
   function onUnsubscribeFail (message) {
+    setQualitySubmitState(false);
     console.error('[Red5ProSubsriber] Unsubscribe Error :: ' + message);
   }
   function onUnsubscribeSuccess () {
+    setQualitySubmitState(false);
     console.log('[Red5ProSubsriber] Unsubscribe Complete.');
   }
 
@@ -214,7 +228,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         })
         .catch(function (error) {
             var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
-            console.error('[PublisherStreamManagerTest] :: Error - Could not POST transcode request. ' + jsonError)
+            console.error('[SubscriberStreamManagerTest] :: Error - Could not GET transcode request. ' + jsonError)
             reject(error)
         });
     });
@@ -351,11 +365,25 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
     });
 
-  streamSelectButton.addEventListener('click', function () {
+  function setQualityAndSubscribe() {
     if (streamSelect.value !== 'Select...') {
       startup(streamSelect.value);
     }
-  });
+  }
+
+  function setQualitySubmitState (isSubscribing) {
+    if (isSubscribing) {
+      streamSelectButton.removeEventListener('click', setQualityAndSubscribe, false);
+      streamSelectButton.innerText = 'Stop Subscribing';
+      streamSelectButton.addEventListener('click', unsubscribe, false);
+    } else {
+      updateStatistics(0, 0, 0, 0);
+      streamSelectButton.removeEventListener('click', unsubscribe, false);
+      streamSelectButton.innerText = 'Start Subscribing';
+      streamSelectButton.addEventListener('click', setQualityAndSubscribe, false);
+    }
+  }
+  setQualitySubmitState(false);
 
   // Clean up.
   var shuttingDown = false;

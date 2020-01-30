@@ -34,31 +34,32 @@ gulp.task('compile', function (cb) {
 
 });
 
-gulp.task('move-scripts', ['compile'], function (cb) {
+gulp.task('move-scripts', gulp.series('compile', function (cb) {
 
   gulp.src([path.join(sourceDirectory, 'page', '**', '*.js'), path.join(sourceDirectory, 'page', '**', '*.swf')])
     .pipe(gulp.dest(buildDirectory))
     .on('end', cb);
 
-});
+}));
 
-gulp.task('move-static', ['compile', 'move-scripts'], function (cb) {
+gulp.task('move-static', gulp.series('move-scripts', function (cb) {
 
   gulp.src(path.join(staticDirectory, '**'))
     .pipe(replace('$VERSION', version))
     .pipe(gulp.dest(buildDirectory))
     .on('end', cb);
 
-});
+}));
 
-gulp.task('build', ['compile', 'move-scripts', 'move-static'], function (cb) {
+gulp.task('build', gulp.series('move-static', function (cb) {
   cb();
-});
+}));
 
-gulp.task('build:webapp', function (cb) { // eslint-disable-line no-unused-vars
+gulp.task('set-build-directory', function (cb) {
   buildDirectory = webappBuildDirectory;
-  gulp.start('build');
+  cb()
 });
+gulp.task('build:webapp', gulp.series(['set-build-directory', 'build']));
 
 gulp.task('bump-version', function() {
   var versionType = process.env.BUMP !== undefined ? process.env.BUMP : 'patch';

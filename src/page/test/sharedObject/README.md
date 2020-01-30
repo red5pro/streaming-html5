@@ -66,25 +66,32 @@ The `SharedObject` instance dispatches the following events:
 
 Remote Shared Objects use JSON for transmission, meaning that its structure is primarily up to your discretion. The base object will always be a dictionary with string keys, while values can be strings, numbers, booleans, arrays, or other dictionaries - with the same restriction on sub-objects.
 
-This example simply uses a number to keep a count of how many people are connected to the object. As seen in the `PROPERTY_UPDATE` handler, value can be accessed from the object by name, and set using `setProperty`:
+This example simply uses a `color` property to update and set the text color of messages across all clients connected to the same shared object. 
+
+The `color` value can be set to the Shared Object using `setProperty`:
+
+```js
+colorPicker.addEventListener('input', handleColorChangeRequest);
+
+function handleColorChangeRequest (event) {
+  if (so) {
+    so.setProperty('color', event.target.value);
+  }
+}
+```
+
+As seen in the `PROPERTY_UPDATE` handler, value can be accessed from the object by name:
 
 ```js
 so.on(red5pro.SharedObjectEventTypes.PROPERTY_UPDATE, function (event) {
-  if (event.data.hasOwnProperty('count')) {
-    appendMessage('User count is: ' + event.data.count + '.');
-    if (!hasRegistered) {
-      hasRegistered = true;
-      so.setProperty('count', parseInt(event.data.count) + 1);
-    }
-  }
-  else if (!hasRegistered) {
-    hasRegistered = true;
-    so.setProperty('count', 1);
+  if (event.data.hasOwnProperty('color')) {
+    soField.style.color = event.data.color;
+    colorPicker.value = event.data.color;
   }
 });
 ```
 
-[index.js #161](index#L161)
+[index.js #206](index#L206)
 
 ## Messages
 
