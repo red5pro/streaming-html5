@@ -509,8 +509,6 @@ The following events are common across all Publisher implementations from the Re
 The following events are specific to the `RTCPublisher` implementation and accessible on the global `red5prosdk` object from the `RTCPublisherEventTypes` attribute. These events are dispatched during the lifecycle of thre trickle ICE functionality required to start a broadcast:
 | Access | Name | Meaning |
 | :--- | :---: | :--- |
-| CONSTRAINTS_ACCEPTED | 'WebRTC.MediaConstraints.Accepted' | When constraints have been accepted from the internal request to `getUserMedia`. The `data` property of this event contains a `requested` object detailing the constraints used in the `getUserMedia` request and an `accepted` object which is the current constraint settings for the media. |
-| CONSTRAINTS_REJECTED | 'WebRTC.MediaConstraints.Rejected' | Then constraints have been rejected from the internal request to `getUserMedia`. The `data` property of this event contains a `constraints` object detailing the constraints that were used and rejected from `getUserMedia`. |
 | MEDIA_STREAM_AVAILABLE | 'WebRTC.MediaStream.Available' | When the negotation process has returned a `MediaStream` object to use. |
 | PEER_CONNECTION_AVAILABLE | 'WebRTC.PeerConnection.Available' | When the negotation process has produced a valid `PeerConnection`. |
 | OFFER_START | 'WebRTC.Offer.Start' | When the publisher requests to send an offer using a `SessionDescription` on the `PeerConnection`. |

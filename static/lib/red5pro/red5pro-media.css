@@ -131,7 +131,7 @@ input[type=range][orient=vertical] {
   width: 24px;
   height: 24px;
   display: inline-block;
-  background-size: contain;
+  background-size: 100% 100%;
   background-position: 50% 50%;
   background-color: transparent;
   background-repeat: no-repeat;
