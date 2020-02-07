@@ -51,6 +51,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   var targetSubscriber1;
   var targetSubscriber2;
+  var statisticsFields = document.getElementsByClassName('statistics-field');
 
   var updateStatusFromEvent = window.red5proHandleSubscriberEvent; // defined in src/template/partial/status-field-subscriber.hbs
   var instanceId = Math.floor(Math.random() * 0x10000).toString(16);
@@ -59,11 +60,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   var protocol = serverSettings.protocol;
   var isSecure = protocol === 'https';
-
-  var bitrate = [0, 0];
-  var packetsReceived = [0, 0];
-  var frameWidth = [0, 0];
-  var frameHeight = [0, 0];
 
   // Determines the ports and protocols based on being served over TLS.
   function getSocketLocationFromProtocol () {
@@ -94,6 +90,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       if(typeof updateStatusFromEvent === 'function'){
         updateStatusFromEvent(event, document.getElementById(field));
       }
+      if (event.type === 'Subscribe.VideoDimensions.Change') {
+        var index = field.indexOf('stream1') !== -1 ? 0 : 1;
+        var resolutionField = statisticsFields[1].getElementsByClassName('resolution-field')[index];
+        resolutionField.text = event.data.width + 'x' + event.data.height;
+      }
     }
   }
   function onSubscribeFail (message) {
@@ -101,6 +102,39 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
   function onSubscribeSuccess (subscriber, id) {
     console.log('[Red5ProSubsriber] Subscribe ' + id + ' Complete.');
+    (function (sub, index) {
+      if (sub.getType().toLowerCase() === 'rtc') {
+        try {
+          var bitrate = 0;
+          var packets = 0;
+          var frameWidth = 0;
+          var frameHeight = 0;
+          var bitrateField = statisticsFields[index].getElementsByClassName('bitrate-field')[0];
+          var packetsField = statisticsFields[index].getElementsByClassName('packets-field')[0];
+          var resolutionField = statisticsFields[index].getElementsByClassName('resolution-field')[0];
+
+          var updateStatisticsField = function (b, p, w, h) {
+            statisticsFields[index].classList.remove('hidden');
+            bitrateField.innerText =  Math.floor(b);
+            packetsField.innerText = p;
+            resolutionField.innerText = w + 'x' + h;
+          }
+          var onBitrateUpdate = function (b, p) {
+            bitrate = b;
+            packets = p
+            updateStatisticsField(bitrate, packets, frameWidth, frameHeight);
+          }
+          var onResolutionUpdate = function (w, h) {
+            frameWidth = w;
+            frameHeight = h;
+            updateStatisticsField(bitrate, packets, frameWidth, frameHeight);
+          }
+          window.trackBitrate(sub.getPeerConnection(), onBitrateUpdate, onResolutionUpdate, true, true);
+        } catch (e) {
+          //
+        }
+      }
+    })(subscriber, id);
   }
   function onUnsubscribeFail (message) {
     console.error('[Red5ProSubsriber] Unsubscribe Error :: ' + message);

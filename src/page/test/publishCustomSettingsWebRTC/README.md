@@ -21,6 +21,7 @@ Settings included for customization:
 
 | Name | Usage |
 |--- |--- |
+| Camera Device | The Camera Device to broadcast with. |
 | Camera Width | The requested Camera width to broadcast. |
 | Camera Height | The requested Camera height to broadcast. |
 | Camera Framerate | The frequested framerate at which to broadcast. |

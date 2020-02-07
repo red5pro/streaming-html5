@@ -64,6 +64,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var instanceId = Math.floor(Math.random() * 0x10000).toString(16);
   var streamTitle = document.getElementById('stream-title');
   var statisticsField = document.getElementById('statistics-field');
+  var bitrateField = document.getElementById('bitrate-field');
+  var packetsField = document.getElementById('packets-field');
+  var resolutionField = document.getElementById('resolution-field');
+
   var addressField = document.getElementById('address-field');
   var loginForm = document.getElementById('login-form');
   var usernameField = document.getElementById('username-field');
@@ -83,7 +87,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var frameWidth = 0;
   var frameHeight = 0;
   function updateStatistics (b, p, w, h) {
-    statisticsField.innerText = 'Bitrate: ' + Math.floor(b) + '. Packets Received: ' + p + '.' + ' Resolution: ' + w + ', ' + h + '.';
+    statisticsField.classList.remove('hidden');
+    bitrateField.innerText = b === 0 ? 'N/A' : Math.floor(b);
+    packetsField.innerText = p;
+    resolutionField.innerText = (w || 0) + 'x' + (h || 0);
   }
 
   function onBitrateUpdate (b, p) {
@@ -135,6 +142,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   function onSubscriberEvent (event) {
     console.log('[Red5ProSubsriber] ' + event.type + '.');
     updateStatusFromEvent(event);
+    if (event.type === 'Subscribe.VideoDimensions.Change') {
+      onResolutionUpdate(event.data.width, event.data.height);
+    }  
   }
   function onSubscribeFail (message) {
     console.error('[Red5ProSubsriber] Subscribe Error :: ' + message);
@@ -195,29 +205,29 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     var host = jsonResponse.serverAddress;
     var name = jsonResponse.name;
     var app = jsonResponse.scope;
-	
-	if (tokenCheckBox.checked == true)
-	{
-		console.log("Token required. Creating auth object");
-		proxyAuthConfiguration = {
-		  host: host,
-		  app: app,
-		  username: usernameField.value,
-		  password: passwordField.value,
-		  token: tokenField.value
-		};
-	}
-	else
-	{
-		console.log("Token not required. Creating auth object");
-		proxyAuthConfiguration = {
-		  host: host,
-		  app: app,
-		  username: usernameField.value,
-		  password: passwordField.value
-		};
-	}
-	
+  
+  if (tokenCheckBox.checked == true)
+  {
+    console.log("Token required. Creating auth object");
+    proxyAuthConfiguration = {
+      host: host,
+      app: app,
+      username: usernameField.value,
+      password: passwordField.value,
+      token: tokenField.value
+    };
+  }
+  else
+  {
+    console.log("Token not required. Creating auth object");
+    proxyAuthConfiguration = {
+      host: host,
+      app: app,
+      username: usernameField.value,
+      password: passwordField.value
+    };
+  }
+  
     var config = Object.assign({}, configuration, defaultConfiguration);
     var rtcConfig = Object.assign({}, config, {
       host: configuration.host,
@@ -240,8 +250,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       swfobjectURL: '../../lib/swfobject/swfobject.js',
       productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
     })
-	Object.assign(rtmpConfig, proxyAuthConfiguration);
-	
+  Object.assign(rtmpConfig, proxyAuthConfiguration);
+  
     var hlsConfig = Object.assign({}, config, {
       host: host,
       app: app,
@@ -350,7 +360,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   function startup () {
-	  loginForm.classList.add('hidden'); 
+    loginForm.classList.add('hidden'); 
     // Kick off.
     requestEdge(configuration)
       .then(respondToEdge)
@@ -366,10 +376,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     {
         alert("Error: Token field cannot be empty");
     }
-	else
-	{
-		startup();
-	}
+  else
+  {
+    startup();
+  }
   });
   
 

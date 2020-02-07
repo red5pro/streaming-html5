@@ -66,14 +66,14 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   function assignStorage () {
     json = {
       "version": build_version,
-      "host": "localhost",
+      "host": window.location.hostname,
       "port": 8554, // rtsp
       "stream1": "stream1",
       "stream2": "stream2",
       "app": "live",
       "proxy": "streammanager",
       "streamMode": "live",
-      "cameraWidth": 854,
+      "cameraWidth": 640,
       "cameraHeight": 480,
       "embedWidth": "100%",
       "embedHeight": 480,
@@ -98,7 +98,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           },
           "frameRate": {
             "min": 8,
-            "max": 24
+            "max": 30
           }
         }
       },

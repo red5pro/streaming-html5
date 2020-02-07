@@ -41,6 +41,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         return;
       }
       switch (event.type) {
+        case 'ERROR':
+          inFailedState = true;
+          status = ['ERROR', event.data].join(': ');
+          break;
         case pubTypes.CONNECTION_CLOSED:
           status = 'Connection closed.';
           window.untrackBitrate();
@@ -67,7 +71,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           inFailedState = true;
           break;
         case rtcTypes.MEDIA_STREAM_AVAILABLE:
-          status = 'Stream available...';
+          status = 'Media Source available...';
           inFailedState = false;
           break;
         case rtcTypes.PEER_CONNECTION_AVAILABLE:
@@ -81,6 +85,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           break;
         case rtcTypes.ICE_TRICKLE_COMPLETE:
           status = 'Negotiation complete. Waiting Publish Start...';
+          break;
+        case pubTypes.UNPUBLISH_SUCCESS:
+          status = "Unpublished."
           break;
       }
     if (status && status.length > 0) {
