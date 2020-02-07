@@ -75,28 +75,38 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           break;
         case rtcTypes.OFFER_START:
           status = 'Begin offer...';
+          inFailedState = false;
           break;
         case rtcTypes.OFFER_END:
           status = 'Offer accepted...';
+          inFailedState = false;
           break;
         case rtcTypes.ANSWER_START:
           status = 'Sending answer...';
           answer = JSON.stringify(event.data, null, 2);
           console.log('[SubscriberStatus] ' + event.type + ': ' + answer);
+          inFailedState = false;
           break;
         case rtcTypes.ANSWER_END:
           status = 'Answer received...';
+          inFailedState = false;
           break;
         case rtcTypes.CANDIDATE_START:
           status = 'Sending candidate...';
           candidate = JSON.stringify(event.data, null, 2);
           console.log('[SubscriberStatus] ' + event.type + ': ' + candidate);
+          inFailedState = false;
           break;
         case rtcTypes.CANDIDATE_END:
           status = 'Candidate received...';
+          inFailedState = false;
           break;
         case rtcTypes.ICE_TRICKLE_COMPLETE:
           status = 'Negotiation complete. Waiting Subscription Start...';
+          inFailedState = false;
+          break;
+        default:
+          inFailedState = false;
           break;
     }
     if (status && status.length > 0) {
