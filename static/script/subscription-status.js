@@ -31,9 +31,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
     // Displays in status field based on events from subscriber instance.
     function updateStatusFromEvent (event, statusField) {
-      if (inFailedState) {
-        return true;
-      }
+      // if (inFailedState) {
+      //   return true;
+      // }
+      var wasInFailedState = inFailedState;
+
       statusField = typeof statusField !== 'undefined' ? statusField : field;
       var subTypes = window.red5prosdk.SubscriberEventTypes;
       var rtcTypes = window.red5prosdk.RTCSubscriberEventTypes;
@@ -108,6 +110,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         default:
           inFailedState = false;
           break;
+    }
+    if(wasInFailedState && inFailedState){
+      return true;
     }
     if (status && status.length > 0) {
       statusField.innerText = ['STATUS', status].join(': ');
