@@ -54,10 +54,6 @@
           <label class="settings-label">Stream2 Name:</label>
           <input id="stream2-field" name="stream2-field" value="stream2">
         </p>
-        <p class="settings-field settings-collapsable">
-        <label class="sregion-label">Region:</label>
-        <input id="region-field" name="region-field" value="region">
-        </p>
         <hr class="paddedHR" />
         <h2 class="centered">WebRTC Specific</h2>
         <p class="settings-field settings-collapsable">
@@ -110,6 +106,10 @@
         <p class="settings-field settings-collapsable">
           <label class="settings-label">Stream Manager Access Token:</label>
           <input id="sm-access-field" name="sm-access-field" placeholder="e.g., abc123">
+        </p>
+        <p class="settings-field settings-collapsable">
+        <label class="sm-region-label">Region:</label>
+        <input id="sm-region-field" name="sm-region-field" value="sm-region">
         </p>
         <p class="settings-field settings-collapsable">
           <label class="settings-label">Stream Manager API Level:</label>
@@ -178,7 +178,6 @@
         var appField = document.getElementById('app-field');
         var stream1Field = document.getElementById('stream1-field');
         var stream2Field = document.getElementById('stream2-field');
-        var regionField = document.getElementById('region-field');
         var iceField = document.getElementById('ice-field');
         var iceUsername = document.getElementById('ice-username');
         var iceCredential = document.getElementById('ice-credential');
@@ -193,6 +192,7 @@
         var audioField = document.getElementById('audio-active-field');
         var muteAutoplayField = document.getElementById('mute-autoplay-field');
         var streamSwapButton = document.getElementById('stream-swap-btn');
+        var smRegionField = document.getElementById('sm-region-field');
         var smAccessField = document.getElementById('sm-access-field');
         var smAPIField = document.getElementById('sm-api-field');
         var authEnabledField = document.getElementById('auth-enabled-field');
@@ -232,11 +232,6 @@
         stream2Field.addEventListener('blur', function () {
           configuration.stream2 = stream2Field.value;
           seal(configuration);
-        });
-
-        regionField.addEventListener('blur', function () {
-        configuration.region = regionField.value;
-        seal(configuration);
         });
 
         iceField.addEventListener('blur', function () {
@@ -339,6 +334,12 @@
           seal(configuration);
         });
 
+
+        smRegionField.addEventListener('blur', function () {
+        configuration.streamManagerRegion = smRegionField.value;
+        seal(configuration);
+        });
+
         smAPIField.addEventListener('blur', function () {
           configuration.streamManagerAPI = smAPIField.value;
           seal(configuration);
@@ -347,7 +348,7 @@
         streamSwapButton.addEventListener('click', function () {
           var stream1Value = stream1Field.value;
           var stream2Value = stream2Field.value;
-          configuration.stream1 = stream2Value;
+          configuration.stream1 = stream2Value;:0
           configuration.stream2 = stream1Value;
           seal(configuration);
           populate(configuration);
@@ -358,7 +359,6 @@
           appField.value = config.app;
           stream1Field.value = config.stream1;
           stream2Field.value = config.stream2;
-          regionField.value = config.region;
           iceField.value = config.rtcConfiguration.iceServers[0].urls;
           iceUsername.value = config.rtcConfiguration.iceServers[0].username || '';
           iceCredential.value = config.rtcConfiguration.iceServers[0].credential || '';
@@ -368,6 +368,7 @@
           videoField.checked = config.useVideo ? true : false;
           audioField.checked = config.useAudio ? true : false;
           muteAutoplayField.checked = config.muteOnAutoplayRestriction ? true : false;
+          smRegionField.value = config.streamManagerRegion;
           smAccessField.value = config.streamManagerAccessToken;
           smAPIField.value = config.streamManagerAPI;
           authEnabledField.checked = config.authentication.enabled ? true : false;
