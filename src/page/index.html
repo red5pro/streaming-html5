@@ -67,7 +67,7 @@
         <p class="settings-field settings-collapsable">
           <label class="settings-label">Candidate Pool Size:</label>
           <input type="number" id="rtc-pool-size" name="rtc-pool-size"
-            min="0" 
+            min="0"
             value="0"
             style="min-width: 120px">
         </p>
@@ -110,6 +110,10 @@
         <p class="settings-field settings-collapsable">
           <label class="settings-label">Stream Manager API Level:</label>
           <input id="sm-api-field" name="sm-api-field" placeholder="e.g., 3.1">
+        </p>
+        <p class="settings-field settings-collapsable">
+        <label class="settings-label">Region:</label>
+        <input id="sm-region-field" name="sm-region-field" value="sm-region">
         </p>
         <hr class="paddedHR" />
         <h2 class="centered">Authentication</h2>
@@ -188,6 +192,7 @@
         var audioField = document.getElementById('audio-active-field');
         var muteAutoplayField = document.getElementById('mute-autoplay-field');
         var streamSwapButton = document.getElementById('stream-swap-btn');
+        var smRegionField = document.getElementById('sm-region-field');
         var smAccessField = document.getElementById('sm-access-field');
         var smAPIField = document.getElementById('sm-api-field');
         var authEnabledField = document.getElementById('auth-enabled-field');
@@ -329,6 +334,12 @@
           seal(configuration);
         });
 
+
+        smRegionField.addEventListener('blur', function () {
+        configuration.streamManagerRegion = smRegionField.value;
+        seal(configuration);
+        });
+
         smAPIField.addEventListener('blur', function () {
           configuration.streamManagerAPI = smAPIField.value;
           seal(configuration);
@@ -357,6 +368,7 @@
           videoField.checked = config.useVideo ? true : false;
           audioField.checked = config.useAudio ? true : false;
           muteAutoplayField.checked = config.muteOnAutoplayRestriction ? true : false;
+          smRegionField.value = config.streamManagerRegion;
           smAccessField.value = config.streamManagerAccessToken;
           smAPIField.value = config.streamManagerAPI;
           authEnabledField.checked = config.authentication.enabled ? true : false;
