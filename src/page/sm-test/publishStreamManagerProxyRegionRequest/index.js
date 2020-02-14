@@ -154,7 +154,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     var portURI = (port.length > 0 ? ':' + port : '');
     var baseUrl = isSecure ? protocol + '://' + host : protocol + '://' + host + portURI;
     var apiVersion = configuration.streamManagerAPI || '3.1';
-    var url = baseUrl + '/streammanager/api/' + apiVersion + '/event/' + app + '/' + streamName + '?action=broadcast' + '&region=' region;
+    var region = configuration.streamManagerRegion;
+    var url = baseUrl + '/streammanager/api/' + apiVersion + '/event/' + app + '/' + streamName + '?action=broadcast' + '&region=' + region;
       return new Promise(function (resolve, reject) {
         fetch(url)
           .then(function (res) {
