@@ -54,6 +54,10 @@
           <label class="settings-label">Stream2 Name:</label>
           <input id="stream2-field" name="stream2-field" value="stream2">
         </p>
+        <p class="settings-field settings-collapsable">
+        <label class="sregion-label">Region:</label>
+        <input id="region-field" name="region-field" value="region">
+        </p>
         <hr class="paddedHR" />
         <h2 class="centered">WebRTC Specific</h2>
         <p class="settings-field settings-collapsable">
@@ -67,7 +71,7 @@
         <p class="settings-field settings-collapsable">
           <label class="settings-label">Candidate Pool Size:</label>
           <input type="number" id="rtc-pool-size" name="rtc-pool-size"
-            min="0" 
+            min="0"
             value="0"
             style="min-width: 120px">
         </p>
@@ -174,6 +178,7 @@
         var appField = document.getElementById('app-field');
         var stream1Field = document.getElementById('stream1-field');
         var stream2Field = document.getElementById('stream2-field');
+        var regionField = document.getElementById('region-field');
         var iceField = document.getElementById('ice-field');
         var iceUsername = document.getElementById('ice-username');
         var iceCredential = document.getElementById('ice-credential');
@@ -227,6 +232,11 @@
         stream2Field.addEventListener('blur', function () {
           configuration.stream2 = stream2Field.value;
           seal(configuration);
+        });
+
+        regionField.addEventListener('blur', function () {
+        configuration.region = regionField.value;
+        seal(configuration);
         });
 
         iceField.addEventListener('blur', function () {
@@ -348,6 +358,7 @@
           appField.value = config.app;
           stream1Field.value = config.stream1;
           stream2Field.value = config.stream2;
+          regionField.value = config.region;
           iceField.value = config.rtcConfiguration.iceServers[0].urls;
           iceUsername.value = config.rtcConfiguration.iceServers[0].username || '';
           iceCredential.value = config.rtcConfiguration.iceServers[0].credential || '';
