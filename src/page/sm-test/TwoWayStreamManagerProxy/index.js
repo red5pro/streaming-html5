@@ -213,9 +213,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   function requestOrigin(streamName, action){
     var host = configuration.host;
     var app = configuration.app;
-    var port = serverSettings.httpport.toString();
-    var portURI = (port.length > 0 ? ':' + port : '');
-    var baseUrl = isSecure ? protocol + '://' + host : protocol + '://' + host + portURI;
+    var port = serverSettings.httpport;
+    var baseUrl = protocol + '://' + host + ':' + port;
     var apiVersion = configuration.streamManagerAPI || '2.0';
     var url = baseUrl + '/streammanager/api/' + apiVersion + '/event/' + app + '/' + streamName + '?action=' + action;
     return new Promise(function (resolve, reject) {
@@ -306,9 +305,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   function beginStreamListCall () {
     var host = configuration.host;
-    var port = serverSettings.hlsport.toString();
-    var portURI = (port.length > 0 ? ':' + port : '');
-    var baseUrl = isSecure ? protocol + '://' + host : protocol + '://' + host + portURI;
+    var port = serverSettings.httpport;
+    var baseUrl = protocol + '://' + host + ':' + port;
     var url = baseUrl + '/streammanager/api/2.0/event/list';
     fetch(url)
       .then(function (res) {

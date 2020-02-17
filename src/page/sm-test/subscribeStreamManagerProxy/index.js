@@ -176,9 +176,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   function requestEdge (configuration) {
     var host = configuration.host;
     var app = configuration.app;
-    var port = proxyLocal ? '' : serverSettings.httpport.toString();
-    var portURI = (port.length > 0 ? ':' + port : '');
-    var baseUrl = isSecure || proxyLocal ? protocol + '://' + host : protocol + '://' + host + portURI;
+    var port = serverSettings.httpport;
+    var baseUrl = protocol + '://' + host + ':' + port;
     var streamName = configuration.stream1;
     var apiVersion = configuration.streamManagerAPI || '3.1';
     var url = baseUrl + '/streammanager/api/' + apiVersion + '/event/' + app + '/' + streamName + '?action=subscribe';

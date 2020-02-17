@@ -71,7 +71,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   streamTitle.innerText = configuration.stream1;
 
   var protocol = serverSettings.protocol;
-  var isSecure = protocol == 'https';
   var accessToken = configuration.streamManagerAccessToken;
   var authName = '';
   var authPass = '';
@@ -94,9 +93,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     var host = configuration.host;
     var app = configuration.app;
     var streamName = configuration.stream1;
-    var port = serverSettings.httpport.toString();
-    var portURI = (port.length > 0 ? ':' + port : '');
-    var baseUrl = isSecure ? protocol + '://' + host : protocol + '://' + host + portURI;
+    var port = serverSettings.httpport;
+    var baseUrl = protocol + '://' + host + ':' + port;
     var apiVersion = configuration.streamManagerAPI || '3.1';
     var url = baseUrl + '/streammanager/api/' + apiVersion + '/admin/event/meta/' + app + '/' + streamName + '?accessToken=' + accessToken;
     return new Promise(function (resolve, reject) {
@@ -133,9 +131,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     var host = configuration.host;
     var app = configuration.app;
     var streamName = configuration.stream1;
-    var port = serverSettings.httpport.toString();
-    var portURI = (port.length > 0 ? ':' + port : '');
-    var baseUrl = isSecure ? protocol + '://' + host : protocol + '://' + host + portURI;
+    var port = serverSettings.httpport;
+    var baseUrl = protocol + '://' + host + ':' + port;
     var apiVersion = configuration.streamManagerAPI || '3.1';
     var url = baseUrl + '/streammanager/api/' + apiVersion + '/event/' + app + '/' + streamName + '?action=broadcast';
       return new Promise(function (resolve, reject) {
