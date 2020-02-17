@@ -269,34 +269,41 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     cameraSelect.innerHTML = options.join(' ');
   }
 
-  function establishInitialStream () {
-    var stream;
-    var constraints = getUserMediaConfiguration();
+  function clearEstablishedStream () {
     var pubElement = document.getElementById('red5pro-publisher');
     if (pubElement.srcObject) {
       pubElement.srcObject.getTracks().forEach(function (track) {
         track.stop();
       });
+      return true;
     }
-    if (configuration.useVideo) {
-      delete constraints.video.frameRate;
-    }
-    navigator.mediaDevices.getUserMedia(constraints)
-      .then(function (mediastream) {
-        stream = mediastream;
-        return navigator.mediaDevices.enumerateDevices()
-      })
-      .then(function (devices) {
-        listDevices(devices);
-        stream.getVideoTracks().forEach(function (track) {
-          cameraSelect.value = track.getSettings().deviceId;
+    return false;
+  }
+
+  function establishInitialStream (deviceId) {
+    var stream;
+    var constraints = {audio:false, video: (deviceId ? { deviceId: {exact: deviceId} } : true) };
+    var pubElement = document.getElementById('red5pro-publisher');
+    var delay = clearEstablishedStream() ? 200 : 0;
+    var t = setTimeout(function () {
+      clearTimeout(t);
+      navigator.mediaDevices.getUserMedia(constraints)
+        .then(function (mediastream) {
+          stream = mediastream;
+          return navigator.mediaDevices.enumerateDevices()
+        })
+        .then(function (devices) {
+          listDevices(devices);
+          stream.getVideoTracks().forEach(function (track) {
+            cameraSelect.value = track.getSettings().deviceId;
+          });
+          pubElement.srcObject = stream;
+        })
+        .catch(function (error) {
+          console.error(error);
+          showConstraintError(error.message, error.constraint || 'N/A');
         });
-        document.getElementById('red5pro-publisher').srcObject = stream;
-      })
-      .catch(function (error) {
-        console.error(error);
-        showConstraintError(error.message, error.constraint || 'N/A');
-      });
+    }, delay);
   }
 
   function onCameraSelect () {
@@ -440,24 +447,27 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var retryCount = 0;
   var retryLimit = 3;
   function respondToOrigin (response) {
-    determinePublisher(response)
-      .then(function (publisherImpl) {
-        streamTitle.innerText = configuration.stream1;
-        targetPublisher = publisherImpl;
-        return targetPublisher.publish()
-      })
-      .then(function () {
-        onPublishSuccess(targetPublisher);
-      })
-      .catch(function (error) {
-        var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
-        console.error('[Red5ProPublisher] :: Error in access of Origin IP: ' + jsonError);
-        updateStatusFromEvent({
-          type: red5prosdk.PublisherEventTypes.CONNECT_FAILURE
+    var delay = clearEstablishedStream() ? 200 : 0;
+    var t = setTimeout(function (){
+      clearTimeout(t);
+      determinePublisher(response)
+        .then(function (publisherImpl) {
+          streamTitle.innerText = configuration.stream1;
+          targetPublisher = publisherImpl;
+          return targetPublisher.publish()
+        })
+        .then(function () {
+          onPublishSuccess(targetPublisher);
+        })
+        .catch(function (error) {
+          var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
+          console.error('[Red5ProPublisher] :: Error in access of Origin IP: ' + jsonError);
+          updateStatusFromEvent({
+            type: red5prosdk.PublisherEventTypes.CONNECT_FAILURE
+          });
+          onPublishFail(jsonError);
         });
-        onPublishFail(jsonError);
-      });
-
+    }, delay);
   }
 
   function respondToOriginFailure (error) {
@@ -488,7 +498,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   function restart() {
-    establishInitialStream();
+    establishInitialStream((cameraSelect.value && cameraSelect.value.length > 0) ? cameraSelect.value : undefined);
   }
 
   navigator.mediaDevices.enumerateDevices()
