@@ -83,7 +83,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       updateStatusFromEvent(event);
     }
     if (event.type === 'Subscribe.VideoDimensions.Change') {
-      onResolutionUpdate(event.data.width, event.data.height);
+      //onResolutionUpdate(event.data.width, event.data.height);
     }
   }
   function onSubscribeFail (message) {
