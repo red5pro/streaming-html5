@@ -13,9 +13,13 @@ LICENSE=$(realpath scripts/LICENSE.js)
 # check to see if already has license...
 echo "Traversing ${SRC}..."
 while IFS= read -r -d '' file; do
+        b=$(basename $file)
         if grep -q "$STRING" "$file"; then
                 echo "$file"
                 echo "Already has license..."
+        elif [ "$b" == "renderer-360.js" ]
+        then
+                echo "Skipping... $b"
         else
                 cat "$LICENSE" "$file" > $$.tmp && mv $$.tmp "$file"
         fi
