@@ -326,19 +326,23 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     });
   }
 
-  function determinePublisher () {
-
+  function determinePublisher (jsonResponse) {
+    var host = jsonResponse.serverAddress;
+    var app = jsonResponse.scope;
     var config = Object.assign({},
                       configuration,
-                      {
-                        streamMode: configuration.recordBroadcast ? 'record' : 'live'
-                      },
                       getAuthenticationParams(),
                       getUserMediaConfiguration());
 
     var rtcConfig = Object.assign({}, config, {
                       protocol: getSocketLocationFromProtocol().protocol,
                       port: getSocketLocationFromProtocol().port,
+                      streamName: streamName,
+                      app: app, //configuration.proxy,
+                      connectionParams: {
+                        host: host,
+                        app: app
+                      },
                       bandwidth: {
                         video: 256
                       },
@@ -355,8 +359,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
                             exact: 15
                           }
                         }
-                      },
-                      streamName: streamName
+                      }
                    });
 
     var publisher = new red5prosdk.RTCPublisher();
@@ -403,19 +406,89 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     });
   }
 
-  // Kick off.
-  determinePublisher()
-    .then(function (publisherImpl) {
-      targetPublisher = publisherImpl;
-      targetPublisher.on('*', onPublisherEvent);
-      return targetPublisher.preview();
-    })
-    .catch(function (error) {
+  function requestOrigin (configuration) {
+    var host = configuration.host;
+    var app = configuration.app;
+    var port = serverSettings.httpport;
+    var baseUrl = protocol + '://' + host + ':' + port;
+    var apiVersion = configuration.streamManagerAPI || '3.1';
+    var url = baseUrl + '/streammanager/api/' + apiVersion + '/event/' + app + '/' + streamName + '?action=broadcast';
+      return new Promise(function (resolve, reject) {
+        fetch(url)
+          .then(function (res) {
+            if(res.status == 200){
+                if (res.headers.get("content-type") && res.headers.get("content-type").toLowerCase().indexOf("application/json") >= 0) {
+                    return res.json();
+                }
+                else {
+                  throw new TypeError('Could not properly parse response.');
+                }
+            } else {
+              var msg = "";
+              if(res.status == 400) {
+                msg = "An invalid request was detected";
+              } else if(res.status == 404) {
+                msg = "Data for the request could not be located/provided.";
+              } else if(res.status == 500) {
+                msg = "Improper server state error was detected.";
+              } else {
+                msg = "Unkown error";
+              }
+              throw new TypeError(msg);
+            }
+          })
+          .then(function (json) {
+            resolve(json);
+          })
+          .catch(function (error) {
+            var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
+            console.error('[PublisherStreamManagerTest] :: Error - Could not request Origin IP from Stream Manager. ' + jsonError)
+            reject(error)
+          });
+    });
+  }
+
+  var retryCount = 0;
+  var retryLimit = 3;
+  function respondToOrigin (response) {
+    determinePublisher(response)
+      .then(function (publisherImpl) {
+        targetPublisher = publisherImpl;
+        targetPublisher.on('*', onPublisherEvent);
+        return targetPublisher.preview();
+      })
+      .catch(function (error) {
+        var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
+        console.error('[Red5ProPublisher] :: Error in access of Origin IP: ' + jsonError);
+        updateStatusFromEvent({
+          type: red5prosdk.PublisherEventTypes.CONNECT_FAILURE
+        });
+        onPublishFail(jsonError);
+      });
+  }
+
+  function respondToOriginFailure (error) {
+    if (retryCount++ < retryLimit) {
+      var retryTimer = setTimeout(function () {
+        clearTimeout(retryTimer);
+        startup();
+      }, 1000);
+    }
+    else {
       var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
-      console.error('[Red5ProPublisher] :: Error in publishing - ' + jsonError);
-      console.error(error);
-      onPublishFail(jsonError);
-     });
+      updateStatusFromEvent({
+        type: red5prosdk.PublisherEventTypes.CONNECT_FAILURE
+      });
+      console.error('[Red5ProPublisher] :: Retry timeout in publishing - ' + jsonError);
+    }
+  }
+
+  function startup () {
+    requestOrigin(configuration)
+      .then(respondToOrigin)
+      .catch(respondToOriginFailure);
+  }
+  startup();
 
   var shuttingDown = false;
   function shutdown () {
