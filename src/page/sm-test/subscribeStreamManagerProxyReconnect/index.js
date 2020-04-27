@@ -146,7 +146,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     updateStatusFromEvent(event);
     if (event.type === 'Subscribe.VideoDimensions.Change') {
       onResolutionUpdate(event.data.width, event.data.height);
-    } else if (event.type === 'Subscribe.Unpublish' ||
+    } else if (event.type === 'Subscribe.Play.Unpublish' ||
       event.type === 'Subscribe.Connection.Closed') {
       setConnected(false);
     }

@@ -120,11 +120,54 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     decoy.unsubscribe();
   }
 
+  function requestEdge (configuration, serverSettings, streamName) {
+    var host = configuration.host;
+    var app = configuration.app;
+    var port = serverSettings.httpport;
+    var baseUrl = serverSettings.protocol + '://' + host + ':' + port;
+    var apiVersion = configuration.streamManagerAPI || '3.1';
+    var url = baseUrl + '/streammanager/api/' + apiVersion + '/event/' + app + '/' + streamName + '?action=subscribe';
+      return new Promise(function (resolve, reject) {
+        fetch(url)
+          .then(function (res) {
+            if(res.status == 200){
+                if (res.headers.get("content-type") && res.headers.get("content-type").toLowerCase().indexOf("application/json") >= 0) {
+                    return res.json();
+                }
+                else {
+                  throw new TypeError('Could not properly parse response.');
+                }
+            } else {
+              var msg = "";
+              if(res.status == 400) {
+                msg = "An invalid request was detected";
+              } else if(res.status == 404) {
+                msg = "Data for the request could not be located/provided.";
+              } else if(res.status == 500) {
+                msg = "Improper server state error was detected.";
+              } else {
+                msg = "Unkown error";
+              }
+              throw new TypeError(msg);
+            }
+          })
+          .then(function (json) {
+            resolve(json);
+          })
+          .catch(function (error) {
+            var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
+            console.error('[SubscribeStreamManagerTest] :: Error - Could not request Origin IP from Stream Manager. ' + jsonError)
+            reject(error)
+          });
+    });
+  }
+
   var SubscriberItem = function (subStreamName, parent, index) {
     this.subscriptionId = [streamNameField.value, 'sub'].join('-');
     this.streamName = subStreamName;
     this.subscriber = undefined;
     this.baseConfiguration = undefined;
+    this.serverSettings = undefined;
     this.streamingMode = undefined;
     this.audioDecoy = undefined; // Used when initial mode is `Audio`.
     this.index = index;
@@ -173,16 +216,17 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
   SubscriberItem.prototype.resolve = function () {
     if (this.next) {
-      this.next.execute(this.baseConfiguration);
+      this.next.execute(this.baseConfiguration, this.serverSettings);
     }
   }
   SubscriberItem.prototype.reject = function (event) {
     console.error(event);
     if (this.next) {
-      this.next.execute(this.baseConfiguration);
+      this.next.execute(this.baseConfiguration, this.serverSettings);
     }
   }
-  SubscriberItem.prototype.execute = function (config) {
+  SubscriberItem.prototype.execute = function (config, settings) {
+    this.serverSettings = settings;
     this.baseConfiguration = config;
     var self = this;
     var name = this.streamName;
@@ -210,7 +254,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         sub.off('*', respond);
         sub.off('Subscribe.Fail', fail);
       }
-      sub.off('Subscribe.Connection.Closed', close);
+      sub.off('Subscribe.Connection.Closed', fail);
       sub.unsubscribe().then(cleanup).catch(cleanup);
       if (self.audioDecoy) {
         removeAudioSubscriberDecoy(self.streamName, self.audioDecoy);
@@ -221,7 +265,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       close();
       var t = setTimeout(function () {
         clearTimeout(t);
-        new SubscriberItem(self.streamName, self.parent, self.index).execute();
+        new SubscriberItem(self.streamName, self.parent, self.index).execute(self.baseConfiguration, self.serverSettings);
       }, 2000);
     };
     var respond = function (event) {
@@ -239,18 +283,38 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       }
     };
 
-    this.subscriber.on('Subscribe.Connection.Closed', close);
+    // NOTE: Reconnect logic is for an Edge disappearing and having to move to another.
+    // If the stream is unpublished, we don't need to try and re-subscribe as the 
+    // manifest of streams is maintained by the Shared Object.
+    this.subscriber.on('Subscriber.Play.Unpublish', close);
+    // TODO: This Closed without Unpublish has to be treated as Edge Loss.
+    this.subscriber.on('Subscribe.Connection.Closed', fail);
     this.subscriber.on('Subscribe.Fail', fail);
     this.subscriber.on('*', respond);
 
-    this.subscriber.init(rtcConfig)
-      .then(function (subscriber) {
-        subscriberMap[name] = subscriber;
-        return subscriber.subscribe();
-       })
+    requestEdge(this.baseConfiguration, this.serverSettings, this.streamName)
+      .then(function (jsonResponse) {
+        if (jsonResponse.errorMessage) {
+          throw new Error(jsonResponse.errorMessage);
+        }
+        var connectParams = Object.assign({}, rtcConfig.connectionParams, {
+          host: jsonResponse.serverAddress,
+          app: jsonResponse.scope
+        })
+        rtcConfig.connectionParams = connectParams;
+        self.subscriber.init(rtcConfig)
+          .then(function (subscriber) {
+            subscriberMap[name] = subscriber;
+            return subscriber.subscribe();
+           })
+          .catch(function (error) {
+            console.log('[subscriber:' + name + '] Error - ' + (error.hasOwnProperty('message') ? error.message : error));
+            reject(error);
+          });
+      })
       .catch(function (error) {
-        console.log('[subscriber:' + name + '] Error');
-        reject(error);
+        console.log('[subscriber:' + name + '] Error - ' + (error.hasOwnProperty('message') ? error.message : error));
+        fail();
       });
   }
 

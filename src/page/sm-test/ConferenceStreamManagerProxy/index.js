@@ -248,15 +248,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       : {};
   }
 
-  function getUserMediaConfiguration () {
-    return {
-      mediaConstraints: {
-        audio: configuration.useAudio ? configuration.mediaConstraints.audio : false,
-        video: configuration.useVideo ? configuration.mediaConstraints.video : false
-      }
-    };
-  }
-
   function setPublishingUI (streamName) {
     publisherNameField.innerText = streamName;
     roomField.setAttribute('disabled', true);
@@ -329,20 +320,17 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   function determinePublisher (jsonResponse) {
     var host = jsonResponse.serverAddress;
     var app = jsonResponse.scope;
-    var config = Object.assign({},
-                      configuration,
-                      getAuthenticationParams(),
-                      getUserMediaConfiguration());
-
+    var config = Object.assign({}, configuration);
+    var connectParams = Object.assign({}, getAuthenticationParams(), {
+      host: host,
+      app: app
+    });
     var rtcConfig = Object.assign({}, config, {
                       protocol: getSocketLocationFromProtocol().protocol,
                       port: getSocketLocationFromProtocol().port,
                       streamName: streamName,
-                      app: app, //configuration.proxy,
-                      connectionParams: {
-                        host: host,
-                        app: app
-                      },
+                      app: configuration.proxy,
+                      connectionParams: connectParams,
                       bandwidth: {
                         video: 256
                       },
@@ -532,9 +520,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
                                     protocol: getSocketLocationFromProtocol().protocol,
                                     port: getSocketLocationFromProtocol().port
                                   },
-                                  getAuthenticationParams(),
-                                  getUserMediaConfiguration());
-      subscribers[0].execute(baseSubscriberConfig);
+                                  getAuthenticationParams());
+      subscribers[0].execute(baseSubscriberConfig, serverSettings);
     }
 
     updatePublishingUIOnStreamCount(nonPublishers.length);
