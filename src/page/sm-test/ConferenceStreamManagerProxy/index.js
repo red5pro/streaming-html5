@@ -521,7 +521,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
                                     port: getSocketLocationFromProtocol().port
                                   },
                                   getAuthenticationParams());
-      subscribers[0].execute(baseSubscriberConfig, serverSettings);
+      subscribers[0].execute(baseSubscriberConfig, serverSettings, configuration.proxy);
     }
 
     updatePublishingUIOnStreamCount(nonPublishers.length);

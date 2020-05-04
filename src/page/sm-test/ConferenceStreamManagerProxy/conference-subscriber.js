@@ -168,6 +168,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     this.subscriber = undefined;
     this.baseConfiguration = undefined;
     this.serverSettings = undefined;
+    this.proxyScope = undefined;
     this.streamingMode = undefined;
     this.audioDecoy = undefined; // Used when initial mode is `Audio`.
     this.index = index;
@@ -216,18 +217,19 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
   SubscriberItem.prototype.resolve = function () {
     if (this.next) {
-      this.next.execute(this.baseConfiguration, this.serverSettings);
+      this.next.execute(this.baseConfiguration, this.serverSettings, this.proxyScope);
     }
   }
   SubscriberItem.prototype.reject = function (event) {
     console.error(event);
     if (this.next) {
-      this.next.execute(this.baseConfiguration, this.serverSettings);
+      this.next.execute(this.baseConfiguration, this.serverSettings, this.proxyScope);
     }
   }
-  SubscriberItem.prototype.execute = function (config, settings) {
-    this.serverSettings = settings;
+  SubscriberItem.prototype.execute = function (config, settings, proxyScope) {
     this.baseConfiguration = config;
+    this.serverSettings = settings;
+    this.proxyScope = proxyScope;    
     var self = this;
     var name = this.streamName;
     var uid = Math.floor(Math.random() * 0x10000).toString(16);
@@ -265,7 +267,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       close();
       var t = setTimeout(function () {
         clearTimeout(t);
-        new SubscriberItem(self.streamName, self.parent, self.index).execute(self.baseConfiguration, self.serverSettings);
+        new SubscriberItem(self.streamName, self.parent, self.index).execute(self.baseConfiguration, self.serverSettings, self.proxyScope);
       }, 2000);
     };
     var respond = function (event) {
@@ -301,6 +303,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           host: jsonResponse.serverAddress,
           app: jsonResponse.scope
         })
+        rtcConfig.app = proxyScope
         rtcConfig.connectionParams = connectParams;
         self.subscriber.init(rtcConfig)
           .then(function (subscriber) {
