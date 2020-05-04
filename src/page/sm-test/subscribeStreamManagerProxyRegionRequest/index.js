@@ -179,7 +179,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     var port = serverSettings.httpport;
     var baseUrl = protocol + '://' + host + ':' + port;
     var streamName = configuration.stream1;
-    var apiVersion = configuration.streamManagerAPI || '3.1';
+    var apiVersion = configuration.streamManagerAPI || '4.0';
     var region = configuration.streamManagerRegion;
     var url = baseUrl + '/streammanager/api/' + apiVersion + '/event/' + app + '/' + streamName + '?action=subscribe' + '&region=' + region;
       return new Promise(function (resolve, reject) {

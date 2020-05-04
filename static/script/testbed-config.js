@@ -128,7 +128,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       "iceTransport": "udp",
       "verboseLogging": true,
       "recordBroadcast": false,
-      "streamManagerAPI": "3.1",
+      "streamManagerAPI": "4.0",
       "streamManagerAccessToken": "xyz123",
       "muteOnAutoplayRestriction": true,
       "authentication": {
