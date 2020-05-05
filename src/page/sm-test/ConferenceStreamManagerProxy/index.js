@@ -331,6 +331,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
                       streamName: streamName,
                       app: configuration.proxy,
                       connectionParams: connectParams,
+                      streamMode: configuration.recordBroadcast ? 'record' : 'live',
                       bandwidth: {
                         video: 256
                       },
