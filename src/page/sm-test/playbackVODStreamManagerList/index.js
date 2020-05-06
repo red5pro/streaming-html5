@@ -52,7 +52,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var targetSubscriber;
   var edgeData;
 
-  var streamTitle = document.getElementById('stream-title');
   var errorNotification = document.getElementById('error-notification');
   var mediaListing = document.getElementById('media-file-listing');
   var playlistListing = document.getElementById('playlist-listing');
@@ -272,12 +271,27 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     var index = parseInt(el.dataset.index, 10);
     if (!isNaN(index) && mediafiles.length > index) {
       var next = function () {
-        requestEdge(configuration, mediafiles[index].name)
-          .then(respondToEdge)
-          .catch(function (error) {
-            console.error(error);
-            showErrorNotification(error);
-          });
+        var f = mediafiles[index];
+        var url = f.url;
+        var location = url.split('/');
+        mediafiles[index] = Object.assign({}, f, {
+          serverAddress: location[2],
+          scope: [location[3], location[4]].join('/'),
+          name: location[5]
+        })
+        var mediafile = mediafiles[index]
+        if (isMP4File(mediafile.url)) {
+          useMP4Fallback(mediafile.url);
+        } else {
+          requestEdge(configuration, mediafile.name)
+            .then(function (edgeData) {
+              respondToEdge(edgeData, mediafile);
+            })
+            .catch(function (error) {
+              console.error(error);
+              showErrorNotification(error);
+            });
+        }
       }
       unsubscribe().then(next).catch(next);
      }
@@ -341,9 +355,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
   }
 
-  function forceFallback (edgeData) {
-    if (isMP4File(edgeData.url)) {
-      useMP4Fallback(edgeData.url);
+  function forceFallback (mediafile, edgeData) {
+    if (isMP4File(mediafile.url)) {
+      useMP4Fallback(mediafile.url);
     } else {
       useFLVFallback(edgeData.serverAddress, edgeData.scope, edgeData.name);
     }
@@ -351,6 +365,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   // Request to unsubscribe.
   function unsubscribe () {
+    try {
+      document.getElementById('red5pro-subscriber').pause();
+    } catch (e) {
+      console.log('WARN: tried to stop playback. ' + e.message);
+    }
     return new Promise(function(resolve, reject) {
       var subscriber = targetSubscriber
       if (!subscriber) {
@@ -400,7 +419,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     });
     new red5prosdk.HLSSubscriber().init(hlsConfig)
       .then(function (subscriberImpl) {
-        streamTitle.innerText = name;
         targetSubscriber = subscriberImpl;
         // Subscribe to events.
         targetSubscriber.on('*', onSubscriberEvent);
@@ -417,7 +435,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       });
   }
 
-  function respondToEdge (response) {
+  function respondToEdge (response, mediaFile) {
     edgeData = response;
     var host = edgeData.serverAddress;
     var name = edgeData.name;
@@ -439,7 +457,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
     new red5prosdk.RTMPSubscriber().init(rtmpConfig)
       .then(function (subscriberImpl) {
-        streamTitle.innerText = configuration.stream1;
         targetSubscriber = subscriberImpl;
         // Subscribe to events.
         targetSubscriber.on('*', onSubscriberEvent);
@@ -450,7 +467,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       })
       .catch(function (error) { // eslint-disable-line no-unused-vars
         try {
-          forceFallback(edgeData)
+          forceFallback(mediaFile, edgeData)
         } catch (e) {
           console.error('[Red5ProSubscriber] :: Error in subscribing - ' + e.message);
           onSubscribeFail(e.message);
