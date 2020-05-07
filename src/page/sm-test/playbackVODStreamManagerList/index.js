@@ -162,7 +162,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     source.type = 'application/x-mpegURL';
     source.src = url;
     videoElement.appendChild(source);
-    new window.videojs(videoElement, {
+    new window.videojs('red5pro-subscriber', {
       techOrder: ['html5', 'flash']
     }, function () {
       // success.
