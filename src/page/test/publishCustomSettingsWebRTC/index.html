@@ -13,6 +13,9 @@
       .settings-field, .settings-field > input {
         font-size: 1em;
       }
+      .settings-label {
+        width: 35%;
+      }
     </style>
   </head>
   <body>
@@ -26,6 +29,10 @@
           <p class="settings-field settings-collapsable">
             <Label class="settings-label">Camera:</label>
             <select id="camera-select" class="control settings-control"></select>
+          </p>
+          <p class="settings-field settings-collapsable">
+            <Label class="settings-label">Microphone:</label>
+            <select id="audio-select" class="control settings-control"></select>
           </p>
           <p class="settings-field settings-collapsable">
             <label class="settings-label">Camera Width:</label>
@@ -46,6 +53,13 @@
           <p class="settings-field settings-collapsable">
             <label class="settings-label">Audio Bitrate (Kbps):</label>
             <input id="audio-bitrate-field" name="audio-bitrate-field" class="settings-control" value="0">
+          </p>
+          <p class="settings-field settings-collapsable">
+            <label class="settings-label">Audio Sample Rate (Hz):</label>
+            <select id="audio-sample-field" name="audio-sample-field" class="control settings-control">
+              <option class="audio-sample-option" value="44100" selected>44100</option>
+              <option class="audio-sample-option" value="48000">48000</option>
+            </select>
           </p>
           <p class="settings-field settings-collapsable">
             <label class="settings-label">Key Framerate (ms):</label>

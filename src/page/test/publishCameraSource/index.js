@@ -165,9 +165,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   function onMediaSelect () {
-    if (!configuration.useVideo) {
-      return;
-    }
     getMedia();
     updateStatistics(0, 0, 0, 0);
     statisticsField.classList.add('hidden');
@@ -307,6 +304,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             audioSelect.value = track.getSettings().deviceId;
           });
         })
+        .catch(function (error) {
+          console.error(error);
+        })
     });
   }
 
@@ -317,12 +317,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     })
     .catch(onDeviceError);
 
-  cameraSelect.addEventListener('change', function () {
-    onMediaSelect(cameraSelect.value);
-  });
-  audioSelect.addEventListener('change', function () {
-    onMediaSelect(audioSelect.value);
-  });
+  cameraSelect.addEventListener('change', onMediaSelect);
+  audioSelect.addEventListener('change', onMediaSelect);
   publishButton.addEventListener('click', function () {
     restart(mediaStream);
   });

@@ -50,6 +50,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   red5prosdk.setLogLevel(configuration.verboseLogging ? red5prosdk.LOG_LEVELS.TRACE : red5prosdk.LOG_LEVELS.WARN);
 
   var targetPublisher;
+  var mediaStream;
 
   var updateStatusFromEvent = window.red5proHandlePublisherEvent; // defined in src/template/partial/status-field-publisher.hbs
   var streamTitle = document.getElementById('stream-title');
@@ -59,9 +60,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var bandwidthVideoField = document.getElementById('video-bitrate-field');
   var keyFramerateField = document.getElementById('key-framerate-field');
   var cameraSelect = document.getElementById('camera-select');
+  var audioSelect = document.getElementById('audio-select');
   var cameraWidthField = document.getElementById('camera-width-field');
   var cameraHeightField = document.getElementById('camera-height-field');
   var framerateField =document.getElementById('framerate-field');
+  var samplerateField = document.getElementById('audio-sample-field');
   var publishButton = document.getElementById('publish-button');
 
   var settingsControls = document.getElementsByClassName('settings-control');
@@ -257,10 +260,17 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     var cameras = devices.filter(function (item) {
       return item.kind === 'videoinput';
     })
+    var mics = devices.filter(function (item) {
+      return item.kind === 'audioinput';
+    })
     var options = cameras.map(function (camera, index) {
       return '<option value="' + camera.deviceId + '">' + (camera.label || 'camera ' + index) + '</option>';
     });
+    var micOptions = mics.map(function (mic, index) {
+      return '<option value="' + mic.deviceId + '">' + (mic.label || 'microphone ' + index) + '</option>';
+    });
     cameraSelect.innerHTML = options.join(' ');
+    audioSelect.innerHTML = micOptions.join(' ');
   }
 
   function clearEstablishedStream () {
@@ -274,44 +284,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     return false;
   }
 
-  function establishInitialStream (deviceId) {
-    var stream;
-    var constraints = {audio:false, video: (deviceId ? { deviceId: {exact: deviceId} } : true) };
-    var pubElement = document.getElementById('red5pro-publisher');
-    var delay = clearEstablishedStream() ? 200 : 0;
-    var t = setTimeout(function () {
-      clearTimeout(t);
-      navigator.mediaDevices.getUserMedia(constraints)
-        .then(function (mediastream) {
-          stream = mediastream;
-          return navigator.mediaDevices.enumerateDevices()
-        })
-        .then(function (devices) {
-          listDevices(devices);
-          stream.getVideoTracks().forEach(function (track) {
-            cameraSelect.value = track.getSettings().deviceId;
-          });
-          pubElement.srcObject = stream;
-        })
-        .catch(function (error) {
-          console.error(error);
-          showConstraintError(error.message, error.constraint || 'N/A');
-        });
-    }, delay);
-  }
-
-  function onCameraSelect () {
-    if (!configuration.useVideo) {
-      return;
-    }
+  function onMediaSelect () {
     updateStatistics(0, 0, 0, 0);
     statisticsField.classList.add('hidden');
-    unpublish()
-      .then(restart)
-      .catch(function (error) {
-        console.error('[Red5ProPublisher] :: Error in unpublishing - ' + error);
-        restart();
-       });
+    getMedia();
   }
 
   function getAuthenticationParams () {
@@ -326,19 +302,38 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       : {};
   }
 
+  function getAudioSampleRate () {
+    var children = [].slice.call(samplerateField.children);
+    var sampleRate = 0;
+    children.forEach(function (option) {
+      sampleRate = option.selected ? parseInt(option.value, 10) : sampleRate
+    });
+    return sampleRate;
+  }
+
   function getUserMediaConfiguration () {
     var config = {
-      audio: configuration.useAudio ? configuration.mediaConstraints.audio : false,
+      audio: configuration.useAudio ? {
+        sampleRate: getAudioSampleRate()
+      } : false,
       video: configuration.useVideo ? {
         width: { exact: parseInt(cameraWidthField.value) },
         height: { exact: parseInt(cameraHeightField.value) },
         frameRate: { min: parseInt(framerateField.value) }
       } : false
     };
-    if (configuration.useVideo && cameraSelect.value && cameraSelect.value.length > 0) {
-      var v = Object.assign(config.video, {deviceId: { exact: cameraSelect.value }});
+    var selectedCamera = cameraSelect.value
+    var selectedAudio = audioSelect.value
+    if (configuration.useVideo && selectedCamera && selectedCamera.length > 0) {
+      var v = Object.assign(config.video, {deviceId: { exact: selectedCamera }});
       config.video = v;
     }
+    if (configuration.useAudio && selectedAudio && selectedAudio.length > 0 && selectedAudio !== 'default') {
+      var a = Object.assign(config.audio, {deviceId: { exact: selectedAudio }});
+      config.audio = a;
+    }
+    console.log("Request Media: " + JSON.stringify(config, null, 2));
+
     return config;
   }
 
@@ -364,9 +359,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
                       port: getSocketLocationFromProtocol().port,
                       streamName: config.stream1
                    });
-    var pub = new red5prosdk.RTCPublisher();
-    pub.on('*', onPublisherEvent);
-    return pub.init(rtcConfig);
+    return new red5prosdk.RTCPublisher().init(rtcConfig);
   }
 
   function unpublish () {
@@ -391,17 +384,18 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     });
   }
 
-  function startStopPublish () {
+  function startStopPublish (mediaStream) {
     if (isPublishable) {
       setPublishableState(false);
       // delay by 200 milliseconds to allow for clearage of previous stream.
       var delay = clearEstablishedStream() ? 200 : 0;
       var t = setTimeout(function (){
         clearTimeout(t);
-        determinePublisher()
+        determinePublisher(mediaStream)
           .then(function (publisherImpl) {
-            streamTitle.innerText = configuration.stream1;
             targetPublisher = publisherImpl;
+            streamTitle.innerText = configuration.stream1;
+            targetPublisher.on('*', onPublisherEvent);
             return targetPublisher.publish()
           })
           .then(function () {
@@ -418,8 +412,38 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
   }
 
-  function restart() {
-    establishInitialStream((cameraSelect.value && cameraSelect.value.length > 0) ? cameraSelect.value : undefined);
+  function getMedia (cb) {
+    navigator.mediaDevices.getUserMedia(getUserMediaConfiguration())
+      .then(function (stream) {
+        mediaStream = stream;
+        document.getElementById('red5pro-publisher').srcObject = mediaStream;
+        if (cb) {
+          cb.call(null, mediaStream);
+        }
+        publishButton.disabled = false;
+      })
+      .catch(function (error) {
+        console.error(error)
+        showConstraintError(error.message, error.constraint || 'N/A');
+      });
+  }
+
+  function establishInitialStream () {
+    getMedia(function (stream) {
+      navigator.mediaDevices.enumerateDevices()
+        .then(function (devices) {
+          listDevices(devices)
+          stream.getVideoTracks().forEach(function (track) {
+            cameraSelect.value = track.getSettings().deviceId;
+          });
+          stream.getAudioTracks().forEach(function (track) {
+            audioSelect.value = track.getSettings().deviceId;
+          });
+        })
+        .catch(function (error) {
+          console.error(error);
+        })
+    });
   }
 
   navigator.mediaDevices.enumerateDevices()
@@ -429,11 +453,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     })
     .catch(onDeviceError);
 
-  cameraSelect.addEventListener('change', function () {
-    onCameraSelect(cameraSelect.value);
+  cameraSelect.addEventListener('change', onMediaSelect);
+  audioSelect.addEventListener('change', onMediaSelect);
+  publishButton.addEventListener('click', function () {
+    startStopPublish(mediaStream);
   });
-
-  publishButton.addEventListener('click', startStopPublish);
 
   var shuttingDown = false;
   function shutdown (trackShutdown) {
