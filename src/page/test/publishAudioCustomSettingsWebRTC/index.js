@@ -206,11 +206,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   function onPublisherEvent (event) {
     console.log('[Red5ProPublisher] ' + event.type + '.');
     updateStatusFromEvent(event);
-    if (event.type === 'WebRTC.MediaConstraints.Accepted' ||
-      event.type === 'WebRTC.MediaConstraints.Rejected') {
-      constraintInfoNotices.push(event.data);
-      showConstraintInfo();
-    }
   }
   function onPublishFail (message) {
     console.error('[Red5ProPublisher] Publish Error :: ' + message);
@@ -219,6 +214,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   function onPublishSuccess (publisher) {
     console.log('[Red5ProPublisher] Publish Complete.');
     setPublishableState(false);
+    var media = publisher.getMediaStream();
+    console.log("Requested Constraints: " + JSON.stringify(media.getAudioTracks()[0].getConstraints(), null, 2))
+    console.log("Accepted Constraints: " + JSON.stringify(media.getAudioTracks()[0].getSettings(), null, 2))
     try {
       var pc = publisher.getPeerConnection();
       var stream = publisher.getMediaStream();
