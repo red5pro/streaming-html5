@@ -1,0 +1,81 @@
+<!doctype html>
+{{> license}}
+<html>
+  <head>
+    {{> meta title='Publish Custom Settings WebRTC Test'}}
+    {{> header-scripts}}
+    {{> header-stylesheets}}
+    <style>
+      .settings-area {
+        padding-top: 20px;
+        background-color: #eeee;
+      }
+      .settings-field, .settings-field > input {
+        font-size: 1em;
+      }
+    </style>
+  </head>
+  <body>
+    {{> top-bar }}
+    {{> navigation isTestPage=true }}
+    <div id="app">
+      {{> settings-link}}
+      {{> test-info testTitle='Publish Custom Audio Settings Test (WebRTC)'}}
+      <div class="stream-section">
+        <div class="settings-area">
+          <p class="settings-field settings-collapsable">
+            <Label class="settings-label">Camera:</label>
+            <select id="camera-select" class="control settings-control"></select>
+          </p>
+          <p class="settings-field settings-collapsable">
+            <Label class="settings-label">Microphone:</label>
+            <select id="mic-select" class="control settings-control"></select>
+          </p>
+          <p class="settings-field settings-collapsable">
+            <label class="settings-label">Sample Rate:</label>
+            <input id="sample-rate-field" name="sample-rate-field" class="settings-control" value="48000">
+          </p>
+          <p class="settings-field settings-collapsable">
+            <label class="settings-label">Sample Size:</label>
+            <input id="sample-size-field" name="sample-size-field" class="settings-control" value="16">
+          </p>
+          <p class="settings-field settings-collapsable">
+          <label class="settings-label">Channel Count:</label>
+            <input id="channel-field" name="channel-field" class="settings-control" value="2">
+          </p>
+          <p class="settings-field settings-collapsable">
+            <label class="settings-label">Audio Bitrate (Kbps):</label>
+            <input id="audio-bitrate-field" name="audio-bitrate-field" class="settings-control" value="128">
+          </p>
+          <p class="settings-field settings-collapsable">
+            <label class="settings-label" for="echo-check">Use Echo Cancellation</label>
+            <input id="echo-check" type="checkbox" class="settings-control">
+          </p>
+          <p class="settings-field settings-collapsable">
+            <label class="settings-label" for="noise-check">Use Noise Suppression</label>
+            <input id="noise-check" type="checkbox" class="settings-control">
+          </p>
+          <p class="settings-field settings-collapsable">
+            <label class="settings-label" for="gain-check">Use Auto Gain Control</label>
+            <input id="gain-check" type="checkbox" class="settings-control">
+          </p>
+          <p>
+            <button id="publish-button" class="control ui-button">Publish</button>
+          </p>
+        </div>
+        {{> status-field-publisher}}
+        {{> statistics-field packets_field='Packets Sent'}}
+        <div id="video-container" class="centered">
+          <div class="centered">
+            <video id="red5pro-publisher" class="red5pro-publisher"
+                 controls autoplay playsinline muted>
+            </video>
+          </div>
+        </div>
+      </div>
+    </div>
+    {{> body-scripts}}
+    <script src="index.js"></script>
+    <link rel="stylesheet" href="../../css/modal.css" />
+  </body>
+</html>
