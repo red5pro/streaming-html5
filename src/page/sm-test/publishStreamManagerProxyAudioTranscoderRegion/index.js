@@ -328,7 +328,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
                         audio: parseInt(bandwidthAudioField.value),
                         video: transcoderConfig.properties.videoBR / 1000
                       }, 
-                      mediaConfiguration: getUserMediaConfiguration(transcoderConfig)
+                      mediaConstraints: getUserMediaConfiguration(transcoderConfig)
                     });
     var rtcConfig = Object.assign({}, config, {
                       protocol: getSocketLocationFromProtocol().protocol,
