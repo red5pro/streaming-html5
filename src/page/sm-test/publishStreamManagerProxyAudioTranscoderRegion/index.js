@@ -71,7 +71,17 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     return list;
   })(transcoderTypes);
   var qualityContainer = document.getElementById('quality-container');
+
   var qualitySelect = document.getElementById('quality-select');
+  var cameraSelect = document.getElementById('camera-select');
+  var micSelect = document.getElementById('mic-select');
+  var sampleRateField = document.getElementById('sample-rate-field');
+  var sampleSizeField = document.getElementById('sample-size-field');
+  var channelField  =document.getElementById('channel-field');
+  var bandwidthAudioField = document.getElementById('audio-bitrate-field');
+  var echoCheck = document.getElementById('echo-check');
+  var noiseCheck = document.getElementById('noise-check');
+  var gainCheck = document.getElementById('gain-check');
   var qualitySubmit = document.getElementById('quality-submit');
 
   submitButton.addEventListener('click', submitTranscode);
@@ -102,10 +112,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var defaultConfiguration = {
     protocol: getSocketLocationFromProtocol().protocol,
     port: getSocketLocationFromProtocol().port,
-    streamMode: configuration.recordBroadcast ? 'record' : 'live',
-    bandwidth: {
-      video: 1000
-    }
+    streamMode: configuration.recordBroadcast ? 'record' : 'live'
   };
 
   var accessToken = configuration.streamManagerAccessToken;
@@ -199,6 +206,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     console.log('[Red5ProPublisher] Unpublish Complete.');
     setQualitySubmitState(false);
   }
+  function onDeviceError (error) {
+    console.error('Could not access devices: ' + error);
+  }
+
 
   function postTranscode (transcode) {
     var host = configuration.host;
@@ -267,16 +278,29 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     });
   }
 
-  function getUserMediaConfiguration (config) {
-    return {
-      mediaConstraints: {
-        audio: configuration.useAudio ? configuration.mediaConstraints.audio : false,
+  function getUserMediaConfiguration (transcoderConfig) {
+    var config = {
+        audio: configuration.useAudio ? {
+          autoGainControl: gainCheck.checked,
+          channelCount: parseInt(channelField.value, 10),
+          echoCancellation: echoCheck.checked,
+          noiseSuppression: noiseCheck.checked,
+          sampleRate: parseInt(sampleRateField.value, 10),
+          sampleSize: parseInt(sampleSizeField.value, 10)
+        } : false,
         video: configuration.useVideo ? {
-          width: {exact: config.properties.videoWidth},
-          height: {exact: config.properties.videoHeight}
+          width: {exact: transcoderConfig.properties.videoWidth},
+          height: {exact: transcoderConfig.properties.videoHeight}
         }: false
-      }
-    };
+      };
+    if (configuration.useVideo && cameraSelect.value && cameraSelect.value.length > 0) {
+      var v = Object.assign(config.video, {deviceId: { exact: cameraSelect.value }});
+      config.video = v;
+    }
+    if (micSelect.value && micSelect.value.length > 0) {
+      config.audio.deviceId = { exact: micSelect.value }
+    }
+    return config;
   }
 
   function getRTMPMediaConfiguration (config) {
@@ -296,11 +320,16 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     var host = jsonResponse.serverAddress;
     var app = jsonResponse.scope;
     var name = transcoderConfig.name;
-    defaultConfiguration.bandwidth.video = transcoderConfig.properties.videoBR / 1000; 
     var config = Object.assign({},
                     configuration,
                     defaultConfiguration,
-                    getUserMediaConfiguration(transcoderConfig));
+                    {
+                      bandwidth: {
+                        audio: parseInt(bandwidthAudioField.value),
+                        video: transcoderConfig.properties.videoBR / 1000
+                      }, 
+                      mediaConfiguration: getUserMediaConfiguration(transcoderConfig)
+                    });
     var rtcConfig = Object.assign({}, config, {
                       protocol: getSocketLocationFromProtocol().protocol,
                       port: getSocketLocationFromProtocol().port,
@@ -505,6 +534,95 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       startup();
     }
   }
+
+  /* Custom Settings */
+  function listDevices (devices) {
+    var cameras = devices.filter(function (item) {
+      return item.kind === 'videoinput';
+    })
+    var mics = devices.filter(function (item) {
+      return item.kind === 'audioinput';
+    })
+    var options = cameras.map(function (camera, index) {
+      return '<option value="' + camera.deviceId + '">' + (camera.label || 'camera ' + index) + '</option>';
+    });
+    var micOptions = mics.map(function (mic, index) {
+      return '<option value="' + mic.deviceId + '">' + (mic.label || 'mic ' + index) + '</option>';
+    });
+    cameraSelect.innerHTML = options.join(' ');
+    micSelect.innerHTML = micOptions.join(' ');
+  }
+
+  function clearEstablishedStream () {
+    var pubElement = document.getElementById('red5pro-publisher');
+    if (pubElement.srcObject) {
+      pubElement.srcObject.getTracks().forEach(function (track) {
+        track.stop();
+      });
+      return true;
+    }
+    return false;
+  }
+
+  function establishInitialStream () {
+    var stream;
+    var constraints = getUserMediaConfiguration({properties: {
+      videoWidth: 640,
+      videoHeight: 480
+    }});
+    var pubElement = document.getElementById('red5pro-publisher');
+    var delay = clearEstablishedStream() ? 200 : 0;
+    var t = setTimeout(function () {
+      clearTimeout(t);
+      navigator.mediaDevices.getUserMedia(constraints)
+        .then(function (mediastream) {
+          stream = mediastream;
+          return navigator.mediaDevices.enumerateDevices()
+        })
+        .then(function (devices) {
+          listDevices(devices);
+          stream.getVideoTracks().forEach(function (track) {
+            cameraSelect.value = track.getSettings().deviceId;
+          });
+          stream.getAudioTracks().forEach(function (track) {
+            micSelect.value = track.getSettings().deviceId;
+          });
+          pubElement.srcObject = stream;
+        })
+        .catch(function (error) {
+          console.error(error);
+          onDeviceError(error.message + ': ' + (error.constraint || 'N/A'));
+        });
+    }, delay);
+  }
+
+  function onMediaSelect () {
+    if (!configuration.useVideo) {
+      return;
+    }
+    updateStatistics(0, 0, 0, 0);
+    statisticsField.classList.add('hidden');
+    unpublish()
+      .then(restart)
+      .catch(function (error) {
+        console.error('[Red5ProPublisher] :: Error in unpublishing - ' + error);
+        restart();
+       });
+  }
+
+  function restart() {
+    establishInitialStream();
+  }
+
+  navigator.mediaDevices.enumerateDevices()
+    .then(function (devices) {
+      listDevices(devices);
+      establishInitialStream();
+    })
+    .catch(onDeviceError);
+
+  cameraSelect.addEventListener('change', onMediaSelect);
+  micSelect.addEventListener('change', onMediaSelect);
 
   var shuttingDown = false;
   function shutdown() {
