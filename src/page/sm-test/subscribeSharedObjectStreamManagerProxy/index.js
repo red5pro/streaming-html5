@@ -239,7 +239,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     var host = configuration.host;
     var app = configuration.app;
     var streamName = configuration.stream1;
-    var port = 8001;//serverSettings.httpport;
+    var port = serverSettings.httpport;
     var baseUrl = protocol + '://' + host + ':' + port;
     var apiVersion = configuration.streamManagerAPI || '3.1';
     var url = baseUrl + '/streammanager/api/' + apiVersion + '/event/' + app + '/' + streamName + '?action=subscribe';
