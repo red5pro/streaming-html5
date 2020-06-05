@@ -79,7 +79,12 @@ To define the **Host** with the server instance's IP, click the _Host_ field f t
 
 | **[Custom Settings](src/page/test/publishCustomSettingsWebRTC)**
 | :-----
-| *Allows you to customize the media broadcast settings for a WebRTC Publisher..*
+| *Allows you to customize the media broadcast settings for a WebRTC Publisher.*
+
+
+| **[Custom Audio Settings](src/page/test/publishAudioCustomSettingsWebRTC)**
+| :-----
+| *Allows you to customize the audio settings for a WebRTC Publisher.*
 
 | **[MediaStream Swap](src/page/test/publishMediaStreamCamera)**
 | :-----
@@ -137,7 +142,7 @@ To define the **Host** with the server instance's IP, click the _Host_ field f t
 
 | **[Stream Manager Proxy Settings with Audio](src/page/sm-test/publishStreamManagerProxyAudioSettings)**
 | :-----
-| *Demonstrates utilizing the Red5 Pro Stream Manager as an SSL WebSocket Proxy to publish WebRTC with custom video and audio settings to an autoscaling cluster's origin.*
+| *Demonstrates utilizing the Red5 Pro Stream Manager as an SSL WebSocket Proxy to publish WebRTC with custom audio settings to an autoscaling cluster's origin.*
 
 | **[Stream Manager Proxy Settings Region](src/page/sm-test/publishStreamManagerProxySettingsRegion)**
 | :-----
