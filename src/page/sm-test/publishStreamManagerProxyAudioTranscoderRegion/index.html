@@ -16,6 +16,7 @@
       }
       .quality-subheader {
         padding: 20px;
+        border-bottom: 1px solid black;
       }
       .quality-select {
         height: 1.5rem;
@@ -91,7 +92,7 @@
           <p>All resolutions should have the same aspect ratio, otherwise your stream will be skewed.</p>
         </div>
       </div>
-      {{> test-info testTitle='Publish SM Transcode Proxy Test'}}
+      {{> test-info testTitle='Publish SM Transcode Proxy Region & Audio Test'}}
       <div class="settings-section">
         <div class="settings-area">
           <div class="form-container">
@@ -117,7 +118,47 @@
               <option value="3">Low_3</option>
             </select>
           </p>
-          <button id="quality-submit" class="ui-button">Start Publishing</button>
+          <div class="settings-area">
+            <p class="settings-field settings-collapsable">
+              <Label class="settings-label">Camera:</label>
+              <select id="camera-select" class="control settings-control"></select>
+            </p>
+            <p class="settings-field settings-collapsable">
+              <Label class="settings-label">Microphone:</label>
+              <select id="mic-select" class="control settings-control"></select>
+            </p>
+            <p class="settings-field settings-collapsable">
+              <label class="settings-label">Sample Rate:</label>
+              <input id="sample-rate-field" name="sample-rate-field" class="settings-control" value="48000">
+            </p>
+            <p class="settings-field settings-collapsable">
+              <label class="settings-label">Sample Size:</label>
+              <input id="sample-size-field" name="sample-size-field" class="settings-control" value="16">
+            </p>
+            <p class="settings-field settings-collapsable">
+            <label class="settings-label">Channel Count:</label>
+              <input id="channel-field" name="channel-field" class="settings-control" value="2">
+            </p>
+            <p class="settings-field settings-collapsable">
+              <label class="settings-label">Audio Bitrate (Kbps):</label>
+              <input id="audio-bitrate-field" name="audio-bitrate-field" class="settings-control" value="128">
+            </p>
+            <p class="settings-field settings-collapsable">
+              <label class="settings-label" for="echo-check">Use Echo Cancellation</label>
+              <input id="echo-check" type="checkbox" class="settings-control">
+            </p>
+            <p class="settings-field settings-collapsable">
+              <label class="settings-label" for="noise-check">Use Noise Suppression</label>
+              <input id="noise-check" type="checkbox" class="settings-control">
+            </p>
+            <p class="settings-field settings-collapsable">
+              <label class="settings-label" for="gain-check">Use Auto Gain Control</label>
+              <input id="gain-check" type="checkbox" class="settings-control">
+            </p>
+            <p>
+              <button id="quality-submit" class="ui-button">Start Publishing</button>
+            </p>
+          </div>
         </div>
         {{> status-field-publisher}}
         {{> statistics-field packets_field='Packets Sent'}}

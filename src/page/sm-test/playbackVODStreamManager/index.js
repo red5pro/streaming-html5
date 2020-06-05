@@ -357,6 +357,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     var host = edgeData.serverAddress;
     var name = edgeData.name;
     var app = edgeData.scope;
+    edgeData.url = 'http://' + host + ':5080/' + app + '/' + name;
+
     var config = Object.assign({}, configuration, defaultConfiguration);
     var rtmpConfig = Object.assign({}, config, {
       host: host,
@@ -384,7 +386,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       })
       .catch(function (error) { // eslint-disable-line no-unused-vars
         try {
-          forceFallback(response)
+          forceFallback(edgeData)
         } catch (e) {
           console.error('[Red5ProSubscriber] :: Error in subscribing - ' + e.message);
           onSubscribeFail(e.message);
