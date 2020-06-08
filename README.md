@@ -79,7 +79,12 @@ To define the **Host** with the server instance's IP, click the _Host_ field f t
 
 | **[Custom Settings](src/page/test/publishCustomSettingsWebRTC)**
 | :-----
-| *Allows you to customize the media broadcast settings for a WebRTC Publisher..*
+| *Allows you to customize the media broadcast settings for a WebRTC Publisher.*
+
+
+| **[Custom Audio Settings](src/page/test/publishAudioCustomSettingsWebRTC)**
+| :-----
+| *Allows you to customize the audio settings for a WebRTC Publisher.*
 
 | **[MediaStream Swap](src/page/test/publishMediaStreamCamera)**
 | :-----
@@ -127,6 +132,22 @@ To define the **Host** with the server instance's IP, click the _Host_ field f t
 | :-----
 | *Demonstrates utilizing the Red5 Pro Stream Manager as an SSL WebSocket Proxy to publish WebRTC to an autoscaling cluster's origin.*
 
+| **[Stream Manager Proxy Camera Select](src/page/sm-test/publishStreamManagerProxyCamera)**
+| :-----
+| *Demonstrates utilizing the Red5 Pro Stream Manager as an SSL WebSocket Proxy to publish WebRTC to an autoscaling cluster's origin with camera select.*
+
+| **[Stream Manager Proxy Settings](src/page/sm-test/publishStreamManagerProxySettings)**
+| :-----
+| *Demonstrates utilizing the Red5 Pro Stream Manager as an SSL WebSocket Proxy to publish WebRTC with custom video settings to an autoscaling cluster's origin.*
+
+| **[Stream Manager Proxy Settings with Audio](src/page/sm-test/publishStreamManagerProxyAudioSettings)**
+| :-----
+| *Demonstrates utilizing the Red5 Pro Stream Manager as an SSL WebSocket Proxy to publish WebRTC with custom audio settings to an autoscaling cluster's origin.*
+
+| **[Stream Manager Proxy Settings Region](src/page/sm-test/publishStreamManagerProxySettingsRegion)**
+| :-----
+| *Demonstrates utilizing the Red5 Pro Stream Manager as an SSL WebSocket Proxy to publish WebRTC with custom settings to an autoscaling cluster's origin, specifying region.*
+
 | **[Stream Manager Provision Form](src/page/sm-test/publishStreamManagerProvisionForm)**
 | :-----
 | *Provides an easy form to POST a new Provision to the Stream Manager for ABR broadcasts. Once the provision is POSTed, use your favorite Media Encoder to broadcast the variants.*
@@ -143,9 +164,13 @@ To define the **Host** with the server instance's IP, click the _Host_ field f t
 | :-----
 | *Provides an easy form to POST a new Provision to the Stream Manager for ABR broadcasts and to start a single variant broadcast using the Transcoder.*
 
-| **[Two-Way Stream Manager Proxy](src/page/sm-test/TwoWayStreamManagerProxy)**
+| **[Stream Manager Proxy Transcoder Region](src/page/sm-test/publishStreamManagerProxyTranscoderRegion)**
 | :-----
-| *The Two-Way example through a Stream Manager - including use of a proxy. Includes stream detection and auto-connection.*
+| *Provides an easy form to POST a new Provision to the Stream Manager for ABR broadcasts and to start a single variant broadcast using the Transcoder, specifying region.*
+
+| **[Stream Manager Proxy Validation](src/page/sm-test/publishStreamManagerProxyValidation)**
+| :-----
+| *An example of utilizing validation parameters with Red5 Pro over Stream Manager Proxy.*
 
 ### Multi
 
@@ -153,9 +178,17 @@ To define the **Host** with the server instance's IP, click the _Host_ field f t
 | :-----
 | *Demonstrates simultaneously publishing while subscribing - allowing a conversation. Includes stream detection and auto-connection.*
 
+| **[Two-Way Stream Manager Proxy](src/page/sm-test/TwoWayStreamManagerProxy)**
+| :-----
+| *The Two-Way example through a Stream Manager - including use of a proxy. Includes stream detection and auto-connection.*
+
 | **[Conference](src/page/test/conference)**
 | :-----
 | *Demonstrates multi-party communication using Red5 Pro. It also demonstrates using Shared Objects as notifications to recognize the addition and removal of parties broadcasting.*
+
+| **[Conference - Stream Manager](src/page/sm-test/ConferenceStreamManagerProxy)**
+| :-----
+| *Demonstrates multi-party communication using Red5 Pro over Stream Manager. It also demonstrates using Shared Objects as notifications to recognize the addition and removal of parties broadcasting.*
 
 | **[Shared Object (websockets only)](src/page/test/sharedObject)**
 | :-----
@@ -245,9 +278,17 @@ To define the **Host** with the server instance's IP, click the _Host_ field f t
 | :-----
 | *Demonstrates utilizing the Red5 Pro Stream Manager API to access an Edge server IP to subscribe to a live stream.*
 
+| **[Stream Manager Proxy Reconnect](src/page/test/subscribeStreamManagerProxyReconnect)**
+| :-----
+| *Demonstrates the failover mechanism of the Red5 Pro HTML SDK to select a subscriber based on browser support and to auto-reconnect on close of broadcast or loss of connection.*
+
+| **[Stream Manager Proxy Region](src/page/test/subscribeStreamManagerProxyRegionRequest)**
+| :-----
+| *Demonstrates utilizing the Red5 Pro Stream Manager API to access an Edge server IP to subscribe to a live stream.*
+
 | **[Stream Manager Proxy Round Trip Authentication](src/page/sm-test/subscribeStreamManagerProxyRoundTripAuth)**
 | :-----
-| *Demonstrates subscribing using round trip authentication.*
+| *Demonstrates subscribing using round trip authentication, region specified.*
 
 | **[Stream Manager Proxy Transcoder (RTC)](src/page/sm-test/subscribeStreamManagerProxyTranscoderRTC)**
 | :-----

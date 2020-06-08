@@ -1,0 +1,176 @@
+<!doctype html>
+{{> license}}
+<html>
+  <head>
+    {{> meta title='Publish Stream Manager Transcode Proxy Test'}}
+    {{> header-scripts}}
+    {{> header-stylesheets}}
+    <style>
+      .quality-container {
+        text-align: center;
+        background-color: #dbdbdb;
+        color: #3b3b3b;
+        max-width: 1024px;
+        margin: 20px auto 0 auto;
+        line-height: 1.5em;
+      }
+      .quality-subheader {
+        padding: 20px;
+        border-bottom: 1px solid black;
+      }
+      .quality-select {
+        height: 1.5rem;
+        font-size: 1rem;
+      }
+      .quality-hr {
+        max-width: 480px;
+        margin: 20px auto;
+      }
+      .settings-section {
+        max-width: 1024px;
+        width: 100%;
+        margin: 0 auto;
+      }
+      .settings-area {
+        background-color: #dbdbdb;
+      }
+      .settings-field {
+        display: flex;
+        align-items: center;
+        flex-direction: row;
+      }
+      .settings-field, .settings-field > input {
+        font-size: 1em;
+      }
+      .settings-field > input {
+        width: 40%;
+        padding-left: 10px;
+      }
+      .info-title {
+        padding: 20px 0;
+      }
+      .paddedHR {
+        margin: 0!important;
+      }
+      .form-container {
+        padding: 20px 0 0 0;
+        text-align: center;
+      }
+      .transcoder-form-container {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-evenly;
+        padding: 20px 0;
+      }
+      @media (max-width:767px) {
+        .transcoder-form-container {
+          flex-direction: column;
+        }
+      }
+      @media (max-width: 510px) {
+        .settings-field {
+          flex-direction: column;
+        }
+        .settings-field.settings-collapsable > input {
+          width: 100%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    {{> top-bar }}
+    {{> navigation isTestPage=true }}
+    <div id="app">
+      {{> settings-link}}
+      <div class="ice-background">
+        <div class="test-notification">
+          <p>In order to properly run the Stream Manager examples, you will need to configure you server for cluster infrastructure as described in the following documentation:</p>
+          <p><a href="https://www.red5pro.com/docs/server/autoscale/" target="_blank">https://www.red5pro.com/docs/server/autoscale/</a></p>
+          <br>
+          <p>Additionally to use this example stream manager proxy gateway should be enabled.</p>
+          <br>
+          <p>All resolutions should have the same aspect ratio, otherwise your stream will be skewed.</p>
+        </div>
+      </div>
+      {{> test-info testTitle='Publish SM Transcode Proxy Region & Audio Test'}}
+      <div class="settings-section">
+        <div class="settings-area">
+          <div class="form-container">
+            <p>Use this form to post your ABR Provisions:</p>
+            <div class="transcoder-form-container">
+              {{> transcoder-form id="transcoder-high" category="High" width="1280" height="720" bitrate="2000000"}}
+              {{> transcoder-form id="transcoder-mid" category="Mid" width="640" height="360" bitrate="1000000"}}
+              {{> transcoder-form id="transcoder-low" category="Low" width="320" height="180" bitrate="500000"}}
+            </div>
+            <p>
+            <button id="submit-button" class="ui-button">Submit</button>
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="stream-section">
+        <div id="quality-container" class="hidden quality-container">
+          <p class="quality-subheader">
+            Choose which quality to publish on:
+            <select id="quality-select" class="quality-select">
+              <option value="1" selected>High_1</option>
+              <option value="2">Mid_2</option>
+              <option value="3">Low_3</option>
+            </select>
+          </p>
+          <div class="settings-area">
+            <p class="settings-field settings-collapsable">
+              <Label class="settings-label">Camera:</label>
+              <select id="camera-select" class="control settings-control"></select>
+            </p>
+            <p class="settings-field settings-collapsable">
+              <Label class="settings-label">Microphone:</label>
+              <select id="mic-select" class="control settings-control"></select>
+            </p>
+            <p class="settings-field settings-collapsable">
+              <label class="settings-label">Sample Rate:</label>
+              <input id="sample-rate-field" name="sample-rate-field" class="settings-control" value="48000">
+            </p>
+            <p class="settings-field settings-collapsable">
+              <label class="settings-label">Sample Size:</label>
+              <input id="sample-size-field" name="sample-size-field" class="settings-control" value="16">
+            </p>
+            <p class="settings-field settings-collapsable">
+            <label class="settings-label">Channel Count:</label>
+              <input id="channel-field" name="channel-field" class="settings-control" value="2">
+            </p>
+            <p class="settings-field settings-collapsable">
+              <label class="settings-label">Audio Bitrate (Kbps):</label>
+              <input id="audio-bitrate-field" name="audio-bitrate-field" class="settings-control" value="128">
+            </p>
+            <p class="settings-field settings-collapsable">
+              <label class="settings-label" for="echo-check">Use Echo Cancellation</label>
+              <input id="echo-check" type="checkbox" class="settings-control">
+            </p>
+            <p class="settings-field settings-collapsable">
+              <label class="settings-label" for="noise-check">Use Noise Suppression</label>
+              <input id="noise-check" type="checkbox" class="settings-control">
+            </p>
+            <p class="settings-field settings-collapsable">
+              <label class="settings-label" for="gain-check">Use Auto Gain Control</label>
+              <input id="gain-check" type="checkbox" class="settings-control">
+            </p>
+            <p>
+              <button id="quality-submit" class="ui-button">Start Publishing</button>
+            </p>
+          </div>
+        </div>
+        {{> status-field-publisher}}
+        {{> statistics-field packets_field='Packets Sent'}}
+        <div class="centered"><p id="address-field" class="address-field">Transcoder Address: N/A</p></div>
+        <div class="centered">
+          <video id="red5pro-publisher" class="red5pro-publisher"
+                 controls autoplay muted playsinline>
+          </video>
+        </div>
+      </div>
+    </div>
+    {{> body-scripts}}
+    <script src="index.js"></script>
+  </body>
+</html>
