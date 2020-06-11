@@ -130,7 +130,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     port: serverSettings.httpport,
     scope: configuration.app,
     streamName: configuration.stream1,
-    apiVersion: configuration.streamManagerAPI || '3.1',
+    apiVersion: configuration.streamManagerAPI || '4.0',
     retryLimit: retryLimit,
     retryDelay: retryDelay,
     useProxy: true 
