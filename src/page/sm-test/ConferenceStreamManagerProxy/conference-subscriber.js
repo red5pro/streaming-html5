@@ -125,7 +125,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     var app = configuration.app;
     var port = serverSettings.httpport;
     var baseUrl = serverSettings.protocol + '://' + host + ':' + port;
-    var apiVersion = configuration.streamManagerAPI || '3.1';
+    var apiVersion = configuration.streamManagerAPI || '4.0';
     var url = baseUrl + '/streammanager/api/' + apiVersion + '/event/' + app + '/' + streamName + '?action=subscribe';
     if (optionalRegion) {
       url += '&region=' + optionalRegion

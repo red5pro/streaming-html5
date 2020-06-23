@@ -412,7 +412,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     var app = configuration.app;
     var port = serverSettings.httpport;
     var baseUrl = protocol + '://' + host + ':' + port;
-    var apiVersion = configuration.streamManagerAPI || '3.1';
+    var apiVersion = configuration.streamManagerAPI || '4.0';
     var region = getRegionIfDefined();
     var url = baseUrl + '/streammanager/api/' + apiVersion + '/event/' + app + '/' + streamName + '?action=broadcast';
     if (region) {

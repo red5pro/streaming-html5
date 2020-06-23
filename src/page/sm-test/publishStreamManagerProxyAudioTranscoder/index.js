@@ -217,7 +217,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     var streamName = configuration.stream1;
     var port = serverSettings.httpport;
     var baseUrl = protocol + '://' + host + ':' + port;
-    var apiVersion = configuration.streamManagerAPI || '3.1';
+    var apiVersion = configuration.streamManagerAPI || '4.0';
     var url = baseUrl + '/streammanager/api/' + apiVersion + '/admin/event/meta/' + app + '/' + streamName + '?accessToken=' + accessToken;
     return new Promise(function (resolve, reject) {
       fetch(url, {
@@ -253,7 +253,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     var streamName = configuration.stream1;
     var port = serverSettings.httpport;
     var baseUrl = protocol + '://' + host + ':' + port;
-    var apiVersion = configuration.streamManagerAPI || '3.1';
+    var apiVersion = configuration.streamManagerAPI || '4.0';
     var region = configuration.streamManagerRegion;
     var url = baseUrl + '/streammanager/api/' + apiVersion + '/event/' + app + '/' + streamName + '?action=broadcast' + '&region=' + region + '&transcode=true';
       return new Promise(function (resolve, reject) {
