@@ -91,6 +91,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     bitrate = b;
     packetsSent = p;
     updateStatistics(bitrate, packetsSent, frameWidth, frameHeight);
+    if (packetsSent > 100) {
+      establishSharedObject(targetPublisher, roomField.value, streamNameField.value);
+    }
   }
 
   function onResolutionUpdate (w, h) {
@@ -212,7 +215,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     isPublishing = true;
     window.red5propublisher = publisher;
     console.log('[Red5ProPublisher] Publish Complete.');
-    establishSharedObject(publisher, roomField.value, streamNameField.value);
+    // [NOTE] Moving SO setup until Package Sent amount is sufficient.
+    //    establishSharedObject(publisher, roomField.value, streamNameField.value);
     try {
       var pc = publisher.getPeerConnection();
       var stream = publisher.getMediaStream();
@@ -317,6 +321,14 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     });
   }
 
+  function getRegionIfDefined () {
+    var region = configuration.streamManagerRegion;
+    if (typeof region === 'string' && region.length > 0 && region !== 'undefined') {
+      return region;
+    }
+    return undefined
+  }
+
   function determinePublisher (jsonResponse) {
     var host = jsonResponse.serverAddress;
     var app = jsonResponse.scope;
@@ -401,7 +413,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     var port = serverSettings.httpport;
     var baseUrl = protocol + '://' + host + ':' + port;
     var apiVersion = configuration.streamManagerAPI || '3.1';
+    var region = getRegionIfDefined();
     var url = baseUrl + '/streammanager/api/' + apiVersion + '/event/' + app + '/' + streamName + '?action=broadcast';
+    if (region) {
+      url += '&region=' + region;
+    }
       return new Promise(function (resolve, reject) {
         fetch(url)
           .then(function (res) {
@@ -522,7 +538,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
                                     port: getSocketLocationFromProtocol().port
                                   },
                                   getAuthenticationParams());
-      subscribers[0].execute(baseSubscriberConfig, serverSettings, configuration.proxy);
+      subscribers[0].execute(baseSubscriberConfig, serverSettings, configuration.proxy, getRegionIfDefined());
     }
 
     updatePublishingUIOnStreamCount(nonPublishers.length);

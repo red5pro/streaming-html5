@@ -298,9 +298,21 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
   }
 
+  function getRegionIfDefined () {
+    var region = configuration.streamManagerRegion;
+    if (typeof region === 'string' && region.length > 0 && region !== 'undefined') {
+      return region;
+    }
+    return undefined
+  }
+
   function getEdgeListFromStreamName (smHost, smApp, streamName, amount) {
     var version = configuration.streamManagerAPI;
+    var region = getRegionIfDefined();
     var url = 'https://' + smHost + '/streammanager/api/' + version + '/event/' + smApp + '/' + streamName + '?action=subscribe&endpoints=' + amount;
+    if (region) {
+      url += '&region=' + region;
+    }
     return new Promise(function (resolve, reject) { // eslint-disable-line no-unused-vars
       fetch(url)
         .then(function (res) {
