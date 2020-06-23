@@ -91,6 +91,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     bitrate = b;
     packetsSent = p;
     updateStatistics(bitrate, packetsSent, frameWidth, frameHeight);
+    if (packetsSent > 100) {
+      establishSharedObject(targetPublisher, roomField.value, streamNameField.value);
+    }
   }
 
   function onResolutionUpdate (w, h) {
@@ -212,7 +215,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     isPublishing = true;
     window.red5propublisher = publisher;
     console.log('[Red5ProPublisher] Publish Complete.');
-    establishSharedObject(publisher, roomField.value, streamNameField.value);
+    // [NOTE] Moving SO setup until Package Sent amount is sufficient.
+    //    establishSharedObject(publisher, roomField.value, streamNameField.value);
     try {
       var pc = publisher.getPeerConnection();
       var stream = publisher.getMediaStream();

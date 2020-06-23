@@ -368,7 +368,7 @@
           videoField.checked = config.useVideo ? true : false;
           audioField.checked = config.useAudio ? true : false;
           muteAutoplayField.checked = config.muteOnAutoplayRestriction ? true : false;
-          smRegionField.value = config.streamManagerRegion;
+          smRegionField.value = config.streamManagerRegion ? config.streamManagerRegion : '';
           smAccessField.value = config.streamManagerAccessToken;
           smAPIField.value = config.streamManagerAPI;
           authEnabledField.checked = config.authentication.enabled ? true : false;
