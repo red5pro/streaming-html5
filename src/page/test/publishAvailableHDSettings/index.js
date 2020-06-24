@@ -243,57 +243,79 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   // List of default HD resolutions. Used in determining browser support for Camera.
   var hd = [
-    [640, 360, 15, 512],
-    [640, 480, 15, 512],
-    [854, 480, 15, 750],
-    [1280, 720, 30, 1500],
-    [1920, 1080, 30, 3000],
-    [3840, 2160, 40, 4500]
-  ]
-  var validResolutions = []
+    {width: 640, height: 360, frameRate: 15, bandwidth: 512, media: undefined},
+    {width: 640, height: 480, frameRate: 15, bandwidth: 512, media: undefined},
+    {width: 854, height: 480, frameRate: 15, bandwidth: 750, media: undefined},
+    {width: 1280, height: 720, frameRate: 30, bandwidth: 1500, media: undefined},
+    {width: 1920, height: 1080, frameRate: 30, bandwidth: 3000, media: undefined},
+    {width: 3840, height: 2160, frameRate: 30, bandwidth: 4500, media: undefined}
+  ];
+  function getSelectedElementForBroadcast () {
+    var elements = document.getElementsByClassName('table-row-selected');
+    return elements && elements.length > 0 ? elements[0] : undefined;
+  }
+  function getSelectedResolutionForBroadcast () {
+    var element = getSelectedElementForBroadcast();
+    if (element) {
+      var index = element.id.split('dimension-')[1];
+      return hd[index];
+    }
+    return undefined;
+  }
+  function selectResolutionForBroadcast (resolution, index) {
+    var currentSelectElement = getSelectedElementForBroadcast();
+    var toSelectElement = document.getElementById('dimension-' + index);
+    var pubElement = document.getElementById('red5pro-publisher');
+    if (currentSelectElement) {
+      currentSelectElement.classList.remove('table-row-selected');
+    }
+    if (toSelectElement) {
+      toSelectElement.classList.add('table-row-selected');
+    }
+    pubElement.srcObject = resolution.media;
+  }
   function displayAvailableResolutions (deviceId, list) {
-    validResolutions = []
     // Clear resolution selection UI.
     while (resContainer.firstChild) {
       resContainer.removeChild(resContainer.firstChild)
     }
     // UI builder for resolution option to select from.
     var generateResOption = function(dim, index, enabled) {
-      var res = [dim[0], dim[1]].join('x')
-      var framerate = dim[2]
-      //      var bitrate = dim[3]
-      var i = document.createElement('input');
+      var res = [dim.width, dim.height].join('x')
+      var framerate = dim.frameRate;
+      var bitrate = dim.bandwidth;
       var tr = document.createElement('tr');
       var resTD = document.createElement('td');
       var frTD = document.createElement('td');
+      var bitrateTD = document.createElement('td');
       var acceptedTD = document.createElement('td');
+      var resText = document.createTextNode(res)
+      var ftText = document.createTextNode(framerate);
+      var bitrateText = document.createTextNode(bitrate);
+      var accText = document.createTextNode(enabled ? '✓' : '⨯');
+      tr.id = 'dimension-' + index;
+      tr.classList.add('settings-control');
       tr.appendChild(resTD);
       tr.appendChild(frTD);
+      tr.appendChild(bitrateTD);
       tr.appendChild(acceptedTD);
       tr.classList.add('table-row');
-      [resTD, frTD, acceptedTD].forEach(function (td) {
-        td.classList.add('table-entry');
-        if (!enabled) {
-          td.classList.add('table-entry-disabled');
-        }
-      });
-      var resText = document.createTextNode(res)
-      resTD.append(i);
-      resTD.append(resText);
-      i.type = 'radio'
-      i.name = 'res-select'
-      i.id = `${index}-resolution`
-      i.value = res
-      i.enabled = enabled
-      var ftText = document.createTextNode(framerate);
+      if (!enabled) {
+        tr.classList.add('table-row-disabled');
+      }
+      resTD.appendChild(resText);
       frTD.appendChild(ftText);
-      var accText = document.createTextNode(enabled ? '✓' : '⨯');
+      bitrateTD.appendChild(bitrateText);
       acceptedTD.appendChild(accText);
-      i.addEventListener('click', function () {
-        //        document.querySelector('#framerate-input-pub').value = framerate
-        //        document.querySelector('#bitrate-input-pub').value = bitrate
-      })
-      return tr
+      [resTD, frTD, bitrateTD, acceptedTD].forEach(function (td) {
+        td.classList.add('table-entry');
+      });
+      if (enabled) {
+        tr.addEventListener('click', function () {
+          selectResolutionForBroadcast(dim, index);
+        });
+      }
+      return tr;
     }
 
     return new Promise(function (resolve) {
@@ -304,8 +326,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         var constraints = {
           audio:false, 
           video: {
-            width: { exact: dim[0] },
-            height: { exact: dim[1] },
+            width: { exact: dim.width },
+            height: { exact: dim.height },
+            frameRate: { exact: dim.frameRate },
             deviceId: deviceId
           }
         };
@@ -313,16 +336,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         navigator.mediaDevices.getUserMedia(constraints)
           .then(function (media) {
             // If resolution supported, generate UI entry and add event listener for selection.
-            dim.push(media);
-            validResolutions.push(dim)
+            dim.media = media;
             resContainer.appendChild(generateResOption(dim, index, true))
-            resContainer.firstChild.firstChild.setAttribute('checked', 'checked')
-            const event = new MouseEvent('click', {
-              view: window,
-              bubbles: true,
-              cancelable: true
-            })
-            resContainer.firstChild.firstChild.dispatchEvent(event)
+            selectResolutionForBroadcast(dim, index);
             if (index === list.length - 1) {
               resolve();
             } else {
@@ -330,7 +346,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             }
           })
           .catch(function (error) {
-            console.log(dim + ' :: ' + error.name)
+            console.log(error.name + ':: ' + JSON.stringify(dim));
             resContainer.appendChild(generateResOption(dim, index, false))
             resContainer.firstChild.firstChild.setAttribute('checked', 'checked')
             if (index === list.length - 1) {
@@ -423,13 +439,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       : {};
   }
 
-  function getUserMediaConfiguration () {
+  function getUserMediaConstraints (res) {
     var config = {
       audio: configuration.useAudio ? configuration.mediaConstraints.audio : false,
       video: configuration.useVideo ? {
-        width: { exact: parseInt(640) }, // TODO: Set with selection.
-        height: { exact: parseInt(320) }, // TODO: Set with selection.
-        frameRate: { min: parseInt(15) } // TODO: Set with selection.
+        width: { exact: parseInt(res.width) },
+        height: { exact: parseInt(res.height) },
+        frameRate: { min: parseInt(res.frameRate) }
       } : false
     };
     if (configuration.useVideo && cameraSelect.value && cameraSelect.value.length > 0) {
@@ -440,6 +456,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   function determinePublisher () {
+    var resolution = getSelectedResolutionForBroadcast();
     var config = Object.assign({},
                       configuration,
                       defaultConfiguration,
@@ -448,9 +465,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
                         keyFramerate: 3000,
                         bandwidth: {
                           audio: configuration.bandwidth.audio,
-                          video: 512 // TODO: Set with selection.
+                          video: resolution.bandwidth
                         },
-                        mediaConstraints: getUserMediaConfiguration()
+                        mediaConstraints: getUserMediaConstraints(resolution)
                       });
 
     console.log('-----');

@@ -18,13 +18,18 @@
       }
       .table-row {
         background-color: #fff;
+        cursor: pointer;
       }
       .table-entry {
         padding: 10px;
         border: 1px solid black;
       }
-      .table-entry-disabled {
+      .table-row-disabled {
         background-color: #eee;
+        cursor: default;
+      }
+      .table-row-selected {
+        background-color: #cef0ff;
       }
     </style>
   </head>
@@ -41,12 +46,13 @@
             <select id="camera-select" class="control settings-control"></select>
           </p>
           <div class="settings-field settings-collapsable">
-            <p>Available Resolutions:</p>
+            <p class="centered status-field">Supported Constraints</p>
             <table class="table">
               <thead>
-                <tr class="table-row">
+                <tr>
                   <td class="table-entry">Resolution</td>
                   <td class="table-entry">Framerate</td>
+                  <td class="table-entry">Bitrate (Kbps)</td>
                   <td class="table-entry">Is Supported</td>
                 </tr>
               </thead>
