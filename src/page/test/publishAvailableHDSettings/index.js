@@ -250,6 +250,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     {width: 1920, height: 1080, frameRate: 30, bandwidth: 3000, media: undefined},
     {width: 3840, height: 2160, frameRate: 30, bandwidth: 4500, media: undefined}
   ];
+  function onResolutionSelect (event) {
+    var index = parseInt(event.currentTarget.id.split('dimension-')[1], 10);
+    selectResolutionForBroadcast(hd[index], index);
+  }
   function getSelectedElementForBroadcast () {
     var elements = document.getElementsByClassName('table-row-selected');
     return elements && elements.length > 0 ? elements[0] : undefined;
@@ -257,7 +261,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   function getSelectedResolutionForBroadcast () {
     var element = getSelectedElementForBroadcast();
     if (element) {
-      var index = element.id.split('dimension-')[1];
+      var index = parseInt(element.id.split('dimension-')[1], 10);
       return hd[index];
     }
     return undefined;
@@ -277,6 +281,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   function displayAvailableResolutions (deviceId, list) {
     // Clear resolution selection UI.
     while (resContainer.firstChild) {
+      resContainer.firstChild.removeEventListener('click', onResolutionSelect);
       resContainer.removeChild(resContainer.firstChild)
     }
     // UI builder for resolution option to select from.
@@ -311,9 +316,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         td.classList.add('table-entry');
       });
       if (enabled) {
-        tr.addEventListener('click', function () {
-          selectResolutionForBroadcast(dim, index);
-        });
+        tr.addEventListener('click', onResolutionSelect, true);
       }
       return tr;
     }
@@ -328,7 +331,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           video: {
             width: { exact: dim.width },
             height: { exact: dim.height },
-            frameRate: { exact: dim.frameRate },
+            //            frameRate: { exact: dim.frameRate },
             deviceId: deviceId
           }
         };
@@ -336,6 +339,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         navigator.mediaDevices.getUserMedia(constraints)
           .then(function (media) {
             // If resolution supported, generate UI entry and add event listener for selection.
+            if (dim.media) {
+              dim.media.getVideoTracks().forEach(function (track) {
+                track.stop();
+              });
+            }
             dim.media = media;
             resContainer.appendChild(generateResOption(dim, index, true))
             selectResolutionForBroadcast(dim, index);
@@ -356,6 +364,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             }
           });
       };
+
       checkValid(0);
     });
   }
