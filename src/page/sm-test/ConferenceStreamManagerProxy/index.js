@@ -287,6 +287,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     soField.value = ['User "' + message.user + '": ' + message.message, soField.value].join('\n');
   }
   function establishSharedObject (publisher, roomName, streamName) {
+    if (so) {
+      return;
+    }
     // Create new shared object.
     so = new SharedObject(roomName, publisher)
     var soCallback = {
@@ -298,6 +301,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     });
     so.on(red5prosdk.SharedObjectEventTypes.CONNECT_FAILURE, function (event) { // eslint-disable-line no-unused-vars
       console.log('[Red5ProPublisher] SharedObject Fail.');
+      so = undefined;
     });
     so.on(red5prosdk.SharedObjectEventTypes.PROPERTY_UPDATE, function (event) {
       console.log('[Red5ProPublisher] SharedObject Property Update.');
