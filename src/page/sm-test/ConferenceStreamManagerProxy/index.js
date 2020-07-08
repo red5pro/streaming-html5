@@ -128,17 +128,30 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   function updateMutedAudioOnPublisher () {
     if (targetPublisher && isPublishing) {
+      var c = targetPublisher.getPeerConnection();
+      var senders = c.getSenders();
+      var params = senders[0].getParameters();
       if (audioCheck.checked) { 
-        if (videoTrackClone) {
-          var c = targetPublisher.getPeerConnection();
-          var senders = c.getSenders();
+        if (audioTrackClone) {
           senders[0].replaceTrack(audioTrackClone);
           audioTrackClone = undefined;
         } else {
-          targetPublisher.unmuteAudio();
+          try {
+            params.encodings[0].active = true;
+            senders[0].setParameters(params);
+          } catch (e) {
+            // no browser support, let's use mute API.
+            targetPublisher.unmuteAudio();
+          }
         }
       } else { 
-        targetPublisher.muteAudio(); 
+        try {
+          params.encodings[0].active = false;
+          senders[0].setParameters(params);
+        } catch (e) {
+          // no browser support, let's use mute API.
+          targetPublisher.muteAudio();
+        }
       }
     }
   }
