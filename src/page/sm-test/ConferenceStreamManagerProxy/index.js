@@ -137,6 +137,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           audioTrackClone = undefined;
         } else {
           try {
+            targetPublisher.unmuteAudio();
             params.encodings[0].active = true;
             senders[0].setParameters(params);
           } catch (e) {
@@ -146,6 +147,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         }
       } else { 
         try {
+          targetPublisher.muteAudio();
           params.encodings[0].active = false;
           senders[0].setParameters(params);
         } catch (e) {
