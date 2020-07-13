@@ -54,8 +54,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var updateStatusFromEvent = window.red5proHandlePublisherEvent; // defined in src/template/partial/status-field-publisher.hbs
   var streamTitle = document.getElementById('stream-title');
   var statisticsField = document.getElementById('statistics-field');
-  var muteAudioButton = document.getElementById('mute-audio-button');
-  var muteVideoButton = document.getElementById('mute-video-button');
+  //  var muteAudioButton = document.getElementById('mute-audio-button');
+  //  var muteVideoButton = document.getElementById('mute-video-button');
+  var muteAudioButton2 = document.getElementById('mute-audio2-button');
+  var muteVideoButton2 = document.getElementById('mute-video2-button');
   var bitrateField = document.getElementById('bitrate-field');
   var packetsField = document.getElementById('packets-field');
   var resolutionField = document.getElementById('resolution-field');
@@ -100,9 +102,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   };
 
   function addMuteListener (publisher) {
+    // Favoring the client mute functionality over the legacy server mute.
+    /**
     muteAudioButton.addEventListener('click', function () {
-      var wasMuted = muteAudioButton.innerText === 'Unmute Audio';
-      muteAudioButton.innerText = wasMuted ? 'Mute audio' : 'Unmute Audio';
+      var wasMuted = muteAudioButton.innerText === 'Unmute Audio (Server)';
+      muteAudioButton.innerText = wasMuted ? 'Mute Audio (Server)' : 'Unmute Audio (Server)';
       if (wasMuted) {
         publisher.unmuteAudio();
       }
@@ -111,8 +115,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       }
     });
     muteVideoButton.addEventListener('click', function () {
-      var wasMuted = muteVideoButton.innerText === 'Unmute Video';
-      muteVideoButton.innerText = wasMuted ? 'Mute Video' : 'Unmute Video';
+      var wasMuted = muteVideoButton.innerText === 'Unmute Video (Server)';
+      muteVideoButton.innerText = wasMuted ? 'Mute Video (Server)' : 'Unmute Video (Server)';
       var videoElement = document.getElementById('red5pro-publisher');
       if (wasMuted) {
         publisher.unmuteVideo();
@@ -140,6 +144,37 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           track.stop();
         })
       }
+    });
+    */
+    muteAudioButton2.addEventListener('click', function () {
+      var wasMuted = muteAudioButton2.innerText === 'Unmute Audio (Client)';
+      muteAudioButton2.innerText = wasMuted ? 'Mute Audio (Client)' : 'Unmute Audio (Client)';
+      if (wasMuted) {
+        publisher.unmuteAudio();
+      }
+      else {
+        publisher.muteAudio();
+      }
+      var pc = publisher.getPeerConnection();
+      var sender = pc.getSenders()[0]; // Assuming Audio is first in list.
+      var params = sender.getParameters();
+      params.encodings[0].active = wasMuted ? true : false;
+      sender.setParameters(params);
+    });
+    muteVideoButton2.addEventListener('click', function () {
+      var wasMuted = muteVideoButton2.innerText === 'Unmute Video (Client)';
+      muteVideoButton2.innerText = wasMuted ? 'Mute Video (Client)' : 'Unmute Video (Client)';
+      if (wasMuted) {
+        publisher.unmuteVideo();
+      }
+      else {
+        publisher.muteVideo();
+      }
+      var pc = publisher.getPeerConnection();
+      var sender = pc.getSenders()[1]; // Assuming Video is second in list.
+      var params = sender.getParameters();
+      params.encodings[0].active = wasMuted ? true : false;
+      sender.setParameters(params);
     });
   }
 

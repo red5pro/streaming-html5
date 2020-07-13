@@ -140,8 +140,20 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     return form;
   }
 
+  function getRegionIfDefined () {
+    var region = configuration.streamManagerRegion;
+    if (typeof region === 'string' && region.length > 0 && region !== 'undefined') {
+      return region;
+    }
+    return undefined
+  }
+
   function getValidationParams () {
     var kvObject = {}
+    var region = getRegionIfDefined();
+    if (region) {
+      kvObject.region = region;
+    }
     var nodes = validationForm.childNodes;
     var i = 0, length = nodes.length;
     var inputField, valueField;
