@@ -70,6 +70,7 @@ _It is *highly* recommended to include [adapter.js](https://github.com/webrtcHac
 | connectionParams | [-] | `undefined` | An object of connection parameters to send to the server upon connection request. |
 | mediaConstraints | [x] | [see below](#webrtc-mediaconstraints) | A object representative of the [Media Constraints](https://developer.mozilla.org/en-US/docs/Web/API/MediaStreamConstraints) to use while setting up the Media (via `getUserMedia` internally to the SDK). |
 | onGetUserMedia | [-] | [see below](#using-mediaconstraints-and-ongetusermedia) | An override method for performing your own `getUserMedia` request. |
+| signalingSocketOnly | [-] | false | Flag to indicate whether the `WebSocket` should only be used for signaling while establishing a connection. Afterward, all data between client and server will be sent over an `RTCDataChannel`.
 
 ### WebRTC Example
 

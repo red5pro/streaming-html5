@@ -75,6 +75,7 @@ _It is *highly* recommended to include [adapter.js](https://github.com/webrtcHac
 | autoLayoutOrientation | [-] | `true` | Flag to allow SDK to auto-orientation the layout of `video` element based on broadcast metadata. _Mobile publishers broadcast with orientation._ |
 | muteOnAutoplayRestriction | [-] | `true` | Flag to attempt to mute the `video` element when `autoplay` is restricted in the browser. [See section on Autoplay Restrictions](#autoplay-restrictions) |
 | maintainConnectionOnSubscribeErrors | [-] | `false` | Flag to maintain previously established `WebSocket` connection on any failure within the `subscribe` request flow. [Example](https://github.com/red5pro/streaming-html5/tree/master/src/page/test/subscribeRetryOnInvalidName) |
+| signalingSocketOnly | [-] | false | Flag to indicate whether the `WebSocket` should only be used for signaling while establishing a connection. Afterward, all data between client and server will be sent over an `RTCDataChannel`.
 
 #### Video Encoding Configuration
 
