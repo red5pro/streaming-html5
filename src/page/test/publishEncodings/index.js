@@ -225,8 +225,23 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   function getUserMediaConfiguration () {
     return {
       audio: configuration.useAudio ? configuration.mediaConstraints.audio : false,
-      video: configuration.useVideo ? configuration.mediaConstraints.video : false,
-      frameRate: configuration.frameRate
+      video: configuration.useVideo ? {
+        width: {
+          min: 640,
+          ideal: 1920,
+          max: 1920
+        },
+        height: {
+          min: 480,
+          ideal: 1080,
+          max: 1080
+        }
+      } : false,
+      frameRate: {
+        min: 25,
+        ideal: 60,
+        max: 60
+      }
     };
   }
 
@@ -235,13 +250,15 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
                       configuration,
                       defaultConfiguration,
                       getAuthenticationParams(),
-                      getUserMediaConfiguration());
+                      { 
+                        mediaConstraints: getUserMediaConfiguration()
+                      });
 
     var rtcConfig = Object.assign({}, config, {
                       protocol: getSocketLocationFromProtocol().protocol,
                       port: getSocketLocationFromProtocol().port,
                       streamName: config.stream1,
-                      bandwidth: null // to allow for scaling of bandwidth
+                      bandwidth: 2500 // to allow for scaling of bandwidth
                    });
     return new red5prosdk.RTCPublisher().init(rtcConfig);
   }
