@@ -58,6 +58,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var muteVideoButton = document.getElementById('mute-video-button');
   var bandwidthSelect = document.getElementById('bandwidth-select');
   var scaleSelect = document.getElementById('scale-select');
+  var activeCheck = document.getElementById('active-check');
   var bitrateField = document.getElementById('bitrate-field');
   var packetsField = document.getElementById('packets-field');
   var resolutionField = document.getElementById('resolution-field');
@@ -101,11 +102,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     streamMode: configuration.recordBroadcast ? 'record' : 'live'
   };
 
-  function getVideoTrackSender (connection) {
+  function getTrackSender (connection, kind) {
     var senders = connection.getSenders();
     var i = senders.length
     while (--i > -1) {
-      if (senders[i].track.kind === 'video') {
+      if (senders[i].track.kind === kind) {
         return senders[i];
       }
     }
@@ -115,7 +116,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   function addPublisherControls (publisher) {
     bandwidthSelect.addEventListener('change', function () {
       var value = bandwidthSelect.options[bandwidthSelect.selectedIndex].value;
-      var sender = getVideoTrackSender(publisher.getPeerConnection());
+      var sender = getTrackSender(publisher.getPeerConnection(), 'video');
       var params = sender.getParameters();
       if (!params.encodings) {
         params.encodings = [{}];
@@ -129,7 +130,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     });
     scaleSelect.addEventListener('change', function () {
       var value = scaleSelect.options[scaleSelect.selectedIndex].value;
-      var sender = getVideoTrackSender(publisher.getPeerConnection());
+      var sender = getTrackSender(publisher.getPeerConnection(), 'video');
       var params = sender.getParameters();
       if (!params.encodings) {
         params.encodings = [{}];
@@ -139,12 +140,26 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     });
     muteAudioButton.addEventListener('click', function () {
       var wasMuted = muteAudioButton.innerText === 'Unmute Audio';
+      var useActive = activeCheck.checked;
       muteAudioButton.innerText = wasMuted ? 'Mute audio' : 'Unmute Audio';
+      var sender = getTrackSender(publisher.getPeerConnection(), 'audio');
+      var params = sender.getParameters();
+      if (!params.encodings) {
+        params.encodings = [{}];
+      }
       if (wasMuted) {
         publisher.unmuteAudio();
+        if (useActive) {
+          params.encodings[0].active = true;
+          sender.setParameters(params);
+        }
       }
       else {
         publisher.muteAudio();
+        if (useActive) {
+          params.encodings[0].active = false;
+          sender.setParameters(params);
+        }
       }
     });
     muteVideoButton.addEventListener('click', function () {
