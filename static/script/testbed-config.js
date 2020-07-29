@@ -130,6 +130,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       "recordBroadcast": false,
       "streamManagerAPI": "4.0",
       "streamManagerAccessToken": "xyz123",
+      "streamManagerRegion": undefined,
       "muteOnAutoplayRestriction": true,
       "authentication": {
         "enabled": false,

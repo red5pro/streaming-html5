@@ -54,50 +54,16 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var updateStatusFromEvent = window.red5proHandlePublisherEvent; // defined in src/template/partial/status-field-publisher.hbs
   var streamTitle = document.getElementById('stream-title');
   var statisticsField = document.getElementById('statistics-field');
-  var addressField = document.getElementById('address-field');
-  var bitrateField = document.getElementById('bitrate-field');
-  var packetsField = document.getElementById('packets-field');
-  var resolutionField = document.getElementById('resolution-field');
 
-  var bandwidthAudioField = document.getElementById('audio-bitrate-field');
-  var bandwidthVideoField = document.getElementById('video-bitrate-field');
-  var keyFramerateField = document.getElementById('key-framerate-field');
   var cameraSelect = document.getElementById('camera-select');
-  var cameraWidthField = document.getElementById('camera-width-field');
-  var cameraHeightField = document.getElementById('camera-height-field');
-  var framerateField =document.getElementById('framerate-field');
+  var resContainer = document.getElementById('res-container');
   var publishButton = document.getElementById('publish-button');
 
   var settingsControls = document.getElementsByClassName('settings-control');
 
-  bandwidthAudioField.value = configuration.bandwidth.audio;
-  bandwidthVideoField.value = configuration.bandwidth.video;
-  keyFramerateField.value = configuration.keyFramerate || 3000;
-  cameraWidthField.value = configuration.mediaConstraints.video !== true ? configuration.mediaConstraints.video.width.max : 640;
-  cameraHeightField.value = configuration.mediaConstraints.video !== true ? configuration.mediaConstraints.video.height.max : 480;
-  framerateField.value = configuration.mediaConstraints.video !== true ? configuration.mediaConstraints.video.frameRate.max : 30;
-
-  var protocol = serverSettings.protocol;
-  var isSecure = protocol == 'https';
-
-  function getSocketLocationFromProtocol () {
-    return !isSecure
-      ? {protocol: 'ws', port: serverSettings.wsport}
-      : {protocol: 'wss', port: serverSettings.wssport};
-  }
-
-  streamTitle.innerText = configuration.stream1;
-  var defaultConfiguration = {
-    protocol: getSocketLocationFromProtocol().protocol,
-    port: getSocketLocationFromProtocol().port,
-    streamMode: configuration.recordBroadcast ? 'record' : 'live'
-  };
-
-  function displayServerAddress (serverAddress, proxyAddress)
-  {
-    proxyAddress = (typeof proxyAddress === 'undefined') ? 'N/A' : proxyAddress;
-    addressField.innerText = ' Proxy Address: ' + proxyAddress + ' | ' + ' Origin Address: ' + serverAddress;
-  }
+  var bitrateField = document.getElementById('bitrate-field');
+  var packetsField = document.getElementById('packets-field');
+  var resolutionField = document.getElementById('resolution-field');
 
   var isShowingModal = false;
   var constraintInfoNotices = [];
@@ -199,6 +165,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     updateStatistics(bitrate, packetsSent, frameWidth, frameHeight);
   }
 
+  streamTitle.innerText = configuration.stream1;
+
+  var protocol = serverSettings.protocol;
+  var isSecure = protocol == 'https';
+
   var isPublishable = true;
   function setPublishableState (isPublishableFlag) {
     isPublishable = isPublishableFlag;
@@ -213,6 +184,17 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     publishButton.innerText = isPublishable ? 'Start Publish' : 'Stop Publish';
   }
   setPublishableState(true);
+
+  function getSocketLocationFromProtocol () {
+    return !isSecure
+      ? {protocol: 'ws', port: serverSettings.wsport}
+      : {protocol: 'wss', port: serverSettings.wssport};
+  }
+  var defaultConfiguration = {
+    protocol: getSocketLocationFromProtocol().protocol,
+    port: getSocketLocationFromProtocol().port,
+    streamMode: configuration.recordBroadcast ? 'record' : 'live'
+  };
 
   function onPublisherEvent (event) {
     console.log('[Red5ProPublisher] ' + event.type + '.');
@@ -259,6 +241,134 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     console.error('Could not access devices: ' + error);
   }
 
+  // List of default HD resolutions. Used in determining browser support for Camera.
+  var hd = [
+    {width: 640, height: 360, frameRate: 15, bandwidth: 512, media: undefined},
+    {width: 640, height: 480, frameRate: 15, bandwidth: 512, media: undefined},
+    {width: 854, height: 480, frameRate: 15, bandwidth: 750, media: undefined},
+    {width: 1280, height: 720, frameRate: 30, bandwidth: 1500, media: undefined},
+    {width: 1920, height: 1080, frameRate: 30, bandwidth: 3000, media: undefined},
+    {width: 3840, height: 2160, frameRate: 30, bandwidth: 4500, media: undefined}
+  ];
+  function onResolutionSelect (event) {
+    var index = parseInt(event.currentTarget.id.split('dimension-')[1], 10);
+    selectResolutionForBroadcast(hd[index], index);
+  }
+  function getSelectedElementForBroadcast () {
+    var elements = document.getElementsByClassName('table-row-selected');
+    return elements && elements.length > 0 ? elements[0] : undefined;
+  }
+  function getSelectedResolutionForBroadcast () {
+    var element = getSelectedElementForBroadcast();
+    if (element) {
+      var index = parseInt(element.id.split('dimension-')[1], 10);
+      return hd[index];
+    }
+    return undefined;
+  }
+  function selectResolutionForBroadcast (resolution, index) {
+    var currentSelectElement = getSelectedElementForBroadcast();
+    var toSelectElement = document.getElementById('dimension-' + index);
+    var pubElement = document.getElementById('red5pro-publisher');
+    if (currentSelectElement) {
+      currentSelectElement.classList.remove('table-row-selected');
+    }
+    if (toSelectElement) {
+      toSelectElement.classList.add('table-row-selected');
+    }
+    pubElement.srcObject = resolution.media;
+  }
+  function displayAvailableResolutions (deviceId, list) {
+    // Clear resolution selection UI.
+    while (resContainer.firstChild) {
+      resContainer.firstChild.removeEventListener('click', onResolutionSelect);
+      resContainer.removeChild(resContainer.firstChild)
+    }
+    // UI builder for resolution option to select from.
+    var generateResOption = function(dim, index, enabled) {
+      var res = [dim.width, dim.height].join('x')
+      var framerate = dim.frameRate;
+      var bitrate = dim.bandwidth;
+      var tr = document.createElement('tr');
+      var resTD = document.createElement('td');
+      var frTD = document.createElement('td');
+      var bitrateTD = document.createElement('td');
+      var acceptedTD = document.createElement('td');
+      var resText = document.createTextNode(res)
+      var ftText = document.createTextNode(framerate);
+      var bitrateText = document.createTextNode(bitrate);
+      var accText = document.createTextNode(enabled ? '✓' : '⨯');
+      tr.id = 'dimension-' + index;
+      tr.classList.add('settings-control');
+      tr.appendChild(resTD);
+      tr.appendChild(frTD);
+      tr.appendChild(bitrateTD);
+      tr.appendChild(acceptedTD);
+      tr.classList.add('table-row');
+      if (!enabled) {
+        tr.classList.add('table-row-disabled');
+      }
+      resTD.appendChild(resText);
+      frTD.appendChild(ftText);
+      bitrateTD.appendChild(bitrateText);
+      acceptedTD.appendChild(accText);
+      [resTD, frTD, bitrateTD, acceptedTD].forEach(function (td) {
+        td.classList.add('table-entry');
+      });
+      if (enabled) {
+        tr.addEventListener('click', onResolutionSelect, true);
+      }
+      return tr;
+    }
+
+    return new Promise(function (resolve) {
+      // For each HD listing, check if resolution is supported in the browser and 
+      //  add to selection UI if available.
+      var checkValid = function (index) {
+        var dim = list[index];
+        var constraints = {
+          audio:false, 
+          video: {
+            width: { exact: dim.width },
+            height: { exact: dim.height },
+            //            frameRate: { exact: dim.frameRate },
+            deviceId: deviceId
+          }
+        };
+
+        navigator.mediaDevices.getUserMedia(constraints)
+          .then(function (media) {
+            // If resolution supported, generate UI entry and add event listener for selection.
+            if (dim.media) {
+              dim.media.getVideoTracks().forEach(function (track) {
+                track.stop();
+              });
+            }
+            dim.media = media;
+            resContainer.appendChild(generateResOption(dim, index, true))
+            selectResolutionForBroadcast(dim, index);
+            if (index === list.length - 1) {
+              resolve();
+            } else {
+              checkValid(++index);
+            }
+          })
+          .catch(function (error) {
+            console.log(error.name + ':: ' + JSON.stringify(dim));
+            resContainer.appendChild(generateResOption(dim, index, false))
+            resContainer.firstChild.firstChild.setAttribute('checked', 'checked')
+            if (index === list.length - 1) {
+              resolve();
+            } else {
+              checkValid(++index);
+            }
+          });
+      };
+
+      checkValid(0);
+    });
+  }
+
   function listDevices (devices) {
     var cameras = devices.filter(function (item) {
       return item.kind === 'videoinput';
@@ -287,21 +397,27 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     var delay = clearEstablishedStream() ? 200 : 0;
     var t = setTimeout(function () {
       clearTimeout(t);
-      navigator.mediaDevices.getUserMedia(constraints)
-        .then(function (mediastream) {
-          stream = mediastream;
-          return navigator.mediaDevices.enumerateDevices()
-        })
-        .then(function (devices) {
-          listDevices(devices);
-          stream.getVideoTracks().forEach(function (track) {
-            cameraSelect.value = track.getSettings().deviceId;
-          });
-          pubElement.srcObject = stream;
+      displayAvailableResolutions(deviceId, hd)
+        .then(function () {
+          navigator.mediaDevices.getUserMedia(constraints)
+            .then(function (mediastream) {
+              stream = mediastream;
+              return navigator.mediaDevices.enumerateDevices()
+            })
+            .then(function (devices) {
+              listDevices(devices);
+              stream.getVideoTracks().forEach(function (track) {
+                cameraSelect.value = track.getSettings().deviceId;
+              });
+              pubElement.srcObject = stream;
+            })
+            .catch(function (error) {
+              console.error(error);
+              showConstraintError(error.message, error.constraint || 'N/A');
+            });
         })
         .catch(function (error) {
           console.error(error);
-          showConstraintError(error.message, error.constraint || 'N/A');
         });
     }, delay);
   }
@@ -320,37 +436,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
        });
   }
 
-  function requestOrigin (configuration) {
-    var host = configuration.host;
-    var app = configuration.app;
-    var streamName = configuration.stream1;
-    var port = serverSettings.httpport;
-    var baseUrl = protocol + '://' + host + ':' + port;
-    var apiVersion = configuration.streamManagerAPI || '4.0';
-    var region = configuration.streamManagerRegion;
-    var url = baseUrl + '/streammanager/api/' + apiVersion + '/event/' + app + '/' + streamName + '?action=broadcast' + '&region=' + region;
-      return new Promise(function (resolve, reject) {
-        fetch(url)
-          .then(function (res) {
-            if (res.headers.get("content-type") &&
-              res.headers.get("content-type").toLowerCase().indexOf("application/json") >= 0) {
-                return res.json();
-            }
-            else {
-              throw new TypeError('Could not properly parse response.');
-            }
-          })
-          .then(function (json) {
-            resolve(json);
-          })
-          .catch(function (error) {
-            var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
-            console.error('[PublisherStreamManagerTest] :: Error - Could not request Origin IP from Stream Manager. ' + jsonError)
-            reject(error)
-          });
-    });
-  }
-
   function getAuthenticationParams () {
     var auth = configuration.authentication;
     return auth && auth.enabled
@@ -363,60 +448,45 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       : {};
   }
 
-  function getUserMediaConfiguration () {
+  function getUserMediaConstraints (res) {
     var config = {
       audio: configuration.useAudio ? configuration.mediaConstraints.audio : false,
       video: configuration.useVideo ? {
-        width: { exact: parseInt(cameraWidthField.value) },
-        height: { exact: parseInt(cameraHeightField.value) },
-        frameRate: { min: parseInt(framerateField.value) }
+        width: { exact: parseInt(res.width) },
+        height: { exact: parseInt(res.height) },
+        frameRate: { min: parseInt(res.frameRate) }
       } : false
     };
-    if (cameraSelect.value && cameraSelect.value.length > 0) {
+    if (configuration.useVideo && cameraSelect.value && cameraSelect.value.length > 0) {
       var v = Object.assign(config.video, {deviceId: { exact: cameraSelect.value }});
       config.video = v;
     }
     return config;
   }
 
-  function determinePublisher (jsonResponse) {
-    var host = jsonResponse.serverAddress;
-    var app = jsonResponse.scope;
-    var name = jsonResponse.name;
+  function determinePublisher () {
+    var resolution = getSelectedResolutionForBroadcast();
     var config = Object.assign({},
-                    configuration,
-                    defaultConfiguration,
-                    {
-                      keyFramerate: parseInt(keyFramerateField.value),
-                      bandwidth: {
-                        audio: parseInt(bandwidthAudioField.value),
-                        video: parseInt(bandwidthVideoField.value)
-                      },
-                        mediaConstraints: getUserMediaConfiguration()
-                    });
+                      configuration,
+                      defaultConfiguration,
+                      getAuthenticationParams(),
+                      {
+                        keyFramerate: 3000,
+                        bandwidth: {
+                          audio: configuration.bandwidth.audio,
+                          video: resolution.bandwidth
+                        },
+                        mediaConstraints: getUserMediaConstraints(resolution)
+                      });
 
     console.log('-----');
     console.log(JSON.stringify(config, null, 2));
     console.log('-----');
-
     var rtcConfig = Object.assign({}, config, {
                       protocol: getSocketLocationFromProtocol().protocol,
                       port: getSocketLocationFromProtocol().port,
-                      streamName: name,
-                      app: configuration.proxy,
-                      connectionParams: {
-                        host: host,
-                        app: app
-                      }
+                      streamName: config.stream1
                    });
-
-    // Merge in possible authentication params.
-    rtcConfig.connectionParams = Object.assign({},
-      getAuthenticationParams().connectionParams,
-      rtcConfig.connectionParams);
-
-    displayServerAddress(host, config.host);
-
     var pub = new red5prosdk.RTCPublisher();
     pub.on('*', onPublisherEvent);
     return pub.init(rtcConfig);
@@ -444,54 +514,28 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     });
   }
 
-  var retryCount = 0;
-  var retryLimit = 3;
-  function respondToOrigin (response) {
-    var delay = clearEstablishedStream() ? 200 : 0;
-    var t = setTimeout(function (){
-      clearTimeout(t);
-      determinePublisher(response)
-        .then(function (publisherImpl) {
-          streamTitle.innerText = configuration.stream1;
-          targetPublisher = publisherImpl;
-          return targetPublisher.publish()
-        })
-        .then(function () {
-          onPublishSuccess(targetPublisher);
-        })
-        .catch(function (error) {
-          var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
-          console.error('[Red5ProPublisher] :: Error in access of Origin IP: ' + jsonError);
-          updateStatusFromEvent({
-            type: red5prosdk.PublisherEventTypes.CONNECT_FAILURE
-          });
-          onPublishFail(jsonError);
-        });
-    }, delay);
-  }
-
-  function respondToOriginFailure (error) {
-    if (retryCount++ < retryLimit) {
-      var retryTimer = setTimeout(function () {
-        clearTimeout(retryTimer);
-        restart();
-      }, 1000);
-    }
-    else {
-      var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
-      updateStatusFromEvent({
-        type: red5prosdk.PublisherEventTypes.CONNECT_FAILURE
-      });
-      console.error('[Red5ProPublisher] :: Retry timeout in publishing - ' + jsonError);
-    }
-  }
-
   function startStopPublish () {
     if (isPublishable) {
       setPublishableState(false);
-      requestOrigin(configuration)
-        .then(respondToOrigin)
-        .catch(respondToOriginFailure);
+      // delay by 200 milliseconds to allow for clearage of previous stream.
+      var delay = clearEstablishedStream() ? 200 : 0;
+      var t = setTimeout(function (){
+        clearTimeout(t);
+        determinePublisher()
+          .then(function (publisherImpl) {
+            streamTitle.innerText = configuration.stream1;
+            targetPublisher = publisherImpl;
+            return targetPublisher.publish()
+          })
+          .then(function () {
+            onPublishSuccess(targetPublisher);
+          })
+          .catch(function (error) {
+            var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
+            console.error('[Red5ProPublisher] :: Error in publishing - ' + jsonError);
+            onPublishFail(jsonError);
+          });
+      }, delay);
     } else {
       shutdown(false);
     }
@@ -515,7 +559,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   publishButton.addEventListener('click', startStopPublish);
 
   var shuttingDown = false;
-  function shutdown(trackShutdown) {
+  function shutdown (trackShutdown) {
     if (shuttingDown) return;
     shuttingDown = (typeof trackShutdown === 'boolean') ? trackShutdown : true;
     function clearRefs () {

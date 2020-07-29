@@ -11,7 +11,22 @@ This example shows how to "mute" the audio and video of a publisher while stream
 
 > These examples use the WebRTC-based Publisher implementation from the Red5 Pro HTML SDK.
 
+# Important Note
+
+A server configuration related to WebRTC plugin is required in order for this example to work properly:
+
+In the server distribution, under `conf`, update the following line in `webrtc-plugin.properties`:
+
+```sh
+# Idle checking for transport layer
+idle.check.enabled=false
+```
+
+The reason it needs to be switched from the default of `true` to `false` is to properly notify the server to not consider a subscriber who is not receiving video data (in the case of a publisher having muted their audio and video) to be considered a lost connection.
+
 # Mute & Unmute
+
+## Mute API in the SDK
 
 The WebRTC-based publisher exposes the following API to mute and unmute audio and video:
 
@@ -22,7 +37,25 @@ The WebRTC-based publisher exposes the following API to mute and unmute audio an
 | `muteVideo` | Turns off sending video data during a live broadcast. |
 | `unmuteVideo` | Turns on sending video data during a live broadcast. |
 
-These methods cn be thought of as "muting" and "unmuting" the microphone and camer during a live broadcast.
+These methods are used to communicate to the server that the broadcaster is going to be shutting off their audio and/or video stream(s), respectively.
+
+This notification is first made prior to actually stopping the sending of packets to the server using the `active` encoding parameter of the `RTCRtspSender` of a `RTCPeerConnection`.
+
+## active Encoding in RTCRtspSender
+
+After notifying the server that packets will stop being sent, we utilize the `active` encoding parameter of each `RTCRtspSender` of the underlying connection to toggle on or off the audio and/or video stream.
+
+For example, the following will stop sending audio packets out on the target publisher:
+
+```js
+var pc = publisher.getPeerConnection();
+var sender = pc.getSenders()[0]; // Assuming Audio is first in list.
+var params = sender.getParameters();
+params.encodings[0].active = wasMuted ? true : false;
+sender.setParameters(params);
+```
+
+> More information: [https://developer.mozilla.org/en-US/docs/Web/API/RTCRtpSendParameters/encodings](https://developer.mozilla.org/en-US/docs/Web/API/RTCRtpSendParameters/encodings)
 
 ## UI
 
@@ -30,28 +63,39 @@ Included on the page are buttons that allow you to mute and unmute both audio an
 
 ```
 function addMuteListener (publisher) {
-  muteAudioButton.addEventListener('click', function () {
-    var wasMuted = muteAudioButton.innerText === 'unmute';
-    muteAudioButton.innerText = wasMuted ? 'mute' : 'unmute';
-    if (wasMuted) {
-      publisher.unmuteAudio();
-    }
-    else {
-      publisher.muteAudio();
-    }
-  });
-  muteVideoButton.addEventListener('click', function () {
-    var wasMuted = muteVideoButton.innerText === 'unmute';
-    muteVideoButton.innerText = wasMuted ? 'mute' : 'unmute';
-    if (wasMuted) {
-      publisher.unmuteVideo();
-    }
-    else {
-      publisher.muteVideo();
-    }
-  });
+    muteAudioButton2.addEventListener('click', function () {
+      var wasMuted = muteAudioButton2.innerText === 'Unmute Audio (Client)';
+      muteAudioButton2.innerText = wasMuted ? 'Mute Audio (Client)' : 'Unmute Audio (Client)';
+      if (wasMuted) {
+        publisher.unmuteAudio();
+      }
+      else {
+        publisher.muteAudio();
+      }
+      var pc = publisher.getPeerConnection();
+      var sender = pc.getSenders()[0]; // Assuming Audio is first in list.
+      var params = sender.getParameters();
+      params.encodings[0].active = wasMuted ? true : false;
+      sender.setParameters(params);
+    });
+    muteVideoButton2.addEventListener('click', function () {
+      var wasMuted = muteVideoButton2.innerText === 'Unmute Video (Client)';
+      muteVideoButton2.innerText = wasMuted ? 'Mute Video (Client)' : 'Unmute Video (Client)';
+      if (wasMuted) {
+        publisher.unmuteVideo();
+      }
+      else {
+        publisher.muteVideo();
+      }
+      var pc = publisher.getPeerConnection();
+      var sender = pc.getSenders()[1]; // Assuming Video is second in list.
+      var params = sender.getParameters();
+      params.encodings[0].active = wasMuted ? true : false;
+      sender.setParameters(params);
+    });
+  }
 }
 ```
 
-[index #48](index#L48)
+[index #149](index#L149)
 
