@@ -47,32 +47,24 @@ function swapCamera () {
         deviceId: { exact: selection }
       };
     }
+    mediaConstraints.audio = configuration.useAudio ? configuration.mediaConstraints.audio : false;
     // 1. Grab new MediaStream from updated constraints.
     navigator.mediaDevices.getUserMedia(mediaConstraints)
       .then(function (stream) {
+        var replacePromise;
         // 2. Update the media tracks on senders through connection.
         var senders = connection.getSenders();
-        var tracks = stream.getTracks();
         var i = senders.length;
-        var j = tracks.length;
-        while ( --i > -1) { // 3. Find the currently sending video stream
+        while ( --i > -1) {
+          // 3. Replace the currently sending streams based on track kind
+          senders[i].track.stop();
           if (senders[i].track.kind === 'video') {
-            break;
+            replacePromise = senders[i].replaceTrack(stream.getVideoTracks()[0]);
+          } else {
+            senders[i].replaceTrack(stream.getAudioTracks()[0]);
           }
         }
-        if ( i < 0 ) {
-          console.error('Could not replace track : No video stream in connection');
-          return;
-        }
-        var replacePromise;
-        while ( --j > -1) { // 4. Get the new stream and apply it after cleaning up the previous one
-          if (tracks[j].kind === 'video') {
-            senders[i].track.stop();
-            replacePromise = senders[i].replaceTrack(tracks[j]);
-            break;
-          }
-        }
-        // 3. Update the video display with new stream.
+        // 4. Update the video display with new stream.
         document.getElementById('red5pro-publisher').srcObject = stream;
         return replacePromise;
       })
