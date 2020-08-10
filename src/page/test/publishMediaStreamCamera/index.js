@@ -23,7 +23,7 @@ NONINFRINGEMENT.   IN  NO  EVENT  SHALL INFRARED5, INC. BE LIABLE FOR ANY CLAIM,
 WHETHER IN  AN  ACTION  OF  CONTRACT,  TORT  OR  OTHERWISE,  ARISING  FROM,  OUT  OF  OR  IN CONNECTION 
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
-(function(window, document, red5prosdk) {
+(function(window, document, red5prosdk, adapter) {
   'use strict';
 
   var serverSettings = (function() {
@@ -56,6 +56,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   var targetPublisher;
 
+  var browserDetails = adapter.browserDetails;
   var updateStatusFromEvent = window.red5proHandlePublisherEvent; // defined in src/template/partial/status-field-publisher.hbs
   var streamTitle = document.getElementById('stream-title');
   var statisticsField = document.getElementById('statistics-field');
@@ -208,16 +209,28 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       };
     }
     mediaConstraints.audio = configuration.useAudio ? configuration.mediaConstraints.audio : false;
+    var isOldMobileChrome = browserDetails.browser.toLowerCase() === 'chrome' && browserDetails.version <= 83;
+    var requiresTrackStopBeforeGUM = isOldMobileChrome; // Add any other criteria here.
+    var senders = connection.getSenders();
+    if (requiresTrackStopBeforeGUM) {
+      // Note: In some older mobile browsers, it is required to stop all current tracks before requesting
+      // media through `getUserMedia` again.
+      // This has the unfortunate side affect of the video going "black" until new media is accessed.
+      senders.forEach(function (sender) {
+        sender.track.stop();
+      });
+    }
     // 1. Grab new MediaStream from updated constraints.
     navigator.mediaDevices.getUserMedia(mediaConstraints)
       .then(function (stream) {
         var replacePromise;
         // 2. Update the media tracks on senders through connection.
-        var senders = connection.getSenders();
         var i = senders.length;
         while ( --i > -1) {
           // 3. Replace the currently sending streams based on track kind
-          senders[i].track.stop();
+          if (!requiresTrackStopBeforeGUM) {
+            senders[i].track.stop();
+          }
           if (senders[i].track.kind === 'video') {
             replacePromise = senders[i].replaceTrack(stream.getVideoTracks()[0]);
           } else {
@@ -284,5 +297,5 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   window.addEventListener('pagehide', shutdown);
   window.addEventListener('beforeunload', shutdown);
 
-})(this, document, window.red5prosdk);
+})(this, document, window.red5prosdk, window.adapter);
 
