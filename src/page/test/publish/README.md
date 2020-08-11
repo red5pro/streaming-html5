@@ -116,7 +116,7 @@ The `init` method of the `Red5ProPublisher` returns a `Promise`-like object that
 
 You can determine the selected implementation by invoking `selectedPublisher.getType()`.
 
-> Read more about configurations and their attributes from the [Red5 Pro HTML SDK Documentation](https://www.red5pro.com/docs/streaming/publisher.html).
+> Read more about configurations and their attributes from the [Red5 Pro HTML SDK Documentation](https://red5pro.com/docs/client/webrtc/publisher/overview/).
 
 ### Publishing
 
