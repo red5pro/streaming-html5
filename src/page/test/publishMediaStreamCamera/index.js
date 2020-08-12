@@ -210,7 +210,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
     mediaConstraints.audio = configuration.useAudio ? configuration.mediaConstraints.audio : false;
     var isOldMobileChrome = browserDetails.browser.toLowerCase() === 'chrome' && browserDetails.version <= 83;
-    var requiresTrackStopBeforeGUM = isOldMobileChrome; // Add any other criteria here.
+    // In the below flag, we originally equated it to being an older Chrome version,
+    //  however, it turns out it was not necessarily just the browser but could also be the Android OS...
+    //  As a result, we stop all tracks for all browsers now before requesting `getUserMedia` again.
+    var requiresTrackStopBeforeGUM = true; // Add any other criteria here.
     var senders = connection.getSenders();
     if (requiresTrackStopBeforeGUM) {
       // Note: In some older mobile browsers, it is required to stop all current tracks before requesting
