@@ -157,6 +157,10 @@ To define the **Host** with the server instance's IP, click the _Host_ field f t
 | :-----
 | *Demonstrates multi-party communication using Red5 Pro. It also demonstrates using Shared Objects as notifications to recognize the addition and removal of parties broadcasting.*
 
+| **[Conference - Stream Manager](src/page/sm-test/ConferenceStreamManagerProxy)**
+| :-----
+| *Demonstrates multi-party communication using Red5 Pro over Stream Manager. It also demonstrates using Shared Objects as notifications to recognize the addition and removal of parties broadcasting.*
+
 | **[Shared Object (websockets only)](src/page/test/sharedObject)**
 | :-----
 | *Demonstrates the use of Shared Objects through a WebSocket proxy from the Red5 Pro HTML SDK.*
@@ -244,6 +248,10 @@ To define the **Host** with the server instance's IP, click the _Host_ field f t
 | **[Stream Manager Proxy](src/page/sm-test/subscribeStreamManagerProxy)**
 | :-----
 | *Demonstrates utilizing the Red5 Pro Stream Manager API to access an Edge server IP to subscribe to a live stream.*
+
+| **[Stream Manager Proxy Reconnect](src/page/test/subscribeStreamManagerProxyReconnect)**
+| :-----
+| *Demonstrates the failover mechanism of the Red5 Pro HTML SDK to select a subscriber based on browser support and to auto-reconnect on close of broadcast or loss of connection.*
 
 | **[Stream Manager Proxy Round Trip Authentication](src/page/sm-test/subscribeStreamManagerProxyRoundTripAuth)**
 | :-----
