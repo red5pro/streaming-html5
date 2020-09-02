@@ -91,6 +91,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     bitrate = b;
     packetsSent = p;
     updateStatistics(bitrate, packetsSent, frameWidth, frameHeight);
+    if (packetsSent > 100) {
+      establishSharedObject(targetPublisher, roomField.value, streamNameField.value);
+    }
   }
 
   function onResolutionUpdate (w, h) {
@@ -125,17 +128,32 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   function updateMutedAudioOnPublisher () {
     if (targetPublisher && isPublishing) {
+      var c = targetPublisher.getPeerConnection();
+      var senders = c.getSenders();
+      var params = senders[0].getParameters();
       if (audioCheck.checked) { 
-        if (videoTrackClone) {
-          var c = targetPublisher.getPeerConnection();
-          var senders = c.getSenders();
+        if (audioTrackClone) {
           senders[0].replaceTrack(audioTrackClone);
           audioTrackClone = undefined;
         } else {
-          targetPublisher.unmuteAudio();
+          try {
+            targetPublisher.unmuteAudio();
+            params.encodings[0].active = true;
+            senders[0].setParameters(params);
+          } catch (e) {
+            // no browser support, let's use mute API.
+            targetPublisher.unmuteAudio();
+          }
         }
       } else { 
-        targetPublisher.muteAudio(); 
+        try {
+          targetPublisher.muteAudio();
+          params.encodings[0].active = false;
+          senders[0].setParameters(params);
+        } catch (e) {
+          // no browser support, let's use mute API.
+          targetPublisher.muteAudio();
+        }
       }
     }
   }
@@ -212,7 +230,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     isPublishing = true;
     window.red5propublisher = publisher;
     console.log('[Red5ProPublisher] Publish Complete.');
-    establishSharedObject(publisher, roomField.value, streamNameField.value);
+    // [NOTE] Moving SO setup until Package Sent amount is sufficient.
+    //    establishSharedObject(publisher, roomField.value, streamNameField.value);
+    if (publisher.getType().toUpperCase() !== 'RTC') {
+      // It's flash, let it go.
+      establishSharedObject(publisher, roomField.value, streamNameField.value);
+    }
     try {
       var pc = publisher.getPeerConnection();
       var stream = publisher.getMediaStream();
@@ -288,6 +311,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     soField.value = ['User "' + message.user + '": ' + message.message, soField.value].join('\n');
   }
   function establishSharedObject (publisher, roomName, streamName) {
+    if (so) {
+      return;
+    }
     // Create new shared object.
     so = new SharedObject(roomName, publisher)
     var soCallback = {
