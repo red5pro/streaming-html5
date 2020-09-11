@@ -73,15 +73,34 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var frameWidth = 0;
   var frameHeight = 0;
 
-  // XXX nate
+  // XXX socialpusher
 	var sendButton = document.getElementById('send-button');
 	var destUri = document.getElementById('dest-URI');
 	var streamKey = document.getElementById('stream-key');
-
-
+	var passwd = document.getElementById('passwd');
 	var isForwarding = false;
 
-	sendButton.addEventListener('click', function (event) {
+	// from https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/digest
+	async function digestMessage(message) {
+	  const msgUint8 = new TextEncoder().encode(message);                           // encode as (utf-8) Uint8Array
+	  const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8);           // hash the message
+	  const hashArray = Array.from(new Uint8Array(hashBuffer));                     // convert buffer to byte array
+	  const hashHex = hashArray.map(b => {
+				var result = b.toString(16);
+				console.log("b: " + b + " result: " + result);
+				return result;
+			}).join(''); // convert bytes to hex string
+	  return hashHex;
+	}
+
+	function createSignature(timestamp) {
+		var action = isForwarding ? "provision.delete" : "provision.create";
+		var message = action + timestamp + passwd.value;
+		
+		return digestMessage(message);
+	}
+
+	sendButton.addEventListener('click', async function (event) {
 		const data = JSON.stringify({
 				provisions:[
 					{
@@ -103,7 +122,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				
 				var response = JSON.parse(this.responseText);				
 				if (response.statusCode == 200) {
-					// XXX if status 200, 
 					isForwarding = !isForwarding;
 					sendButton.innerHTML = isForwarding ? "Stop Forwarding" : "Begin Forwarding";
 					console.log("isForwarding: " + isForwarding);
@@ -113,8 +131,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			}
 		})	  
 
+		var timestamp = Date.now();
+		var signature = await createSignature(timestamp);
 		var uri = serverSettings.protocol + "://" + config.host + ":" + serverSettings.httpport + "/socialpusher/api?action=provision.";
 		uri += isForwarding ? "delete" : "create";
+		uri += "&signature=" + encodeURI(signature);
+		uri += "&timestamp=" + timestamp;
 
 		xhr.open('POST', uri)
 		xhr.setRequestHeader('content-type', 'application/json')	
@@ -123,7 +145,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 		console.log("POST to uri: " + uri);
 		console.log("send data: " + data);
 	});
-  // XXX /nate
+  // XXX /socialpusher
 
 
   function updateStatistics (b, p, w, h) {
