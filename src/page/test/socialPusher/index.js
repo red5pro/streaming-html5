@@ -86,8 +86,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 	  const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8);           // hash the message
 	  const hashArray = Array.from(new Uint8Array(hashBuffer));                     // convert buffer to byte array
 	  const hashHex = hashArray.map(b => {
-				var result = b.toString(16);
-				console.log("b: " + b + " result: " + result);
+				var result = b.toString(16); // NO leading zeros
+				//console.log("b: " + b + " result: " + result);
 				return result;
 			}).join(''); // convert bytes to hex string
 	  return hashHex;
@@ -131,12 +131,14 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			}
 		})	  
 
-		var timestamp = Date.now();
-		var signature = await createSignature(timestamp);
 		var uri = serverSettings.protocol + "://" + config.host + ":" + serverSettings.httpport + "/socialpusher/api?action=provision.";
 		uri += isForwarding ? "delete" : "create";
-		uri += "&signature=" + encodeURI(signature);
+
+		var timestamp = Date.now();
 		uri += "&timestamp=" + timestamp;
+
+		var signature = await createSignature(timestamp);
+		uri += "&signature=" + encodeURI(signature);
 
 		xhr.open('POST', uri)
 		xhr.setRequestHeader('content-type', 'application/json')	
