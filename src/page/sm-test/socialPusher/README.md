@@ -1,4 +1,4 @@
-# SocialPusher Plugin
+# SocialPusher Plugin through Stream Manager
 #### Publish and push to social media
 This example is based on the *publish* example. It forwards the published stream to the RTMP server specified. See that example's [README](../publish/README.md) for details on publishing.
 
@@ -7,9 +7,8 @@ This example is based on the *publish* example. It forwards the published stream
 - **[index.js](index.js)**
 
 # UI
-We require three pieces of data from the user: **password**, **destination URI**, and **stream key**.
+We require two pieces of data from the user: **destination URI**, and **stream key**.
 
-* **password** must always match the password specified in cluster.xml (in the clustering plugin). By default, this value is `changeme`.
 * **destination URI** is the RTMP or RTMPS URI of the forwarding destination.
 * **stream key** is the name of the forwarded stream (at the destination).
 
@@ -53,17 +52,13 @@ We must also specify the `parameters` map to define the `destURI` parameter (whi
 ## Query Parameters
 We construct the base URI of the SocialPusher servlet using the `serverSettings` and `config` objects (both originating in the *publish* example).
 ```javascript
-var uri = serverSettings.protocol + "://" + config.host + ":" + serverSettings.httpport + "/socialpusher/api?action=provision.";
+var uri = baseUrl + '/streammanager/api/' + apiVersion + '/socialpusher?accessToken=' + accessToken + "&action=provision.";
 ```
 
 The partial action is followed with `create` or `delete` depending on the desired action.
 
-Then the `timestamp` is generated and the `signature` created.
-
-The `signature` is the SHA-256 hash of the concatenation of *action*, *timestamp*, and *password*. Signature is then URI-encoded.
-
 ### Example URI
-```http://localhost:5080/socialpusher/api?signature=b2ff86296d9afba7f85b9c82bd44c113046ae1e5519f2f2ae74277b392fa&timestamp=1601527953384&action=provision.create```
+```https://example.com/streammanager/api/4.0/socialpusher?accessToken=xyz123&action=provision.create```
 
 ## POST
 Finally, the JSON array of `Provision` is delivered in the body of an HTTP POST to the SocialPusher servlet. The servlet will respond with HTTP 200 on success; any other response is assumed to be failure. 
