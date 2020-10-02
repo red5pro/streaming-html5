@@ -60,7 +60,7 @@ The partial action is followed with `create` or `delete` depending on the desire
 
 Then the `timestamp` is generated and the `signature` created.
 
-The `signature` is the SHA-256 hash of the concatenation of *action*, *timestamp*, and *password*. Signature is then URI-encoded.
+The `signature` is the SHA-256 hash of the concatenation of *action*, *timestamp*, and *password*. Then, concatenate the bytes of the hash into a string of hexadecimal digits, **ignoring leading zeros**.
 
 ### Example URI
 ```http://localhost:5080/socialpusher/api?signature=b2ff86296d9afba7f85b9c82bd44c113046ae1e5519f2f2ae74277b392fa&timestamp=1601527953384&action=provision.create```
