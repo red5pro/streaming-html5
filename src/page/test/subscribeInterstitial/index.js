@@ -94,16 +94,14 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			}
 		})	  
 
-		var host = "localhost"; // XXX how do i find the stream manager hostname?
-		var app = "live"; // XXX and the app.... (config.app/appName wasn't working)
-		var uri = serverSettings.protocol + "://" + host + ":" + serverSettings.httpport + "/" + config.app + "/interstitial";
+		var uri = serverSettings.protocol + "://" + configuration.host + ":" + serverSettings.httpport + "/" + configuration.app + "/interstitial";
+
+		console.log("POST to uri: " + uri);
+		console.log("send data: " + json);
 		
 		xhr.open('POST', uri)
 		xhr.setRequestHeader('content-type', 'application/json')	
 		xhr.send(json)
-
-		console.log("POST to uri: " + uri);
-		console.log("send data: " + json);
 	}
 	
 	sendButton.addEventListener('click', async function (event) {

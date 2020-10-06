@@ -105,7 +105,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			}
 		})	  
 
-		var uri = serverSettings.protocol + "://" + targetPublisher.rtc.host + ":" + serverSettings.httpport + "/" + config.appName + "/interstitial";
+		var host = configuration.host;
+		var app = configuration.app;
+		var port = serverSettings.httpport;
+		var baseUrl = protocol + '://' + host + ':' + port;
+		var apiVersion = configuration.streamManagerAPI || '4.0';
+		var uri = baseUrl + "/streammanager/api/" + apiVersion + "/interstitial";
 		
 		xhr.open('POST', uri)
 		xhr.setRequestHeader('content-type', 'application/json')	
@@ -133,7 +138,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 							}
 						  ]
 						}));
-	}
+	});
 
 	resumeButton.addEventListener('click', async function (event) {
 		postInterstitialRest(JSON.stringify({
@@ -141,7 +146,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 						  "digest": "bar",
 						  "resume": target.value
 						}));
-	}
+	});
 	
 	// XXX /interstitial
 
