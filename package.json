@@ -1,6 +1,6 @@
 {
   "name": "red5pro-html-sdk-testbed",
-  "version": "8.0.0-RC1",
+  "version": "8.0.0-RC2",
   "description": "Testbed examples for Red5 Pro HTML SDK",
   "main": "src/js/index.js",
   "repository": {
