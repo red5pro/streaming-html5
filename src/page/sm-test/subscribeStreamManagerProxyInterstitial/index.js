@@ -90,6 +90,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 	var duration = document.getElementById('duration');
 	var sendButton = document.getElementById('send-button');
 	var resumeButton = document.getElementById('resume-button');
+	var accessToken = configuration.streamManagerAccessToken;
 		
 	function postInterstitialRest(json) {
 		const xhr = new XMLHttpRequest()	  
@@ -110,7 +111,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 		var port = serverSettings.httpport;
 		var baseUrl = protocol + '://' + host + ':' + port;
 		var apiVersion = configuration.streamManagerAPI || '4.0';
-		var uri = baseUrl + "/streammanager/api/" + apiVersion + "/interstitial";
+		var uri = baseUrl + "/streammanager/api/" + apiVersion + "/interstitial?accessToken=" + accessToken;
 		
 		xhr.open('POST', uri)
 		xhr.setRequestHeader('content-type', 'application/json')	
