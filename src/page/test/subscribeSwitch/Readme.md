@@ -1,4 +1,4 @@
-#WebRTC Subscriber Switch
+# WebRTC Subscriber Switch
 
 Through WebRTC, the current subscriber's stream may be switch to another live stream or to static content. This example demonstrates.
 
@@ -15,7 +15,7 @@ This example demonstrates using the `callServer` API to invoke a method on the A
 
 > This example uses the WebRTC-based Subscriber implementation from the Red5 Pro HTML SDK.
 
-#Calling the server
+# Calling the server
 The `switchStreams` server call requires two pieces of data: 
 
 * **`path`** to the live stream or static file. For live streams, this includes the context path and stream name, e.g., "live/stream1". For static files, only FLV is supported. The server expects to find the FLV file in webapps/live/streams, which is also the directory where recordings are stored. **Static content is not currently supported in a clustered environment.**
