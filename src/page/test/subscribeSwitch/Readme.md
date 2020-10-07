@@ -29,3 +29,15 @@ targetSubscriber.callServer("switchStreams", [{
 	isImmediate: true,
 }]);
 ```
+
+The server responds with a message:
+
+```javascript
+{
+  "data": {
+    "type": "result",
+    "message": "Stream switch: Success"
+  }
+}
+```
+
