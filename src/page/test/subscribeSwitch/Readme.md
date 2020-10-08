@@ -6,6 +6,8 @@ This example is based on the *subscriber* example. See that example's [README](.
 
 This example demonstrates using the `callServer` API to invoke a method on the Application Adapter of the target app. The `callServer` method returns a `Promise`-like object that can additional deliver return data from the server.
 
+**Note** that to switch back to the original stream, you should reload the page to establish a new subscription. If you use the stream switch request again to return to the original stream, you will introduce latency as the stream is internally redirected within the server for this subscriber.
+
 [WebSockets](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API)
 [WebRTC](https://developer.mozilla.org/en-US/docs/Web/Guide/API/WebRTC)
 
