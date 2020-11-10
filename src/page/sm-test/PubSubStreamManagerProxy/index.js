@@ -354,7 +354,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     var found = false;
     var address = undefined
     for (var i = listIn.length - 1; i >= 0; i--) {
-      found = listIn[i].name === configuration.stream2;
+      found = listIn[i].name === configuration.stream1;
       address = listIn[i].serverAddress
       if(found) break;
     }
@@ -384,7 +384,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     // Kick off.
     determineSubscriber(address)
     .then(function(subscriberImpl) {
-        subStreamTitle.innerText = configuration.stream2;
+        subStreamTitle.innerText = configuration.stream1;
         targetSubscriber = subscriberImpl;
         // Subscribe to events.
         targetSubscriber.on('*', onSubscriberEvent);
@@ -412,13 +412,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         app: configuration.app
       },
       subscriptionId: 'subscriber-' + instanceId,
-      streamName: config.stream2
+      streamName: config.stream1
     })
     var rtmpConfig = Object.assign({}, config, {
       host: serverAddress,
       protocol: 'rtmp',
       port: serverSettings.rtmpport,
-      streamName: config.stream2,
+      streamName: config.stream1,
       mimeType: 'rtmp/flv',
       useVideoJS: false,
       width: config.cameraWidth,
@@ -431,7 +431,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       host: serverAddress,
       protocol: protocol,
       port: isSecure ? serverSettings.hlssport : serverSettings.hlsport,
-      streamName: config.stream2,
+      streamName: config.stream1,
       mimeType: 'application/x-mpegURL'
     })
 
