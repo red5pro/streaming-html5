@@ -23,7 +23,7 @@ NONINFRINGEMENT.   IN  NO  EVENT  SHALL INFRARED5, INC. BE LIABLE FOR ANY CLAIM,
 WHETHER IN  AN  ACTION  OF  CONTRACT,  TORT  OR  OTHERWISE,  ARISING  FROM,  OUT  OF  OR  IN CONNECTION 
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
-(function(window, document, red5prosdk, adapter) {
+(function(window, document, red5prosdk) {
   'use strict';
 
   var serverSettings = (function() {
@@ -49,26 +49,106 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   })();
 
   red5prosdk.setLogLevel(configuration.verboseLogging ? red5prosdk.LOG_LEVELS.TRACE : red5prosdk.LOG_LEVELS.WARN);
-  var mediaConstraints = {
-    audio: configuration.useAudio ? configuration.mediaConstraints.audio : false,
-    video: configuration.useVideo ? configuration.mediaConstraints.video : false,
-  };
+
 
   var targetPublisher;
 
-  var browserDetails = adapter.browserDetails;
   var updateStatusFromEvent = window.red5proHandlePublisherEvent; // defined in src/template/partial/status-field-publisher.hbs
   var streamTitle = document.getElementById('stream-title');
   var statisticsField = document.getElementById('statistics-field');
-  var cameraSelect = document.getElementById('camera-select');
   var bitrateField = document.getElementById('bitrate-field');
   var packetsField = document.getElementById('packets-field');
   var resolutionField = document.getElementById('resolution-field');
+
+  var protocol = serverSettings.protocol;
+  var isSecure = protocol == 'https';
+  function getSocketLocationFromProtocol () {
+    return !isSecure
+      ? {protocol: 'ws', port: serverSettings.wsport}
+      : {protocol: 'wss', port: serverSettings.wssport};
+  }
 
   var bitrate = 0;
   var packetsSent = 0;
   var frameWidth = 0;
   var frameHeight = 0;
+
+  // XXX socialpusher
+	var sendButton = document.getElementById('send-button');
+	var destUri = document.getElementById('dest-URI');
+	var streamKey = document.getElementById('stream-key');
+	var passwd = document.getElementById('passwd');
+	var isForwarding = false;
+
+	// from https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/digest
+	async function digestMessage(message) {
+	  const msgUint8 = new TextEncoder().encode(message);                           // encode as (utf-8) Uint8Array
+	  const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8);           // hash the message
+	  const hashArray = Array.from(new Uint8Array(hashBuffer));                     // convert buffer to byte array
+	  const hashHex = hashArray.map(b => {
+				var result = b.toString(16); // NO leading zeros
+				//console.log("b: " + b + " result: " + result);
+				return result;
+			}).join(''); // convert bytes to hex string
+	  return hashHex;
+	}
+
+	function createSignature(timestamp) {
+		var action = isForwarding ? "provision.delete" : "provision.create";
+		var message = action + timestamp + passwd.value;
+		
+		return digestMessage(message);
+	}
+
+	sendButton.addEventListener('click', async function (event) {
+		const data = JSON.stringify({
+				provisions:[
+					{
+						guid:"any",
+						level:1,
+						context:config.app,
+						name:config.stream1,
+						parameters:{
+							destURI:destUri.value + "/" + streamKey.value
+						}
+					}
+				]
+			})
+		  
+		const xhr = new XMLHttpRequest()	  
+		xhr.addEventListener('readystatechange', function() {
+			if (this.readyState === this.DONE) {
+				console.log(this.responseText)
+				
+				var response = JSON.parse(this.responseText);				
+				if (response.statusCode == 200) {
+					isForwarding = !isForwarding;
+					sendButton.innerHTML = isForwarding ? "Stop Forwarding" : "Begin Forwarding";
+					console.log("isForwarding: " + isForwarding);
+				} else {
+					console.log("error status: " + response.statusCode);
+				}
+			}
+		})	  
+
+		var uri = serverSettings.protocol + "://" + config.host + ":" + serverSettings.httpport + "/socialpusher/api?action=provision.";
+		uri += isForwarding ? "delete" : "create";
+
+		var timestamp = Date.now();
+		uri += "&timestamp=" + timestamp;
+
+		var signature = await createSignature(timestamp);
+		uri += "&signature=" + encodeURI(signature);
+
+		xhr.open('POST', uri)
+		xhr.setRequestHeader('content-type', 'application/json')	
+		xhr.send(data)
+
+		console.log("POST to uri: " + uri);
+		console.log("send data: " + data);
+	});
+  // XXX /socialpusher
+
 
   function updateStatistics (b, p, w, h) {
     statisticsField.classList.remove('hidden');
@@ -89,25 +169,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     updateStatistics(bitrate, packetsSent, frameWidth, frameHeight);
   }
 
-  var current_selection = undefined;
-  var protocol = serverSettings.protocol;
-  var isSecure = protocol == 'https';
-  function getSocketLocationFromProtocol () {
-    return !isSecure
-      ? {protocol: 'ws', port: serverSettings.wsport}
-      : {protocol: 'wss', port: serverSettings.wssport};
-  }
-
   function onPublisherEvent (event) {
     console.log('[Red5ProPublisher] ' + event.type + '.');
     updateStatusFromEvent(event);
-    if (event.type === 'WebRTC.MediaStream.Available') {
-      var tracks = publisher.getMediaStream().getVideoTracks();
-      tracks.forEach(function (track) {
-        var settings = track.getSettings();
-        setCameraSelection(settings.deviceId);
-      });
-    }
   }
   function onPublishFail (message) {
     console.error('[Red5ProPublisher] Publish Error :: ' + message);
@@ -135,36 +199,16 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     console.log('[Red5ProPublisher] Unpublish Complete.');
   }
 
-  function onDeviceError (error) {
-    console.error('Could not access devices: ' + error);
-  }
-
-  function listDevices (devices) {
-    var cameras = devices.filter(function (item) {
-      return item.kind === 'videoinput';
-    })
-    var options = cameras.map(function (camera, index) {
-      return '<option value="' + camera.deviceId + '">' + (camera.label || 'camera ' + index) + '</option>';
-    });
-    cameraSelect.innerHTML = options.join(' ');
-    if (targetPublisher && targetPublisher.getMediaStream()) {
-      var tracks = targetPublisher.getMediaStream().getVideoTracks();
-      tracks.forEach(function (track) {
-        var settings = track.getSettings();
-        setCameraSelection(settings.deviceId);
-      });
-    }
-  }
-
-  function setCameraSelection (deviceId) {
-    var options = cameraSelect.childNodes;
-    var i = options.length;
-    while( --i > -1) {
-      if (options[i].value === deviceId) {
-        options[i].selected = true;
-        return
+  function getAuthenticationParams () {
+    var auth = configuration.authentication;
+    return auth && auth.enabled
+      ? {
+        connectionParams: {
+          username: auth.username,
+          password: auth.password
+        }
       }
-    }
+      : {};
   }
 
   function getUserMediaConfiguration () {
@@ -174,6 +218,18 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         video: configuration.useVideo ? configuration.mediaConstraints.video : false
       }
     };
+  }
+
+  function getRTMPMediaConfiguration () {
+    return {
+      mediaConstraints: {
+        audio: configuration.useAudio ? configuration.mediaConstraints.audio : false,
+        video: configuration.useVideo ? {
+                width: configuration.cameraWidth,
+                height: configuration.cameraHeight
+              } : false
+      }
+    }
   }
 
   function unpublish () {
@@ -192,76 +248,44 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     });
   }
 
-  function swapCamera () {
-    var connection = targetPublisher.getPeerConnection();
-    var selection = cameraSelect.value;
-    if (selection === current_selection) {
-      return;
-    }
-    current_selection = selection;
-    if (mediaConstraints.video && typeof mediaConstraints.video !== 'boolean') {
-      mediaConstraints.video.deviceId = { exact: selection }
-      delete mediaConstraints.video.frameRate
-    }
-    else {
-      mediaConstraints.video = {
-        deviceId: { exact: selection }
-      };
-    }
-    mediaConstraints.audio = configuration.useAudio ? configuration.mediaConstraints.audio : false;
-    var isOldMobileChrome = browserDetails.browser.toLowerCase() === 'chrome' && browserDetails.version <= 83;
-    // In the below flag, we originally equated it to being an older Chrome version,
-    //  however, it turns out it was not necessarily just the browser but could also be the Android OS...
-    //  As a result, we stop all tracks for all browsers now before requesting `getUserMedia` again.
-    var requiresTrackStopBeforeGUM = true; // Add any other criteria here.
-    var senders = connection.getSenders();
-    if (requiresTrackStopBeforeGUM) {
-      // Note: In some older mobile browsers, it is required to stop all current tracks before requesting
-      // media through `getUserMedia` again.
-      // This has the unfortunate side affect of the video going "black" until new media is accessed.
-      senders.forEach(function (sender) {
-        sender.track.stop();
-      });
-    }
-    // 1. Grab new MediaStream from updated constraints.
-    navigator.mediaDevices.getUserMedia(mediaConstraints)
-      .then(function (stream) {
-        var replacePromise;
-        // 2. Update the media tracks on senders through connection.
-        var i = senders.length;
-        while ( --i > -1) {
-          // 3. Replace the currently sending streams based on track kind
-          if (!requiresTrackStopBeforeGUM) {
-            senders[i].track.stop();
-          }
-          if (senders[i].track.kind === 'video') {
-            replacePromise = senders[i].replaceTrack(stream.getVideoTracks()[0]);
-          } else {
-            senders[i].replaceTrack(stream.getAudioTracks()[0]);
-          }
-        }
-        // 4. Update the video display with new stream.
-        document.getElementById('red5pro-publisher').srcObject = stream;
-        return replacePromise;
-      })
-      .catch (function (error) {
-        console.error('Could not replace track : ' + error.message);
-      });
-  }
-
   var config = Object.assign({},
     configuration,
+    {
+      streamMode: configuration.recordBroadcast ? 'record' : 'live'
+    },
+    getAuthenticationParams(),
     getUserMediaConfiguration());
 
   var rtcConfig = Object.assign({}, config, {
                       protocol: getSocketLocationFromProtocol().protocol,
                       port: getSocketLocationFromProtocol().port,
                       streamName: config.stream1,
-                      streamMode: configuration.recordBroadcast ? 'record' : 'live'
                    });
+  var rtmpConfig = Object.assign({}, config, {
+                      protocol: 'rtmp',
+                      port: serverSettings.rtmpport,
+                      streamName: config.stream1,
+                      backgroundColor: '#000000',
+                      swf: '../../lib/red5pro/red5pro-publisher.swf',
+                      swfobjectURL: '../../lib/swfobject/swfobject.js',
+                      productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
+                    }, getRTMPMediaConfiguration());
+  var publishOrder = config.publisherFailoverOrder
+                            .split(',')
+                            .map(function (item) {
+                              return item.trim()
+                        });
 
-  var publisher = new red5prosdk.RTCPublisher()
-  publisher.init(rtcConfig)
+  if (window.query('view')) {
+    publishOrder = [window.query('view')];
+  }
+
+  var publisher = new red5prosdk.Red5ProPublisher()
+  publisher.setPublishOrder(publishOrder)
+    .init({
+      rtc: rtcConfig,
+      rtmp: rtmpConfig
+    })
     .then(function (publisherImpl) {
       streamTitle.innerText = configuration.stream1;
       targetPublisher = publisherImpl;
@@ -269,20 +293,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       return targetPublisher.publish();
     })
     .then(function () {
-      return navigator.mediaDevices.enumerateDevices()
-    })
-    .then(listDevices)    
-    .then(function () {
       onPublishSuccess(targetPublisher);
     })
     .catch(function (error) {
       var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
       console.error('[Red5ProPublisher] :: Error in publishing - ' + jsonError);
       onPublishFail(jsonError);
-    });
-
-  navigator.mediaDevices.enumerateDevices().then(listDevices).catch(onDeviceError);
-  cameraSelect.addEventListener('change', swapCamera);
+     });
 
   var shuttingDown = false;
   function shutdown() {
@@ -300,5 +317,5 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   window.addEventListener('pagehide', shutdown);
   window.addEventListener('beforeunload', shutdown);
 
-})(this, document, window.red5prosdk, window.adapter);
+})(this, document, window.red5prosdk);
 
