@@ -82,6 +82,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         "audio": 56,
         "video": 750
       },
+      "signalingSocketOnly": false,
       "keyFramerate": 3000,
       "useAudio": true,
       "useVideo": true,
