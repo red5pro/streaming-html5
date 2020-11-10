@@ -58,6 +58,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var subStreamTitle = document.getElementById('sub-stream-title');
   var statisticsFields = document.getElementsByClassName('statistics-field');
 
+  var timeout = 0  
   var instanceId = Math.floor(Math.random() * 0x10000).toString(16);
   var protocol = serverSettings.protocol;
   var isSecure = protocol === 'https';
@@ -370,7 +371,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   function setWaitTime () {
-    setTimeout(beginStreamListCall, 2000);
+    clearTimeout(timeout)
+    timeout = setTimeout(function() {
+      clearTimeout(timeout)
+      beginStreamListCall()
+    }, 1000);
   }
 
   function startSubscribing () {
