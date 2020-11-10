@@ -1,31 +1,28 @@
 # Changes
 
-## 6.0.0-RC4
+## 7.2.1
 
-- incremented SDK version (beetlejesss)
+- fix for unpreview turning autoplay to false in publisher. (bustardcelly)
+- fix for non-DOM manipulation if not using custom controls. (bustardcelly)
+
+## 7.0.0
+
+- defaulting pub clear to false for backward compatability. (bustardcelly)
+- adding clear on media unpublish. (bustardcelly)
+- fixed issue with RTC retry sub removing video element if not available. (bustardcelly)
+
+## 6.0.0
+
 - listening to onresize for video resolution change in transcode. (bustardcelly)
 - setting delay off controls in mobile to 6 seconds. (bustardcelly)
-- better logging for fail and close. (bustardcelly)
-- touch event support for controls on mobile browser. (bustardcelly)
-- README updates for constraints events. (bustardcelly)
 - adding rejection and acceptance notifications for gUM in RTC publishers. (bustardcelly)
-- support for SharedObject initial property update on socket. (bustardcelly)
-- i guess HLS doesn't have video dimensions on data load... (bustardcelly)
 - added Video Dimensions Change to bubble up playback dimensions. (bustardcelly)
 - Fix for flash stalled playback. (bustardcelly)
-- failing subscriber/publisher on ice connection fail. (bustardcelly)
-- build for examples. (bustardcelly)
-- not using NetStream video dimensions change to determine video aspect ratio. (bustardcelly)
 - Added notifications for RTCPeerConnection open event. (bustardcelly)
 
     > This will allow for clients to recognize when they can start using peer connection APIs such as mute/unmute.
 
 - fix for HLS socket authentication failure capture. (bustardcelly)
-- fixing build and deploy targets. (bustardcelly)
-- renaming dist directory. (bustardcelly)
-- renaming dist directory. (bustardcelly)
-- adding in post doc processing for SEO. (bustardcelly)
-- adding license. (bustardcelly)
 - Fix for Safari Publisher issue. (bustardcelly)
 
     > When `gUM` returns with `video` track listed before `audio`, there is an issue on delivering the media to the server. Most likely due to mismatched candidates.
@@ -34,15 +31,9 @@
 
     > Is now `productInstallURL` for both rtmp publisher and subscriber.
 
-- fixe for unpublish not resolving if not currently publishing. (bustardcelly)
-- proper callback name for hls metadata. (bustardcelly)
+- fix for unpublish not resolving if not currently publishing. (bustardcelly)
 - API update to allow for providing MediaStream for publish to bypass gUM in SDK internally. (bustardcelly)
-- subsequent disconnect request for RTMP subscribers on unpublish event. (bustardcelly)
 - some cleanup on how streamingMode is handled for HLS. (bustardcelly)
-- adding metadata change event notifications on all subscribers. (bustardcelly)
-- attempts at gracefully handling empty streams. (bustardcelly)
-- added in test-supported streamingMode delegate notifications. (bustardcelly)
-- starting out simple test update. (bustardcelly)
 
 ## 5.7.0
 
