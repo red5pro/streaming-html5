@@ -82,11 +82,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         "audio": 56,
         "video": 750
       },
-<<<<<<< HEAD
       "signalingSocketOnly": true,
-=======
-      "signalingSocketOnly": false,
->>>>>>> feature/rtc_data_channel_RPRO-6314
       "keyFramerate": 3000,
       "useAudio": true,
       "useVideo": true,
