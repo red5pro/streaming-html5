@@ -1,7 +1,6 @@
 {
   "name": "red5pro-html-sdk-testbed",
-  "version": "7.3.0.Beta1",
-
+  "version": "7.3.0-Beta1",
   "description": "Testbed examples for Red5 Pro HTML SDK",
   "main": "src/js/index.js",
   "repository": {
