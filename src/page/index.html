@@ -372,7 +372,7 @@
           iceUsername.value = config.rtcConfiguration.iceServers[0].username || '';
           iceCredential.value = config.rtcConfiguration.iceServers[0].credential || '';
           rtcCandidatePoolSize.value = config.rtcConfiguration.iceCandidatePoolSize || 0;
-          rtcSignalSocketField.checked = config.signalingSocketOnly || false;
+          rtcSignalSocketField.checked = config.signalingSocketOnly || true;
           loggingField.checked = config.verboseLogging ? true : false;
           recordField.checked = config.recordBroadcast ? true : false;
           videoField.checked = config.useVideo ? true : false;
