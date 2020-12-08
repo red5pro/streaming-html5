@@ -166,7 +166,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   function showIncomingAudioVideo (stream) {
     conferenceVideo.srcObject = stream
     conferenceVideo.classList.remove('hidden')
-    document.getElementById('red5pro-publisher').classList.add('minimized')
+    document.getElementById('red5pro-publisher').classList.add('hidden')
   }
 
   var config = Object.assign({},
