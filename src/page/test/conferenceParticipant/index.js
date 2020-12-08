@@ -51,6 +51,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   red5prosdk.setLogLevel(configuration.verboseLogging ? red5prosdk.LOG_LEVELS.TRACE : red5prosdk.LOG_LEVELS.WARN);
 
   var updateStatusFromEvent = window.red5proHandlePublisherEvent; // defined in src/template/partial/status-field-publisher.hbs
+  var groupField = document.getElementById('group-field');
+  var submitButton = document.getElementById('submit-button');
+
   var streamTitle = document.getElementById('stream-title');
   var statisticsField = document.getElementById('statistics-field');
   var bitrateField = document.getElementById('bitrate-field');
@@ -94,27 +97,22 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     console.log('[Red5ProPublisher] ' + event.type + '.');
     updateStatusFromEvent(event);
     if (event.type === 'Conference.MediaStream') {
+      try {
+        var pc = participant.getPeerConnection();
+        window.trackBitrate(pc, onBitrateUpdate, onResolutionUpdate, true);
+        statisticsField.classList.remove('hidden');
+      } catch (e) {
+        // no tracking for you!
+      }
       showIncomingAudioVideo(event.data.stream);
     }
   }
   function onPublishFail (message) {
     console.error('[Red5ProPublisher] Publish Error :: ' + message);
+    submitButton.disabled = false
   }
-  function onPublishSuccess (publisher) {
+  function onPublishSuccess () {
     console.log('[Red5ProPublisher] Publish Complete.');
-    try {
-      var pc = publisher.getPeerConnection();
-      var stream = publisher.getMediaStream();
-      window.trackBitrate(pc, onBitrateUpdate);
-      statisticsField.classList.remove('hidden');
-      stream.getVideoTracks().forEach(function (track) {
-        var settings = track.getSettings();
-        onResolutionUpdate(settings.width, settings.height);
-      });
-    }
-    catch (e) {
-      // no tracking for you!
-    }
   }
   function onUnpublishFail (message) {
     console.error('[Red5ProPublisher] Unpublish Error :: ' + message);
@@ -183,31 +181,36 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     protocol: getSocketLocationFromProtocol().protocol,
     port: getSocketLocationFromProtocol().port,
     streamName: config.stream1,
-    groupName: 'group02',
-    autoGenerateAudioPlayback: true,
-    mixAudioDown: false
-    //    ,dataChannelConfiguration: {
-    //      name: 'red5pro'
-    //    }
+    autoGenerateMediaStream: true
   });
 
   var participant
-  new red5prosdk.RTCConferenceParticipant()
-    .init(rtcConfig)
-    .then(function (publisher) {
-      streamTitle.innerText = configuration.stream1;
-      participant = publisher
-      participant.on('*', onPublisherEvent);
-      return participant.publish();
-    })
-    .then(function () {
-      onPublishSuccess(participant);
-    })
-    .catch(function (error) {
-      var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
-      console.error('[Red5ProPublisher] :: Error in publishing - ' + jsonError);
-      onPublishFail(jsonError);
-     });
+  function start () {
+    if (groupField.value.length === 0) {
+      console.warn('Please provide a group name.')
+      return
+    }
+    submitButton.disabled = true
+    rtcConfig.groupName = groupField.value
+    new red5prosdk.RTCConferenceParticipant()
+      .init(rtcConfig)
+      .then(function (publisher) {
+        streamTitle.innerText = configuration.stream1;
+        participant = publisher
+        participant.on('*', onPublisherEvent);
+        return participant.publish();
+      })
+      .then(function () {
+        onPublishSuccess(participant);
+      })
+      .catch(function (error) {
+        var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
+        console.error('[Red5ProPublisher] :: Error in publishing - ' + jsonError);
+        onPublishFail(jsonError);
+       });
+  }
+
+  submitButton.addEventListener('click', start)
 
   var shuttingDown = false;
   function shutdown() {
