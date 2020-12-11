@@ -1,0 +1,59 @@
+<!doctype html>
+{{> license}}
+<html>
+  <head>
+    {{> meta title='Conference Composite Test'}}
+    {{> header-scripts}}
+    {{> header-stylesheets}}
+    <style>
+      .settings-area {
+        background-color: #eeee;
+      }
+      .settings-field, .settings-field > input {
+        font-size: 1em;
+      }
+      .info-title {
+        padding: 20px 0;
+      }
+      .paddedHR {
+        margin: 0!important;
+      }
+      .conference {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-content: center;
+        justify-content: center;
+      }
+      .conference-video {
+        width: 240px;
+        background-color: #000;
+      }
+      .stream-section {
+        max-width: 720px!important;
+      }
+    </style>
+  </head>
+  <body>
+    {{> top-bar }}
+    {{> navigation isTestPage=true }}
+    <div id="app">
+      {{> settings-link}}
+      {{> test-info testTitle='Conference Composite Test'}}
+      <div class="stream-section">
+        <div id="group-form" class="settings-area">
+          <h3 class="centered info-title">Set Group to Composite:</h3>
+          <hr class="paddedHR">
+          <p class="settings-field settings-collapsable">
+            <label for="group-field" class="settings-label">Group:</label>
+            <input id="group-field" name="group-field" value="red5pro">
+          </p>
+          <button id="submit-button" class="ui-button">Submit</button>
+        </div>
+        <div class="centered conference"></div>
+      </div>
+    </div>
+    {{> body-scripts}}
+    <script src="index.js"></script>
+  </body>
+</html>
