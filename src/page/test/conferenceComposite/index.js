@@ -52,6 +52,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   var groupField = document.getElementById('group-field');
   var submitButton = document.getElementById('submit-button');
+  var conferenceContainer = document.querySelector('.conference')
 
   var protocol = serverSettings.protocol;
   var isSecure = protocol == 'https';
@@ -88,12 +89,69 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   var POLL_INTERVAL = 5000
   var pollInterval = 0
+  var currentStreams = []
+
+  function onSubscriberEvent (event) {
+    var subscriber = event.subscriber
+    if (event.type === red5prosdk.SubscriberEventTypes.CONNECTION_CLOSED ||
+      event.type === red5prosdk.SubscriberEventTypes.CONNECT_FAILURE ||
+      event.type === red5prosdk.SubscriberEventTypes.PLAY_UNPUBLISH) {
+      var el = subscriber.getPlayer()
+      if (el && el.parent) {
+        el.parent.removeChild(el)
+      }
+      subscriber.unsubscribe().catch(function (e) {
+        console.warn(e)
+      })
+    }
+  }
+
+  function generateSubscriber (stream) {
+    var el = document.createElement('video')
+    el.autoplay = 'autoplay'
+    el.controls = 'controls'
+    el.muted = 'muted'
+    el.classList.add('conference-video')
+    el.id = stream.stream
+    var c = Object.assign({}, rtcConfig, {
+      app: stream.contextpath,
+      streamName: stream.stream,
+      mediaElementId: stream.stream
+    })
+    new red5prosdk.RTCSubscriber()
+      .init(c)
+      .then(function (sub) {
+        sub.on('*', onSubscriberEvent)
+        return sub.subscribe()
+      })
+      .catch(function (error) {
+        console.error(error)
+      });
+
+    return el;
+  }
+
+  function addNewStreams (list) {
+    list.forEach(function (streamName) {
+      conferenceContainer.appendChild(generateSubscriber(streamName))
+    })
+  }
 
   function parseGroup (data) {
     console.log(data)
+    var streams = data.data.streams
+    var newStreams = streams.filter(function (entry) {
+      return currentStreams.indexOf(entry.stream) === -1
+    })
+    currentStreams = streams.map(function (entry) {
+      return entry.stream
+    })
+    addNewStreams(newStreams)
   }
 
   function runCompositePoll () {
+    if (shuttingDown) return
+
     var group = groupField.value;
     var url = `${baseQueryURL}?group=${rtcConfig.app}/${group}`
     fetch(url)
@@ -129,6 +187,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
     submitButton.disabled = true
     pollInterval = setInterval(runCompositePoll, POLL_INTERVAL)
+    runCompositePoll()
   }
 
   submitButton.addEventListener('click', start)
