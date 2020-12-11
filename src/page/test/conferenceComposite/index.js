@@ -87,6 +87,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var port = isSecure ? 443 : 5080
   var baseQueryURL = `${protocol}://${rtcConfig.host}:${port}/live/groupinfo.jsp`
 
+  var groupName;
   var POLL_INTERVAL = 5000
   var pollInterval = 0
   var currentStreams = []
@@ -97,9 +98,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       event.type === red5prosdk.SubscriberEventTypes.CONNECT_FAILURE ||
       event.type === red5prosdk.SubscriberEventTypes.PLAY_UNPUBLISH) {
       var el = subscriber.getPlayer()
-      if (el && el.parent) {
-        el.parent.removeChild(el)
+      if (el && el.parentNode) {
+        el.parentNode.removeChild(el)
       }
+      subscriber.off('*', onSubscriberEvent)
       subscriber.unsubscribe().catch(function (e) {
         console.warn(e)
       })
@@ -141,7 +143,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     console.log(data)
     var streams = data.data.streams
     var newStreams = streams.filter(function (entry) {
-      return currentStreams.indexOf(entry.stream) === -1
+      return currentStreams.indexOf(entry.stream) === -1 && entry.stream !== groupName
     })
     currentStreams = streams.map(function (entry) {
       return entry.stream
@@ -152,8 +154,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   function runCompositePoll () {
     if (shuttingDown) return
 
-    var group = groupField.value;
-    var url = `${baseQueryURL}?group=${rtcConfig.app}/${group}`
+    var url = `${baseQueryURL}?group=${rtcConfig.app}/${groupName}`
     fetch(url)
       .then(function (res) {
         if (res.headers.get('content-type') &&
@@ -186,6 +187,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       return
     }
     submitButton.disabled = true
+    groupName = groupField.value;
     pollInterval = setInterval(runCompositePoll, POLL_INTERVAL)
     runCompositePoll()
   }
