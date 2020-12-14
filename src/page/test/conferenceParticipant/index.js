@@ -61,6 +61,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var resolutionField = document.getElementById('resolution-field');
   var conferenceVideo = document.getElementById('red5pro-conference')
 
+  var groupName;
+  var participant;
+
   var protocol = serverSettings.protocol;
   var isSecure = protocol == 'https';
   function getSocketLocationFromProtocol () {
@@ -104,7 +107,19 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       } catch (e) {
         // no tracking for you!
       }
-      showIncomingAudioVideo(event.data.stream);
+      conferenceVideo.srcObject = event.data.stream
+    } else if (event.type === 'WebRTC.Socket.Message'
+      || event.type === 'WebRTC.DataChannel.Message') {
+      try {
+        var data = JSON.parse(event.data.message.data);
+        if (hasGroupStream(data.streams || data.data.streams)) {
+          showGroupStream();
+        } else {
+          removeGroupStream();
+        }
+      } catch (e) {
+        console.warn(e)
+      }
     }
   }
   function onPublishFail (message) {
@@ -163,10 +178,24 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     });
   }
 
-  function showIncomingAudioVideo (stream) {
-    conferenceVideo.srcObject = stream
+  function hasGroupStream (streams) {
+    var i = streams ? streams.length : 0;
+    while (--i > -1) {
+      if (streams[i].stream === groupName) {
+        return true
+      }
+    }
+    return false
+  }
+
+  function showGroupStream () {
     conferenceVideo.classList.remove('hidden')
     document.getElementById('red5pro-publisher').classList.add('hidden')
+  }
+
+  function removeGroupStream () {
+    document.getElementById('red5pro-publisher').classList.remove('hidden')
+    conferenceVideo.classList.add('hidden')
   }
 
   var config = Object.assign({},
@@ -184,14 +213,14 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     autoGenerateMediaStream: true
   });
 
-  var participant
   function start () {
     if (groupField.value.length === 0) {
       console.warn('Please provide a group name.')
       return
     }
     submitButton.disabled = true
-    rtcConfig.groupName = groupField.value
+    groupName = groupField.value
+    rtcConfig.groupName = groupName
     new red5prosdk.RTCConferenceParticipant()
       .init(rtcConfig)
       .then(function (publisher) {

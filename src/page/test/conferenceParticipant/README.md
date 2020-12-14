@@ -60,11 +60,20 @@ submitButton.addEventListener('click', start)
 Once the `Conference.MediaStream` event is captured, the provided `MediaStream` is set as the `srcObject` on a `video` element on the page:
 
 ```js
-function showIncomingAudioVideo (stream) {
-  conferenceVideo.srcObject = stream
-  conferenceVideo.classList.remove('hidden')
-  document.getElementById('red5pro-publisher').classList.add('minimized')
+function onPublisherEvent (event) {
+  console.log('[Red5ProPublisher] ' + event.type + '.');
+  updateStatusFromEvent(event);
+  if (event.type === 'Conference.MediaStream') {
+    try {
+      var pc = participant.getPeerConnection();
+      window.trackBitrate(pc, onBitrateUpdate, onResolutionUpdate, true);
+      statisticsField.classList.remove('hidden');
+    } catch (e) {
+      // no tracking for you!
+    }
+    conferenceVideo.srcObject = event.data.stream
+  }
 }
 ```
 
-The `MediaStream` contains 3 audio tracks and a single composited video track of all Conference Group participants.
+> The `MediaStream` contains 3 audio tracks and a single composited video track of all Conference Group participants.
