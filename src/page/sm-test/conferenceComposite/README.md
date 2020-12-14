@@ -1,5 +1,9 @@
 # Conference Participation using Red5 Pro
 
+This is an example of subscribing to all participants of a Group Conference. To start a Participant, visit the [Conference Participant](../conferenceParticipant) example.
+
+---
+
 This is an example of subscribing to a group conference using an `RTCConferenceParticipant` from the Red5 Pro HTML SDK.
 
 The `RTCConferenceParticipant` is an extension of `RTCPublisher` that receives additional tracks to playback multiple audio sources along with a single composited video of all participants in the conference group.
