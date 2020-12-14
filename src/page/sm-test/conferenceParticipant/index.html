@@ -22,10 +22,22 @@
         display: flex;
         flex-direction: row;
       }
-      .minimized {
-        width: 160px;
+      .unminimized {
+        width: 100%;
+        opacity: 1;
+        visibility: visible;
+        transition-duration: 500ms, 500ms, 0ms;
+        transition-property: opacity, width, visibility;
+        transition-delay: 500ms, 500ms, 0ms;
       }
-    </style>
+      .minimized {
+        width: 0px;
+        opacity: 0;
+        visibility: hidden;
+        transition-duration: 1s, 1s, 0ms;
+        transition-property: opacity, width, visibility;
+        transition-delay: 0ms, 0ms, 1s;
+      }    </style>
   </head>
   <body>
     {{> top-bar }}
@@ -46,7 +58,7 @@
         {{> status-field-publisher}}
         {{> statistics-field packets_field='Packets Received'}}
         <div class="centered conference">
-          <video id="red5pro-publisher" class="red5pro-publisher"
+          <video id="red5pro-publisher" class="red5pro-publisher unminimized"
                  controls autoplay playsinline muted>
           </video>
           <video id="red5pro-conference" class="red5pro-publisher hidden"

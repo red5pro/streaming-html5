@@ -190,11 +190,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   function showGroupStream () {
     conferenceVideo.classList.remove('hidden')
-    document.getElementById('red5pro-publisher').classList.add('hidden')
+    document.getElementById('red5pro-publisher').classList.add('minimized')
   }
 
   function removeGroupStream () {
-    document.getElementById('red5pro-publisher').classList.remove('hidden')
+    document.getElementById('red5pro-publisher').classList.remove('minimized')
     conferenceVideo.classList.add('hidden')
   }
 
