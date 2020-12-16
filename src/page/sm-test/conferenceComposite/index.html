@@ -32,6 +32,14 @@
       .stream-section {
         max-width: 720px!important;
       }
+      .conference-out {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        right: 0;
+        left: 0;
+        z-index: 10000;
+      }
     </style>
   </head>
   <body>
@@ -51,6 +59,7 @@
           <button id="submit-button" class="ui-button">Submit</button>
         </div>
         <div class="centered conference"></div>
+        <button id="broadcast-button" class="ui-button" disabled>Start Composite Broadcast</button>
       </div>
     </div>
     {{> body-scripts}}

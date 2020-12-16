@@ -52,6 +52,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   var groupField = document.getElementById('group-field');
   var submitButton = document.getElementById('submit-button');
+  var broadcastButton = document.getElementById('broadcast-button');
   var conferenceContainer = document.querySelector('.conference')
 
   var protocol = serverSettings.protocol;
@@ -92,6 +93,73 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var pollInterval = 0
   var currentStreams = []
 
+  var screenshare = undefined;
+  var screenshareId = 'r5_screenshare';
+
+  function onScreenshareEvent (event) {
+    console.log('[ScreenshareEvent]:: ' + event.type)
+  }
+  function endBroadcast () {
+    var v = document.getElementById(screenshareId)
+    if (v && v.parentNode) {
+      v.parentNode.removeChild(v)
+    }
+    if (screenshare) {
+      screenshare.unpublish()
+      if (screenshare.getMediaStream()) {
+        screenshare.getMediaStream().getTracks().forEach(function (track) {
+          track.stop();
+        })
+      }
+      screenshare.off('*', onScreenshareEvent)
+      screenshare = undefined
+    }
+    conferenceContainer.classList.remove('conference-out')
+  }
+  function startBroadcast (groupName) {
+    var ssConfig = Object.assign({}, rtcConfig, {
+      app: [rtcConfig.app, groupName].join('/'),
+      groupName: groupName,
+      streamName: groupName,
+      mediaElementId :screenshareId
+    })
+    requestNode(ssConfig, 'broadcast')
+      .then(function (response) {
+        var conf = Object.assign({}, ssConfig, {
+          app: configuration.proxy,
+          connectionParams: {
+            host: response.serverAddress
+          }
+        });
+        var v = document.createElement('video')
+        v.id = screenshareId
+        v.classList.add('hidden')
+        document.body.appendChild(v)
+        conferenceContainer.classList.add('conference-out')
+        navigator.mediaDevices.getDisplayMedia({audio: false, video: true})
+          .then(function (stream) {
+            new red5prosdk.RTCPublisher().initWithStream(conf, stream)
+              .then(function (publisher) {
+                screenshare = publisher
+                screenshare.on('*', onScreenshareEvent)
+                return screenshare.publish()
+              })
+              .then(function () {
+                screenshare.getMediaStream().getVideoTracks().forEach(function (track) {
+                  track.onended = endBroadcast
+                })
+              })
+              .catch(function (error) {
+                console.error('Could not start screenshare: ' + error.message)
+                endBroadcast()
+              })
+          })
+      })
+      .catch(function (error) {
+        console.error('Could not start screenshare: ' + error.message)
+      })
+  }
+
   function onSubscriberEvent (event) {
     var subscriber = event.subscriber
     if (event.type === red5prosdk.SubscriberEventTypes.CONNECTION_CLOSED ||
@@ -116,14 +184,14 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     return undefined
   }
 
-  function requestEdge (configuration) {
+  function requestNode (configuration, action) {
     var host = configuration.host;
     var app = configuration.app;
     var port = serverSettings.httpport;
     var baseUrl = protocol + '://' + host + ':' + port;
     var streamName = configuration.stream1;
     var apiVersion = configuration.streamManagerAPI || '4.0';
-    var url = baseUrl + '/streammanager/api/' + apiVersion + '/event/' + app + '/' + streamName + '?action=subscribe';
+    var url = baseUrl + '/streammanager/api/' + apiVersion + '/event/' + app + '/' + streamName + '?action=' + action;
     var region = getRegionIfDefined();
     if (region) {
       url += '&region=' + region;
@@ -173,7 +241,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       streamName: stream.stream,
       mediaElementId: stream.stream
     })
-    requestEdge(c)
+    requestNode(c, 'subscribe')
       .then(function (response) {
         var conf = Object.assign({}, c, {
           app: configuration.proxy,
@@ -214,6 +282,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       return entry.stream
     })
     addNewStreams(newStreams)
+    broadcastButton.disabled = currentStreams.length <= 0
   }
 
   function runCompositePoll () {
@@ -258,6 +327,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   submitButton.addEventListener('click', start)
+  broadcastButton.addEventListener('click', function () {
+    if (groupName) {
+      startBroadcast(groupName)
+    }
+  })
 
   var shuttingDown = false;
   function shutdown() {
