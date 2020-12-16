@@ -8,6 +8,62 @@ The `RTCConferenceParticipant` is an extension of `RTCPublisher` that receives a
 - **[index.html](index.html)**
 - **[index.js](index.js)**
 
+# Submitting a Provision for a Group
+
+Before Joining a Conference Group as a Participant, a Group Provision needs to be available on the server.
+
+```js
+var provision = {
+  guid: undefined,
+  context: undefined,
+  name: undefined,
+  level: 0,
+  isRestricted: false,
+  parameters: {
+    group: 'webrtc',
+    audiotracks: 3, 
+    videotracks: 1
+  },
+  restrictions: [],
+  primaries: [],
+  secondaries: []
+}
+
+function postProvision (groupName, context) {
+  provision = Object.assign(provision, {
+    guid: context,
+    context: context,
+    name: groupName
+  })
+  var host = rtcConfig.host;
+  var port = serverSettings.httpport;
+  var baseUrl = protocol + '://' + host + ':' + port;
+  var provisionUrl = baseUrl + '/cluster/api?action=provision.create'
+  return new Promise(function (resolve, reject) {
+    fetch(provisionUrl, {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({provisions: [provision]})
+    }).then(function (res) {
+      if (res.status === 200) {
+        resolve(true)
+      }
+    }).catch(function (error) {
+      reject(error)
+    })
+  })
+}
+```
+
+The `guid` and `context` attributes for the provision take the form of `<webapp name>/<group name>`.
+
+> For this example, which is broadcasting the `live` webapp with a group name of `red5pro`, that would result in `live/red5pro`.
+
+Once the provision is submitted properly, you can check if the provision exists - as well as any current participants - by visiting [http://localhost:5080/live/groupinfo.jsp?group=live/red5pro](http://localhost:5080/live/groupinfo.jsp?group=live/red5pro).
+
 # How to Join a Conference Group
 
 Joining a Conference Group is very similar to establishing an `RTCPublisher` session, but with the additional configuration properties:

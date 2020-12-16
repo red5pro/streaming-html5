@@ -4,6 +4,8 @@ This is an example of subscribing to all participants of a Group Conference. Add
 
 To start a Participant, visit the [Conference Participant](../conferenceParticipant) example.
 
+> Please start at least one particpant before starting the composite example.
+
 ---
 
 This is an example of subscribing to a group conference using an `RTCConferenceParticipant` from the Red5 Pro HTML SDK.
