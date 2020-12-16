@@ -221,6 +221,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     submitButton.disabled = true
     groupName = groupField.value
     rtcConfig.groupName = groupName
+    rtcConfig.app = [rtcConfig.app, groupName].join('/')
     new red5prosdk.RTCConferenceParticipant()
       .init(rtcConfig)
       .then(function (publisher) {

@@ -36,6 +36,7 @@ function start () {
   }
   submitButton.disabled = true
   rtcConfig.groupName = groupField.value
+  rtcConfig.app = [rtcConfig.app, groupName].join('/')
   new red5prosdk.RTCConferenceParticipant()
     .init(rtcConfig)
     .then(function (publisher) {

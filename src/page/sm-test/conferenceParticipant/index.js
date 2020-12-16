@@ -319,6 +319,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     submitButton.disabled = true
     groupName = groupField.value
     rtcConfig.groupName = groupName
+    rtcConfig.app = [rtcConfig.app, groupName].join('/')
     requestOrigin(rtcConfig)
       .then(respondToOrigin)
       .catch(respondToOriginFailure)
