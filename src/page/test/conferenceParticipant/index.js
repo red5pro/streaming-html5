@@ -213,17 +213,53 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     autoGenerateMediaStream: true
   });
 
-  function start () {
-    if (groupField.value.length === 0) {
-      console.warn('Please provide a group name.')
-      return
-    }
-    submitButton.disabled = true
-    groupName = groupField.value
-    rtcConfig.groupName = groupName
-    rtcConfig.app = [rtcConfig.app, groupName].join('/')
+  var provision = {
+    guid: undefined,
+    context: undefined,
+    name: undefined,
+    level: 0,
+    isRestricted: false,
+    parameters: {
+      group: 'webrtc',
+      audiotracks: 3, 
+      videotracks: 1
+    },
+    restrictions: [],
+    primaries: [],
+    secondaries: []
+  }
+
+  function postProvision (groupName, context) {
+    provision = Object.assign(provision, {
+      guid: context,
+      context: context,
+      name: groupName
+    })
+    var host = rtcConfig.host;
+    var port = serverSettings.httpport;
+    var baseUrl = protocol + '://' + host + ':' + port;
+    var provisionUrl = baseUrl + '/cluster/api?action=provision.create'
+    return new Promise(function (resolve, reject) {
+      fetch(provisionUrl, {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({provisions: [provision]})
+      }).then(function (res) {
+        if (res.status === 200) {
+          resolve(true)
+        }
+      }).catch(function (error) {
+        reject(error)
+      })
+    })
+  }
+
+  function startParticipant (config) {
     new red5prosdk.RTCConferenceParticipant()
-      .init(rtcConfig)
+      .init(config)
       .then(function (publisher) {
         streamTitle.innerText = configuration.stream1;
         participant = publisher
@@ -238,6 +274,26 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         console.error('[Red5ProPublisher] :: Error in publishing - ' + jsonError);
         onPublishFail(jsonError);
        });
+  }
+
+  function start () {
+    if (groupField.value.length === 0) {
+      console.warn('Please provide a group name.')
+      return
+    }
+    submitButton.disabled = true
+    groupName = groupField.value
+
+    rtcConfig.groupName = groupName
+    rtcConfig.app = [rtcConfig.app, groupName].join('/')
+
+    postProvision(groupName, rtcConfig.app)
+      .then(function () {
+        startParticipant(rtcConfig)
+      })
+      .catch(function (error) {
+        console.error(error)
+      })
   }
 
   submitButton.addEventListener('click', start)
