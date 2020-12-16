@@ -52,7 +52,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   var groupField = document.getElementById('group-field');
   var submitButton = document.getElementById('submit-button');
-  var conferenceContainer = document.querySelector('.conference')
+  var broadcastButton = document.getElementById('broadcast-button');
+  var conferenceContainer = document.querySelector('.conference');
 
   var protocol = serverSettings.protocol;
   var isSecure = protocol == 'https';
@@ -91,6 +92,61 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var POLL_INTERVAL = 5000
   var pollInterval = 0
   var currentStreams = []
+
+  var screenshare = undefined;
+  var screenshareId = 'r5_screenshare';
+
+  function onScreenshareEvent (event) {
+    console.log('[ScreenshareEvent]:: ' + event.type)
+  }
+  function endBroadcast () {
+    var v = document.getElementById(screenshareId)
+    if (v && v.parentNode) {
+      v.parentNode.removeChild(v)
+    }
+    if (screenshare) {
+      screenshare.unpublish()
+      if (screenshare.getMediaStream()) {
+        screenshare.getMediaStream().getTracks().forEach(function (track) {
+          track.stop();
+        })
+      }
+      screenshare.off('*', onScreenshareEvent)
+      screenshare = undefined
+    }
+    conferenceContainer.classList.remove('conference-out')
+  }
+  function startBroadcast (groupName) {
+    var v = document.createElement('video')
+    v.id = screenshareId
+    v.classList.add('hidden')
+    document.body.appendChild(v)
+    conferenceContainer.classList.add('conference-out')
+    navigator.mediaDevices.getDisplayMedia({audio: false, video: true})
+      .then(function (stream) {
+        var ssConfig = Object.assign({}, rtcConfig, {
+          app: [rtcConfig.app, groupName].join('/'),
+          groupName: groupName,
+          streamName: groupName,
+          mediaElementId :screenshareId
+        })
+        new red5prosdk.RTCPublisher().initWithStream(ssConfig, stream)
+          .then(function (publisher) {
+            screenshare = publisher
+            screenshare.on('*', onScreenshareEvent)
+            return screenshare.publish()
+          })
+          .then(function () {
+            screenshare.getMediaStream().getVideoTracks().forEach(function (track) {
+              track.onended = endBroadcast
+            })
+          })
+          .catch(function (error) {
+            console.error('Could not start screenshare: ' + error.message)
+            endBroadcast()
+          })
+      })
+  }
 
   function onSubscriberEvent (event) {
     var subscriber = event.subscriber
@@ -149,6 +205,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       return entry.stream
     })
     addNewStreams(newStreams)
+    broadcastButton.disabled = currentStreams.length <= 0
   }
 
   function runCompositePoll () {
@@ -187,12 +244,18 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       return
     }
     submitButton.disabled = true
+
     groupName = groupField.value;
     pollInterval = setInterval(runCompositePoll, POLL_INTERVAL)
     runCompositePoll()
   }
 
   submitButton.addEventListener('click', start)
+  broadcastButton.addEventListener('click', function () {
+    if (groupName) {
+      startBroadcast(groupName)
+    }
+  })
 
   var shuttingDown = false;
   function shutdown() {
