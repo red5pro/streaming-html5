@@ -1,6 +1,8 @@
 # Conference Participation using Red5 Pro
 
-This is an example of subscribing to all participants of a Group Conference. To start a Participant, visit the [Conference Participant](../conferenceParticipant) example.
+This is an example of subscribing to all participants of a Group Conference. Additionally, it provides the ability to broadcast out the composite stream as the main group stream.
+
+To start a Participant, visit the [Conference Participant](../conferenceParticipant) example.
 
 ---
 
@@ -12,63 +14,87 @@ The `RTCConferenceParticipant` is an extension of `RTCPublisher` that receives a
 - **[index.html](index.html)**
 - **[index.js](index.js)**
 
-# How to Join a Conference Group
+# How to Access Group Info
 
-Joining a Conference Group is very similar to establishing an `RTCPublisher` session, but with the additional configuration properties:
-
-* `groupName` - **Required**. Defines the Conference Group to join as a participant.
-* `autoGenerateMediaStream` -  **Default: true**. Flag to generate a single `MediaStream` from all the incoming audio and video tracks. This resultant `MediaStream` will be accessible from the `Conference.MediaStream` event so you can place it do with it as you please (such as appling it as a `srcObject` to a `video` element, as this example does).
-
-## Example
-
-The example begins a publishing session for a Conference Group once a `groupName` is provided and you click `Submit`:
+The example first polls for group info related to the `group name` submitted:
 
 ```js
-var participant
+function parseGroup (data) {
+  var streams = data.data.streams
+  var newStreams = streams.filter(function (entry) {
+    return currentStreams.indexOf(entry.stream) === -1 && entry.stream !== groupName
+  })
+  currentStreams = streams.map(function (entry) {
+    return entry.stream
+  })
+  addNewStreams(newStreams)
+  broadcastButton.disabled = currentStreams.length <= 0
+}
 
-var rtcConfig = Object.assign({}, config, {
-  protocol: getSocketLocationFromProtocol().protocol,
-  port: getSocketLocationFromProtocol().port,
-  streamName: config.stream1,
-  autoGenerateMediaStream: true
-});
-
-function start () {
-  if (groupField.value.length === 0) {
-    console.warn('Please provide a group name.')
-    return
+function runCompositePoll () {
+  var url = `${baseQueryURL}?group=${rtcConfig.app}/${groupName}`
+  fetch(url)
+    .then(function (res) {
+      if (res.headers.get('content-type') &&
+          res.headers.get('content-type').toLowerCase().indexOf('application/json') >= 0) {
+        return res.json();
+      } else {
+        return res.text();
+      }
+    })
+    .then(function (jsonOrString) {
+      var json = jsonOrString;
+      if (typeof jsonOrString === 'string') {
+        try {
+          json = JSON.parse(json);
+        } catch(e) {
+          throw new TypeError('Could not properly parse response: ' + e.message);
+        }
+      }
+      parseGroup(json);
+    })
+    .catch(function (e) {
+      console.error(e)
+    })
   }
-  submitButton.disabled = true
-  rtcConfig.groupName = groupField.value
-  new red5prosdk.RTCConferenceParticipant()
-    .init(rtcConfig)
-    .then(function (publisher) {
-      streamTitle.innerText = configuration.stream1;
-      participant = publisher
-      participant.on('*', onPublisherEvent);
-      return participant.publish();
-    })
-    .then(function () {
-      onPublishSuccess(participant);
-    })
-    .catch(function (error) {
-      var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
-      console.error('[Red5ProPublisher] :: Error in publishing - ' + jsonError);
-      onPublishFail(jsonError);
-    });
-}
-
-submitButton.addEventListener('click', start)
 ```
 
-Once the `Conference.MediaStream` event is captured, the provided `MediaStream` is set as the `srcObject` on a `video` element on the page:
+As new participants are recognized as having joined the group, they are added to the grid display (a.k.a., composite).
+
+## Broadcast Main Stream
+
+The main stream for the group has the same stream name as the group name. This example allows for starting a screenshare session that captures the Composite view of gridded participants:
 
 ```js
-function showIncomingAudioVideo (stream) {
-  conferenceVideo.srcObject = stream
-  conferenceVideo.classList.remove('hidden')
-  document.getElementById('red5pro-publisher').classList.add('minimized')
+function startBroadcast (groupName) {
+  var v = document.createElement('video')
+  v.id = screenshareId
+  v.classList.add('hidden')
+  document.body.appendChild(v)
+  conferenceContainer.classList.add('conference-out')
+  navigator.mediaDevices.getDisplayMedia({audio: false, video: true})
+    .then(function (stream) {
+      var ssConfig = Object.assign({}, rtcConfig, {
+        app: [rtcConfig.app, groupName].join('/'),
+        groupName: groupName,
+        streamName: groupName,
+        mediaElementId :screenshareId
+      })
+      new red5prosdk.RTCPublisher().initWithStream(ssConfig, stream)
+        .then(function (publisher) {
+          screenshare = publisher
+          screenshare.on('*', onScreenshareEvent)
+          return screenshare.publish()
+        })
+        .then(function () {
+          screenshare.getMediaStream().getVideoTracks().forEach(function (track) {
+            track.onended = endBroadcast
+          })
+        })
+        .catch(function (error) {
+          console.error('Could not start screenshare: ' + error.message)
+          endBroadcast()
+        })
+    })
 }
 ```
-
-The `MediaStream` contains 3 audio tracks and a single composited video track of all Conference Group participants.
