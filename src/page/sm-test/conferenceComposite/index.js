@@ -84,13 +84,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     port: getSocketLocationFromProtocol().port
   });
 
-  // https://nextechar-test.red5pro.cloud/live/groupinfo.jsp?group=live/group03
-  var port = isSecure ? 443 : 5080
-  var baseQueryURL = `${protocol}://${rtcConfig.host}:${port}/live/groupinfo.jsp`
-
   var groupName;
-  var POLL_INTERVAL = 5000
-  var pollInterval = 0
   var currentStreams = []
 
   var screenshare = undefined;
@@ -116,9 +110,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
     conferenceContainer.classList.remove('conference-out')
   }
-  function startBroadcast (groupName) {
+
+  function startBroadcast (groupName, context) {
     var ssConfig = Object.assign({}, rtcConfig, {
-      app: [rtcConfig.app, groupName].join('/'),
+      app: context,
       groupName: groupName,
       streamName: groupName,
       mediaElementId :screenshareId
@@ -189,9 +184,14 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     var app = configuration.app;
     var port = serverSettings.httpport;
     var baseUrl = protocol + '://' + host + ':' + port;
-    var streamName = configuration.stream1;
+    var streamName = configuration.streamName;
     var apiVersion = configuration.streamManagerAPI || '4.0';
-    var url = baseUrl + '/streammanager/api/' + apiVersion + '/event/' + app + '/' + streamName + '?action=' + action;
+    var url = baseUrl + '/streammanager/api/' + apiVersion + '/event/' + app
+    if (action === 'subscribe') {
+      url += '/' + streamName + '?action=' + action
+    } else {
+      url += '/join?action=' + action
+    }
     var region = getRegionIfDefined();
     if (region) {
       url += '&region=' + region;
@@ -274,45 +274,54 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   function parseGroup (data) {
     console.log(data)
-    var streams = data.data.streams
-    var newStreams = streams.filter(function (entry) {
-      return currentStreams.indexOf(entry.stream) === -1 && entry.stream !== groupName
-    })
-    currentStreams = streams.map(function (entry) {
-      return entry.stream
-    })
-    addNewStreams(newStreams)
-    broadcastButton.disabled = currentStreams.length <= 0
+    if (data && data.data && data.data.streams) {
+      var streams = data.data.streams
+      var newStreams = streams.filter(function (entry) {
+        return currentStreams.indexOf(entry.stream) === -1 && entry.stream !== groupName
+      })
+      currentStreams = streams.map(function (entry) {
+        return entry.stream
+      })
+      addNewStreams(newStreams)
+      broadcastButton.disabled = currentStreams.length <= 0
+    }
   }
 
-  function runCompositePoll () {
-    if (shuttingDown) return
-
-    var url = `${baseQueryURL}?group=${rtcConfig.app}/${groupName}`
-    fetch(url)
-      .then(function (res) {
-        if (res.headers.get('content-type') &&
-            res.headers.get('content-type').toLowerCase().indexOf('application/json') >= 0) {
-          return res.json();
-        }
-        else {
-          return res.text();
-        }
-      })
-      .then(function (jsonOrString) {
-        var json = jsonOrString;
-        if (typeof jsonOrString === 'string') {
-          try {
-            json = JSON.parse(json);
-          } catch(e) {
-            throw new TypeError('Could not properly parse response: ' + e.message);
+  function startMixerParticipantForGroup (context) {
+    var id = 'r5_compositor'
+    var v = document.createElement('video')
+    v.id = id
+    v.classList.add('hidden')
+    document.body.appendChild(v)
+    var compositorConfig = Object.assign({}, rtcConfig, {
+      streamName: id,
+      groupName: groupName,
+      mediaElementId: id,
+      app: context
+    })
+    requestNode(compositorConfig, 'broadcast')
+      .then(function (response) {
+        var conf = Object.assign({}, compositorConfig, {
+          app: configuration.proxy,
+          connectionParams: {
+            host: response.serverAddress,
+            app: context
           }
-        }
-        parseGroup(json);
+        });
+        new red5prosdk.RTCConferenceParticipant()
+          .init(conf)
+          .then(function (p) {
+            p.on('WebRTC.DataChannel.Message', parseGroup)
+            p.on('WebRTC.Socket.Message', parseGroup)
+            return p.publish()
+          })
+          .catch(function (e) {
+            console.error(e)
+          });
       })
-      .catch(function (e) {
-        console.error(e)
-      })
+      .catch(function (error) {
+        console.error(error)
+      });
   }
 
   function start () {
@@ -322,20 +331,21 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
     submitButton.disabled = true
     groupName = groupField.value;
-    pollInterval = setInterval(runCompositePoll, POLL_INTERVAL)
-    runCompositePoll()
+
+    var context = [rtcConfig.app, groupName].join('/')
+    startMixerParticipantForGroup(context)
   }
 
   submitButton.addEventListener('click', start)
   broadcastButton.addEventListener('click', function () {
     if (groupName) {
-      startBroadcast(groupName)
+      var context = [rtcConfig.app, groupName].join('/');
+      startBroadcast(groupName, context)
     }
   })
 
   var shuttingDown = false;
   function shutdown() {
-    clearInterval(pollInterval)
     if (shuttingDown) return;
     shuttingDown = true;
   }

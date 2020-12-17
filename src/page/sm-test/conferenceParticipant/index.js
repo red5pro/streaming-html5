@@ -224,11 +224,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   function requestOrigin (configuration) {
     var host = configuration.host;
     var app = configuration.app;
-    var streamName = configuration.stream1;
     var port = serverSettings.httpport;
     var baseUrl = protocol + '://' + host + ':' + port;
     var apiVersion = configuration.streamManagerAPI || '4.0';
-    var url = baseUrl + '/streammanager/api/' + apiVersion + '/event/' + app + '/' + streamName + '?action=broadcast';
+    var url = baseUrl + '/streammanager/api/' + apiVersion + '/event/' + app + '/join?action=broadcast';
     var region = getRegionIfDefined();
     if (region) {
       url += '&region=' + region;
@@ -327,18 +326,25 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     secondaries: []
   }
 
-  function postProvision (groupName, context) {
+  function postProvision (configuration, groupName, context) {
     provision = Object.assign(provision, {
       guid: context,
       context: context,
       name: groupName
     })
-    var host = rtcConfig.host;
+
+    var host = configuration.host;
     var port = serverSettings.httpport;
     var baseUrl = protocol + '://' + host + ':' + port;
-    var provisionUrl = baseUrl + '/cluster/api?action=provision.create'
+    var apiVersion = configuration.streamManagerAPI || '4.0';
+    var accessToken = configuration.streamManagerAccessToken;
+    var url = baseUrl + '/streammanager/api/' + apiVersion + '/event/meta/' + context + '?accessToken=' + accessToken;
+    var region = getRegionIfDefined();
+    if (region) {
+      url += '&region=' + region;
+    }
     return new Promise(function (resolve, reject) {
-      fetch(provisionUrl, {
+      fetch(url, {
         method: 'POST',
         headers: {
           'Accept': 'application/json',
@@ -375,7 +381,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     rtcConfig.groupName = groupName
     rtcConfig.app = [rtcConfig.app, groupName].join('/')
 
-    postProvision(groupName, rtcConfig.app)
+    postProvision(rtcConfig, groupName, rtcConfig.app)
       .then(function () {
         startParticipant(rtcConfig)
       })
