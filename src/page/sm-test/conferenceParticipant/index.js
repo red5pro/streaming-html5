@@ -227,7 +227,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     var port = serverSettings.httpport;
     var baseUrl = protocol + '://' + host + ':' + port;
     var apiVersion = configuration.streamManagerAPI || '4.0';
-    var url = baseUrl + '/streammanager/api/' + apiVersion + '/event/' + app + '/join?action=broadcast';
+    var url = baseUrl + '/streammanager/api/' + apiVersion + '/event/' + app + '/join';
     var region = getRegionIfDefined();
     if (region) {
       url += '&region=' + region;

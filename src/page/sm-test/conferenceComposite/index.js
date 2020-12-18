@@ -190,7 +190,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     if (action === 'subscribe') {
       url += '/' + streamName + '?action=' + action
     } else {
-      url += '/join?action=' + action
+      url += '/join'
     }
     var region = getRegionIfDefined();
     if (region) {
