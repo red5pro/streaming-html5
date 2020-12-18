@@ -298,7 +298,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     if (retryCount++ < retryLimit) {
       var retryTimer = setTimeout(function () {
         clearTimeout(retryTimer);
-        start();
+        startParticipant(rtcConfig);
       }, 1000);
     }
     else {
@@ -338,26 +338,44 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     var baseUrl = protocol + '://' + host + ':' + port;
     var apiVersion = configuration.streamManagerAPI || '4.0';
     var accessToken = configuration.streamManagerAccessToken;
-    var url = baseUrl + '/streammanager/api/' + apiVersion + '/event/meta/' + context + '?accessToken=' + accessToken;
+    var url = baseUrl + '/streammanager/api/' + apiVersion + '/admin/event/meta/' + context + '?accessToken=' + accessToken;
     var region = getRegionIfDefined();
     if (region) {
       url += '&region=' + region;
     }
     return new Promise(function (resolve, reject) {
-      fetch(url, {
-        method: 'POST',
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({provisions: [provision]})
-      }).then(function (res) {
-        if (res.status === 200) {
+      fetch(url, { method: 'GET' })
+        .then(function (res) {
+          if (res.headers.get("content-type") &&
+            res.headers.get("content-type").toLowerCase().indexOf("application/json") >= 0) {
+            return res.json();
+          } else {
+            throw new TypeError('Could not properly parse response.');
+          }
+        })
+        .then(function (json) {
+          if (json.errorMessage) {
+            throw new TypeError('No provision found.')
+          }
           resolve(true)
-        }
-      }).catch(function (error) {
-        reject(error)
-      })
+        })
+        .catch(function () {
+          // Thrown error if not exist.
+          fetch(url, {
+            method: 'POST',
+            headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(provision)
+          }).then(function (res) {
+            if (res.status === 200) {
+              resolve(true)
+            }
+          }).catch(function (error) {
+            reject(error)
+          })
+        });
     })
   }
 
