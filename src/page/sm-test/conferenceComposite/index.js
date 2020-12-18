@@ -123,7 +123,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         var conf = Object.assign({}, ssConfig, {
           app: configuration.proxy,
           connectionParams: {
-            host: response.serverAddress
+            host: response.serverAddress,
+            app: context
           }
         });
         var v = document.createElement('video')

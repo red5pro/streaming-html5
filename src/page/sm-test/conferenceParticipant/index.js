@@ -273,7 +273,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       app: configuration.proxy,
       connectionParams: {
         host: response.serverAddress,
-        app: response.scope
+        app: response.scope.indexOf('/') > -1 ? response.scope : [response.scope, groupName].join('/')
       }
     });
     new red5prosdk.RTCConferenceParticipant()
