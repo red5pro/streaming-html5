@@ -247,7 +247,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         var conf = Object.assign({}, c, {
           app: configuration.proxy,
           connectionParams: {
-            host: response.serverAddress
+            host: response.serverAddress,
+            app: response.scope
           }
         })
         new red5prosdk.RTCSubscriber()
@@ -273,12 +274,19 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     })
   }
 
-  function parseGroup (data) {
-    console.log(data)
-    if (data && data.data && data.data.streams) {
-      var streams = data.data.streams
+  function parseGroup (event) {
+    console.log(event.data)
+    var message = event.data.message
+    if (message && message.data) {
+      var payload
+      try {
+        payload = typeof message.data === 'string' ? JSON.parse(message.data) : message.data
+      } catch (e) {
+        return
+      }
+      var streams = payload.data.streams
       var newStreams = streams.filter(function (entry) {
-        return currentStreams.indexOf(entry.stream) === -1 && entry.stream !== groupName
+        return currentStreams.indexOf(entry.stream) === -1 && entry.stream !== groupName && entry.stream !== 'r5_compositor'
       })
       currentStreams = streams.map(function (entry) {
         return entry.stream
