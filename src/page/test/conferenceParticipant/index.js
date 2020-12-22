@@ -285,7 +285,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     groupName = groupField.value
 
     rtcConfig.groupName = groupName
-    rtcConfig.app = [rtcConfig.app, groupName].join('/')
+    rtcConfig.app = [config.app, groupName].join('/')
 
     postProvision(groupName, rtcConfig.app)
       .then(function () {
