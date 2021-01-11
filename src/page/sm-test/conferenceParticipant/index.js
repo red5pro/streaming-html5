@@ -338,7 +338,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     var baseUrl = protocol + '://' + host + ':' + port;
     var apiVersion = configuration.streamManagerAPI || '4.0';
     var accessToken = configuration.streamManagerAccessToken;
-    var url = baseUrl + '/streammanager/api/' + apiVersion + '/admin/event/meta/' + context + '?accessToken=' + accessToken;
+    var url = baseUrl + '/streammanager/api/' + apiVersion + '/admin/event/meta/' + context + '/' + groupName + '?accessToken=' + accessToken;
     var region = getRegionIfDefined();
     if (region) {
       url += '&region=' + region;
