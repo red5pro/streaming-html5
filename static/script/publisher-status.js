@@ -95,6 +95,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       }
     }
 
-    window.red5proHandlePublisherEvent = updateStatusFromEvent;
+  function clearStatusEvent (statusField) {
+    inFailedState = false
+    statusField = typeof statusField !== 'undefined' ? statusField : field;
+    statusField.innerText = ''
+  }
+
+  window.red5proHandlePublisherEvent = updateStatusFromEvent;
+  window.red5proClearPublisherEvent = clearStatusEvent;
 
 })(this, document);
