@@ -251,15 +251,18 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             app: response.scope
           }
         })
-        new red5prosdk.RTCSubscriber()
-          .init(conf)
-          .then(function (sub) {
-            sub.on('*', onSubscriberEvent)
-            return sub.subscribe()
-          })
-          .catch(function (error) {
-            console.error(error)
-          });
+        var t = setTimeout(function () {
+          clearTimeout(t)
+          new red5prosdk.RTCSubscriber()
+            .init(conf)
+            .then(function (sub) {
+              sub.on('*', onSubscriberEvent)
+              return sub.subscribe()
+            })
+            .catch(function (error) {
+              console.error(error)
+            });
+        }, 3000)
       })
       .catch(function (e) {
         console.error(e);
@@ -285,6 +288,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         return
       }
       var streams = payload.data.streams
+      if (!streams) {
+        return
+      }
+      // Parse.
       var newStreams = streams.filter(function (entry) {
         return currentStreams.indexOf(entry.stream) === -1 && entry.stream !== groupName && entry.stream !== 'r5_compositor'
       })

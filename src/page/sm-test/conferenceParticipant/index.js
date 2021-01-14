@@ -196,6 +196,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   function removeGroupStream () {
     document.getElementById('red5pro-publisher').classList.remove('minimized')
     conferenceVideo.classList.add('hidden')
+    if (typeof conferenceVideo.srcObject !== 'undefined') {
+      conferenceVideo.srcObject.getTracks().forEach(function (track) {
+        track.stop()
+      })
+    }
   }
 
   var config = Object.assign({},
