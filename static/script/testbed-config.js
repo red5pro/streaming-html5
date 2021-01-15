@@ -42,6 +42,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     if (!results[2]) return '';
     return decodeURIComponent(results[2].replace(/\+/g, " "));
   }
+  window.getParameterByName = getParameterByName;
 
   var build_version = '$VERSION';
   var protocol = window.location.protocol;

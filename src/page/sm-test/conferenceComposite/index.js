@@ -53,7 +53,16 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var groupField = document.getElementById('group-field');
   var submitButton = document.getElementById('submit-button');
   var broadcastButton = document.getElementById('broadcast-button');
-  var conferenceContainer = document.querySelector('.conference')
+  var conferenceContainer = document.querySelector('.conference');
+
+  var autostart = window.getParameterByName('autostart')
+  var groupName = window.getParameterByName('groupname')
+
+  if (groupName) {
+    groupField.value = groupName
+  } else {
+    groupName = groupField.value
+  }
 
   var protocol = serverSettings.protocol;
   var isSecure = protocol == 'https';
@@ -84,9 +93,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     port: getSocketLocationFromProtocol().port
   });
 
-  var groupName;
   var currentStreams = []
-
   var screenshare = undefined;
   var screenshareId = 'r5_screenshare';
 
@@ -359,6 +366,14 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       startBroadcast(groupName, context)
     }
   })
+
+  if (autostart) {
+    if (groupName) {
+      var context = [rtcConfig.app, groupName].join('/');
+      startBroadcast(groupName, context)
+      start()
+    }
+  }
 
   var shuttingDown = false;
   function shutdown() {
