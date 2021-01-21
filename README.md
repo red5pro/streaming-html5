@@ -278,11 +278,11 @@ To define the **Host** with the server instance's IP, click the _Host_ field f t
 | :-----
 | *Demonstrates utilizing the Red5 Pro Stream Manager API to access an Edge server IP to subscribe to a live stream.*
 
-| **[Stream Manager Proxy Reconnect](src/page/test/subscribeStreamManagerProxyReconnect)**
+| **[Stream Manager Proxy Reconnect](src/page/sm-test/subscribeStreamManagerProxyReconnect)**
 | :-----
 | *Demonstrates the failover mechanism of the Red5 Pro HTML SDK to select a subscriber based on browser support and to auto-reconnect on close of broadcast or loss of connection.*
 
-| **[Stream Manager Proxy Region](src/page/test/subscribeStreamManagerProxyRegionRequest)**
+| **[Stream Manager Proxy Region](src/page/sm-test/subscribeStreamManagerProxyRegionRequest)**
 | :-----
 | *Demonstrates utilizing the Red5 Pro Stream Manager API to access an Edge server IP to subscribe to a live stream.*
 
