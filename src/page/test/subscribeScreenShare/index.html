@@ -1,4 +1,5 @@
 <!doctype html>
+{{> license}}
 <html>
   <head>
     {{> meta title='Subscriber Screen Share Test'}}
@@ -6,26 +7,29 @@
     {{> header-stylesheets}}
   </head>
   <body>
+    {{> top-bar }}
+    {{> navigation isTestPage=true }}
     <div id="app">
-      {{> version }}
       {{> settings-link}}
       <div class="ice-background">
         <div class="test-notification">
-          <p>This exampe attempts to make two connections; one for screen share and one for audio from the broadcaster.<br>Start a screen share broadcast using the <a href="../publishScreenShare" target="_blank">Publisher Screen Share</a>.</p>
+          <p>This exampe attempts to make two connections:<br> One for ScreenShare &amp; One for Audio from the Broadcaster.<br><br>Start a screen share broadcast using the <a href="../publishScreenShare" target="_blank">Publisher Screen Share</a>.</p>
         </div>
       </div>
       {{> test-info testTitle='Subscriber Screen Share Test'}}
-      {{> status-field-subscriber}}
-      {{> statistics-field}}
-      <div class="centered">
-        <video id="red5pro-subscriber"
-                controls="controls" autoplay="autoplay" playsinline
-                class="red5pro-media red5pro-media-background"
-                width="640" height="480">
-        </video>
-        <audio id="red5pro-audio"
-                controls autoplay="autoplay" playsinline
-                style="display: none;"></audio>
+      <div class="stream-section">
+        {{> status-field-subscriber}}
+        {{> statistics-field packets_field='Packets Received'}}
+        <div class="centered">
+          <video id="red5pro-subscriber"
+                  controls="controls" autoplay="autoplay" playsinline
+                  class="red5pro-subscriber red5pro-media red5pro-media-background"
+                  width="640" height="480">
+          </video>
+          <audio id="red5pro-audio"
+                  controls autoplay="autoplay" playsinline
+                  style="display: none;"></audio>
+        </div>
       </div>
     </div>
     {{> body-scripts}}

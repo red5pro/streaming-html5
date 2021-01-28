@@ -1,53 +1,126 @@
 <!doctype html>
+{{> license}}
 <html>
   <head>
     {{> meta title='Publish Stream Manager Transcode Proxy Test'}}
     {{> header-scripts}}
     {{> header-stylesheets}}
     <style>
-      #address-field {
-        padding: 6px;
-        background-color: #ccc;
+      .quality-container {
+        text-align: center;
+        background-color: #dbdbdb;
+        color: #3b3b3b;
+        max-width: 1024px;
+        margin: 20px auto 0 auto;
+        padding: 20px;
+        line-height: 1.5em;
       }
-      .hidden {
-        display: none;
+      .quality-link {
+        text-decoration: underline;
+      }
+      .quality-subheader {
+        padding: 20px;
+      }
+      .quality-hr {
+        max-width: 480px;
+        margin: 20px auto;
+      }
+      .stream-section {
+        max-width: 1024px;
+      }
+      .settings-area {
+        background-color: #dbdbdb;
+      }
+      .settings-field {
+        display: flex;
+        align-items: center;
+        flex-direction: row;
+      }
+      .settings-field, .settings-field > input {
+        font-size: 1em;
+      }
+      .settings-field > input {
+        width: 40%;
+        padding-left: 10px;
+      }
+      .info-title {
+        padding: 20px 0;
+      }
+      .paddedHR {
+        margin: 0!important;
+      }
+      .form-container {
+        padding: 20px 0 0 0;
+        text-align: center;
+      }
+      .transcoder-form-container {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-evenly;
+        padding: 20px 0;
+      }
+      @media (max-width:767px) {
+        .transcoder-form-container {
+          flex-direction: column;
+        }
+      }
+      @media (max-width: 510px) {
+        .settings-field {
+          flex-direction: column;
+        }
+        .settings-field.settings-collapsable > input {
+          width: 100%;
+        }
       }
     </style>
   </head>
   <body>
+    {{> top-bar }}
+    {{> navigation isTestPage=true }}
     <div id="app">
-      {{> version }}
       {{> settings-link}}
       <div class="ice-background">
       <div class="test-notification">
-        <p>In order to properly run the Stream Manager examples, you will need to configure you server for cluster infrastructure as described in the following documentation:</p>
-        <p><a href="https://www.red5pro.com/docs/server/autoscale/" target="_blank">https://www.red5pro.com/docs/server/autoscale/</a></p>
+        <p>In order to properly run the Stream Manager examples, you will need to configure your environment with the autoscaling infrastructure as described in the following documentation:</p>
+    <p><a href="https://www.red5pro.com/docs/autoscale/" target="_blank">https://www.red5pro.com/docs/autoscale/</a></p>
+        <br>
         <p>Additionally to use this example stream manager proxy gateway should be enabled.</p>
+        <br>
         <p>All resolutions should have the same aspect ratio, otherwise your stream will be skewed.</p>
       </div>
       </div>
       {{> test-info testTitle='Publish SM ABR Provision Form'}}
-      <div class="clearfix centered ice-background" style="padding: 24px 0; border-top: 1px solid #ddd;">
-        <p>Use this form to post your ABR Provisions:</p>
-        {{> transcoder-form id="transcoder-high" category="High" width="1280" height="720" bitrate="1000000"}}
-        {{> transcoder-form id="transcoder-mid" category="Mid" width="640" height="360" bitrate="512000"}}
-        {{> transcoder-form id="transcoder-low" category="Low" width="320" height="180" bitrate="128000"}}
-        <p style="padding-top: 20px;">
-          <button id="submit-button">Submit</button>
-        </p>
-        <div id="quality-container" class="hidden">
-          <hr/>
-          <p style="padding-top: 20px;"><strong>Transcoder Manifest submitted successfully!</strong><p>
-          <p style="padding: 14px;">Now you can visit</p>
-          <p style="padding: 8px;"><a id="provision-link" target="_blank"></a></p>
-          <p style="padding: 14px;">to view your Provision.
-          <hr />
-          <div id="stream-listing" style="padding: 14px;">
-            <p><strong>Start the following streams with your Media Encoder:</strong></p>
+      <div class="stream-section">
+        <div class="settings-area">
+          <div class="form-container">
+            <p>Use this form to post your ABR Provisions:</p>
+            <div class="transcoder-form-container">
+              {{> transcoder-form id="transcoder-high" category="High" width="1280" height="720" bitrate="2000000"}}
+              {{> transcoder-form id="transcoder-mid" category="Mid" width="640" height="360" bitrate="1000000"}}
+              {{> transcoder-form id="transcoder-low" category="Low" width="320" height="180" bitrate="500000"}}
+            </div>
+            <p>
+            <button id="submit-button" class="ui-button">Submit</button>
+            </p>
+            <hr class="paddedHR">
+            {{> status-field-publisher}}
           </div>
-          <hr />
-          <div style="padding-top: 14px">
-            <p>Then visit the accompanying <a href="../subscribeStreamManagerProxyTranscoder">Subscriber</a>!</p>
+        </div>
+        <div id="quality-container" class="hidden quality-container">
+          <p class="quality-subheader">Transcoder Manifest submitted successfully!<p>
+          <p>
+            <span>Now you can visit</span>&nbsp;
+            <span><a id="provision-link" target="_blank" class="quality-link">URL HERE</a></span>
+            <span>to view your Provision.</span>
+          <hr class="quality-hr" />
+          <div id="stream-listing">
+            <p class="quality-subheader">
+              Start the following streams with your Media Encoder:
+            </p>
+          </div>
+          <hr class="quality-hr" />
+          <div>
+            <p>Then visit the accompanying <a href="../subscribeStreamManagerProxyTranscoder" class="quality-link">Subscriber</a>!</p>
           </div>
         </div>
       </div>
@@ -55,4 +128,3 @@
     <script src="index.js"></script>
   </body>
 </html>
-

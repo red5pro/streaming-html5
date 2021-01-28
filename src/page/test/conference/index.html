@@ -1,77 +1,68 @@
 <!doctype html>
+{{> license}}
 <html lang="eng">
   <head>
     {{> meta title='Conference'}}
     {{> header-scripts}}
     {{> header-stylesheets}}
     <link rel="stylesheet" href="../../css/conference.css">
-    <style>
-      hr {
-        margin: 0;
-      }
-      .device-label {
-        width: 45%;
-        text-align: right;
-        display: inline-block;
-      }
-      .device-control {
-        max-width: 142px;
-      }
-      .device-info {
-        font-size: 0.7em;
-      }
-    </style>
     <script src="../../script/subscription-status.js"></script>
   </head>
   <body>
+    {{> top-bar }}
+    {{> navigation isTestPage=true }}
     <div id="app">
-      {{> version }}
       {{> settings-link}}
       {{> test-title title='Conference'}}
-      <div class="centered status-field">
-        <p>
-          <label for="room-field">Room:</label>
-          <input id="room-field" name="room-field">
-        </p>
+      <div class="conference-section">
+        <div id="publisher-container" class="publisher-section publisher-container">
+          <div class="settings-area">
+            <p>
+              <label for="room-field" class="settings-label">Room:</label>
+              <input id="room-field" name="room-field" class="settings-input">
+            </p>
+          </div>
+          <div id="publisher-session" class="publisher-session hidden">
+            {{> status-field-publisher}}
+          {{> statistics-field packets_field='Packets Sent'}}
+          </div>
+          <div class="centered video-holder">
+          <video id="red5pro-publisher" class="red5pro-publisher"
+                 controls autoplay playsinline muted
+                 width="320" height="240">
+          </video>
+          </div>
+          <div id="publisher-settings" class="publisher-settings">
+            <p class="remove-on-broadcast">
+              <label class="device-label" for="streamname-field">Stream Name:</label>
+              <input id="streamname-field" name="streamname-field" class="settings-input">
+            </p>
+            <hr class="paddedHR" />
+            <p>
+              <label class="device-label" for="camera-select">Camera:</label>
+              <select class="control device-control settings-input" name="camera-select" id="camera-select"></select>
+            </p>
+            <p>
+              <label class="device-label" for="microphone-select">Microphone:</label>
+              <select class="control device-control settings-input" name="microphone-select" id="microphone-select"></select>
+            </p>
+            <p id="publisher-mute-notice" class="publisher-mute-notice remove-on-broadcast">
+              <span class="device-info">Video and Audio can be turned off after publish has started.</span>
+            </p>
+            <p id="publisher-mute-controls" class="publisher-mute-controls hidden">
+              <label for="video-check">Video: </label>
+              <input type="checkbox" id="video-check" name="video-check" checked>
+              <label for="audio-check">Audio: </label>
+              <input type="checkbox" id="audio-check" name="audio-check" checked>
+            </p>
+            <p id="publisher-name-field" class="publisher-name-field hidden"></p>
+            <div class="remove-on-broadcast">
+              <button id="join-button" class="ui-button">Join!</button>
+            </div>
+          </div>
+        </div>
+        <div id="subscribers" class="subscribers"></div>
       </div>
-      <div id="publisher-container" class="publisher-container auto-margined">
-        <div id="publisher-session" class="publisher-session hidden">
-          {{> status-field-publisher}}
-          {{> statistics-field}}
-        </div>
-        <div class="centered video-holder">
-          <video id="red5pro-publisher" autoplay playsinline muted
-                 width="320" height="240"></video>
-        </div>
-        <div id="publisher-settings" class="publisher-settings">
-          <p class="centered remove-on-broadcast">
-            <label for="streamname-field">Stream Name:</label>
-            <input id="streamname-field" name="streamname-field">
-          </p>
-          <hr />
-          <p style="padding-bottom: 0em;">
-            <label class="device-label" for="camera-select">Camera:</label>
-            <select class="control device-control" name="camera-select" id="camera-select"></select>
-          </p>
-          <p  style="padding-bottom: 0.8em;">
-            <label class="device-label" for="microphone-select">Microphone:</label>
-            <select class="control device-control" name="microphone-select" id="microphone-select"></select>
-          </p>
-          <p id="publisher-mute-notice" class="centered remove-on-broadcast">
-            <span class="device-info">Video and Audio can be turned off after publish has started.</span>
-          </p>
-          <hr />
-          <p id="publisher-mute-controls" class="centered hidden">
-            <span id="publisher-name-field" class="hidden"></span>
-            <label for="video-check">Video: </label>
-            <input type="checkbox" id="video-check" name="video-check" checked>
-            <label for="audio-check">Audio: </label>
-            <input type="checkbox" id="audio-check" name="audio-check" checked>
-          </p>
-          <p class="centered dark-background remove-on-broadcast"><button id="join-button">Join!</button></p>
-        </div>
-      </div>
-      <div id="subscribers" class="float-left"></div>
       <div class="centered status-field hidden">
         <p>
           <input type="text" id="input-field" />

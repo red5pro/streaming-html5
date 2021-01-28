@@ -1,4 +1,29 @@
-(function(window, document, red5prosdk) {
+/*
+Copyright © 2015 Infrared5, Inc. All rights reserved.
+
+The accompanying code comprising examples for use solely in conjunction with Red5 Pro (the "Example Code") 
+is  licensed  to  you  by  Infrared5  Inc.  in  consideration  of  your  agreement  to  the  following  
+license terms  and  conditions.  Access,  use,  modification,  or  redistribution  of  the  accompanying  
+code  constitutes your acceptance of the following license terms and conditions.
+
+Permission is hereby granted, free of charge, to you to use the Example Code and associated documentation 
+files (collectively, the "Software") without restriction, including without limitation the rights to use, 
+copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit 
+persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The Software shall be used solely in conjunction with Red5 Pro. Red5 Pro is licensed under a separate end 
+user  license  agreement  (the  "EULA"),  which  must  be  executed  with  Infrared5,  Inc.   
+An  example  of  the EULA can be found on our website at: https://account.red5pro.com/assets/LICENSE.txt.
+
+The above copyright notice and this license shall be included in all copies or portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,  INCLUDING  BUT  
+NOT  LIMITED  TO  THE  WARRANTIES  OF  MERCHANTABILITY, FITNESS  FOR  A  PARTICULAR  PURPOSE  AND  
+NONINFRINGEMENT.   IN  NO  EVENT  SHALL INFRARED5, INC. BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, 
+WHETHER IN  AN  ACTION  OF  CONTRACT,  TORT  OR  OTHERWISE,  ARISING  FROM,  OUT  OF  OR  IN CONNECTION 
+WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
+(function(window, document, red5prosdk, adapter) {
   'use strict';
 
   var serverSettings = (function() {
@@ -31,52 +56,40 @@
 
   var targetPublisher;
 
+  var browserDetails = adapter.browserDetails;
   var updateStatusFromEvent = window.red5proHandlePublisherEvent; // defined in src/template/partial/status-field-publisher.hbs
   var streamTitle = document.getElementById('stream-title');
   var statisticsField = document.getElementById('statistics-field');
   var cameraSelect = document.getElementById('camera-select');
-  var swapButton = document.getElementById('swap-button');
+  var bitrateField = document.getElementById('bitrate-field');
+  var packetsField = document.getElementById('packets-field');
+  var resolutionField = document.getElementById('resolution-field');
 
-  swapButton.addEventListener('click', swapCamera);
+  var bitrate = 0;
+  var packetsSent = 0;
+  var frameWidth = 0;
+  var frameHeight = 0;
 
-  var SELECT_DEFAULT = 'Select a camera...';
-  var deviceList;
-  // Fill Camera listing.
-  (function (cameraSelect) {
-    navigator.mediaDevices.enumerateDevices()
-      .then(function (devices) {
-        var videoCameras = devices.filter(function (item) {
-          return item.kind === 'videoinput';
-        })
-        var cameras = [{
-          label: SELECT_DEFAULT
-        }].concat(videoCameras);
-        var options = cameras.map(function (camera, index) {
-          return '<option value="' + camera.deviceId + '">' + (camera.label || 'camera ' + index) + '</option>';
-        });
-        deviceList = cameras.map(function (camera) {
-          return camera.deviceId;
-        });
-        cameraSelect.innerHTML = options.join(' ');
-      })
-      .catch(function (error) {
-        console.error('Could not access camera devices: ' + error);
-      });
-  })(cameraSelect);
-
-  function getSelectedIndexFromTrack (track) {
-    var i = deviceList.length;
-    while (--i > -1) {
-      var option = deviceList[i];
-      if (option.value === track.id) {
-        break;
-      }
-    }
-    if (i > -1) {
-      cameraSelect.selectedIndex = i;
-    }
+  function updateStatistics (b, p, w, h) {
+    statisticsField.classList.remove('hidden');
+    bitrateField.innerText = b === 0 ? 'N/A' : Math.floor(b);
+    packetsField.innerText = p;
+    resolutionField.innerText = (w || 0) + 'x' + (h || 0);
   }
 
+  function onBitrateUpdate (b, p) {
+    bitrate = b;
+    packetsSent = p;
+    updateStatistics(bitrate, packetsSent, frameWidth, frameHeight);
+  }
+
+  function onResolutionUpdate (w, h) {
+    frameWidth = w;
+    frameHeight = h;
+    updateStatistics(bitrate, packetsSent, frameWidth, frameHeight);
+  }
+
+  var current_selection = undefined;
   var protocol = serverSettings.protocol;
   var isSecure = protocol == 'https';
   function getSocketLocationFromProtocol () {
@@ -85,16 +98,15 @@
       : {protocol: 'wss', port: serverSettings.wssport};
   }
 
-  function onBitrateUpdate (bitrate, packetsSent) {
-    statisticsField.innerText = 'Bitrate: ' + Math.floor(bitrate) + '. Packets Sent: ' + packetsSent + '.';
-  }
-
   function onPublisherEvent (event) {
     console.log('[Red5ProPublisher] ' + event.type + '.');
     updateStatusFromEvent(event);
     if (event.type === 'WebRTC.MediaStream.Available') {
-      // var stream = event.data;
-      // TODO: set cameraSelect.selectedIndex from getSelectedIndexFromTrack(data.getVideoTracks[0]);
+      var tracks = publisher.getMediaStream().getVideoTracks();
+      tracks.forEach(function (track) {
+        var settings = track.getSettings();
+        setCameraSelection(settings.deviceId);
+      });
     }
   }
   function onPublishFail (message) {
@@ -103,7 +115,14 @@
   function onPublishSuccess (publisher) {
     console.log('[Red5ProPublisher] Publish Complete.');
     try {
-      window.trackBitrate(publisher.getPeerConnection(), onBitrateUpdate);
+      var pc = publisher.getPeerConnection();
+      var stream = publisher.getMediaStream();
+      window.trackBitrate(pc, onBitrateUpdate);
+      statisticsField.classList.remove('hidden');
+      stream.getVideoTracks().forEach(function (track) {
+        var settings = track.getSettings();
+        onResolutionUpdate(settings.width, settings.height);
+      });
     }
     catch (e) {
       // no tracking for you!
@@ -114,6 +133,38 @@
   }
   function onUnpublishSuccess () {
     console.log('[Red5ProPublisher] Unpublish Complete.');
+  }
+
+  function onDeviceError (error) {
+    console.error('Could not access devices: ' + error);
+  }
+
+  function listDevices (devices) {
+    var cameras = devices.filter(function (item) {
+      return item.kind === 'videoinput';
+    })
+    var options = cameras.map(function (camera, index) {
+      return '<option value="' + camera.deviceId + '">' + (camera.label || 'camera ' + index) + '</option>';
+    });
+    cameraSelect.innerHTML = options.join(' ');
+    if (targetPublisher && targetPublisher.getMediaStream()) {
+      var tracks = targetPublisher.getMediaStream().getVideoTracks();
+      tracks.forEach(function (track) {
+        var settings = track.getSettings();
+        setCameraSelection(settings.deviceId);
+      });
+    }
+  }
+
+  function setCameraSelection (deviceId) {
+    var options = cameraSelect.childNodes;
+    var i = options.length;
+    while( --i > -1) {
+      if (options[i].value === deviceId) {
+        options[i].selected = true;
+        return
+      }
+    }
   }
 
   function getUserMediaConfiguration () {
@@ -144,31 +195,54 @@
   function swapCamera () {
     var connection = targetPublisher.getPeerConnection();
     var selection = cameraSelect.value;
-    if (selection === SELECT_DEFAULT) {
+    if (selection === current_selection) {
       return;
     }
+    current_selection = selection;
     if (mediaConstraints.video && typeof mediaConstraints.video !== 'boolean') {
       mediaConstraints.video.deviceId = { exact: selection }
+      delete mediaConstraints.video.frameRate
     }
     else {
       mediaConstraints.video = {
         deviceId: { exact: selection }
       };
     }
-    // 1. Grap new MediaStream from updated constraints.
+    mediaConstraints.audio = configuration.useAudio ? configuration.mediaConstraints.audio : false;
+    var isOldMobileChrome = browserDetails.browser.toLowerCase() === 'chrome' && browserDetails.version <= 83;
+    // In the below flag, we originally equated it to being an older Chrome version,
+    //  however, it turns out it was not necessarily just the browser but could also be the Android OS...
+    //  As a result, we stop all tracks for all browsers now before requesting `getUserMedia` again.
+    var requiresTrackStopBeforeGUM = true; // Add any other criteria here.
+    var senders = connection.getSenders();
+    if (requiresTrackStopBeforeGUM) {
+      // Note: In some older mobile browsers, it is required to stop all current tracks before requesting
+      // media through `getUserMedia` again.
+      // This has the unfortunate side affect of the video going "black" until new media is accessed.
+      senders.forEach(function (sender) {
+        sender.track.stop();
+      });
+    }
+    // 1. Grab new MediaStream from updated constraints.
     navigator.mediaDevices.getUserMedia(mediaConstraints)
       .then(function (stream) {
+        var replacePromise;
         // 2. Update the media tracks on senders through connection.
-        var senders = connection.getSenders();
-        var tracks = stream.getTracks();
-        var i = tracks.length;
+        var i = senders.length;
         while ( --i > -1) {
-          if (tracks[i].kind === 'video') {
-            senders[i].replaceTrack(tracks[i]);
+          // 3. Replace the currently sending streams based on track kind
+          if (!requiresTrackStopBeforeGUM) {
+            senders[i].track.stop();
+          }
+          if (senders[i].track.kind === 'video') {
+            replacePromise = senders[i].replaceTrack(stream.getVideoTracks()[0]);
+          } else {
+            senders[i].replaceTrack(stream.getAudioTracks()[0]);
           }
         }
-        // 3. Update the video display with new stream.
+        // 4. Update the video display with new stream.
         document.getElementById('red5pro-publisher').srcObject = stream;
+        return replacePromise;
       })
       .catch (function (error) {
         console.error('Could not replace track : ' + error.message);
@@ -195,13 +269,20 @@
       return targetPublisher.publish();
     })
     .then(function () {
+      return navigator.mediaDevices.enumerateDevices()
+    })
+    .then(listDevices)    
+    .then(function () {
       onPublishSuccess(targetPublisher);
     })
     .catch(function (error) {
       var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
       console.error('[Red5ProPublisher] :: Error in publishing - ' + jsonError);
       onPublishFail(jsonError);
-     });
+    });
+
+  navigator.mediaDevices.enumerateDevices().then(listDevices).catch(onDeviceError);
+  cameraSelect.addEventListener('change', swapCamera);
 
   var shuttingDown = false;
   function shutdown() {
@@ -219,5 +300,5 @@
   window.addEventListener('pagehide', shutdown);
   window.addEventListener('beforeunload', shutdown);
 
-})(this, document, window.red5prosdk);
+})(this, document, window.red5prosdk, window.adapter);
 

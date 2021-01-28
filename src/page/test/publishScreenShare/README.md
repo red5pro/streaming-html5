@@ -1,10 +1,7 @@
 # Publish Screen Share using Red5 Pro
-This is an example of utilizing the screen sharing capabilities of **Chrome** and **Firefox**.
+This is an example of utilizing the `getDisplayMedia` API for screen sharing capabilities available in **Chrome**, **Edge** and **Firefox**.
 
-The example utilizes the `getScreenId` library from [https://www.webrtc-experiment.com/getScreenId/](https://www.webrtc-experiment.com/getScreenId/).
-
-* In order to use this example in Chrome, you will first need to install the [Screen Capturing Extension](https://chrome.google.com/webstore/detail/screen-capturing/ajhifddimkapgcifgcodmmfdlknahffk) and restart your browser.
-* In order to use this example in Firefox, it must be served over HTTPS; `localhost` testing will not work properly.
+> Browser Compatibility table for `getDisplayMedia`: [https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getDisplayMedia](https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getDisplayMedia)
 
 Additionally, it is currently not possible (as of the time of this writing, *November 30th, 2017*) to stream a screen capture along with audio. As such, this example actually creates two publisher connections on the Red5 Pro Server: one to stream the screen share, and another for audio.
 
@@ -19,63 +16,58 @@ Additionally, it is currently not possible (as of the time of this writing, *Nov
 
 # How to Publish a Screen Share
 
-Utilize the `onGetUserMedia` configuration attribute to provide the constraints returned from the [getScreenId](https://www.webrtc-experiment.com/getScreenId/) library, and include any custom defined fallback values:
+Utilize the `getDisplayMedia` API along with the `initWithMedia` method of the Red5 Pro HTML SDK:
 
 ```js
 function capture (cb) {
-  getScreenId(function (error, sourceId, screen_constraints) {
-    cb(screen_constraints)
-  });
-}
-
-function setupPublisher (constraints) {
   var vw = parseInt(cameraWidthField.value);
   var vh = parseInt(cameraHeightField.value);
   var fr = parseInt(framerateField.value);
-
-  var config = {
-    protocol: 'https',
-    port: 443,
-    streamName: 'mystream',
-    onGetUserMedia: function () {
-      var c = Object.assign({}, constraints);
-      if (c.video.optional) {
-        // chrome
-        c.video.optional.push({
-          maxWidth: vw
-        }, {
-          maxHeight: vh
-        }, {
-          maxFrameRate: fr
-        });
-      }
-      else if (c.video.mediaSource === 'window') {
-        // moz
-        c.video.width = {
-          exact: vw
-        };
-        c.video.height = {
-          exact: vh
-        };
-        c.video.frameRate = {
-          exact: fr
-        }
-      }
-      return navigator.mediaDevices.getUserMedia(c);
+    // Edge has getDisplayMedia on navigator and not media devices?
+    var p = undefined
+    if (navigator.getDisplayMedia) {
+      p = navigator.getDisplayMedia(config)
+    } else {
+      p = navigator.mediaDevices.getDisplayMedia(config)
     }
-  };
-
-  new RTCPublisher()
-    .init(config)
-    .then(function (publisherImpl) {
-      return publisherImpl.publish();
-    })
-    .catch(function (error) {
-      // handle any errors.
+    p.then(cb).catch(function (error) {
+      captureButton.disabled = false;
+      console.error(error);
+      updateStatusFromEvent({
+        type: 'ERROR',
+        data: error.message
+      });
     });
 }
+```
 
-capture(setupPublisher);
+The `capture` method in the example is invoked from a User click event on a button that assigns the callback to `setupPublisher`:
+
+```js
+captureButton.addEventListener('click', function() {
+  capture(setupPublisher);
+});
+```
+
+The `setupPublisher` method accepts the returned `MediaStream` from the `getDisplayMedia` and uses it to initialize the WebRTC-based publisher using the `initWithMedia` method:
+
+```js
+function setupPublisher (mediaStream) {
+...
+    new red5prosdk.RTCPublisher()
+      .initWithStream(rtcConfig, mediaStream)
+      .then(function (publisherImpl) {
+        streamTitle.innerText = configuration.stream1;
+        targetPublisher = publisherImpl;
+        targetPublisher.on('*', onPublisherEvent);
+        return targetPublisher.publish();
+      })
+      .then(function () {
+        onPublishSuccess(targetPublisher);
+        setupAudio();
+      })
+...
+}
 ```
 
 # Settings

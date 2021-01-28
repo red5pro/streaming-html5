@@ -1,4 +1,5 @@
 <!doctype html>
+{{> license}}
 <html>
   <head>
     {{> meta title='Subscriber Test'}}
@@ -8,7 +9,7 @@
   <body>
     <div id="app">  
         {{> status-field-subscriber}}
-        {{> statistics-field}}
+        {{> statistics-field packets_field='Packets Received'}}
         {{> test-info testTitle='Subscriber Mobile Optimized Test'}}
       <div class="centered">
         <video id="red5pro-subscriber"

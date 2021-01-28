@@ -1,76 +1,124 @@
-# Playback VOD using Red5 Pro
+# Publishing RTC Streams over stream manager proxy
 
-This is an example of Video On Demand (VOD) playback.
+The streammanager WebRTC proxy is a communication layer built inside streammanager web application which allows it to act as a proxy gateway for webrtc publishers / subscribers. The target use case of this communication layer is to facilitate a secure browser client to be able to connect to a "unsecure" remote websocket endpoint for consuming WebRTC services offered by Red5pro. 
 
-To view the recorded files available for VOD playback, view the listings from your server deploy in the webapp that the recorded stream was recorded to, such as the following:
+Streammanager autoscaling works with dynamic nodes which are associated with dynamic IP addresses and cannot have a SSL attached to them. The proxy layer helps publishers to connect and initiate a WebRTC publish session from a `secure` (ssl enabled) domain to a `unsecure` Red5pro origin having using an IP address.
 
-* [http://localhost:5080/live/mediafiles](../../live/mediafiles)
-* [http://localhost:5080/live/playlists](../../live/playlists)
 
-**Please refer to the [Basic Subscriber Documentation](../subscribe/README.md) to learn more about the basic setup.**
+**Please refer to the [Basic Publisher Documentation](../publish/README.md) to learn more about the basic setup.**
+
+> In order to properly run the Stream Manager examples, you will need to configure you server for cluster infrastructure as described in the following documentation: [https://www.red5pro.com/docs/server/autoscale/](https://www.red5pro.com/docs/server/autoscale/).
+
+> You also need to ensure that the stream manager proxy layer is `enabled`. The configuration section can be found in stream manager's config file - `red5-web.properties`
+
+`
+## WEBSOCKET PROXY SECTION
+proxy.enabled=false
+`
 
 ## Example Code
 
 - **[index.html](index.html)**
 - **[index.js](index.js)**
 
-# How to Playback
+## Setup
 
-> Be sure to have previously recorded a broadcast using the [Publish Record Example](../publishRecord).
-
-1. Enter in a filename - including the extension - of a previously recorded broadcast.
-2. Click `playback file`.
-
-The playback format - either Flash or HLS - will be determined based on the extension with the following rules:
-
-| Extension | Format |
-| --- | --- |
-| `flv` | Flash/RTMP |
-| `mp4` | Flash/RTMP |
-| `m3u8` | HLS |
-
-# Specifying a file as playback in a Subscriber
-
-Playing back a VOD file using the Red5 Pro Subscriber is similar to streaming a live video. Some configuration attributes will be different depending on the playback target.
-
-## Flash/RTMP
-
-To playback a VOD in the RTMP-based Subscriber:
-
-* Set the `streamName` in the configuration to the filename, with the extension.
-
-With a configuration provided for the RTMP Subscriber:
+In order to publish, you first need to connect to the Stream Manager. The Stream Manager knows which origins are valid (part of a cluster) & available for publishing.
 
 ```js
-{
-  protocol: 'rtmp',
-  host: 'localhost',
-  port: 1935,
-  app: 'live',
-  streamName: 'thefiletoplay.flv'
+
+function requestOrigin (configuration) {
+  var host = configuration.host;
+  var app = configuration.app;
+  var proxy = configuration.proxy;
+  var streamName = configuration.stream1;
+  var port = serverSettings.httpport.toString();
+  var portURI = (port.length > 0 ? ':' + port : '');
+  var baseUrl = isSecure ? protocol + '://' + host : protocol + '://' + host + portURI;
+  var apiVersion = configuration.streamManagerAPI || '4.0';
+  var url = baseUrl + '/streammanager/api/' + apiVersion + '/event/' + app + '/' + streamName + '?action=broadcast';
+  return new Promise(function (resolve, reject) {
+    fetch(url)
+      .then(function (res) {
+        if (res.headers.get("content-type") &&
+          res.headers.get("content-type").toLowerCase().indexOf("application/json") >= 0) {
+          return res.json();
+        }
+        else {
+          throw new TypeError('Could not properly parse response.');
+        }
+      })
+      .then(function (json) {
+        resolve(json.serverAddress);
+      })
+      .catch(function (error) {
+        var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
+        console.error('[PublisherStreamManagerTest] :: Error - Could not request Origin IP from Stream Manager. ' + jsonError)
+        reject(error)
+      });
+  });
 }
 ```
 
-The Playback engine will connect to the server at `rtmp://localhost:1935/` and attempt to play back the `thefiletoplay.flv` file located in `<red5proserver>/webapps/live/streams`.
+[index.js #80](index.js#L80)
 
-## HLS
+The service returns a JSON object. In particular to note is the `serverAddress` attribute which will be the IP of the Origin server.
 
-To playback a VOD in the HLS-based Subscriber:
-
-* Set the `streamName` in the configuration to the filename, _without_ the extension.
-* Set the `port` in the configuration to that of the one the server is served on.
-
-With a configuration provided for the HLS Subscriber:
-
-```js
-{
-  protocol: 'http',
-  host: 'localhost',
-  port: 5080,
-  app: 'live',
-  streamName: 'thefiletoplay'
+```
+  "name": "<stream-name>",
+  "scope": "<stream-scope>",
+  "serverAddress": "<origin-host-address>",
+  "region": "<region-code>"
 }
 ```
 
-The Playback engine will connect to the server at `http://localhost:5080/` and attempt to play back the `thefiletoplay.m3u8` file located in `<red5proserver>/webapps/live/streams`.
+Next we construct the configuration object for the publisher per supported protocol. Note that the `proxy` usage is applicable for `rtc` only. The origin address is set directly as host for `rtmp` publisher where as it is passed in through `connectionParams` for `rtc`.
+
+Another important to note is that for `rtc` publisher the target application is the proxy - the `streammanager` webapp and not the app that you want to publish to. The rtc configuration passes the actual target application name in `connectionParams` as `app`.
+
+```
+function determinePublisher (serverAddress) {
+    var config = Object.assign({},
+                    configuration,
+                    defaultConfiguration,
+                    getUserMediaConfiguration());
+    var rtcConfig = Object.assign({}, config, {
+                      protocol: getSocketLocationFromProtocol().protocol,
+                      port: getSocketLocationFromProtocol().port,
+                      streamName: config.stream1,
+                      app: configuration.proxy,
+                      connectionParams: {
+                        host: serverAddress,
+                        app: configuration.app
+                      }
+                   });
+    var rtmpConfig = Object.assign({}, config, {
+                      host: serverAddress,
+                      protocol: 'rtmp',
+                      port: serverSettings.rtmpport,
+                      streamName: config.stream1,
+                      swf: '../../lib/red5pro/red5pro-publisher.swf',
+                      swfobjectURL: '../../lib/swfobject/swfobject.js',
+                      productInstallURL: '../../lib/swfobject/playerProductInstall.swf',
+                      mediaConstraint: {
+                        video: {
+                          width: config.cameraWidth,
+                          height: config.cameraHeight,
+                        }
+                      }
+                   });
+    var publishOrder = config.publisherFailoverOrder
+                            .split(',')
+                            .map(function (item) {
+                              return item.trim()
+                        });
+
+    return PublisherBase.determinePublisher({
+                rtc: rtcConfig,
+                rtmp: rtmpConfig
+              }, publishOrder);
+  }
+```
+
+[index.js #120](index.js#L120)
 

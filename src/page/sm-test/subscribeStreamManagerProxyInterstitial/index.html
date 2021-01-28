@@ -1,0 +1,77 @@
+<!doctype html>
+{{> license}}
+<html>
+  <head>
+    {{> meta title='Subscriber Stream Manager Proxy Test'}}
+    {{> header-scripts}}
+    {{> header-stylesheets}}
+  </head>
+  <body>
+    {{> top-bar }}
+    {{> navigation isTestPage=true }}
+    <div id="app">
+      {{> settings-link}}
+      {{> sm-proxy-notification}}
+      {{> test-info testTitle='Subscriber Stream Manager Proxy Interstitial Test'}}
+      <div class="stream-section">
+        {{> status-field-subscriber}}
+        {{> statistics-field packets_field='Packets Received'}}
+        <div class="centered"><p id="address-field" class="address-field">Edge Address: N/A</p></div>
+        <div class="centered">
+          <video id="red5pro-subscriber"
+                  controls autoplay playsinline
+                  class="red5pro-subscriber red5pro-media red5pro-media-background"
+                  width="640" height="480">
+          </video>
+
+		<!-- XXX interstitial -->
+        <div class="settings-area">
+          <p class="settings-field settings-collapsable">
+            <label class="settings-label" for="target">Target:</label>
+            <input id="target" type="text" size="75" value="live/stream1"/>
+          </p>		
+          <p class="settings-field settings-collapsable">
+            <label class="settings-label" for="interstitial">Interstitial:</label>
+            <input id="interstitial" type="text" size="75" value="live/stream2"/>
+          </p>
+          <p class="settings-field settings-collapsable">
+            <label class="settings-label" for="switchAudio">Switch Audio:</label>
+            <input id="switchAudio" type="checkbox" size="75" checked/>
+          </p>
+          <p class="settings-field settings-collapsable">
+            <label class="settings-label" for="switchVideo">Switch Video:</label>
+            <input id="switchVideo" type="checkbox" size="75" checked/>
+          </p>
+          <p class="settings-field settings-collapsable">
+            <label class="settings-label" for="isLoop">Loop:</label>
+            <input id="isLoop" type="checkbox" size="75" checked/>
+          </p>
+          <p class="settings-field settings-collapsable">
+            <label class="settings-label" for="durationControlType">Duration Control:</label>
+            <select id="durationControlType">
+				<option value="Indefinite" selected>Indefinite</option>
+				<option value="StreamClock">StreamClock</option>
+				<option value="WallClock">WallClock</option>
+			</select>
+          </p>
+          <p class="settings-field settings-collapsable">
+            <label class="settings-label" for="start">Start:</label>
+            <input id="start" type="numeric" size="15" value="0"/>
+          </p>
+          <p class="settings-field settings-collapsable">
+            <label class="settings-label" for="start">Duration:</label>
+            <input id="duration" type="numeric" size="15" value="30000"/>
+          </p>
+          <p><button class="ui-button" id="send-button">Switch to interstitial</button></p>
+          <p><button class="ui-button" id="resume-button">Resume</button></p>
+        </div>		
+		<!-- XXX /interstitial -->
+
+        </div>
+      </div>
+    </div>
+    {{> body-scripts}}
+    {{> mobile-subscriber-util}}
+    <script src="index.js"></script>
+  </body>
+</html>

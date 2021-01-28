@@ -1,28 +1,30 @@
 <!doctype html>
+{{> license}}
 <html>
   <head>
-    {{> meta title='Subscriber Standby Test'}}
+    {{> meta title='WebRTC Subscriber Standby Test'}}
     {{> header-scripts}}
     {{> header-stylesheets}}
   </head>
   <body>
+    {{> top-bar }}
+    {{> navigation isTestPage=true }}
     <div id="app">
-      {{> version }}
       {{> settings-link}}
-      {{> test-info testTitle='Subscriber Standby Test'}}
-      {{> status-field-subscriber}}
-      {{> statistics-field}}
-      <div class="centered">
-        <video id="red5pro-subscriber"
-                controls="controls" autoplay="autoplay" playsinline
-                class="red5pro-media red5pro-media-background"
-                width="640" height="480">
-        </video>
-      </div>
-      <div class="centered" style="margin-top: 16px">
-              <p>
-                <button id="standby-button" disabled>Enable Standby</button>
-              </p>
+      {{> test-info testTitle='Subscriber Standby Test (WebRTC)'}}
+      <div class="stream-section">
+        {{> status-field-subscriber}}
+        {{> statistics-field packets_field='Packets Received'}}
+        <div class="centered">
+          <video id="red5pro-subscriber"
+                  controls="controls" autoplay="autoplay" playsinline
+                  class="red5pro-subscriber red5pro-media red5pro-media-background"
+                  width="640" height="480">
+          </video>
+        </div>
+        <div>
+          <button id="standby-button" class="ui-button" disabled>Enable Standby</button>
+        </div>
       </div>
     </div>
     {{> body-scripts}}

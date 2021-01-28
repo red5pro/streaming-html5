@@ -1,19 +1,15 @@
 <!doctype html>
+{{> license}}
 <html>
   <head>
     {{> meta title='Publish Stream Manager Test'}}
     {{> header-scripts}}
     {{> header-stylesheets}}
-    <style>
-      #address-field {
-        padding: 6px;
-        background-color: #ccc;
-      }
-    </style>
   </head>
   <body>
+    {{> top-bar }}
+    {{> navigation isTestPage=true }}
     <div id="app">
-      {{> version }}
       {{> settings-link}}
       <div class="ice-background">
       <div class="test-notification">
@@ -22,11 +18,15 @@
       </div>
       </div>
       {{> test-info testTitle='Publish Stream Manager Test'}}
-      {{> status-field-publisher}}
-      {{> statistics-field}}
-      <div class="centered"><p id="address-field">Origin Address: N/A</p></div>
-      <div class="centered">
-        <video id="red5pro-publisher" controls autoplay playsinline muted></video>
+      <div class="stream-section">
+        {{> status-field-publisher}}
+        {{> statistics-field packets_field='Packets Sent'}}
+        <div class="centered"><p id="address-field" class="address-field">Origin Address: N/A</p></div>
+        <div class="centered">
+          <video id="red5pro-publisher" class="red5pro-publisher"
+                 controls autoplay playsinline muted>
+          </video>
+        </div>
       </div>
     </div>
     {{> body-scripts}}

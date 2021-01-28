@@ -128,7 +128,7 @@ The `init` method of the `Red5ProSubscriber` returns a `Promise`-like object tha
 
 You can determine the selected implementation by invoking `selectedSubscriber.getType()`.
 
-> Read more about configurations and their attributes from the [Red5 Pro HTML SDK Documentation](https://github.com/infrared5/red5pro-html-sdk#subscriber).
+> Read more about configurations and their attributes from the [Red5 Pro HTML SDK Documentation](https://red5pro.com/docs/client/webrtc/subscriber/overview/).
 
 ### Subscribing
 

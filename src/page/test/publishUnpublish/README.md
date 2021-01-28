@@ -1,6 +1,6 @@
 # Unpublishing and optionally removing preview
 
-This is an example of requesting to remove the video preview and release Media browser access when calling to `unpublish` a broadcast stream.
+This is an example of removing the video preview and releasing Media browser access when using the `clearMediaOnUnpublish` configuration property of a broadcast stream.
 
 > **WebRTC Only**
 
@@ -8,13 +8,13 @@ This is an example of requesting to remove the video preview and release Media b
 - **[index.html](index.html)**
 - **[index.js](index.js)**
 
-# Unpublish
+# clearMediaOnUnpublish
 
-The `unpublish` API of the `RTCPublisher` has a default parameter that keeps the preview video of an establshed publisher as the source for the target `video` element. Additionally, this maintains the browser Media connection of the Camera and Microphone.
+The `clearMediaOnUnpublish` configuration property for a publisher is a `boolean` value that either retains Media capture and preview in a `video` element if left as default (`false`), or releases the Media (camera, microphone and tab indicator of a browser) and removes the preview from the `video` element if set to `true`.
 
-This is by design for some frontends that require to maintain the Camera and Microphone connections between broadcasting sessions.
+The default of `false` is by design for some frontends that require to maintain the Camera and Microphone connections between broadcasting sessions.
 
-However, this default design can be overriden by providing a `true` argument value when invoking `unpublish` on an `RTCPublisher`. The result of doing so will be:
+However, this default design can be overriden by setting the `clearMediaOnUnpublish` config property value to `true`. When requesting to `unpublish`, this will affectively:
 
 * Removal of media video in the target `video` element
 * Release of the Camera from the browser
@@ -22,17 +22,7 @@ However, this default design can be overriden by providing a `true` argument val
 
 > To the end-user, this will turn off the camera light of the Camera being used.
 
-```js
+Internally, what the SDK does is:
 
-var publisher = new RTCPublisher()
-publisher
-  .init(config)
-  .then(() => {
-    return publisher.publish()
-  })
-
-...
-
-// Providing `true` will release the video preview and browser connection of Media.
-publisher.unpublish(true)
-```
+1. Set the `srcObject` on the target `video` element to `null`.
+2. Traverses and stops all the `MediaStreamTracks` of the underlying `MediaStream`.

@@ -1,3 +1,28 @@
+/*
+Copyright © 2015 Infrared5, Inc. All rights reserved.
+
+The accompanying code comprising examples for use solely in conjunction with Red5 Pro (the "Example Code") 
+is  licensed  to  you  by  Infrared5  Inc.  in  consideration  of  your  agreement  to  the  following  
+license terms  and  conditions.  Access,  use,  modification,  or  redistribution  of  the  accompanying  
+code  constitutes your acceptance of the following license terms and conditions.
+
+Permission is hereby granted, free of charge, to you to use the Example Code and associated documentation 
+files (collectively, the "Software") without restriction, including without limitation the rights to use, 
+copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit 
+persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The Software shall be used solely in conjunction with Red5 Pro. Red5 Pro is licensed under a separate end 
+user  license  agreement  (the  "EULA"),  which  must  be  executed  with  Infrared5,  Inc.   
+An  example  of  the EULA can be found on our website at: https://account.red5pro.com/assets/LICENSE.txt.
+
+The above copyright notice and this license shall be included in all copies or portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,  INCLUDING  BUT  
+NOT  LIMITED  TO  THE  WARRANTIES  OF  MERCHANTABILITY, FITNESS  FOR  A  PARTICULAR  PURPOSE  AND  
+NONINFRINGEMENT.   IN  NO  EVENT  SHALL INFRARED5, INC. BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, 
+WHETHER IN  AN  ACTION  OF  CONTRACT,  TORT  OR  OTHERWISE,  ARISING  FROM,  OUT  OF  OR  IN CONNECTION 
+WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
 (function(window, document, red5prosdk) {
   'use strict';
 
@@ -35,6 +60,7 @@
   var streamName = window.query('streamName') || ['publisher', Math.floor(Math.random() * 0x10000).toString(16)].join('-');
 
   var roomField = document.getElementById('room-field');
+  // eslint-disable-next-line no-unused-vars
   var publisherContainer = document.getElementById('publisher-container');
   var publisherMuteControls = document.getElementById('publisher-mute-controls');
   var publisherSession = document.getElementById('publisher-session');
@@ -45,6 +71,36 @@
   var videoCheck = document.getElementById('video-check');
   var joinButton = document.getElementById('join-button');
   var statisticsField = document.getElementById('statistics-field');
+  var bitrateField = document.getElementById('bitrate-field');
+  var packetsField = document.getElementById('packets-field');
+  var resolutionField = document.getElementById('resolution-field');
+  var bitrateTrackingTicket;
+  var bitrate = 0;
+  var packetsSent = 0;
+  var frameWidth = 0;
+  var frameHeight = 0;
+
+  function updateStatistics (b, p, w, h) {
+    statisticsField.classList.remove('hidden');
+    bitrateField.innerText = b === 0 ? 'N/A' : Math.floor(b);
+    packetsField.innerText = p;
+    resolutionField.innerText = (w || 0) + 'x' + (h || 0);
+  }
+
+  function onBitrateUpdate (b, p) {
+    bitrate = b;
+    packetsSent = p;
+    updateStatistics(bitrate, packetsSent, frameWidth, frameHeight);
+    if (packetsSent > 100) {
+      establishSharedObject(targetPublisher, roomField.value, streamNameField.value);
+    }
+  }
+
+  function onResolutionUpdate (w, h) {
+    frameWidth = w;
+    frameHeight = h;
+    updateStatistics(bitrate, packetsSent, frameWidth, frameHeight);
+  }
 
   roomField.value = roomName;
   streamNameField.value = streamName;
@@ -72,17 +128,32 @@
 
   function updateMutedAudioOnPublisher () {
     if (targetPublisher && isPublishing) {
+      var c = targetPublisher.getPeerConnection();
+      var senders = c.getSenders();
+      var params = senders[0].getParameters();
       if (audioCheck.checked) { 
-        if (videoTrackClone) {
-          var c = targetPublisher.getPeerConnection();
-          var senders = c.getSenders();
+        if (audioTrackClone) {
           senders[0].replaceTrack(audioTrackClone);
           audioTrackClone = undefined;
         } else {
-          targetPublisher.unmuteAudio();
+          try {
+            targetPublisher.unmuteAudio();
+            params.encodings[0].active = true;
+            senders[0].setParameters(params);
+          } catch (e) {
+            // no browser support, let's use mute API.
+            targetPublisher.unmuteAudio();
+          }
         }
       } else { 
-        targetPublisher.muteAudio(); 
+        try {
+          targetPublisher.muteAudio();
+          params.encodings[0].active = false;
+          senders[0].setParameters(params);
+        } catch (e) {
+          // no browser support, let's use mute API.
+          targetPublisher.muteAudio();
+        }
       }
     }
   }
@@ -142,11 +213,6 @@
       : {protocol: 'wss', port: serverSettings.wssport};
   }
 
-  var bitrateTrackingTicket;
-  function onBitrateUpdate (bitrate, packetsSent) {
-    statisticsField.innerText = 'Bitrate: ' + Math.floor(bitrate) + '. Packets Sent: ' + packetsSent + '.';
-  }
-
   function onPublisherEvent (event) {
     console.log('[Red5ProPublisher] ' + event.type + '.');
     if (event.type === 'WebSocket.Message.Unhandled') {
@@ -164,9 +230,21 @@
     isPublishing = true;
     window.red5propublisher = publisher;
     console.log('[Red5ProPublisher] Publish Complete.');
-    establishSharedObject(publisher, roomField.value, streamNameField.value);
+    // [NOTE] Moving SO setup until Package Sent amount is sufficient.
+    //    establishSharedObject(publisher, roomField.value, streamNameField.value);
+    if (publisher.getType().toUpperCase() !== 'RTC') {
+      // It's flash, let it go.
+      establishSharedObject(publisher, roomField.value, streamNameField.value);
+    }
     try {
-      bitrateTrackingTicket = window.trackBitrate(publisher.getPeerConnection(), onBitrateUpdate, null, null, true);
+      var pc = publisher.getPeerConnection();
+      var stream = publisher.getMediaStream();
+      bitrateTrackingTicket = window.trackBitrate(pc, onBitrateUpdate, null, null, true);
+      statisticsField.classList.remove('hidden');
+      stream.getVideoTracks().forEach(function (track) {
+        var settings = track.getSettings();
+        onResolutionUpdate(settings.width, settings.height);
+      });
     }
     catch (e) {
       // no tracking for you!
@@ -213,16 +291,15 @@
     });
   }
 
+  // eslint-disable-next-line no-unused-vars
   function updatePublishingUIOnStreamCount (streamCount) {
+    /*
     if (streamCount > 0) {
-      publisherContainer.classList.remove('auto-margined');
-      publisherContainer.classList.add('spaced');
-      publisherContainer.classList.add('float-left');
+      publisherContainer.classList.remove('margin-center');
     } else {
-      publisherContainer.classList.add('auto-margined');
-      publisherContainer.classList.remove('spaced');
-      publisherContainer.classList.remove('float-left');
+      publisherContainer.classList.add('margin-center');
     }
+    */
   }
 
   var hasRegistered = false;
@@ -234,6 +311,9 @@
     soField.value = ['User "' + message.user + '": ' + message.message, soField.value].join('\n');
   }
   function establishSharedObject (publisher, roomName, streamName) {
+    if (so) {
+      return;
+    }
     // Create new shared object.
     so = new SharedObject(roomName, publisher)
     var soCallback = {

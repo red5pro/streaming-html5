@@ -1,3 +1,28 @@
+/*
+Copyright © 2015 Infrared5, Inc. All rights reserved.
+
+The accompanying code comprising examples for use solely in conjunction with Red5 Pro (the "Example Code") 
+is  licensed  to  you  by  Infrared5  Inc.  in  consideration  of  your  agreement  to  the  following  
+license terms  and  conditions.  Access,  use,  modification,  or  redistribution  of  the  accompanying  
+code  constitutes your acceptance of the following license terms and conditions.
+
+Permission is hereby granted, free of charge, to you to use the Example Code and associated documentation 
+files (collectively, the "Software") without restriction, including without limitation the rights to use, 
+copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit 
+persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The Software shall be used solely in conjunction with Red5 Pro. Red5 Pro is licensed under a separate end 
+user  license  agreement  (the  "EULA"),  which  must  be  executed  with  Infrared5,  Inc.   
+An  example  of  the EULA can be found on our website at: https://account.red5pro.com/assets/LICENSE.txt.
+
+The above copyright notice and this license shall be included in all copies or portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,  INCLUDING  BUT  
+NOT  LIMITED  TO  THE  WARRANTIES  OF  MERCHANTABILITY, FITNESS  FOR  A  PARTICULAR  PURPOSE  AND  
+NONINFRINGEMENT.   IN  NO  EVENT  SHALL INFRARED5, INC. BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, 
+WHETHER IN  AN  ACTION  OF  CONTRACT,  TORT  OR  OTHERWISE,  ARISING  FROM,  OUT  OF  OR  IN CONNECTION 
+WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
 (function(window, document, red5prosdk) {
   'use strict';
 
@@ -35,9 +60,11 @@
   var inputField = document.getElementById('input-field');
   var sendButton = document.getElementById('send-button');
   var soField = document.getElementById('so-field');
+  var colorPicker = document.getElementById('color-picker');
 
   disconnectButton.addEventListener('click', deEstablishSharedObject);
   connectButton.addEventListener('click', startConnection);
+  colorPicker.addEventListener('input', handleColorChangeRequest);
 
   function reEnableConnection () {
     hideDisconnect();
@@ -66,12 +93,14 @@
   function enableSend () {
     sendButton.removeAttribute('disabled');
     inputField.removeAttribute('disabled');
+    colorPicker.removeAttribute('disabled');
     sendButton.addEventListener('click', sendMessage);
   }
 
   function disableSend () {
     sendButton.setAttribute('disabled', true);
     inputField.setAttribute('disabled', true);
+    colorPicker.setAttribute('disabled', true);
     inputField.value = '';
     sendButton.removeEventListener('click', sendMessage);
   }
@@ -125,13 +154,24 @@
       : {};
   }
 
-  var hasRegistered = false;
   function appendMessage (message) {
     soField.value = [message, soField.value].join('\n');
   }
   // Invoked from METHOD_UPDATE event on Shared Object instance.
   function messageTransmit (message) { // eslint-disable-line no-unused-vars
     soField.value = ['User "' + message.user + '": ' + message.message, soField.value].join('\n');
+  }
+
+  function handleColorChangeRequest (event) {
+    if (so) {
+      so.setProperty('color', event.target.value);
+      /*
+      so.send('messageTransmit', {
+        user: configuration.stream1,
+        message: 'Color changed to: ' + event.target.value.toString()
+      });
+      */
+    }
   }
 
   function deEstablishSharedObject () {
@@ -161,16 +201,9 @@
     so.on(red5prosdk.SharedObjectEventTypes.PROPERTY_UPDATE, function (event) {
       console.log('[Red5ProPublisher] SharedObject Property Update.');
       console.log(JSON.stringify(event.data, null, 2));
-      if (event.data.hasOwnProperty('count')) {
-        appendMessage('User count is: ' + event.data.count + '.');
-        if (!hasRegistered) {
-          hasRegistered = true;
-          so.setProperty('count', parseInt(event.data.count) + 1);
-        }
-      else if (!hasRegistered) {
-          hasRegistered = true;
-          so.setProperty('count', 1);
-        }
+      if (event.data.hasOwnProperty('color')) {
+        soField.style.color = event.data.color;
+        colorPicker.value = event.data.color;
       }
     });
     so.on(red5prosdk.SharedObjectEventTypes.METHOD_UPDATE, function (event) {

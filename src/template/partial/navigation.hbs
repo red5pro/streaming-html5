@@ -1,0 +1,607 @@
+{{#if isTestPage}}
+<script src="../../lib/smartmenus-1.1.0/libs/jquery/jquery.js"></script>
+<link rel="stylesheet" href="../../lib/smartmenus-1.1.0/css/sm-core-css.css" />
+<link rel="stylesheet" href="../../lib/smartmenus-1.1.0/css/sm-clean/sm-clean.css" />
+{{else}}
+<script src="lib/smartmenus-1.1.0/libs/jquery/jquery.js"></script>
+<link rel="stylesheet" href="lib/smartmenus-1.1.0/css/sm-core-css.css" />
+<link rel="stylesheet" href="lib/smartmenus-1.1.0/css/sm-clean/sm-clean.css" />
+{{/if}}
+<!-- smart menu clean overrides -->
+<style>
+@media (min-width: 1024px) {
+  /* Switch to desktop layout
+  -----------------------------------------------
+     These transform the menu tree from
+     collapsible to desktop (navbar + dropdowns)
+  -----------------------------------------------*/
+  /* start... (it's not recommended editing these rules) */
+  .sm-clean ul {
+    position: absolute;
+    width: 12em;
+  }
+
+  .sm-clean li {
+    float: left;
+  }
+
+  .sm-clean.sm-rtl li {
+    float: right;
+  }
+
+  .sm-clean ul li, .sm-clean.sm-rtl ul li, .sm-clean.sm-vertical li {
+    float: none;
+  }
+
+  .sm-clean a {
+    white-space: nowrap;
+  }
+
+  .sm-clean ul a, .sm-clean.sm-vertical a {
+    white-space: normal;
+  }
+
+  .sm-clean .sm-nowrap > li > a, .sm-clean .sm-nowrap > li > :not(ul) a {
+    white-space: nowrap;
+  }
+
+  /* ...end */
+  .sm-clean {
+    /* padding: 0 10px; */
+    /* background: #eeeeee; */
+    /* border-radius: 100px; */
+  }
+  .sm-clean a, .sm-clean a:hover, .sm-clean a:focus, .sm-clean a:active, .sm-clean a.highlighted {
+    padding: 12px 12px;
+    color: #555555;
+    border-radius: 0 !important;
+  }
+  .sm-clean a:hover, .sm-clean a:focus, .sm-clean a:active, .sm-clean a.highlighted {
+    color: #D23600;
+  }
+  .sm-clean a.current {
+    color: #D23600;
+  }
+  .sm-clean a.disabled {
+    color: #bbbbbb;
+  }
+  .sm-clean a.has-submenu {
+    padding-right: 24px;
+  }
+  .sm-clean a .sub-arrow {
+    top: 50%;
+    margin-top: -2px;
+    right: 12px;
+    width: 0;
+    height: 0;
+    border-width: 4px;
+    border-style: solid dashed dashed dashed;
+    border-color: #555555 transparent transparent transparent;
+    background: transparent;
+    border-radius: 0;
+  }
+  .sm-clean a .sub-arrow::before {
+    display: none;
+  }
+  .sm-clean li {
+    border-top: 0;
+  }
+  .sm-clean > li > ul::before,
+  .sm-clean > li > ul::after {
+    content: '';
+    position: absolute;
+    top: -18px;
+    left: 30px;
+    width: 0;
+    height: 0;
+    overflow: hidden;
+    border-width: 9px;
+    border-style: dashed dashed solid dashed;
+    border-color: transparent transparent #bbbbbb transparent;
+  }
+  .sm-clean > li > ul::after {
+    top: -16px;
+    left: 31px;
+    border-width: 8px;
+    border-color: transparent transparent #fff transparent;
+  }
+  .sm-clean ul {
+    border: 1px solid #bbbbbb;
+    padding: 5px 0;
+    background: #fff;
+    border-radius: 5px !important;
+    box-shadow: 0 5px 9px rgba(0, 0, 0, 0.2);
+  }
+  .sm-clean ul a, .sm-clean ul a:hover, .sm-clean ul a:focus, .sm-clean ul a:active, .sm-clean ul a.highlighted {
+    border: 0 !important;
+    padding: 10px 20px;
+    color: #555555;
+  }
+  .sm-clean ul a:hover, .sm-clean ul a:focus, .sm-clean ul a:active, .sm-clean ul a.highlighted {
+    background: #eeeeee;
+    color: #D23600;
+  }
+  .sm-clean ul a.current {
+    color: #D23600;
+  }
+  .sm-clean ul a.disabled {
+    background: #fff;
+    color: #cccccc;
+  }
+  .sm-clean ul a.has-submenu {
+    padding-right: 20px;
+  }
+  .sm-clean ul a .sub-arrow {
+    right: 8px;
+    top: 50%;
+    margin-top: -5px;
+    border-width: 5px;
+    border-style: dashed dashed dashed solid;
+    border-color: transparent transparent transparent #555555;
+  }
+  .sm-clean .scroll-up,
+  .sm-clean .scroll-down {
+    position: absolute;
+    display: none;
+    visibility: hidden;
+    overflow: hidden;
+    background: #fff;
+    height: 20px;
+  }
+  .sm-clean .scroll-up:hover,
+  .sm-clean .scroll-down:hover {
+    background: #eeeeee;
+  }
+  .sm-clean .scroll-up:hover .scroll-up-arrow {
+    border-color: transparent transparent #D23600 transparent;
+  }
+  .sm-clean .scroll-down:hover .scroll-down-arrow {
+    border-color: #D23600 transparent transparent transparent;
+  }
+  .sm-clean .scroll-up-arrow,
+  .sm-clean .scroll-down-arrow {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    margin-left: -6px;
+    width: 0;
+    height: 0;
+    overflow: hidden;
+    border-width: 6px;
+    border-style: dashed dashed solid dashed;
+    border-color: transparent transparent #555555 transparent;
+  }
+  .sm-clean .scroll-down-arrow {
+    top: 8px;
+    border-style: solid dashed dashed dashed;
+    border-color: #555555 transparent transparent transparent;
+  }
+  .sm-clean.sm-rtl a.has-submenu {
+    padding-right: 12px;
+    padding-left: 24px;
+  }
+  .sm-clean.sm-rtl a .sub-arrow {
+    right: auto;
+    left: 12px;
+  }
+  .sm-clean.sm-rtl.sm-vertical a.has-submenu {
+    padding: 10px 20px;
+  }
+  .sm-clean.sm-rtl.sm-vertical a .sub-arrow {
+    right: auto;
+    left: 8px;
+    border-style: dashed solid dashed dashed;
+    border-color: transparent #555555 transparent transparent;
+  }
+  .sm-clean.sm-rtl > li > ul::before {
+    left: auto;
+    right: 30px;
+  }
+  .sm-clean.sm-rtl > li > ul::after {
+    left: auto;
+    right: 31px;
+  }
+  .sm-clean.sm-rtl ul a.has-submenu {
+    padding: 10px 20px !important;
+  }
+  .sm-clean.sm-rtl ul a .sub-arrow {
+    right: auto;
+    left: 8px;
+    border-style: dashed solid dashed dashed;
+    border-color: transparent #555555 transparent transparent;
+  }
+  .sm-clean.sm-vertical {
+    padding: 10px 0;
+    border-radius: 5px;
+  }
+  .sm-clean.sm-vertical a {
+    padding: 10px 20px;
+  }
+  .sm-clean.sm-vertical a:hover, .sm-clean.sm-vertical a:focus, .sm-clean.sm-vertical a:active, .sm-clean.sm-vertical a.highlighted {
+    background: #fff;
+  }
+  .sm-clean.sm-vertical a.disabled {
+    background: #eeeeee;
+  }
+  .sm-clean.sm-vertical a .sub-arrow {
+    right: 8px;
+    top: 50%;
+    margin-top: -5px;
+    border-width: 5px;
+    border-style: dashed dashed dashed solid;
+    border-color: transparent transparent transparent #555555;
+  }
+  .sm-clean.sm-vertical > li > ul::before,
+  .sm-clean.sm-vertical > li > ul::after {
+    display: none;
+  }
+  .sm-clean.sm-vertical ul a {
+    padding: 10px 20px;
+  }
+  .sm-clean.sm-vertical ul a:hover, .sm-clean.sm-vertical ul a:focus, .sm-clean.sm-vertical ul a:active, .sm-clean.sm-vertical ul a.highlighted {
+    background: #eeeeee;
+  }
+  .sm-clean.sm-vertical ul a.disabled {
+    background: #fff;
+  }
+}
+
+.main-nav {
+  background: #3b3b3b;
+  padding: 0 20px;
+  border-top: rgb(146, 146, 146) solid 1px;
+}
+
+.main-nav:after {
+  clear: both;
+  content: "\00a0";
+  display: block;
+  height: 0;
+  font: 0px/0 serif;
+  overflow: hidden;
+}
+
+.nav-brand {
+  float: left;
+  margin: 0;
+}
+
+.nav-brand a {
+  display: block;
+  padding: 12px 12px 12px 20px;
+  color: #555;
+  font-size: 22px;
+  font-weight: normal;
+  line-height: 17px;
+  text-decoration: none;
+}
+
+.brand-icon {
+  width: 200px;
+}
+
+#main-menu {
+  clear: both;
+}
+
+@media (min-width: 1024px) {
+  #main-menu {
+    float: right;
+    clear: none;
+  }
+  .main-nav {
+    display: -ms-flexbox;
+    display: -webkit-flex;
+    display: flex;
+    -ms-flex-align: center;
+    -webkit-align-items: center;
+    -webkit-box-align: center;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+/* Mobile menu toggle button */
+
+.main-menu-btn {
+  float: right;
+  margin: 6px 10px;
+  position: relative;
+  display: inline-block;
+  width: 29px;
+  height: 52px;
+  text-indent: 29px;
+  white-space: nowrap;
+  overflow: hidden;
+  cursor: pointer;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+}
+
+
+/* hamburger icon */
+
+.main-menu-btn-icon,
+.main-menu-btn-icon:before,
+.main-menu-btn-icon:after {
+  position: absolute;
+  top: 50%;
+  left: 2px;
+  height: 2px;
+  width: 24px;
+  background: #dbdbdb;
+  -webkit-transition: all 0.25s;
+  transition: all 0.25s;
+}
+
+.main-menu-btn-icon:before {
+  content: '';
+  top: -7px;
+  left: 0;
+}
+
+.main-menu-btn-icon:after {
+  content: '';
+  top: 7px;
+  left: 0;
+}
+
+/* x icon */
+
+#main-menu-state:checked ~ .main-menu-btn .main-menu-btn-icon {
+  height: 0;
+  background: transparent;
+}
+
+#main-menu-state:checked ~ .main-menu-btn .main-menu-btn-icon:before {
+  top: 0;
+  -webkit-transform: rotate(-45deg);
+  transform: rotate(-45deg);
+}
+
+#main-menu-state:checked ~ .main-menu-btn .main-menu-btn-icon:after {
+  top: 0;
+  -webkit-transform: rotate(45deg);
+  transform: rotate(45deg);
+}
+
+
+/* hide menu state checkbox (keep it visible to screen readers) */
+
+#main-menu-state {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  border: 0;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(1px, 1px, 1px, 1px);
+}
+
+
+/* hide the menu in mobile view */
+
+#main-menu-state:not(:checked) ~ #main-menu {
+  display: none;
+}
+
+#main-menu-state:checked ~ #main-menu {
+  display: block;
+}
+
+@media (min-width: 768px) {
+  .sm-clean ul {
+    border: 1px solid #bbbbbb;
+    padding: 5px 0;
+    background: #3b3b3b;
+    border-radius: 0px !important;
+    color: #dbdbdb;
+  }
+}
+
+@media (min-width: 1024px) {
+  /* hide the button in desktop view */
+  .main-menu-btn {
+    position: absolute;
+    top: -99999px;
+  }
+  /* always show the menu in desktop view */
+  #main-menu-state:not(:checked) ~ #main-menu {
+    display: block;
+  }
+  .sm-clean {
+    background-color: #3b3b3b;
+  }
+  .sm-clean a {
+    color: #dbdbdb;
+  }
+  .sm-clean ul {
+    border: 1px solid #bbbbbb;
+    padding: 5px 0;
+    background: #3b3b3b;
+    border-radius: 0px !important;
+    color: #dbdbdb;
+  }
+  .sm-clean li {
+    padding: 0 8px;
+  }
+  .sm-clean a .sub-arrow {
+    margin-top: 0px;
+    right: 6px;
+  }
+}
+
+.sm-clean {
+  background-color: #3b3b3b;
+}
+
+.sm-clean a, .sm-clean ul a {
+  color: #dbdbdb;
+  font-family: Lato;
+  font-size: 16px;
+  font-weight: 400;
+}
+
+.sm-clean a .sub-arrow, .sm-clean ul a .sub-arrow {
+  border-color: #dbdbdb transparent transparent transparent;
+}
+
+.sm-clean a:hover {
+  color: #db1f26;
+  font-family: Lato;
+  font-size: 16px;
+  font-weight: 400;
+}
+
+.sm-clean a:focus, sm-clean a:active {
+  color: #db1f26;
+  font-family: Lato;
+  font-size: 16px;
+  font-weight: 400;
+}
+
+.sm-clean a .sub-arrow {
+  background: 0;
+}
+</style>
+<nav class="main-nav" role="navigation">
+
+  <!-- Mobile menu toggle button (hamburger/x icon) -->
+  <input id="main-menu-state" type="checkbox" />
+  <label class="main-menu-btn" for="main-menu-state">
+    <span class="main-menu-btn-icon"></span> Toggle main menu visibility
+  </label>
+
+  <div class="nav-brand" href="https://www.red5pro.com" data-elementor-open-lightbox="">
+    <a href="https://www.red5pro.com">
+      {{#if isTestPage}}
+      <img alt="Red5 Pro" class="brand-icon" src="../../css/assets/Red5Pro_logo_white_red.svg">
+        <noscript><img alt="Red5 Pro" data-src="../../css/assets/Red5Pro_logo_white_red.svg" class="brand-icon" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" />
+        <noscript><img src="../../css/assets/Red5Pro_logo_white_red.svg" class="brand-icon" alt="Red5 Pro" /></noscript>
+      {{else}}
+      <img alt="Red5 Pro" class="brand-icon" src="css/assets/Red5Pro_logo_white_red.svg">
+        <noscript><img alt="Red5 Pro" data-src="css/assets/Red5Pro_logo_white_red.svg" class="brand-icon" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" />
+        <noscript><img src="css/assets/Red5Pro_logo_white_red.svg" class="brand-icon" alt="Red5 Pro" /></noscript>
+      {{/if}}
+    </a>
+</div>
+
+  <!-- Sample menu definition -->
+  <ul id="main-menu" class="sm sm-clean">
+    <li><a href="#">Product</a>
+      <ul>
+        <li><a href="#">Red5 Pro</a>
+          <ul>
+            <li><a href="https://www.red5pro.com/red5-pro-server/">Server</a></li>
+            <li><a href="https://www.red5pro.com/red5pro-mobile-sdks/">SDKs</a></li>
+            <li><a href="https://www.red5pro.com/product-professional-services/">Professional Services</a></li>
+          </ul>
+        </li>
+        <li><a href="#">Open Source</a>
+          <ul>
+            <li><a href="https://www.red5pro.com/open-source/">Overview</a></li>
+            <li><a href="https://github.com/red5pro">Github Repos</a></li>
+            <li><a href="https://www.red5pro.com/red5-media-server/">Media Server</a></li>
+            <li><a href="https://www.red5pro.com/red5-rtmp-client/">RTMP Client</a></li>
+            <li><a href="https://github.com/infrared5/react-native-red5pro">React Native Library</a></li>
+            <li><a href="https://www.red5pro.com/open-source-cordova/">Cordova Plugin For Red5 Pro</a></li>
+            <li><a href="https://www.red5pro.com/open-source-xamarin/">Xamarin Plugin for Red5 Pro</a></li>
+            <li><a href="https://github.com/red5pro?utf8=%E2%9C%93&amp;q=bees&amp;type=&amp;language=">Load Testing Tools</a></li>
+            <li><a href="https://www.red5pro.com/open-source-other-libraries/">Other Libraries</a></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+    <li><a href="https://www.red5pro.com/red5-pro-license-pricing/">Pricing</a></li>
+    <li><a href="#">Resources</a>
+      <ul>
+        <li><a href="https://www.red5pro.com/webinars/">Webinars</a></li>
+        <li><a href="https://www.red5pro.com/white-papers/">White Papers</a></li>
+        <li><a href="https://blog.red5pro.com/">Blog</a></li>
+      </ul>
+     </li>
+    <li><a href="#">Developer Zone</a>
+      <ul>
+        <li><a href="https://www.red5pro.com/developer-zone/">Overview</a></li>
+        <li><a href="#">Github Links</a>
+          <ul>
+            <li><a href="https://github.com/Red5">Red5</a></li>
+            <li><a href="https://github.com/red5pro">Red5 Pro</a></li>
+          </ul>
+        </li>
+        <li><a href="https://qa-site.red5pro.com/docs">Introduction</a></li>
+        <li><a href="https://qa-site.red5pro.com/docs/#quick-start-guides">Quick Start Guides</a></li>
+        <li><a href="https://qa-site.red5pro.com/docs/streaming/">Streaming SDKs</a></li>
+        <li><a href="https://qa-site.red5pro.com/docs/server/">Red5 Pro Server</a></li>
+        <li><a href="https://qa-site.red5pro.com/docs/developerseries/">Developer Series</a></li>
+        <li><a href="https://qa-site.red5pro.com/docs/serverside-guide/">Server-Side Guide</a></li>
+        <li><a href="https://qa-site.red5pro.com/docs/autoscale/">Autoscaling + Stream Manager</a></li>
+      </ul>
+    </li>
+    <li><a href="#">Customers &amp; Industries</a>
+      <ul>
+        <li><a href="https://www.red5pro.com/whos-using-red5-pro/">Who’s Using Red5 Pro</a></li>
+        <li><a href="#">Industries</a>
+          <ul>
+            <li><a href="https://www.red5pro.com/live-auction-video-streaming/">Live Auction Video Streaming</a></li>
+            <li><a href="https://www.red5pro.com/government-iot-and-surveillance-video-streaming/">Government – IoT and Surveillance</a></li>
+            <li><a href="https://www.red5pro.com/video-games-and-esports-video-streaming/">Video Games and eSports</a></li>
+            <li><a href="https://www.red5pro.com/social-media-video-streaming/">Social Media Video Streaming</a></li>
+            <li><a href="https://www.red5pro.com/broadcast-video-streaming/">Broadcast Video Streaming</a></li>
+            <li><a href="https://www.red5pro.com/online-gambling-video-streaming/">Online Gambling Video Streaming</a></li>
+          </ul>
+        </li>
+        <li><a href="#">Case Studies</a>
+          <ul>
+            <li><a href="https://www.red5pro.com/novetta/">Novetta</a></li>
+            <li><a href="https://www.red5pro.com/singular-live/">Singular.Live</a></li>
+            <li><a href="https://www.red5pro.com/invaluable/">Invaluable</a></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+    <li><a href="#">Help</a>
+      <ul>
+        <li><a href="https://red5pro.zendesk.com/hc/en-us">FAQs</a></li>
+        <li><a href="https://red5pro.zendesk.com/hc/en-us/requests/new">Ticket Submissions</a></li>
+        <li><a href="https://calendly.com/red5-pro/15-minute-phone-call">Talk to Sales</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+{{#if isTestPage}}
+  <script src="../../lib/smartmenus-1.1.0/jquery.smartmenus.js"></script>
+{{else}}
+  <script src="lib/smartmenus-1.1.0/jquery.smartmenus.js"></script>
+{{/if}}
+<script>
+// SmartMenus init
+$(function() {
+  $('#main-menu').smartmenus({
+    subMenusSubOffsetX: 1,
+    subMenusSubOffsetY: -8
+  });
+});
+
+// SmartMenus mobile menu toggle button
+$(function() {
+  var $mainMenuState = $('#main-menu-state');
+  if ($mainMenuState.length) {
+    // animate mobile menu
+    $mainMenuState.change(function(e) {
+      var $menu = $('#main-menu');
+      if (this.checked) {
+        $menu.hide().slideDown(250, function() { $menu.css('display', ''); });
+      } else {
+        $menu.show().slideUp(250, function() { $menu.css('display', ''); });
+      }
+    });
+    // hide mobile menu beforeunload
+    $(window).bind('beforeunload unload', function() {
+      if ($mainMenuState[0].checked) {
+        $mainMenuState[0].click();
+      }
+    });
+  }
+});
+</script>

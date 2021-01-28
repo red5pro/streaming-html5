@@ -1,4 +1,5 @@
 <!doctype html>
+{{> license}}
 <html>
   <head>
     {{> meta title='Subscriber Stream Manager Proxy Validation Test'}}
@@ -38,8 +39,8 @@
       {{> settings-link}}
       <div class="ice-background">
       <div class="test-notification">
-        <p>In order to properly run the Stream Manager examples, you will need to configure you server for cluster infrastructure as described in the following documentation:</p>
-        <p><a href="https://www.red5pro.com/docs/server/autoscale/" target="_blank">https://www.red5pro.com/docs/server/autoscale/</a></p>
+        <p>In order to properly run the Stream Manager examples, you will need to configure your environment with the autoscaling infrastructure as described in the following documentation:</p>
+        <p><a href="https://www.red5pro.com/docs/autoscale/" target="_blank">https://www.red5pro.com/docs/autoscale/</a></p>
       <p>Additionally to use this example stream manager proxy gateway should be enabled.</p>
       </div>
       </div>
@@ -62,7 +63,7 @@
       <hr />
       <h2 class="centered"><em>stream</em>: <span id="stream-title"></span></h2>
       {{> status-field-subscriber}}
-      {{> statistics-field}}
+      {{> statistics-field packets_field='Packets Received'}}
       <div class="centered"><p id="address-field">Edge Address: N/A</p></div>
       <div class="centered">
         <video id="red5pro-subscriber"

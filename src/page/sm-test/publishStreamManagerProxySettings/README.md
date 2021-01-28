@@ -35,7 +35,7 @@ function requestOrigin (configuration) {
   var port = serverSettings.httpport.toString();
   var portURI = (port.length > 0 ? ':' + port : '');
   var baseUrl = isSecure ? protocol + '://' + host : protocol + '://' + host + portURI;
-  var apiVersion = configuration.streamManagerAPI || '3.1';
+  var apiVersion = configuration.streamManagerAPI || '4.0';
   var url = baseUrl + '/streammanager/api/' + apiVersion + '/event/' + app + '/' + streamName + '?action=broadcast';
   return new Promise(function (resolve, reject) {
     fetch(url)
@@ -86,7 +86,6 @@ function determinePublisher (serverAddress) {
                       protocol: getSocketLocationFromProtocol().protocol,
                       port: getSocketLocationFromProtocol().port,
                       streamName: config.stream1,
-                      streamType: 'webrtc',
                       app: configuration.proxy,
                       connectionParams: {
                         host: serverAddress,

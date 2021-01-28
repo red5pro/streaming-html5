@@ -1,5 +1,48 @@
 # Changes
 
+## 7.2.1
+
+- fix for unpreview turning autoplay to false in publisher. (bustardcelly)
+- fix for non-DOM manipulation if not using custom controls. (bustardcelly)
+
+## 7.0.0
+
+- defaulting pub clear to false for backward compatability. (bustardcelly)
+- adding clear on media unpublish. (bustardcelly)
+- fixed issue with RTC retry sub removing video element if not available. (bustardcelly)
+
+## 6.0.0
+
+- listening to onresize for video resolution change in transcode. (bustardcelly)
+- setting delay off controls in mobile to 6 seconds. (bustardcelly)
+- adding rejection and acceptance notifications for gUM in RTC publishers. (bustardcelly)
+- added Video Dimensions Change to bubble up playback dimensions. (bustardcelly)
+- Fix for flash stalled playback. (bustardcelly)
+- Added notifications for RTCPeerConnection open event. (bustardcelly)
+
+    > This will allow for clients to recognize when they can start using peer connection APIs such as mute/unmute.
+
+- fix for HLS socket authentication failure capture. (bustardcelly)
+- Fix for Safari Publisher issue. (bustardcelly)
+
+    > When `gUM` returns with `video` track listed before `audio`, there is an issue on delivering the media to the server. Most likely due to mismatched candidates.
+
+- Fixed improper spelling of `productInstallUrl` config option. (bustardcelly)
+
+    > Is now `productInstallURL` for both rtmp publisher and subscriber.
+
+- fix for unpublish not resolving if not currently publishing. (bustardcelly)
+- API update to allow for providing MediaStream for publish to bypass gUM in SDK internally. (bustardcelly)
+- some cleanup on how streamingMode is handled for HLS. (bustardcelly)
+
+## 5.7.0
+
+- fix for WebRTC API deprecation of addStream. (bustardcelly)
+
+## 5.6.0
+
+- No Changes.
+
 ## 5.5.0
 
 - default to srcObject in try...catch for modern browsers. (bustardcelly)
