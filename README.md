@@ -39,7 +39,7 @@ You will need to modify the **Host** field from the _Settings_ page to point to 
 ### Note on TLS and CORS
 It is important to note that some of these examples - specifically those that involve publishing using WebRTC - require being run on TLS and, thusly, served over HTTPS. If running the examples on `localhost` you should not see an issues, but if your server is deployed remotely you will need to be sure that these examples are served over HTTPS and the proper Cross Origin Resource Sharing (CORS) settings are defined for the server.
 
-* [Read More about Red5 Pro and SSL](https://red5pro.com/docs/server/red5prossl/index.html).
+* [Read More about Red5 Pro and SSL](https://www.red5pro.com/docs/server/ssl/overview/).
 * [More information on CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS).
 
 ### Instructions

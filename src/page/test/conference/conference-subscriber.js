@@ -247,7 +247,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       .then(function (subscriber) {
         subscriberMap[name] = subscriber;
         return subscriber.subscribe();
-       })
+      })
       .catch(function (error) {
         console.log('[subscriber:' + name + '] Error');
         reject(error);

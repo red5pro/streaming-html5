@@ -120,13 +120,16 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     decoy.unsubscribe();
   }
 
-  function requestEdge (configuration, serverSettings, streamName) {
+  function requestEdge (configuration, serverSettings, streamName, optionalRegion) {
     var host = configuration.host;
     var app = configuration.app;
     var port = serverSettings.httpport;
     var baseUrl = serverSettings.protocol + '://' + host + ':' + port;
-    var apiVersion = configuration.streamManagerAPI || '3.1';
+    var apiVersion = configuration.streamManagerAPI || '4.0';
     var url = baseUrl + '/streammanager/api/' + apiVersion + '/event/' + app + '/' + streamName + '?action=subscribe';
+    if (optionalRegion) {
+      url += '&region=' + optionalRegion
+    }
       return new Promise(function (resolve, reject) {
         fetch(url)
           .then(function (res) {
@@ -146,7 +149,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
               } else if(res.status == 500) {
                 msg = "Improper server state error was detected.";
               } else {
-                msg = "Unkown error";
+                msg = "Unknown error";
               }
               throw new TypeError(msg);
             }
@@ -169,6 +172,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     this.baseConfiguration = undefined;
     this.serverSettings = undefined;
     this.proxyScope = undefined;
+    this.region = undefined;
     this.streamingMode = undefined;
     this.audioDecoy = undefined; // Used when initial mode is `Audio`.
     this.index = index;
@@ -217,19 +221,20 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
   SubscriberItem.prototype.resolve = function () {
     if (this.next) {
-      this.next.execute(this.baseConfiguration, this.serverSettings, this.proxyScope);
+      this.next.execute(this.baseConfiguration, this.serverSettings, this.proxyScope, this.region);
     }
   }
   SubscriberItem.prototype.reject = function (event) {
     console.error(event);
     if (this.next) {
-      this.next.execute(this.baseConfiguration, this.serverSettings, this.proxyScope);
+      this.next.execute(this.baseConfiguration, this.serverSettings, this.proxyScope, this.region);
     }
   }
-  SubscriberItem.prototype.execute = function (config, settings, proxyScope) {
+  SubscriberItem.prototype.execute = function (config, settings, proxyScope, optionalRegion) {
     this.baseConfiguration = config;
     this.serverSettings = settings;
-    this.proxyScope = proxyScope;    
+    this.proxyScope = proxyScope;
+    this.region = optionalRegion;
     var self = this;
     var name = this.streamName;
     var uid = Math.floor(Math.random() * 0x10000).toString(16);
@@ -267,7 +272,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       close();
       var t = setTimeout(function () {
         clearTimeout(t);
-        new SubscriberItem(self.streamName, self.parent, self.index).execute(self.baseConfiguration, self.serverSettings, self.proxyScope);
+        new SubscriberItem(self.streamName, self.parent, self.index).execute(self.baseConfiguration, self.serverSettings, self.proxyScope, self.region);
       }, 2000);
     };
     var respond = function (event) {
@@ -286,7 +291,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     };
 
     // NOTE: Reconnect logic is for an Edge disappearing and having to move to another.
-    // If the stream is unpublished, we don't need to try and re-subscribe as the 
+    // If the stream is unpublished, we don't need to try and re-subscribe as the
     // manifest of streams is maintained by the Shared Object.
     this.subscriber.on('Subscribe.Play.Unpublish', close);
     // TODO: This Closed without Unpublish has to be treated as Edge Loss.
@@ -294,7 +299,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     this.subscriber.on('Subscribe.Fail', fail);
     this.subscriber.on('*', respond);
 
-    requestEdge(this.baseConfiguration, this.serverSettings, this.streamName)
+    requestEdge(this.baseConfiguration, this.serverSettings, this.streamName, this.region)
       .then(function (jsonResponse) {
         if (jsonResponse.errorMessage) {
           throw new Error(jsonResponse.errorMessage);
