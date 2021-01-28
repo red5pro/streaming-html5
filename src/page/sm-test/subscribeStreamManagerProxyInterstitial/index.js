@@ -129,7 +129,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 							{
 							  "id": 1,
 							  "target": target.value,
-							  "uri": interstitial.value,
+							  "interstitial": interstitial.value,
 							  "loop": isLoop.checked,
 							  "type": durationControlType.value,
 							  "isInterstitialAudio": switchAudio.checked,
