@@ -273,7 +273,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
                       protocol: getSocketLocationFromProtocol().protocol,
                       port: getSocketLocationFromProtocol().port,
                       streamName: config.stream1,
-                      bandwidth: 2500 // to allow for scaling of bandwidth
+                      bandwidth: {
+                        audio: 56,
+                        video: 2500
+                      } // to allow for scaling of bandwidth
                    });
     return new red5prosdk.RTCPublisher().init(rtcConfig);
   }
