@@ -133,9 +133,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
   function onSocketEvent (event) {
     console.log('[Red5ProSocket] :: Event - ' + event.type);
-    if (event.type.toLowerCase() === 'websocket.close') {
+    if (event.type.toLowerCase() === 'websocket.close' ||
+        event.type.toLowerCase() === 'messagetransport.close') {
       // enable reconnect;
-      appendMessage('Disconnected from ' + so.getName() + '.');
+      appendMessage('Disconnected from ' + connectField.value + '.');
       socket.off('*', onSocketEvent);
       socket = undefined;
       document.getElementById('status-field').innerText = 'SharedObject closed (' + event.data.event.code + ').';
