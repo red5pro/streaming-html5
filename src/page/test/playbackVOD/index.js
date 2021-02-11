@@ -60,7 +60,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     event.stopImmediatePropagation();
     var filename = nameInput.value;
     if (filename.split('.').length < 2) {
-      alert('Expecting filename to have an extension (e.g., "filname.flv").');
+      alert('Expecting filename to have an extension (e.g., "filname.m3u8").');
     }
     else {
       playback(filename);
@@ -112,25 +112,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     console.log('[Red5ProSubsriber] Unsubscribe Complete.');
   }
 
-  var generateFlashEmbedObject = function (id) {
-    var obj = document.createElement('object');
-    obj.type = 'application/x-shockwave-flash';
-    obj.id = id;
-    obj.name = id;
-    obj.align = 'middle';
-    obj.data = '../../lib/red5pro/red5pro-subscriber.swf';
-    obj.width = '100%';
-    obj.height = '480';
-    obj.classList.add('red5pro-subscriber', 'red5pro-media-background', 'red5pro-media');
-    obj.innerHTML = '<param name="quality" value="high">' +
-              '<param name="wmode" value="opaque">' +
-              '<param name="bgcolor" value="#000000">' +
-              '<param name="allowscriptaccess" value="always">' +
-              '<param name="allowfullscreen" value="true">' +
-              '<param name="allownetworking" value="all">';
-    return obj;
-  }
-
   function isMP4File (filename) {
     return filename.indexOf('.mp4') !== -1;
   }
@@ -163,28 +144,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     element.appendChild(source);
   }
 
-  function useFLVFallback (streamName) {
-    console.log('[subscribe] Playback FLV: ' + streamName);
-    var container = document.getElementById('red5pro-subscriber');
-    var parent = container ? container.parentNode : document.getElementById('video-container');
-    if (container && parent) {
-      parent.removeChild(container);
-    }
-    var flashElement = generateFlashEmbedObject('red5pro-subscriber');
-    var flashvars = document.createElement('param');
-      flashvars.name = 'flashvars';
-      flashvars.value = 'stream='+streamName+'&'+
-                        'app='+configuration.app+'&'+
-                        'host='+configuration.host+'&'+
-                        'muted=false&'+
-                        'autoplay=true&'+
-                        'backgroundColor=#000000&'+
-                        'buffer=0.5&'+
-                        'autosize=true';
-    flashElement.appendChild(flashvars);
-    parent.appendChild(flashElement);
-  }
-
   function useVideoJSFallback (url) {
     console.log('[subscribe] Playback HLS: ' + url);
     var videoElement = document.getElementById('red5pro-subscriber');
@@ -194,37 +153,22 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     source.src = url;
     videoElement.appendChild(source);
     new window.videojs(videoElement, {
-      techOrder: ['html5', 'flash']
+      techOrder: ['html5']
     }, function () {
       // success.
     });
   }
 
-  function determineSubscriber (streamName, failoverOrder) {
+  function determineSubscriber (streamName) {
     var config = Object.assign({}, configuration, defaultConfiguration);
-    var rtmpConfig = Object.assign({}, config, {
-      protocol: 'rtmp',
-      port: serverSettings.rtmpport,
-      streamName: streamName,
-      width: 640,
-      height: 480,
-      backgroundColor: '#000000',
-      swf: '../../lib/red5pro/red5pro-subscriber.swf',
-      swfobjectURL: '../../lib/swfobject/swfobject.js',
-      productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
-    });
     var hlsConfig = Object.assign({}, config, {
       protocol: protocol,
       port: isSecure ? serverSettings.hlssport : serverSettings.hlsport,
       streamName: streamName,
     });
 
-    var subscriber = new red5prosdk.Red5ProSubscriber();
-    return subscriber.setPlaybackOrder(failoverOrder)
-      .init({
-        rtmp: rtmpConfig,
-        hls: hlsConfig
-      });
+    var subscriber = new red5prosdk.HLSSubscriber();
+    return subscriber.init(hlsConfig)
   }
 
   // Request to unsubscribe.
@@ -250,24 +194,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     });
   }
 
-  var formats = {
-    rtmp: ['mp4', 'flv'],
-    hls: ['m3u8']
-  }
-
-  function determineFailoverOrderFromFilename (filename) {
-    var ext = filename.split('.')[1];
-    for (var key in formats) {
-      var i = formats[key].length;
-      while (--i > -1) {
-        if (formats[key][i] === ext) {
-          return key;
-        }
-      }
-    }
-    return configuration.subscriberFailoverOrder;
-  }
-
   function determineStreamNameFromFilename (filename) {
     var parts = filename.split('.');
     var ext = parts[1];
@@ -278,12 +204,14 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   function playback(filename) {
-    var failoverOrder = determineFailoverOrderFromFilename(filename);
     var streamName = determineStreamNameFromFilename(filename);
-
     var start = function () {
+      if (isMP4File(filename)) {
+        useMP4Fallback(getFileURL(filename));
+        return
+      }
       // Kick off.
-      determineSubscriber(streamName, failoverOrder)
+      determineSubscriber(streamName)
         .then(function(subscriberImpl) {
           targetSubscriber = subscriberImpl;
           // Subscribe to events.
@@ -299,12 +227,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           onSubscribeFail(jsonError);
           if (isHLSFile(filename)) {
             useVideoJSFallback(getFileURL(filename));
-          } else {
-            if (isMP4File(filename)) {
-              useMP4Fallback(getFileURL(filename));
-            } else {
-              useFLVFallback(filename);
-            }
+          } else if (isMP4File(filename)) {
+            useMP4Fallback(getFileURL(filename));
           }
         });
     };
