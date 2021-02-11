@@ -53,7 +53,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   var nameInput = document.getElementById('name-input');
   var submitButton = document.getElementById('submit-button');
-  submitButton.addEventListener('click', function () {
+  submitButton.addEventListener('click', onsubmit)
+
+  function onsubmit (event) {
+    event.preventDefault()
+    event.stopImmediatePropagation();
     var filename = nameInput.value;
     if (filename.split('.').length < 2) {
       alert('Expecting filename to have an extension (e.g., "filname.flv").');
@@ -61,7 +65,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     else {
       playback(filename);
     }
-  });
+    return false
+  }
 
   var mediaFilesLink = document.getElementById('mediafiles-link');
   var playlistsLink = document.getElementById('playlists-link');

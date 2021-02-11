@@ -12,7 +12,7 @@
       }
       .test-notification {
         text-align: center;
-        max-width: 1024px;
+        max-width: 720px;
       }
       .settings-area {
         background-color: #eeee;
@@ -27,10 +27,8 @@
         width: auto;
       }
     </style>
-    <link href="//vjs.zencdn.net/5.19/video-js.min.css" rel="stylesheet">
-    <script src="//unpkg.com/video.js/dist/video.js"></script>
-    <script src="//unpkg.com/videojs-contrib-hls/dist/videojs-contrib-hls.js"></script>
-    <script src="//unpkg.com/videojs-flash/dist/videojs-flash.js"></script>
+    <link href="//unpkg.com/video.js@7.0.0/dist/video-js.css" rel="stylesheet">
+    <script src="//unpkg.com/video.js@7.0.0/dist/video.min.js"></script>
   </head>
   <body>
     {{> top-bar }}
@@ -40,28 +38,35 @@
       <div class="ice-background">
         <div class="test-notification">
           <p>
-            <span>To use this test, you must first published a recorded broadcast using the <a href="../publishRecord" target="_blank">Publish - Record</a> test.</span>
+            <span>To use this test, you must first publish a recorded broadcast using the <a href="../publishRecord" target="_blank">Publish - Record</a> test.</span>
             <br><br>
             <span>You can view a list of available Videos on Demand (VODs), by requesting <a id="mediafiles-link" href="/live/mediafiles" target="_blank">mediafiles</a> and <a id="playlists-link" href="/live/playlists" target="_blank">playlists</a>.</span>
+            <br>
+            <span>The URLs returned from <strong>mediafiles</strong> will contain FLV and - optionally - MP4 files, while the URLs returned from <strong>playlists</strong> will be HLS videos with the <strong>m3u8</strong> file extension.</span>
             <hr class="paddedHR" />
-            <span>Once you have a recorded stream, enter the filename - </span><span class="strong">with extension</span><span> - name below:</span>
+            <span>Once you have a recorded stream, enter the filename - </span><span class="strong">with extension</span><span> - name below.</span>
+            <br><br>
+            <span><strong>Note:</strong> Due to the sunsetting of Flash Player in browsers, FLV playback is no longer available.</span>
+            <br><span>Please provide either <strong>HLS</strong> (exension: <em>.m3u8</em>) or <strong>MP4</strong> (extension: <em>.mp4</em>).</span>
           </p>
         </div>
       </div>
       {{> test-title title='Playback VOD Test'}}
       <div class="stream-section">
         <div class="centered settings-area">
-          <p class="settings-field settings-collapsable">
-            <label for="name-input" class="settings-label">Name:</label>
-            <input type="text" name="name-input" id="name-input" placeholder="stream1.flv">
-          </p>
-          <p>
-            <button id="submit-button" class="ui-button">Play File</button>
-          </p>
+          <form method="POST" onsubmit="return onsubmit()" action="#">
+            <p class="settings-field settings-collapsable">
+              <label for="name-input" class="settings-label">Name:</label>
+              <input type="text" name="name-input" id="name-input" placeholder="stream1.m3u8">
+            </p>
+            <p>
+              <button id="submit-button" class="ui-button">Play File</button>
+            </p>
+          </form>
         </div>
         <div id="video-container" class="centered">
           <video id="red5pro-subscriber"
-                  controls autoplay playsinline
+                  controls autoplay playsinline loop
                   class="red5pro-subscriber red5pro-media red5pro-media-background"
                   width="640" height="480">
           </video>
