@@ -489,7 +489,10 @@ The following events are common across all Subscriber implementations from the R
 | SUBSCRIBE_INVALID_NAME | 'Subscribe.InvalidName' | When the subscriber is cannot start subscribing to stream because a stream associated with the `streamName` is not available. |
 | SUBSCRIBE_STOP | 'Subscribe.Stop' | When the subscriber has successfully closed an active subscription to a stream. |
 | SUBSCRIBE_METADATA | 'Subscribe.Metadata' | When metadata is received on the client from the server. |
+| SUBSCRIBE_STATUS | 'Subscribe.Status' | When a status event of the subscriber has been receieved from the server. |
 | SUBSCRIBE_SEND_INVOKE | 'Subscribe.Send.Invoke' | When a message is being sent by a subscribed-to publisher. |
+| SUBSCRIBE_PUBLISHER_CONGESTION | 'Subscribe.Publisher.NetworkCongestion' | When a playback session is experiencing network congestion on the broadcast side. |
+| SUBSCRIBE_PUBLISHER_RECOVERY | 'Subscribe.Publisher.NetworkRecovery' | When a playback session is recovering from network congestion on the broadcast side. |
 | PLAY_UNPUBLISH | 'Subscribe.Play.Unpublish' | Notification of when a live broadcast has stopped publishing. |
 | CONNECTION_CLOSED | 'Subscribe.Connection.Closed' | Invoked when a close to the connection is detected. |
 | ORIENTATION_CHANGE | 'Subscribe.Orientation.Change' | Invoked when an orientation change is detected in metadata. Mobile (iOS and Android) broadcasts are sent with an orientation. |

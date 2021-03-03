@@ -504,6 +504,11 @@ The following events are common across all Publisher implementations from the Re
 | PUBLISH_INVALID_NAME | 'Publish.InvalidName' | When the publisher is rejected from starting a broadcast stream because the `streamName` provided is already in use. |
 | UNPUBLISH_SUCCESS | 'Unpublish.Success' | When the publisher has successfully closed an active broadcast stream. |
 | PUBLISH_METADATA | 'Publish.Metadata' | When the publisher receives metadata from the server. |
+| PUBLISH_STATUS | 'Publish.Status' | When a status event of the publisher has been receieved from the server. |
+| PUBLISH_AVAILABLE | 'Publish.Available' | When the publisher stream has become available on the origin server to be consumed. This will follow the connection setup and `Publish.Start` event. |
+| PUBLISH_INSUFFICIENT_BANDWIDTH | 'Publish.InsufficientBW' | When the current broadcast session is experiencing insufficient bandwidth conditions. |
+| PUBLISH_RECOVERING_BANDWIDTH | 'Publish.RecoveringBW' | Then the current broadcast has updated information related to bandwidth condition recovery. |
+| PUBLISH_SUFFICIENT_BANDWIDTH | 'Publish.SufficientBW' | When the current broadcast session has sufficient bandwidth conditions from previously experiencing network issues. |
 | CONNECTION_CLOSED | 'Publisher.Connection.Closed' | Invoked when a close to the connection is detected. |
 | DIMENSION_CHANGE | 'Publisher.Video.DimensionChange' | Notification when the Camera resolution has been set or change. |
 
