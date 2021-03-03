@@ -100,25 +100,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     console.log('[Red5ProSubsriber] Unsubscribe Complete.');
   }
 
-  var generateFlashEmbedObject = function (id) {
-    var obj = document.createElement('object');
-    obj.type = 'application/x-shockwave-flash';
-    obj.id = id;
-    obj.name = id;
-    obj.align = 'middle';
-    obj.data = '../../lib/red5pro/red5pro-subscriber.swf';
-    obj.width = '100%';
-    obj.height = '480';
-    obj.classList.add('red5pro-subscriber', 'red5pro-media-background', 'red5pro-media');
-    obj.innerHTML = '<param name="quality" value="high">' +
-              '<param name="wmode" value="opaque">' +
-              '<param name="bgcolor" value="#000000">' +
-              '<param name="allowscriptaccess" value="always">' +
-              '<param name="allowfullscreen" value="true">' +
-              '<param name="allownetworking" value="all">';
-    return obj;
-  }
-
   function isMP4File (url) {
     return url.indexOf('.mp4') !== -1;
   }
@@ -135,23 +116,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     source.type = 'video/mp4;codecs="avc1.42E01E, mp4a.40.2"';
     source.src = url;
     element.appendChild(source);
-  }
-
-  function useFLVFallback (host, app, streamName) {
-    console.log('[subscribe] Playback FLV: ' + streamName);
-    var flashElement = generateFlashEmbedObject('red5pro-subscriber');
-    var flashvars = document.createElement('param');
-      flashvars.name = 'flashvars';
-      flashvars.value = 'stream='+streamName+'&'+
-                        'app='+app+'&'+
-                        'host='+host+'&'+
-                        'muted=false&'+
-                        'autoplay=true&'+
-                        'backgroundColor=#000000&'+
-                        'buffer=0.5&'+
-                        'autosize=true';
-    flashElement.appendChild(flashvars);
-    videoContainer.appendChild(flashElement);
   }
 
   function useVideoJSFallback (url) {
@@ -350,8 +314,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   function forceFallback (mediafile) {
     if (isMP4File(mediafile.url)) {
       useMP4Fallback(mediafile.url);
-    } else {
-      useFLVFallback(mediafile.serverAddress, mediafile.scope, mediafile.name);
     }
   }
 
