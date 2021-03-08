@@ -7,9 +7,47 @@ This documentation serves as a guide in migrating client-side code where a break
 * [4.0.0 to 5.0.0](#migrating-from-400-to-500)
 * [3.5.0 to 4.0.0](#migrating-from-350-to-400)
 
+# Important Note About `8.0.0` Release
+
+**Red5 Pro SDK has been published on NPM!**
+
+While currently not open source, the SDK build has been published to NPM to allow you to integrate into your projects with greater ease and dependency management.
+
+## Install as `script` in HTML page
+
+```
+<script src="https://unpkg.com/red5pro-html-sdk@latest/red5pro-sdk.min.js"></script>
+```
+
+... or if you know the version:
+
+```
+<script src="https://unpkg.com/red5pro-html-sdk@8.0.0/red5pro-sdk.min.js"></script>
+```
+
+## Install using `npm` or `yarn` for you browser-based projects
+
+```
+npm install --save-dev red5pro-html-sdk
+```
+
+```
+yarn install --dev red5pro-html-sdk
+```
+
+### Usage
+
+All members exposed on the otherwise global `window.red5prosdk` if loading as a script on an HTML page are importable from the `red5pro-html-sdk` module:
+
+_publisher-example.js_
+
+```
+import { RTCPublisher } from 'red5pro-html-sdk'
+```
+
 # Migrating from `7.2.0` to `8.0.0`
 
-The `7.3.0` release of the Red5 Pro HTML SDK includes the ability for WebRTC based clients - `RTCPublisher` and `RTCSubscriber` - to use WebSockets only for signaling purposes. Once they have finished their negotiation process and have begun broadcasting or consuming a stream, repsectively, they will open a `RTCDataChannel` connection and close the underlying `WebSocket` used for signaling.
+The `8.0.0` release of the Red5 Pro HTML SDK includes the ability for WebRTC based clients - `RTCPublisher` and `RTCSubscriber` - to use WebSockets only for signaling purposes. Once they have finished their negotiation process and have begun broadcasting or consuming a stream, repsectively, they will open a `RTCDataChannel` connection and close the underlying `WebSocket` used for signaling.
 
 The benefit of closing the `WebSocket` and switching to a `RTCDataChannel` after signaling is complete is cutting down on the number of open socket connections to the server; in a Stream Manager Proxy scenario, this can be a significant benefit as the Proxy is no longer needed to keep alive while the stream is being delivered to the Origin(s) or from the Edge(s).
 
