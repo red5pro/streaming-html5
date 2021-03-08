@@ -2,9 +2,10 @@
 {{> license}}
 <html>
   <head>
-    {{> meta title='Subscriber Screen Share Test'}}
+    {{> meta title='Subscriber Live VOD Test'}}
     {{> header-scripts}}
     {{> header-stylesheets}}
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
   </head>
   <body>
     {{> top-bar }}
@@ -13,10 +14,15 @@
       {{> settings-link}}
       <div class="ice-background">
         <div class="test-notification">
-          <p>This example attempts to make two connections:<br> One for ScreenShare &amp; One for Audio from the Broadcaster.<br><br>Start a screen share broadcast using the <a href="../publishScreenShare" target="_blank">Publisher Screen Share</a>.</p>
+          <p>This example requires that the HLS Recording is setup properly server-side. Within the <strong>conf/hlsconfig.xml</strong> file, you will need to define the following properties:
+          <br><br>
+          <code>&lt;property name="outputFormat" value="FMP4"/&gt;</code>
+          <br>
+          <code>&lt;property name="forceVODRecord" value="true"/&gt;</code>
+          <br><br><em>You will need to restart the server after making the configuration changes</em>.</p>
         </div>
       </div>
-      {{> test-info testTitle='Subscriber Screen Share Test'}}
+      {{> test-info testTitle='Subscriber Live VOD Test'}}
       <div class="stream-section">
         {{> status-field-subscriber}}
         {{> statistics-field packets_field='Packets Received'}}
@@ -26,9 +32,6 @@
                   class="red5pro-subscriber red5pro-media red5pro-media-background"
                   width="640" height="480">
           </video>
-          <audio id="red5pro-audio"
-                  controls autoplay="autoplay" playsinline
-                  style="display: none;"></audio>
         </div>
       </div>
     </div>

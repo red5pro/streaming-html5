@@ -9,7 +9,7 @@ This documentation serves as a guide in migrating client-side code where a break
 
 # Migrating from `7.2.0` to `8.0.0`
 
-The `7.3.0` release of the Red5 Pro HTML SDK includes the ability for WebRTC based clients - `RTCPublisher` and `RTCSubscriber` - to use WebSockets only for signaling purposes. Once they have finished their negotiation process and have begun broadcasting or consuming a stream, repsectively, they will open a `RTCDataChannel` connection and close the underlying `WebSocket` used for signaling.
+The `8.0.0` release of the Red5 Pro HTML SDK includes the ability for WebRTC based clients - `RTCPublisher` and `RTCSubscriber` - to use WebSockets only for signaling purposes. Once they have finished their negotiation process and have begun broadcasting or consuming a stream, repsectively, they will open a `RTCDataChannel` connection and close the underlying `WebSocket` used for signaling.
 
 The benefit of closing the `WebSocket` and switching to a `RTCDataChannel` after signaling is complete is cutting down on the number of open socket connections to the server; in a Stream Manager Proxy scenario, this can be a significant benefit as the Proxy is no longer needed to keep alive while the stream is being delivered to the Origin(s) or from the Edge(s).
 
