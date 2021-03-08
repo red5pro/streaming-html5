@@ -25,46 +25,33 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 (function(window, document, red5prosdk) {
 
-  var serverSettings = (function() {
-    var settings = sessionStorage.getItem('r5proServerSettings');
-    try {
-      return JSON.parse(settings);
-    }
-    catch (e) {
-      console.error('Could not read server settings from sessionstorage: ' + e.message);
-    }
-    return {};
-  })();
+  const serverSettings = (() => {
+    const settings = sessionStorage.getItem('r5proServerSettings')
+    try { return JSON.parse(settings) } catch (e) { return {} }
+  })()
+  const configuration = (() => {
+    const conf = sessionStorage.getItem('r5proTestBed')
+    try { return JSON.parse(conf) } catch (e) { return {} }
+  })()
 
-  var configuration = (function () {
-    var conf = sessionStorage.getItem('r5proTestBed');
-    try {
-      return JSON.parse(conf);
-    }
-    catch (e) {
-      console.error('Could not read testbed configuration from sessionstorage: ' + e.message);
-    }
-    return {}
-  })();
-  red5prosdk.setLogLevel(configuration.verboseLogging ? red5prosdk.LOG_LEVELS.TRACE : red5prosdk.LOG_LEVELS.WARN);
+  red5prosdk.setLogLevel(configuration.verboseLogging ? red5prosdk.LOG_LEVELS.TRACE : red5prosdk.LOG_LEVELS.WARN)
 
-  var targetSubscriber;
+  let subscriber
+  let instanceId = Math.floor(Math.random() * 0x10000).toString(16);
+  let protocol = serverSettings.protocol
+  let isSecure = protocol === 'https'
 
-  var updateStatusFromEvent = window.red5proHandleSubscriberEvent; // defined in src/template/partial/status-field-subscriber.hbs
-  var instanceId = Math.floor(Math.random() * 0x10000).toString(16);
-  var streamTitle = document.getElementById('stream-title');
-  var statisticsField = document.getElementById('statistics-field');
-  var bitrateField = document.getElementById('bitrate-field');
-  var packetsField = document.getElementById('packets-field');
-  var resolutionField = document.getElementById('resolution-field');
+  const updateStatusFromEvent = window.red5proHandleSubscriberEvent // defined in src/template/partial/status-field-subscriber.hbs
+  const streamTitle = document.getElementById('stream-title')
+  const statisticsField = document.getElementById('statistics-field')
+  const bitrateField = document.getElementById('bitrate-field')
+  const packetsField = document.getElementById('packets-field')
+  const resolutionField = document.getElementById('resolution-field')
 
-  var protocol = serverSettings.protocol;
-  var isSecure = protocol === 'https';
-
-  var bitrate = 0;
-  var packetsReceived = 0;
-  var frameWidth = 0;
-  var frameHeight = 0;
+  let bitrate = 0
+  let packetsReceived = 0
+  let frameWidth = 0
+  let frameHeight = 0
 
   function updateStatistics (b, p, w, h) {
     statisticsField.classList.remove('hidden');
@@ -93,8 +80,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   // Base configuration to extend in providing specific tech failover configurations.
-  var defaultConfiguration = (function(useVideo, useAudio) {
-    var c = {
+  let defaultConfiguration = (function(useVideo, useAudio) {
+    let c = {
       protocol: getSocketLocationFromProtocol().protocol,
       port: getSocketLocationFromProtocol().port
     };
@@ -128,8 +115,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     if (subscriber.getType().toLowerCase() === 'rtc') {
       try {
         window.trackBitrate(subscriber.getPeerConnection(), onBitrateUpdate, onResolutionUpdate, true);
-      }
-      catch (e) {
+      } catch (e) {
         //
       }
     }
@@ -142,7 +128,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   function getAuthenticationParams () {
-    var auth = configuration.authentication;
+    const auth = configuration.authentication;
     return auth && auth.enabled
       ? {
         connectionParams: {
@@ -154,102 +140,66 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   // Request to unsubscribe.
-  function unsubscribe () {
-    return new Promise(function(resolve, reject) {
-      var subscriber = targetSubscriber
-      subscriber.unsubscribe()
-        .then(function () {
-          targetSubscriber.off('*', onSubscriberEvent);
-          targetSubscriber = undefined;
-          onUnsubscribeSuccess();
-          resolve();
-        })
-        .catch(function (error) {
-          var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
-          onUnsubscribeFail(jsonError);
-          reject(error);
-        });
-    });
+  const unsubscribe = async () => {
+    if (subscriber) {
+      try {
+        await subscriber.unsubscribe()
+        onUnsubscribeSuccess()
+      } catch (error) {
+        const jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
+        onUnsubscribeFail(jsonError)
+        throw error
+      }
+      subscriber.off('*', onSubscriberEvent)
+      subscriber = undefined
+    }
   }
 
   // Define tech spefific configurations for each failover item.
-  var config = Object.assign({},
-    configuration,
-    defaultConfiguration,
-    getAuthenticationParams(), {
-      streamName: configuration.stream1
-    });
-  var rtcConfig = Object.assign({}, config, {
+  const config = {...configuration,
+    ...defaultConfiguration,
+    ...getAuthenticationParams(),
+    ... {
+    streamName: configuration.stream1
+  }}
+  const rtcConfig = {...config, ...{
     protocol: getSocketLocationFromProtocol().protocol,
     port: getSocketLocationFromProtocol().port,
-    subscriptionId: 'subscriber-' + instanceId
-  })
-  var rtmpConfig = Object.assign({}, config, {
-    protocol: 'rtmp',
-    port: serverSettings.rtmpport,
-    width: config.cameraWidth,
-    height: config.cameraHeight,
-    backgroundColor: '#000000',
-    swf: '../../lib/red5pro/red5pro-subscriber.swf',
-    swfobjectURL: '../../lib/swfobject/swfobject.js',
-    productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
-  })
-  var hlsConfig = Object.assign({}, config, {
-    protocol: protocol,
-    port: isSecure ? serverSettings.hlssport : serverSettings.hlsport
-  })
+    subscriptionId: 'subscriber-' + instanceId,
+    enableLiveSeek: true
+  }}
 
-  // Define failover order.
-  var subscribeOrder = config.subscriberFailoverOrder
-        .split(',').map(function (item) {
-          return item.trim();
-        });
-
-  // Override for providing ?view= query param.
-  if (window.query('view')) {
-    subscribeOrder = [window.query('view')];
+  const subscribe = async () => {
+    try {
+      subscriber = await new red5prosdk.RTCSubscriber().init(rtcConfig)
+      subscriber.on('*', onSubscriberEvent)
+      streamTitle.innerText = configuration.stream1
+      await subscriber.subscribe()
+      onSubscribeSuccess(subscriber)
+    } catch (error) {
+      var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
+      console.error('[Red5ProSubscriber] :: Error in subscribing - ' + jsonError)
+      onSubscribeFail(jsonError)
+    }
   }
-
-  // Request to initialization and start subscribing through failover support.
-  var subscriber = new red5prosdk.Red5ProSubscriber()
-  subscriber.setPlaybackOrder(subscribeOrder)
-    .init({
-      rtc: rtcConfig,
-      rtmp: rtmpConfig,
-      hls: hlsConfig
-    })
-    .then(function (subscriberImpl) {
-      streamTitle.innerText = configuration.stream1;
-      targetSubscriber = subscriberImpl
-      // Subscribe to events.
-      targetSubscriber.on('*', onSubscriberEvent);
-      return targetSubscriber.subscribe()
-    })
-    .then(function () {
-      onSubscribeSuccess(targetSubscriber);
-    })
-    .catch(function (error) {
-      var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
-      console.error('[Red5ProSubscriber] :: Error in subscribing - ' + jsonError);
-      onSubscribeFail(jsonError);
-    });
 
   // Clean up.
-  var shuttingDown = false;
-  function shutdown() {
-    if (shuttingDown) return;
-    shuttingDown = true;
-    function clearRefs () {
-      if (targetSubscriber) {
-        targetSubscriber.off('*', onSubscriberEvent);
-      }
-      targetSubscriber = undefined;
+  let shuttingDown = false;
+  const shutdown = async () => {
+    if (shuttingDown) return
+    shuttingDown = true
+    window.untrackBitrate()
+    try {
+      await unsubscribe()
+    } catch (e) {
+      console.warn(e)
     }
-    unsubscribe().then(clearRefs).catch(clearRefs);
-    window.untrackBitrate();
   }
-  window.addEventListener('pagehide', shutdown);
-  window.addEventListener('beforeunload', shutdown);
+  window.addEventListener('pagehide', shutdown)
+  window.addEventListener('beforeunload', shutdown)
 
-})(this, document, window.red5prosdk);
+  // Start
+  subscribe()
+
+})(this, document, window.red5prosdk)
 
