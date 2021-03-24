@@ -1,0 +1,80 @@
+<!doctype html>
+{{> license}}
+<html>
+  <head>
+    {{> meta title='Publish Shared Object Stream Manager Proxy'}}
+    {{> header-scripts}}
+    {{> header-stylesheets}}
+    <style>
+      .settings-area {
+        padding: 5px;
+        background-color: #eeee;
+      }
+      .settings-field, .settings-field > input {
+        font-size: 1em;
+      }
+      .so-container {
+        width: 50%; 
+        min-width: 320px;
+        margin: 0 auto;
+      }
+      #so-field {
+        width: 100%;
+        min-height: 240px;
+      }
+      .color-picker-container {
+        text-align: center;
+        padding-bottom: 20px;
+        vertical-align: middle;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #3b3b3b;
+      }
+      #color-picker {
+        margin-left: 10px;
+      }
+      @media (max-width:510px) {
+        .so-container {
+          width: 85%;
+          min-width: auto;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    {{> top-bar }}
+    {{> navigation isTestPage=true }}
+    <div id="app">
+      {{> settings-link}}
+      {{> test-info testTitle='Publish Shared Object - Stream Manager Proxy'}}
+      <div class="stream-section">
+        {{> status-field-publisher}}
+        {{> statistics-field packets_field='Packets Sent'}}
+        <div class="centered">
+          <video id="red5pro-publisher" class="red5pro-publisher"
+                 controls autoplay playsinline muted>
+          </video>
+        </div>
+        <div class="settings-area">
+          <p class="settings-field settings-collapsable">
+            <label class="settings-label" for="message-input">Message:</label>
+            <input id="input-field" name="input-field" type="text"></input>
+          </p>
+          <p><button class="ui-button" id="send-button">Send</button></p>
+          <hr class="paddedHR">
+          <p class="color-picker-container">
+            <label for="color">Set the text color of messages for all users:</label>
+            <input type="color" id="color-picker" name="color" disabled
+               value="#3b3b3b">
+          </p>
+          <p class="so-container">
+            <textarea id="so-field" disabled></textarea>
+          </p>
+        </div>
+      </div>
+    </div>
+    {{> body-scripts}}
+    <script src="index.js"></script>
+  </body>
+</html>

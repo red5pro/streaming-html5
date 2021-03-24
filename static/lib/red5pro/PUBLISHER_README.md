@@ -70,6 +70,9 @@ _It is *highly* recommended to include [adapter.js](https://github.com/webrtcHac
 | connectionParams | [-] | `undefined` | An object of connection parameters to send to the server upon connection request. |
 | mediaConstraints | [x] | [see below](#webrtc-mediaconstraints) | A object representative of the [Media Constraints](https://developer.mozilla.org/en-US/docs/Web/API/MediaStreamConstraints) to use while setting up the Media (via `getUserMedia` internally to the SDK). |
 | onGetUserMedia | [-] | [see below](#using-mediaconstraints-and-ongetusermedia) | An override method for performing your own `getUserMedia` request. |
+| signalingSocketOnly | [-] | `true` | Flag to indicate whether the `WebSocket` should only be used for signaling while establishing a connection. Afterward, all data between client and server will be sent over an `RTCDataChannel`.
+| dataChannelConfiguration | [-] | `{name: "red5pro"}` | An object used in configuring a n `RTCDataChannel`. _Only used when `signalingSocketOnly` is defined as `true`_ |
+| forceVP8 | [-] | `false` | Flag to force VP8 as the encoder for the outgoing stream. |
 
 ### WebRTC Example
 
@@ -501,6 +504,11 @@ The following events are common across all Publisher implementations from the Re
 | PUBLISH_INVALID_NAME | 'Publish.InvalidName' | When the publisher is rejected from starting a broadcast stream because the `streamName` provided is already in use. |
 | UNPUBLISH_SUCCESS | 'Unpublish.Success' | When the publisher has successfully closed an active broadcast stream. |
 | PUBLISH_METADATA | 'Publish.Metadata' | When the publisher receives metadata from the server. |
+| PUBLISH_STATUS | 'Publish.Status' | When a status event of the publisher has been receieved from the server. |
+| PUBLISH_AVAILABLE | 'Publish.Available' | When the publisher stream has become available on the origin server to be consumed. This will follow the connection setup and `Publish.Start` event. |
+| PUBLISH_INSUFFICIENT_BANDWIDTH | 'Publish.InsufficientBW' | When the current broadcast session is experiencing insufficient bandwidth conditions. |
+| PUBLISH_RECOVERING_BANDWIDTH | 'Publish.RecoveringBW' | Then the current broadcast has updated information related to bandwidth condition recovery. |
+| PUBLISH_SUFFICIENT_BANDWIDTH | 'Publish.SufficientBW' | When the current broadcast session has sufficient bandwidth conditions from previously experiencing network issues. |
 | CONNECTION_CLOSED | 'Publisher.Connection.Closed' | Invoked when a close to the connection is detected. |
 | DIMENSION_CHANGE | 'Publisher.Video.DimensionChange' | Notification when the Camera resolution has been set or change. |
 
@@ -516,6 +524,11 @@ The following events are specific to the `RTCPublisher` implementation and acces
 | OFFER_START | 'WebRTC.Offer.Start' | When the publisher requests to send an offer using a `SessionDescription` on the `PeerConnection`. |
 | OFFER_END | 'WebRTC.Offer.End' | When the publisher has received an answer from the `SDP` offer on the `PeerConnection`. |
 | ICE_TRICKLE_COMPLETE | 'WebRTC.IceTrickle.Complete' | When the negotaiton process (a.k.a. trickle) has completed and the publisher will attempt at opening a broadcast stream. |
+| DATA_CHANNEL_AVAILABLE | 'WebRTC.DataChannel.Available' |  the underlying `RTCDataChannel` is available when `signalingServerOnly` configuration is used. |
+| DATA_CHANNEL_OPEN | 'WebRTC.DataChannel.Open' | When the underlying `RTCDataChannel` is opened when `signalingServerOnly` configuration is used.
+| DATA_CHANNEL_CLOSE | 'WebRTC.DataChannel.Close' | When the underlying `RTCDataChannel` is closed when `signalingServerOnly` configuration is used. |
+| DATA_CHANNEL_ERROR | 'WebRTC.DataChannel.Error' | When an error has occurred within the underlying `RTCDataChannel` when `signalingServerOnly` configuration is used. |
+| DATA_CHANNEL_MESSAGE | 'WebRTC.DataChannel.Message' | When a message has been delivered over the underlying `RTCDataChannel` when `signalingServerOnly` configuration is used. |
 
 ## RTMP Publisher Events
 

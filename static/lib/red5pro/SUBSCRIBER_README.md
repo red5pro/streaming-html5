@@ -75,6 +75,8 @@ _It is *highly* recommended to include [adapter.js](https://github.com/webrtcHac
 | autoLayoutOrientation | [-] | `true` | Flag to allow SDK to auto-orientation the layout of `video` element based on broadcast metadata. _Mobile publishers broadcast with orientation._ |
 | muteOnAutoplayRestriction | [-] | `true` | Flag to attempt to mute the `video` element when `autoplay` is restricted in the browser. [See section on Autoplay Restrictions](#autoplay-restrictions) |
 | maintainConnectionOnSubscribeErrors | [-] | `false` | Flag to maintain previously established `WebSocket` connection on any failure within the `subscribe` request flow. [Example](https://github.com/red5pro/streaming-html5/tree/master/src/page/test/subscribeRetryOnInvalidName) |
+| signalingSocketOnly | [-] | `true` | Flag to indicate whether the `WebSocket` should only be used for signaling while establishing a connection. Afterward, all data between client and server will be sent over an `RTCDataChannel`.
+| dataChannelConfiguration | [-] | `{name: "red5pro"}` | An object used in configuring a n `RTCDataChannel`. _Only used when `signalingSocketOnly` is defined as `true`_ |
 
 #### Video Encoding Configuration
 
@@ -487,7 +489,10 @@ The following events are common across all Subscriber implementations from the R
 | SUBSCRIBE_INVALID_NAME | 'Subscribe.InvalidName' | When the subscriber is cannot start subscribing to stream because a stream associated with the `streamName` is not available. |
 | SUBSCRIBE_STOP | 'Subscribe.Stop' | When the subscriber has successfully closed an active subscription to a stream. |
 | SUBSCRIBE_METADATA | 'Subscribe.Metadata' | When metadata is received on the client from the server. |
+| SUBSCRIBE_STATUS | 'Subscribe.Status' | When a status event of the subscriber has been receieved from the server. |
 | SUBSCRIBE_SEND_INVOKE | 'Subscribe.Send.Invoke' | When a message is being sent by a subscribed-to publisher. |
+| SUBSCRIBE_PUBLISHER_CONGESTION | 'Subscribe.Publisher.NetworkCongestion' | When a playback session is experiencing network congestion on the broadcast side. |
+| SUBSCRIBE_PUBLISHER_RECOVERY | 'Subscribe.Publisher.NetworkRecovery' | When a playback session is recovering from network congestion on the broadcast side. |
 | PLAY_UNPUBLISH | 'Subscribe.Play.Unpublish' | Notification of when a live broadcast has stopped publishing. |
 | CONNECTION_CLOSED | 'Subscribe.Connection.Closed' | Invoked when a close to the connection is detected. |
 | ORIENTATION_CHANGE | 'Subscribe.Orientation.Change' | Invoked when an orientation change is detected in metadata. Mobile (iOS and Android) broadcasts are sent with an orientation. |
@@ -514,6 +519,11 @@ The following events are specific to the `RTCSubscriber` implementation and acce
 | CANDIDATE_START | 'WebRTC.Candidate.Start' | When the subscriber requests to send a candidate on the `PeerConnection`. |
 | CANDIDATE_END | 'WebRTC.Candidate.End' | When the subscriber has received a candidate over the `PeerConnection`. |
 | ICE_TRICKLE_COMPLETE | 'WebRTC.IceTrickle.Complete' | When the negotaiton process (a.k.a. trickle) has completed and the subscriber will attempt at consuming a stream. |
+| DATA_CHANNEL_AVAILABLE | 'WebRTC.DataChannel.Available' |  the underlying `RTCDataChannel` is available when `signalingServerOnly` configuration is used. |
+| DATA_CHANNEL_OPEN | 'WebRTC.DataChannel.Open' | When the underlying `RTCDataChannel` is opened when `signalingServerOnly` configuration is used.
+| DATA_CHANNEL_CLOSE | 'WebRTC.DataChannel.Close' | When the underlying `RTCDataChannel` is closed when `signalingServerOnly` configuration is used. |
+| DATA_CHANNEL_ERROR | 'WebRTC.DataChannel.Error' | When an error has occurred within the underlying `RTCDataChannel` when `signalingServerOnly` configuration is used. |
+| DATA_CHANNEL_MESSAGE | 'WebRTC.DataChannel.Message' | When a message has been delivered over the underlying `RTCDataChannel` when `signalingServerOnly` configuration is used. |
 
 ## RTMP Subscriber Events
 

@@ -67,7 +67,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     json = {
       "version": build_version,
       "host": window.location.hostname,
-      "port": 8554, // rtsp
+      "port": 5080,
       "stream1": "stream1",
       "stream2": "stream2",
       "app": "live",
@@ -82,6 +82,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         "audio": 56,
         "video": 750
       },
+      "signalingSocketOnly": true,
       "keyFramerate": 3000,
       "useAudio": true,
       "useVideo": true,

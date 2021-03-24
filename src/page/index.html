@@ -101,6 +101,10 @@
             <option value="require">require</option>
           </select>
         </p>
+        <p class="settings-field settings-collapsable">
+          <label class="settings-label">Switch to Data Channel After Connection:</label>
+          <input type="checkbox" id="rtc-signal-socket-field" style="vertical-align: middle;">
+        </p>
         <hr class="paddedHR" />
         <h2 class="centered">Stream Manager Specific</h2>
         <p class="settings-field settings-collapsable">
@@ -186,6 +190,7 @@
         var rtcBundlePolicySelect = document.getElementById('rtc-bundle-policy');
         var rtcTransportPolicySelect = document.getElementById('rtc-transport-policy');
         var rtcpMuxPolicySelect = document.getElementById('rtc-mux-policy');
+        var rtcSignalSocketField = document.getElementById('rtc-signal-socket-field');
         var loggingField = document.getElementById('logging-field');
         var recordField = document.getElementById('record-field');
         var videoField = document.getElementById('video-active-field');
@@ -289,6 +294,10 @@
           configuration.rtcConfiguration.iceCandidatePoolSize = parseInt(event.target.value, 10);
           seal(configuration);
         });
+        rtcSignalSocketField.addEventListener('change', function () {
+          configuration.signalingSocketOnly = rtcSignalSocketField.checked;
+          seal(configuration);
+        });
 
         authEnabledField.addEventListener('change', function () {
           configuration.authentication.enabled = authEnabledField.checked;
@@ -363,6 +372,7 @@
           iceUsername.value = config.rtcConfiguration.iceServers[0].username || '';
           iceCredential.value = config.rtcConfiguration.iceServers[0].credential || '';
           rtcCandidatePoolSize.value = config.rtcConfiguration.iceCandidatePoolSize || 0;
+          rtcSignalSocketField.checked = config.signalingSocketOnly || true;
           loggingField.checked = config.verboseLogging ? true : false;
           recordField.checked = config.recordBroadcast ? true : false;
           videoField.checked = config.useVideo ? true : false;

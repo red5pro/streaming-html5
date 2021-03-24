@@ -23,7 +23,7 @@ NONINFRINGEMENT.   IN  NO  EVENT  SHALL INFRARED5, INC. BE LIABLE FOR ANY CLAIM,
 WHETHER IN  AN  ACTION  OF  CONTRACT,  TORT  OR  OTHERWISE,  ARISING  FROM,  OUT  OF  OR  IN CONNECTION 
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
-(function(window, document, red5prosdk) {
+(function(window, document, red5prosdk, adapter) {
   'use strict';
 
   var serverSettings = (function() {
@@ -56,6 +56,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   var targetPublisher;
 
+  var browserDetails = adapter.browserDetails;
   var updateStatusFromEvent = window.red5proHandlePublisherEvent; // defined in src/template/partial/status-field-publisher.hbs
   var streamTitle = document.getElementById('stream-title');
   var statisticsField = document.getElementById('statistics-field');
@@ -207,32 +208,39 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         deviceId: { exact: selection }
       };
     }
+    mediaConstraints.audio = configuration.useAudio ? configuration.mediaConstraints.audio : false;
+    var isOldMobileChrome = browserDetails.browser.toLowerCase() === 'chrome' && browserDetails.version <= 83;
+    // In the below flag, we originally equated it to being an older Chrome version,
+    //  however, it turns out it was not necessarily just the browser but could also be the Android OS...
+    //  As a result, we stop all tracks for all browsers now before requesting `getUserMedia` again.
+    var requiresTrackStopBeforeGUM = true; // Add any other criteria here.
+    var senders = connection.getSenders();
+    if (requiresTrackStopBeforeGUM) {
+      // Note: In some older mobile browsers, it is required to stop all current tracks before requesting
+      // media through `getUserMedia` again.
+      // This has the unfortunate side affect of the video going "black" until new media is accessed.
+      senders.forEach(function (sender) {
+        sender.track.stop();
+      });
+    }
     // 1. Grab new MediaStream from updated constraints.
     navigator.mediaDevices.getUserMedia(mediaConstraints)
       .then(function (stream) {
-        // 2. Update the media tracks on senders through connection.
-        var senders = connection.getSenders();
-        var tracks = stream.getTracks();
-        var i = senders.length;
-        var j = tracks.length;
-        while ( --i > -1) { // 3. Find the currently sending video stream
-          if (senders[i].track.kind === 'video') {
-            break;
-          }
-        }
-        if ( i < 0 ) {
-          console.error('Could not replace track : No video stream in connection');
-          return;
-        }
         var replacePromise;
-        while ( --j > -1) { // 4. Get the new stream and apply it after cleaning up the previous one
-          if (tracks[j].kind === 'video') {
+        // 2. Update the media tracks on senders through connection.
+        var i = senders.length;
+        while ( --i > -1) {
+          // 3. Replace the currently sending streams based on track kind
+          if (!requiresTrackStopBeforeGUM) {
             senders[i].track.stop();
-            replacePromise = senders[i].replaceTrack(tracks[j]);
-            break;
+          }
+          if (senders[i].track.kind === 'video') {
+            replacePromise = senders[i].replaceTrack(stream.getVideoTracks()[0]);
+          } else {
+            senders[i].replaceTrack(stream.getAudioTracks()[0]);
           }
         }
-        // 3. Update the video display with new stream.
+        // 4. Update the video display with new stream.
         document.getElementById('red5pro-publisher').srcObject = stream;
         return replacePromise;
       })
@@ -292,5 +300,5 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   window.addEventListener('pagehide', shutdown);
   window.addEventListener('beforeunload', shutdown);
 
-})(this, document, window.red5prosdk);
+})(this, document, window.red5prosdk, window.adapter);
 

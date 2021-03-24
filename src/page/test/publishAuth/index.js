@@ -225,6 +225,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   submitButton.addEventListener('click', function () {
+    window.red5proClearPublisherEvent()
     configuration.connectionParams = {
       username: usernameField.value,
       password: passwordField.value

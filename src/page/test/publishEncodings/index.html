@@ -1,0 +1,96 @@
+<!doctype html>
+{{> license}}
+<html>
+  <head>
+    {{> meta title='WebRTC Publish Live Encodings Test'}}
+    {{> header-scripts}}
+    {{> header-stylesheets}}
+    <style>
+      code {
+        padding: 0 0.5rem;
+        background-color: #fff;
+      }
+      .settings-area {
+        padding-top: 10px;
+        background-color: #eeee;
+      }
+      .settings-field {
+        display: flex;
+        align-items: center;
+      }
+      .control-container {
+        display: flex;
+        flex-direction: row;
+        background-color: #dbdbdb;
+        padding: 20px;  }
+      .control-container > button:nth-child(even) {
+        margin-left: 20px;
+      }
+      @media (max-width:510px) {
+        .control-container {
+          flex-direction: column;
+        }
+        .control-container > button:nth-child(even) {
+          margin-left: 0px;
+          margin-top: 20px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    {{> top-bar }}
+    {{> navigation isTestPage=true }}
+    <div id="app">
+      {{> settings-link}}
+      {{> test-info testTitle='Publish Live Encodings Test (WebRTC)'}}
+      <div class="stream-section">
+        {{> status-field-publisher}}
+        {{> statistics-field packets_field='Packets Sent'}}
+        <div class="centered">
+          <video id="red5pro-publisher" class="red5pro-publisher"
+                 controls autoplay playsinline muted>
+          </video>
+        </div>
+        <div class="settings-area">
+          <p class="settings-field settings-collapsable">
+            <Label class="settings-label">Bandwidth:</label>
+            <select id="bandwidth-select" class="control settings-control">
+              <option value="150">150</option>
+              <option value="300">300</option>
+              <option value="500">500</option>
+              <option value="1000">1000</option>
+              <option value="2000">2000</option>
+              <option value="unlimited" selected>Unlimited</option>
+            </select>
+          </p>
+          <p class="settings-field settings-collapsable">
+            <Label class="settings-label">Scale Resolution:</label>
+            <select id="scale-select" class="control settings-control">
+              <option value="8.0">1/8</option>
+              <option value="4.0">1/4</option>
+              <option value="2.0">1/2</option>
+              <option value="1.0" selected>Original</option>
+            </select>
+          </p>
+          <p class="settings-field settings-collapsable">
+            <Label class="settings-label">Set Active on Mute*:</label>
+            <input type="checkbox" id="active-check" class-"control settings-control">
+          </p>
+          <p class="control-container">
+            <button id="mute-audio-button" class="ui-button">Mute Audio</button>
+            <button id="mute-video-button" class="ui-button">Mute Video</button>
+          </p>
+          <div class="test-notification">
+            <p> After starting a publisher stream, it is recommended to open a Subscriber test in a separate browser, window or tab in order to see how the stream being consumed is affected. </p>
+            <p>Setting <code>Active on Mute</code> to <code>true</code> will use the Mute API along with the <code>active</code> encoding parameter for audio track. Such functionality requires a server-side setting.</p><br>
+            <p>In the <code>conf/webrtc-plugin.properties</code> file, change the following:</p>
+            <p><code>idle.check.enabled=false</code></p><br>
+            <p>This property setting is required in order for the server to not consider subscribers not receiving any stream data as being idle</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    {{> body-scripts}}
+    <script src="index.js"></script>
+  </body>
+</html>
