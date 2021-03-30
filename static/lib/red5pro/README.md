@@ -149,14 +149,14 @@ To begin working with the *Red5 Pro HTML5 SDK* in your project:
 ```
 
 # Requirements
-The **Red5 Pro HTML SDK** is intended to communicate with a [Red5 Pro Server](https://www.red5pro.com/), which allows for broadcasting and consuming live streams utilizing [WebRTC](https://developer.mozilla.org/en-US/docs/Web/Guide/API/WebRTC) and other protocols, including [RTMP](https://en.wikipedia.org/wiki/Real_Time_Messaging_Protocol) and [HLS](https://en.wikipedia.org/wiki/HTTP_Live_Streaming).
+The **Red5 Pro WebRTC SDK** is intended to communicate with a [Red5 Pro Server](https://www.red5pro.com/), which allows for broadcasting and consuming live streams utilizing [WebRTC](https://developer.mozilla.org/en-US/docs/Web/Guide/API/WebRTC) and other protocols, including [RTMP](https://en.wikipedia.org/wiki/Real_Time_Messaging_Protocol) and [HLS](https://en.wikipedia.org/wiki/HTTP_Live_Streaming).
 
 As such, you will need a distribution of the [Red5 Pro Server](https://www.red5pro.com/) running locally or accessible from the web, such as [Amazon Web Services](https://www.red5pro.com/docs/server/awsinstall/).
 
 > **[Click here to start using the Red5 Pro Server today!](https://account.red5pro.com/login)**
 
 # Usage
-This section describes using the **Red5 Pro HTML SDK** browser install to create sessions for a [Publisher](#publisher) and a [Subscriber](#subscriber).
+This section describes using the **Red5 Pro WebRTC SDK** browser install to create sessions for a [Publisher](#publisher) and a [Subscriber](#subscriber).
 
 ## Publisher
 Please refer to the [Publisher Readme](PUBLISHER_README.md) for information about setting up a broadcast session.
@@ -168,4 +168,4 @@ Please refer to the [Subscriber Readme](SUBSCRIBER_README.md) for information ab
 Please refer to the [SharedObject Documentation](SHARED_OBJECT_README.md) for information about using SharedObjects in both Publishers and Subscribers.
 
 # Contributing
-> Please refer to the [Contributing Documentation](CONTRIBUTING.md) to learn more about contributing to the development of the Red5 Pro HTML SDK.
+> Please refer to the [Contributing Documentation](CONTRIBUTING.md) to learn more about contributing to the development of the Red5 Pro WebRTC SDK.
