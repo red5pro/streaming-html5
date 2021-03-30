@@ -114,13 +114,22 @@ To define the **Host** with the server instance's IP, click the _Host_ field f t
 | :-----
 | *An example of utilizing round-trip authentication with Red5 Pro.*
 
+| **[Screen Share](src/page/test/publishScreenShare)**
+| :-----
+| *An example of utilizing the screen sharing capabilities of* **Chrome** *and* **Firefox**.<br> For use with Subscribe Screen Share example.
+
 | **[Shared Object](src/page/test/publishSharedObject)**
 | :-----
 | *Demonstrates using remote Shared Object to send and recieve information between connected clients.*
 
-| **[Screen Share](src/page/test/publishScreenShare)**
+| **[Social Media Stream Push](src/page/test/publishSocialPusher)**
 | :-----
-| *An example of utilizing the screen sharing capabilities of* **Chrome** *and* **Firefox**.<br> For use with Subscribe Screen Share example.
+| *An example of rebroadcasting a live stream to a social media platform.*
+
+| **[VP8](src/page/test/publishVP8)**
+| :-----
+| *An example for requesting VP8 video codec on publish*
+
 
 ### Publishing - Stream Manager Examples
 
@@ -159,6 +168,10 @@ To define the **Host** with the server instance's IP, click the _Host_ field f t
 | **[Stream Manager Proxy Screen Share](src/page/sm-test/publishStreamManagerProxyScreenShare)**
 | :-----
 | *An example of utilizing the screen sharing capabilities of* **Chrome** *and* **Firefox**. *For use with Stream Manager Proxy Subscribe Screen Share example.*
+
+| **[Stream Manager Proxy Social Media Stream Push](src/page/sm-test/publishStreamManagerSocialPusher)**
+| :-----
+| *An example of rebroadcasting a live stream to a social media platform.*
 
 | **[Stream Manager Proxy Transcoder](src/page/sm-test/publishStreamManagerProxyTranscoderPOST)**
 | :-----
