@@ -149,6 +149,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     } else if (event.type === 'Subscribe.Play.Unpublish' ||
       event.type === 'Subscribe.Connection.Closed') {
       setConnected(false);
+    } else if (event.type === 'WebRTC.DataChannel.Error') {
+      setConnected(false)
     }
   }
   function onSubscribeFail (message) {
