@@ -1,0 +1,47 @@
+<!doctype html>
+{{> license}}
+<html>
+  <head>
+    {{> meta title='Publish Test'}}
+    {{> header-scripts}}
+    {{> header-stylesheets}}
+  </head>
+  <body>
+    {{> top-bar }}
+    {{> navigation isTestPage=true }}
+    <div id="app">
+      {{> settings-link}}
+      {{> test-info testTitle='Publish - Social Media Push Test'}}
+      <div class="stream-section">
+        {{> status-field-publisher}}
+        {{> statistics-field packets_field='Packets Sent'}}
+        <div class="centered">
+          <video id="red5pro-publisher" class="red5pro-publisher"
+                 controls autoplay playsinline muted>
+          </video>
+
+		<!-- XXX socialpusher -->
+        <div class="settings-area">
+          <p class="settings-field settings-collapsable">
+            <label class="settings-label" for="stream-path">Password:</label>
+            <input id="passwd" name="passwd" type="text" size="75" value="changeme"></input>
+          </p>
+          <p class="settings-field settings-collapsable">
+            <label class="settings-label" for="stream-path">Destination URI:</label>
+            <input id="dest-URI" name="dest-URI" type="text" size="75" value="rtmp://localhost/live"></input>
+          </p>
+          <p class="settings-field settings-collapsable">
+            <label class="settings-label" for="stream-path">Stream Key:</label>
+            <input id="stream-key" name="stream-key" type="text" size="35" value="stream2"></input>
+          </p>
+          <p><button class="ui-button" id="send-button">Begin Forwarding</button></p>
+        </div>
+		<!-- XXX /socialpusher -->
+
+        </div>
+      </div>
+    </div>
+    {{> body-scripts}}
+    <script src="index.js"></script>
+  </body>
+</html>

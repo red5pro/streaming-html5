@@ -133,14 +133,26 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     console.log('[Red5ProSubsriber] Unsubscribe Complete.');
   }
 
+  function getRegionIfDefined () {
+    var region = configuration.streamManagerRegion;
+    if (typeof region === 'string' && region.length > 0 && region !== 'undefined') {
+      return region;
+    }
+    return undefined
+  }
+
   function requestEdge (configuration) {
     var host = configuration.host;
     var app = configuration.app;
     var port = serverSettings.httpport;
     var baseUrl = protocol + '://' + host + ':' + port;
     var streamName = configuration.stream1;
-    var apiVersion = configuration.streamManagerAPI || '3.1';
+    var apiVersion = configuration.streamManagerAPI || '4.0';
     var url = baseUrl + '/streammanager/api/' + apiVersion + '/event/' + app + '/' + streamName + '?action=subscribe';
+    var region = getRegionIfDefined();
+    if (region) {
+      url += '&region=' + region;
+    }
       return new Promise(function (resolve, reject) {
         fetch(url)
           .then(function (res) {

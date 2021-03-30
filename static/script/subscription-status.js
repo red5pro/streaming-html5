@@ -120,6 +120,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     return inFailedState;
   }
 
+  function clearStatusEvent (statusField) {
+    inFailedState = false
+    statusField = typeof statusField !== 'undefined' ? statusField : field;
+    statusField.innerText = ''
+  }
+
   window.red5proHandleSubscriberEvent = updateStatusFromEvent;
+  window.red5proClearSubscriberEvent = clearStatusEvent
 
 })(this, document);

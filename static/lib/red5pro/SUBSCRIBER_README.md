@@ -9,18 +9,15 @@
 
 ---
 
-# Subscribing to Streams with Red5 Pro HTML SDK
+# Subscribing to Streams with Red5 Pro WebRTC SDK
 
-This document describes how to use the Red5 Pro HTML SDK to subscribe to a broadcast session.
+This document describes how to use the Red5 Pro WebRTC SDK to subscribe to a broadcast session.
 
 * [Requirements](#requirements)
 * [Subscriber Types](#subscriber-types)
   * [WebRTC](#webrtc)
     * [Configuration Parameters](#webrtc-configuration-parameters)
     * [Example](#webrtc-example)
-  * [Flash/RTMP](#flashrtmp)
-    * [Configuration Parameters](#flash-configuration-parameters)
-    * [Example](#flashrtmp-example)
   * [HLS](#hls)
     * [Configuration Parameters](#hls-configuration-parameters)
     * [Example](#hls-example)
@@ -32,7 +29,7 @@ This document describes how to use the Red5 Pro HTML SDK to subscribe to a broad
 
 # Requirements
 
-The **Red5 Pro HTML SDK** is intended to communicate with a [Red5 Pro Server](https://www.red5pro.com/), which allows for broadcasting and consuming live streams utilizing [WebRTC](https://developer.mozilla.org/en-US/docs/Web/Guide/API/WebRTC) and other protocols, including [RTMP](https://en.wikipedia.org/wiki/Real_Time_Messaging_Protocol) and [HLS](https://en.wikipedia.org/wiki/HTTP_Live_Streaming).
+The **Red5 Pro WebRTC SDK** is intended to communicate with a [Red5 Pro Server](https://www.red5pro.com/), which allows for broadcasting and consuming live streams utilizing [WebRTC](https://developer.mozilla.org/en-US/docs/Web/Guide/API/WebRTC) and other protocols, [HLS](https://en.wikipedia.org/wiki/HTTP_Live_Streaming).
 
 As such, you will need a distribution of the [Red5 Pro Server](https://www.red5pro.com/) running locally or accessible from the web, such as [Amazon Web Services](https://www.red5pro.com/docs/server/awsinstall/).
 
@@ -44,14 +41,13 @@ The following subscriber types / protocols are supported:
 
 * [WebRTC](#webrtc) (using [WebSockets](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API), [WebRTC](https://developer.mozilla.org/en-US/docs/Web/Guide/API/WebRTC) and the HTML5 [video](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/video) Element or HTML5 [audio](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/audio) Element).
 
-* [RTMP](#flashrtmp) (using the custom Flash-based player developed for Red5 Pro)
 * [HLS](#hls) (using the HTML5 Video/Audio Element)
 
-Additionally, the **Red5 Pro HTML SDK** allows for automatic detection and failover to determine the correct playback option to use based on desired order and browser support. To learn more, visit the [Auto Failover](#auto-failover-and-order) section.
+Additionally, the **Red5 Pro WebRTC SDK** allows for automatic detection and failover to determine the correct playback option to use based on desired order and browser support. To learn more, visit the [Auto Failover](#auto-failover-and-order) section.
 
 ## WebRTC
 
-The Red5 Pro HTML SDK WebRTC Subscriber solution utilizes WebSockets and WebRTC support in modern browsers.
+The Red5 Pro WebRTC SDK WebRTC Subscriber solution utilizes WebSockets and WebRTC support in modern browsers.
 
 _It is *highly* recommended to include [adapter.js](https://github.com/webrtcHacks/adapter) when targeting the WebRTC subscriber._
 
@@ -75,6 +71,8 @@ _It is *highly* recommended to include [adapter.js](https://github.com/webrtcHac
 | autoLayoutOrientation | [-] | `true` | Flag to allow SDK to auto-orientation the layout of `video` element based on broadcast metadata. _Mobile publishers broadcast with orientation._ |
 | muteOnAutoplayRestriction | [-] | `true` | Flag to attempt to mute the `video` element when `autoplay` is restricted in the browser. [See section on Autoplay Restrictions](#autoplay-restrictions) |
 | maintainConnectionOnSubscribeErrors | [-] | `false` | Flag to maintain previously established `WebSocket` connection on any failure within the `subscribe` request flow. [Example](https://github.com/red5pro/streaming-html5/tree/master/src/page/test/subscribeRetryOnInvalidName) |
+| signalingSocketOnly | [-] | `true` | Flag to indicate whether the `WebSocket` should only be used for signaling while establishing a connection. Afterward, all data between client and server will be sent over an `RTCDataChannel`.
+| dataChannelConfiguration | [-] | `{name: "red5pro"}` | An object used in configuring a n `RTCDataChannel`. _Only used when `signalingSocketOnly` is defined as `true`_ |
 
 #### Video Encoding Configuration
 
@@ -96,6 +94,41 @@ By not providing the `audioEncoding` attribute in the WebRTC Subscriber configur
 
 ### WebRTC Example
 
+#### As a Module
+
+```js
+import { RTCSubscriber } from 'red5pro-webrtc-sdk'
+
+const start = async () => {
+
+  try {
+
+    const subscriber = new RTCSubscriber()
+    await subscriber.init({
+      protocol: 'ws',
+      port: 5080,
+      host: 'localhost',
+      app: 'live',
+      streamName: 'mystream',
+      rtcConfiguration: {
+        iceServers: [{urls: 'stun:stun2.l.google.com:19302'}],
+        iceCandidatePoolSize: 2,
+        bundlePolicy: 'max-bundle'
+      }, // See https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/RTCPeerConnection#RTCConfiguration_dictionary
+      mediaElementId: 'red5pro-subscriber',
+      subscriptionId: 'mystream' + Math.floor(Math.random() * 0x10000).toString(16),
+    })
+    await subscriber.subscribe()
+
+  } catch (e) {
+    // An error occured in establishing a subscriber session.
+  }
+
+}
+start()
+```
+
+#### In Browser
 _index.html_:
 
 ```html
@@ -164,107 +197,9 @@ _main.js_:
 })(window.red5prosdk);
 ```
 
-## Flash/RTMP
-
-The Red5 Pro HTML SDK Flash-based Subscriber embeds a SWF file - utilizing [swfobject](https://github.com/swfobject/swfobject) - to incorporate playback over RTMP.
-
-The **Red5 Pro HTML SDK** supports the following SWF integration:
-
-* A bare-bones RTMP playback viewer - included in the `src` directory as **red5pro-subscriber.swf** - and distributed with the `live` webapp of the [Red5 Pro Server](https://account.red5pro.com/login) install.
-  * _Note: You will need to provide a URL to the [swfobject](https://github.com/swfobject/swfobject) library which will be dynamically injected at runtime if not - by default - found relative to the page at `lib/swfobject`._
-
-### Flash Configuration Properties
-
-| Property | Required | Default | Description |
-| :--- | :---: | :---: | :--- |
-| protocol | [x] | `rtmp` | The protocol of the RTMP streaming endpoint; `rtmp` or `rtmps`) |
-| port | [x] | `1935` | The port that the stream is accessible on. |
-| app | [x] | `live` | The application to locate the stream. |
-| host | [x] | *None* | The IP or address that the stream resides on. |
-| streamName | [x] | *None* | The stream name to subscribe to. |
-| mediaElementId | [-] | `red5pro-subscriber` | The target `video` or `audio` element `id` attribute which will display the stream. |
-| buffer | [-] | `1` | The amount ot buffer the stream (in seconds). |
-| connectionParams | [-] | `undefined` | An object of connection parameters to send to the server upon connection request. |
-| width | [x] | `640` | The width of the video element within the SWF movie. |
-| height | [x] | `480` | The height of the video element within the SWF movie. |
-| embedWidth | [x] | `100%` | The width of the object element for the SWF movie embed. (`Integer` or `100%`) |
-| embedHeight | [x] | `100%` | The height of the object element for the SWF movie embed. (`Integer` or `100%`) |
-| swf | [x] | `lib/red5pro/red5pro-subscriber.swf` | The swf file location to use as the Flash client subscriber. |
-| minFlashVersion | [x] | `10.0.0` | Minimum semversion of the target Flash Player. |
-| backgroundColor | [-] | `0x000000` | The color to show in the background of the SWF movie. |
-| swfobjectURL | [x] | `lib/swfobject/swfobject.js` | Location of the [swfobject](https://github.com/swfobject/swfobject) dependency library that will be dynamically injected. |
-| productInstallURL | [x] | `lib/swfobject/playerProductInstall.swf` | Location of the **playerProductInstall** SWF used by [swfobject](https://github.com/swfobject/swfobject). |
-
-### Flash Example
-
-_index.html_
-
-```html
-<!doctype html>
-<html>
-  <head>
-    <!-- Default Red5 Pro Playback Control styles. -->
-    <link href="lib/red5pro/red5pro-media.css" rel="stylesheet">
-    <!-- Fullscreen shim. -->
-    <script src="lib/screenfull/screenfull.min.js"></script>
-  </head>
-  <body>
-    <video id="red5pro-subscriber"
-           class="red5pro-media red5pro-media-background"
-           autoplay controls>
-    </video>
-    <!-- Exposes `red5prosdk` on the window global. -->
-    <script src="lib/red5pro/red5pro-sdk.min.js"></script>
-    <!-- Example script below. -->
-    <script src="main.js"></script>
-  </body>
-</html>
-```
-
-_main.js_:
-
-```js
-(function (red5prosdk) {
-
-  // Create a new instance of the Flash/RTMP subcriber.
-  var subscriber = new red5prosdk.RTMPSubscriber();
-
-  // Initialize
-  subscriber.init({
-    protocol: 'rtmp',
-    port: 1935,
-    host: 'localhost',
-    app: 'live',
-    streamName: 'mystream',
-    swf: 'lib/red5pro-subscriber.swf'
-    productInstallURL: 'lib/swfobject/playerProductInstall.swf',
-    minFlashVersion: '10.0.0',
-    buffer: 1,
-    width: 640,
-    height: 480,
-    embedWidth: '100%',
-    embedHeight: '100%'
-  })
-  .then(function(subscriber) {
-    // `subcriber` is the Flash/RTMP Subscriber instance.
-    return subscriber.subscribe();
-  })
-  .then(function(subscriber) {
-    // subscription is complete.
-    // playback should begin immediately due to
-    //   declaration of `autoplay` on the `video` element.
-  })
-  .catch(function(error) {
-    // A fault occurred while trying to initialize and playback the stream.
-    console.error(error)
-  });
-
-})(window.red5prosdk);
-```
-
 ## HLS
 
-The Red5 Pro HTML SDK HLS Subscriber.
+The Red5 Pro WebRTC SDK HLS Subscriber.
 
 ### HLS Configuration Properties
 
@@ -283,6 +218,36 @@ The Red5 Pro HTML SDK HLS Subscriber.
 | connectionParams | [-] |  `undefined` | An object of connection parameters to send to the server upon connection request. |
 
 ### HLS Example
+
+#### As a Module
+
+```js
+import { HLSSubscriber } from 'red5pro-webrtc-sdk'
+
+const start = async () => {
+
+  try {
+
+    const subscriber = new HLSSubscriber()
+    await subscriber.init({
+      protocol: 'http',
+      port: 5080,
+      app: 'live',
+      host: 'localhost',
+      streamName: 'mystream',
+      mediaElementId: 'red5pro-subscriber'
+    })
+    await subscriber.subscribe()
+
+  } catch (e) {
+    // An error occured in establishing a subscriber session.
+  }
+
+}
+start()
+```
+
+#### In Browser
 
 _index.html_:
 
@@ -323,7 +288,6 @@ _main.js_:
     app: 'live',
     host: 'localhost',
     streamName: 'mystream',
-    mimeType: 'application/x-mpegURL',
     mediaElementId: 'red5pro-subscriber'
   })
   .then(function(subscriber) {
@@ -353,7 +317,7 @@ It is important to note that the failover mechanism of the SDK is driven by brow
 
 As such, specific failover targets - such as HLS - require native browser support. In the case of HLS, this means failover and playback are limited to Safari Mobile and Safari Desktop when using our SDK.
 
-It is entirely possible to playback streams in HLS using a 3rd-Party library (such as [VideoJS](https://videojs.com/)), but you will not be able to do so while utilizing the Red5 Pro HTML SDK.
+It is entirely possible to playback streams in HLS using a 3rd-Party library (such as [VideoJS](https://videojs.com/)), but you will not be able to do so while utilizing the Red5 Pro WebRTC SDK.
 
 > For more information on how to playback HLS in browsers without native support, please refer to the *Using VideoJS for Playback* section of the [Migration Guide](https://www.red5pro.com/docs/streaming/migrationguide.html#migrating-from-350-to-400).
 
@@ -362,10 +326,42 @@ It is entirely possible to playback streams in HLS using a 3rd-Party library (su
 As you may have noticed form the previous section, the source configuration for each player has differing property requirements. This is due simply to the technologies and playback strategies that each use:
 
 * The **WebRTC** player utilizes [WebSockets](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API) and [WebRTC](https://developer.mozilla.org/en-US/docs/Glossary/WebRTC) to subscribe to a video to be displayed in an [HTML5 video](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/video) element.
-* The **Flash/RTMP** player utilizes a SWF file to playback streaming video in the Flash Player plugin.
 * The **HLS** player utilizes the [HTTP Live Streaming protocol](https://developer.mozilla.org/en-US/Apps/Fundamentals/Audio_and_video_delivery/Live_streaming_web_audio_and_video#HLS) to subscribe to a stream.
 
-As such, the **init** configuration provided to the library to allow for auto-failover player selection should be provided with attributes defining the target source(s) - i.e., `rtc`, `rtmp` and/or `hls`:
+As such, the **init** configuration provided to the library to allow for auto-failover player selection should be provided with attributes defining the target source(s) - i.e., `rtc` and/or `hls`:
+
+### As a module
+
+```js
+import { Red5ProSubscriber} from 'red5pro-webrtc-sdk'
+
+const start = async () => {
+
+  try {
+
+    const subscriber = 
+      await new Red5ProSubscriber()
+                .setPlaybackOrder(['rtc', 'hls'])
+                .init({
+                  "rtc": {
+                    // See above documentation for WebRTC source option requirements.
+                  },
+                  "hls": {
+                    // See above documentation for HLS source option requirements
+                  }
+                })
+    await subscriber.subscribe()
+
+  } catch (e) {
+    console.error(e)  
+  }
+
+}
+
+start()
+```
+
+### In a Browser
 
 _index.html_:
 
@@ -402,11 +398,8 @@ _main.js_:
   var subscriber = new red5prosdk.Red5ProSubscriber();
 
   subscriber
-    .setPlaybackOrder(['rtc', 'rtmp', 'hls'])
+    .setPlaybackOrder(['rtc', 'hls'])
     .init({
-       "rtmp": {
-          // See above documentation for RTMP source option requirements.
-        },
         "rtc": {
           // See above documentation for WebRTC source option requirements.
         },
@@ -432,16 +425,15 @@ _main.js_:
 
 Important things to note:
 
-* Only `rtc`, `rtmp` and `hls` are supported values for order and are also accessible as enums on `Red5ProVidepPlayer.playbackTypes`
+* Only `rtc` and `hls` are supported values for order and are also accessible as enums on `Red5ProVidepPlayer.playbackTypes`
 
 # Lifecycle Events
 
-This section describes the events dispatched from the Subscriber of the Red5 Pro HTML SDK.
+This section describes the events dispatched from the Subscriber of the Red5 Pro WebRTC SDK.
 
 * [Listening to Subscriber Events](#listening-to-subscriber-events)
 * [Common Events](#common-events)
 * [WebRTC Subscriber Events](#webrtc-subscriber-events)
-* [RTMP Subscriber Events](#rtmp-subscriber-events)
 * [HLS Subscriber Events](#hls-subscriber-events)
 
 ## Listening to Subscriber Events
@@ -453,15 +445,15 @@ To subscribe to all events from a subscriber:
 ```js
 function handleSubscriberEvent (event) {
   // The name of the event:
-  var type = event.type;
+  const { type } = event
   // The dispatching publisher instance:
-  var subscriber = event.subscriber;
+  const { subscriber } = event
   // Optional data releated to the event (not available on all events):
-  var data = event.data;
+  const { data } = event
 }
 
-var subscriber = new red5prosdk.RTCSubscriber();
-subscriber.on('*', handleSubscriberEvent);
+const subscriber = new RTCSubscriber()
+subscriber.on('*', handleSubscriberEvent)
 ```
 
 > The `*` type assignment is considered a "Wildcard" subscription - all events being issued by the subscriber instance will invoke the assign event handler.
@@ -469,25 +461,28 @@ subscriber.on('*', handleSubscriberEvent);
 To unsubscribe to all events from a subscriber after assinging an event handler:
 
 ```js
-subscriber.off('*', handleSubscriberEvent);
+subscriber.off('*', handleSubscriberEvent)
 ```
 
 The following sections of this document describe the event types that can also be listened to directly, instead of using the `*` wildcard.
 
 ## Common Events
 
-The following events are common across all Subscriber implementations from the Red5 Pro HTML SDK. They can be accessed from the global `red5prosdk` object from the `SubscriberEventTypes` attribute.
+The following events are common across all Subscriber implementations from the Red5 Pro WebRTC SDK. They can be accessed from the global `red5prosdk` object from the `SubscriberEventTypes` attribute.
 
 | Access | Name | Meaning |
 | :--- | :---: | :--- |
-| CONNECT_SUCCESS | 'Connect.Success' | When the subscriber has established a required remote connection, such as to a WebSocket or RTMP-based server. |
+| CONNECT_SUCCESS | 'Connect.Success' | When the subscriber has established a required remote connection, such as to a WebSocket server. |
 | CONNECT_FAILURE | 'Connect.Failure' | When the subscriber has failed to establish a required remote connection for consuming a stream. |
 | SUBSCRIBE_START | 'Subscribe.Start' | When the subscriber has started a subscribing to a stream. |
 | SUBSCRIBE_FAIL | 'Subscribe.Fail' | When the subscriber has failed to start subscribing to a stream. |
 | SUBSCRIBE_INVALID_NAME | 'Subscribe.InvalidName' | When the subscriber is cannot start subscribing to stream because a stream associated with the `streamName` is not available. |
 | SUBSCRIBE_STOP | 'Subscribe.Stop' | When the subscriber has successfully closed an active subscription to a stream. |
 | SUBSCRIBE_METADATA | 'Subscribe.Metadata' | When metadata is received on the client from the server. |
+| SUBSCRIBE_STATUS | 'Subscribe.Status' | When a status event of the subscriber has been receieved from the server. |
 | SUBSCRIBE_SEND_INVOKE | 'Subscribe.Send.Invoke' | When a message is being sent by a subscribed-to publisher. |
+| SUBSCRIBE_PUBLISHER_CONGESTION | 'Subscribe.Publisher.NetworkCongestion' | When a playback session is experiencing network congestion on the broadcast side. |
+| SUBSCRIBE_PUBLISHER_RECOVERY | 'Subscribe.Publisher.NetworkRecovery' | When a playback session is recovering from network congestion on the broadcast side. |
 | PLAY_UNPUBLISH | 'Subscribe.Play.Unpublish' | Notification of when a live broadcast has stopped publishing. |
 | CONNECTION_CLOSED | 'Subscribe.Connection.Closed' | Invoked when a close to the connection is detected. |
 | ORIENTATION_CHANGE | 'Subscribe.Orientation.Change' | Invoked when an orientation change is detected in metadata. Mobile (iOS and Android) broadcasts are sent with an orientation. |
@@ -514,15 +509,11 @@ The following events are specific to the `RTCSubscriber` implementation and acce
 | CANDIDATE_START | 'WebRTC.Candidate.Start' | When the subscriber requests to send a candidate on the `PeerConnection`. |
 | CANDIDATE_END | 'WebRTC.Candidate.End' | When the subscriber has received a candidate over the `PeerConnection`. |
 | ICE_TRICKLE_COMPLETE | 'WebRTC.IceTrickle.Complete' | When the negotaiton process (a.k.a. trickle) has completed and the subscriber will attempt at consuming a stream. |
-
-## RTMP Subscriber Events
-
-The following events are specific to the `RTMPSubscriber` implementation and accessible on the global `red5prosk` object from the `RTMPSubscriberEventTypes` attribute:
-
-| Access | Name | Meaning |
-| :--- | :---: | :--- |
-| EMBED_SUCCESS | 'FlashPlayer.Embed.Success' | When the subscriber-based SWF is successfully embedded in the page. |
-| EMBED_FAILURE | 'FlashPlayer.Embed.Failure' | When the subscriber-based SWF fails to be embedded properly in the page. |
+| DATA_CHANNEL_AVAILABLE | 'WebRTC.DataChannel.Available' |  the underlying `RTCDataChannel` is available when `signalingSocketOnly` configuration is used. |
+| DATA_CHANNEL_OPEN | 'WebRTC.DataChannel.Open' | When the underlying `RTCDataChannel` is opened when `signalingSocketOnly` configuration is used.
+| DATA_CHANNEL_CLOSE | 'WebRTC.DataChannel.Close' | When the underlying `RTCDataChannel` is closed when `signalingSocketOnly` configuration is used. |
+| DATA_CHANNEL_ERROR | 'WebRTC.DataChannel.Error' | When an error has occurred within the underlying `RTCDataChannel` when `signalingSocketOnly` configuration is used. |
+| DATA_CHANNEL_MESSAGE | 'WebRTC.DataChannel.Message' | When a message has been delivered over the underlying `RTCDataChannel` when `signalingSocketOnly` configuration is used. |
 
 ## HLS Subscriber Events
 
@@ -538,13 +529,13 @@ The `4.0.0` release of the SDK introduces Playback API and Default Controls for 
 
 In an attempt to provide a more pleasing user experience and reduce data consumption on mobile devices, browsers are continuing to evolve their `autoplay` policies. While generally and attempt to keep websites (read: *ads*) from playing back unwanted and/or unsolicited video and audio, these policies also affect those sites in which the sole intent _is to_ playback video and/or audio - such as from a conference web application built utilizing [Red5 Pro](https://red5pro.com).
 
-Naturally, this can cause some confusion and frustration as `autoplay` may have worked as expected prior to latest browser updates. Thankfully, you do have options when using the *Red5 Pro HTML SDK* to provide a better user experience.
+Naturally, this can cause some confusion and frustration as `autoplay` may have worked as expected prior to latest browser updates. Thankfully, you do have options when using the *Red5 Pro WebRTC SDK* to provide a better user experience.
 
-> It should be noted that the recent `autoplay` policies only affect the WebRTC and HLS subscribers from the Red5 Pro HTML SDK.
+> It should be noted that the recent `autoplay` policies only affect the WebRTC and HLS subscribers from the Red5 Pro WebRTC SDK.
 
 ### Using autoplay with the SDK
 
-If supporting autoplay is a requirement for your web application integrating the *Red5 Pro HTML SDK*, you have three implementation choices to choose from:
+If supporting autoplay is a requirement for your web application integrating the *Red5 Pro WebRTC SDK*, you have three implementation choices to choose from:
 
 1. Declaring the `autoplay` and `muted` attributes of the target video element in tandem.
 2. Declaring the `autoplay` attribute of the target video element and setting the `muteOnAutoplayRestriction` initialization property to `true`.
@@ -568,13 +559,13 @@ This is the general recommendation to allow for auto-playback and allow the user
 
 > Declaring the `autoplay` attribute of the target video element and setting the `muteOnAutoplayRestriction` initialization property to `true`.
 
-By declaring only the `autoplay` attribute on the video element and setting the `muteOnAutoplayRestriction` initialization property to `true` in the configuration, you can instruct the HTML SDK to:
+By declaring only the `autoplay` attribute on the video element and setting the `muteOnAutoplayRestriction` initialization property to `true` in the configuration, you can instruct the WebRTC SDK to:
 
 * first attempt `autoplay` unmuted
 * subsequently attempt to `autoplay` muted, if first attempt fails
 * send event notification of `Subscribe.Autoplay.Muted`, if auto-playback is muted
 
-Using this solution, `autoplay` can work as desired for browsers that do not enforce the policy (e.g., the policy may differ between desktop and mobile versions of the same browser). For those browsers that do enforce the policy, the *Red5 Pro HTML SDK* will attempt to autoplay the stream. If an exception is thrown on the `play` request of the video element, the SDK will then declare the `muted` attribute on the element on the video element and make a subsequent attempt to autoplay.
+Using this solution, `autoplay` can work as desired for browsers that do not enforce the policy (e.g., the policy may differ between desktop and mobile versions of the same browser). For those browsers that do enforce the policy, the *Red5 Pro WebRTC SDK* will attempt to autoplay the stream. If an exception is thrown on the `play` request of the video element, the SDK will then declare the `muted` attribute on the element on the video element and make a subsequent attempt to autoplay.
 
 If the muted autoplay happens without exception, a `Subscribe.Autoplay.Muted` event is dispatched from the subscriber instance (refer to [Common Events](#common-events)). As a developer, you can handle this method as per your specifications - such as displaying an alert notifying the user that audio has been muted and instructing them to unmute to hear audio.
 
@@ -587,24 +578,21 @@ _declaration of video element in html:_
 _usage of muteOnAutoplayRestriction in initialization:_
 
 ```js
-var subscriber = new red5prosdk.RTCSubscriber()
-subscriber.init({
-    protocol: 'ws',
-    port: 5080,
-    host: 'localhost',
-    app: 'live',
-    streamName: 'mystream',
-    muteOnAutoRestriction: true
-  })
-  .then(subscriber => {
-    subscriber.on(red5prosdk.SubscriberEventTypes.AUTO_PLAYBACK_MUTED, () => {
-      alert('Audio has been muted.')
-    })
-    return subscriber.subscribe()
-  })
-  .then(subscriber => {
-    subscriber.
-  })
+const subscriber = new RTCSubscriber()
+await subscriber.init({
+  protocol: 'ws',
+  port: 5080,
+  host: 'localhost',
+  app: 'live',
+  streamName: 'mystream',
+  muteOnAutoRestriction: true
+})
+
+subscriber.on(red5prosdk.SubscriberEventTypes.AUTO_PLAYBACK_MUTED, () => {
+  alert('Audio has been muted.')
+})
+
+await subscriber.subscribe()
 ```
 
 > The `muteOnAutoplayRestriction` property is `true` by default.
@@ -613,12 +601,12 @@ subscriber.init({
 
 > Declaring the `autoplay` attribute of the target video element and setting the `muteOnAutoplayRestriction` initialization property to `false`.
 
-By declaring only the `autoplay` attribute on the video element and setting the `muteOnAutoplayRestriction` initialization property to `false` in the configuration, you instruct the HTML SDK to not attempt to:
+By declaring only the `autoplay` attribute on the video element and setting the `muteOnAutoplayRestriction` initialization property to `false` in the configuration, you instruct the WebRTC SDK to not attempt to:
 
 * first attempt `autoplay` unmuted
 * send event notification of `Subscribe.Autoplay.Failed`, if first attempt fails
 
-Using this solution, `autoplay` can work as desired for browsers that do not enforce the policy (e.g., the policy may differ between desktop and mobile versions of the same browser). For those browsers that do enforce the policy, the *Red5 Pro HTML SDK* will dispatch a `Subscribe.Autoplay.Failed` event from the subscriber instance (refer to [Common Events](#common-events)). As a developer, you can handle this method as per your specifications - such as displaying an alert notifying the user that autoplay did not occur and they will need to press the play button to begin playback.
+Using this solution, `autoplay` can work as desired for browsers that do not enforce the policy (e.g., the policy may differ between desktop and mobile versions of the same browser). For those browsers that do enforce the policy, the *Red5 Pro WebRTC SDK* will dispatch a `Subscribe.Autoplay.Failed` event from the subscriber instance (refer to [Common Events](#common-events)). As a developer, you can handle this method as per your specifications - such as displaying an alert notifying the user that autoplay did not occur and they will need to press the play button to begin playback.
 
 _declaration of video element in html:_
 
@@ -629,22 +617,19 @@ _declaration of video element in html:_
 _usage of muteOnAutoplayRestriction in initialization:_
 
 ```js
-var subscriber = new red5prosdk.RTCSubscriber()
-subscriber.init({
-    protocol: 'ws',
-    port: 5080,
-    host: 'localhost',
-    app: 'live',
-    streamName: 'mystream',
-    muteOnAutoRestriction: false
-  })
-  .then(subscriber => {
-    subscriber.on(red5prosdk.SubscriberEventTypes.AUTO_PLAYBACK_MUTED, () => {
-      alert('Audio has been muted.')
-    })
-    return subscriber.subscribe()
-  })
-  .then(subscriber => {
-    subscriber.
-  })
+const subscriber = new RTCSubscriber()
+await subscriber.init({
+  protocol: 'ws',
+  port: 5080,
+  host: 'localhost',
+  app: 'live',
+  streamName: 'mystream',
+  muteOnAutoRestriction: false
+})
+
+subscriber.on(red5prosdk.SubscriberEventTypes.AUTO_PLAYBACK_MUTED, () => {
+  alert('Audio has been muted.')
+})
+
+await subscriber.subscribe()
 ```

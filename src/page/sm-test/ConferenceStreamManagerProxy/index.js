@@ -1,26 +1,26 @@
 /*
 Copyright © 2015 Infrared5, Inc. All rights reserved.
 
-The accompanying code comprising examples for use solely in conjunction with Red5 Pro (the "Example Code") 
-is  licensed  to  you  by  Infrared5  Inc.  in  consideration  of  your  agreement  to  the  following  
-license terms  and  conditions.  Access,  use,  modification,  or  redistribution  of  the  accompanying  
+The accompanying code comprising examples for use solely in conjunction with Red5 Pro (the "Example Code")
+is  licensed  to  you  by  Infrared5  Inc.  in  consideration  of  your  agreement  to  the  following
+license terms  and  conditions.  Access,  use,  modification,  or  redistribution  of  the  accompanying
 code  constitutes your acceptance of the following license terms and conditions.
 
-Permission is hereby granted, free of charge, to you to use the Example Code and associated documentation 
-files (collectively, the "Software") without restriction, including without limitation the rights to use, 
-copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit 
+Permission is hereby granted, free of charge, to you to use the Example Code and associated documentation
+files (collectively, the "Software") without restriction, including without limitation the rights to use,
+copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit
 persons to whom the Software is furnished to do so, subject to the following conditions:
 
-The Software shall be used solely in conjunction with Red5 Pro. Red5 Pro is licensed under a separate end 
-user  license  agreement  (the  "EULA"),  which  must  be  executed  with  Infrared5,  Inc.   
+The Software shall be used solely in conjunction with Red5 Pro. Red5 Pro is licensed under a separate end
+user  license  agreement  (the  "EULA"),  which  must  be  executed  with  Infrared5,  Inc.
 An  example  of  the EULA can be found on our website at: https://account.red5pro.com/assets/LICENSE.txt.
 
 The above copyright notice and this license shall be included in all copies or portions of the Software.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,  INCLUDING  BUT  
-NOT  LIMITED  TO  THE  WARRANTIES  OF  MERCHANTABILITY, FITNESS  FOR  A  PARTICULAR  PURPOSE  AND  
-NONINFRINGEMENT.   IN  NO  EVENT  SHALL INFRARED5, INC. BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, 
-WHETHER IN  AN  ACTION  OF  CONTRACT,  TORT  OR  OTHERWISE,  ARISING  FROM,  OUT  OF  OR  IN CONNECTION 
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,  INCLUDING  BUT
+NOT  LIMITED  TO  THE  WARRANTIES  OF  MERCHANTABILITY, FITNESS  FOR  A  PARTICULAR  PURPOSE  AND
+NONINFRINGEMENT.   IN  NO  EVENT  SHALL INFRARED5, INC. BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+WHETHER IN  AN  ACTION  OF  CONTRACT,  TORT  OR  OTHERWISE,  ARISING  FROM,  OUT  OF  OR  IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 (function(window, document, red5prosdk) {
@@ -91,6 +91,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     bitrate = b;
     packetsSent = p;
     updateStatistics(bitrate, packetsSent, frameWidth, frameHeight);
+    if (packetsSent > 100) {
+      establishSharedObject(targetPublisher, roomField.value, streamNameField.value);
+    }
   }
 
   function onResolutionUpdate (w, h) {
@@ -125,17 +128,32 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   function updateMutedAudioOnPublisher () {
     if (targetPublisher && isPublishing) {
-      if (audioCheck.checked) { 
-        if (videoTrackClone) {
-          var c = targetPublisher.getPeerConnection();
-          var senders = c.getSenders();
+      var c = targetPublisher.getPeerConnection();
+      var senders = c.getSenders();
+      var params = senders[0].getParameters();
+      if (audioCheck.checked) {
+        if (audioTrackClone) {
           senders[0].replaceTrack(audioTrackClone);
           audioTrackClone = undefined;
         } else {
-          targetPublisher.unmuteAudio();
+          try {
+            targetPublisher.unmuteAudio();
+            params.encodings[0].active = true;
+            senders[0].setParameters(params);
+          } catch (e) {
+            // no browser support, let's use mute API.
+            targetPublisher.unmuteAudio();
+          }
         }
-      } else { 
-        targetPublisher.muteAudio(); 
+      } else {
+        try {
+          targetPublisher.muteAudio();
+          params.encodings[0].active = false;
+          senders[0].setParameters(params);
+        } catch (e) {
+          // no browser support, let's use mute API.
+          targetPublisher.muteAudio();
+        }
       }
     }
   }
@@ -151,8 +169,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         } else {
           targetPublisher.unmuteVideo();
         }
-      } else { 
-        targetPublisher.muteVideo(); 
+      } else {
+        targetPublisher.muteVideo();
       }
     }
     !videoCheck.checked && showVideoPoster();
@@ -177,7 +195,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         connection.getSenders()[0].replaceTrack(null);
       }
       clearTimeout(t);
-    }, 2000); 
+    }, 2000);
     // a bit of a hack. had to put a timeout to ensure the video track bits at least started flowing :/
   }
 
@@ -212,7 +230,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     isPublishing = true;
     window.red5propublisher = publisher;
     console.log('[Red5ProPublisher] Publish Complete.');
-    establishSharedObject(publisher, roomField.value, streamNameField.value);
+    // [NOTE] Moving SO setup until Package Sent amount is sufficient.
+    //    establishSharedObject(publisher, roomField.value, streamNameField.value);
+    if (publisher.getType().toUpperCase() !== 'RTC') {
+      // It's flash, let it go.
+      establishSharedObject(publisher, roomField.value, streamNameField.value);
+    }
     try {
       var pc = publisher.getPeerConnection();
       var stream = publisher.getMediaStream();
@@ -279,6 +302,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     soField.value = ['User "' + message.user + '": ' + message.message, soField.value].join('\n');
   }
   function establishSharedObject (publisher, roomName, streamName) {
+    if (so) {
+      return;
+    }
     // Create new shared object.
     so = new SharedObject(roomName, publisher)
     var soCallback = {
@@ -290,6 +316,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     });
     so.on(red5prosdk.SharedObjectEventTypes.CONNECT_FAILURE, function (event) { // eslint-disable-line no-unused-vars
       console.log('[Red5ProPublisher] SharedObject Fail.');
+      so = undefined;
     });
     so.on(red5prosdk.SharedObjectEventTypes.PROPERTY_UPDATE, function (event) {
       console.log('[Red5ProPublisher] SharedObject Property Update.');
@@ -315,6 +342,14 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       console.log(JSON.stringify(event.data, null, 2));
       soCallback[event.data.methodName].call(null, event.data.message);
     });
+  }
+
+  function getRegionIfDefined () {
+    var region = configuration.streamManagerRegion;
+    if (typeof region === 'string' && region.length > 0 && region !== 'undefined') {
+      return region;
+    }
+    return undefined
   }
 
   function determinePublisher (jsonResponse) {
@@ -400,8 +435,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     var app = configuration.app;
     var port = serverSettings.httpport;
     var baseUrl = protocol + '://' + host + ':' + port;
-    var apiVersion = configuration.streamManagerAPI || '3.1';
+    var apiVersion = configuration.streamManagerAPI || '4.0';
+    var region = getRegionIfDefined();
     var url = baseUrl + '/streammanager/api/' + apiVersion + '/event/' + app + '/' + streamName + '?action=broadcast';
+    if (region) {
+      url += '&region=' + region;
+    }
       return new Promise(function (resolve, reject) {
         fetch(url)
           .then(function (res) {
@@ -421,7 +460,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
               } else if(res.status == 500) {
                 msg = "Improper server state error was detected.";
               } else {
-                msg = "Unkown error";
+                msg = "Unknown error";
               }
               throw new TypeError(msg);
             }
@@ -522,11 +561,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
                                     port: getSocketLocationFromProtocol().port
                                   },
                                   getAuthenticationParams());
-      subscribers[0].execute(baseSubscriberConfig, serverSettings, configuration.proxy);
+      subscribers[0].execute(baseSubscriberConfig, serverSettings, configuration.proxy, getRegionIfDefined());
     }
 
     updatePublishingUIOnStreamCount(nonPublishers.length);
   }
 
 })(this, document, window.red5prosdk);
-
