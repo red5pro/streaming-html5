@@ -1,8 +1,8 @@
-# WebRTC Subscriber Switch
+# WebRTC Subscriber Switch over stream manager proxy
 
-Through WebRTC, the current subscriber's stream may be switched to another live stream. This example demonstrates.
+Through WebRTC over stream manager proxy, the current subscriber's stream may be switched to another live stream. This example demonstrates that the process is essentially the same as with a standalone server.
 
-This example is based on the *subscriber* example. See that example's [README](../subscriber/README.md) for details on subscribing. Like the subscriber example, this example assumes there is a live stream by default named "stream1".
+This example is based on the *subscribestreamManagerProxy* example. See that example's [README](../subscribestreamManagerProxy/README.md) for details on subscribing. Like the subscriber example, this example assumes there is a live stream by default named "stream1".
 
 This example demonstrates using the `callServer` API to invoke a method on the Application Adapter of the target app. The `callServer` method returns a `Promise`-like object that can additional deliver return data from the server.
 
