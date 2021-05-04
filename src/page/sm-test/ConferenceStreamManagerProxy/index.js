@@ -26,8 +26,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 (function(window, document, red5prosdk) {
   'use strict';
 
-  var SharedObject = red5prosdk.Red5ProSharedObject;
-  var so = undefined; // @see onPublishSuccess
   var isPublishing = false;
 
   var serverSettings = (function() {
@@ -56,8 +54,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var updateStatusFromEvent = window.red5proHandlePublisherEvent; // defined in src/template/partial/status-field-publisher.hbs
 
   var targetPublisher;
+  var hostSocket;
   var roomName = window.query('room') || 'red5pro'; // eslint-disable-line no-unused-vars
   var streamName = window.query('streamName') || ['publisher', Math.floor(Math.random() * 0x10000).toString(16)].join('-');
+  var socketEndpoint = window.query('socket') || 'localhost:8001'
 
   var roomField = document.getElementById('room-field');
   // eslint-disable-next-line no-unused-vars
@@ -92,7 +92,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     packetsSent = p;
     updateStatistics(bitrate, packetsSent, frameWidth, frameHeight);
     if (packetsSent > 100) {
-      establishSharedObject(targetPublisher, roomField.value, streamNameField.value);
+      establishSocketHost(targetPublisher, roomField.value, streamNameField.value);
     }
   }
 
@@ -115,8 +115,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   audioCheck.addEventListener('change', updateMutedAudioOnPublisher);
   videoCheck.addEventListener('change', updateMutedVideoOnPublisher);
-
-  var soField = document.getElementById('so-field');
 
   var protocol = serverSettings.protocol;
   var isSecure = protocol == 'https';
@@ -234,7 +232,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     //    establishSharedObject(publisher, roomField.value, streamNameField.value);
     if (publisher.getType().toUpperCase() !== 'RTC') {
       // It's flash, let it go.
-      establishSharedObject(publisher, roomField.value, streamNameField.value);
+      establishSocketHost(publisher, roomField.value, streamNameField.value);
     }
     try {
       var pc = publisher.getPeerConnection();
@@ -293,55 +291,18 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     */
   }
 
-  var hasRegistered = false;
-  function appendMessage (message) {
-    soField.value = [message, soField.value].join('\n');
-  }
-  // Invoked from METHOD_UPDATE event on Shared Object instance.
-  function messageTransmit (message) { // eslint-disable-line no-unused-vars
-    soField.value = ['User "' + message.user + '": ' + message.message, soField.value].join('\n');
-  }
-  function establishSharedObject (publisher, roomName, streamName) {
-    if (so) {
-      return;
+  function establishSocketHost (publisher, roomName, streamName) {
+    if (hostSocket) return
+    var wsProtocol = isSecure ? 'wss' : 'ws'
+    var url = `${wsProtocol}://${socketEndpoint}?room=${roomName}&streamName=${streamName}`
+    hostSocket = new WebSocket(url)
+    hostSocket.onmessage = function (message) {
+      var payload = JSON.parse(message.data)
+      if (roomName === payload.room) {
+        streamsList = payload.streams
+        processStreams(streamsList, streamName);
+      }
     }
-    // Create new shared object.
-    so = new SharedObject(roomName, publisher)
-    var soCallback = {
-      messageTransmit: messageTransmit
-    };
-    so.on(red5prosdk.SharedObjectEventTypes.CONNECT_SUCCESS, function (event) { // eslint-disable-line no-unused-vars
-      console.log('[Red5ProPublisher] SharedObject Connect.');
-      appendMessage('Connected.');
-    });
-    so.on(red5prosdk.SharedObjectEventTypes.CONNECT_FAILURE, function (event) { // eslint-disable-line no-unused-vars
-      console.log('[Red5ProPublisher] SharedObject Fail.');
-      so = undefined;
-    });
-    so.on(red5prosdk.SharedObjectEventTypes.PROPERTY_UPDATE, function (event) {
-      console.log('[Red5ProPublisher] SharedObject Property Update.');
-      console.log(JSON.stringify(event.data, null, 2));
-      if (event.data.hasOwnProperty('streams')) {
-        appendMessage('Stream list is: ' + event.data.streams + '.');
-        var streams = event.data.streams.length > 0 ? event.data.streams.split(',') : [];
-        if (!hasRegistered) {
-          hasRegistered = true;
-          so.setProperty('streams', streams.concat([streamName]).join(','));
-        }
-        streamsPropertyList = streams;
-        processStreams(streamsPropertyList, streamName);
-      }
-      else if (!hasRegistered) {
-        hasRegistered = true;
-        streamsPropertyList = [streamName];
-        so.setProperty('streams', streamName);
-      }
-    });
-    so.on(red5prosdk.SharedObjectEventTypes.METHOD_UPDATE, function (event) {
-      console.log('[Red5ProPublisher] SharedObject Method Update.');
-      console.log(JSON.stringify(event.data, null, 2));
-      soCallback[event.data.methodName].call(null, event.data.message);
-    });
   }
 
   function getRegionIfDefined () {
@@ -406,14 +367,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   function unpublish () {
-    if (so !== undefined)  {
-      var name = streamName;
-      var updateList = streamsPropertyList.filter(function (item) {
-        return item !== name;
-      });
-      streamsPropertyList = updateList;
-      so.setProperty('streams', updateList.join(','));
-      so.close();
+    if (hostSocket !== undefined)  {
+      hostSocket.close()
     }
     return new Promise(function (resolve, reject) {
       var publisher = targetPublisher;
@@ -534,7 +489,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   window.addEventListener('beforeunload', shutdown);
   window.addEventListener('pagehide', shutdown);
 
-  var streamsPropertyList = [];
+  var streamsList = [];
   var subscribersEl = document.getElementById('subscribers');
   function processStreams (streamlist, exclusion) {
     var nonPublishers = streamlist.filter(function (name) {
