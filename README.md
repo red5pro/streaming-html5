@@ -153,14 +153,6 @@ To define the **Host** with the server instance's IP, click the _Host_ field f t
 | :-----
 | *Demonstrates utilizing the Red5 Pro Stream Manager as an SSL WebSocket Proxy to publish WebRTC with custom audio settings to an autoscaling cluster's origin.*
 
-| **[Stream Manager Proxy Settings Region](src/page/sm-test/publishStreamManagerProxySettingsRegion)**
-| :-----
-| *Demonstrates utilizing the Red5 Pro Stream Manager as an SSL WebSocket Proxy to publish WebRTC with custom settings to an autoscaling cluster's origin, specifying region.*
-
-| **[Stream Manager Provision Form](src/page/sm-test/publishStreamManagerProvisionForm)**
-| :-----
-| *Provides an easy form to POST a new Provision to the Stream Manager for ABR broadcasts. Once the provision is POSTed, use your favorite Media Encoder to broadcast the variants.*
-
 | **[Stream Manager Proxy Round Trip Authenticaion](src/page/sm-test/publishStreamManagerProxyRoundTripAuth)**
 | :-----
 | *An example of utilizing round-trip authentication with Red5 Pro over Stream Manager Proxy.*
@@ -173,13 +165,17 @@ To define the **Host** with the server instance's IP, click the _Host_ field f t
 | :-----
 | *An example of rebroadcasting a live stream to a social media platform.*
 
+| **[Stream Manager Transcode Provision Form](src/page/sm-test/publishStreamManagerProvisionForm)**
+| :-----
+| *Provides an easy form to POST a new Provision to the Stream Manager for ABR broadcasts. Once the provision is POSTed, use your favorite Media Encoder to broadcast the variants.*
+
 | **[Stream Manager Proxy Transcoder](src/page/sm-test/publishStreamManagerProxyTranscoderPOST)**
 | :-----
 | *Provides an easy form to POST a new Provision to the Stream Manager for ABR broadcasts and to start a single variant broadcast using the Transcoder.*
 
-| **[Stream Manager Proxy Transcoder Region](src/page/sm-test/publishStreamManagerProxyTranscoderRegion)**
+| **[Stream Manager Proxy Transcoder with Authentication](src/page/sm-test/publishStreamManagerProxyTranscoderPOSTauth)**
 | :-----
-| *Provides an easy form to POST a new Provision to the Stream Manager for ABR broadcasts and to start a single variant broadcast using the Transcoder, specifying region.*
+| *Provides an easy form to POST a new Provision to the Stream Manager for ABR broadcasts and to start a single variant broadcast using the Transcoder, including authentication.*
 
 | **[Stream Manager Proxy Validation](src/page/sm-test/publishStreamManagerProxyValidation)**
 | :-----
