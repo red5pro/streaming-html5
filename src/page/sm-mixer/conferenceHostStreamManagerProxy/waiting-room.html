@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width">
+  <script src="https://webrtchacks.github.io/adapter/adapter-latest.js"></script>
+  <link href="css/common.css" rel="stylesheet">
+  <link href="css/subscriber.css" rel="stylesheet">
+  <link href="css/waiting-room.css" rel="stylesheet">
+  <script src="scripts/usage.js"></script>
+</head>
+
+<body>
+  <div class="section">
+
+    <div class="composition-editor-container" id="composition-editor">
+      <div>
+        <h3>Active Composition:</h3>
+        <p id="event-name">Name: </p>
+        <select name="event-name" id="event-name-select" onchange="compositionSelected();">
+          <option name=""></option>
+        </select>
+        <p id="event-room">Room:</p>
+        <p id="event-state">State:</p>
+        <button id="destroy-composition-button" disabled onclick="destroyComposition()">Destroy</button>
+      </div>
+      <h3>Create Composition</h3>
+      <form id="create-mixers-form">
+        <h4>Create Mixer Objects:</h4>
+        <label for="mixerName">Mixer Name:</label><br>
+        <input type="text" id="mixerName" name="mixerName" value="1"><br>
+        <label for="mixingPage">Mixing Page:</label><br>
+        <input type="text" id="mixingPage" name="mixingPage"><br>
+        <label for="scope">Scope:</label><br>
+        <input type="text" id="scope" name="scope" value="nextechar"><br>
+        <label for="streamName">Stream Name:</label><br>
+        <input type="text" id="streamName" name="streamName" value=""><br>
+        <label for="width">Width:</label><br>
+        <input type="number" id="width" name="width" value="1280"><br>
+        <label for="height">Height:</label><br>
+        <input type="number" id="height" name="height" value="720"><br>
+        <label for="framerate">Framerate:</label><br>
+        <input type="number" id="framerate" name="framerate" value="30"><br>
+        <label for="bitrate">Bitrate:</label><br>
+        <input type="number" id="bitrate" name="bitrate" value="1500"><br>
+        <label for="doForward">Forward?</label><br>
+        <input type="checkbox" id="doForward" name="doForward" checked><br>
+        <label for="destinationMixerName">Destination Mixer Name:</label><br>
+        <input type="text" id="destinationMixerName" name="destinationMixerName"><br>
+        <br>
+        <button type="submit">Add Mixer</button>
+      </form>
+      <br>
+      <p>Mixers For Composition:</p>
+      <div id="mixers" style="border: thin solid #000">
+
+      </div>
+      <br>
+      <form id="create-composition-form">
+        <label for="event">Event Name:</label><br>
+        <input type="text" id="event" name="event" value="event1"><br>
+        <label for="digest">Digest:</label><br>
+        <input type="text" id="digest" name="digest" value="password"><br>
+        <label for="transcodeComposition">Transcode Composition:</label><br>
+        <input type="checkbox" id="transcodeComposition" name="transcodeComposition"><br>
+        <label for="location">Mixer Region:</label><br>
+        <input type="text" id="location" value="eastus"><br>
+        <br>
+        <button type="submit">Create Composition</button>
+      </form>
+      <br>
+    </div>
+
+    <div class="view-container">
+      <iframe id="conference-i-frame" src=""></iframe>
+    </div>
+    <div class="waiting-room-container">
+      <p><span>Waiting room for: </span><strong><span id="room-field">?</span></strong></p>
+      <div id="waiting-room-wall" class="waiting-room-wall subscribe-section"></div>
+    </div>
+  </div>
+  <script src="lib/red5pro/red5pro-sdk.min.js"></script>
+  <script src="scripts/util.js"></script>
+  <script src="scripts/sm-util.js"></script>
+  <script src="scripts/subscriber-block.js"></script>
+  <script src="scripts/waiting-room.js"></script>
+</body>
+
+</html>
