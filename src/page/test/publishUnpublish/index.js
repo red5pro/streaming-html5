@@ -79,11 +79,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
   }
   pubUnpubButton.addEventListener('click', function () {
-    if (currentState === STATE_PUBLISHING) {
       var removePreview = previewCheck.checked;
+    if (currentState === STATE_PUBLISHING) {
       unpublish(removePreview);
     } else {
-      beginPublish();
+      beginPublish(removePreview);
     }
   })
 
@@ -167,6 +167,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   function unpublish (removePreview) {
     return new Promise(function (resolve, reject) {
       var publisher = targetPublisher;
+      publisher._options.clearMediaOnUnpublish = removePreview
       publisher.unpublish(removePreview)
         .then(function () {
           onUnpublishSuccess();
