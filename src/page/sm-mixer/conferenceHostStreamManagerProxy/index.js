@@ -43,13 +43,8 @@
     return splits[0]
   }
 
-  const websocketEndpoint = configuration.mixerBackendSocketField
   const appContext = configuration.app
   const roomName = getRoomName(appContext)
-  const useABR = false
-
-  const streamName = configuration.stream1
-  const streamMode = configuration.streamMode
 
   const PARTICIPANT_APPENDIX = '_r5participator'
 

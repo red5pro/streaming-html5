@@ -64,14 +64,13 @@
             border-bottom: 1px solid #999;
         }
 
-        /* end */
+
         html,
         body {
             height: 100%;
         }
 
         body {
-            background: #fff;
             margin: 0;
             display: flex;
             flex-direction: column;
@@ -97,6 +96,13 @@
 
         .subscribe-section {
             flex-grow: 2;
+        }
+
+        .line {
+            width: 112px;
+            height: 47px;
+            border-bottom: 4px solid black;
+            position: absolute;
         }
 
         .status-details {
@@ -125,122 +131,123 @@
             }
         }
 
+        body {
+            height: 100vh;
+            margin: 0;
+        }
 
-
-        .red5pro-media-container {
-            /*width: 100%;*/
-            flex: 1;
-            height: 0;
+        .main-container {
             display: flex;
-            justify-content: center;
+            flex-direction: row;
+            flex: 1;
+            margin: 12px;
+            height: 100%;
+            position: relative;
+        }
+
+        /*
+        .composition-editor-container {
+            border: 1px solid black;
+            flex: 1;
+            overflow-y: scroll;
+            display: flex;
+            flex-wrap: wrap;
+            flex-direction: column;
+            padding: 5px;
+            align-content: baseline;
+        }
+*/
+        .media-list-container {
+            border: 1px solid black;
+            flex: 1;
+            display: flex;
+            flex-wrap: wrap;
+            flex-direction: column;
+            width: 50%;
+            max-width: 500px;
+            padding: 20px;
+            align-content: baseline;
+        }
+
+        .mixer-container {
+            display: grid;
+            grid-gap: 0px;
+            grid-template-columns: 1fr 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            align-items: stretch;
+            color: #444;
+            margin: 0px;
+            flex-grow: 1;
+        }
+
+        .box {
+            flex: 1;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+        }
+
+        .box>p {
+            margin: 0px;
+
+        }
+
+        .box-drag-over {
+            outline: 2px solid #00ff00;
+        }
+
+        .list-holder {
+            display: flex;
+            flex-direction: row;
+            flex-wrap: nowrap;
+            overflow: scroll;
+            max-width: 500px;
+            height: 50%;
+            flex: 1;
+            align-content: flex-start;
+        }
+
+        .list-holder-muted {
+            display: flex;
+            flex-direction: row;
+            flex-wrap: nowrap;
+            overflow: scroll;
+            height: 50%;
+            flex: 1;
+            align-content: flex-start;
+        }
+
+        .list-holder-unmuted {
+            display: flex;
+            flex-direction: row;
+            flex-wrap: nowrap;
+            overflow: scroll;
+            height: 50%;
+            flex: 1;
+            align-content: flex-start;
+        }
+
+        .media-list-container_controls {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            width: 100%;
+            padding: 10px;
         }
 
         .red5pro-subscriber {
-            width: 100%;
-        }
-
-        .loading-icon {
-            width: 50px;
-            height: 50px;
-            color: #fff;
-            position: absolute;
-        }
-
-        .subscriber-notifications {
-            right: 0;
-            top: 0;
-            position: absolute;
-        }
-
-        .audio-notification,
-        .video-notification {
-            background-color: #000;
-            color: #fff;
-            padding: 4px;
-            margin: 0;
-        }
-
-        .subscriber-container {
-            max-height: 75%;
-            position: relative;
-            background-color: #000;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .subscriber-error {
-            position: relative;
-            background-color: #db1f26;
-            color: #fff;
-            padding: 12px;
-            margin: 0 12px 0 12px;
-            text-align: center;
-        }
-
-        .red5pro-screenshare-fullscreen {
-            display: block;
-            box-sizing: border-box;
-            position: relative;
-            line-height: 0px;
-            width: 100vw !important;
-            height: 100vh !important;
-            overflow: hidden !important;
-            object-fit: contain;
-        }
-
-        .subscriber-container:fullscreen {
-            height: 100%;
-            width: 100%;
-            margin: 0;
-            background-color: #000;
-        }
-
-
-        iframe {
-            width: 100%;
-            height: 100%;
-            box-sizing: border-box;
-        }
-
-        .view-container {
-            flex: 3;
-            height: 100%;
-        }
-
-        .waiting-room-container {
-            display: flex;
-            flex: 1;
-            flex-direction: column;
-            padding: 15px;
-            border: 1px solid #aaa;
-            box-sizing: border-box;
-        }
-
-        .waiting-room-wall {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            flex-flow: row wrap;
-            justify-content: flex-start;
-            overflow-y: scroll;
+            object-fit: cover;
         }
 
         .subscriber-block {
             flex: 1;
-            margin: 5px;
-            min-width: 240px;
-            max-width: 320px;
-            width: 100%;
+            height: 100%;
+            /*
+  height: 360px;
+  width: 100%;
+  */
             position: relative;
             display: flex;
             flex-direction: column;
-            min-height: 240px;
-        }
-
-        .subscriber-block-conference {
-            min-width: none !important;
-            max-width: none !important;
         }
 
         .subscriber-name-field {
@@ -260,55 +267,21 @@
             background-color: #ddd;
         }
 
-        .subscriber-exclusion-button {
-            color: #fff;
-            background-color: #ff0000;
-        }
-
-        .red5pro-subscriber {
-            width: 100%;
-        }
-
-        .centered {
-            text-align: center;
-        }
-
-        .resolution-title-field {
-            background-color: #dbdbdb;
-            margin: 0;
-            padding: 12px;
-        }
-
-        .table {
-            width: 100%;
-            border-collapse: collapse;
-            border-spacing: 0;
-        }
-
-        .table-entry {
+        .media-list-item {
+            background-color: #ddd;
             padding: 10px;
             border: 1px solid black;
+            cursor: move;
+            height: max-content;
+            width: max-content;
+            margin: 5px;
         }
 
-        .table-entry-option {
-            background-color: #fff;
-        }
-
-        .exclusion-alert-container {
-            width: 100%;
-            height: 100%;
-            flex: 1;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            align-content: center;
-        }
-
-        .exclusion-alert-field {
-            padding: 100px;
-            text-align: center;
-            background-color: #ff0000;
-            color: #fff;
+        @media screen and (max-width: 640px) {
+            .main-container {
+                display: flex;
+                flex-direction: column;
+            }
         }
 
         .collapsible {
@@ -341,6 +314,86 @@
             overflow-y: scroll;
             overflow-x: hidden;
         }
+
+        .red5pro-media-container {
+            width: 100%;
+            flex: 1;
+            height: 0;
+            display: flex;
+            justify-content: center;
+        }
+
+        .red5pro-subscriber {
+            width: 100%;
+        }
+
+        .loading-icon {
+            width: 25px;
+            height: 25px;
+            color: #fff;
+            position: absolute;
+        }
+
+        .subscriber-notifications {
+            right: 0;
+            top: 0;
+            position: absolute;
+        }
+
+        .subscriber-grabber {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 30px;
+            height: 30px;
+            margin: 0;
+            cursor: move;
+            background-color: #ff0000;
+        }
+
+        .audio-notification,
+        .video-notification {
+            background-color: #000;
+            color: #fff;
+            padding: 4px;
+            margin: 0;
+        }
+
+        .subscriber-container {
+            position: relative;
+            background-color: #000;
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            height: 100%;
+        }
+
+        .subscriber-error {
+            position: relative;
+            background-color: #db1f26;
+            color: #fff;
+            padding: 12px;
+            margin: 0 12px 0 12px;
+            text-align: center;
+        }
+
+        .red5pro-screenshare-fullscreen {
+            display: block;
+            box-sizing: border-box;
+            position: relative;
+            line-height: 0px;
+            width: 100vw !important;
+            height: 100vh !important;
+            overflow: hidden !important;
+            object-fit: contain;
+        }
+
+        .subscriber-container:fullscreen {
+            height: 100%;
+            width: 100%;
+            margin: 0;
+            background-color: #000;
+        }
     </style>
 
     <!--<link href="common.css" rel="stylesheet">
@@ -357,8 +410,9 @@
     {{> navigation isTestPage=true }}
     <div id="app" style="height:70%">
         {{> settings-link}}
-        {{> test-title title='Stream Manager Conference Host Test'}}
-        <div id="login-form" class="hidden settings-area">
+        {{> test-title title='Stream Manager Conference Participant Test'}}
+
+        <div id="login-form" class="settings-area hidden">
             <h3 class="centered info-title">Log In to begin your Broadcast:</h3>
             <hr class="paddedHR">
             <p class="settings-field settings-collapsable"><label for="username-field"
@@ -376,8 +430,8 @@
             <p class="exclusion-alert-field">You have been excluded from this conference.</p>
         </div>
 
-        <div class="section">
 
+        <div class="main-container">
             <div class="composition-editor-container" id="composition-editor">
                 <div>
                     <h3>Active Composition:</h3>
@@ -385,19 +439,20 @@
                     <select name="event-name" id="event-name-select" onchange="compositionSelected();">
                         <option name=""></option>
                     </select>
-                    <p id="event-room">Room:</p>
                     <p id="event-state">State:</p>
                     <button id="destroy-composition-button" disabled onclick="destroyComposition()">Destroy</button>
                 </div>
-                <h3>Create Composition</h3>
                 <br>
+                <h3>Create Composition</h3>
                 <form id="create-mixers-form">
-                    <h4>Add Mixer Objects:</h4>
+                    <br>
+                    <h4>Create Mixer Objects:</h4>
                     <br>
                     <label for="mixerName">Mixer Name:</label><br>
                     <input type="text" id="mixerName" name="mixerName" value="1"><br>
                     <label for="mixingPage">Mixing Page:</label><br>
-                    <input type="text" id="mixingPage" name="mixingPage"><br>
+                    <input type="text" id="mixingPage" name="mixingPage"
+                        value="https://stageconnect-sm-mvp2-new.red5pro.cloud/stageconnect/dynamicmixer/3x3/index.html?sm=true"><br>
                     <label for="scope">Scope:</label><br>
                     <input type="text" id="scope" name="scope" value="live"><br>
                     <label for="streamName">Stream Name:</label><br>
@@ -431,26 +486,49 @@
                     <label for="transcodeComposition">Transcode Composition:</label><br>
                     <input type="checkbox" id="transcodeComposition" name="transcodeComposition"><br>
                     <label for="location">Mixer Region:</label><br>
-                    <input type="text" id="location" value="eastus"><br>
+                    <input type="text" id="location" value="nyc1"><br>
                     <br>
                     <button type="submit">Create Composition</button>
                 </form>
-                <br>
+            </div>
+            <div class="media-list-container">
+                <div class="media-list-container_controls">
+                    <h3>Active Streams</h3>
+                </div>
+                <hr>
+                <div class="list-holder" data-list="stream-list-container"></div>
+                <!--<div>
+                    <h3>Switchable Channels</h3>
+                    <form id="create-channels-form">
+                        <button type="submit" id="submit-channels-form-button">Create Channels</button>
+                        <input type="number" min="1" max="5" id="channels" name="channels" value="1">
+                    </form>
+                    <br>
+                    <button disabled type="submit" id="destroy-channels-button" onclick="destroyChannels()">Destroy
+                        Channels</button>
+                    <br>
+                    <div>
+                        <br>
+                        <div class="channels-block" id="channels-container">
+                        </div>
+                    </div>
+
+                </div>-->
             </div>
 
-            <div class="view-container">
-                <iframe id="conference-i-frame" src=""></iframe>
-            </div>
-            <div class="waiting-room-container">
-                <p><span>Waiting room for: </span><strong><span id="room-field">?</span></strong></p>
-                <div id="waiting-room-wall" class="waiting-room-wall subscribe-section"></div>
+            <div class="mixer-container " data-mixer-id="mixer1">
             </div>
         </div>
+
+
+
     </div>
     {{> body-scripts}}
-    <!--<script src="subscriber-block.js"></script>-->
     <script src="../../script/red5pro-utils.js"></script>
-    <script src="../../script/conference-subscriber-block.js"></script>
+    <script src="../../script/publisher-status.js"></script>
+    <!--<script src="util.js"></script>
+    <script src="sm-util.js"></script>-->
+    <!--<script src="publisher-status.js"></script>-->
     <script src="index.js"></script>
 </body>
 
