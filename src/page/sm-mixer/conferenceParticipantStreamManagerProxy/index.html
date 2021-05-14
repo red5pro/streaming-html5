@@ -349,10 +349,18 @@
     {{> navigation isTestPage=true }}
     <div id="app">
         {{> settings-link}}
+        <div class="ice-background">
+            <div class="test-notification">
+                <p>
+                    <span>To use this test, you must set the webapp to <em>mixertestbeds</em> in the <a
+                            href="../../index.html" target="_blank">Settings</a> page.</span>
+                </p>
+            </div>
+        </div>
         {{> test-title title='Stream Manager Conference Participant Test'}}
-
         <div id="login-form" class="settings-area">
-            <h3 class="centered info-title">Log In to begin your Broadcast:</h3>
+            <h3 class="centered info-title">Set a mock username, password and token for your session. Credentials will
+                not be validated</h3>
             <hr class="paddedHR">
             <p class="settings-field settings-collapsable"><label for="username-field"
                     class="settings-label">Username:</label><input id="username-field" name="username-field"></p>
@@ -360,9 +368,6 @@
                     class="settings-label">Password:</label><input id="password-field" name="password-field"></p>
             <p class="settings-field settings-collapsable"><label for="token-field"
                     class="settings-label">Token:</label><input id="token-field" name="token-field"></p>
-            <p class="settings-field"><label for="token-required-field" class="settings-label">Token
-                    Required:</label><input type="checkbox" id="token-required-field" name="token-required-field"
-                    checked></p>
             <button id="submit-button" class="ui-button">Submit</button>
         </div>
         <div id="exclusion-alert" class="exclusion-alert-container hidden">

@@ -22,16 +22,22 @@
     return {}
   })();
 
-
-  //  red5prosdk.setLogLevel('debug')
-  const rowCount = window.query('rows') || 3
+  let rowCount = 1
+  let colCount = 1
 
   const cefId = window.query('cef-id') || 'default-mixer-id'
   const appContext = window.query('app') || 'live'
+
   const sm = window.query('sm') || 'true'
   const requiresStreamManager = !sm ? false : !(sm && sm === 'false')
   const ws = window.query('ws') || 'null'
   const webSocketEndpointForLayouts = `wss://${ws}?type=cef&id=${cefId}`
+  const SUBSCRIBE_CONCURRENCY = window.query('subscribe-concurrency') || 5
+  const SUBSCRIBE_RETRY_DELAY = window.query('subscribe-retry-delay') || 5000
+
+
+  const placeholderImage = '../../css/assets/Red5Pro_logo_white_red.svg'
+  const CHECK_FOR_TASKS_INTERVAL = 1000
 
   const red5ProHost = window.query('host') || configuration.host
 
@@ -40,15 +46,17 @@
   const password = window.query('password') || 'default-password'
   const token = window.query('token') || 'default-token'
 
-  // const layoutName = window.query('layoutname') || 'squaresmix'
   const sectionContainer = document.querySelector('.main-container')
-  const slots = document.querySelectorAll('.box')
+  let slots = document.querySelectorAll('.box')
 
   let ipReg = /^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/
   let localhostReg = /^localhost.*/
   let isIPOrLocalhost = ipReg.exec(red5ProHost) || localhostReg.exec(red5ProHost)
   let secureConnection = !isIPOrLocalhost
   let activeSubscribers = {}
+  let activeSubscribersCount = 0
+
+  window.connectedSubscribers = {}
 
   let setStreamsToSubscribeTo = new Set()
 
@@ -94,24 +102,12 @@
   })
 
 
-  // Red5 Pro configuration to subscribe
-  /*const baseConfig = {
-    host: red5ProHost,
-    app: appContext,
-    protocol: secureConnection ? 'wss' : 'ws',
-    port: secureConnection ? '443' : 5080,
-    connectionParams: {
-      username: username,
-      password: password,
-      token: token
-    }
+  const origConsoleLog = console.log
+  let logArr = []
+  console.log = (...args) => {
+    origConsoleLog.apply(console, args)
+    logArr = logArr.concat(args)
   }
-
-  const subscriberConfig = {
-    ...baseConfig, ...{
-      host: red5ProHost
-    }
-  }*/
 
   // UI Configurations
   const utilizeSubscriberNotifications = false
@@ -122,7 +118,6 @@
    * @return {HTMLNode}
    */
   const findNextAvailableSlot = () => {
-    console.log(slots, slots.length)
     const len = slots.length
     for (let i = 0; i < len; i++) {
       const slot = slots[i]
@@ -142,6 +137,14 @@
     } = event
     if (type === 'Subscribe.Start') {
       subscriber.getElementContainer().classList.remove('hidden')
+      const streamName = subscriber.getStreamName()
+      const idx = currentStreamsToSubscribeToListForWorker.indexOf(streamName)
+      if (idx >= 0) {
+        currentStreamsToSubscribeToListForWorker.splice(idx, 1)
+      }
+      else {
+        console.warn(`Subscribe start received but stream ${streamName} not found in worker pool`)
+      }
     } else if (type === 'Subscribe.Fail' ||
       type === 'Subscribe.InvalidName' ||
       type === 'Subscribe.Stop' ||
@@ -151,6 +154,48 @@
     }
   }
 
+  let streamToSubscribeQueue = []
+  let currentStreamsToSubscribeToListForWorker = []
+  const queueSubscribeStarts = function (streamList) {
+    if (!streamList || streamList.length <= 0)
+      return
+
+    for (let stream of streamList) {
+      if (!streamToSubscribeQueue.includes(stream)) {
+        streamToSubscribeQueue.push(stream)
+      }
+    }
+    console.log('Subscribe queue', streamToSubscribeQueue)
+  }
+
+  /*
+  * Worker that allows up to SUBSCRIBE_CONCURRENCY subscribe attempts at any time
+  */
+  const startSubscribersWorker = function () {
+    setInterval(() => {
+      if (currentStreamsToSubscribeToListForWorker.length >= SUBSCRIBE_CONCURRENCY) {
+        console.log('Too many pending subscribers, waiting...')
+        return
+      }
+
+      let available = SUBSCRIBE_CONCURRENCY - currentStreamsToSubscribeToListForWorker
+      if (available > streamToSubscribeQueue.length) {
+        available = streamToSubscribeQueue.length
+      }
+
+      if (available <= 0) {
+        //console.log('No streams found in the queue')
+        return
+      }
+
+      const candidatesList = streamToSubscribeQueue.slice(0, available);
+      streamToSubscribeQueue = streamToSubscribeQueue.slice(available);
+      currentStreamsToSubscribeToListForWorker = currentStreamsToSubscribeToListForWorker.concat(candidatesList)
+
+      startSubscribers(candidatesList)
+    }, CHECK_FOR_TASKS_INTERVAL)
+  }
+
   /**
    * Creates and start subscribing to streams from the list.
    *
@@ -158,12 +203,12 @@
    *        A list of stream names.
    */
   const startSubscribers = (streamList) => {
-    console.log('sub to ', streamList)
     console.log(`[mixer]:: Starting new subscribers from list: ${JSON.toString(streamList, null, 2)}`)
     const subscribers = streamList.map(name => {
       let freeSlot = findNextAvailableSlot()
-      let bl = new SubscriberBlock(name, freeSlot, utilizeSubscriberNotifications)
+      let bl = new SubscriberBlock(name, freeSlot, SUBSCRIBE_RETRY_DELAY, utilizeSubscriberNotifications)
       activeSubscribers[name] = bl
+      activeSubscribersCount++
       return bl
     })
     // Create linked-list and start subscribing.
@@ -179,45 +224,18 @@
   }
 
   /**
-   * Parses layout update to swap in specific CSS file.
-   *
-   * @param {String} name
-   *        The CSS filename to swap in.
-   
-  const parseLayout = name => {
-    const elements = Array.from(document.querySelectorAll('[data-mixer]'))
-    const link = document.createElement('link')
-    link.setAttribute('data-mixer', 'css')
-    link.rel = 'stylesheet'
-    link.href = `css/${name}.css`
-
-    // Try to replace any previous stylesheet for the page.
-    if (elements) {
-      const currentStyle = elements.filter(el => {
-        return el.dataset.mixer === 'css'
-      })
-      if (currentStyle.length > 0) {
-        const toSwap = currentStyle[0]
-        toSwap.previousSibling.after(link)
-        toSwap.parentNode.removeChild(toSwap)
-        return
-      }
-    }
-    // Else, just append to `head`.
-    document.getElementsByTagName('head')[0].appendChild(link)
-  }
-*/
-
-  /**
    * Resizes each slot on change to window dimensions.
    */
   const resizeSlots = () => {
     const width = window.innerWidth
     const height = window.innerHeight
+    console.log(`Screen dims = ${width}x${height}`)
 
     let slotWidth
     let slotHeight
     const rows = parseInt(rowCount, 10)
+    const cols = parseInt(colCount, 10)
+    console.log(rows + 'x' + cols)
     if (width > height) {
       slotHeight = height / rows
       slotWidth = slotHeight
@@ -236,7 +254,7 @@
       slot.style.width = `${slotWidth}px`
       slot.style.height = `${slotHeight}px`
     })
-    sectionContainer.style.width = `${slotWidth * rowCount}px`
+    sectionContainer.style.width = `${slotWidth * colCount}px`
   }
 
   const webSocket = new WebSocket(webSocketEndpointForLayouts);
@@ -264,7 +282,8 @@
   const processCompositionUpdate = function (message) {
     if (Object.prototype.hasOwnProperty.call(message, 'add') && message.add.length > 0) {
       const streamsToAdd = getNewStreamsToAdd(message)
-      startSubscribers(streamsToAdd)
+      resizeGridIfNeeded(streamsToAdd.length)
+      queueSubscribeStarts(streamsToAdd)
     }
 
     if (Object.prototype.hasOwnProperty.call(message, 'remove') && message.remove.length > 0) {
@@ -280,17 +299,31 @@
     }
   }
 
+  const resizeGridIfNeeded = function (newStreamsCount) {
+    let cols = colCount
+    let rows = rowCount
+    let currentGridSize = rows * cols
+    const activeSubscribersCount = Object.keys(activeSubscribers).length
+    while (currentGridSize < activeSubscribersCount + newStreamsCount) {
+      cols += 2
+      rows += 1
+      currentGridSize = rows * cols
+    }
+
+    if (rows != rowCount || cols != colCount) {
+      enlargeGrid(rows, cols)
+    }
+  }
   /**
-   * Returns the new streams to subscribe to so they are in the composition
-   */
-  const getNewStreamsToAdd = function (message) {
-    const addArray = message.add
+  * Returns the new streams to subscribe to so they are in the composition
+  */
+  const getNewStreamsToAdd = function (activeStreams) {
     let streamsToAdd = []
-    for (let stream of addArray) {
+    for (let stream of activeStreams) {
       if (!setStreamsToSubscribeTo.has(stream)) {
         streamsToAdd.push(stream);
+        setStreamsToSubscribeTo.add(stream)
       }
-      setStreamsToSubscribeTo.add(stream)
     }
     return streamsToAdd
   }
@@ -298,16 +331,17 @@
   /**
    * Removes the specified streams from the composition.
    */
-  const removeStreams = function (message) {
-    const removeArray = message.remove
-    for (let stream of removeArray) {
+  const removeStreams = function (streams) {
+    for (let stream of streams) {
       setStreamsToSubscribeTo.delete(stream)
       if (activeSubscribers[stream]) {
+        activeSubscribersCount--
         activeSubscribers[stream].cancel()
         delete activeSubscribers[stream]
       }
     }
   }
+
 
   /**
      * Mutes the specified streams in the composition.
@@ -341,6 +375,35 @@
     }
   }
 
+
+  const enlargeGrid = function (rows, cols) {
+    const templateRows = "1fr ".repeat(rows)
+    const templateCols = "1fr ".repeat(cols)
+    sectionContainer.style['grid-template-rows'] = templateRows
+    sectionContainer.style['grid-template-columns'] = templateCols
+
+    const diffRows = rows - rowCount
+    const diffCols = cols - colCount
+    if (diffRows >= 0 && diffCols >= 0) {
+      for (let i = 0; i < diffRows * colCount + diffCols * rowCount + diffCols; i++) {
+        const div = document.createElement('div')
+        div.classList.add('box')
+        sectionContainer.appendChild(div)
+      }
+    }
+    else {
+      console.warn('Unsupported operation. Cannot remove columns and or rows from the grid')
+    }
+
+    rowCount = rows
+    colCount = cols
+    slots = document.querySelectorAll('.box')
+    resizeSlots()
+
+    const imgs = Array(rowCount * colCount).fill(placeholderImage)
+    setSubscriberImages(imgs)
+  }
+
   /**
    * Sets placeholder images on the players to show the grid.
    */
@@ -352,20 +415,17 @@
       return img
     })
     slots.forEach((slot, index) => {
-      slot.appendChild(imgs[index])
+      if (slot.childNodes.length <= 0) {
+        slot.appendChild(imgs[index])
+      }
     })
   }
 
   // Main.
-  //parseLayout(layoutName)
   resizeSlots()
-
-  setSubscriberImages(new Array(9).fill('../../css/assets/Red5Pro_logo_white_red.svg'))
-
+  const imgs = Array(rowCount * colCount).fill(placeholderImage)
+  setSubscriberImages(imgs)
   window.addEventListener('resize', resizeSlots, true)
+  startSubscribersWorker()
+
 })(window, window.red5prosdk, window.SubscriberBlock)
-
-
-
-
-

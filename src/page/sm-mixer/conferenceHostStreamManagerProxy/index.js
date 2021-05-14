@@ -48,17 +48,26 @@
 
   const PARTICIPANT_APPENDIX = '_r5participator'
 
-  var loginForm = document.getElementById('login-form');
   var usernameField = document.getElementById('username-field');
   var passwordField = document.getElementById('password-field');
   var tokenField = document.getElementById('token-field');
-  var tokenCheckBox = document.getElementById('token-required-field');
   var submitButton = document.getElementById('submit-button');
 
   // Round Trip Authentication
-  const username = usernameField.value
-  const password = passwordField.value
-  const token = tokenField.value
+  let username
+  let password
+  let token
+
+  submitButton.addEventListener('click', () => {
+    username = usernameField.value
+    password = passwordField.value
+    token = tokenField.value
+
+    const loginForm = document.getElementById('login-form')
+    if (loginForm) {
+      loginForm.classList.add('hidden')
+    }
+  })
 
   var protocol = serverSettings.protocol;
   var isSecure = protocol === 'https';
@@ -108,13 +117,6 @@
     createCompositionForm.addEventListener("submit", processCreateCompositionForm);
   }
 
-  const createMixersForm = document.getElementById('create-mixers-form');
-  if (createMixersForm.attachEvent) {
-    createMixersForm.attachEvent("submit", processCreateMixersForm);
-  } else {
-    createMixersForm.addEventListener("submit", processCreateMixersForm);
-  }
-
   function getUserMediaConfiguration() {
     return {
       mediaConstraints: {
@@ -151,84 +153,6 @@
   let pendingListing = undefined // in limbo
   let conferenceListing = undefined // in conference
 
-  let mixers = []
-  function processCreateMixersForm(e) {
-    if (e.preventDefault) e.preventDefault();
-
-    const mixerName = document.getElementById('mixerName').value
-    const mixingPage = document.getElementById('mixingPage').value
-    const path = document.getElementById('scope').value
-    const streamName = document.getElementById('streamName').value
-    const width = String(document.getElementById('width').value)
-    const height = String(document.getElementById('height').value)
-    const framerate = document.getElementById('framerate').value
-    const bitrate = document.getElementById('bitrate').value
-    const doForward = document.getElementById('doForward').checked
-    const destinationMixerName = document.getElementById('destinationMixerName').value
-
-    if (!isStringAValidUrl(mixingPage)) {
-      alert(`The provided cefpage ${mixingPage} is not a valid URL`)
-      return
-    }
-
-    const mixerObj = {
-      mixerName,
-      mixingPage,
-      streamName,
-      path,
-      width,
-      height,
-      framerate,
-      bitrate,
-      doForward,
-      destinationMixerName
-    }
-    mixers.push(mixerObj)
-
-    const id = Math.random().toString(36).substring(7);
-    const collapsible = `<button type="button" id="${id}-button" class="collapsible">Mixer ${mixers.length}</button>
-        <div class="content" id="${id}-content">
-          <p>
-          Mixer Name: ${mixerName}<br>
-          Mixing Page: ${mixingPage}<br>
-          Scope: ${path}<br>
-          Stream Name: ${streamName}<br>
-          Width: ${width}<br>
-          Height: ${height}<br>
-          Framerate: ${framerate}<br>
-          bitrate: ${bitrate}<br>
-          Forward? ${doForward}<br>
-          Destination Mixer Name: ${destinationMixerName}<br>
-          </p>
-          <button type="button" id="remove-${id}">Delete</button>
-        </div>`
-
-    var template = document.createElement('template')
-    template.innerHTML = collapsible
-    document.getElementById('mixers').appendChild(template.content)
-    document.getElementById(`${id}-button`).addEventListener("click", function () {
-      this.classList.toggle("active")
-      var content = this.nextElementSibling
-      if (content.style.display === "block") {
-        content.style.display = "none"
-      } else {
-        content.style.display = "block"
-      }
-    })
-
-    document.getElementById(`remove-${id}`).addEventListener("click", function () {
-      const index = this.id.split('-')[0]
-      mixers.splice(index, 1)
-
-      document.getElementById('mixers').removeChild(document.getElementById(`${id}-content`))
-      document.getElementById('mixers').removeChild(document.getElementById(`${id}-button`))
-    })
-
-    document.getElementById('create-mixers-form').reset()
-    // return false to prevent the default form behavior
-    return false;
-  }
-
   /*
    * Posts a create composition message to the WebSocket server with the
    * data provided by the user. The server will forward the data to the Stream
@@ -245,11 +169,26 @@
 
     const eventName = document.getElementById('event').value
     const digest = document.getElementById('digest').value
-    const transcodeComposition = document.getElementById('transcodeComposition').checked
     const location = document.getElementById('location').value
+    const mixingPage = document.getElementById('mixingPage').value
+    const path = document.getElementById('scope').value
+    const streamName = document.getElementById('streamName').value
+    const width = String(document.getElementById('width').value)
+    const height = String(document.getElementById('height').value)
+    const framerate = document.getElementById('framerate').value
+    const bitrate = document.getElementById('bitrate').value
+    const transcodeComposition = false
+    const mixerName = uuidv4()
+    const doForward = true
+    const destinationMixerName = ""
 
-    if (mixers.length <= 0) {
-      alert(`At least one mixer must be provided`)
+    if (!eventName || !digest || !mixingPage || !path || !streamName || !width || !height || !framerate || !bitrate) {
+      alert(`At least one of eventName, digest, mixingPage, path, streamName, width, height, framerate or bitrate was not provided`)
+      return
+    }
+
+    if (!isStringAValidUrl(mixingPage)) {
+      alert(`The provided page ${mixingPage} is not a valid URL`)
       return
     }
 
@@ -258,7 +197,20 @@
       event: eventName,
       digest,
       transcodeComposition,
-      mixers,
+      mixers: [
+        {
+          mixerName,
+          mixingPage,
+          streamName,
+          path,
+          width,
+          height,
+          framerate,
+          bitrate,
+          doForward,
+          destinationMixerName
+        }
+      ],
       location: [location]
     }
 
@@ -270,9 +222,6 @@
     eventStateText.innerHTML = `State: Pending`
 
     document.getElementById('create-composition-form').reset()
-    document.getElementById('create-mixers-form').reset()
-    mixers = []
-    document.getElementById('mixers').innerHTML = ''
 
     // return false to prevent the default form behavior
     return false;

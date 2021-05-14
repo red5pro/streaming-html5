@@ -76,17 +76,26 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   const resolutionField = document.querySelector('#resolution-field')
   const errorInfo = document.querySelector('.publisher-error')
 
-  var loginForm = document.getElementById('login-form');
   var usernameField = document.getElementById('username-field');
   var passwordField = document.getElementById('password-field');
   var tokenField = document.getElementById('token-field');
-  var tokenCheckBox = document.getElementById('token-required-field');
   var submitButton = document.getElementById('submit-button');
 
   // Round Trip Authentication
-  const username = usernameField.value
-  const password = passwordField.value
-  const token = tokenField.value
+  let username
+  let password
+  let token
+
+  submitButton.addEventListener('click', () => {
+    username = usernameField.value
+    password = passwordField.value
+    token = tokenField.value
+
+    const loginForm = document.getElementById('login-form')
+    if (loginForm) {
+      loginForm.classList.add('hidden')
+    }
+  })
 
   // Publisher UI
   const publisherSettingsSetup = document.querySelector('#publisher-settings-setup')

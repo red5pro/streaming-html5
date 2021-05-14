@@ -357,9 +357,18 @@
     {{> navigation isTestPage=true }}
     <div id="app" style="height:70%">
         {{> settings-link}}
+        <div class="ice-background">
+            <div class="test-notification">
+                <p>
+                    <span>To use this test, you must set the webapp to <em>mixertestbeds</em> in the <a
+                            href="../../index.html" target="_blank">Settings</a> page.</span>
+                </p>
+            </div>
+        </div>
         {{> test-title title='Stream Manager Conference Host Test'}}
-        <div id="login-form" class="hidden settings-area">
-            <h3 class="centered info-title">Log In to begin your Broadcast:</h3>
+        <div id="login-form" class="settings-area">
+            <h3 class="centered info-title">Set a mock username, password and token for your session. Credentials will
+                not be validated</h3>
             <hr class="paddedHR">
             <p class="settings-field settings-collapsable"><label for="username-field"
                     class="settings-label">Username:</label><input id="username-field" name="username-field"></p>
@@ -367,9 +376,6 @@
                     class="settings-label">Password:</label><input id="password-field" name="password-field"></p>
             <p class="settings-field settings-collapsable"><label for="token-field"
                     class="settings-label">Token:</label><input id="token-field" name="token-field"></p>
-            <p class="settings-field"><label for="token-required-field" class="settings-label">Token
-                    Required:</label><input type="checkbox" id="token-required-field" name="token-required-field"
-                    checked></p>
             <button id="submit-button" class="ui-button">Submit</button>
         </div>
         <div id="exclusion-alert" class="exclusion-alert-container hidden">
@@ -380,7 +386,7 @@
 
             <div class="composition-editor-container" id="composition-editor">
                 <div>
-                    <h3>Active Composition:</h3>
+                    <h2>Active Compositions</h2>
                     <p id="event-name">Name: </p>
                     <select name="event-name" id="event-name-select" onchange="compositionSelected();">
                         <option name=""></option>
@@ -389,13 +395,13 @@
                     <p id="event-state">State:</p>
                     <button id="destroy-composition-button" disabled onclick="destroyComposition()">Destroy</button>
                 </div>
-                <h3>Create Composition</h3>
                 <br>
-                <form id="create-mixers-form">
-                    <h4>Add Mixer Objects:</h4>
-                    <br>
-                    <label for="mixerName">Mixer Name:</label><br>
-                    <input type="text" id="mixerName" name="mixerName" value="1"><br>
+                <h2>Create Composition</h2>
+                <form id="create-composition-form">
+                    <label for="event">Event Name:</label><br>
+                    <input type="text" id="event" name="event" value="event1"><br>
+                    <label for="digest">Digest:</label><br>
+                    <input type="text" id="digest" name="digest" value="password"><br>
                     <label for="mixingPage">Mixing Page:</label><br>
                     <input type="text" id="mixingPage" name="mixingPage"><br>
                     <label for="scope">Scope:</label><br>
@@ -410,26 +416,6 @@
                     <input type="number" id="framerate" name="framerate" value="30"><br>
                     <label for="bitrate">Bitrate:</label><br>
                     <input type="number" id="bitrate" name="bitrate" value="1500"><br>
-                    <label for="doForward">Forward?</label><br>
-                    <input type="checkbox" id="doForward" name="doForward" checked><br>
-                    <label for="destinationMixerName">Destination Mixer Name:</label><br>
-                    <input type="text" id="destinationMixerName" name="destinationMixerName"><br>
-                    <br>
-                    <button type="submit">Add Mixer</button>
-                </form>
-                <br>
-                <p>Mixers For Composition:</p>
-                <div id="mixers" style="border: thin solid #000">
-
-                </div>
-                <br>
-                <form id="create-composition-form">
-                    <label for="event">Event Name:</label><br>
-                    <input type="text" id="event" name="event" value="event1"><br>
-                    <label for="digest">Digest:</label><br>
-                    <input type="text" id="digest" name="digest" value="password"><br>
-                    <label for="transcodeComposition">Transcode Composition:</label><br>
-                    <input type="checkbox" id="transcodeComposition" name="transcodeComposition"><br>
                     <label for="location">Mixer Region:</label><br>
                     <input type="text" id="location" value="eastus"><br>
                     <br>
@@ -449,6 +435,7 @@
     </div>
     {{> body-scripts}}
     <!--<script src="subscriber-block.js"></script>-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/uuid/8.1.0/uuidv4.min.js"></script>
     <script src="../../script/red5pro-utils.js"></script>
     <script src="../../script/conference-subscriber-block.js"></script>
     <script src="index.js"></script>

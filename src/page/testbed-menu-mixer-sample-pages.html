@@ -27,9 +27,28 @@
                 <li class="top-level-listing"><a href="testbed-menu.html">Non-Stream Manager Tests</a></li>
                 <li><a href="sample-mixer-pages/2x2/">2x2 Grid Layout</a></li>
                 <li><a href="sample-mixer-pages/3x3">3x3 Grid Layout</a></li>
+                <li><a href="sample-mixer-pages/nxn">Dynamic NxN Grid Layout</a></li>
                 <li><a href="sample-mixer-pages/conference">Conference Layout</a></li>
             </ul>
         </div>
+        <script>
+            var configuration = (function () {
+                var conf = sessionStorage.getItem('r5proTestBed');
+                try {
+                    return JSON.parse(conf);
+                }
+                catch (e) {
+                    console.error('Could not read testbed configuration from sessionstorage: ' + e.message);
+                }
+                return {}
+            })();
+            const refs = document.getElementsByTagName('a')
+            for (let ref of refs) {
+                if (ref.href.indexOf('sample-mixer-pages') >= 0) {
+                    ref.href = `${ref.href}?ws=${configuration.mixerBackendSocketField}`
+                }
+            }
+        </script>
 </body>
 
 </html>
