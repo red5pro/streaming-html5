@@ -9,6 +9,7 @@ const bodyParser = require('body-parser')
 let port = process.env.PORT || 8001
 const fs = require('fs');
 const streamManagerHost = process.env.SM_HOST || 'http://127.0.0.1:7000'
+const restAdminToken = process.env.REST_ADMIN_TOKEN || '123abcz'
 const smToken = process.env.SM_TOKEN || 'abc123'
 const ERROR = 'error'
 const POLL_INTERVAL = 5000
@@ -18,8 +19,8 @@ let key
 
 const useSSL = streamManagerHost != 'http://127.0.0.1:7000';
 if (useSSL) {
-  cert = fs.readFileSync('./cert/certificate.crt')
-  key = fs.readFileSync('./cert/privateKey.key')
+  cert = fs.readFileSync('/etc/letsencrypt/live/nex-118-test-azure-mixer.red5.net/fullchain.pem')
+  key = fs.readFileSync('/etc/letsencrypt/live/nex-118-test-azure-mixer.red5.net/privkey.pem')
   port = 443
 }
 
@@ -54,20 +55,24 @@ app.post('/validateCredentials', function (request, response) {
   let username = request.body.username
   let password = request.body.password
   if (request.body.token) {
-    const authToken = request.body.token
-    if (authToken.room) {
-      room = authToken.room
-    }
-    if (authToken.token) {
-      token = authToken.token
+    try {
+      console.log(decodeURIComponent(request.body.token))
+      const authToken = JSON.parse(decodeURIComponent(request.body.token))
+
+      if (authToken.room) {
+        room = authToken.room
+      }
+      if (authToken.token) {
+        token = authToken.token
+      }
+    } catch (error) {
+      console.log(error)
     }
   }
   let streamName = request.body.streamID
   let userType = request.body.type
   let roomMap = streamList.hasOwnProperty(room) ? streamList[room] : undefined
   let excludedMap = excludedList.hasOwnProperty(room) ? excludedList[room] : undefined
-  // todo userid no longer exists. Use username, password and token
-  //let userIdMap = publisherUserIdMap.hasOwnProperty(room) ? publisherUserIdMap[room] : undefined
   let credentialsMap = publisherCredentialsMap.hasOwnProperty(room) ? publisherCredentialsMap[room] : undefined
 
   if (userType === "publisher") {
@@ -80,21 +85,13 @@ app.post('/validateCredentials', function (request, response) {
       }
       streamList[room].push(streamName)
     }
-    /*if (!userIdMap || !userIdMap.hasOwnProperty(streamName)) {
-      //console.log('Add token: ' + userToken)
-      if (!userIdMap) {
-        publisherUserIdMap[room] = {}
-      }
-      publisherUserIdMap[room][streamName] = userId
-    }*/
-    if (!credentialsMap || !credentialsMap.hasOwnProperty(streamName)) {
-      //console.log('Add token: ' + userToken)
-      if (!credentialsMap) {
-        credentialsMap[room] = {}
-      }
-      credentialsMap[room][streamName] = { username, password, token }
+    if (!credentialsMap) {
+      credentialsMap = {}
+      publisherCredentialsMap[room] = credentialsMap
     }
 
+    credentialsMap[streamName] = { username, password, token }
+    console.log(credentialsMap)
     console.log(streamList[room])
 
     for (var i in clients) {
@@ -137,7 +134,6 @@ app.post('/invalidateCredentials', function (request, response) {
   let excludedMap = excludedList.hasOwnProperty(room) ? excludedList[room] : undefined
   let conferenceMap = conferenceList.hasOwnProperty(room) ? conferenceList[room] : undefined
   let presenter = presenterList.hasOwnProperty(room) ? presenterList[room] : undefined
-  // var userIdMap = publisherUserIdMap.hasOwnProperty(room) ? publisherUserIdMap[room] : undefined
   let credentialsMap = publisherCredentialsMap.hasOwnProperty(room) ? publisherCredentialsMap[room] : undefined
   if (roomMap) {
     index = roomMap.indexOf(streamName)
@@ -158,10 +154,6 @@ app.post('/invalidateCredentials', function (request, response) {
       presenter[room] = undefined
     }
   }
-  /*if (userIdMap && userIdMap.hasOwnProperty(streamName)) {
-    //console.log('Remove token: ' + userIdMap[streamName])
-    delete userIdMap[streamName]
-  }*/
   if (credentialsMap && credentialsMap.hasOwnProperty(streamName)) {
     //console.log('Remove token: ' + userIdMap[streamName])
     delete credentialsMap[streamName]
@@ -200,7 +192,6 @@ server.listen(port)
 console.log('Mock Socket Server running on ' + port + '.')
 
 let clients = []
-//var publisherUserIdMap = {} // by room
 let publisherCredentialsMap = {} // by room for stream suppression
 let streamList = {} // by room
 let excludedList = {} // by room
@@ -303,16 +294,6 @@ const createComposition = function (ws, message) {
 
   // call Stream Manager API to create the composition 
   const url = `${streamManagerHost}/streammanager/api/4.0/composition?accessToken=${smToken}`
-  console.log(url)
-  /*const payload = {
-      context,
-      event: eventName,
-      transcodeComposition,
-      name,
-      size,
-      cefpage,
-      location
-  }*/
   const payload = {
     event: eventName,
     transcodeComposition,
@@ -541,7 +522,6 @@ var postActiveList = function (ws, room, list) {
     screenshareName: getScreenshareName(list),
     streams: list
   }
-  //  console.log(JSON.stringify(obj, null, 2))
   ws.send(JSON.stringify(obj))
 }
 
@@ -551,7 +531,6 @@ var postExcludedList = function (ws, room, list) {
     room: room,
     streams: list
   }
-  //  console.log(JSON.stringify(obj, null, 2))
   ws.send(JSON.stringify(obj))
 }
 
@@ -563,7 +542,6 @@ var postConferenceList = function (ws, room, list) {
     room: room,
     streams: list
   }
-  //  console.log(JSON.stringify(obj, null, 2))
   ws.send(JSON.stringify(obj))
 }
 
@@ -620,18 +598,7 @@ var updateStreamListFromMessage = function (payload, ws) {
     // Note [TODO]: We need to shut down all variants.
     // The terminateClient call will take care of this by shutting down 
     // all clients that have published with a certain token
-
-    //var userIdMap = publisherUserIdMap.hasOwnProperty(room) ? publisherUserIdMap[room] : undefined
-    var credentialsMap = credentialsMap.hasOwnProperty(room) ? credentialsMap[room] : undefined
-    /*if (userIdMap && userIdMap.hasOwnProperty(streamName)) {
-      var userId = userIdMap[streamName]
-      if (streamManagerHost !== '') {
-        broadcastTerminateClient(userId, '')
-      }
-      else {
-        terminateClient('127.0.0.1', userId)
-      }
-    }*/
+    let credentialsMap = publisherCredentialsMap.hasOwnProperty(room) ? publisherCredentialsMap[room] : undefined
     if (credentialsMap && credentialsMap.hasOwnProperty(streamName)) {
       var credentials = credentialsMap[streamName]
       if (streamManagerHost !== '') {
@@ -643,6 +610,7 @@ var updateStreamListFromMessage = function (payload, ws) {
     }
     else {
       console.warn('Could NOT find the token for stream ' + streamName + ' in room ' + room)
+      console.log(publisherCredentialsMap)
     }
 
     if (!excludedMap) {
@@ -797,13 +765,13 @@ wss.on('connection', function (ws, req) {
 })
 
 var terminateClient = function (host, credentials) {
-  var url = "http://" + host + ":5080/mixertestbeds/terminateclient"
+  var url = "http://" + host + `:5080/mixertestbeds/admin/suppress-client?adminToken=${restAdminToken}`
   var json = { ...credentials }
   makeRequest(url, json)
 }
 
 var broadcastTerminateClient = function (credentials, type) {
-  var url = streamManagerHost + "/mixertestbeds/broadcastterminateclient"
+  var url = streamManagerHost + `/mixertestbeds/admin/broadcast-suppress-client?adminToken=${restAdminToken}`
   var json = { ...credentials, type: type != undefined ? type : "" }
   makeRequest(url, json)
 }
@@ -822,7 +790,6 @@ var makeRequest = function (url, body) {
     }
   )
 }
-
 
 const makePostJsonRequest = async function (url, payload) {
   return new Promise((resolve, reject) => {
