@@ -24,7 +24,7 @@
     return {}
   })();
 
-  const getRoomName = (context) => {
+  /*const getRoomName = (context) => {
     const splits = context.split('/')
     if (splits.length > 1) {
       splits.splice(0, 1)
@@ -32,25 +32,31 @@
     }
 
     return context
-  }
+  }*/
 
   const PARTICIPANT_APPENDIX = '_r5participator'
 
-  const appContext = configuration.app
-  const roomName = getRoomName(appContext)
+  const appContext = window.query('app')
+  const roomName = window.query('room')
 
   const role = window.query('role') || undefined
   const host = window.query('host') || undefined
   const isHost = role === 'moderator'
   const isMixer = role === 'mixer'
   const requiresStreamManager = true
-  const SM_ACCESS_TOKEN = configuration.streamManagerAccessToken
-  const ws = configuration.mixerBackendSocketField
+  const SM_ACCESS_TOKEN = window.query('smtoken')
+  const ws = window.query('ws') || undefined
+
+  const getConferenceRoomContext = () => {
+    return `${appContext}/${roomName}`
+  }
 
   // Round Trip Authentication
   const username = window.query('username') || 'default-username'
   const password = window.query('password') || 'default-password'
-  const token = window.query('token') || 'default-token'
+  const token = JSON.stringify({
+    token: window.query('token') || 'default-token', room: getConferenceRoomContext()
+  })
 
   const presenterContainer = document.querySelector('.presenter-container')
   const sectionContainer = document.querySelector('.section-container')
@@ -63,9 +69,6 @@
       : { protocol: 'wss', port: serverSettings.wssport };
   }
 
-  const getConferenceRoomContext = () => {
-    return appContext
-  }
 
   const wsEndpoint = secureConnection ? `wss://${ws}?room=${getConferenceRoomContext()}&host=${isHost}&mixer=${isMixer}&presenter=1` : `ws://${ws}?room=${getConferenceRoomContext()}&host=${isHost}&mixer=${isMixer}&presenter=1`
 
@@ -93,7 +96,7 @@
     protocol: getSocketLocationFromProtocol().protocol,
     port: getSocketLocationFromProtocol().port,
     streamName: configuration.stream1,
-    app: configuration.proxy,
+    app: getConferenceRoomContext(),
     connectionParams: {
       host: configuration.host,
       app: getConferenceRoomContext(),
@@ -122,8 +125,8 @@
   // Update provision for conference.
   let confProvision = {
     ...provision, ...{
-      guid: configuration.app,
-      context: configuration.app,
+      guid: getConferenceRoomContext(),
+      context: getConferenceRoomContext(),
       name: roomName
     }
   }
@@ -420,7 +423,7 @@
       if (typeof json === 'string') {
         json = JSON.parse(event.data)
       }
-      if (json.type === 'conference' && json.room === appContext) {
+      if (json.type === 'conference' && json.room === getConferenceRoomContext()) {
         json.hasOwnProperty('streams') && parseStreamList(json.streams, json.presenter, '')// PARTICIPANT_APPENDIX)
         json.hasOwnProperty('presenter') && startPresenter(json.presenter, '')// PARTICIPANT_APPENDIX)
       }

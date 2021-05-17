@@ -50,7 +50,7 @@
   // Round Trip Authentication
   const username = window.getParamByName('username') || 'default-username'
   const password = window.getParamByName('password') || 'default-password'
-  const token = window.getParamByName('token') || 'default-token'
+  const token = JSON.stringify({ token: window.getParamByName('token') || 'default-token', room: appContext })
 
   const presenterContainer = document.querySelector('.presenter-container')
   const sectionContainer = document.querySelector('.section-container')
@@ -93,7 +93,7 @@
     protocol: getSocketLocationFromProtocol().protocol,
     port: getSocketLocationFromProtocol().port,
     streamName: configuration.stream1,
-    app: configuration.proxy,
+    app: getConferenceRoomContext(),
     connectionParams: {
       host: configuration.host,
       app: getConferenceRoomContext(),

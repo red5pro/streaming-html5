@@ -91,6 +91,30 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     password = passwordField.value
     token = tokenField.value
 
+    rtcConfig.connectionParams = {
+      ...rtcConfig.connectionParams,
+      username,
+      password,
+      token: JSON.stringify({ token, room: `${appContext}_wr` })
+    }
+
+    publisherConfig.connectionParams = {
+      ...publisherConfig.connectionParams,
+      username,
+      password,
+      token: JSON.stringify({ token, room: `${appContext}_wr` })
+    }
+
+
+    participantConfig.connectionParams = {
+      ...participantConfig.connectionParams,
+      username,
+      password,
+      token: JSON.stringify({ token, room: appContext })
+    }
+
+    console.log('participantConfig', appContext, participantConfig)
+
     const loginForm = document.getElementById('login-form')
     if (loginForm) {
       loginForm.classList.add('hidden')
@@ -112,7 +136,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   let participant
 
   const getConferenceRoomContext = () => {
-    return `${appContext}/${roomName}`
+    return `${appContext}`
+  }
+
+  const getWaitingRoomContext = () => {
+    return `${appContext}_wr`
   }
 
   function getUserMediaConfiguration() {
@@ -151,7 +179,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     app: configuration.proxy,
     connectionParams: {
       host: configuration.host,
-      app: `${configuration.app}_wr`,
+      app: getWaitingRoomContext(),
       username,
       password,
       token
@@ -173,11 +201,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   let participantConfig = {
     ...rtcConfig, ...{
-      app: configuration.app,
       groupName: roomName,
       streamName: streamName,
       mediaElementId: 'red5pro-participant',
-      cleanMediaOnUnpublish: true
+      cleanMediaOnUnpublish: true,
+      connectionParams: {
+        app: getConferenceRoomContext()
+      }
     }
   }
 
@@ -507,9 +537,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   const setUpPublisher = async (stream) => {
 
     try {
-
-
-      const scope = publisherConfig.app
+      const scope = getWaitingRoomContext() // publisherConfig.app
       const publisherSM = await window.streamManagerUtil.getOrigin(publisherConfig.host, scope, publisherConfig.streamName, useABR)
       const {
         serverAddress
@@ -575,17 +603,24 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   const setUpParticipant = async (stream) => {
     try {
-      const scope = configuration.app
+
+
+      console.log('participantConfig', participantConfig)
+      const scope = getConferenceRoomContext()
       const participantSM = await window.streamManagerUtil.getOriginForConference(configuration.host, scope)
       const {
         serverAddress
       } = participantSM
 
       participantConfig.connectionParams = {
-        ...publisherConfig.connectionParams, ...{
+        ...participantConfig.connectionParams, ...{
           host: serverAddress
         }
       }
+
+
+      console.log('participantConfig', participantConfig)
+
       await window.streamManagerUtil.postProvision(participantConfig.host, confProvision, configuration.streamManagerAccessToken)
 
       const pub = new red5prosdk.RTCConferenceParticipant()

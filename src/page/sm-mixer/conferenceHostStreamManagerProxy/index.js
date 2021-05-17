@@ -61,12 +61,22 @@
   submitButton.addEventListener('click', () => {
     username = usernameField.value
     password = passwordField.value
-    token = tokenField.value
+    token = JSON.stringify({ token: tokenField.value, room: `${appContext}_wr` })
+
+    rtcConfig.connectionParams = {
+      ...rtcConfig.connectionParams,
+      username,
+      password,
+      token
+    }
 
     const loginForm = document.getElementById('login-form')
     if (loginForm) {
       loginForm.classList.add('hidden')
     }
+
+    setUpWaitingRoomWebSocket(waitingRoomWSEndpoint)
+    setUpConferenceRoomWebSocket(conferenceRoomWSEndpoint)
   })
 
   var protocol = serverSettings.protocol;
@@ -93,13 +103,12 @@
   const waitingRoomWSEndpoint = isSecure ? `wss://${configuration.mixerBackendSocketField}?room=${getWaitingRoomContext()}&host=true` : `ws://${configuration.mixerBackendSocketField}?room=${getWaitingRoomContext()}&host=true`
   const conferenceRoomWSEndpoint = isSecure ? `wss://${configuration.mixerBackendSocketField}?room=${getConferenceRoomContext()}&host=true` : `ws://${configuration.mixerBackendSocketField}?room=${getConferenceRoomContext()}&host=true`
 
-
-  document.getElementById('scope').value = `${getAppName(appContext)}`
+  document.getElementById('scope').value = appContext
   document.getElementById('streamName').value = roomName
   document.getElementById('conference-i-frame').src = `./presenter-flow-viewer.html?sm=true&host=${configuration.host}&app=${getAppName(appContext)}&room=${roomName}&role=moderator&ws=${configuration.mixerBackendSocketField}&smtoken=${configuration.streamManagerAccessToken}`
   document.getElementById('event').value = roomName
   // todo fix
-  document.getElementById('mixingPage').value = `https://${configuration.host}/client/mixer/presenter-flow-viewer.html?role=mixer&app=${getAppName(appContext)}&room=${roomName}&ws=${configuration.mixerBackendSocketField}&token=${Date.now()}&sm=true&smtoken=${configuration.streamManagerAccessToken}`
+  document.getElementById('mixingPage').value = `https://${configuration.host}/webrtcexamples/sample-mixer-pages/conference/?role=mixer&app=${getAppName(appContext)}&room=${roomName}&ws=${configuration.mixerBackendSocketField}&token=${Date.now()}&sm=true&smtoken=${configuration.streamManagerAccessToken}`
   const waitingRoomWall = document.querySelector('#waiting-room-wall')
   const selectBox = document.getElementById("event-name-select");
   const destroyCompositionButton = document.getElementById('destroy-composition-button')
@@ -135,7 +144,7 @@
     protocol: getSocketLocationFromProtocol().protocol,
     port: getSocketLocationFromProtocol().port,
     streamName: configuration.stream1,
-    app: configuration.proxy,
+    app: getWaitingRoomContext(),
     connectionParams: {
       host: configuration.host,
       app: getWaitingRoomContext(),
@@ -253,7 +262,7 @@
         sub.next = subscribers[index + 1]
       }
       if (index === 0) {
-        sub.execute(rtcConfig, false)
+        sub.execute(rtcConfig, true)
       }
     })
   }
@@ -442,13 +451,6 @@
       } else if (json.type === 'excluded') {
         json.hasOwnProperty('streams') && parseExcludedList(json.streams)
       }
-      /*
-            } else if (json.type === 'conference') {
-              conferenceListing = json.streams || []
-              parseStreamList(pendingListing || streamListing, conferenceListing, PARTICIPANT_APPENDIX)
-              pendingListing = undefined
-            }
-      */
     }
   }
 
@@ -614,9 +616,5 @@
       }
     }
   }
-
-  // Main.
-  setUpWaitingRoomWebSocket(waitingRoomWSEndpoint)
-  setUpConferenceRoomWebSocket(conferenceRoomWSEndpoint)
 
 })(window, window.red5prosdk, window.SubscriberBlock)

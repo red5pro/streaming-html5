@@ -28,6 +28,8 @@
 
   const cefId = window.query('cef-id') || 'default-mixer-id'
   const appContext = window.query('app') || 'live'
+  const roomName = window.query('room') || ''
+  const scope = roomName === '' ? appContext : `${appContext}/${roomName}`
   const sm = window.query('sm') || 'true'
   const requiresStreamManager = !sm ? false : !(sm && sm === 'false')
   const ws = window.query('ws') || 'null'
@@ -38,7 +40,9 @@
   // Round Trip Authentication
   const username = window.query('username') || 'default-username'
   const password = window.query('password') || 'default-password'
-  const token = window.query('token') || 'default-token'
+  const token = JSON.stringify({
+    token: window.query('token') || 'default-token', room: roomName
+  })
 
   // const layoutName = window.query('layoutname') || 'squaresmix'
   const sectionContainer = document.querySelector('.main-container')
@@ -83,10 +87,10 @@
     protocol: getSocketLocationFromProtocol().protocol,
     port: getSocketLocationFromProtocol().port,
     streamName: configuration.stream1,
-    app: requiresStreamManager ? configuration.proxy : appContext,
+    app: requiresStreamManager ? configuration.proxy : scope,
     connectionParams: {
       host: configuration.host,
-      app: appContext,
+      app: scope,
       username,
       password,
       token

@@ -287,6 +287,8 @@
           }
         }
 
+        console.log(rtcConfig)
+
         await this.subscriber.init(rtcConfig)
         await this.subscriber.subscribe()
         if (this._forceMute) {

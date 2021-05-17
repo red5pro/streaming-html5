@@ -43,6 +43,7 @@
     return splits[0]
   }
 
+  const roomName = getRoomName(configuration.app)
   var usernameField = document.getElementById('username-field');
   var passwordField = document.getElementById('password-field');
   var tokenField = document.getElementById('token-field');
@@ -56,7 +57,14 @@
   submitButton.addEventListener('click', () => {
     username = usernameField.value
     password = passwordField.value
-    token = tokenField.value
+    token = JSON.stringify({ token: tokenField.value, room: roomName })
+
+    baseConfig.connectionParams = {
+      ...baseConfig.connectionParams,
+      username,
+      password,
+      token
+    }
 
     const loginForm = document.getElementById('login-form')
     if (loginForm) {

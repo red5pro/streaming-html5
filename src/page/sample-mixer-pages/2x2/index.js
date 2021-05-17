@@ -28,6 +28,8 @@
 
   const cefId = window.query('cef-id') || 'default-mixer-id'
   const appContext = window.query('app') || 'live'
+  const roomName = window.query('room') || ''
+  const scope = roomName === '' ? appContext : `${appContext}/${roomName}`
   const sm = window.query('sm') || 'true'
   const requiresStreamManager = !sm ? false : !(sm && sm === 'false')
   const ws = window.query('ws') || 'null'
@@ -37,7 +39,9 @@
   // Round Trip Authentication
   const username = window.query('username') || 'default-username'
   const password = window.query('password') || 'default-password'
-  const token = window.query('token') || 'default-token'
+  const token = JSON.stringify({
+    token: window.query('token') || 'default-token', room: roomName
+  })
 
   //const layoutName = window.query('layoutname') || 'squaresmix'
   const sectionContainer = document.querySelector('.main-container')
@@ -85,10 +89,10 @@
     protocol: secureConnection ? 'wss' : 'ws',
     port: secureConnection ? '443' : 5080,
     streamName: configuration.stream1,
-    app: requiresStreamManager ? configuration.proxy : appContext,
+    app: requiresStreamManager ? configuration.proxy : scope,
     connectionParams: {
       host: configuration.host,
-      app: appContext,
+      app: scope,
       username,
       password,
       token
@@ -167,14 +171,14 @@
    *
    * @param {String} name
    *        The CSS filename to swap in.
-
+  
   const parseLayout = name => {
     const elements = Array.from(document.querySelectorAll('[data-mixer]'))
     const link = document.createElement('link')
     link.setAttribute('data-mixer', 'css')
     link.rel = 'stylesheet'
     link.href = `css/${name}.css`
-
+  
     // Try to replace any previous stylesheet for the page.
     if (elements) {
       const currentStyle = elements.filter(el => {
