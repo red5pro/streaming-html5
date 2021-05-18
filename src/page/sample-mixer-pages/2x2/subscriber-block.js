@@ -67,8 +67,8 @@
   /**
    * Generic container HTML element for the subscriber block.
    */
-  const subscriberTemplate = `<div class="subscriber-container">
-      <div class="red5pro-media-container video-holder centered">
+  const subscriberTemplateNormal = `<div class="subscriber-container">
+      <div class="red5pro-media-container-normal video-holder centered">
         <video autoplay controls playsinline class="red5pro-subscriber"></video>
       </div>
       <div class="subscriber-notifications"></div>
@@ -76,6 +76,19 @@
         <p class="subscriber-name-field"></span></p>
       </div>
     </div>`
+
+  /**
+ * Generic container HTML element for the subscriber block.
+ */
+  const subscriberTemplateFinalLayer = `<div class="subscriber-container">
+  <div class="red5pro-media-container video-holder centered">
+    <video autoplay controls playsinline class="red5pro-subscriber"></video>
+  </div>
+  <div class="subscriber-notifications"></div>
+  <div class="centered">
+    <p class="subscriber-name-field"></span></p>
+  </div>
+</div>`
 
   /**
    * Generates the template.
@@ -112,7 +125,9 @@
    * Generates the encapsulating DOM element for the subscriber.
    */
   const generateNewSubscriberDOM = (streamName, subId, parent) => {
-    const card = templateContent(subscriberTemplate, streamName)
+    const template = (window.mixingLayer && window.mixingLayer === 'final') ? subscriberTemplateFinalLayer : subscriberTemplateNormal
+    console.log('using template for layer:', window.mixingLayer)
+    const card = templateContent(template, streamName)
     parent.appendChild(card)
     const videoId = subId
     const videoElement = card.querySelector('.red5pro-subscriber')

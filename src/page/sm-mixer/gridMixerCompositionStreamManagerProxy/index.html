@@ -197,9 +197,9 @@
 
         .list-holder {
             display: flex;
-            flex-direction: row;
+            flex-direction: column;
             flex-wrap: nowrap;
-            overflow: scroll;
+            overflow-y: scroll;
             max-width: 500px;
             height: 50%;
             flex: 1;
@@ -208,9 +208,9 @@
 
         .list-holder-muted {
             display: flex;
-            flex-direction: row;
+            flex-direction: column;
             flex-wrap: nowrap;
-            overflow: scroll;
+            overflow-y: scroll;
             height: 50%;
             flex: 1;
             align-content: flex-start;
@@ -218,9 +218,9 @@
 
         .list-holder-unmuted {
             display: flex;
-            flex-direction: row;
+            flex-direction: column;
             flex-wrap: nowrap;
-            overflow: scroll;
+            overflow-y: scroll;
             height: 50%;
             flex: 1;
             align-content: flex-start;
@@ -414,28 +414,16 @@
             <div class="test-notification">
                 <p>
                     <span>To use this test, you must set the webapp to <em>mixertestbeds</em> in the <a
-                            href="../../index.html" target="_blank">Settings</a> page.</span>
+                            href="../../index.html" target="_blank">Settings</a> page and publish a few streams with the
+                        round trip authentication examples. The streams will appear in the active stream section.
+                    </span>
                 </p>
             </div>
         </div>
         {{> test-title title='Stream Manager Grid Composition Test'}}
-        <div id="login-form" class="settings-area">
-            <h3 class="centered info-title">Set a mock username, password and token for your session. Credentials will
-                not be validated</h3>
-            <hr class="paddedHR">
-            <p class="settings-field settings-collapsable"><label for="username-field"
-                    class="settings-label">Username:</label><input id="username-field" name="username-field"></p>
-            <p class="settings-field settings-collapsable"><label for="password-field"
-                    class="settings-label">Password:</label><input id="password-field" name="password-field"></p>
-            <p class="settings-field settings-collapsable"><label for="token-field"
-                    class="settings-label">Token:</label><input id="token-field" name="token-field"></p>
-            <button id="submit-button" class="ui-button">Submit</button>
-        </div>
         <div id="exclusion-alert" class="exclusion-alert-container hidden">
             <p class="exclusion-alert-field">You have been excluded from this conference.</p>
         </div>
-
-
         <div class="main-container">
             <div class="composition-editor-container" id="composition-editor">
                 <div>
@@ -456,10 +444,13 @@
                     <label for="mixerName">Mixer Name:</label><br>
                     <input type="text" id="mixerName" name="mixerName" value="1"><br>
                     <label for="mixingPage">Mixing Page:</label><br>
-                    <input type="text" id="mixingPage" name="mixingPage"
-                        value="https://stageconnect-sm-mvp2-new.red5pro.cloud/stageconnect/dynamicmixer/3x3/index.html?sm=true"><br>
+                    <select name="mixingPage" id="mixingPage-select">
+                        <option name="2x2">2x2</option>
+                        <option name="3x3">3x3</option>
+                        <option name="NxN">NxN</option>
+                    </select><br>
                     <label for="scope">Scope:</label><br>
-                    <input type="text" id="scope" name="scope" value="live"><br>
+                    <input type="text" id="scope" name="scope" value="mixertestbeds"><br>
                     <label for="streamName">Stream Name:</label><br>
                     <input type="text" id="streamName" name="streamName" value=""><br>
                     <label for="width">Width:</label><br>
@@ -470,8 +461,6 @@
                     <input type="number" id="framerate" name="framerate" value="30"><br>
                     <label for="bitrate">Bitrate:</label><br>
                     <input type="number" id="bitrate" name="bitrate" value="1500"><br>
-                    <label for="doForward">Forward?</label><br>
-                    <input type="checkbox" id="doForward" name="doForward" checked><br>
                     <label for="destinationMixerName">Destination Mixer Name:</label><br>
                     <input type="text" id="destinationMixerName" name="destinationMixerName"><br>
                     <br>
@@ -491,7 +480,7 @@
                     <label for="transcodeComposition">Transcode Composition:</label><br>
                     <input type="checkbox" id="transcodeComposition" name="transcodeComposition"><br>
                     <label for="location">Mixer Region:</label><br>
-                    <input type="text" id="location" value="nyc1"><br>
+                    <input type="text" id="location" value="eastus"><br>
                     <br>
                     <button type="submit">Create Composition</button>
                 </form>

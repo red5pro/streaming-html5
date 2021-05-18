@@ -26,17 +26,16 @@
   let colCount = 1
 
   const cefId = window.query('cef-id') || 'default-mixer-id'
-  const appContext = window.query('app') || 'live'
+  const appContext = window.query('app') || 'mixertestbeds'
   const roomName = window.query('room') || ''
   const scope = roomName === '' ? appContext : `${appContext}/${roomName}`
 
   const sm = window.query('sm') || 'true'
   const requiresStreamManager = !sm ? false : !(sm && sm === 'false')
   const ws = window.query('ws') || 'null'
-  const webSocketEndpointForLayouts = `wss://${ws}?type=cef&id=${cefId}`
+  const webSocketEndpointForLayouts = `wss://${ws}?testbed=grid&type=cef&id=${cefId}`
   const SUBSCRIBE_CONCURRENCY = window.query('subscribe-concurrency') || 5
   const SUBSCRIBE_RETRY_DELAY = window.query('subscribe-retry-delay') || 5000
-
 
   const placeholderImage = '../../css/assets/Red5Pro_logo_white_red.svg'
   const CHECK_FOR_TASKS_INTERVAL = 1000
@@ -95,7 +94,7 @@
     protocol: getSocketLocationFromProtocol().protocol,
     port: getSocketLocationFromProtocol().port,
     streamName: configuration.stream1,
-    app: requiresStreamManager ? configuration.proxy : scope,
+    app: scope,
     connectionParams: {
       host: configuration.host,
       app: scope,
@@ -142,12 +141,13 @@
     if (type === 'Subscribe.Start') {
       subscriber.getElementContainer().classList.remove('hidden')
       const streamName = subscriber.getStreamName()
-      const idx = currentStreamsToSubscribeToListForWorker.indexOf(streamName)
+      const idx = currentStreamsToSubscribeToListForWorker.indexOf(`/${streamName}`)
       if (idx >= 0) {
         currentStreamsToSubscribeToListForWorker.splice(idx, 1)
       }
       else {
-        console.warn(`Subscribe start received but stream ${streamName} not found in worker pool`)
+        console.log(`Subscribe start received but stream ${streamName} not found in worker pool`)
+        console.log(currentStreamsToSubscribeToListForWorker)
       }
     } else if (type === 'Subscribe.Fail' ||
       type === 'Subscribe.InvalidName' ||
@@ -182,7 +182,7 @@
         return
       }
 
-      let available = SUBSCRIBE_CONCURRENCY - currentStreamsToSubscribeToListForWorker
+      let available = SUBSCRIBE_CONCURRENCY - currentStreamsToSubscribeToListForWorker.length
       if (available > streamToSubscribeQueue.length) {
         available = streamToSubscribeQueue.length
       }
@@ -207,7 +207,7 @@
    *        A list of stream names.
    */
   const startSubscribers = (streamList) => {
-    console.log(`[mixer]:: Starting new subscribers from list: ${JSON.toString(streamList, null, 2)}`)
+    console.log(`[mixer]:: Starting new subscribers from list: ${JSON.stringify(streamList)}`)
     const subscribers = streamList.map(name => {
       let freeSlot = findNextAvailableSlot()
       let bl = new SubscriberBlock(name, freeSlot, SUBSCRIBE_RETRY_DELAY, utilizeSubscriberNotifications)
@@ -233,13 +233,13 @@
   const resizeSlots = () => {
     const width = window.innerWidth
     const height = window.innerHeight
-    console.log(`Screen dims = ${width}x${height}`)
+    // console.log(`Screen dims = ${ width }x${ height }`)
 
     let slotWidth
     let slotHeight
     const rows = parseInt(rowCount, 10)
     const cols = parseInt(colCount, 10)
-    console.log(rows + 'x' + cols)
+    //console.log(rows + 'x' + cols)
     if (width > height) {
       slotHeight = height / rows
       slotWidth = slotHeight
@@ -247,13 +247,6 @@
       slotWidth = width / rows
       slotHeight = slotWidth
     }
-    /* // 16:9 below.
-    const slotHeight = height / 3
-    // eslint-disable-next-line no-unused-vars
-    const slotWidth = (slotHeight*16) / 9
-    //    const slotWidth = width <= 640 ? width : width / 3
-    //    const slotHeight = (slotWidth*9) / 16
-    */
     slots.forEach(slot => {
       slot.style.width = `${slotWidth}px`
       slot.style.height = `${slotHeight}px`
@@ -285,21 +278,21 @@
    */
   const processCompositionUpdate = function (message) {
     if (Object.prototype.hasOwnProperty.call(message, 'add') && message.add.length > 0) {
-      const streamsToAdd = getNewStreamsToAdd(message)
+      const streamsToAdd = getNewStreamsToAdd(message.add)
       resizeGridIfNeeded(streamsToAdd.length)
       queueSubscribeStarts(streamsToAdd)
     }
 
     if (Object.prototype.hasOwnProperty.call(message, 'remove') && message.remove.length > 0) {
-      removeStreams(message)
+      removeStreams(message.remove)
     }
 
     if (Object.prototype.hasOwnProperty.call(message, 'mute') && message.mute.length > 0) {
-      muteStreams(message)
+      muteStreams(message.mute)
     }
 
     if (Object.prototype.hasOwnProperty.call(message, 'unmute') && message.unmute.length > 0) {
-      unmuteStreams(message)
+      unmuteStreams(message.unmute)
     }
   }
 
@@ -350,8 +343,7 @@
   /**
      * Mutes the specified streams in the composition.
      */
-  const muteStreams = function (message) {
-    const muteArray = message.mute
+  const muteStreams = function (muteArray) {
     for (let stream of muteArray) {
       if (activeSubscribers[stream]) {
         console.log('mute stream: ', stream)
@@ -366,8 +358,7 @@
   /**
    * Unmutes the specified streams from the composition.
    */
-  const unmuteStreams = function (message) {
-    const unmuteArray = message.unmute
+  const unmuteStreams = function (unmuteArray) {
     for (let stream of unmuteArray) {
       if (activeSubscribers[stream]) {
         console.log('unmute stream: ', stream)

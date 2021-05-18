@@ -176,6 +176,7 @@
      */
     respond(event) {
       if (event.type === 'Subscribe.Time.Update') return
+      console.log(this.subscriber)
       const id = this.subscriber ? this.subscriber.subscriptionId : 'UNKNOWN'
       const displayName = `${this.streamName}/${id}`
       console.log(`[subscriber:${displayName}] + ${event.type}`)

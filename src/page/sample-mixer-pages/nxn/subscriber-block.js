@@ -150,7 +150,7 @@
   function getRoomAndStreamFromStreamName(streamName) {
     let index = streamName.indexOf('/', 1)
     if (index < 0) {
-      return { 'room': '', 'stream': streamName }
+      return { 'room': '', 'stream': streamName.substring(1) }
     }
 
     index = streamName.lastIndexOf('/')

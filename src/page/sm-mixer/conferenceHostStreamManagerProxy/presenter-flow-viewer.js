@@ -67,7 +67,7 @@
     return appContext
   }
 
-  const wsEndpoint = secureConnection ? `wss://${ws}?room=${getConferenceRoomContext()}&host=${isHost}&mixer=${isMixer}&presenter=1` : `ws://${ws}?room=${getConferenceRoomContext()}&host=${isHost}&mixer=${isMixer}&presenter=1`
+  const wsEndpoint = secureConnection ? `wss://${ws}?testbed=conference&room=${getConferenceRoomContext()}&host=${isHost}&mixer=${isMixer}&presenter=1` : `ws://${ws}?room=${getConferenceRoomContext()}&host=${isHost}&mixer=${isMixer}&presenter=1`
 
   function getUserMediaConfiguration() {
     return {

@@ -27,13 +27,14 @@
   const rowCount = window.query('rows') || 2
 
   const cefId = window.query('cef-id') || 'default-mixer-id'
-  const appContext = window.query('app') || 'live'
+  const appContext = window.query('app') || 'mixertestbeds'
+  window.mixingLayer = window.query('layer') || 'top'
   const roomName = window.query('room') || ''
   const scope = roomName === '' ? appContext : `${appContext}/${roomName}`
   const sm = window.query('sm') || 'true'
   const requiresStreamManager = !sm ? false : !(sm && sm === 'false')
   const ws = window.query('ws') || 'null'
-  const webSocketEndpointForLayouts = `wss://${ws}?type=cef&id=${cefId}`
+  const webSocketEndpointForLayouts = `wss://${ws}?testbed=grid&type=cef&id=${cefId}`
   const red5ProHost = window.query('host') || configuration.host
 
   // Round Trip Authentication
@@ -89,7 +90,7 @@
     protocol: secureConnection ? 'wss' : 'ws',
     port: secureConnection ? '443' : 5080,
     streamName: configuration.stream1,
-    app: requiresStreamManager ? configuration.proxy : scope,
+    app: scope,
     connectionParams: {
       host: configuration.host,
       app: scope,
@@ -167,41 +168,12 @@
   }
 
   /**
-   * Parses layout update to swap in specific CSS file.
-   *
-   * @param {String} name
-   *        The CSS filename to swap in.
-  
-  const parseLayout = name => {
-    const elements = Array.from(document.querySelectorAll('[data-mixer]'))
-    const link = document.createElement('link')
-    link.setAttribute('data-mixer', 'css')
-    link.rel = 'stylesheet'
-    link.href = `css/${name}.css`
-  
-    // Try to replace any previous stylesheet for the page.
-    if (elements) {
-      const currentStyle = elements.filter(el => {
-        return el.dataset.mixer === 'css'
-      })
-      if (currentStyle.length > 0) {
-        const toSwap = currentStyle[0]
-        toSwap.previousSibling.after(link)
-        toSwap.parentNode.removeChild(toSwap)
-        return
-      }
-    }
-    // Else, just append to `head`.
-    document.getElementsByTagName('head')[0].appendChild(link)
-  }
-   */
-  /**
    * Resizes each slot on change to window dimensions.
    */
   const resizeSlots = () => {
     const width = window.innerWidth
     const height = window.innerHeight
-    console.log(`Screen dims = ${width}x${height}`)
+    //console.log(`Screen dims = ${width}x${height}`)
 
     let slotWidth
     let slotHeight
@@ -213,14 +185,7 @@
       slotWidth = width / rows
       slotHeight = slotWidth
     }
-    console.log(slots.length)
-    /* // 16:9 below.
-    const slotHeight = height / 3
-    // eslint-disable-next-line no-unused-vars
-    const slotWidth = (slotHeight*16) / 9
-    //    const slotWidth = width <= 640 ? width : width / 3
-    //    const slotHeight = (slotWidth*9) / 16
-    */
+    //console.log(slots.length)
     slots.forEach(slot => {
       slot.style.width = `${slotWidth}px`
       slot.style.height = `${slotHeight}px`

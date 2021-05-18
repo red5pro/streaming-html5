@@ -44,8 +44,9 @@
   }
 
   const appContext = configuration.app
+  const appName = getRoomName(appContext)
   const roomName = getRoomName(appContext)
-
+  const mixingPageSelector = document.getElementById('mixingPage-select')
   const PARTICIPANT_APPENDIX = '_r5participator'
 
   var usernameField = document.getElementById('username-field');
@@ -100,15 +101,13 @@
     return `${appContext}_wr`
   }
 
-  const waitingRoomWSEndpoint = isSecure ? `wss://${configuration.mixerBackendSocketField}?room=${getWaitingRoomContext()}&host=true` : `ws://${configuration.mixerBackendSocketField}?room=${getWaitingRoomContext()}&host=true`
-  const conferenceRoomWSEndpoint = isSecure ? `wss://${configuration.mixerBackendSocketField}?room=${getConferenceRoomContext()}&host=true` : `ws://${configuration.mixerBackendSocketField}?room=${getConferenceRoomContext()}&host=true`
+  const waitingRoomWSEndpoint = isSecure ? `wss://${configuration.mixerBackendSocketField}?testbed=conference&room=${getWaitingRoomContext()}&host=true` : `ws://${configuration.mixerBackendSocketField}?room=${getWaitingRoomContext()}&host=true`
+  const conferenceRoomWSEndpoint = isSecure ? `wss://${configuration.mixerBackendSocketField}?testbed=conference&room=${getConferenceRoomContext()}&host=true` : `ws://${configuration.mixerBackendSocketField}?room=${getConferenceRoomContext()}&host=true`
 
   document.getElementById('scope').value = appContext
   document.getElementById('streamName').value = roomName
   document.getElementById('conference-i-frame').src = `./presenter-flow-viewer.html?sm=true&host=${configuration.host}&app=${getAppName(appContext)}&room=${roomName}&role=moderator&ws=${configuration.mixerBackendSocketField}&smtoken=${configuration.streamManagerAccessToken}`
   document.getElementById('event').value = roomName
-  // todo fix
-  document.getElementById('mixingPage').value = `https://${configuration.host}/webrtcexamples/sample-mixer-pages/conference/?role=mixer&app=${getAppName(appContext)}&room=${roomName}&ws=${configuration.mixerBackendSocketField}&token=${Date.now()}&sm=true&smtoken=${configuration.streamManagerAccessToken}`
   const waitingRoomWall = document.querySelector('#waiting-room-wall')
   const selectBox = document.getElementById("event-name-select");
   const destroyCompositionButton = document.getElementById('destroy-composition-button')
@@ -155,6 +154,15 @@
   })
 
 
+  const getMixingPageFromSelector = (selection) => {
+    if (selection === 'focused') {
+      return `https://${configuration.host}/webrtcexamples/sample-mixer-pages/conference/?role=mixer&app=${getAppName(appContext)}&room=${roomName}&ws=${configuration.mixerBackendSocketField}&token=${Date.now()}&sm=true&smtoken=${configuration.streamManagerAccessToken}`
+    }
+    else {
+      return ``
+    }
+  }
+
   document.querySelector('#room-field').innerText = `${appContext}/${roomName}`
 
   let websocket
@@ -179,7 +187,6 @@
     const eventName = document.getElementById('event').value
     const digest = document.getElementById('digest').value
     const location = document.getElementById('location').value
-    const mixingPage = document.getElementById('mixingPage').value
     const path = document.getElementById('scope').value
     const streamName = document.getElementById('streamName').value
     const width = String(document.getElementById('width').value)
@@ -190,6 +197,7 @@
     const mixerName = uuidv4()
     const doForward = true
     const destinationMixerName = ""
+    let mixingPage = getMixingPageFromSelector(mixingPageSelector.options[mixingPageSelector.selectedIndex].value)
 
     if (!eventName || !digest || !mixingPage || !path || !streamName || !width || !height || !framerate || !bitrate) {
       alert(`At least one of eventName, digest, mixingPage, path, streamName, width, height, framerate or bitrate was not provided`)
@@ -230,7 +238,7 @@
     compositionEventName = eventName
     eventStateText.innerHTML = `State: Pending`
 
-    document.getElementById('create-composition-form').reset()
+    //document.getElementById('create-composition-form').reset()
 
     // return false to prevent the default form behavior
     return false;

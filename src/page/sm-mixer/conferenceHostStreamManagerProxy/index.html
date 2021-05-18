@@ -363,7 +363,7 @@
                     <span>To use this test, you must configure the Stream Manager token and set the webapp to
                         <em>mixertestbeds</em> in the <a href="../../index.html" target="_blank">Settings</a> page, and
                         publish to a room
-                        scope.</span>
+                        scope using a round trip authentication Stream Manager testbed.</span>
                 </p>
             </div>
         </div>
@@ -405,7 +405,9 @@
                     <label for="digest">Digest:</label><br>
                     <input type="text" id="digest" name="digest" value="password"><br>
                     <label for="mixingPage">Mixing Page:</label><br>
-                    <input type="text" id="mixingPage" name="mixingPage"><br>
+                    <select name="mixingPage" id="mixingPage-select">
+                        <option name="focused" selected>focused</option>
+                    </select><br>
                     <label for="scope">Scope:</label><br>
                     <input type="text" id="scope" name="scope" value="live"><br>
                     <label for="streamName">Stream Name:</label><br>

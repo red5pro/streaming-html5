@@ -33,7 +33,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     catch (e) {
       console.error('Could not read server settings from sessionstorage: ' + e.message);
     }
-    return {};
+    return {}
   })();
 
   var configuration = (function () {
@@ -76,10 +76,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   const resolutionField = document.querySelector('#resolution-field')
   const errorInfo = document.querySelector('.publisher-error')
 
-  var usernameField = document.getElementById('username-field');
-  var passwordField = document.getElementById('password-field');
-  var tokenField = document.getElementById('token-field');
-  var submitButton = document.getElementById('submit-button');
+  var usernameField = document.getElementById('username-field')
+  var passwordField = document.getElementById('password-field')
+  var tokenField = document.getElementById('token-field')
+  var submitButton = document.getElementById('submit-button')
 
   // Round Trip Authentication
   let username
@@ -776,7 +776,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   let localhostReg = /^localhost.*/
   const isIPOrLocalhost = ipReg.exec(websocketEndpoint) || localhostReg.exec(websocketEndpoint)
   let wsProtocol = isIPOrLocalhost ? 'ws' : 'wss'
-  const socketUrl = `${wsProtocol}://${websocketEndpoint}?room=${getConferenceRoomContext()}&host=true`
+  const socketUrl = `${wsProtocol}://${websocketEndpoint}?testbed=conference&room=${getConferenceRoomContext()}&host=true`
 
   const setUpStreamListSocket = (url) => {
     websocket = new WebSocket(url)

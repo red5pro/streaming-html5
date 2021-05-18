@@ -43,34 +43,8 @@
     return splits[0]
   }
 
+  const appName = getAppName(configuration.app)
   const roomName = getRoomName(configuration.app)
-  var usernameField = document.getElementById('username-field');
-  var passwordField = document.getElementById('password-field');
-  var tokenField = document.getElementById('token-field');
-  var submitButton = document.getElementById('submit-button');
-
-  // Round Trip Authentication
-  let username
-  let password
-  let token
-
-  submitButton.addEventListener('click', () => {
-    username = usernameField.value
-    password = passwordField.value
-    token = JSON.stringify({ token: tokenField.value, room: roomName })
-
-    baseConfig.connectionParams = {
-      ...baseConfig.connectionParams,
-      username,
-      password,
-      token
-    }
-
-    const loginForm = document.getElementById('login-form')
-    if (loginForm) {
-      loginForm.classList.add('hidden')
-    }
-  })
 
   var protocol = serverSettings.protocol;
   var isSecure = protocol === 'https';
@@ -92,8 +66,7 @@
   const red5ProHost = configuration.host
   const smToken = configuration.streamManagerAccessToken
 
-  const mixingPage = document.getElementById('mixingPage')
-  mixingPage.value = `https://${red5ProHost}/webrtcexamples/sample-mixer-pages/3x3/index.html?sm=true`
+  document.getElementById('streamName').value = configuration.stream1
 
   const createCompositionForm = document.getElementById('create-composition-form');
   if (createCompositionForm.attachEvent) {
@@ -122,6 +95,7 @@
   const mediaListContainer = document.querySelector('.media-list-container')
   const mixerContainer = document.querySelector('.mixer-container')
   let slots = mixerContainer.querySelectorAll('.box')
+  const mixingPageSelector = document.getElementById('mixingPage-select')
 
   mainContainer.style['max-width'] = window.innerWidth
 
@@ -142,7 +116,6 @@
   let switchableChannels = 0
 
 
-
   function getUserMediaConfiguration() {
     return {
       mediaConstraints: {
@@ -151,25 +124,6 @@
       }
     };
   }
-
-  var config = Object.assign({},
-    configuration,
-    defaultConfiguration,
-    getUserMediaConfiguration())
-
-  var baseConfig = Object.assign({}, config, {
-    protocol: getSocketLocationFromProtocol().protocol,
-    port: getSocketLocationFromProtocol().port,
-    streamName: configuration.stream1,
-    app: configuration.proxy,
-    connectionParams: {
-      host: configuration.host,
-      app: configuration.app,
-      username,
-      password,
-      token
-    }
-  })
 
   /**
    * Event listener for drag start on subscriber blocks.
@@ -206,42 +160,6 @@
     </div>
   </div>`
 
-  /**
-   * Generates the encapsulating DOM element for the mixer subscriber.
-   */
-  const generateMixerSubscriberDOM = (mixerObjs) => {
-    let index = 0
-    document.querySelectorAll('.box').forEach((parent) => {
-      const uid = Math.floor(Math.random() * 0x10000).toString(16)
-      const streamName = mixerObjs[index].name
-      const subId = [streamName, 'sub', uid].join('-')
-      const card = templateContent(subscriberTemplate, streamName)
-      parent.appendChild(card)
-      const videoId = subId
-      const videoElement = card.querySelector('.red5pro-subscriber')
-      const subscriberNameField = card.querySelector('.subscriber-name-field')
-      subscriberNameField.innerText = streamName
-      videoElement.id = videoId
-      card.id = [videoId, 'container'].join('-')
-      mixerObjs[index].subscriberId = subId
-      index++
-    })
-
-    return mixerObjs
-  }
-
-  /**
-   * Generates the template.
-   */
-  const templateContent = (templateHTML) => {
-    const box = document.querySelectorAll('.box').item(0)
-    const boxWidth = window.getComputedStyle(box).width
-    var div = document.createElement('div')
-    div.style.width = boxWidth
-    div.style.height = `${(parseInt(boxWidth.substring(0, boxWidth.indexOf('.'))) * 9) / 16}px`
-    div.innerHTML = templateHTML
-    return div
-  }
 
   /**
    * Event listener for drag out on subscriber blocks.
@@ -278,27 +196,8 @@
     const label = document.createTextNode(name)
     p.appendChild(label)
 
-    const divChannelAction = document.createElement('div')
-    divChannelAction.classList.add('channel-selection')
-    const input = document.createElement('input')
-    input.classList.add('channel-selection-input')
-    input.type = 'number'
-    input.value = 1
-    input.min = 1
-    input.max = 5
-    const button = document.createElement('button')
-    button.innerHTML = 'Add To Channel'
-    button.id = uid
-    button.classList.add('add-to-channel-button')
-    button.onclick = channelStateChange
-    divChannelAction.appendChild(button)
-    divChannelAction.appendChild(input)
-    if (switchableChannels == 0) {
-      divChannelAction.hidden = true
-    }
-
     item.appendChild(p)
-    item.appendChild(divChannelAction)
+    //item.appendChild(divChannelAction)
     item.dataset.name = name
     item.classList.add('media-list-item')
     item.draggable = true
@@ -562,69 +461,12 @@
       if (mixerContainer.children.length <= 0) {
         createMixerBoxes(mixerObj)
         resizeSlots()
-        //const mixerObjWithId = generateMixerSubscriberDOM(mixerObj)
-        //startMixerSubscribers(mixerObjWithId)
       }
 
       updateSlotStreams(mixers)
     }
   }
 
-  const getCompositionDataFromStreamManager = async function () {
-    try {
-      let payload
-      const url = `https://${red5ProHost}/streammanager/api/4.0/composition/${compositionEventName}?accessToken=${smToken}`
-      const response = await fetch(url)
-      if (response.headers.get('content-type') &&
-        response.headers.get('content-type').toLowerCase().indexOf('application/json') >= 0) {
-        payload = await response.json()
-      } else {
-        payload = await response.text()
-      }
-
-      let json = payload
-      if (typeof payload === 'string') {
-        json = JSON.parse(payload)
-      }
-      return json
-    } catch (e) {
-      console.error(e)
-      return {}
-    }
-  }
-
-  const startMixerSubscribers = async (mixerObjWithId) => {
-    const compositionData = await getCompositionDataFromStreamManager()
-    if (!compositionData.hasOwnProperty('mixers')) {
-      console.log('Mixers not found in composition data')
-      return
-    }
-    const mixers = compositionData.mixers
-    const mixerIdToAddress = {}
-    mixers.forEach(m => mixerIdToAddress[m.id] = m.serverAddress)
-    console.log(mixerIdToAddress)
-    mixerObjWithId.forEach(async (mixer) => {
-      doStartMixerSubscriber(mixer, mixerIdToAddress[mixer.id])
-    })
-  }
-
-  const doStartMixerSubscriber = async (mixer, mixerAddress) => {
-    let config = {
-      ...baseConfig, ...{
-        app: 'streammanager',
-        streamName: mixer.name,
-        mediaElementId: mixer.subscriberId
-      }
-    }
-
-    config.connectionParams = {
-      app: mixer.context,
-      streamName: mixer.name,
-      host: mixerAddress
-    }
-
-    subscribe(mixer.id, config)
-  }
 
   /*
   * Launch a mixer subscriber using the given configuration
@@ -795,17 +637,10 @@
       slotHeight = height / Math.ceil(COUNT / rows)
     }
 
-    console.log(`Screen ${width}x${height}`)
-    console.log('New slot width ' + slotWidth)
-    console.log('New slot height ' + slotHeight)
-    /* // 16:9 below.
-    const slotHeight = height / 3
-    const slotWidth = (slotHeight*16) / 9
-    //    const slotWidth = width <= 640 ? width : width / 3
-    //    const slotHeight = (slotWidth*9) / 16
-    */
+    //console.log(`Screen ${width}x${height}`)
+    //console.log('New slot width ' + slotWidth)
+    //console.log('New slot height ' + slotHeight)
     slots.forEach(slot => {
-      // slot.style.width = `${slotWidth}px`
       slot.style.height = `${slotHeight}px`
       const list = slot.querySelector('.list-holder')
       if (list) list.style.height = `${slotHeight - 20}px`
@@ -854,24 +689,38 @@
     }
   }
 
+  const getMixingPageFromSelector = (selection) => {
+    if (selection === '2x2') {
+      return `https://${red5ProHost}/webrtcexamples/sample-mixer-pages/2x2/index.html?sm=true&app=${appName}&ws=${websocketEndpoint}`
+    }
+    else if (selection === '3x3') {
+      return `https://${red5ProHost}/webrtcexamples/sample-mixer-pages/3x3/index.html?sm=true&app=${appName}&ws=${websocketEndpoint}`
+    }
+    else {
+      return `https://${red5ProHost}/webrtcexamples/sample-mixer-pages/nxn/index.html?sm=true&app=${appName}&ws=${websocketEndpoint}`
+    }
+
+  }
+
   let mixers = []
   function processCreateMixersForm(e) {
     if (e.preventDefault) e.preventDefault();
 
     const mixerName = document.getElementById('mixerName').value
-    const mixingPage = document.getElementById('mixingPage').value
+    //let mixingPage = document.getElementById('mixingPage').value
     const path = document.getElementById('scope').value
     const streamName = document.getElementById('streamName').value
     const width = String(document.getElementById('width').value)
     const height = String(document.getElementById('height').value)
     const framerate = document.getElementById('framerate').value
     const bitrate = document.getElementById('bitrate').value
-    const doForward = document.getElementById('doForward').checked
     const destinationMixerName = document.getElementById('destinationMixerName').value
+    const doForward = true
+    let mixingPage = getMixingPageFromSelector(mixingPageSelector.options[mixingPageSelector.selectedIndex].value)
 
-    if (!isStringAValidUrl(mixingPage)) {
-      alert(`The provided mixingPage ${mixingPage} is not a valid URL`)
-      return
+    // this will inform the page that it is the final layer so the page can adapt as needed  
+    if (mixers.length > 0 && destinationMixerName == "") {
+      mixingPage = `${mixingPage}&layer=final`
     }
 
     const mixerObj = {
@@ -982,10 +831,13 @@
     compositionEventName = eventName
     eventStateText.innerHTML = `State: Pending`
 
-    document.getElementById('create-composition-form').reset()
-    document.getElementById('create-mixers-form').reset()
+    //document.getElementById('create-composition-form').reset()
+    //document.getElementById('create-mixers-form').reset()
     mixers = []
     document.getElementById('mixers').innerHTML = ''
+    //mixingPage.value = `https://${red5ProHost}/webrtcexamples/sample-mixer-pages/3x3/index.html?sm=true&app=${appName}&ws=${websocketEndpoint}`
+    //document.getElementById('streamName').value = configuration.stream1
+
     // return false to prevent the default form behavior
     return false;
   }
@@ -1065,7 +917,7 @@
   resizeSlots()
   window.addEventListener('resize', resizeSlots, true)
   const uid = Math.floor(Math.random() * 0x10000).toString(16)
-  const webSocketEndpoint = `${baseWebSocketUrl}?type=manager&id=${uid}`
+  const webSocketEndpoint = `${baseWebSocketUrl}?testbed=grid&type=manager&id=${uid}`
   setUpWebSocket(webSocketEndpoint)
 
 
