@@ -29,7 +29,7 @@ Generate a certificate for the server to use.
 
 Start the Node.js server with the following command:
 ```sh
-sudo PORT=443 SM_TOKEN=<SM-API_token> SM_HOST=https://<Hostname-of-Stream-Manager> CERT=<path-to-fullchain.pem> KEY=<path-to-private-key.pem> forever start index.js 
+sudo PORT=443 REST_ADMIN_TOKEN=<token-configured-in-mixertestbeds-webapp> SM_TOKEN=<SM-API_token> SM_HOST=https://<Hostname-of-Stream-Manager> CERT=<path-to-fullchain.pem> KEY=<path-to-private-key.pem> forever start index.js 
 ```
 
 > By default, if `PORT` is not specified, the websocket server will run on `localhost:8001`.
