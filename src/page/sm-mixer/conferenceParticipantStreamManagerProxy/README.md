@@ -1,68 +1,31 @@
-# Playback VOD using Red5 Pro
-This is an example of Video On Demand (VOD) playback.
+# Stream Manager Proxy Conference Participant
 
-To view the recorded files available for VOD playback, view the listings from your server deploy in the webapp that the recorded stream was recorded to, such as the following:
+The streammanager WebRTC proxy is a communication layer built inside streammanager web application which allows it to act as a proxy gateway for webrtc publishers / subscribers. The target use case of this communication layer is to facilitate a secure browser client to be able to connect to a "unsecure" remote websocket endpoint for consuming WebRTC services offered by Red5pro. 
 
-* [http://localhost:5080/live/mediafiles](../../live/mediafiles)
-* [http://localhost:5080/live/playlists](../../live/playlists)
+Streammanager autoscaling works with dynamic nodes which are associated with dynamic IP addresses and cannot have a SSL attached to them. The proxy layer helps publishers to connect and initiate a WebRTC publish session from a `secure` (ssl enabled) domain to a `unsecure` Red5pro origin having using an IP address.
 
-### Example Code
-- **[index.html](index.html)**
-- **[index.js](index.js)**
 
-## How to Playback
-> Be sure to have previously recorded a broadcast using the [Publish Record Example](../publishRecord).
+**Please refer to the [Basic Publisher Documentation](../publish/README.md) to learn more about the basic setup.**
 
-1. Enter in a filename - including the extension - of a previously recorded broadcast.
-2. Click `playback file`.
+> In order to properly run the Stream Manager examples, you will need to configure you server for cluster infrastructure as described in the following documentation: [https://www.red5pro.com/docs/server/autoscale/](https://www.red5pro.com/docs/server/autoscale/).
 
-The playback format - either Flash or HLS - will be determined based on the extension with the following rules:
+> You also need to ensure that the stream manager proxy layer is `enabled`. The configuration section can be found in stream manager's config file - `red5-web.properties`
 
-| Extension | Format |
-| --- | --- |
-| `flv` | Flash/RTMP |
-| `mp4` | Flash/RTMP |
-| `m3u8` | HLS |
+`
+## WEBSOCKET PROXY SECTION
+proxy.enabled=false
+`
 
-## Specifying a file as playback in a Subscriber
-Playing back a VOD file using the Red5 Pro Subscriber is similar to streaming a live video. Some configuration attributes will be different depending on the playback target.
+## Conference Participant Testbed
+The testbed shows how to join a video conference that uses a Red5 Pro mixer to create a composition for the conference that is returned as a single video stream to conference participants along with a mix-minus audio track. The testbed includes two players: one shows the participant's published stream while the other the stream returned by the Mixer.
 
-### Flash/RTMP
-To playback a VOD in the RTMP-based Subscriber:
+The mixed stream returned to the participant is created and managed by a Conference Host using the [Conference Host Testbed](../conferenceHostStreamManagerProxy)
 
-* Set the `streamName` in the configuration to the filename, with the extension.
+The page starts by connecting to a [WebSocket server](../../../../backend-mixer-testbeds) and publishing into a waiting room using a `RTCPublisher`. The WebSocket server notifies any `Conference Host` connected to the same room that can add the participant to the conference. When a participant is added, its testbed is notified by the WebSocket server. As a result the participant joins the conference using the `RTCConferenceParticipant` publisher that publishes the participant's stream into the conference and receives back the mixed video from the mixer along with a set of mix-minus audio tracks. 
 
-With a configuration provided for the RTMP Subscriber:
-
-```js
-{
-  protocol: 'rtmp',
-  host: 'localhost',
-  port: 1935,
-  app: 'live',
-  streamName: 'thefiletoplay.flv'
-}
-```
-
-The Playback engine will connect to the server at `rtmp://localhost:1935/` and attempt to play back the `thefiletoplay.flv` file located in `<red5proserver>/webapps/live/streams`.
-
-### HLS
-To playback a VOD in the HLS-based Subscriber:
-
-* Set the `streamName` in the configuration to the filename, _without_ the extension.
-* Set the `port` in the configuration to that of the one the server is served on.
-
-With a configuration provided for the HLS Subscriber:
-
-```js
-{
-  protocol: 'http',
-  host: 'localhost',
-  port: 5080,
-  app: 'live',
-  streamName: 'thefiletoplay'
-}
-```
-
-The Playback engine will connect to the server at `http://localhost:5080/` and attempt to play back the `thefiletoplay.m3u8` file located in `<red5proserver>/webapps/live/streams`.
-
+The `Conference Participant` testbed can be used as follows:
+1. Open the `Red5 Pro Testbed Settings Page`, set Web App to `mixertestbeds/<room>`, where `<room>` is a room scope. In the same page, scroll to the `Mixer Specific` section and set the `Backend WebSocket For Compositions` endpoint to point to the [WebSocket server](../../../../backend-mixer-testbeds)
+2. Head to the `Conference Participant` testbed by clicking `Testbed Menu` -> `Stream Manager Mixer Tests` -> `Conference Participant`. 
+3. Provide a set of mock username, password and token and click Submit
+4. Click `Start Broadcast` to join the waiting room of the video conference for the room `<room>` configured in the `Settings` page.
+5. When the `Conference Host` in the same room adds the participant to the conference, the participant will receive back the mixed conference stream. See the [Conference Host Testbed](../conferenceHostStreamManagerProxy).

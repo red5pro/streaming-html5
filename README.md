@@ -319,6 +319,37 @@ To define the **Host** with the server instance's IP, click the _Host_ field f t
 | :-----
 | *An example of utilizing the screen sharing capabilities of* **Chrome** *and* **Firefox**. *For use with Publish Screen Share example.*
 
+
+### Mixer - Stream Manager Examples
+
+| **[Stream Manager Proxy Conference Participant](src/page/sm-mixer/conferenceParticipantStreamManagerProxy)**
+| :-----
+| *Demonstrates utilizing the Red5 Pro Stream Manager API to join a video conference with a single return stream.*
+
+| **[Stream Manager Proxy Conference Host](src/page/sm-mixer/conferenceHostStreamManagerProxy)**
+| :-----
+| *Demonstrates utilizing the Red5 Pro Stream Manager API to host and manage a video conference with a single return stream.*
+
+| **[Stream Manager Grid Composition Host](src/page/sm-mixer/gridMixerCompositionStreamManagerProxy)**
+| :-----
+| *Demonstrates utilizing the Red5 Pro Stream Manager API to create and manage a composition of several live streams into a single stream.*
+
+| **[Stream Manager 2x2 Grid Layout Example](src/page/sample-mixer-pages/2x2)**
+| :-----
+| *Demonstrates composing a set of live streams into a 2x2 grid that can be loaded into a Red5 Pro Mixer to create a composition with up to 4 streams.*
+
+| **[Stream Manager 3x3 Grid Layout Example](src/page/sample-mixer-pages/3x3)**
+| :-----
+| *Demonstrates composing a set of live streams into a 3x3 grid that can be loaded into a Red5 Pro Mixer to create a composition with up to 9 streams.*
+
+| **[Stream Manager NxN Grid Layout Example](src/page/sample-mixer-pages/nxn)**
+| :-----
+| *Demonstrates composing a set of live streams into a NxN grid that can automatically resize as new streams are added to it. The page can be loaded into a Red5 Pro Mixer to create a composition with many streams.*
+
+| **[Stream Manager Conference Layout](src/page/sample-mixer-pages/conference)**
+| :-----
+| *Demonstrates composing a set of live streams into a focused layout for a video conference where the presenter is highlighted. The page can be loaded into a Red5 Pro Mixer to create a video conference with a single return stream.*
+
 ## Notes
 
 1. For the Subscriber examples, you will need to have a live stream currently being published and named based on the *Stream 1 Name* field of the _Settings_. You can use another device to start streaming using this webapp, or you can also use a web browser to publish via Flash, [http://your_red5_pro_server_ip:5080/live](http://your_red5_pro_server_ip:5080/live).

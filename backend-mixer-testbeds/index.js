@@ -10,14 +10,15 @@ const gridCompositionBackend = require('./grid-composition-backend')
 let port = process.env.PORT || 8001
 const fs = require('fs');
 const streamManagerHost = process.env.SM_HOST || 'http://127.0.0.1:7000'
-
-let cert
-let key
+const certPath = process.env.CERT || '/etc/letsencrypt/live/a.b.c/fullchain.pem'
+const keyPath = process.env.KEY || '/etc/letsencrypt/live/a.b.c/privkey.pem'
 
 const useSSL = streamManagerHost != 'http://127.0.0.1:7000';
+let key
+let cert
 if (useSSL) {
-    cert = fs.readFileSync('/etc/letsencrypt/live/nex-118-test-azure-mixer.red5.net/fullchain.pem')
-    key = fs.readFileSync('/etc/letsencrypt/live/nex-118-test-azure-mixer.red5.net/privkey.pem')
+    cert = fs.readFileSync(certPath)
+    key = fs.readFileSync(keyPath)
     port = 443
 }
 
