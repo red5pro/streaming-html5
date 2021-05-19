@@ -91,12 +91,18 @@ app.post('/invalidateCredentials', function (request, response) {
     let username = request.body.username
     let password = request.body.password
     if (request.body.token) {
-        const authToken = JSON.parse(decodeURIComponent(request.body.token))
-        if (authToken.room) {
-            room = authToken.room
-        }
-        if (authToken.token) {
-            token = authToken.token
+        try {
+            console.log(decodeURIComponent(request.body.token))
+            const authToken = JSON.parse(decodeURIComponent(request.body.token))
+
+            if (authToken.room) {
+                room = authToken.room
+            }
+            if (authToken.token) {
+                token = authToken.token
+            }
+        } catch (error) {
+            console.log(error)
         }
     }
 
