@@ -39,8 +39,8 @@
   const appContext = configuration.app
   const roomName = getRoomName(appContext)
 
-  const role = window.getParamByName('role') || undefined
-  const host = window.getParamByName('host') || undefined
+  const role = window.query('role') || undefined
+  const host = window.query('host') || undefined
   const isHost = role === 'moderator'
   const isMixer = role === 'mixer'
   const requiresStreamManager = true
@@ -48,9 +48,9 @@
   const ws = configuration.mixerBackendSocketField
 
   // Round Trip Authentication
-  const username = window.getParamByName('username') || 'default-username'
-  const password = window.getParamByName('password') || 'default-password'
-  const token = JSON.stringify({ token: window.getParamByName('token') || 'default-token', room: appContext })
+  const username = window.query('username') || 'default-username'
+  const password = window.query('password') || 'default-password'
+  const token = JSON.stringify({ token: window.query('token') || 'default-token', room: appContext })
 
   const presenterContainer = document.querySelector('.presenter-container')
   const sectionContainer = document.querySelector('.section-container')

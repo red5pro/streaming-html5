@@ -342,12 +342,6 @@
             overflow-x: hidden;
         }
     </style>
-
-    <!--<link href="common.css" rel="stylesheet">
-    <link href="publisher.css" rel="stylesheet">
-    <link href="subscriber.css" rel="stylesheet">
-    <link href="conference.css" rel="stylesheet">-->
-    <script src="usage.js"></script>
     <link href="//unpkg.com/video.js@7.0.0/dist/video-js.css" rel="stylesheet">
     <script src="//unpkg.com/video.js@7.0.0/dist/video.min.js"></script>
 </head>
@@ -360,7 +354,8 @@
         <div class="ice-background">
             <div class="test-notification">
                 <p>
-                    <span>To use this test, you must configure the Stream Manager token and set the webapp to
+                    <span>To use this test, you must configure the Stream Manager token, backend WebSocket for
+                        compositions endpoint and set the webapp to
                         <em>mixertestbeds</em> in the <a href="../../index.html" target="_blank">Settings</a> page, and
                         publish to a room
                         scope using a round trip authentication Stream Manager testbed.</span>
@@ -438,7 +433,6 @@
         </div>
     </div>
     {{> body-scripts}}
-    <!--<script src="subscriber-block.js"></script>-->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/uuid/8.1.0/uuidv4.min.js"></script>
     <script src="../../script/red5pro-utils.js"></script>
     <script src="../../script/conference-subscriber-block.js"></script>

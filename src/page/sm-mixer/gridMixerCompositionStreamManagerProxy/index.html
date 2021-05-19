@@ -395,12 +395,6 @@
             background-color: #000;
         }
     </style>
-
-    <!--<link href="common.css" rel="stylesheet">
-    <link href="publisher.css" rel="stylesheet">
-    <link href="subscriber.css" rel="stylesheet">
-    <link href="conference.css" rel="stylesheet">-->
-    <script src="usage.js"></script>
     <link href="//unpkg.com/video.js@7.0.0/dist/video-js.css" rel="stylesheet">
     <script src="//unpkg.com/video.js@7.0.0/dist/video.min.js"></script>
 </head>
@@ -413,7 +407,8 @@
         <div class="ice-background">
             <div class="test-notification">
                 <p>
-                    <span>To use this test, you must set the webapp to <em>mixertestbeds</em> in the <a
+                    <span>To use this test, you must configure the backend WebSocket for
+                        compositions endpoint and set the webapp to <em>mixertestbeds</em> in the <a
                             href="../../index.html" target="_blank">Settings</a> page and publish a few streams with the
                         round trip authentication examples. The streams will appear in the active stream section.
                     </span>
@@ -491,23 +486,6 @@
                 </div>
                 <hr>
                 <div class="list-holder" data-list="stream-list-container"></div>
-                <!--<div>
-                    <h3>Switchable Channels</h3>
-                    <form id="create-channels-form">
-                        <button type="submit" id="submit-channels-form-button">Create Channels</button>
-                        <input type="number" min="1" max="5" id="channels" name="channels" value="1">
-                    </form>
-                    <br>
-                    <button disabled type="submit" id="destroy-channels-button" onclick="destroyChannels()">Destroy
-                        Channels</button>
-                    <br>
-                    <div>
-                        <br>
-                        <div class="channels-block" id="channels-container">
-                        </div>
-                    </div>
-
-                </div>-->
             </div>
 
             <div class="mixer-container " data-mixer-id="mixer1">
