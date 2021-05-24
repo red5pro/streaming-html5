@@ -1,5 +1,6 @@
 # Playback Controls API for Subscribers (Live Streaming & VOD)
-This document covers the Controls API and usage for Subscribers from the Red5 Pro HTML SDK. The Controls API supports both _Live Streaming_ and _Video On Demand (VOD)_ across the 3 supported playback platforms: `WebRTC`, `Flash/RTMP` and `HLS`.
+
+This document covers the Controls API and usage for Subscribers from the Red5 Pro WebRTC SDK. The Controls API supports both _Live Streaming_ and _Video On Demand (VOD)_ across the 3 supported playback platforms: `WebRTC` and `HLS`.
 
 * [Playback Controls](#playback-controls)
   * [Enabling](#enabling-the-controls)
@@ -15,10 +16,13 @@ This document covers the Controls API and usage for Subscribers from the Red5 Pr
 * [Creating Custom Playback Controls](#creating-custom-playback-controls)
 * [Creating Custom Controls UI](#creating-custom-controls-ui)
 
-# Playback Controls
-The Playback Controls of the Red5 Pro HTML SDK provide a cross-browser and unified look-and-feel for playback of streams across the supported platforms of `WebRTC`, `Flash/RMTP` and `HLS`.
+> **Note**: You are not required to use the Custom Playback Controls.
 
-By enabling the Red5 Pro HTML SDK Playback Controls, users have the ability to due the following during stream playback:
+# Playback Controls
+
+The Playback Controls of the Red5 Pro WebRTC SDK provide a cross-browser and unified look-and-feel for playback of streams across the supported platforms of `WebRTC` and `HLS`.
+
+By enabling the Red5 Pro WebRTC SDK Playback Controls, users have the ability to due the following during stream playback:
 
 * Pause and Resume the Stream
 * Mute and Unmute the Audio of the Stream
@@ -27,7 +31,7 @@ By enabling the Red5 Pro HTML SDK Playback Controls, users have the ability to d
 * Seek to Timeframe on VOD (Video on Demand)
 
 ## Enabling the Controls
-To turn on the custom Red5 Pro HTML SDK Playback Controls simply add the following to the target `video` or `audio` element that will play back the stream:
+To turn on the custom Red5 Pro WebRTC SDK Playback Controls simply add the following to the target `video` or `audio` element that will play back the stream:
 
 * `controls`
 * `class="red5pro-media"`
@@ -44,7 +48,7 @@ Internally, the SDK will read these attributes and override the default browser 
 The following describes the resource dependencies required to properly display the controls and support fullscreen mode.
 
 ### css
-In order to view the controls, the `red5pro-media.css` file included in the Red5 Pro HTML SDK distribution needs to be added as a resource to the page.
+In order to view the controls, the `red5pro-media.css` file included in the Red5 Pro WebRTC SDK distribution needs to be added as a resource to the page.
 
 Somewhere in the `head` tag, add the following:
 
@@ -82,7 +86,7 @@ The `controls`, `autoplay` and `muted` attributes are not unique to the Red5 Pro
 > [https://developer.mozilla.org/en-US/docs/Web/HTML/Element/video](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/video)
 
 # Playback Controls API
-The Red5 Pro HTML SDK Subscriber(s) have been updated to provide an API that interacts with stream playback. With the default Red5 Pro SDK Playback Controls enabled (as described in the (previous section)[Enabling the Controls]) - the controls interact with this API internally.
+The Red5 Pro WebRTC SDK Subscriber(s) have been updated to provide an API that interacts with stream playback. With the default Red5 Pro SDK Playback Controls enabled (as described in the (previous section)[Enabling the Controls]) - the controls interact with this API internally.
 
 The API is available to be interacted with as seen fit by the developer - and in the case if you, as a developer, want to create your own custom controls.
 
@@ -162,10 +166,10 @@ The following code and corresponding states are dispatched with this event:
 Please refer to section [Creating Custom Playback Controls](#creating-custom-playback-controls) to view an example of utilizing the [Playback Controls API](#playback-controls-api) and [Playback Events API](#playback-events-api) to provide custom playback controls.
 
 # Playback Controls UI
-The Red5 Pro HTML SDK Playback Controls are styled based on the provided `red5pro-media.css` file of the distribution.
+The Red5 Pro WebRTC SDK Playback Controls are styled based on the provided `red5pro-media.css` file of the distribution.
 
 ## Red5 Pro Media Container
-The `video` (or `audio`) declaration for a Red5 Pro Subscriber cannot have the Playback Controls UI placed within it. As such, the Red5 Pro HTML SDK detects if the `video` or `audio` element is wrapped by a container with a class declaration of `red5pro-media-container` and if non-existant, creates one and adds the `video` or `audio` element as a child.
+The `video` (or `audio`) declaration for a Red5 Pro Subscriber cannot have the Playback Controls UI placed within it. As such, the Red5 Pro WebRTC SDK detects if the `video` or `audio` element is wrapped by a container with a class declaration of `red5pro-media-container` and if non-existant, creates one and adds the `video` or `audio` element as a child.
 
 By having a `red5pro-media-container` element, the SDK can then add the Player Controls UI overlay on the `video` or `audio` element. If you would like to provide your own container:
 
@@ -176,7 +180,7 @@ By having a `red5pro-media-container` element, the SDK can then add the Player C
 ```
 
 ## Playback Controls Style Declarations
-The CSS Style Declaration from the `red5pro-media.css` file delivered with the Red5 Pro HTML SDK has the following declarations:
+The CSS Style Declaration from the `red5pro-media.css` file delivered with the Red5 Pro WebRTC SDK has the following declarations:
 
 | Declaration | Related Control | Description |
 | :--- | :--- | :--- |
@@ -206,7 +210,7 @@ The CSS Style Declaration from the `red5pro-media.css` file delivered with the R
 > These declarations can be changed with any other styling to match the look-and-feel of your brand. Please refer to [Creating Custom Controls UI](#creating-custom-controls-ui) for an example.
 
 # Creating Custom Playback Controls
-The following example demonstrates how to utilize the [Playback Controls API](#playback-controls-api) and [Playback Events API](#playback-events-api) to provide custom controls and not those provide as default from the Red5 Pro HTML SDK:
+The following example demonstrates how to utilize the [Playback Controls API](#playback-controls-api) and [Playback Events API](#playback-events-api) to provide custom controls and not those provide as default from the Red5 Pro WebRTC SDK:
 
 ```html
 <!doctype html>
@@ -280,23 +284,14 @@ The following example demonstrates how to utilize the [Playback Controls API](#p
             protocol: 'ws',
             port: 5080
           });
-          var rtmpConfig = Object.assign({}, config, {
-            protocol: 'rtmp',
-            port: 1935,
-            backgroundColor: "#000000",
-            swf: '../lib/red5pro/red5pro-subscriber.swf',
-            swfobjectURL: '../lib/swfobject/swfobject.js',
-            productInstallURL: '../lib/swfobject/playerProductInstall.swf'
-          });
           var hlsConfig = Object.assign({}, config, {
             protocol: 'http',
             port: '5080'
           });
           var sub = new red5pro.Red5ProSubscriber()
-          sub.setPlaybackOrder(['rtc', 'rtmp', 'hls'])
+          sub.setPlaybackOrder(['rtc', 'hls'])
             .init({
               rtc: rtcConfig,
-              rtmp: rtmpConfig,
               hls: hlsConfig
             })
             .then(function(subscriberImpl) {
