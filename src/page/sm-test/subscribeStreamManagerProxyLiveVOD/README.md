@@ -2,7 +2,7 @@
 
 This is an example of being able to seek to a specific time within a live stream. It uses Fragmented MP4 (a.k.a. FMP4) to save `ts` files on a server that are appended to a `m3u8` and loaded and played back within a `video` container utilizing the [HLS.JS](https://github.com/video-dev/hls.js/) library.
 
-**Please refer to the [Basic Subscriber Documentation](../subscribe/README.md) to learn more about the basic setup.**
+**Please refer to the [Basic Subscriber Documentation](../subscribeStreamManagerProxy/README.md) to learn more about the basic setup.**
 
 ## Example Code
 - **[index.html](index.html)**
