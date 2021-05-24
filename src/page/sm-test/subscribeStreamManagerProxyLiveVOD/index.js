@@ -127,6 +127,60 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     console.log('[Red5ProSubsriber] Unsubscribe Complete.');
   }
 
+  function getRegionIfDefined () {
+    const region = configuration.streamManagerRegion;
+    if (typeof region === 'string' && region.length > 0 && region !== 'undefined') {
+      return region;
+    }
+    return undefined
+  }
+
+  function requestEdge (configuration) {
+    const host = configuration.host;
+    const app = configuration.app;
+    const port = serverSettings.httpport;
+    const baseUrl = protocol + '://' + host + ':' + port;
+    const streamName = configuration.stream1;
+    const apiVersion = configuration.streamManagerAPI || '4.0';
+    const region = getRegionIfDefined();
+    let url = baseUrl + '/streammanager/api/' + apiVersion + '/event/' + app + '/' + streamName + '?action=subscribe';
+    if (region) {
+      url += '&region=' + region;
+    }
+    return new Promise(function (resolve, reject) {
+        fetch(url)
+          .then(function (res) {
+            if(res.status == 200){
+                if (res.headers.get("content-type") && res.headers.get("content-type").toLowerCase().indexOf("application/json") >= 0) {
+                    return res.json();
+                } else {
+                    throw new TypeError('Could not properly parse response.');
+                }
+            } else {
+              let msg = "";
+              if(res.status == 400) {
+                msg = "An invalid request was detected";
+              } else if(res.status == 404) {
+                msg = "Data for the request could not be located/provided.";
+              } else if(res.status == 500) {
+                msg = "Improper server state error was detected.";
+              } else {
+                msg = "Unknown error";
+              }
+              throw new TypeError(msg);
+            }
+          })
+          .then(function (json) {
+            resolve(json);
+          })
+          .catch(function (error) {
+            const jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
+            console.error('[SubscribeStreamManagerTest] :: Error - Could not request Edge IP from Stream Manager. ' + jsonError)
+            reject(error)
+          });
+    });
+  }
+
   function getAuthenticationParams () {
     const auth = configuration.authentication;
     return auth && auth.enabled
@@ -155,22 +209,30 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
   }
 
-  // Define tech spefific configurations for each failover item.
+  // Define tech specific configurations for each failover item.
   const config = {...configuration,
     ...defaultConfiguration,
     ...getAuthenticationParams(),
     ... {
     streamName: configuration.stream1
   }}
-  const rtcConfig = {...config, ...{
+  let rtcConfig = {...config, ...{
     protocol: getSocketLocationFromProtocol().protocol,
     port: getSocketLocationFromProtocol().port,
     subscriptionId: 'subscriber-' + instanceId,
     enableLiveSeek: true
   }}
 
-  const subscribe = async () => {
+  const subscribe = async (serverAddress, scope) => {
     try {
+      const connParams = rtcConfig.connectionParams || {}
+      rtcConfig = {...rtcConfig, ...{
+        app: configuration.proxy,
+        connectionParams: {...connParams, ...{
+          host: serverAddress,
+          app: scope
+        }}
+      }}
       subscriber = await new red5prosdk.RTCSubscriber().init(rtcConfig)
       subscriber.on('*', onSubscriberEvent)
       streamTitle.innerText = configuration.stream1
@@ -198,8 +260,36 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   window.addEventListener('pagehide', shutdown)
   window.addEventListener('beforeunload', shutdown)
 
+  var retryCount = 0;
+  var retryLimit = 3;
+  function respondToEdge (response) {
+    const {
+      scope,
+      serverAddress
+    } = response
+    subscribe(serverAddress, scope)
+  }
+
+  function respondToEdgeFailure (error) {
+    if (retryCount++ < retryLimit) {
+      var retryTimer = setTimeout(function () {
+        clearTimeout(retryTimer);
+        startup();
+      }, 1000);
+    }
+    else {
+      var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
+      console.error('[Red5ProSubscriber] :: Retry timeout in subscribing - ' + jsonError);
+    }
+  }
+
   // Start
-  subscribe()
+  function startup () {
+    requestEdge(rtcConfig)
+      .then(respondToEdge)
+      .catch(respondToEdgeFailure);
+  }
+  startup()
 
 })(this, document, window.red5prosdk)
 
