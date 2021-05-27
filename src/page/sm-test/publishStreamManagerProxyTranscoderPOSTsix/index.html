@@ -1,0 +1,136 @@
+<!doctype html>
+{{> license}}
+<html>
+  <head>
+    {{> meta title='Publish Stream Manager Transcode Proxy Test'}}
+    {{> header-scripts}}
+    {{> header-stylesheets}}
+    <style>
+      .quality-container {
+        text-align: center;
+        background-color: #dbdbdb;
+        color: #3b3b3b;
+        max-width: 1024px;
+        margin: 20px auto 0 auto;
+        line-height: 1.5em;
+      }
+      .quality-subheader {
+        padding: 20px;
+      }
+      .quality-select {
+        height: 1.5rem;
+        font-size: 1rem;
+      }
+      .quality-hr {
+        max-width: 480px;
+        margin: 20px auto;
+      }
+      .settings-section {
+        max-width: 1024px;
+        width: 100%;
+        margin: 0 auto;
+      }
+      .settings-area {
+        background-color: #dbdbdb;
+      }
+      .settings-field {
+        display: flex;
+        align-items: center;
+        flex-direction: row;
+      }
+      .settings-field, .settings-field > input {
+        font-size: 1em;
+      }
+      .settings-field > input {
+        width: 40%;
+        padding-left: 10px;
+      }
+      .info-title {
+        padding: 20px 0;
+      }
+      .paddedHR {
+        margin: 0!important;
+      }
+      .form-container {
+        padding: 20px 0 0 0;
+        text-align: center;
+      }
+      .transcoder-form-container {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-evenly;
+        padding: 20px 0;
+      }
+      @media (max-width:767px) {
+        .transcoder-form-container {
+          flex-direction: column;
+        }
+      }
+      @media (max-width: 510px) {
+        .settings-field {
+          flex-direction: column;
+        }
+        .settings-field.settings-collapsable > input {
+          width: 100%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    {{> top-bar }}
+    {{> navigation isTestPage=true }}
+    <div id="app">
+      {{> settings-link}}
+      <div class="ice-background">
+        <div class="test-notification">
+          <p>In order to properly run the Stream Manager examples, you will need to configure your environment with the autoscaling infrastructure as described in the following documentation:</p>
+    <p><a href="https://www.red5pro.com/docs/autoscale/" target="_blank">https://www.red5pro.com/docs/autoscale/</a></p>
+          <br>
+          <p>Additionally to use this example stream manager proxy gateway should be enabled.</p>
+          <br>
+          <p>All resolutions should have the same aspect ratio, otherwise your stream will be skewed.</p>
+        </div>
+      </div>
+      {{> test-info testTitle='Publish SM Transcode Proxy Test'}}
+      <div class="settings-section">
+        <div class="settings-area">
+          <div class="form-container">
+            <p>Use this form to post your ABR Provisions:</p>
+            <div class="transcoder-form-container">
+              {{> transcoder-form id="transcoder-high1" category="High1" width="1280" height="720" bitrate="3000000"}}
+              {{> transcoder-form id="transcoder-high2" category="High2" width="960" height="640" bitrate="1500000"}}
+              {{> transcoder-form id="transcoder-mid1" category="Mid1" width="640" height="360" bitrate="1000000"}}
+              {{> transcoder-form id="transcoder-mid2" category="Mid2" width="480" height="320" bitrate="750000"}}
+              {{> transcoder-form id="transcoder-low1" category="Low1" width="360" height="180" bitrate="500000"}}
+              {{> transcoder-form id="transcoder-low2" category="Low2" width="240" height="160" bitrate="300000"}}
+            </div>
+            <p>
+            <button id="submit-button" class="ui-button">Submit</button>
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="stream-section">
+        <div id="quality-container" class="hidden quality-container">
+          <p class="quality-subheader">
+            Choose which high quality for publishing:
+            <select id="quality-select" class="quality-select">
+              <option value="1" selected>High_1</option>
+            </select>
+          </p>
+          <button id="quality-submit" class="ui-button">Start Publishing</button>
+        </div>
+        {{> status-field-publisher}}
+        {{> statistics-field packets_field='Packets Sent'}}
+        <div class="centered"><p id="address-field" class="address-field">Transcoder Address: N/A</p></div>
+        <div class="centered">
+          <video id="red5pro-publisher" class="red5pro-publisher"
+                 controls autoplay muted playsinline>
+          </video>
+        </div>
+      </div>
+    </div>
+    {{> body-scripts}}
+    <script src="index.js"></script>
+  </body>
+</html>
