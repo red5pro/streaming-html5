@@ -11,30 +11,68 @@ Streammanager autoscaling works with dynamic nodes which are associated with dyn
 
 > You also need to ensure that the stream manager proxy layer is `enabled`. The configuration section can be found in stream manager's config file - `red5-web.properties`
 
-`
+```
 ## WEBSOCKET PROXY SECTION
 proxy.enabled=false
-`
+```
 
 ## Conference Host Testbed
 The testbed shows how to create a video conference that uses a Red5 Pro mixer to create a composition for the conference that is returned as a single video stream to conference participants along with a mix-minus audio track. The page includes a form to create a composition, a section to manage participants in a waiting room and a section to see and manage participants that are part of the video conference. 
 
-The page loads the [Conference Layout](../../sample-mixer-pages/conference) into the Red5 Pro Mixer to create the composition and interfaces with a [WebSocket server](../../../../backend-mixer-testbeds) to dynamically update the composition as participants are added or removed, or the presenter is changed.
+A Mixer based video conference requires:
+* A HTML5 page for the Mixer
+* A Front-end for the Host
+* A Front-end for the Participants
 
-The compositions are created using the [Composition Stream Manager API](todo link does not exist yet)
+## HTML5 page for the Mixer
+The HTML5 page for the Mixer is responsible for subscribing to the conference participant's streams that will be shown in the composite stream. The composite stream is returned to participants to allow them to see the other participants and it can be consumed by third parties to watch the whole conference.
 
+The Red5 Pro testbeds provide a sample [Conference Layout](../../sample-mixer-pages/conference) page for this purpose. The page shows the focused presenter on the top row and the other participants in the bottom row. 
 
-Before using the testbed create a conference participant as follows:
-1. Open the `Red5 Pro Testbed Settings Page`, set `Web App` to `mixertestbeds/<room>`, where `<room>` is a room scope. In the same page, scroll to the `Mixer Specific` section and set the `Backend WebSocket For Compositions` endpoint to point to the [WebSocket server](../../../../backend-mixer-testbeds)
-2. Head to the `Conference Participant` testbed by clicking `Testbed Menu` -> `Stream Manager Mixer Tests` -> `Conference Participant`. 
-3. Provide a set of mock username, password and token and click Submit
-4. Click `Start Broadcast` to join the waiting room of the video conference for the room `<room>` configured in the `Settings` page.
+## Front-end for the Participants 
+The Red5 Pro testbeds provides a sample `Conference Participant - Stream Manager Proxy` page. It allows to publish a stream to the waiting room of a conference and receive back a composite stream and mix-minus audio once added to the conference. 
 
-Use the `Conference Host` testbed as follows:
-1. Open the `Red5 Pro Testbed Settings Page`, set `Web App` to `mixertestbeds/<room>`, where `<room>` is the same room scope used above. In the same page, scroll to the `Mixer Specific` section and set the `Backend WebSocket For Compositions` endpoint to point to the [WebSocket server](../../../../backend-mixer-testbeds)
-2. Head to the `Conference Host` testbed by clicking `Testbed Menu` -> `Stream Manager Mixer Tests` -> `Conference Host`. 
-3. Create a mixer object using the `Create Mixer Objects` form. The form is pre-configured, but special attention must be paid to the `Mixer Region` field that must specify the region where the Red5 Pro Mixers are currently deployed.
-4. Click `Create Composition` and scroll up to the `Active Composition` section where the state of the newly created composition will be shown. 
-5. Wait until the composition `State` becomes `Composing`.
-6. The right hand side section of the testbed will include the stream previously published that is in the waiting room. Use the buttons on its player to the stream to the conference. The UI will update and show the conference streams in the center of the page. 
-7. Once the stream is added to the conference, the conference participant will receive back the mixed stream created by the mixer and a mix-minus audio track. 
+The page includes:
+* A form to submit the Round Trip Authentication credentials
+* A small player on the right for the published stream
+* A larger player on the left for the composite stream
+
+As a Participant join a video conference as follows:
+1. Open the `Red5 Pro Testbed Settings Page`, set `Web App` to `mixertestbeds/<room>`, where `<room>` is a room scope. A room scope is always required when creating a mixed conference.
+2. While on the `Settings Page`, scroll to the `Mixer Specific` section and set the `Backend WebSocket For Compositions` endpoint to point to the Node.js Server deployed as Back-end for the Mixer testbeds. 
+3. Head to the `Conference Participant` testbed by clicking `Testbed Menu` -> `Stream Manager Mixer Tests` -> `Conference Participant`. 
+4. Provide a set of mock username, password and token and click `Submit`
+5. Click `Start Broadcast` to join the waiting room of the video conference for the room `<room>` configured in the `Settings` page.
+6. As soon as the `Conference Host` adds the participant to the conference, the composite stream will appear in the player on the left. Continue to the next section to see how to create a conference as a Host and add Participants to it. 
+
+## Front-end for the Host
+The Red5 Pro testbeds provide a sample `Conference Host - Stream Manager Proxy` page. It allows a Host to create a mixed video conference with a Red5 Pro Mixer that loads a HTML5 page that subscribes to the Participant's streams. 
+
+The page includes:
+* A form to submit the Round Trip Authentication credentials
+* A form on the left to create the composition
+* A section on the right to manage participants in a waiting room
+* A central section to see and manage participants that are part of the video conference and composite stream. 
+
+As a Host create a video conference as follows:
+1. Open the `Red5 Pro Testbed Settings Page`, set `Web App` to `mixertestbeds/<room>`, where `<room>` is the same room scope used above. 
+2. While on the `Settings Page`, scroll to the `Mixer Specific` section and set the `Backend WebSocket For Compositions` endpoint to point to the Node.js Server deployed as Back-end for the Mixer testbeds. 
+3. Head to the `Conference Host` testbed by clicking `Testbed Menu` -> `Stream Manager Mixer Tests` -> `Conference Host`. 
+4. Set a random username, password and token, and click `Submit`. These are required to be able to subscribe to the live streams.
+5. The right hand side section of the testbed will display the streams in the waiting room that were published by the Conference Participants. 
+6. Create the composition using the `Create Composition` form. The form is pre-configured, but special attention must be paid to the `Mixer Region` field that must specify the region where the Red5 Pro Mixers are currently deployed. The other parameters are as follows:
+    * Event Name: Unique event name or UUID.
+    * Digest: String with the password that the Mixer will use for the Round Trip Authentication when publishing its *composite* stream. 
+    * Mixing Page: Selector for the HTML5 page to load in the Mixer. The testbed allows selecting only the `focused` page that points to the sample `Conference Layout` page.
+    * Scope: app and room name where the *composite* stream is published by the mixer. 
+    * Stream Name: stream name of the *composite* stream that will be published by the mixer. **Note:** The mixer of a conference must always publish its composite stream to `<app>/<room>/<room>`. That is, Stream Name must be equal to the value of `<room>`.  
+    * Width: Width of the *composite* stream that will be published by the mixer
+    * Height: height of the *composite* stream that will be published by the mixer
+    * Framerate: framerate of the *composite* stream that will be published by the mixer
+    * Bitrate: bitrate (in kbps) of the *composite* stream that will be published by the mixer
+    * Mixer Region: Name of the region where the Mixer servers are deployed. 
+7. Click `Create Composition` and scroll up to the `Active Composition` section where the state of the newly created composition will be shown. 
+8. Wait until the composition `State` becomes `Composing`.
+9. Click on the `add to conference` button of one of the waiting room streams and verify it is moved to the central section of the page. That indicates the stream was added to the composition. 
+10. Use the `Subscribe - Stream Manager Proxy RoundTrip Authentication` to subscribe to the composed stream published by the Mixer `<app>/<room>/<room>` to verify it includes the new Participant. 
+11. Interact with the `make presenter` and `remove from conference` buttons to verify the focused presenter and list of Participants changes in the `Conference Host` testbed and composite stream. 

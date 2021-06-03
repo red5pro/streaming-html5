@@ -11,10 +11,11 @@ Streammanager autoscaling works with dynamic nodes which are associated with dyn
 
 > You also need to ensure that the stream manager proxy layer is `enabled`. The configuration section can be found in stream manager's config file - `red5-web.properties`
 
-`
+
+```
 ## WEBSOCKET PROXY SECTION
 proxy.enabled=false
-`
+```
 
 ## Conference Participant Testbed
 The testbed shows how to join a video conference that uses a Red5 Pro mixer to create a composition for the conference that is returned as a single video stream to conference participants along with a mix-minus audio track. The testbed includes two players: one shows the participant's published stream while the other the stream returned by the Mixer.
@@ -29,3 +30,4 @@ The `Conference Participant` testbed can be used as follows:
 3. Provide a set of mock username, password and token and click Submit
 4. Click `Start Broadcast` to join the waiting room of the video conference for the room `<room>` configured in the `Settings` page.
 5. When the `Conference Host` in the same room adds the participant to the conference, the participant will receive back the mixed conference stream. See the [Conference Host Testbed](../conferenceHostStreamManagerProxy).
+

@@ -7,8 +7,7 @@ The page supports three layouts for the compositions:
 2. [3x3 Grid](../../sample-mixer-pages/3x3): A 3x3 grid that can compose up to 9 streams
 3. [NxN Grid](../../sample-mixer-pages/nxn): A NxN grid that can compose several streams and resize as the streams are added to it.
 
-Additionally, the 3x3 and 2x2 grids can be used together to create compositions of compositions. See [compositions of compositions](todo link does not exist yet).
-
+Additionally, the 3x3 and 2x2 grids can be used together to create compositions of compositions. 
 
 Before using the testbed publish one or more live streams as follows:
 1. Open the `Red5 Pro Testbed Settings Page`, set Web App to `mixertestbeds`. In the same page, scroll to the Mixer Specific section and set the `Backend WebSocket For Compositions` endpoint to point to the [WebSocket server](../../../../backend-mixer-testbeds)
