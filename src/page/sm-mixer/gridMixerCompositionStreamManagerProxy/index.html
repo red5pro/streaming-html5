@@ -394,6 +394,49 @@
             margin: 0;
             background-color: #000;
         }
+
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            border-bottom: 1px dotted black;
+        }
+
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 120px;
+            background-color: #555;
+            color: #fff;
+            text-align: center;
+            padding: 5px 0;
+            border-radius: 6px;
+
+            /* tooltip text position*/
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -60px;
+
+            /* Fade */
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .tooltip .tooltiptext::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #555 transparent transparent transparent;
+        }
+
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
     </style>
     <link href="//unpkg.com/video.js@7.0.0/dist/video-js.css" rel="stylesheet">
     <script src="//unpkg.com/video.js@7.0.0/dist/video.min.js"></script>
@@ -436,28 +479,56 @@
                     <br>
                     <h4>Create Mixer Objects:</h4>
                     <br>
-                    <label for="mixerName">Mixer Name:</label><br>
-                    <input type="text" id="mixerName" name="mixerName" value="1"><br>
-                    <label for="mixingPage">Mixing Page:</label><br>
-                    <select name="mixingPage" id="mixingPage-select">
-                        <option name="2x2">2x2</option>
-                        <option name="3x3">3x3</option>
-                        <option name="NxN">NxN</option>
-                    </select><br>
-                    <label for="scope">Scope:</label><br>
-                    <input type="text" id="scope" name="scope" value="mixertestbeds"><br>
-                    <label for="streamName">Stream Name:</label><br>
-                    <input type="text" id="streamName" name="streamName" value=""><br>
-                    <label for="width">Width:</label><br>
-                    <input type="number" id="width" name="width" value="1280"><br>
-                    <label for="height">Height:</label><br>
-                    <input type="number" id="height" name="height" value="720"><br>
-                    <label for="framerate">Framerate:</label><br>
-                    <input type="number" id="framerate" name="framerate" value="30"><br>
-                    <label for="bitrate">Bitrate:</label><br>
-                    <input type="number" id="bitrate" name="bitrate" value="1500"><br>
-                    <label for="destinationMixerName">Destination Mixer Name:</label><br>
-                    <input type="text" id="destinationMixerName" name="destinationMixerName"><br>
+                    <div class="tooltip">
+                        <span class="tooltiptext">Unique name for the Mixer</span>
+                        <label for="mixerName">Mixer Name:</label><br>
+                        <input type="text" id="mixerName" name="mixerName" value="1"><br>
+                    </div>
+                    <div class="tooltip">
+                        <span class="tooltiptext">Page to load into the Mixer</span>
+                        <label for="mixingPage">Mixing Page:</label><br>
+                        <select name="mixingPage" id="mixingPage-select">
+                            <option name="2x2">2x2</option>
+                            <option name="3x3">3x3</option>
+                            <option name="NxN">NxN</option>
+                        </select><br>
+                    </div>
+                    <div class="tooltip">
+                        <span class="tooltiptext">App and room scope of the composite stream</span>
+                        <label for="scope">Scope:</label><br>
+                        <input type="text" id="scope" name="scope" value="mixertestbeds"><br>
+                    </div>
+                    <div class="tooltip">
+                        <span class="tooltiptext">Stream Name of the composite stream</span>
+                        <label for="streamName">Stream Name:</label><br>
+                        <input type="text" id="streamName" name="streamName" value=""><br>
+                    </div>
+                    <div class="tooltip">
+                        <span class="tooltiptext">Width of the composite stream</span>
+                        <label for="width">Width:</label><br>
+                        <input type="number" id="width" name="width" value="1280"><br>
+                    </div>
+                    <div class="tooltip">
+                        <span class="tooltiptext">Height of the composite stream</span>
+                        <label for="height">Height:</label><br>
+                        <input type="number" id="height" name="height" value="720"><br>
+                    </div>
+                    <div class="tooltip">
+                        <span class="tooltiptext">Framerate of the composite stream</span>
+                        <label for="framerate">Framerate:</label><br>
+                        <input type="number" id="framerate" name="framerate" value="30"><br>
+                    </div>
+                    <div class="tooltip">
+                        <span class="tooltiptext">Bitrate of the composite stream</span>
+                        <label for="bitrate">Bitrate:</label><br>
+                        <input type="number" id="bitrate" name="bitrate" value="1500"><br>
+                    </div>
+                    <div class="tooltip">
+                        <span class="tooltiptext">Mixer Name to publish to, or leave empty to publish to the Red5 Pro
+                            Cluster</span>
+                        <label for="destinationMixerName">Destination Mixer Name:</label><br>
+                        <input type="text" id="destinationMixerName" name="destinationMixerName"><br>
+                    </div>
                     <br>
                     <button type="submit">Add Mixer</button>
                 </form>
@@ -468,14 +539,26 @@
                 </div>
                 <br>
                 <form id="create-composition-form">
-                    <label for="event">Event Name:</label><br>
-                    <input type="text" id="event" name="event" value="event1"><br>
-                    <label for="digest">Digest:</label><br>
-                    <input type="text" id="digest" name="digest" value="password"><br>
-                    <label for="transcodeComposition">Transcode Composition:</label><br>
-                    <input type="checkbox" id="transcodeComposition" name="transcodeComposition"><br>
-                    <label for="location">Mixer Region:</label><br>
-                    <input type="text" id="location" value="eastus"><br>
+                    <div class="tooltip">
+                        <span class="tooltiptext">Unique event name</span>
+                        <label for="event">Event Name:</label><br>
+                        <input type="text" id="event" name="event" value="event1"><br>
+                    </div>
+                    <div class="tooltip">
+                        <span class="tooltiptext">Mixer password for Round Trip Authentication</span>
+                        <label for="digest">Digest:</label><br>
+                        <input type="text" id="digest" name="digest" value="password"><br>
+                    </div>
+                    <div class="tooltip">
+                        <span class="tooltiptext">Check to transcode the composite stream</span>
+                        <label for="transcodeComposition">Transcode Composition:</label><br>
+                        <input type="checkbox" id="transcodeComposition" name="transcodeComposition"><br>
+                    </div>
+                    <div class="tooltip">
+                        <span class="tooltiptext">Region where the Mixer is deployed</span>
+                        <label for="location">Mixer Region:</label><br>
+                        <input type="text" id="location" value="eastus"><br>
+                    </div>
                     <br>
                     <button type="submit">Create Composition</button>
                 </form>
