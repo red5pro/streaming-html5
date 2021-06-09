@@ -45,17 +45,24 @@ module.exports = {
     },
 
     registerPublishedStream: (room, streamName) => {
+        const guid = `${room}/${streamName}`
         room = room === "" ? "/" : `/${room}`
 
-        if (!activeStreams[room]) {
-            activeStreams[room] = []
+        if ((!activeStreams[room] || activeStreams[room].indexOf(streamName) === -1)) {
+            console.log(`Grid: add stream: ${guid} to active streams list`)
+            if (!activeStreams[room]) {
+                activeStreams[room] = []
+            }
+            activeStreams[room].push(streamName)
         }
-        activeStreams[room].push(streamName)
-        console.log(`Stream ${streamName} is live in room ${room}`)
+
         Object.keys(managerSockets).forEach((key) => postActiveStreams(managerSockets[key]))
+
+        console.log(activeStreams)
     },
 
     unregisterUnpublishedStream: (room, streamName) => {
+        console.log(`Grid: remove stream: ${room}/${streamName} from active streams list`)
         room = room === "" ? "/" : `/${room}`
         const streamsInRoom = activeStreams[room]
         if (streamsInRoom) {
@@ -72,7 +79,7 @@ module.exports = {
             }
         }
 
-        console.log('Active streams: ', activeStreams)
+        console.log('Grid: active streams: ', activeStreams)
     }
 }
 

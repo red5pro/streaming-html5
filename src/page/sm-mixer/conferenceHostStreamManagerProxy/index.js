@@ -46,9 +46,12 @@
   const appContext = configuration.app
   const appName = getRoomName(appContext)
   const roomName = getRoomName(appContext)
+  let iFramesrc = `./presenter-flow-viewer.html?sm=true&host=${configuration.host}&app=${getAppName(appContext)}&room=${roomName}&role=moderator&ws=${configuration.mixerBackendSocketField}&smtoken=${configuration.streamManagerAccessToken}`
   const mixingPageSelector = document.getElementById('mixingPage-select')
   const PARTICIPANT_APPENDIX = '_r5participator'
 
+  const isAuthEnabled = configuration.mixerAuthenticationEnabled
+  var authenticationForm = document.getElementById('login-form')
   var usernameField = document.getElementById('username-field');
   var passwordField = document.getElementById('password-field');
   var tokenField = document.getElementById('token-field');
@@ -62,7 +65,7 @@
   submitButton.addEventListener('click', () => {
     username = usernameField.value
     password = passwordField.value
-    token = JSON.stringify({ token: tokenField.value, room: `${appContext}_wr` })
+    token = tokenField.value
 
     rtcConfig.connectionParams = {
       ...rtcConfig.connectionParams,
@@ -76,6 +79,10 @@
       loginForm.classList.add('hidden')
     }
 
+    iFramesrc = `${iFramesrc}&username=${username}&password=${password}&token=${token}`
+    document.getElementById('conference-i-frame').src = iFramesrc
+
+    console.log('connect to socket- auth params submitted')
     setUpWaitingRoomWebSocket(waitingRoomWSEndpoint)
     setUpConferenceRoomWebSocket(conferenceRoomWSEndpoint)
   })
@@ -106,7 +113,6 @@
 
   document.getElementById('scope').value = appContext
   document.getElementById('streamName').value = roomName
-  document.getElementById('conference-i-frame').src = `./presenter-flow-viewer.html?sm=true&host=${configuration.host}&app=${getAppName(appContext)}&room=${roomName}&role=moderator&ws=${configuration.mixerBackendSocketField}&smtoken=${configuration.streamManagerAccessToken}`
   document.getElementById('event').value = roomName
   const waitingRoomWall = document.querySelector('#waiting-room-wall')
   const selectBox = document.getElementById("event-name-select");
@@ -146,10 +152,7 @@
     app: getWaitingRoomContext(),
     connectionParams: {
       host: configuration.host,
-      app: getWaitingRoomContext(),
-      username,
-      password,
-      token
+      app: getWaitingRoomContext()
     }
   })
 
@@ -263,6 +266,15 @@
   const startSubscribers = (streamList) => {
     console.log(`[waitingroom]:: Starting new subscribers from list: ${streamList.join(',')}`)
     const subscribers = streamList.map(name => new SubscriberBlock(name, waitingRoomWall))
+    if (isAuthEnabled) {
+      rtcConfig.connectionParams = {
+        ...rtcConfig.connectionParams,
+        username,
+        password,
+        token
+      }
+    }
+
     // Create linked-list and start subscribing.
     subscribers.forEach((sub, index) => {
       decorateSubscriberForModeration(sub)
@@ -318,22 +330,22 @@
     const addLabel = document.createTextNode('add to conference')
     const exclusionButton = document.createElement('button')
     const exclusionLabel = document.createTextNode('exclude')
-    bar.classList.add('subscriber-moderation-field')
-    addButton.appendChild(addLabel)
     exclusionButton.classList.add('subscriber-exclusion-button')
     exclusionButton.appendChild(exclusionLabel)
+    bar.classList.add('subscriber-moderation-field')
+    addButton.appendChild(addLabel)
     bar.appendChild(addButton)
     bar.appendChild(exclusionButton)
     subscriber.getElementContainer().appendChild(bar)
-    exclusionButton.addEventListener('click', () => {
-      const streamName = devariantStreamName(subscriber.getStreamName())
-      // Note [TODO]:: streamName is now the top level GUID if transcoding.
-      onModeratorExcludeStream(rtcConfig.connectionParams.app, streamName)
-    })
     addButton.addEventListener('click', () => {
       const streamName = devariantStreamName(subscriber.getStreamName())
       // Note [TODO]:: streamName is now the top level GUID if transcoding.
       onModeratorAddConferenceStream(getConferenceRoomContext(), streamName)
+    })
+    exclusionButton.addEventListener('click', () => {
+      const streamName = devariantStreamName(subscriber.getStreamName())
+      // Note [TODO]:: streamName is now the top level GUID if transcoding.
+      onModeratorExcludeStream(rtcConfig.connectionParams.app, streamName)
     })
   }
 
@@ -623,6 +635,18 @@
         console.warn(e)
       }
     }
+  }
+
+  // Main 
+
+  if (isAuthEnabled) {
+    authenticationForm.classList.remove('hidden')
+  }
+  else {
+    console.log('connect to socket- auth not enabled')
+    document.getElementById('conference-i-frame').src = iFramesrc
+    setUpWaitingRoomWebSocket(waitingRoomWSEndpoint)
+    setUpConferenceRoomWebSocket(conferenceRoomWSEndpoint)
   }
 
 })(window, window.red5prosdk, window.SubscriberBlock)

@@ -148,9 +148,11 @@
       <h2 class="centered">Mixer Specific</h2>
       <p class="settings-field settings-collapsable">
         <label class="settings-label">Backend WebSocket For Compositions:</label>
-        <!--todo fix-->
         <input id="backend-composition-field" name="backend-composition-field" value="<mixer-mock-url>"
           placeholder="e.g., mydomain.com">
+        <label class="settings-label">Enable Round Trip Authentication:</label>
+        <input type="checkbox" id="enable-mixer-authentication-field" name="enable-mixer-authentication-field"
+          unchecked>
       </p>
       <hr class="paddedHR" />
       <p class="settings-field">
@@ -219,6 +221,7 @@
       var smRegionField = document.getElementById('sm-region-field');
       var smAccessField = document.getElementById('sm-access-field');
       var mixerBackendSocketField = document.getElementById('backend-composition-field');
+      var mixerAuthenticationEnabledField = document.getElementById('enable-mixer-authentication-field');
       var smAPIField = document.getElementById('sm-api-field');
       var authEnabledField = document.getElementById('auth-enabled-field');
       var authUsernameField = document.getElementById('auth-username-field');
@@ -368,6 +371,11 @@
         seal(configuration);
       });
 
+      mixerAuthenticationEnabledField.addEventListener('change', function () {
+        configuration.mixerAuthenticationEnabled = mixerAuthenticationEnabledField.checked;
+        seal(configuration);
+      });
+
       smRegionField.addEventListener('blur', function () {
         configuration.streamManagerRegion = smRegionField.value;
         seal(configuration);
@@ -409,6 +417,8 @@
         authUsernameField.value = config.authentication.username;
         authPasswordField.value = config.authentication.password;
         authUsernameField.disabled = authPasswordField.disabled = !authEnabledField.checked;
+        mixerBackendSocketField.value = config.mixerBackendSocketField;
+        mixerAuthenticationEnabledField.checked = config.mixerAuthenticationEnabled ? config.mixerAuthenticationEnabled : false
 
         function selectFieldFromConfiguration(value, selectElem) {
           var i = selectElem.childNodes.length;

@@ -32,47 +32,67 @@ app.use(function (req, res, next) {
     next();
 })
 
-app.post('*', function (request, response, next) {
-    if (!request.body || !request.body.username || !request.body.password || !request.body.token) {
-        const error = 'Username, password or token not found in POST request'
-        console.log(error)
-        request.status(400).send(error)
-        return
+// webhooks from live app
+app.post('/webhook', function (request, response) {
+    console.log('\nWebhook Call');
+    console.log(request.body);
+    /* expected body
+       {
+           "event":"stream-published"|"stream-unpublished",
+           "guid":"<app>/<room-1>/../<room-n>/<stream-name>"
+       }
+    */
+
+    if (!request.body.event || !request.body.guid) {
+        console.log(`Webhook call must include event and guid fields`)
+        return response.status(400).send()
     }
 
-    next();
-})
+    const {
+        context,
+        streamName
+    } = getContextAndStreamNames(request.body.guid)
+    const event = request.body.event
+    if (event === 'stream-published') {
+        conferenceBackend.registerPublishedStream(context, streamName)
+        gridCompositionBackend.registerPublishedStream(context, streamName)
+    }
+    else if (event === 'stream-unpublished') {
+        conferenceBackend.unregisterUnpublishedStream(context, streamName)
+        gridCompositionBackend.unregisterUnpublishedStream(context, streamName)
+    }
+    else {
+        console.log(`Unknown event: ${JSON.stringify(request.body)}`)
+    }
+
+    // response for valid request
+    response.status(200).send({ "result": true });
+
+    // response for invalid request
+    //response.status(400).send({"result":false});
+});
+
+const getContextAndStreamNames = (guid) => {
+    "<app>/<room-1>/../<room-n>/<stream-name>"
+    const splits = guid.split('/')
+    const streamName = splits[splits.length - 1]
+    splits.splice(splits.length - 1, 1)
+    const context = splits.join('/')
+    return {
+        context, streamName
+    }
+}
 
 // RTA authenticate credentials
 app.post('/validateCredentials', function (request, response) {
-    console.log('\nValidate call');
-    console.log(request.body);
+    console.log('\nValidate call')
+    console.log(request.body)
 
-    let room = ""
-    let token = ""
-    let username = request.body.username
-    let password = request.body.password
-    if (request.body.token) {
-        try {
-            console.log(decodeURIComponent(request.body.token))
-            const authToken = JSON.parse(decodeURIComponent(request.body.token))
-
-            if (authToken.room) {
-                room = authToken.room
-            }
-            if (authToken.token) {
-                token = authToken.token
-            }
-        } catch (error) {
-            console.log(error)
-        }
-    }
-
-    let streamName = request.body.streamID
-    let userType = request.body.type
-    if (userType === "publisher") {
-        conferenceBackend.registerPublishedStream(room, streamName, { username, password, token })
-        gridCompositionBackend.registerPublishedStream(room, streamName)
+    if (!request.body || !request.body.username || !request.body.password || !request.body.token) {
+        const error = 'Username, password or token not found in POST request'
+        console.log(error)
+        response.status(400).send(error)
+        return
     }
 
     // response for valid request
@@ -84,32 +104,15 @@ app.post('/validateCredentials', function (request, response) {
 
 // RTA invalidate credentials
 app.post('/invalidateCredentials', function (request, response) {
-    console.log('\nInvalidate call');
-    console.log(request.body);
+    console.log('\nInvalidate call')
+    console.log(request.body)
 
-    let room = ""
-    let token = ""
-    let username = request.body.username
-    let password = request.body.password
-    if (request.body.token) {
-        try {
-            console.log(decodeURIComponent(request.body.token))
-            const authToken = JSON.parse(decodeURIComponent(request.body.token))
-
-            if (authToken.room) {
-                room = authToken.room
-            }
-            if (authToken.token) {
-                token = authToken.token
-            }
-        } catch (error) {
-            console.log(error)
-        }
+    if (!request.body || !request.body.username || !request.body.password || !request.body.token) {
+        const error = 'Username, password or token not found in POST request'
+        console.log(error)
+        response.status(400).send(error)
+        return
     }
-
-    let streamName = request.body.streamID
-    conferenceBackend.unregisterUnpublishedStream(room, streamName)
-    gridCompositionBackend.unregisterUnpublishedStream(room, streamName)
 
     // response for valid request
     response.status(200).send({ "result": true });

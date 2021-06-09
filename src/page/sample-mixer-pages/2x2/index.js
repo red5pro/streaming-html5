@@ -27,7 +27,7 @@
   const rowCount = window.query('rows') || 2
 
   const cefId = window.query('cef-id') || 'default-mixer-id'
-  const appContext = window.query('app') || 'mixertestbeds'
+  const appContext = window.query('app') || 'live'
   window.mixingLayer = window.query('layer') || 'top'
   const roomName = window.query('room') || ''
   const scope = roomName === '' ? appContext : `${appContext}/${roomName}`

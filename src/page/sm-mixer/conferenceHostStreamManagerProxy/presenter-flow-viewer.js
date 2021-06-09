@@ -48,9 +48,10 @@
   const ws = configuration.mixerBackendSocketField
 
   // Round Trip Authentication
+  const isAuthEnabled = configuration.mixerAuthenticationEnabled
   const username = window.query('username') || 'default-username'
   const password = window.query('password') || 'default-password'
-  const token = JSON.stringify({ token: window.query('token') || 'default-token', room: appContext })
+  const token = window.query('token') || 'default-token'
 
   const presenterContainer = document.querySelector('.presenter-container')
   const sectionContainer = document.querySelector('.section-container')
@@ -96,12 +97,22 @@
     app: getConferenceRoomContext(),
     connectionParams: {
       host: configuration.host,
-      app: getConferenceRoomContext(),
+      app: getConferenceRoomContext()
+    }
+  })
+
+  if (isAuthEnabled) {
+    const connectionParams = {
       username,
       password,
       token
     }
-  })
+
+    baseConfig.connectionParams = {
+      ...baseConfig.connectionParams,
+      ...connectionParams
+    }
+  }
 
   let provision = {
     guid: undefined,
@@ -274,22 +285,17 @@
     var removeLabel = document.createTextNode('remove from conference')
     var swapButton = document.createElement('button')
     var swapLabel = document.createTextNode('make presenter')
-    var exclusionButton = document.createElement('button')
-    var exclusionLabel = document.createTextNode('ban')
+    const exclusionButton = document.createElement('button')
+    const exclusionLabel = document.createTextNode('ban')
+    exclusionButton.classList.add('subscriber-exclusion-button')
+    exclusionButton.appendChild(exclusionLabel)
     bar.classList.add('subscriber-moderation-field')
     removeButton.appendChild(removeLabel)
     swapButton.appendChild(swapLabel)
-    exclusionButton.classList.add('subscriber-exclusion-button')
-    exclusionButton.appendChild(exclusionLabel)
     bar.appendChild(swapButton)
     bar.appendChild(removeButton)
     bar.appendChild(exclusionButton)
     subscriber.getElementContainer().appendChild(bar)
-    exclusionButton.addEventListener('click', () => {
-      const streamName = devariantStreamName(subscriber.getStreamName())
-      // Note [TODO]:: streamName is now the top level GUID if transcoding.
-      onModeratorExcludeStream(getConferenceRoomContext(), streamName)
-    })
     removeButton.addEventListener('click', () => {
       const streamName = devariantStreamName(subscriber.getStreamName())
       // Note [TODO]:: streamName is now the top level GUID if transcoding.
@@ -298,6 +304,11 @@
     swapButton.addEventListener('click', () => {
       const streamName = devariantStreamName(subscriber.getStreamName())
       onModeratorSwapPresenterStream(baseConfig.app, streamName)
+    })
+    exclusionButton.addEventListener('click', () => {
+      const streamName = devariantStreamName(subscriber.getStreamName())
+      // Note [TODO]:: streamName is now the top level GUID if transcoding.
+      onModeratorExcludeStream(getConferenceRoomContext(), streamName)
     })
   }
 
