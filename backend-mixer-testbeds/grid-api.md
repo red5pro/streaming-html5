@@ -55,7 +55,7 @@ The Editor page sends this message to create a composition. The server calls the
       "mixerName": "1",
       "mixingPage": "http://localhost:5080/client/editor/editor.html?ws=localhost:8000",
       "streamName": "stream1",
-      "path": "mixertestbeds",
+      "path": "live",
       "width": "1280",
       "height": "720",
       "framerate": "30",

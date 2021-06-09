@@ -8,7 +8,7 @@ WebSocket API used by the [Conference Layout](../src/page/sample-mixer-pages/con
 The initial websocket connection is expecting a `room` parameter which specifies the `<webapp>/<room name>` that the WebSocket wants to connect to and listen for updates for exclusion and stream lists, e.g.,:
 
 ```sh
-ws://localhost:8001?testbed=conference&room=mixertestbeds/room1&host=true&mixer=true
+ws://localhost:8001?testbed=conference&room=live/room1&host=true&mixer=true
 ```
 
 > If `host=true` or `mixer=true` is provided, the WebSocket connection will also be notified of change to Conference Stream List. This is due to the `host` being able to orchestrates layout mixes for single streams and the `mixer` reacting to it.
@@ -20,7 +20,7 @@ The following payloads are expected from a WebSocket client with regards to addi
 ```js
 {
   "type": "exclude",
-  "room": "mixertestbeds/room1",
+  "room": "live/room1",
   "streamName": "stream1"
 }
 ```
@@ -33,7 +33,7 @@ The following payloads are expected from a WebSocket client with regards to addi
 ```js
 {
   "type": "promote",
-  "room": "mixertestbeds/room1",
+  "room": "live/room1",
   "streamName": "stream1"
 }
 ```
@@ -46,7 +46,7 @@ The following payloads are expected from a WebSocket client with regards to addi
 ```js
 {
   "type": "demote",
-  "room": "mixertestbeds/room1",
+  "room": "live/room1",
   "streamName": "stream1"
 }
 ```
@@ -60,7 +60,7 @@ The following payloads are expected from a WebSocket client with regards to addi
 ```js
 {
   "type": "presenter",
-  "room": "mixertestbeds/room1",
+  "room": "live/room1",
   "streamName": "stream1"
 }
 ```
@@ -73,7 +73,7 @@ The following payloads are expected from a WebSocket client with regards to addi
 ```js
 {
   "type": "order",
-  "room": "mixertestbeds/room1",
+  "room": "live/room1",
   "order": 3,
   "streamName": "stream1"
 }
@@ -92,7 +92,7 @@ The following payloads are expected from a Host WebSocket client with regards to
 ```js
 {
   "type": "createComposition",
-  "context": "mixertestbeds/room1",
+  "context": "live/room1",
   "event": "composition1",
   "transcodeComposition": "true|false", 
   "name": "room1", 
@@ -106,7 +106,7 @@ The following payloads are expected from a Host WebSocket client with regards to
 }
 ```
 * `type` - is `createComposition`
-* `context` - is the context where the output stream will be published, for example `mixertestbeds/room1`
+* `context` - is the context where the output stream will be published, for example `live/room1`
 * `event` - is the unique event name for the composition
 * `transcodeComposition` - is `true|false` depending on whether the composition needs to be transcoded or not
 * `name` - is the name of the composed stream published by the Mixer
@@ -145,7 +145,7 @@ The following payloads are sent to connected WebSocket clients as stream listing
 ```js
 {
   type: 'active',
-  room: 'mixertestbeds/room1',
+  room: 'live/room1',
   screenshareName: 'stream1_screenshare',
   streams: ['stream1', 'stream2']
 }
@@ -161,7 +161,7 @@ The following payloads are sent to connected WebSocket clients as stream listing
 ```js
 {
   type: 'excluded',
-  room: 'mixertestbeds/room1',
+  room: 'live/room1',
   streams: ['stream1', 'stream2']
 }
 ```
@@ -175,7 +175,7 @@ The following payloads are sent to connected WebSocket clients as stream listing
 ```js
 {
   type: 'conference',
-  room: 'mixertestbeds/room1',
+  room: 'live/room1',
   presenter: 'stream1',
   streams: ['stream1', 'stream2']
 }
@@ -193,7 +193,7 @@ The server sends this message every time the list of active compositions is upda
   "type": "activeCompositions",
 	"list": [
 		{
-			"context": "mixertestbeds/room1",
+			"context": "live/room1",
 			"event": "composition1", 
 			"name": "room1",
 			"mixers": [
@@ -213,7 +213,7 @@ The server sends this message every time the list of active compositions is upda
 ```
 * `type` - is `activeCompositions`
 * `list` - is an array of compositions
-* `context` - is the context where the output stream of that composition is published, for example `mixertestbeds/room1`
+* `context` - is the context where the output stream of that composition is published, for example `live/room1`
 * `event` - is the unique event name for the composition
 * `name` - is the name of the composed stream published by the output Mixer 
 * `mixers` - is the array of mixers of that composition 

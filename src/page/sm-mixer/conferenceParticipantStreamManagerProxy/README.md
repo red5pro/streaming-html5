@@ -25,9 +25,9 @@ The mixed stream returned to the participant is created and managed by a Confere
 The page starts by connecting to a [WebSocket server](../../../../backend-mixer-testbeds) and publishing into a waiting room using a `RTCPublisher`. The WebSocket server notifies any `Conference Host` connected to the same room that can add the participant to the conference. When a participant is added, its testbed is notified by the WebSocket server. As a result the participant joins the conference using the `RTCConferenceParticipant` publisher that publishes the participant's stream into the conference and receives back the mixed video from the mixer along with a set of mix-minus audio tracks. 
 
 The `Conference Participant` testbed can be used as follows:
-1. Open the `Red5 Pro Testbed Settings Page`, set Web App to `mixertestbeds/<room>`, where `<room>` is a room scope. In the same page, scroll to the `Mixer Specific` section and set the `Backend WebSocket For Compositions` endpoint to point to the [WebSocket server](../../../../backend-mixer-testbeds)
-2. Head to the `Conference Participant` testbed by clicking `Testbed Menu` -> `Stream Manager Mixer Tests` -> `Conference Participant`. 
-3. Provide a set of mock username, password and token and click Submit
-4. Click `Start Broadcast` to join the waiting room of the video conference for the room `<room>` configured in the `Settings` page.
-5. When the `Conference Host` in the same room adds the participant to the conference, the participant will receive back the mixed conference stream. See the [Conference Host Testbed](../conferenceHostStreamManagerProxy).
-
+1. Open the `Red5 Pro Testbed Settings Page`, set Web App to `live/<room>`, where `<room>` is a room scope. In the same page, scroll to the `Mixer Specific` section and set the `Backend WebSocket For Compositions` endpoint to point to the [WebSocket server](../../../../backend-mixer-testbeds)
+2. While on the `Mixer Specific` section, check `Enable Round Trip Authentication` if the Round Trip Authentication was configured in the `live` app.
+3. Head to the `Conference Participant` testbed by clicking `Testbed Menu` -> `Stream Manager Mixer Tests` -> `Conference Participant`. 
+4. If `Enable Round Trip Authentication` was checked at step 3, provide a set of mock username, password and token and click Submit
+5. Click `Start Broadcast` to join the waiting room of the video conference for the room `<room>` configured in the `Settings` page.
+6. When the `Conference Host` in the same room adds the participant to the conference, the participant will receive back the mixed conference stream. See the [Conference Host Testbed](../conferenceHostStreamManagerProxy).
