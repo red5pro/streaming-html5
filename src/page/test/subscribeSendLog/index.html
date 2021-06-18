@@ -1,0 +1,60 @@
+<!doctype html>
+{{> license}}
+<html>
+  <head>
+    {{> meta title='Subscriber Send Log'}}
+    {{> header-scripts}}
+    {{> header-stylesheets}}
+    <style>
+      .stream-section {
+        position: relative;
+      }
+      .callout {
+        position: absolute;
+        padding: 5px;
+        background-color: #dbdbdb;
+        top: 140px;
+        left: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    {{> top-bar }}
+    {{> navigation isTestPage=true }}
+    <div id="app">
+      {{> settings-link}}
+      {{> test-info testTitle='Subscriber Send Log'}}
+      <div class="stream-section">
+        {{> status-field-subscriber}}
+        {{> statistics-field packets_field='Packets Received'}}
+        <div class="centered">
+          <video id="red5pro-subscriber"
+                  controls autoplay playsinline
+                  class="red5pro-subscriber red5pro-media red5pro-media-background"
+                  width="640" height="480">
+          </video>
+        </div>
+        <div class="settings-area">
+          <p class="settings-field settings-collapsable">
+            <label class="settings-label" for="level-input">Level:</label>
+            <select id="level-input" name="level-input">
+              <option value="trace">TRACE</option>
+              <option value="debug" selected>DEBUG</option>
+              <option value="info">INFO</option>
+              <option value="warn">WARN</option>
+              <option value="error">ERROR</option>
+            </select>
+          </p>
+          <p class="settings-field settings-collapsable">
+            <label class="settings-label" for="message-input">Message:</label>
+            <input id="message-input" name="message-input" type="text" placeholder="Send Message..."></input>
+          </p>
+          <p><button class="ui-button" id="send-button">Click to send a log to the server.</button></p>
+        </div>
+      </div>
+    </div>
+    {{> body-scripts}}
+    {{> mobile-subscriber-util}}
+    <script src="index.js"></script>
+  </body>
+</html>
