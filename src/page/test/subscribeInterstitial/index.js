@@ -105,31 +105,41 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 	}
 	
 	sendButton.addEventListener('click', async function (event) {
-		postInterstitialRest(JSON.stringify({
-						  "user": "foo",
-						  "digest": "bar",
-						  "inserts": [
-							{
-							  "id": 1,
-							  "target": target.value,
-							  "interstitial": interstitial.value,
-							  "loop": isLoop.checked,
-							  "type": durationControlType.value,
-							  "isInterstitialAudio": switchAudio.checked,
-							  "isInterstitialVideo": switchVideo.checked,
-							  "start": start.value,
-							  "duration": duration.value
-							}
-						  ]
-						}));
+		if (!target.value) {
+			alert("Target stream GUID is required but missing.");
+		} else if (!interstitial.value) {
+			alert("Interstitial stream GUID is required but missing.");
+		} else {
+			postInterstitialRest(JSON.stringify({
+							  "user": "foo",
+							  "digest": "bar",
+							  "inserts": [
+								{
+								  "id": 1,
+								  "target": target.value,
+								  "interstitial": interstitial.value,
+								  "loop": isLoop.checked,
+								  "type": durationControlType.value,
+								  "isInterstitialAudio": switchAudio.checked,
+								  "isInterstitialVideo": switchVideo.checked,
+								  "start": start.value,
+								  "duration": duration.value
+								}
+							  ]
+							}));
+		}
 	});
 
 	resumeButton.addEventListener('click', async function (event) {
-		postInterstitialRest(JSON.stringify({
-						  "user": "foo",
-						  "digest": "bar",
-						  "resume": target.value
-						}));
+		if (!target.value) {
+			alert("Target stream GUID is required but missing.");
+		} else {
+			postInterstitialRest(JSON.stringify({
+							  "user": "foo",
+							  "digest": "bar",
+							  "resume": target.value
+							}));
+		}
 	});
 	
 	// XXX /interstitial
