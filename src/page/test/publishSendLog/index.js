@@ -55,7 +55,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var streamTitle = document.getElementById('stream-title');
   var sendButton = document.getElementById('send-button');
   var messageInput = document.getElementById('message-input');
-  var levelInput = document.getElementById('level-input');
   var statisticsField = document.getElementById('statistics-field');
   var bitrateField = document.getElementById('bitrate-field');
   var packetsField = document.getElementById('packets-field');
@@ -88,7 +87,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   sendButton.addEventListener('click', function () {
     if (targetPublisher !== undefined) {
-      targetPublisher.sendLog(levelInput.value, messageInput.value === '' ? 'Empty message.' : messageInput.value)
+      targetPublisher.sendLog(configuration.sendLogLevel, messageInput.value === '' ? 'Empty message.' : messageInput.value)
     }
   });
 
