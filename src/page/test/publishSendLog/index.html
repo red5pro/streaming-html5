@@ -1,0 +1,44 @@
+<!doctype html>
+{{> license}}
+<html>
+  <head>
+    {{> meta title='Publish Send Log'}}
+    {{> header-scripts}}
+    {{> header-stylesheets}}
+    <style>
+      .settings-area {
+        padding: 5px;
+        background-color: #eeee;
+      }
+      .settings-field, .settings-field > input {
+        font-size: 1em;
+      }
+    </style>
+  </head>
+  <body>
+    {{> top-bar }}
+    {{> navigation isTestPage=true }}
+    <div id="app">
+      {{> settings-link}}
+      {{> test-info testTitle='Publish Send Log'}}
+      <div class="stream-section">
+        {{> status-field-publisher}}
+        {{> statistics-field packets_field='Packets Sent'}}
+        <div id="video-container" class="centered">
+          <video id="red5pro-publisher" class="red5pro-publisher"
+                 controls autoplay playsinline muted>
+          </video>
+        </div>
+        <div class="settings-area">
+          <p class="settings-field settings-collapsable">
+            <label class="settings-label" for="message-input">Message:</label>
+            <input id="message-input" name="message-input" type="text" placeholder="Send Message..."></input>
+          </p>
+          <p><button class="ui-button" id="send-button">Click to send a log to the server.</button></p>
+        </div>
+      </div>
+    </div>
+    {{> body-scripts}}
+    <script src="index.js"></script>
+  </body>
+</html>
