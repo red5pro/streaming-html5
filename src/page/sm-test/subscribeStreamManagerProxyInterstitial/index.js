@@ -111,7 +111,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 		var port = serverSettings.httpport;
 		var baseUrl = protocol + '://' + host + ':' + port;
 		var apiVersion = configuration.streamManagerAPI || '4.0';
-		var uri = baseUrl + "/streammanager/api/" + apiVersion + "/interstitial?accessToken=" + accessToken;
+		var uri = baseUrl + "/streammanager/api/" + apiVersion + "/admin/interstitial?accessToken=" + accessToken;
 
 		xhr.open('POST', uri)
 		xhr.setRequestHeader('content-type', 'application/json')
