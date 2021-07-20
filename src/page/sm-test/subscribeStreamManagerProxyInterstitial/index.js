@@ -96,12 +96,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 		const xhr = new XMLHttpRequest()
 		xhr.addEventListener('readystatechange', function() {
 			if (this.readyState === this.DONE) {
-				console.log(this.responseText)
-
-				if (xhr.status) {
+				if (this.status == 200) {
 					console.log("SUCCESS status.");
 				} else {
-					console.log("ERROR status: " + xhr.status);
+					console.log("ERROR status: " + this.status + " : " + this.responseText);
+					alert("Error " + this.status + " : " + this.responseText);
 				}
 			}
 		})
@@ -114,6 +113,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 		var uri = baseUrl + "/streammanager/api/" + apiVersion + "/admin/interstitial?accessToken=" + accessToken;
 
 		xhr.open('POST', uri)
+		xhr.setRequestHeader('accept', 'application/json')
 		xhr.setRequestHeader('content-type', 'application/json')
 		xhr.send(json)
 
