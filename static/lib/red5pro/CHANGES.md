@@ -1,5 +1,21 @@
 # Changes
 
+## 8.1.0-beta.0
+
+- Added `sendLog` API for `RTCPublisher` and `RTCSubscriber` to send log-level messages to server. (bustardcelly)
+
+## 8.0.2
+
+- Fix for unsubscribe and close of RTCPeerConnection upon notification of `unpublish`. (bustardcelly)
+
+## 8.0.1
+
+- Fix for rejection on publish when in peer negotation. (bustardcelly)
+
+## 8.0.0
+
+- support for DataChannel usage after signalling is complete for WebRTC. See [Migration Guid](MIGRATION_GUIDE.md). (bustardcelly)
+
 ## 7.2.1
 
 - fix for unpreview turning autoplay to false in publisher. (bustardcelly)
