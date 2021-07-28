@@ -1,4 +1,4 @@
-# Subscribe Interstitial
+# Subscribe Interstitial Media Insertion
 
 This example demonstrates the interstitial feature. The player begins streaming one stream initially. Controls on the page can be used to send InterstitialREST requests to the server to insert other streams into the initial stream.
 
