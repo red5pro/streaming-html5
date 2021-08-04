@@ -96,7 +96,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 		const xhr = new XMLHttpRequest()
 		xhr.addEventListener('readystatechange', function() {
 			if (this.readyState === this.DONE) {
-				if (this.status == 200) {
+				if (this.status >= 200 && this.status < 300) {
 					console.log("SUCCESS status.");
 				} else {
 					console.log("ERROR status: " + this.status + " : " + this.responseText);
