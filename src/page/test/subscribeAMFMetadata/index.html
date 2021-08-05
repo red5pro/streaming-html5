@@ -1,0 +1,37 @@
+<!doctype html>
+{{> license}}
+<html>
+
+<head>
+  {{> meta title='Subscriber AMF Metadata Test'}}
+  {{> header-scripts}}
+  {{> header-stylesheets}}
+</head>
+
+<body>
+  {{> top-bar }}
+  {{> navigation isTestPage=true }}
+  <div id="app">
+    {{> settings-link}}
+    {{> test-info testTitle='Subscriber AMF Metadata Test'}}
+    <div class="stream-section">
+      {{> status-field-subscriber}}
+      {{> statistics-field packets_field='Packets Received'}}
+      <div class="centered">
+        <video id="red5pro-subscriber" controls="controls" autoplay="autoplay" playsinline
+          class="red5pro-subscriber red5pro-media red5pro-media-background" width="640" height="480">
+        </video>
+      </div>
+      <div class="centered">
+        <br>
+        <h3>Received AMF Metadata:</h3>
+        <p id="metadata"></p>
+      </div>
+    </div>
+  </div>
+  {{> body-scripts}}
+  {{> mobile-subscriber-util}}
+  <script src="index.js"></script>
+</body>
+
+</html>
