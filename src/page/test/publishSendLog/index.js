@@ -53,11 +53,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   var updateStatusFromEvent = window.red5proHandlePublisherEvent; // defined in src/template/partial/status-field-publisher.hbs
   var streamTitle = document.getElementById('stream-title');
+  var sendButton = document.getElementById('send-button');
+  var messageInput = document.getElementById('message-input');
   var statisticsField = document.getElementById('statistics-field');
-  var loginForm = document.getElementById('login-form');
-  var usernameField = document.getElementById('username-field');
-  var passwordField = document.getElementById('password-field');
-  var submitButton = document.getElementById('submit-button');
   var bitrateField = document.getElementById('bitrate-field');
   var packetsField = document.getElementById('packets-field');
   var resolutionField = document.getElementById('resolution-field');
@@ -86,7 +84,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     updateStatistics(bitrate, packetsSent, frameWidth, frameHeight);
   }
 
-  streamTitle.innerText = configuration.stream1;
+
+  sendButton.addEventListener('click', function () {
+    if (targetPublisher !== undefined) {
+      targetPublisher.sendLog(configuration.sendLogLevel, messageInput.value === '' ? 'Empty message.' : messageInput.value)
+    }
+  });
 
   var protocol = serverSettings.protocol;
   var isSecure = protocol == 'https';
@@ -126,6 +129,18 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     console.log('[Red5ProPublisher] Unpublish Complete.');
   }
 
+  function getAuthenticationParams () {
+    var auth = configuration.authentication;
+    return auth && auth.enabled
+      ? {
+        connectionParams: {
+          username: auth.username,
+          password: auth.password
+        }
+      }
+      : {};
+  }
+
   function getUserMediaConfiguration () {
     return {
       mediaConstraints: {
@@ -150,16 +165,19 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   function determinePublisher () {
 
     var config = Object.assign({},
-                  configuration,
-                  {
-                    streamMode: configuration.recordBroadcast ? 'record' : 'live'
-                  },
-                  getUserMediaConfiguration());
+                      configuration,
+                      {
+                        streamMode: configuration.recordBroadcast ? 'record' : 'live'
+                      },
+                      getAuthenticationParams(),
+                      getUserMediaConfiguration());
+
     var rtcConfig = Object.assign({}, config, {
                       protocol: getSocketLocationFromProtocol().protocol,
                       port: getSocketLocationFromProtocol().port,
                       streamName: config.stream1
                    });
+
     var rtmpConfig = Object.assign({}, config, {
                       protocol: 'rtmp',
                       port: serverSettings.rtmpport,
@@ -169,6 +187,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
                       swfobjectURL: '../../lib/swfobject/swfobject.js',
                       productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
                     }, getRTMPMediaConfiguration());
+
     var publishOrder = config.publisherFailoverOrder
                             .split(',')
                             .map(function (item) {
@@ -203,35 +222,22 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     });
   }
 
-  function start () {
-    // Kick off.
-    loginForm.classList.add('hidden');
-    determinePublisher()
-      .then(function (publisherImpl) {
-        streamTitle.innerText = configuration.stream1;
-        targetPublisher = publisherImpl;
-        targetPublisher.on('*', onPublisherEvent);
-        return targetPublisher.publish();
-      })
-      .then(function () {
+  // Kick off.
+  determinePublisher()
+    .then(function (publisherImpl) {
+      streamTitle.innerText = configuration.stream1;
+      targetPublisher = publisherImpl;
+      targetPublisher.on('*', onPublisherEvent);
+      return targetPublisher.publish();
+    })
+    .then(function () {
       onPublishSuccess(targetPublisher);
-      })
-      .catch(function (error) {
-        var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
-        console.error('[Red5ProPublisher] :: Error in publishing - ' + jsonError);
-        onPublishFail(jsonError);
-        loginForm.classList.remove('hidden');
-       });
-  }
-
-  submitButton.addEventListener('click', function () {
-    window.red5proClearPublisherEvent()
-    configuration.connectionParams = {
-      username: usernameField.value,
-      password: passwordField.value
-    };
-    start();
-  });
+    })
+    .catch(function (error) {
+      var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
+      console.error('[Red5ProPublisher] :: Error in publishing - ' + jsonError);
+      onPublishFail(jsonError);
+     });
 
   var shuttingDown = false;
   function shutdown() {
