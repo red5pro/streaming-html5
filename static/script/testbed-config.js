@@ -86,6 +86,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       "keyFramerate": 3000,
       "useAudio": true,
       "useVideo": true,
+      "sendLogLevel": "DEBUG",
       "mediaConstraints": {
         "audio": isiPod ? false : true,
         "video": (isMoz || isEdge) ? true : {
