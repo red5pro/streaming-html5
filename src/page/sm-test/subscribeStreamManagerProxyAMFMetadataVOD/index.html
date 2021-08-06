@@ -1,0 +1,91 @@
+<!doctype html>
+{{> license}}
+<html>
+
+<head>
+  {{> meta title='Stream Manager Proxy VOD Playback with AMF Metadata Test'}}
+  {{> header-scripts}}
+  {{> header-stylesheets}}
+  <style>
+    a {
+      color: #db1f26;
+      text-decoration: underline;
+    }
+
+    .test-notification {
+      border-top: 1px solid #dbdbdb;
+    }
+
+    .settings-area {
+      background-color: #eeee;
+    }
+
+    .settings-field {
+      padding-top: 1rem;
+    }
+
+    .settings-field,
+    .settings-field>input {
+      font-size: 1em;
+    }
+
+    .settings-label {
+      width: auto;
+    }
+  </style>
+  <link href="//unpkg.com/video.js@7.0.0/dist/video-js.css" rel="stylesheet">
+  <script src="//unpkg.com/video.js@7.0.0/dist/video.min.js"></script>
+</head>
+
+<body>
+  {{> top-bar }}
+  {{> navigation isTestPage=true }}
+  <div id="app">
+    {{> settings-link}}
+    {{> sm-proxy-notification}}
+    <div class="ice-background">
+      <div class="test-notification">
+        <p>
+          <span>To use this test, you must first publish a recorded broadcast using the <a
+              href="../publishStreamManagerProxyRecord" target="_blank">Publish - Stream Manager Proxy Record</a>
+            test.</span>
+        </p>
+        <br>
+        <p>
+          <span>Once you have a recorded stream, enter the filename - </span><span class="strong">with
+            extension</span><span> - name below:</span>
+        </p>
+      </div>
+    </div>
+    {{> test-title title='Stream Manager VOD Playback Test'}}
+    <div class="centered" style="margin-bottom:10px;"><em>This example requires the use of cloud storage to access the
+        VOD files.</em></div>
+    <div class="stream-section">
+      <div class="centered settings-area">
+        <p class="settings-field settings-collapsable">
+          <label for="name-input" class="settings-label">Name:</label>
+          <input type="text" name="name-input" id="name-input" placeholder="stream1.m3u8">
+        </p>
+        <p>
+          <button id="submit-button" class="ui-button">Play File</button>
+        </p>
+      </div>
+      <div id="video-container" class="centered">
+        <video id="red5pro-subscriber" controls autoplay playsinline
+          class="red5pro-subscriber red5pro-media red5pro-media-background" width="640" height="480">
+        </video>
+      </div>
+      <div class="centered">
+        <br>
+        <h3>Received AMF Metadata:</h3>
+        <br>
+        <p id="metadata"></p>
+      </div>
+    </div>
+  </div>
+  {{> body-scripts}}
+  <script src="index.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+</body>
+
+</html>

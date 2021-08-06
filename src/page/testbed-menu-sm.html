@@ -3,78 +3,99 @@
 <html>
 
 <head>
-  {{> meta title='Red5 Pro HTML SDK Testbed'}}
-  <link rel="stylesheet" href="css/reset.css">
-  <link rel="stylesheet" href="css/testbed.css">
-  <script src="script/testbed-config.js"></script>
-  <link rel='stylesheet'
-    href='//fonts.googleapis.com/css?family=Lato%3A100%2C200%2C300%2C400%2C500%2C600%2C700%2C800%2C900%2C100i%2C200i%2C300i%2C400i%2C500i%2C600i%2C700i%2C800i%2C900i&#038;subset=latin&#038;ver=5.2.3'
-    type='text/css' media='all' />
+    {{> meta title='Red5 Pro HTML SDK Testbed'}}
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="css/testbed.css">
+    <script src="script/testbed-config.js"></script>
+    <link rel='stylesheet'
+        href='//fonts.googleapis.com/css?family=Lato%3A100%2C200%2C300%2C400%2C500%2C600%2C700%2C800%2C900%2C100i%2C200i%2C300i%2C400i%2C500i%2C600i%2C700i%2C800i%2C900i&#038;subset=latin&#038;ver=5.2.3'
+        type='text/css' media='all' />
 </head>
 
 <body>
-  {{> top-bar }}
-  {{> navigation isTestPage=false }}
-  <div id="app">
-    <div id="back-link-container" style="text-align: left;">
-      <p class="back-link"><a href="index.html">&lt; Settings</a></p>
-      <p class="version-field">Testbed Version: {{ version }}</p>
-    </div>
-    <div id="settings-container">
-      <h1 class="centered">Red5 Pro HTML Stream Manager Testbed</h1>
-      <hr class="paddedHR" />
-      <ul id="test-list">
-        <li class="top-level-listing"><a href="testbed-menu.html">Non-Stream Manager Tests</a></li>
-        <li><a href="sm-test/publishStreamManagerProxy">Publish - Stream Manager Proxy</a></li>
-        <li><a href="sm-test/publishStreamManagerProxyCamera">Publish - Stream Manager Proxy w/ Camera Selection</a>
-        </li>
-        <li><a href="sm-test/publishStreamManagerProxySettings">Publish - Stream Manager Proxy w/ Custom Video
-            Settings</a></li>
-        <li><a href="sm-test/publishStreamManagerProxyAudioSettings">Publish - Stream Manager Proxy w/ Custom Video and
-            Audio Settings</a></li>
-        <li><a href="sm-test/publishStreamManagerProxyRoundTripAuth">Publish - Stream Manager Proxy RoundTrip
-            Authentication</a></li>
-        <li><a href="sm-test/publishStreamManagerProxyScreenShare">Publish - Stream Manager Proxy Screen Share</a></li>
-        <li><a href="sm-test/publishStreamManagerProxyScreenShare">Publish - Stream Manager Proxy Screen Share</a></li>
-        <li><a href="sm-test/publishStreamManagerSocialPusher">Publish - Stream Manager Proxy Social Media Stream
-            Push</a></li>
-        <!-- <li><a href="sm-test/publishSharedObjectStreamManagerProxy">Publish - Stream Manager Shared Object</a></li> -->
-        <li><a href="sm-test/publishStreamManagerProvisionForm">Publish - Stream Manager Transcoder Provision (form
-            only)</a></li>
-        <li><a href="sm-test/publishStreamManagerProxyTranscoderPOST">Publish - Stream Manager Transcoder Proxy w/
-            Provision</a></li>
-        <li><a href="sm-test/publishStreamManagerProxyAudioTranscoder">Publish - Stream Manager Transcoder Proxy w/
-            Provision & Audio</a></li>
-        <li><a href="sm-test/publishStreamManagerProxyTranscoderPOSTauth">Publish - Stream Manager Transcoder Proxy w/
-            Provision & Authentication</a></li>
-        <li><a href="sm-test/publishSharedObjectStreamManagerProxy">Publish - Stream Manager Proxy Shared Object</a>
-        </li>
-        <li></li>
-        <!--<li><a href="sm-test/TwoWayStreamManagerProxy">Two Way - Stream Manager Proxy</a></li>-->
-        <li><a href="sm-test/ConferenceStreamManagerProxy">Conference - Stream Manager Proxy</a></li>
-        <li><a href="sm-test/sharedObjectStreamManagerProxy">Shared Object (WebSocket Only) - Stream Manager Proxy</a>
-        </li>
-        <li></li>
-        <li><a href="sm-test/subscribeStreamManagerProxy">Subscribe - Stream Manager Proxy</a></li>
-        <!--<li><a href="sm-test/subscribeBackupStreamSwitchStreammanager">Subscribe - Stream Manager Stream Backup Failover Test</a></li>-->
-        <li><a href="sm-test/subscribeStreamManagerProxyReconnect">Subscribe - Stream Manager Proxy Reconnect</a></li>
-        <li><a href="sm-test/subscribeStreamManagerProxyRoundTripAuth">Subscribe - Stream Manager Proxy RoundTrip
-            Authentication</a></li>
-        <li><a href="sm-test/subscribeStreamManagerProxyScreenShare">Subscribe - Stream Manager Proxy Screen Share</a>
-        </li>
-        <!-- <li><a href="sm-test/subscribeSharedObjectStreamManagerProxy">Subscribe - Stream Manager Proxy Shared Object</a></li> -->
-        <!-- <li><a href="sm-test/subscribeStreamManagerProxySwitch">Subscribe - Stream Manager Proxy Stream Screen Switch</a></li>-->
-        <li><a href="sm-test/subscribeStreamManagerProxyTranscoderRTC">Subscribe - Stream Manager Transcoder Proxy</a>
-        </li>
-        <li><a href="sm-test/subscribeStreamManagerProxyTranscoderHLS">Subscribe - Stream Manager Transcoder Proxy
-            (HLS)</a></li>
-        <li><a href="sm-test/subscribeStreamManagerProxyValidation">Subscribe - Stream Manager Proxy Validation</a></li>
-        <li><a href="sm-test/subscribeStreamManagerProxyAMFMetadata">Subscribe - Stream Manager Proxy AMF Metadata</a>
-        </li>
-        <li><a href="sm-test/playbackVODStreamManager">Playback - Stream Manager VOD</a></li>
-        <li><a href="sm-test/playbackVODStreamManagerList">Playback List - VOD Stream Manager</a></li>
-      </ul>
-    </div>
+    {{> top-bar }}
+    {{> navigation isTestPage=false }}
+    <div id="app">
+        <div id="back-link-container" style="text-align: left;">
+            <p class="back-link"><a href="index.html">&lt; Settings</a></p>
+            <p class="version-field">Testbed Version: {{ version }}</p>
+        </div>
+        <div id="settings-container">
+            <h1 class="centered">Red5 Pro HTML Stream Manager Testbed</h1>
+            <hr class="paddedHR" />
+            <ul id="test-list">
+                <li class="top-level-listing"><a href="testbed-menu.html">Non-Stream Manager Tests</a></li>
+                <li><a href="sm-test/publishStreamManagerProxy">Publish - Stream Manager Proxy</a></li>
+                <li><a href="sm-test/publishStreamManagerProxyCamera">Publish - Stream Manager Proxy w/ Camera
+                        Selection</a>
+                </li>
+                <li><a href="sm-test/publishStreamManagerProxySettings">Publish - Stream Manager Proxy w/ Custom Video
+                        Settings</a></li>
+                <li><a href="sm-test/publishStreamManagerProxyAudioSettings">Publish - Stream Manager Proxy w/ Custom
+                        Video and
+                        Audio Settings</a></li>
+                <li><a href="sm-test/publishStreamManagerProxyRoundTripAuth">Publish - Stream Manager Proxy RoundTrip
+                        Authentication</a></li>
+                <li><a href="sm-test/publishStreamManagerProxyScreenShare">Publish - Stream Manager Proxy Screen
+                        Share</a></li>
+                <li><a href="sm-test/publishStreamManagerProxyScreenShare">Publish - Stream Manager Proxy Screen
+                        Share</a></li>
+                <li><a href="sm-test/publishStreamManagerSocialPusher">Publish - Stream Manager Proxy Social Media
+                        Stream
+                        Push</a></li>
+                <!-- <li><a href="sm-test/publishSharedObjectStreamManagerProxy">Publish - Stream Manager Shared Object</a></li> -->
+                <li><a href="sm-test/publishStreamManagerProvisionForm">Publish - Stream Manager Transcoder Provision
+                        (form
+                        only)</a></li>
+                <li><a href="sm-test/publishStreamManagerProxyTranscoderPOST">Publish - Stream Manager Transcoder Proxy
+                        w/
+                        Provision</a></li>
+                <li><a href="sm-test/publishStreamManagerProxyAudioTranscoder">Publish - Stream Manager Transcoder Proxy
+                        w/
+                        Provision & Audio</a></li>
+                <li><a href="sm-test/publishStreamManagerProxyTranscoderPOSTauth">Publish - Stream Manager Transcoder
+                        Proxy w/
+                        Provision & Authentication</a></li>
+                <li><a href="sm-test/publishSharedObjectStreamManagerProxy">Publish - Stream Manager Proxy Shared
+                        Object</a>
+                </li>
+                <li></li>
+                <!--<li><a href="sm-test/TwoWayStreamManagerProxy">Two Way - Stream Manager Proxy</a></li>-->
+                <li><a href="sm-test/ConferenceStreamManagerProxy">Conference - Stream Manager Proxy</a></li>
+                <li><a href="sm-test/sharedObjectStreamManagerProxy">Shared Object (WebSocket Only) - Stream Manager
+                        Proxy</a>
+                </li>
+                <li></li>
+                <li><a href="sm-test/subscribeStreamManagerProxy">Subscribe - Stream Manager Proxy</a></li>
+                <!--<li><a href="sm-test/subscribeBackupStreamSwitchStreammanager">Subscribe - Stream Manager Stream Backup Failover Test</a></li>-->
+                <li><a href="sm-test/subscribeStreamManagerProxyReconnect">Subscribe - Stream Manager Proxy
+                        Reconnect</a></li>
+                <li><a href="sm-test/subscribeStreamManagerProxyRoundTripAuth">Subscribe - Stream Manager Proxy
+                        RoundTrip
+                        Authentication</a></li>
+                <li><a href="sm-test/subscribeStreamManagerProxyScreenShare">Subscribe - Stream Manager Proxy Screen
+                        Share</a>
+                </li>
+                <!-- <li><a href="sm-test/subscribeSharedObjectStreamManagerProxy">Subscribe - Stream Manager Proxy Shared Object</a></li> -->
+                <!-- <li><a href="sm-test/subscribeStreamManagerProxySwitch">Subscribe - Stream Manager Proxy Stream Screen Switch</a></li>-->
+                <li><a href="sm-test/subscribeStreamManagerProxyTranscoderRTC">Subscribe - Stream Manager Transcoder
+                        Proxy</a>
+                </li>
+                <li><a href="sm-test/subscribeStreamManagerProxyTranscoderHLS">Subscribe - Stream Manager Transcoder
+                        Proxy
+                        (HLS)</a></li>
+                <li><a href="sm-test/subscribeStreamManagerProxyValidation">Subscribe - Stream Manager Proxy
+                        Validation</a></li>
+                <li><a href="sm-test/subscribeStreamManagerProxyAMFMetadata">Subscribe - Stream Manager Proxy AMF
+                        Metadata</a>
+                </li>
+                <li><a href="sm-test/subscribeStreamManagerProxyAMFMetadataVOD">Subscribe - Stream Manager Proxy AMF
+                        Metadata VOD</a>
+                </li>
+                <li><a href="sm-test/playbackVODStreamManager">Playback - Stream Manager VOD</a></li>
+                <li><a href="sm-test/playbackVODStreamManagerList">Playback List - VOD Stream Manager</a></li>
+            </ul>
+        </div>
 </body>
 
 </html>
