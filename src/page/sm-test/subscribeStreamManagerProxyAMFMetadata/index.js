@@ -145,7 +145,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   function onSubscriberEvent(event) {
     console.log('[Red5ProSubsriber] ' + event.type + '.');
     updateStatusFromEvent(event);
-    if (event.type == 'Subscribe.Send.Invoke') {
+    if (event.type == 'Subscribe.Metadata') {
       processAMFData(event)
     }
     if (event.type === 'Subscribe.VideoDimensions.Change') {

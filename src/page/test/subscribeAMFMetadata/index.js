@@ -117,7 +117,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   // Local lifecycle notifications.
   function onSubscriberEvent(event) {
-    if (event.type == 'Subscribe.Send.Invoke' || event.type == 'Subscribe.Metadata') {
+    if (event.type == 'Subscribe.Metadata') {
       processAMFData(event)
     }
 
