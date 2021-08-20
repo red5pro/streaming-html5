@@ -177,14 +177,18 @@
    * Breaks string into room and stream name
    */
   function getRoomAndStreamFromStreamName(streamName) {
-    let index = streamName.indexOf('/', 1)
-    if (index < 0) {
-      return { 'room': '', 'stream': streamName.substring(1) }
+    if (streamName.charAt(0) === '/') {
+      streamName = streamName.substring(1)
     }
 
-    index = streamName.lastIndexOf('/')
-    return { 'room': streamName.substring(0, index), 'stream': streamName.substring(index + 1) }
+    let parts = streamName.split('/')
+    parts.splice(0, 1)
+    let stream = parts[parts.length - 1]
+    parts.splice(parts.length - 1, 1)
+    let room = parts.join('/')
+    return { room, stream }
   }
+
 
   /**
    * The SubscriberBlock is a self-managed subscriber that consumes and plays back a target stream.
