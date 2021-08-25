@@ -455,16 +455,18 @@ const destroyComposition = function (ws, message) {
     makeDeleteRequest(url)
         .then((response) => {
             console.log(`Composition ${eventName} has been destroyed. Received response: `, JSON.stringify(response))
+        })
+        .catch((error) => {
+            const errorMessage = `Stream Manager returned error when attempting to destroy ${eventName} composition. Received Stream Manager error: ` + JSON.stringify(error)
+            console.log(errorMessage)
+            sendError(ws, errorMessage)
+        })
+        .finally(() => {
             delete activeCompositions[eventName]
             Object.keys(managerSockets).forEach((key) => {
                 postActiveComposition(managerSockets[key])
                 postActiveStreams(managerSockets[key])
             })
-        })
-        .catch((error) => {
-            const errorMessage = `Failed to destroy ${eventName} composition, received Stream Manager error: ` + JSON.stringify(error)
-            console.log(errorMessage)
-            sendError(ws, errorMessage)
         })
 }
 
