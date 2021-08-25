@@ -368,8 +368,15 @@ const destroyComposition = function (ws, message) {
     const url = `${streamManagerHost}/streammanager/api/4.0/composition/${eventName}?accessToken=${smToken}`
     makeDeleteRequest(url)
         .then((response) => {
-            const compositeStreamRoomName = getCompositeStreamRoomFromPayload(activeCompositions[eventName])
             console.log(`Composition ${eventName} has been destroyed. Received response: `, JSON.stringify(response))
+        })
+        .catch((error) => {
+            const errorMessage = `Received error when attempting to destroy ${eventName} composition. Stream Manager returned error: ` + JSON.stringify(error)
+            console.log(errorMessage)
+            sendError(ws, errorMessage)
+        })
+        .finally(() => {
+            const compositeStreamRoomName = getCompositeStreamRoomFromPayload(activeCompositions[eventName])
             delete activeCompositions[eventName]
             for (var i in clients) {
                 if (clients[i].isHost && (clients[i].room == compositeStreamRoomName || clients[i].room == compositeStreamRoomName + '_wr')) {
@@ -377,11 +384,6 @@ const destroyComposition = function (ws, message) {
                     postActiveStreams(clients[i])
                 }
             }
-        })
-        .catch((error) => {
-            const errorMessage = `Failed to destroy ${eventName} composition, received Stream Manager error: ` + JSON.stringify(error)
-            console.log(errorMessage)
-            sendError(ws, errorMessage)
         })
 }
 
