@@ -161,6 +161,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     recorder.onstop = async () => {
       let blobChunks = [chunks.shift()]
       let i = 0
+      // 262144 is max bytes able to send on DC in one message.
       let maxbytes = 262144 - blobChunks[0].size
       while (chunks.length > 0) {
         const chunk = chunks.shift()

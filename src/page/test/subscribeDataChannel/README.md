@@ -1,156 +1,121 @@
-# Subscribe Failover using Red5 Pro
+# Publish & Subscribe to DataChannel Messages
 
-This is an example of utilizing the failover mechanism of the Red5 Pro HTML SDK to select a subscriber based on browser support.
+This example demonstrates utilizing the underlying `RTCDataChannel` of a Publisher and Subscriber to send and receive messages.
 
-The default failover order is:
+Though the Publisher example demonstrates sending the messages, while the Subscriber example demonstrates receiving the messages, either peer can act as the sender and receiver when utilizing the `RTCDataChannel`.
 
-1. WebRTC
-2. RTMP/Flash
-3. HLS
+To access the underlying `RTCDataChannel` instance of an `RTCPublisher` and `RTCSubscriber` use the access method: `getDataChannel()`.
 
-When utilizing the auto-failover mechanism, the SDK - by default - will first test for WebRTC support and if missing will attempt to embed a subscriber SWF for the broadcast. If Flash is not supported in the browser, it will finally attempt to playback using HLS.
+> This example requires the configuration attribute of `signalingSocketOnly` being set to the default value of `true`.
 
-You can define the desired failover order from using `setPlaybackOrder`.
-
-> For more detailed information on Configuring and Subscribing with the Red5 Pro SDK, please visit the [Red5 Pro Documentation](https://www.red5pro.com/docs/streaming/subscriber.html).
+**Please refer to the [Basic Publisher Documentation](../publish/README.md) to learn more about the basic setup.**
 
 ## Example Code
+
+### Publisher
+
 - **[index.html](index.html)**
 - **[index.js](index.js)**
 
-# How to Subscribe
+### Subscriber
 
-Subscribing to a Red5 Pro stream requires a few components to function fully.
+- **[index.html](../subscribeDataChannel/index.html)**
+- **[index.js](../subscribeDataChannel/index.js)**
 
-> The examples in this repo also utilize various es2015 shims and polyfills to support ease in such things as `Object.assign` and `Promises`. You can find the list of these utilities used in [https://github.com/red5pro/streaming-html5/tree/master/static/lib/es6](feature/update_docs_RPRO-5153).
+# Running the example
 
-## Including the SDK
+Two clients are required to run this example: one as a publisher, and the other as a subscriber.
 
-You will need to include the Red5 Pro SDK library on the page. If you have not already done so, download the Red5 Pro HTML SDK from your account page: [https://account.red5pro.com/download](https://account.red5pro.com/download).
+Connect the first client (publisher) with the *Publish - Data Channel Messaging* example. On the second lient (subscriber) use the *Subscribe - Data Channel Messaging* example.
 
-Once downloaded, unzip and move the library files - contained in the `lib` directory of the unzipped download - that makes sens for your project. _For the purposes of these examples, we have maked the entire `lib` directory into the top level of our project._
+There are 3 types of messaging that can go through the `RTCDataChannel`:
 
-Once the required SDK files are provided and loaded on the page, the root of the library is accessible from `window.red5prosdk`:
+* RPC Message - using the [Send API](../publishRemoteCall) with a defined JSON schema that the server knows how to properly handle.
+* Basic Message - sending any arbitrary String, mostly represented as JSON.
+* Raw Data - typically the most supported form of `ArrayBuffer`.
 
-```html
-<!doctype html>
-<html>
-  <head>
-    <title>Red5 Pro Subscriber</title>
-    <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
-    <meta content="width=device-width, initial-scale=1, user-scalable=no" name="viewport">
-    <!-- Recommended shim for WebRTC. -->
-    <script src="//webrtc.github.io/adapter/adapter-latest.js"></script>
-    <!-- Recommended shim for fullscreen support. -->
-    <script src="lib/screenfull/screenfull.min.js"></script>
-    <!-- CSS file included with Red5 Pro SDK to style playback controls of the target video element. -->
-    <link rel="stylesheet" href="lib/red5pro/red5pro-media.css">
-  </head>
-  <body>
-    <!-- Target video element to playback stream. -->
-    <video id="red5pro-subscriber"
-      autoplay controls playsinline
-      class="red5pro-media red5pro-media-background"
-      width="640" height="480"></video>
-    <!-- Red5 Pro SDK library. -->
-    <script src="lib/red5pro/red5pro.min.sdk"></script>
-    <!-- The client code... -->
-    <script>
-      (function (window, red5pro) {
+## RPC Message
 
-        // Turn on debugging, to be shown in the Dev Console.
-        red5pro.setLogger(red5pro.LOG_LEVELS.DEBUG);
-
-        // Continue with your code, more examples below.
-
-      })(window, window.red5prosdk);
-    </script>
-  </body>
-</html>
-```
-
-## Subscriber Selection & Initialization
-
-A Subscriber instance is required to attach a stream and request subscription. The SDK can determine browser support and instantiate the proper Subscriber implementation based on the desired failover order.
-
-The available Playback Techs supported by the Red5 Pro SDK are:
-
-* WebRTC
-* Flash/RTMP
-* HLS
-
-> *NOTE*: Aside from the recommendation to utilize the [adapter.js](https://github.com/webrtc/adapter) library to "shim" similar functionality across WebRTC-supported browesers, the Red5 Pro SDK itself does not provide any polyfills for support. As such, the SDK checks the inherent support of the browser in its failover process. For example, if your browser does not inherently support HLS (most browsers aside from Desktop and Mobile Safari), then you will need to use a 3rd Party library in order to provide such support.
-
-When requesting to playback a stream using failover, you will need to provide an initialization configuration for each desired tech. To do so, provide a `rtc`, a `rtmp` and a `hls` configuration property within the configuraiton object passed through `init()` invocation:
+Remote Procedural Call (RPC) Messages use the **Send API** of the `RTCPublisher` API:
 
 ```js
-var config = {
-  rtcport: 5080,
-  rtmpport: 1935,
-  hlsport: 5080
-};
-var rtcConfig = Object.assign({}, config, {
-  protocol: 'ws',
-  port: config.rtcport,
-  subscriptionId: 'subscriber-' + instanceId,
-  streamName: config.stream1
-})
-var rtmpConfig = Object.assign({}, config, {
-  protocol: 'rtmp',
-  port: config.rtmpport,
-  streamName: config.stream1,
-  swf: 'lib/red5pro/red5pro-subscriber.swf',
-  swfobjectURL: 'lib/swfobject/swfobject.js',
-  productInstallURL: 'lib/swfobject/playerProductInstall.swf'
-})
-var hlsConfig = Object.assign({}, config, {
-  protocol: 'http',
-  port: config.hlsport,
-  streamName: config.stream1,
-  mimeType: 'application/x-mpegURL'
-})
-
-var subscriber = new red5pro.Red5ProSubscriber();
-subscriber.setPlaybackOrder(subscribeOrder)
-  .init({
-    rtc: rtcConfig,
-    rtmp: rtmpConfig,
-    hls: hlsConfig
-  })
-  .then(function (selectedSubscriber) {
-    // We have successfully found a playback tech from the list...
-  });
+send("incomingNotification", {
+  message: rpcInput.value === '' ? 'What lovely weather today.' : rpcInput.value,
+  timestamp: new Date().getTime()
+});
 ```
 
-[index.js #97](index.js#L97)
+[index.js #135](index.js#L135)
 
-The `init` method of the `Red5ProSubscriber` returns a `Promise`-like object that will be resolved with the instantiated Subscriber implementation based on the subscriber order and browser support.
+## Method signature
 
-You can determine the selected implementation by invoking `selectedSubscriber.getType()`.
+The method signature for the `send` API is:
 
-> Read more about configurations and their attributes from the [Red5 Pro HTML SDK Documentation](https://red5pro.com/docs/client/webrtc/subscriber/overview/).
+| Param | Description |
+| --- | --- |
+| methodName | The name of the method associated with the data to be parsed on the subscriber clients. |
+| data | A javascript `Object` describing the message data to send to subscriber clients. |
 
-### Subscribing
+If the subscribing client is browser-based, a `Subscriber.Send.Invoke` event is triggered on the subscriber.
 
-The `init` method of the `Red5ProSubscriber` instance returns a `Promise`-object which, when resolved, relays the Subscriber instance determined from the failover. To start a subscribing session, call the `subscribe` method of the Subscriber resolved:
+The `methodName` you provide will be included as the `SubscriberEvent:methodName` of the `Subscriber.Send.Invoke` event if the client is browser-based. For iOS and Android subscribers, it will be invoked on the `R5Stream:client` instance.
+
+The structure of `data` can be any javascript `Object`. The data will be serialized and unpacked appropriately on the corresponding clients and given as the first argument when invoking the `methodName`.
+
+> You should *not* send the `data` object as a `String`.
+
+## Basic Message
+
+Basic JSON String messages can also be sent along the `RTCDataChannel`. This allows for custom messaging that is understood between peers based on you applications requirements:
 
 ```js
-subscriber.setPlaybackOrder(subscribeOrder)
-  .init({
-    rtc: rtcConfig,
-    rtmp: rtmpConfig,
-    hls: hlsConfig
-  })
-  .then(function (selectedSubscriber) {
-    return selectedSubscriber.subscribe();
-  })
-  .then(function () {
-    console.log('Successfully started a subscription session!');
-  })
-  .catch(function () {
-    console.error('Could not start a subscription session: ' + error);
-  })
+const message = JSON.stringify({message: messageInput.value, timestamp: new Date()})
+targetPublisher.getDataChannel().send(message)
 ```
 
-[index.js #136](index.js#L136)
+[index.js #143](index.js#L143)
 
+## Raw Data
+
+Raw binary data can also be sent along the `RTCDataChannel` to shared arbitraty information between peers. This can be used to send encrypted data, files, etc.
+
+Check the browser support of data types allowed to be sent along the `RTCDataChannel` implementation. The most commonly accepted type is an `ArrayBuffer`.
+
+This example demonstrates recording a small amount of audio of the current `MediaStream` and sending it to all peers for playback:
+
+```js
+const stream = new MediaStream()
+stream.addTrack(targetPublisher.getMediaStream().getAudioTracks()[0])
+
+const recorder = new MediaRecorder(stream)
+let chunks = []
+recorder.ondataavailable = e => {
+  chunks.push(e.data)
+}
+
+recorder.onstop = async () => {
+  let blobChunks = [chunks.shift()]
+  let i = 0
+  // 262144 is max bytes able to send on DC in one message.
+  let maxbytes = 262144 - blobChunks[0].size
+  while (chunks.length > 0) {
+    const chunk = chunks.shift()
+    maxbytes -= chunk.size
+    if (maxbytes > 0) {
+      blobChunks.push(chunk)
+    }
+  }
+  const blob = new Blob(blobChunks)
+  const buffer = await new Response(blob).arrayBuffer()
+  console.log('Sending bytes...', buffer.byteLength)
+  console.log(buffer)
+  targetPublisher.getDataChannel().send(buffer)
+}
+
+recorder.start(1000)
+setTimeout(() => {
+recorder.stop()
+}, 5000)
+```
+
+[index.js #152](index.js#L152)

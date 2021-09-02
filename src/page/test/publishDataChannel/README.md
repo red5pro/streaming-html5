@@ -1,6 +1,12 @@
-# Publish & Subscribe Remote Call
+# Publish & Subscribe to DataChannel Messages
 
-This example demonstrates the `send` API of the publisher in the Red5 Pro HTML SDK. Using `send`, a publisher can send a message object to any currently subscribed clients.
+This example demonstrates utilizing the underlying `RTCDataChannel` of a Publisher and Subscriber to send and receive messages.
+
+Though the Publisher example demonstrates sending the messages, while the Subscriber example demonstrates receiving the messages, either peer can act as the sender and receiver when utilizing the `RTCDataChannel`.
+
+To access the underlying `RTCDataChannel` instance of an `RTCPublisher` and `RTCSubscriber` use the access method: `getDataChannel()`.
+
+> This example requires the configuration attribute of `signalingSocketOnly` being set to the default value of `true`.
 
 **Please refer to the [Basic Publisher Documentation](../publish/README.md) to learn more about the basic setup.**
 
@@ -13,29 +19,33 @@ This example demonstrates the `send` API of the publisher in the Red5 Pro HTML S
 
 ### Subscriber
 
-- **[index.html](../subscribeRemoteCall/index.html)**
-- **[index.js](../subscribeRemoteCall/index.js)**
+- **[index.html](../subscribeDataChannel/index.html)**
+- **[index.js](../subscribeDataChannel/index.js)**
 
 # Running the example
 
 Two clients are required to run this example: one as a publisher, and the other as a subscriber.
 
-Connect the first client (publisher) with the *Publish - Remote Call* example. On the second lient (subscriber) use the *Subscribe - Remote Call* example.
+Connect the first client (publisher) with the *Publish - Data Channel Messaging* example. On the second lient (subscriber) use the *Subscribe - Data Channel Messaging* example.
 
-Touch the preview on the publisher screen to display a label on the subscriber screen where the publisher touched.
+There are 3 types of messaging that can go through the `RTCDataChannel`:
 
-## Using the `send` API
-Once the stream has connected you are able to dispatch messages to any connected subscribers. Sending the message is a simple call:
+* RPC Message - using the [Send API](../publishRemoteCall) with a defined JSON schema that the server knows how to properly handle.
+* Basic Message - sending any arbitrary String, mostly represented as JSON.
+* Raw Data - typically the most supported form of `ArrayBuffer`.
+
+## RPC Message
+
+Remote Procedural Call (RPC) Messages use the **Send API** of the `RTCPublisher` API:
 
 ```js
-send('whateverFunctionName', {
-  message: "The publisher wants your attention",
-  touchX: event.offsetX / elem.clientWidth,
-  touchY: event.offsetY / elem.clientHeight
+send("incomingNotification", {
+  message: rpcInput.value === '' ? 'What lovely weather today.' : rpcInput.value,
+  timestamp: new Date().getTime()
 });
 ```
 
-[index.js #37](index.js#L37)
+[index.js #135](index.js#L135)
 
 ## Method signature
 
@@ -54,29 +64,58 @@ The structure of `data` can be any javascript `Object`. The data will be seriali
 
 > You should *not* send the `data` object as a `String`.
 
-## Receiving the message
+## Basic Message
 
-On the browser-based subscriber client, you will need to define the event responder for `Subscriber.Send.Invoke` and handle the event properties to determine the `methodName` being invoked. In using the Red5 Pro HTML SDK:
+Basic JSON String messages can also be sent along the `RTCDataChannel`. This allows for custom messaging that is understood between peers based on you applications requirements:
 
 ```js
-subscriber.on(red5pro.SubscriberEventTypes.SUBSCRIBE_SEND_INVOKE, sendClientHandler);
+const message = JSON.stringify({message: messageInput.value, timestamp: new Date()})
+targetPublisher.getDataChannel().send(message)
 ```
 
-[index.js #186](../subscribeRemoteCall/index.js#L186)
+[index.js #143](index.js#L143)
+
+## Raw Data
+
+Raw binary data can also be sent along the `RTCDataChannel` to shared arbitraty information between peers. This can be used to send encrypted data, files, etc.
+
+Check the browser support of data types allowed to be sent along the `RTCDataChannel` implementation. The most commonly accepted type is an `ArrayBuffer`.
+
+This example demonstrates recording a small amount of audio of the current `MediaStream` and sending it to all peers for playback:
 
 ```js
-var sendClientHandler = function (event) {
-  var eventData = event.data;
-  var msg = eventData.data;
-  var methodName = eventData.methodName;
-  if (methodName === 'whateverFunctionName') {
-    var elem = document.getElementById('red5pro-subscriber-video');
-    messageCallout.innerText = msg.message;
-    messageCallout.style.left = (elem.offsetLeft + (elem.clientWidth * msg.touchX)) + 'px';
-    messageCallout.style.top = (elem.offsetTop + (elem.clientHeight * msg.touchY)) + 'px';
+const stream = new MediaStream()
+stream.addTrack(targetPublisher.getMediaStream().getAudioTracks()[0])
+
+const recorder = new MediaRecorder(stream)
+let chunks = []
+recorder.ondataavailable = e => {
+  chunks.push(e.data)
+}
+
+recorder.onstop = async () => {
+  let blobChunks = [chunks.shift()]
+  let i = 0
+  // 262144 is max bytes able to send on DC in one message.
+  let maxbytes = 262144 - blobChunks[0].size
+  while (chunks.length > 0) {
+    const chunk = chunks.shift()
+    maxbytes -= chunk.size
+    if (maxbytes > 0) {
+      blobChunks.push(chunk)
+    }
   }
-};
+  const blob = new Blob(blobChunks)
+  const buffer = await new Response(blob).arrayBuffer()
+  console.log('Sending bytes...', buffer.byteLength)
+  console.log(buffer)
+  targetPublisher.getDataChannel().send(buffer)
+}
+
+recorder.start(1000)
+setTimeout(() => {
+recorder.stop()
+}, 5000)
 ```
 
-[index.js #201](../subscribeRemoteCall/index.js#L201)
-
+[index.js #152](index.js#L152)
