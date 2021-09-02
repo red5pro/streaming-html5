@@ -1,0 +1,31 @@
+<!doctype html>
+{{> license}}
+<html>
+  <head>
+    {{> meta title='Subscriber Test'}}
+    {{> header-scripts}}
+    {{> header-stylesheets}}
+  </head>
+  <body>
+    {{> top-bar }}
+    {{> navigation isTestPage=true }}
+    <div id="app">
+      {{> settings-link}}
+      {{> test-info testTitle='Subscriber Test'}}
+      <div class="stream-section">
+        {{> status-field-subscriber}}
+        {{> statistics-field packets_field='Packets Received'}}
+        <div class="centered">
+          <video id="red5pro-subscriber"
+                  controls="controls" autoplay="autoplay" playsinline
+                  class="red5pro-subscriber red5pro-media red5pro-media-background"
+                  width="640" height="480">
+          </video>
+        </div>
+      </div>
+    </div>
+    {{> body-scripts}}
+    {{> mobile-subscriber-util}}
+    <script src="index.js"></script>
+  </body>
+</html>
