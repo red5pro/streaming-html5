@@ -87,6 +87,48 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     updateStatistics(bitrate, packetsSent, frameWidth, frameHeight);
   }
 
+  function showModal (content) {
+    var div = document.createElement('div');
+    div.classList.add('modal');
+    var container = document.createElement('div');
+    var button = document.createElement('a');
+    var close = document.createTextNode('close');
+    button.href = "#";
+    button.appendChild(close);
+    button.classList.add('modal-close');
+    container.appendChild(button);
+    container.appendChild(content);
+    div.appendChild(container);
+    document.body.appendChild(div);
+    button.addEventListener('click', function (event) {
+      event.preventDefault();
+      document.body.removeChild(div);
+      return false;
+    });
+  }
+
+  function generateAudioRecordContent (duration) {
+    var delay = 500
+    var amount = duration / delay
+    var content = document.createElement('div')
+    var header = document.createElement('p')
+    var count = 0
+    var ellipseCount = 3
+    var title = 'Recording audio'
+    header.innerText = title
+    var t = setInterval(function () {
+      count = (count++ % ellipseCount) + 1
+      var text = title + (new Array(count).fill('.').join(''))
+      header.innerText = text
+      if (--amount < 0) {
+        clearInterval(t)
+        header.innerText = 'Sent!'
+      }
+    }, delay)
+    content.appendChild(header)
+    return content
+  }
+
   sendRPCButton.addEventListener('click', function (event) {
     var elem = document.getElementById('red5pro-publisher');
     if (targetPublisher !== undefined) {
@@ -105,13 +147,17 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   sendDataButton.addEventListener('click', () => {
     console.log('Preparring bytes...')
+    showModal(generateAudioRecordContent(5000));
+
     const stream = new MediaStream()
     stream.addTrack(targetPublisher.getMediaStream().getAudioTracks()[0])
+
     const recorder = new MediaRecorder(stream)
     let chunks = []
     recorder.ondataavailable = e => {
       chunks.push(e.data)
     }
+
     recorder.onstop = async () => {
       let blobChunks = [chunks.shift()]
       let i = 0
@@ -134,6 +180,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       audio.controls = true
       audio.src = audioUrl
     }
+
     recorder.start(1000)
     setTimeout(() => {
       recorder.stop()
