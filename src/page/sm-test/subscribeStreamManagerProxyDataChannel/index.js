@@ -1,26 +1,26 @@
 /*
 Copyright © 2015 Infrared5, Inc. All rights reserved.
 
-The accompanying code comprising examples for use solely in conjunction with Red5 Pro (the "Example Code")
-is  licensed  to  you  by  Infrared5  Inc.  in  consideration  of  your  agreement  to  the  following
-license terms  and  conditions.  Access,  use,  modification,  or  redistribution  of  the  accompanying
+The accompanying code comprising examples for use solely in conjunction with Red5 Pro (the "Example Code") 
+is  licensed  to  you  by  Infrared5  Inc.  in  consideration  of  your  agreement  to  the  following  
+license terms  and  conditions.  Access,  use,  modification,  or  redistribution  of  the  accompanying  
 code  constitutes your acceptance of the following license terms and conditions.
 
-Permission is hereby granted, free of charge, to you to use the Example Code and associated documentation
-files (collectively, the "Software") without restriction, including without limitation the rights to use,
-copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit
+Permission is hereby granted, free of charge, to you to use the Example Code and associated documentation 
+files (collectively, the "Software") without restriction, including without limitation the rights to use, 
+copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit 
 persons to whom the Software is furnished to do so, subject to the following conditions:
 
-The Software shall be used solely in conjunction with Red5 Pro. Red5 Pro is licensed under a separate end
-user  license  agreement  (the  "EULA"),  which  must  be  executed  with  Infrared5,  Inc.
+The Software shall be used solely in conjunction with Red5 Pro. Red5 Pro is licensed under a separate end 
+user  license  agreement  (the  "EULA"),  which  must  be  executed  with  Infrared5,  Inc.   
 An  example  of  the EULA can be found on our website at: https://account.red5pro.com/assets/LICENSE.txt.
 
 The above copyright notice and this license shall be included in all copies or portions of the Software.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,  INCLUDING  BUT
-NOT  LIMITED  TO  THE  WARRANTIES  OF  MERCHANTABILITY, FITNESS  FOR  A  PARTICULAR  PURPOSE  AND
-NONINFRINGEMENT.   IN  NO  EVENT  SHALL INFRARED5, INC. BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
-WHETHER IN  AN  ACTION  OF  CONTRACT,  TORT  OR  OTHERWISE,  ARISING  FROM,  OUT  OF  OR  IN CONNECTION
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,  INCLUDING  BUT  
+NOT  LIMITED  TO  THE  WARRANTIES  OF  MERCHANTABILITY, FITNESS  FOR  A  PARTICULAR  PURPOSE  AND  
+NONINFRINGEMENT.   IN  NO  EVENT  SHALL INFRARED5, INC. BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, 
+WHETHER IN  AN  ACTION  OF  CONTRACT,  TORT  OR  OTHERWISE,  ARISING  FROM,  OUT  OF  OR  IN CONNECTION 
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 (function(window, document, red5prosdk) {
@@ -51,25 +51,15 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   var targetSubscriber;
 
-  var updateStatusFromEvent = function (event) {
-    var subTypes = red5prosdk.SubscriberEventTypes;
-    switch (event.type) {
-        case subTypes.CONNECT_FAILURE:
-        case subTypes.SUBSCRIBE_FAIL:
-          shutdownVideoElement();
-          break;
-    }
-    window.red5proHandleSubscriberEvent(event); // defined in src/template/partial/status-field-subscriber.hbs
-  };
-  var proxyLocal = window.query('local')
+  var updateStatusFromEvent = window.red5proHandleSubscriberEvent; // defined in src/template/partial/status-field-subscriber.hbs
   var instanceId = Math.floor(Math.random() * 0x10000).toString(16);
   var streamTitle = document.getElementById('stream-title');
   var statisticsField = document.getElementById('statistics-field');
   var bitrateField = document.getElementById('bitrate-field');
   var packetsField = document.getElementById('packets-field');
   var resolutionField = document.getElementById('resolution-field');
-  var addressField = document.getElementById('address-field');
-  var protocol = proxyLocal ? 'https' : serverSettings.protocol;
+
+  var protocol = serverSettings.protocol;
   var isSecure = protocol === 'https';
 
   var bitrate = 0;
@@ -96,12 +86,14 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     updateStatistics(bitrate, packetsReceived, frameWidth, frameHeight);
   }
 
+  // Determines the ports and protocols based on being served over TLS.
   function getSocketLocationFromProtocol () {
     return !isSecure
       ? {protocol: 'ws', port: serverSettings.wsport}
       : {protocol: 'wss', port: serverSettings.wssport};
   }
 
+  // Base configuration to extend in providing specific tech failover configurations.
   var defaultConfiguration = (function(useVideo, useAudio) {
     var c = {
       protocol: getSocketLocationFromProtocol().protocol,
@@ -116,37 +108,122 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     return c;
   })(configuration.useVideo, configuration.useAudio);
 
-  function shutdownVideoElement () {
-    var videoElement = document.getElementById('red5pro-subscriber');
-    if (videoElement) {
-      videoElement.pause()
-      videoElement.src = ''
+  function showModal (content) {
+    var div = document.createElement('div');
+    div.classList.add('modal');
+    var container = document.createElement('div');
+    var button = document.createElement('a');
+    var close = document.createTextNode('close');
+    button.href = "#";
+    button.appendChild(close);
+    button.classList.add('modal-close');
+    container.appendChild(button);
+    container.appendChild(content);
+    div.appendChild(container);
+    document.body.appendChild(div);
+    button.addEventListener('click', function (event) {
+      event.preventDefault();
+      document.body.removeChild(div);
+      return false;
+    });
+  }
+
+  function closePreviousModal () {
+    var modal = document.querySelector('.modal')
+    if (modal) {
+      modal.parentNode.removeChild(modal)
     }
   }
 
-  function getAuthenticationParams () {
-    var auth = configuration.authentication;
-    return auth && auth.enabled
-      ? {
-        connectionParams: {
-          username: auth.username,
-          password: auth.password
-        }
-      }
-      : {};
+  function createRPCMessageContent (json) {
+    closePreviousModal()
+    var style = 'padding: 10px'
+    var content = document.createElement('div')
+    var p = document.createElement('p')
+    var header = document.createTextNode(rtcConfig.streamName + ' has sent an RPC Message:')
+    p.appendChild(header)
+    var messageP = document.createElement('p')
+    messageP.style = style
+    var timestampP = document.createElement('p')
+    timestampP.style = style
+    var invokeP = document.createElement('p')
+    invokeP.style = style
+    var invoke = document.createTextNode('invoke: ' + json.methodName)
+    invokeP.appendChild(invoke)
+    var message = document.createTextNode('message: ' + json.data.message)
+    messageP.appendChild(message)
+    var timestamp = document.createTextNode('timestamp: ' + new Date(json.data.timestamp))
+    timestampP.appendChild(timestamp)
+    content.appendChild(p)
+    content.appendChild(invokeP)
+    content.appendChild(messageP)
+    content.appendChild(timestampP)
+    return content
   }
 
-  function displayServerAddress (serverAddress, proxyAddress) {
-    proxyAddress = (typeof proxyAddress === 'undefined') ? 'N/A' : proxyAddress;
-    addressField.innerText = ' Proxy Address: ' + proxyAddress + ' | ' + ' Edge Address: ' + serverAddress;
+  function createMessageContent (jsonString) {
+    closePreviousModal()
+    var json = JSON.parse(jsonString)
+    var style = 'padding: 10px'
+    var content = document.createElement('div')
+    var p = document.createElement('p')
+    var header = document.createTextNode(rtcConfig.streamName + ' has sent a non-RPC Message:')
+    p.appendChild(header)
+    var messageP = document.createElement('p')
+    messageP.style = style
+    var timestampP = document.createElement('p')
+    timestampP.style = style
+    var message = document.createTextNode('message: ' + json.data.message)
+    messageP.appendChild(message)
+    var timestamp = document.createTextNode('timestamp: ' + new Date(json.data.timestamp))
+    timestampP.appendChild(timestamp)
+    content.appendChild(p)
+    content.appendChild(messageP)
+    content.appendChild(timestampP)
+    return content
+  }
+
+  function createAudioPlaybackContent (arrayBuffer) {
+    closePreviousModal()
+    var style = 'padding: 10px; text-align: center'
+    var blob = new Blob([arrayBuffer])
+    var audioURL = window.URL.createObjectURL(blob)
+    var content = document.createElement('div')
+    var p = document.createElement('p')
+    var header = document.createTextNode(rtcConfig.streamName + ' has sent an Audio Message:')
+    var holder = document.createElement('p')
+    holder.style = style
+    var audio = document.createElement('audio')
+    audio.controls = true
+    audio.src = audioURL
+    holder.appendChild(audio)
+    p.appendChild(header)
+    content.appendChild(p)
+    content.appendChild(holder)
+    return content
   }
 
   // Local lifecycle notifications.
   function onSubscriberEvent (event) {
-    console.log('[Red5ProSubsriber] ' + event.type + '.');
-    updateStatusFromEvent(event);
-    if (event.type === 'Subscribe.VideoDimensions.Change') {
-      onResolutionUpdate(event.data.width, event.data.height);
+    if (event.type !== 'Subscribe.Time.Update') {
+      console.log('[Red5ProSubscriber] ' + event.type + '.');
+      updateStatusFromEvent(event);
+      if (event.type === 'Subscribe.VideoDimensions.Change') {
+        onResolutionUpdate(event.data.width, event.data.height);
+      } else if (event.type === 'WebRTC.DataChannel.Message') {
+        // Non-descript data coming in to handle.
+        // event.data.message will be a MessageEvent directly from the DataChannel
+        // event.data.message.data will be either a String or ArrayBuffer/Blob
+        var data = event.data.message.data
+        if (typeof data === 'string') {
+          showModal(createMessageContent(data))
+        } else {
+          showModal(createAudioPlaybackContent(data))
+        }
+      } else if (event.type === 'Subscribe.Send.Invoke') {
+        // Standard RPC call.
+        showModal(createRPCMessageContent(event.data))
+      }
     }
   }
   function onSubscribeFail (message) {
@@ -171,6 +248,37 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
   function onUnsubscribeSuccess () {
     console.log('[Red5ProSubsriber] Unsubscribe Complete.');
+  }
+
+  function getAuthenticationParams () {
+    var auth = configuration.authentication;
+    return auth && auth.enabled
+      ? {
+        connectionParams: {
+          username: auth.username,
+          password: auth.password
+        }
+      }
+      : {};
+  }
+
+  // Request to unsubscribe.
+  function unsubscribe () {
+    return new Promise(function(resolve, reject) {
+      var subscriber = targetSubscriber
+      subscriber.unsubscribe()
+        .then(function () {
+          targetSubscriber.off('*', onSubscriberEvent);
+          targetSubscriber = undefined;
+          onUnsubscribeSuccess();
+          resolve();
+        })
+        .catch(function (error) {
+          var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
+          onUnsubscribeFail(jsonError);
+          reject(error);
+        });
+    });
   }
 
   function getRegionIfDefined () {
@@ -297,44 +405,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
        });
   }
 
-  function showServerAddress (subscriber) {
-    var config = subscriber.getOptions();
-    console.log("Host = " + config.host + " | " + "app = " + config.app);
-    if (subscriber.getType().toLowerCase() === 'rtc') {
-      displayServerAddress(config.connectionParams.host, config.host);
-      console.log("Using streammanager proxy for rtc");
-      console.log("Proxy target = " + config.connectionParams.host + " | " + "Proxy app = " + config.connectionParams.app)
-      if(isSecure) {
-        console.log("Operating over secure connection | protocol: " + config.protocol + " | port: " +  config.port);
-      }
-      else {
-        console.log("Operating over unsecure connection | protocol: " + config.protocol + " | port: " +  config.port);
-      }
-    }
-    else {
-      displayServerAddress(config.host);
-    }
-  }
-
-  // Request to unsubscribe.
-  function unsubscribe () {
-    return new Promise(function(resolve, reject) {
-      var subscriber = targetSubscriber
-      subscriber.unsubscribe()
-        .then(function () {
-          targetSubscriber.off('*', onSubscriberEvent);
-          targetSubscriber = undefined;
-          onUnsubscribeSuccess();
-          resolve();
-        })
-        .catch(function (error) {
-          var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
-          onUnsubscribeFail(jsonError);
-          reject(error);
-        });
-    });
-  }
-
   var retryCount = 0;
   var retryLimit = 3;
   function respondToEdge (response) {
@@ -396,3 +466,4 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   window.addEventListener('beforeunload', shutdown);
 
 })(this, document, window.red5prosdk);
+
