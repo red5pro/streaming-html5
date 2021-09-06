@@ -164,6 +164,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   function createMessageContent (jsonString) {
     closePreviousModal()
     var json = JSON.parse(jsonString)
+    var data = json.data || data
     var style = 'padding: 10px'
     var content = document.createElement('div')
     var p = document.createElement('p')
@@ -173,9 +174,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     messageP.style = style
     var timestampP = document.createElement('p')
     timestampP.style = style
-    var message = document.createTextNode('message: ' + json.data.message)
+    var message = document.createTextNode('message: ' + data.message)
     messageP.appendChild(message)
-    var timestamp = document.createTextNode('timestamp: ' + new Date(json.data.timestamp))
+    var timestamp = document.createTextNode('timestamp: ' + new Date(data.timestamp))
     timestampP.appendChild(timestamp)
     content.appendChild(p)
     content.appendChild(messageP)
