@@ -53,41 +53,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   var targetPublisher;
 
-  var offButton = document.querySelector('#off-button')
-  var onButton = document.querySelector('#on-button')
-
-  offButton.addEventListener('click', () => {
-    const options = targetPublisher.getOptions()
-    const {
-      mediaElementId
-    } = options
-    const stream = document.querySelector(`#${mediaElementId}`).srcObject
-    const track = stream.getVideoTracks()[0];
-    track.enabled = false;
-    track.stop();
-  })
-  onButton.addEventListener('click', () => {
-    const senders = targetPublisher.getPeerConnection().getSenders()
-    const options = targetPublisher.getOptions()
-    const {
-      mediaConstraints,
-      mediaElementId
-    } = options
-    navigator.mediaDevices.getUserMedia(mediaConstraints)
-      .then(stream => {
-        var i = senders.length
-        while ( --i > -1) {
-          // 3. Replace the currently sending streams based on track kind
-          senders[i].track.stop()
-          if (senders[i].track.kind === 'video') {
-            senders[i].replaceTrack(stream.getVideoTracks()[0])
-          } else {
-            senders[i].replaceTrack(stream.getAudioTracks()[0])
-          }
-        }
-        document.querySelector(`#${mediaElementId}`).srcObject = stream
-      })
-  })
+  var cameraIsOff = false
+  var cameraButton = document.querySelector('#camera-button')
 
   var updateStatusFromEvent = window.red5proHandlePublisherEvent; // defined in src/template/partial/status-field-publisher.hbs
   var streamTitle = document.getElementById('stream-title');
@@ -258,7 +225,56 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
       console.error('[Red5ProPublisher] :: Error in publishing - ' + jsonError);
       onPublishFail(jsonError);
-     });
+    });
+
+
+  function turnCameraOff () {
+    const options = targetPublisher.getOptions()
+    const {
+      mediaElementId
+    } = options
+    const stream = document.querySelector(`#${mediaElementId}`).srcObject
+    const track = stream.getVideoTracks()[0]
+    track.enabled = false
+    track.stop()
+    cameraIsOff = true
+    targetPublisher.send("cameraToggle", {
+      isToggledOff: cameraIsOff
+    })
+  }
+  function turnCameraOn () {
+    const senders = targetPublisher.getPeerConnection().getSenders()
+    const options = targetPublisher.getOptions()
+    const {
+      mediaConstraints,
+      mediaElementId
+    } = options
+    navigator.mediaDevices.getUserMedia(mediaConstraints)
+      .then(stream => {
+        var i = senders.length
+        while ( --i > -1) {
+          // 3. Replace the currently sending streams based on track kind
+          senders[i].track.stop()
+          if (senders[i].track.kind === 'video') {
+            senders[i].replaceTrack(stream.getVideoTracks()[0])
+          } else {
+            senders[i].replaceTrack(stream.getAudioTracks()[0])
+          }
+        }
+        document.querySelector(`#${mediaElementId}`).srcObject = stream
+        cameraIsOff = false
+        targetPublisher.send("cameraToggle", {
+          isToggledOff: cameraIsOff
+        })
+      })
+  }
+  cameraButton.addEventListener('click', () => {
+    if (cameraIsOff) {
+      turnCameraOn()
+    } else {
+      turnCameraOff()
+    }
+  })
 
   var shuttingDown = false;
   function shutdown() {
