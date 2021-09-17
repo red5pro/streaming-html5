@@ -253,7 +253,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       .then(stream => {
         var i = senders.length
         while ( --i > -1) {
-          // 3. Replace the currently sending streams based on track kind
           senders[i].track.stop()
           if (senders[i].track.kind === 'video') {
             senders[i].replaceTrack(stream.getVideoTracks()[0])
