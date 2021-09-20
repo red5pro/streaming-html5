@@ -58,6 +58,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var bitrateField = document.getElementById('bitrate-field');
   var packetsField = document.getElementById('packets-field');
   var resolutionField = document.getElementById('resolution-field');
+  var addressField = document.getElementById('address-field');
 
   var protocol = serverSettings.protocol;
   var isSecure = protocol === 'https';
@@ -261,6 +262,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         }
       }
       : {};
+  }
+
+  function displayServerAddress (serverAddress, proxyAddress) {
+    proxyAddress = (typeof proxyAddress === 'undefined') ? 'N/A' : proxyAddress;
+    addressField.innerText = ' Proxy Address: ' + proxyAddress + ' | ' + ' Edge Address: ' + serverAddress;
   }
 
   function showServerAddress (subscriber) {
