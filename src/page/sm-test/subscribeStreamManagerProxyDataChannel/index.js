@@ -141,7 +141,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     var style = 'padding: 10px'
     var content = document.createElement('div')
     var p = document.createElement('p')
-    var header = document.createTextNode(rtcConfig.streamName + ' has sent an RPC Message:')
+    var header = document.createTextNode(configuration.stream1 + ' has sent an RPC Message:')
     p.appendChild(header)
     var messageP = document.createElement('p')
     messageP.style = style
@@ -165,11 +165,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   function createMessageContent (jsonString) {
     closePreviousModal()
     var json = JSON.parse(jsonString)
-    var data = json.data || data
+    var data = json.data || json
     var style = 'padding: 10px'
     var content = document.createElement('div')
     var p = document.createElement('p')
-    var header = document.createTextNode(rtcConfig.streamName + ' has sent a non-RPC Message:')
+    var header = document.createTextNode(configuration.stream1 + ' has sent a non-RPC Message:')
     p.appendChild(header)
     var messageP = document.createElement('p')
     messageP.style = style
@@ -192,7 +192,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     var audioURL = window.URL.createObjectURL(blob)
     var content = document.createElement('div')
     var p = document.createElement('p')
-    var header = document.createTextNode(rtcConfig.streamName + ' has sent an Audio Message:')
+    var header = document.createTextNode(configuration.stream1 + ' has sent an Audio Message:')
     var holder = document.createElement('p')
     holder.style = style
     var audio = document.createElement('audio')
