@@ -85,4 +85,4 @@ targetPublisher.send("cameraToggle", {
 })
 ```
 
-You can use this notification to update the UI on the subscriber side, which the [Subscriber - Camera Toggle](../subscriberCameraToggle) test demonstrates.
+You can use this notification to update the UI on the subscriber side, which the [Subscriber - Camera Toggle](../subscribeCameraToggle) test demonstrates.
