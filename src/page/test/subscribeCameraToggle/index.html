@@ -1,0 +1,45 @@
+<!doctype html>
+{{> license}}
+<html>
+  <head>
+    {{> meta title='Subscriber Camera Toggle'}}
+    {{> header-scripts}}
+    {{> header-stylesheets}}
+    <style>
+      .stream-section {
+        position: relative;
+      }
+      .callout {
+        position: absolute;
+        padding: 5px;
+        background-color: #000;
+        color: #fff;
+        top: 140px;
+        left: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    {{> top-bar }}
+    {{> navigation isTestPage=true }}
+    <div id="app">
+      {{> settings-link}}
+      {{> test-info testTitle='Subscriber Camera Toggle'}}
+      <div class="stream-section">
+        {{> status-field-subscriber}}
+        {{> statistics-field packets_field='Packets Received'}}
+        <div class="centered">
+          <video id="red5pro-subscriber"
+                  controls autoplay playsinline
+                  class="red5pro-subscriber red5pro-media red5pro-media-background"
+                  width="640" height="480">
+          </video>
+          <div id="message-callout" class="callout hidden"></div>
+        </div>
+      </div>
+    </div>
+    {{> body-scripts}}
+    {{> mobile-subscriber-util}}
+    <script src="index.js"></script>
+  </body>
+</html>
