@@ -23,6 +23,8 @@ Once the Camera is turned back on, video data will again start being sent to the
 When the Camera is set to an off state, the current `MediaStream` instance is accessed and its `MediaStreamTrack` that is associated with the video stream is disabled (will stop sending data) and stopped (will release the Camera from the browser).
 
 ```js
+let cameraIsOff = false
+
 function turnCameraOff () {
   const options = targetPublisher.getOptions()
   const {
