@@ -2,7 +2,7 @@
 {{> license}}
 <html>
   <head>
-    {{> meta title='Subscriber Remote Call'}}
+    {{> meta title='Subscriber Camera Toggle'}}
     {{> header-scripts}}
     {{> header-stylesheets}}
     <style>
@@ -12,7 +12,8 @@
       .callout {
         position: absolute;
         padding: 5px;
-        background-color: #dbdbdb;
+        background-color: #000;
+        color: #fff;
         top: 140px;
         left: 10px;
       }
@@ -23,7 +24,7 @@
     {{> navigation isTestPage=true }}
     <div id="app">
       {{> settings-link}}
-      {{> test-info testTitle='Subscriber Remote Call'}}
+      {{> test-info testTitle='Subscriber Camera Toggle'}}
       <div class="stream-section">
         {{> status-field-subscriber}}
         {{> statistics-field packets_field='Packets Received'}}
