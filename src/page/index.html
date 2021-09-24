@@ -142,6 +142,10 @@
           <label class="settings-label">Password:</label>
           <input id="auth-password-field" name="auth-password-field" disabled>
         </p>
+        <p class="settings-field settings-collapsable">
+          <label class="settings-label">Token:</label>
+          <input id="auth-token-field" name="auth-token-field" disabled>
+        </p>
         </p>
         <hr class="paddedHR" />
         <p class="settings-field">
@@ -214,6 +218,7 @@
         var authEnabledField = document.getElementById('auth-enabled-field');
         var authUsernameField = document.getElementById('auth-username-field');
         var authPasswordField = document.getElementById('auth-password-field');
+        var authTokenField = document.getElementById('auth-token-field');
 
         function hideShowICEOptions () {
           var isTurnServer = turnRegex.test(iceField.value);
@@ -328,6 +333,10 @@
           configuration.authentication.password = authPasswordField.value;
           seal(configuration);
         });
+        authTokenField.addEventListener('blur', function () {
+          configuration.authentication.token = authTokenField.value;
+          seal(configuration);
+        });
 
         loggingField.addEventListener('change', function () {
           configuration.verboseLogging = !configuration.verboseLogging;
@@ -400,7 +409,8 @@
           authEnabledField.checked = config.authentication.enabled ? true : false;
           authUsernameField.value = config.authentication.username;
           authPasswordField.value = config.authentication.password;
-          authUsernameField.disabled = authPasswordField.disabled = !authEnabledField.checked;
+          authTokenField.value = config.authentication.token;
+          authUsernameField.disabled = authPasswordField.disabled = authTokenField.disabled = !authEnabledField.checked;
 
           function selectFieldFromConfiguration (value, selectElem) {
             var i = selectElem.childNodes.length;
