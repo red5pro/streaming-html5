@@ -198,6 +198,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     var audio = document.createElement('audio')
     audio.controls = true
     audio.src = audioURL
+    audio.controlsList = "nodownload"
     holder.appendChild(audio)
     p.appendChild(header)
     content.appendChild(p)
