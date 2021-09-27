@@ -25,15 +25,15 @@
 
   //  red5prosdk.setLogLevel('debug')
   const rowCount = window.query('rows') || 3
-
-  const cefId = window.query('cef-id') || 'default-mixer-id'
+  const cefId = window.getParamByName('cef-id') || 'default-mixer-id'
+  const eventId = window.getParamByName('event-id') || 'default-event-id'
   const appContext = window.query('app') || 'live'
   const roomName = window.query('room') || ''
   const scope = roomName === '' ? appContext : `${appContext}/${roomName}`
   const sm = window.query('sm') || 'true'
   const requiresStreamManager = !sm ? false : !(sm && sm === 'false')
   const ws = window.query('ws') || 'null'
-  const webSocketEndpointForLayouts = `wss://${ws}?testbed=grid&type=cef&id=${cefId}`
+  const webSocketEndpointForLayouts = `wss://${ws}?testbed=grid&type=cef&id=${cefId}&event-id=${eventId}`
 
   const red5ProHost = window.query('host') || configuration.host
 
