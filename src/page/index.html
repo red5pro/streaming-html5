@@ -54,6 +54,16 @@
           <label class="settings-label">Stream2 Name:</label>
           <input id="stream2-field" name="stream2-field" value="stream2">
         </p>
+        <p class="settings-field settings-collapsable">
+          <label class="settings-label" for="level-input">Level:</label>
+          <select id="level-input" name="level-input">
+            <option value="TRACE">TRACE</option>
+            <option value="DEBUG" selected>DEBUG</option>
+            <option value="INFO">INFO</option>
+            <option value="WARN">WARN</option>
+            <option value="ERROR">ERROR</option>
+          </select>
+        </p>
         <hr class="paddedHR" />
         <h2 class="centered">WebRTC Specific</h2>
         <p class="settings-field settings-collapsable">
@@ -132,6 +142,10 @@
           <label class="settings-label">Password:</label>
           <input id="auth-password-field" name="auth-password-field" disabled>
         </p>
+        <p class="settings-field settings-collapsable">
+          <label class="settings-label">Token:</label>
+          <input id="auth-token-field" name="auth-token-field" disabled>
+        </p>
         </p>
         <hr class="paddedHR" />
         <p class="settings-field">
@@ -182,6 +196,7 @@
         var appField = document.getElementById('app-field');
         var stream1Field = document.getElementById('stream1-field');
         var stream2Field = document.getElementById('stream2-field');
+        var logLevelField = document.getElementById('level-input');
         var iceField = document.getElementById('ice-field');
         var iceUsername = document.getElementById('ice-username');
         var iceCredential = document.getElementById('ice-credential');
@@ -203,6 +218,7 @@
         var authEnabledField = document.getElementById('auth-enabled-field');
         var authUsernameField = document.getElementById('auth-username-field');
         var authPasswordField = document.getElementById('auth-password-field');
+        var authTokenField = document.getElementById('auth-token-field');
 
         function hideShowICEOptions () {
           var isTurnServer = turnRegex.test(iceField.value);
@@ -238,6 +254,11 @@
           configuration.stream2 = stream2Field.value;
           seal(configuration);
         });
+
+        logLevelField.addEventListener('change', function () {
+          configuration.sendLogLevel = logLevelField.value.toUpperCase();
+          seal(configuration);  
+        })
 
         iceField.addEventListener('blur', function () {
           configuration.rtcConfiguration.iceServers = [
@@ -312,6 +333,10 @@
           configuration.authentication.password = authPasswordField.value;
           seal(configuration);
         });
+        authTokenField.addEventListener('blur', function () {
+          configuration.authentication.token = authTokenField.value;
+          seal(configuration);
+        });
 
         loggingField.addEventListener('change', function () {
           configuration.verboseLogging = !configuration.verboseLogging;
@@ -384,7 +409,8 @@
           authEnabledField.checked = config.authentication.enabled ? true : false;
           authUsernameField.value = config.authentication.username;
           authPasswordField.value = config.authentication.password;
-          authUsernameField.disabled = authPasswordField.disabled = !authEnabledField.checked;
+          authTokenField.value = config.authentication.token;
+          authUsernameField.disabled = authPasswordField.disabled = authTokenField.disabled = !authEnabledField.checked;
 
           function selectFieldFromConfiguration (value, selectElem) {
             var i = selectElem.childNodes.length;
@@ -398,6 +424,7 @@
             }
             selectElem.value = value;
           }
+          selectFieldFromConfiguration(config.sendLogLevel, logLevelField);
           selectFieldFromConfiguration(config.iceTransport, iceTransportSelect);
           selectFieldFromConfiguration(config.rtcConfiguration.bundlePolicy, rtcBundlePolicySelect);
           selectFieldFromConfiguration(config.rtcConfiguration.iceTransportPolicy, rtcTransportPolicySelect);

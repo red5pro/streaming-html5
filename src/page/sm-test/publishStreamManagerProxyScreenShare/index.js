@@ -164,7 +164,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     try {
       var pc = publisher.getPeerConnection();
       var stream = publisher.getMediaStream();
-      window.trackBitrate(pc, onBitrateUpdate);
+      window.trackBitrate(pc, onBitrateUpdate, onResolutionUpdate);
       statisticsField.classList.remove('hidden');
       stream.getVideoTracks().forEach(function (track) {
         var settings = track.getSettings();
@@ -254,7 +254,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       ? {
         connectionParams: {
           username: auth.username,
-          password: auth.password
+          password: auth.password,
+          token: auth.token
         }
       }
       : {};
