@@ -141,7 +141,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   });
 
   sendMessageButton.addEventListener('click', () => {
-    const message = JSON.stringify({message: messageInput.value, timestamp: new Date()})
+    const message = JSON.stringify({message: messageInput.value, timestamp: new Date().getTime()})
     console.log(`Sending along message: ${message}`)
     targetPublisher.getDataChannel().send(message)
   })
