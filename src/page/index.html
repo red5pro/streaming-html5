@@ -322,7 +322,7 @@
 
         authEnabledField.addEventListener('change', function () {
           configuration.authentication.enabled = authEnabledField.checked;
-          authUsernameField.disabled = authPasswordField.disabled = !configuration.authentication.enabled;
+          authUsernameField.disabled = authPasswordField.disabled = authTokenField.disabled = !configuration.authentication.enabled;
           seal(configuration);
         });
         authUsernameField.addEventListener('blur', function () {
