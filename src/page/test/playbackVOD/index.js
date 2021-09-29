@@ -120,6 +120,16 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     return filename.indexOf('.m3u8') !== -1;
   }
 
+  function getAuthQueryParams () {
+    var auth = configuration.authentication
+    var kv = []
+    for (var key in auth) {
+      if (key === 'enabled' || auth[key] === '') continue
+      kv.push(`${key}=${auth[key]}`)
+    }
+    return kv.join('&')
+  }
+
   function getFileURL (filename) {
     var baseURL = protocol + '://' + configuration.host + 
                   ':' + (isSecure ? serverSettings.hlssport : serverSettings.hlsport) + 
@@ -131,6 +141,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   function useMP4Fallback (url) {
+    if (configuration.authentication.enabled) {
+      url += `?${getAuthQueryParams()}`
+    }
     console.log('[subscribe] Playback MP4: ' + url);
     if (url.indexOf('streams/') === -1) {
       var paths = url.split('/');
@@ -145,6 +158,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   function useVideoJSFallback (url) {
+    if (configuration.authentication.enabled) {
+      url += `?${getAuthQueryParams()}`
+    }
     console.log('[subscribe] Playback HLS: ' + url);
     var videoElement = document.getElementById('red5pro-subscriber');
     videoElement.classList.add('video-js');
