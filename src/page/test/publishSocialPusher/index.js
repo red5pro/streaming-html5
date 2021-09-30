@@ -86,7 +86,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 	  const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8);           // hash the message
 	  const hashArray = Array.from(new Uint8Array(hashBuffer));                     // convert buffer to byte array
 	  const hashHex = hashArray.map(b => {
-				var result = b.toString(16); // NO leading zeros
+				var result = b.toString(16).padStart(2, '0');
 				//console.log("b: " + b + " result: " + result);
 				return result;
 			}).join(''); // convert bytes to hex string
@@ -181,7 +181,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     try {
       var pc = publisher.getPeerConnection();
       var stream = publisher.getMediaStream();
-      window.trackBitrate(pc, onBitrateUpdate);
+      window.trackBitrate(pc, onBitrateUpdate, onResolutionUpdate);
       statisticsField.classList.remove('hidden');
       stream.getVideoTracks().forEach(function (track) {
         var settings = track.getSettings();
@@ -205,7 +205,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       ? {
         connectionParams: {
           username: auth.username,
-          password: auth.password
+          password: auth.password,
+          token: auth.token
         }
       }
       : {};

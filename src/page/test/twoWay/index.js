@@ -147,7 +147,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     updateStatusFromSubscribeEvent(event, subStatusField);
     if (event.type === 'Subscribe.VideoDimensions.Change') {
       var resolutionField = statisticsFields[1].getElementsByClassName('resolution-field')[0];
-      resolutionField.text = event.data.width + 'x' + event.data.height;
+      resolutionField.innerText = event.data.width + 'x' + event.data.height;
     }
   }
   function onSubscribeFail (message) {
@@ -167,25 +167,18 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           var frameHeight = 0;
           var bitrateField = statisticsFields[index].getElementsByClassName('bitrate-field')[0];
           var packetsField = statisticsFields[index].getElementsByClassName('packets-field')[0];
-          var resolutionField = statisticsFields[index].getElementsByClassName('resolution-field')[0];
 
-          var updateStatisticsField = function (b, p, w, h) {
+          var updateStatisticsField = function (b, p) {
             statisticsFields[index].classList.remove('hidden');
             bitrateField.innerText =  Math.floor(b);
             packetsField.innerText = p;
-            resolutionField.innerText = w + 'x' + h;
           }
           var onBitrateUpdate = function (b, p) {
             bitrate = b;
             packets = p
             updateStatisticsField(bitrate, packets, frameWidth, frameHeight);
           }
-          var onResolutionUpdate = function (w, h) {
-            frameWidth = w;
-            frameHeight = h;
-            updateStatisticsField(bitrate, packets, frameWidth, frameHeight);
-          }
-          window.trackBitrate(sub.getPeerConnection(), onBitrateUpdate, onResolutionUpdate, true, true);
+          window.trackBitrate(sub.getPeerConnection(), onBitrateUpdate, null, true, true);
         } catch (e) {
           //
         }
@@ -205,7 +198,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       ? {
         connectionParams: {
           username: auth.username,
-          password: auth.password
+          password: auth.password,
+          token: auth.token
         }
       }
       : {};

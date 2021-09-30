@@ -113,7 +113,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       updateStatusFromEvent(event);
     }
     if (event.type === red5prosdk.SubscriberEventTypes.CONNECTION_CLOSED ||
-       event.type === red5prosdk.SubscriberEventTypes.CONNECT_FAILURE) {
+      event.type === red5prosdk.SubscriberEventTypes.CONNECT_FAILURE ||
+      event.type === red5prosdk.SubscriberEventTypes.PLAY_UNPUBLISH) {
         setConnected(false);
     }
     if (event.type === 'WebRTC.DataChannel.Error') {
@@ -153,7 +154,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       ? {
         connectionParams: {
           username: auth.username,
-          password: auth.password
+          password: auth.password,
+          token: auth.token
         }
       }
       : {};

@@ -96,12 +96,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 		const xhr = new XMLHttpRequest()
 		xhr.addEventListener('readystatechange', function() {
 			if (this.readyState === this.DONE) {
-				console.log(this.responseText)
-
-				if (xhr.status) {
+				if (this.status >= 200 && this.status < 300) {
 					console.log("SUCCESS status.");
 				} else {
-					console.log("ERROR status: " + xhr.status);
+					console.log("ERROR status: " + this.status + " : " + this.responseText);
+					alert("Error " + this.status + " : " + this.responseText);
 				}
 			}
 		})
@@ -111,9 +110,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 		var port = serverSettings.httpport;
 		var baseUrl = protocol + '://' + host + ':' + port;
 		var apiVersion = configuration.streamManagerAPI || '4.0';
-		var uri = baseUrl + "/streammanager/api/" + apiVersion + "/interstitial?accessToken=" + accessToken;
+		var uri = baseUrl + "/streammanager/api/" + apiVersion + "/admin/interstitial?accessToken=" + accessToken;
 
 		xhr.open('POST', uri)
+		xhr.setRequestHeader('accept', 'application/json')
 		xhr.setRequestHeader('content-type', 'application/json')
 		xhr.send(json)
 
@@ -122,31 +122,41 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 	}
 
 	sendButton.addEventListener('click', async function (event) {
-		postInterstitialRest(JSON.stringify({
-						  "user": "foo",
-						  "digest": "bar",
-						  "inserts": [
-							{
-							  "id": 1,
-							  "target": target.value,
-							  "interstitial": interstitial.value,
-							  "loop": isLoop.checked,
-							  "type": durationControlType.value,
-							  "isInterstitialAudio": switchAudio.checked,
-							  "isInterstitialVideo": switchVideo.checked,
-							  "start": start.value,
-							  "duration": duration.value
-							}
-						  ]
-						}));
+		if (!target.value) {
+			alert("Target stream GUID is required but missing.");
+		} else if (!interstitial.value) {
+			alert("Interstitial stream GUID is required but missing.");
+		} else {
+			postInterstitialRest(JSON.stringify({
+							  "user": "foo",
+							  "digest": "bar",
+							  "inserts": [
+								{
+								  "id": 1,
+								  "target": target.value,
+								  "interstitial": interstitial.value,
+								  "loop": isLoop.checked,
+								  "type": durationControlType.value,
+								  "isInterstitialAudio": switchAudio.checked,
+								  "isInterstitialVideo": switchVideo.checked,
+								  "start": start.value,
+								  "duration": duration.value
+								}
+							  ]
+							}));
+		}
 	});
 
 	resumeButton.addEventListener('click', async function (event) {
-		postInterstitialRest(JSON.stringify({
-						  "user": "foo",
-						  "digest": "bar",
-						  "resume": target.value
-						}));
+		if (!target.value) {
+			alert("Target stream GUID is required but missing.");
+		} else {
+			postInterstitialRest(JSON.stringify({
+							  "user": "foo",
+							  "digest": "bar",
+							  "resume": target.value
+							}));
+		}
 	});
 
 	// XXX /interstitial
@@ -205,7 +215,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       ? {
         connectionParams: {
           username: auth.username,
-          password: auth.password
+          password: auth.password,
+          token: auth.token
         }
       }
       : {};

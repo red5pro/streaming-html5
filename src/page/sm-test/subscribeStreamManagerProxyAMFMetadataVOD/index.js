@@ -127,7 +127,20 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     return url.indexOf('.mp4') !== -1;
   }
 
+  function getAuthQueryParams () {
+    var auth = configuration.authentication
+    var kv = []
+    for (var key in auth) {
+      if (key === 'enabled' || auth[key] === '') continue
+      kv.push(`${key}=${auth[key]}`)
+    }
+    return kv.join('&')
+  }
+
   function useMP4Fallback(url) {
+    if (configuration.authentication.enabled) {
+      url += `?${getAuthQueryParams()}`
+    }
     console.log('[subscribe] Playback MP4: ' + url);
     if (url.indexOf('streams/') === -1) {
       var paths = url.split('/');
@@ -165,6 +178,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   let playbackStart
   function useHLSJSFallback(url) {
+    if (configuration.authentication.enabled) {
+      url += `?${getAuthQueryParams()}`
+    }
     console.log('[subscribe] Playback HLS: ' + url);
     var video = document.getElementById('red5pro-subscriber');
     video.classList.add('video-js');
@@ -262,6 +278,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     var baseUrl = protocol + '://' + host + ':' + port;
     var apiVersion = configuration.streamManagerAPI || '4.0';
     var url = baseUrl + '/streammanager/api/' + apiVersion + '/media/' + app + '/playlists';
+    if (configuration.authentication.enabled) {
+      url += `?${getAuthQueryParams()}`
+    }
     return new Promise(function (resolve, reject) {
       fetch(url)
         .then(function (res) {
