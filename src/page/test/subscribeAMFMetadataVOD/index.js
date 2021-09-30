@@ -158,16 +158,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     element.appendChild(source);
   }
 
-  function enableMetadataMonitor(player) {
-
-    const textTracks = typeof player.textTracks === 'function' ? player.textTracks() : player.textTracks
-
+  function enableMetadataMonitor(video) {
+    const textTracks = typeof video.textTracks === 'function' ? video.textTracks() : video.textTracks
     if (textTracks) {
-
-      player.addTextTrack('metadata')
-
+      video.addTextTrack('metadata')
       textTracks.addEventListener('addtrack', addTrackEvent => {
-
         let track = addTrackEvent.track
         track.mode = 'hidden'
         track.addEventListener('cuechange', cueChangeEvent => {
@@ -191,88 +186,70 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             let data = cues[i]
             if (data.value) {
               if (data.value.key === 'TXXX') {
-                // todo add metadata
-                processAMFData(data.value.data)
+                let metadata = JSON.parse(data.value.data)
+                //console.log(metadata)
+                processAMFData(metadata, video)
               }
             }
           }
+
         })
 
       })
     }
-
   }
 
-  let offset = -1
   let metadataSet = new Set()
-  let lastDisplayTime = -1
-  function processAMFData(data) {
+  function processAMFData(data, video) {
     //console.log('received data: ', data)
-    data = JSON.parse(data)
-
-    const monthMap = {
-      Jan: 0,
-      Feb: 1,
-      Mar: 2,
-      Apr: 3,
-      May: 4,
-      Jun: 5,
-      Jul: 6,
-      Aug: 7,
-      Sep: 8,
-      Oct: 9,
-      Nov: 10,
-      Dec: 11
-    }
-
-    let creationDate = data.creationdate
-    let dateSplits = creationDate.split(" ")
-    let timeSplits = dateSplits[3].split(":")
-    const date = new Date(dateSplits[4], monthMap[dateSplits[1]], dateSplits[2] - 1, timeSplits[0], timeSplits[1], timeSplits[2])
-
-    let wait = -1
-    let now = Date.now()
-    if (offset < 0) {
-      wait = 0
-      lastDisplayTime = now
-      offset = date.getTime()
+    const eventTimeMs = data.eventTimeMs
+    if (data.creator && !metadataSet.has(data.title)) {
       metadataSet.add(data.title)
-    } else if (!metadataSet.has(data.title)) {
-      wait = date.getTime() - offset
-      if (((now + wait) < (lastDisplayTime + 250)) && ((now + wait) > (lastDisplayTime - 250))) {
-        wait = wait + 250
-      }
-      lastDisplayTime = now + wait
-      metadataSet.add(data.title)
-    }
-
-    if (wait >= 0) {
-      setTimeout(() => {
+      let now = new Date().getTime()
+      if (now > playbackStart + eventTimeMs) {
         const p = document.getElementById('metadata')
         if (p) {
           p.innerHTML = JSON.stringify(data)
         }
-      }, wait)
+      } else {
+        setTimeout(() => {
+          const p = document.getElementById('metadata')
+          if (p) {
+            p.innerHTML = JSON.stringify(data)
+          }
+        }, (playbackStart + eventTimeMs) - now)
+        console.log('showing ', data.creator, (playbackStart + eventTimeMs) - now)
+      }
     }
   }
-
+  
+  let playbackStart
   function useHLSJSFallback(url) {
     if (configuration.authentication.enabled) {
       url += `?${getAuthQueryParams()}`
     }
     console.log('[subscribe] Playback HLS: ' + url);
-    var videoElement = document.getElementById('red5pro-subscriber');
-    videoElement.classList.add('video-js');
+    var video = document.getElementById('red5pro-subscriber');
+    video.classList.add('video-js');
     var videoSrc = url;
     if (window.Hls.isSupported()) {
       var hls = new window.Hls();
-      hls.loadSource(videoSrc);
-      hls.attachMedia(videoElement);
-      enableMetadataMonitor(videoElement)
+      // bind them together
+      hls.attachMedia(video);
+      hls.on(window.Hls.Events.MEDIA_ATTACHED, function () {
+        console.log('video and hls.js are now bound together !');
+        hls.loadSource(videoSrc);
+        hls.on(window.Hls.Events.MANIFEST_PARSED, function (event, data) {
+          video.play();
+          playbackStart = new Date().getTime()
+          console.log('manifest loaded, found ' + data.levels.length + ' quality level');
+        });
+      });
+      enableMetadataMonitor(video)
     }
-    else if (videoElement.canPlayType('application/vnd.apple.mpegurl')) {
-      videoElement.src = videoSrc;
-      enableMetadataMonitor(videoElement)
+    else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+      video.src = videoSrc;
+      enableMetadataMonitor(video)
     }
   }
 
