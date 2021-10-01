@@ -26,7 +26,7 @@
   let colCount = 1
 
   const cefId = window.query('cef-id') || 'default-mixer-id'
-  const eventId = window.getParamByName('event-id') || 'default-event-id'
+  const eventId = window.query('event-id') || 'default-event-id'
 
   const appContext = window.query('app') || 'live'
   const roomName = window.query('room') || ''

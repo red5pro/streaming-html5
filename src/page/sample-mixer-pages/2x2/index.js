@@ -25,8 +25,8 @@
   //  red5prosdk.setLogLevel('debug')
 
   const rowCount = window.query('rows') || 2
-  const cefId = window.getParamByName('cef-id') || 'default-mixer-id'
-  const eventId = window.getParamByName('event-id') || 'default-event-id'
+  const cefId = window.query('cef-id') || 'default-mixer-id'
+  const eventId = window.query('event-id') || 'default-event-id'
   const appContext = window.query('app') || 'live'
   window.mixingLayer = window.query('layer') || 'top'
   const roomName = window.query('room') || ''
