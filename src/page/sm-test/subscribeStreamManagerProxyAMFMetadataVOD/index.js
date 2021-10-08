@@ -194,6 +194,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         hls.loadSource(videoSrc);
         hls.on(window.Hls.Events.MANIFEST_PARSED, function (event, data) {
           video.play();
+          video.currentTime = 1;
           playbackStart = new Date().getTime()
           console.log('manifest loaded, found ' + data.levels.length + ' quality level');
         });
