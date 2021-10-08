@@ -121,7 +121,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     return filename.indexOf('.m3u8') !== -1;
   }
 
-  function getAuthQueryParams () {
+  function getAuthQueryParams() {
     var auth = configuration.authentication
     var kv = []
     for (var key in auth) {
@@ -222,7 +222,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       }
     }
   }
-  
+
   let playbackStart
   function useHLSJSFallback(url) {
     if (configuration.authentication.enabled) {
@@ -241,6 +241,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         hls.loadSource(videoSrc);
         hls.on(window.Hls.Events.MANIFEST_PARSED, function (event, data) {
           video.play();
+          video.currentTime = 1;
           playbackStart = new Date().getTime()
           console.log('manifest loaded, found ' + data.levels.length + ' quality level');
         });
