@@ -221,7 +221,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             var json = JSON.parse(event.data.message.data)
             // Otherwise is an invoke.
             if (!json.hasOwnProperty('send')) {
-              showModal(createMessageContent(data))
+              showModal(createMessageContent(json))
             }
           } catch (e) {
             // drop.
