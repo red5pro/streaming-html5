@@ -25,8 +25,8 @@
   //  red5prosdk.setLogLevel('debug')
 
   const rowCount = window.query('rows') || 2
-
   const cefId = window.query('cef-id') || 'default-mixer-id'
+  const eventId = window.query('event-id') || 'default-event-id'
   const appContext = window.query('app') || 'live'
   window.mixingLayer = window.query('layer') || 'top'
   const roomName = window.query('room') || ''
@@ -34,7 +34,7 @@
   const sm = window.query('sm') || 'true'
   const requiresStreamManager = !sm ? false : !(sm && sm === 'false')
   const ws = window.query('ws') || 'null'
-  const webSocketEndpointForLayouts = `wss://${ws}?testbed=grid&type=cef&id=${cefId}`
+  const webSocketEndpointForLayouts = `wss://${ws}?testbed=grid&type=cef&id=${cefId}&event-id=${eventId}`
   const red5ProHost = window.query('host') || configuration.host
 
   // Round Trip Authentication

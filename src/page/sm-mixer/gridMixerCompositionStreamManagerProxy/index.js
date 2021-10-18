@@ -815,6 +815,11 @@
       return
     }
 
+    // add event-id so we can identify what event a mixer is handling
+    mixers.forEach(mixer => {
+      mixer.mixingPage = `${mixer.mixingPage}&event-id=${eventName}`
+    })
+
     const createCompositionMessage = {
       type: 'createComposition',
       event: eventName,

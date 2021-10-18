@@ -25,6 +25,9 @@ module.exports = {
         else {
             ws.id = null
         }
+        if (Object.prototype.hasOwnProperty.call(params, 'event-id')) {
+            ws['event-id'] = params['event-id']
+        }
 
         saveWSConnection(ws, params)
         ws.on('message', function (message) {
@@ -84,7 +87,27 @@ module.exports = {
 }
 
 
-const updateMixerWebSocketConnectedState = (mixerId, isConnected) => {
+const updateMixerWebSocketConnectedState = (mixerNodeId, eventName, isConnected) => {
+
+    if (!eventName || !mixerNodeId) {
+        return
+    }
+
+    console.log(`updateMixerWebSocketConnectedState - eventName: ${eventName}, mixerNodeId: ${mixerNodeId}`)
+    if (!activeCompositions[eventName]) {
+        console.log(`Could not find composition with name: ${eventName}`)
+        return
+    }
+
+    const mixers = activeCompositions[eventName].mixers
+    mixers.forEach((mixer) => {
+        if (mixer.id == mixerNodeId) {
+            mixer.isWebSocketConnected = isConnected
+            console.log(`Set state of mixer: ${mixer.id} to connected`)
+        }
+    })
+
+    /*
     Object.keys(activeCompositions).forEach((name) => {
         const mixers = activeCompositions[name].mixers
         mixers.forEach((mixer) => {
@@ -93,15 +116,18 @@ const updateMixerWebSocketConnectedState = (mixerId, isConnected) => {
             }
         })
     })
+    */
 }
 
 const saveWSConnection = function (ws) {
     const id = ws.id
     const type = ws.type
     if (ws.type === 'cef' && id != null) {
-        mixerSockets[id] = ws
-        updateMixerWebSocketConnectedState(id, true)
-        postMixerComposition(id)
+        const eventId = ws['event-id']
+        const mixerPageId = `${id}-${eventId}`
+        mixerSockets[mixerPageId] = ws
+        updateMixerWebSocketConnectedState(id, eventId, true)
+        postMixerComposition(id, eventId)
         Object.keys(managerSockets).forEach((manager) => postActiveComposition(managerSockets[manager]))
     }
     else if (ws.type === 'manager' && id != null) {
@@ -119,8 +145,33 @@ const saveWSConnection = function (ws) {
     console.log(`Registered a ${type} connection`)
 }
 
-const postMixerComposition = function (mixerId) {
-    Object.keys(activeCompositions).forEach((compositionName) => {
+const postMixerComposition = function (mixerNodeId, eventName) {
+    if (!eventName || !mixerNodeId) {
+        return
+    }
+
+    console.log(`postMixerComposition - eventName: ${eventName}, mixerNodeId: ${mixerNodeId}`)
+    if (!activeCompositions[eventName]) {
+        console.log(`Could not find composition with name: ${eventName}`)
+        return
+    }
+
+    const mixers = activeCompositions[eventName].mixers
+    mixers.forEach((mixer) => {
+        if (mixer.id != mixerNodeId) {
+            return
+        }
+
+        const streams = mixer.streams
+        if (streams && Object.hasOwnProperty.call(streams, 'muted') && Object.hasOwnProperty.call(streams, 'unmuted')) {
+            const muted = streams.muted
+            const unmuted = streams.unmuted
+            const add = [].concat(muted).concat(unmuted)
+            const id = `${mixer.id}-${eventName}`
+            postCompositionUpdateToMixer(mixerSockets[id], add, [], muted, unmuted)
+        }
+    })
+    /*Object.keys(activeCompositions).forEach((compositionName) => {
         const composition = activeCompositions[compositionName]
         const mixers = composition.mixers
         mixers.forEach((mixer) => {
@@ -137,14 +188,14 @@ const postMixerComposition = function (mixerId) {
                 postCompositionUpdateToMixer(mixerSockets[mixerId], add, [], muted, unmuted)
             }
         })
-    })
+    })*/
 }
 
 const clearWSData = function (ws) {
     if (ws.type === 'cef') {
-        updateMixerWebSocketConnectedState(ws.id, false)
+        updateMixerWebSocketConnectedState(ws.id, ws['event-id'], false)
         Object.keys(managerSockets).forEach((manager) => postActiveComposition(managerSockets[manager]))
-        delete mixerSockets[ws.id]
+        delete mixerSockets[`${ws.id}-${ws['event-id']}`]
     }
     else if (ws.type === 'manager') {
         delete managerSockets[ws.id]
@@ -350,7 +401,8 @@ const pollStreamManagerForCompositionState = function (compositionName) {
                 mixers.forEach((mixer) => {
                     const state = mixer.state
                     const serverAddress = mixer.serverAddress
-                    const isWebSocketConnected = Object.hasOwnProperty.call(mixerSockets, mixer.id)
+                    const id = `${mixer.id}-${compositionName}`
+                    const isWebSocketConnected = Object.hasOwnProperty.call(mixerSockets, id)
                     if (state === 'pending') {
                         isPending |= true
                         areAllComposing &= false
@@ -416,19 +468,19 @@ const updateLocalActiveCompositionData = function (compositionName, mixerData) {
     console.log(compositionName, mixerData)
     const mixers = activeCompositions[compositionName].mixers
     mixers.forEach((mixer) => {
-        const mixerId = mixer.id
-        if (!Object.hasOwnProperty.call(mixerData, mixerId)) {
+        const mixerNodeId = mixer.id
+        if (!Object.hasOwnProperty.call(mixerData, mixerNodeId)) {
             return
         }
 
-        if (Object.hasOwnProperty.call(mixerData[mixerId], 'state')) {
-            mixer.state = mixerData[mixerId].state
+        if (Object.hasOwnProperty.call(mixerData[mixerNodeId], 'state')) {
+            mixer.state = mixerData[mixerNodeId].state
         }
-        if (Object.hasOwnProperty.call(mixerData[mixerId], 'serverAddress')) {
-            mixer.serverAddress = mixerData[mixerId].serverAddress
+        if (Object.hasOwnProperty.call(mixerData[mixerNodeId], 'serverAddress')) {
+            mixer.serverAddress = mixerData[mixerNodeId].serverAddress
         }
-        if (Object.hasOwnProperty.call(mixerData[mixerId], 'isWebSocketConnected')) {
-            mixer.isWebSocketConnected = mixerData[mixerId].isWebSocketConnected
+        if (Object.hasOwnProperty.call(mixerData[mixerNodeId], 'isWebSocketConnected')) {
+            mixer.isWebSocketConnected = mixerData[mixerNodeId].isWebSocketConnected
         }
     })
     console.log(JSON.stringify(activeCompositions))
@@ -497,10 +549,11 @@ const updateComposition = function (ws, message) {
             return
         }
 
-        const id = compositionUpdate['cef-id']
+        const mixerNodeId = compositionUpdate['cef-id']
         let isMixerConnected = true
-        if (!Object.prototype.hasOwnProperty.call(mixerSockets, id)) {
-            console.log(`Mixer with id ${id} is not connected yet.`)
+        const mixerPageId = `${mixerNodeId}-${eventName}`
+        if (!Object.prototype.hasOwnProperty.call(mixerSockets, mixerPageId)) {
+            console.log(`Mixer with id ${mixerPageId} is not connected yet.`)
             isMixerConnected = false
         }
 
@@ -527,9 +580,9 @@ const updateComposition = function (ws, message) {
         }
 
         if (isMixerConnected) {
-            postCompositionUpdateToMixer(mixerSockets[id], add, remove, mute, unmute)
+            postCompositionUpdateToMixer(mixerSockets[mixerPageId], add, remove, mute, unmute)
         }
-        updateLocalCompositionStreamData(id, eventName, add, remove, mute, unmute)
+        updateLocalCompositionStreamData(mixerNodeId, eventName, add, remove, mute, unmute)
     })
 
     // send composition update to managers/editors 
