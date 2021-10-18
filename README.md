@@ -114,13 +114,22 @@ To define the **Host** with the server instance's IP, click the _Host_ field f t
 | :-----
 | *An example of utilizing round-trip authentication with Red5 Pro.*
 
+| **[Screen Share](src/page/test/publishScreenShare)**
+| :-----
+| *An example of utilizing the screen sharing capabilities of* **Chrome** *and* **Firefox**.<br> For use with Subscribe Screen Share example.
+
 | **[Shared Object](src/page/test/publishSharedObject)**
 | :-----
 | *Demonstrates using remote Shared Object to send and recieve information between connected clients.*
 
-| **[Screen Share](src/page/test/publishScreenShare)**
+| **[Social Media Stream Push](src/page/test/publishSocialPusher)**
 | :-----
-| *An example of utilizing the screen sharing capabilities of* **Chrome** *and* **Firefox**.<br> For use with Subscribe Screen Share example.
+| *An example of rebroadcasting a live stream to a social media platform.*
+
+| **[VP8](src/page/test/publishVP8)**
+| :-----
+| *An example for requesting VP8 video codec on publish*
+
 
 ### Publishing - Stream Manager Examples
 
@@ -159,6 +168,10 @@ To define the **Host** with the server instance's IP, click the _Host_ field f t
 | **[Stream Manager Proxy Screen Share](src/page/sm-test/publishStreamManagerProxyScreenShare)**
 | :-----
 | *An example of utilizing the screen sharing capabilities of* **Chrome** *and* **Firefox**. *For use with Stream Manager Proxy Subscribe Screen Share example.*
+
+| **[Stream Manager Proxy Social Media Stream Push](src/page/sm-test/publishStreamManagerSocialPusher)**
+| :-----
+| *An example of rebroadcasting a live stream to a social media platform.*
 
 | **[Stream Manager Proxy Transcoder](src/page/sm-test/publishStreamManagerProxyTranscoderPOST)**
 | :-----
@@ -278,11 +291,11 @@ To define the **Host** with the server instance's IP, click the _Host_ field f t
 | :-----
 | *Demonstrates utilizing the Red5 Pro Stream Manager API to access an Edge server IP to subscribe to a live stream.*
 
-| **[Stream Manager Proxy Reconnect](src/page/test/subscribeStreamManagerProxyReconnect)**
+| **[Stream Manager Proxy Reconnect](src/page/sm-test/subscribeStreamManagerProxyReconnect)**
 | :-----
 | *Demonstrates the failover mechanism of the Red5 Pro HTML SDK to select a subscriber based on browser support and to auto-reconnect on close of broadcast or loss of connection.*
 
-| **[Stream Manager Proxy Region](src/page/test/subscribeStreamManagerProxyRegionRequest)**
+| **[Stream Manager Proxy Region](src/page/sm-test/subscribeStreamManagerProxyRegionRequest)**
 | :-----
 | *Demonstrates utilizing the Red5 Pro Stream Manager API to access an Edge server IP to subscribe to a live stream.*
 
@@ -305,6 +318,37 @@ To define the **Host** with the server instance's IP, click the _Host_ field f t
 | **[Stream Manager Proxy Screen Share](src/page/sm-test/subscribeStreamManagerProxyScreenShare)**
 | :-----
 | *An example of utilizing the screen sharing capabilities of* **Chrome** *and* **Firefox**. *For use with Publish Screen Share example.*
+
+
+### Mixer - Stream Manager Examples
+
+| **[Stream Manager Proxy Conference Participant](src/page/sm-mixer/conferenceParticipantStreamManagerProxy)**
+| :-----
+| *Demonstrates utilizing the Red5 Pro Stream Manager API to join a video conference with a single return stream.*
+
+| **[Stream Manager Proxy Conference Host](src/page/sm-mixer/conferenceHostStreamManagerProxy)**
+| :-----
+| *Demonstrates utilizing the Red5 Pro Stream Manager API to host and manage a video conference with a single return stream.*
+
+| **[Stream Manager Grid Composition Host](src/page/sm-mixer/gridMixerCompositionStreamManagerProxy)**
+| :-----
+| *Demonstrates utilizing the Red5 Pro Stream Manager API to create and manage a composition of several live streams into a single stream.*
+
+| **[Stream Manager 2x2 Grid Layout Example](src/page/sample-mixer-pages/2x2)**
+| :-----
+| *Demonstrates composing a set of live streams into a 2x2 grid that can be loaded into a Red5 Pro Mixer to create a composition with up to 4 streams.*
+
+| **[Stream Manager 3x3 Grid Layout Example](src/page/sample-mixer-pages/3x3)**
+| :-----
+| *Demonstrates composing a set of live streams into a 3x3 grid that can be loaded into a Red5 Pro Mixer to create a composition with up to 9 streams.*
+
+| **[Stream Manager NxN Grid Layout Example](src/page/sample-mixer-pages/nxn)**
+| :-----
+| *Demonstrates composing a set of live streams into a NxN grid that can automatically resize as new streams are added to it. The page can be loaded into a Red5 Pro Mixer to create a composition with many streams.*
+
+| **[Stream Manager Conference Layout](src/page/sample-mixer-pages/conference)**
+| :-----
+| *Demonstrates composing a set of live streams into a focused layout for a video conference where the presenter is highlighted. The page can be loaded into a Red5 Pro Mixer to create a video conference with a single return stream.*
 
 ## Notes
 

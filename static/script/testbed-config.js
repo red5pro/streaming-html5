@@ -37,7 +37,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
     name = name.replace(/[\[\]]/g, "\\$&");
     var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
-        results = regex.exec(url);
+      results = regex.exec(url);
     if (!results) return null;
     if (!results[2]) return '';
     return decodeURIComponent(results[2].replace(/\+/g, " "));
@@ -64,7 +64,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     "rtmpport": 1935,
     "rtmpsport": 1936
   };
-  function assignStorage () {
+  function assignStorage() {
     json = {
       "version": build_version,
       "host": window.location.hostname,
@@ -138,7 +138,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         "enabled": false,
         "username": "user",
         "password": "pass"
-      }
+      },
+      "mixerBackendSocketField": "",
+      "mixerAuthenticationEnabled": false
     };
 
     /**
@@ -149,7 +151,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     sessionStorage.setItem('r5proTestBed', JSON.stringify(json));
   }
 
-  function defineIceServers () {
+  function defineIceServers() {
     var param = getParameterByName('ice');
     if (param) {
       if (param === 'moz') {

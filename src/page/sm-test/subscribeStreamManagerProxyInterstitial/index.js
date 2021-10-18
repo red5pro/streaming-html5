@@ -1,26 +1,26 @@
 /*
 Copyright © 2015 Infrared5, Inc. All rights reserved.
 
-The accompanying code comprising examples for use solely in conjunction with Red5 Pro (the "Example Code") 
-is  licensed  to  you  by  Infrared5  Inc.  in  consideration  of  your  agreement  to  the  following  
-license terms  and  conditions.  Access,  use,  modification,  or  redistribution  of  the  accompanying  
+The accompanying code comprising examples for use solely in conjunction with Red5 Pro (the "Example Code")
+is  licensed  to  you  by  Infrared5  Inc.  in  consideration  of  your  agreement  to  the  following
+license terms  and  conditions.  Access,  use,  modification,  or  redistribution  of  the  accompanying
 code  constitutes your acceptance of the following license terms and conditions.
 
-Permission is hereby granted, free of charge, to you to use the Example Code and associated documentation 
-files (collectively, the "Software") without restriction, including without limitation the rights to use, 
-copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit 
+Permission is hereby granted, free of charge, to you to use the Example Code and associated documentation
+files (collectively, the "Software") without restriction, including without limitation the rights to use,
+copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit
 persons to whom the Software is furnished to do so, subject to the following conditions:
 
-The Software shall be used solely in conjunction with Red5 Pro. Red5 Pro is licensed under a separate end 
-user  license  agreement  (the  "EULA"),  which  must  be  executed  with  Infrared5,  Inc.   
+The Software shall be used solely in conjunction with Red5 Pro. Red5 Pro is licensed under a separate end
+user  license  agreement  (the  "EULA"),  which  must  be  executed  with  Infrared5,  Inc.
 An  example  of  the EULA can be found on our website at: https://account.red5pro.com/assets/LICENSE.txt.
 
 The above copyright notice and this license shall be included in all copies or portions of the Software.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,  INCLUDING  BUT  
-NOT  LIMITED  TO  THE  WARRANTIES  OF  MERCHANTABILITY, FITNESS  FOR  A  PARTICULAR  PURPOSE  AND  
-NONINFRINGEMENT.   IN  NO  EVENT  SHALL INFRARED5, INC. BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, 
-WHETHER IN  AN  ACTION  OF  CONTRACT,  TORT  OR  OTHERWISE,  ARISING  FROM,  OUT  OF  OR  IN CONNECTION 
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,  INCLUDING  BUT
+NOT  LIMITED  TO  THE  WARRANTIES  OF  MERCHANTABILITY, FITNESS  FOR  A  PARTICULAR  PURPOSE  AND
+NONINFRINGEMENT.   IN  NO  EVENT  SHALL INFRARED5, INC. BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+WHETHER IN  AN  ACTION  OF  CONTRACT,  TORT  OR  OTHERWISE,  ARISING  FROM,  OUT  OF  OR  IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 (function(window, document, red5prosdk) {
@@ -79,7 +79,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
 	// XXX interstitial
-	
+
 	var target = document.getElementById('target');
 	var interstitial = document.getElementById('interstitial');
 	var switchAudio = document.getElementById('switchAudio');
@@ -91,20 +91,20 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 	var sendButton = document.getElementById('send-button');
 	var resumeButton = document.getElementById('resume-button');
 	var accessToken = configuration.streamManagerAccessToken;
-		
+
 	function postInterstitialRest(json) {
-		const xhr = new XMLHttpRequest()	  
+		const xhr = new XMLHttpRequest()
 		xhr.addEventListener('readystatechange', function() {
 			if (this.readyState === this.DONE) {
 				console.log(this.responseText)
-				
+
 				if (xhr.status) {
 					console.log("SUCCESS status.");
 				} else {
 					console.log("ERROR status: " + xhr.status);
 				}
 			}
-		})	  
+		})
 
 		var host = configuration.host;
 		var app = configuration.app;
@@ -112,15 +112,15 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 		var baseUrl = protocol + '://' + host + ':' + port;
 		var apiVersion = configuration.streamManagerAPI || '4.0';
 		var uri = baseUrl + "/streammanager/api/" + apiVersion + "/interstitial?accessToken=" + accessToken;
-		
+
 		xhr.open('POST', uri)
-		xhr.setRequestHeader('content-type', 'application/json')	
+		xhr.setRequestHeader('content-type', 'application/json')
 		xhr.send(json)
 
 		console.log("POST to uri: " + uri);
 		console.log("send data: " + json);
 	}
-	
+
 	sendButton.addEventListener('click', async function (event) {
 		postInterstitialRest(JSON.stringify({
 						  "user": "foo",
@@ -129,7 +129,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 							{
 							  "id": 1,
 							  "target": target.value,
-							  "uri": interstitial.value,
+							  "interstitial": interstitial.value,
 							  "loop": isLoop.checked,
 							  "type": durationControlType.value,
 							  "isInterstitialAudio": switchAudio.checked,
@@ -148,7 +148,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 						  "resume": target.value
 						}));
 	});
-	
+
 	// XXX /interstitial
 
 
@@ -222,7 +222,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     updateStatusFromEvent(event);
     if (event.type === 'Subscribe.VideoDimensions.Change') {
       onResolutionUpdate(event.data.width, event.data.height);
-    }  
+    }
   }
   function onSubscribeFail (message) {
     console.error('[Red5ProSubsriber] Subscribe Error :: ' + message);
@@ -295,14 +295,14 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				}
 				else
 				{
-					msg = "Unkown error";
+					msg = "Unknown error";
 				}
-					
-				
+
+
 				throw new TypeError(msg);
 			}
 
-            
+
           })
           .then(function (json) {
             resolve(json);
@@ -356,7 +356,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     });
 
     // Merge in possible authentication params.
-    rtcConfig.connectionParams = Object.assign({}, 
+    rtcConfig.connectionParams = Object.assign({},
       getAuthenticationParams().connectionParams,
       rtcConfig.connectionParams);
 
@@ -484,4 +484,3 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   window.addEventListener('beforeunload', shutdown);
 
 })(this, document, window.red5prosdk);
-

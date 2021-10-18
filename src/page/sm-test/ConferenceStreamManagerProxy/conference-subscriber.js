@@ -149,7 +149,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
               } else if(res.status == 500) {
                 msg = "Improper server state error was detected.";
               } else {
-                msg = "Unkown error";
+                msg = "Unknown error";
               }
               throw new TypeError(msg);
             }
@@ -291,7 +291,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     };
 
     // NOTE: Reconnect logic is for an Edge disappearing and having to move to another.
-    // If the stream is unpublished, we don't need to try and re-subscribe as the 
+    // If the stream is unpublished, we don't need to try and re-subscribe as the
     // manifest of streams is maintained by the Shared Object.
     this.subscriber.on('Subscribe.Play.Unpublish', close);
     // TODO: This Closed without Unpublish has to be treated as Edge Loss.

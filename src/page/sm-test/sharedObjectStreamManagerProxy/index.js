@@ -1,26 +1,26 @@
 /*
 Copyright © 2015 Infrared5, Inc. All rights reserved.
 
-The accompanying code comprising examples for use solely in conjunction with Red5 Pro (the "Example Code") 
-is  licensed  to  you  by  Infrared5  Inc.  in  consideration  of  your  agreement  to  the  following  
-license terms  and  conditions.  Access,  use,  modification,  or  redistribution  of  the  accompanying  
+The accompanying code comprising examples for use solely in conjunction with Red5 Pro (the "Example Code")
+is  licensed  to  you  by  Infrared5  Inc.  in  consideration  of  your  agreement  to  the  following
+license terms  and  conditions.  Access,  use,  modification,  or  redistribution  of  the  accompanying
 code  constitutes your acceptance of the following license terms and conditions.
 
-Permission is hereby granted, free of charge, to you to use the Example Code and associated documentation 
-files (collectively, the "Software") without restriction, including without limitation the rights to use, 
-copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit 
+Permission is hereby granted, free of charge, to you to use the Example Code and associated documentation
+files (collectively, the "Software") without restriction, including without limitation the rights to use,
+copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit
 persons to whom the Software is furnished to do so, subject to the following conditions:
 
-The Software shall be used solely in conjunction with Red5 Pro. Red5 Pro is licensed under a separate end 
-user  license  agreement  (the  "EULA"),  which  must  be  executed  with  Infrared5,  Inc.   
+The Software shall be used solely in conjunction with Red5 Pro. Red5 Pro is licensed under a separate end
+user  license  agreement  (the  "EULA"),  which  must  be  executed  with  Infrared5,  Inc.
 An  example  of  the EULA can be found on our website at: https://account.red5pro.com/assets/LICENSE.txt.
 
 The above copyright notice and this license shall be included in all copies or portions of the Software.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,  INCLUDING  BUT  
-NOT  LIMITED  TO  THE  WARRANTIES  OF  MERCHANTABILITY, FITNESS  FOR  A  PARTICULAR  PURPOSE  AND  
-NONINFRINGEMENT.   IN  NO  EVENT  SHALL INFRARED5, INC. BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, 
-WHETHER IN  AN  ACTION  OF  CONTRACT,  TORT  OR  OTHERWISE,  ARISING  FROM,  OUT  OF  OR  IN CONNECTION 
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,  INCLUDING  BUT
+NOT  LIMITED  TO  THE  WARRANTIES  OF  MERCHANTABILITY, FITNESS  FOR  A  PARTICULAR  PURPOSE  AND
+NONINFRINGEMENT.   IN  NO  EVENT  SHALL INFRARED5, INC. BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+WHETHER IN  AN  ACTION  OF  CONTRACT,  TORT  OR  OTHERWISE,  ARISING  FROM,  OUT  OF  OR  IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 (function(window, document, red5prosdk) {
@@ -133,8 +133,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
   function onSocketEvent (event) {
     console.log('[Red5ProSocket] :: Event - ' + event.type);
-    if (event.type.toLowerCase() === 'websocket.close') {
+    if (event.type.toLowerCase() === 'websocket.close' ||
+        event.type.toLowerCase() === 'messagetransport.close') {
       // enable reconnect;
+      appendMessage('Disconnected from ' + connectField.value + '.');
       socket.off('*', onSocketEvent);
       socket = undefined;
       document.getElementById('status-field').innerText = 'SharedObject closed (' + event.data.event.code + ').';
@@ -218,14 +220,14 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     });
   }
 
-  function openSocket (edgeOrOriginData) {
-    var host = edgeOrOriginData.serverAddress;
-    var app = edgeOrOriginData.scope;
-    var connectionParams = Object.assign({}, 
+  // https://www.red5pro.com/docs/autoscale/rest-api-v-400/smapi-groups/#list-group-edges
+  function openSocket (address) {
+    var host = address;
+    var connectionParams = Object.assign({},
       getAuthenticationParams(),
       {
         host: host,
-        app: app
+        app: configuration.app
       }
     );
     var config = Object.assign({},
@@ -251,14 +253,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       });
   }
 
-  function requestEdgeOrOrigin (configuration, useOrigin) {
+  function requestGroup (configuration) {
     var host = configuration.host;
-    var app = configuration.app;
     var port = serverSettings.httpport;
     var baseUrl = protocol + '://' + host + ':' + port;
-    var streamName = configuration.stream1;
     var apiVersion = configuration.streamManagerAPI || '3.1';
-    var url = baseUrl + '/streammanager/api/' + apiVersion + '/event/' + app + '/' + streamName + '?action=' + (useOrigin ? 'broadcast' : 'subscribe');
+    var token = configuration.streamManagerAccessToken
+    var url = `${baseUrl}/streammanager/api/${apiVersion}/admin/nodegroup?accessToken=${token}`
     return new Promise(function (resolve, reject) {
         fetch(url)
           .then(function (res) {
@@ -277,7 +278,53 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
               } else if(res.status == 500) {
                 msg = "Improper server state error was detected.";
               } else {
-                msg = "Unkown error";
+                msg = "Unknown error";
+              }
+              throw new TypeError(msg);
+            }
+          })
+          .then(function (json) {
+            if (json && json.length > 0) {
+              resolve(json[0]);
+            } else {
+              throw new Error('No Groups returned.')
+            }
+          })
+          .catch(function (error) {
+            var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
+            console.error('[SubscribeStreamManagerTest] :: Error - Could not request Groups from Stream Manager. ' + jsonError)
+            reject(error)
+          });
+    });
+  }
+
+  function requestEdgeOrOrigin (configuration, groupName, useOrigin) {
+    var host = configuration.host;
+    var port = serverSettings.httpport;
+    var baseUrl = protocol + '://' + host + ':' + port;
+    var apiVersion = configuration.streamManagerAPI || '3.1';
+    var endpoint = useOrigin ? 'origin' : 'edge'
+    var token = configuration.streamManagerAccessToken
+    var url = `${baseUrl}/streammanager/api/${apiVersion}/admin/nodegroup/${groupName}/node/${endpoint}/?accessToken=${token}`
+    return new Promise(function (resolve, reject) {
+        fetch(url)
+          .then(function (res) {
+            if(res.status == 200){
+                if (res.headers.get("content-type") && res.headers.get("content-type").toLowerCase().indexOf("application/json") >= 0) {
+                  return res.json();
+                } else {
+                  throw new TypeError('Could not properly parse response.');
+                }
+            } else {
+              var msg = "";
+              if(res.status == 400) {
+                msg = "An invalid request was detected";
+              } else if(res.status == 404) {
+                msg = "Data for the request could not be located/provided.";
+              } else if(res.status == 500) {
+                msg = "Improper server state error was detected.";
+              } else {
+                msg = "Unknown error";
               }
               throw new TypeError(msg);
             }
@@ -295,8 +342,18 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   function startConnection () {
     var useOrigin = document.getElementById('origin-radio').checked
-    requestEdgeOrOrigin(configuration, useOrigin)
-      .then(openSocket);
+    requestGroup(configuration)
+      .then(group => {
+        return requestEdgeOrOrigin(configuration, group.name, useOrigin)
+      })
+      .then(nodes => {
+        if (nodes && nodes.length > 0) {
+          openSocket(nodes[0].address)
+        } else {
+          throw new Error('No available nodes found!')
+        }
+      })
+      .catch(e => console.error(e))
   }
 
   function unsubscribe () {
@@ -321,4 +378,3 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   });
 
 })(this, document, window.red5prosdk);
-
