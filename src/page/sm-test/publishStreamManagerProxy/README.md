@@ -5,7 +5,7 @@ The streammanager WebRTC proxy is a communication layer built inside streammanag
 Streammanager autoscaling works with dynamic nodes which are associated with dynamic IP addresses and cannot have a SSL attached to them. The proxy layer helps publishers to connect and initiate a WebRTC publish session from a `secure` (ssl enabled) domain to a `unsecure` Red5pro origin having using an IP address.
 
 
-**Please refer to the [Basic Publisher Documentation](../publish/README.md) to learn more about the basic setup.**
+**Please refer to the [Basic Publisher Documentation](../../test/publish/README.md) to learn more about the basic setup.**
 
 > In order to properly run the Stream Manager examples, you will need to configure you server for cluster infrastructure as described in the following documentation: [https://www.red5pro.com/docs/server/autoscale/](https://www.red5pro.com/docs/server/autoscale/).
 

@@ -67,6 +67,16 @@
         <input id="stream2-field" name="stream2-field" value="stream2">
       </p>
       <hr class="paddedHR" />
+      <p class="settings-field settings-collapsable">
+        <label class="settings-label" for="level-input">Level:</label>
+        <select id="level-input" name="level-input">
+          <option value="TRACE">TRACE</option>
+          <option value="DEBUG" selected>DEBUG</option>
+          <option value="INFO">INFO</option>
+          <option value="WARN">WARN</option>
+          <option value="ERROR">ERROR</option>
+        </select>
+      </p>
       <h2 class="centered">WebRTC Specific</h2>
       <p class="settings-field settings-collapsable">
         <label class="settings-label">ICE server:</label>
@@ -203,6 +213,7 @@
       var appField = document.getElementById('app-field');
       var stream1Field = document.getElementById('stream1-field');
       var stream2Field = document.getElementById('stream2-field');
+      var logLevelField = document.getElementById('level-input');
       var iceField = document.getElementById('ice-field');
       var iceUsername = document.getElementById('ice-username');
       var iceCredential = document.getElementById('ice-credential');
@@ -270,6 +281,11 @@
         ]
         hideShowICEOptions();
         seal(configuration);
+      });
+
+      logLevelField.addEventListener('change', function () {
+        configuration.sendLogLevel = logLevelField.value.toUpperCase();
+        seal(configuration);  
       });
 
       iceUsername.addEventListener('blur', function () {
@@ -432,6 +448,7 @@
           }
           selectElem.value = value;
         }
+        selectFieldFromConfiguration(config.sendLogLevel, logLevelField);
         selectFieldFromConfiguration(config.iceTransport, iceTransportSelect);
         selectFieldFromConfiguration(config.rtcConfiguration.bundlePolicy, rtcBundlePolicySelect);
         selectFieldFromConfiguration(config.rtcConfiguration.iceTransportPolicy, rtcTransportPolicySelect);

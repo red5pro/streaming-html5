@@ -54,6 +54,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var updateStatusFromEvent = window.red5proHandleSubscriberEvent; // defined in src/template/partial/status-field-subscriber.hbs
   var instanceId = Math.floor(Math.random() * 0x10000).toString(16);
   var streamTitle = document.getElementById('stream-title');
+  var sendButton = document.getElementById('send-button');
+  var messageInput = document.getElementById('message-input');
   var statisticsField = document.getElementById('statistics-field');
   var bitrateField = document.getElementById('bitrate-field');
   var packetsField = document.getElementById('packets-field');
@@ -66,85 +68,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var packetsReceived = 0;
   var frameWidth = 0;
   var frameHeight = 0;
-
-	// XXX interstitial
-	
-	var target = document.getElementById('target');
-	var interstitial = document.getElementById('interstitial');
-	var switchAudio = document.getElementById('switchAudio');
-	var switchVideo = document.getElementById('switchVideo');
-	var isLoop = document.getElementById('isLoop');
-	var durationControlType = document.getElementById('durationControlType');
-	var start = document.getElementById('start');
-	var duration = document.getElementById('duration');
-	var sendButton = document.getElementById('send-button');
-	var resumeButton = document.getElementById('resume-button');
-		
-	function postInterstitialRest(json) {
-		const xhr = new XMLHttpRequest()	  
-		xhr.addEventListener('readystatechange', function() {
-			if (this.readyState === this.DONE) {
-				if (this.status >= 200 && this.status < 300) {
-					console.log("SUCCESS status.");
-				} else {
-					console.log("ERROR status: " + this.status + " : " + this.responseText);
-					alert("Error " + this.status + " : " + this.responseText);
-				}
-			}
-		})	  
-
-		var uri = serverSettings.protocol + "://" + configuration.host + ":" + serverSettings.httpport + "/" + configuration.app + "/interstitial";
-
-		console.log("POST to uri: " + uri);
-		console.log("send data: " + json);
-		
-		xhr.open('POST', uri)
-		xhr.setRequestHeader('accept', 'application/json')
-		xhr.setRequestHeader('content-type', 'application/json')	
-		xhr.send(json)
-	}
-	
-	sendButton.addEventListener('click', async function (event) {
-		if (!target.value) {
-			alert("Target stream GUID is required but missing.");
-		} else if (!interstitial.value) {
-			alert("Interstitial stream GUID is required but missing.");
-		} else {
-			postInterstitialRest(JSON.stringify({
-							  "user": "foo",
-							  "digest": "bar",
-							  "inserts": [
-								{
-								  "id": 1,
-								  "target": target.value,
-								  "interstitial": interstitial.value,
-								  "loop": isLoop.checked,
-								  "type": durationControlType.value,
-								  "isInterstitialAudio": switchAudio.checked,
-								  "isInterstitialVideo": switchVideo.checked,
-								  "start": start.value,
-								  "duration": duration.value
-								}
-							  ]
-							}));
-		}
-	});
-
-	resumeButton.addEventListener('click', async function (event) {
-		if (!target.value) {
-			alert("Target stream GUID is required but missing.");
-		} else {
-			postInterstitialRest(JSON.stringify({
-							  "user": "foo",
-							  "digest": "bar",
-							  "resume": target.value
-							}));
-		}
-	});
-	
-	// XXX /interstitial
-
-
   function updateStatistics (b, p, w, h) {
     statisticsField.classList.remove('hidden');
     bitrateField.innerText = b === 0 ? 'N/A' : Math.floor(b);
@@ -164,14 +87,18 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     updateStatistics(bitrate, packetsReceived, frameWidth, frameHeight);
   }
 
-  // Determines the ports and protocols based on being served over TLS.
+  sendButton.addEventListener('click', function () {
+    if (targetSubscriber !== undefined) {
+      targetSubscriber.sendLog(configuration.sendLogLevel, messageInput.value === '' ? 'Empty message.' : messageInput.value)
+    }
+  });
+
   function getSocketLocationFromProtocol () {
     return !isSecure
       ? {protocol: 'ws', port: serverSettings.wsport}
       : {protocol: 'wss', port: serverSettings.wssport};
   }
 
-  // Base configuration to extend in providing specific tech failover configurations.
   var defaultConfiguration = (function(useVideo, useAudio) {
     var c = {
       protocol: getSocketLocationFromProtocol().protocol,
@@ -188,12 +115,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   // Local lifecycle notifications.
   function onSubscriberEvent (event) {
-    if (event.type !== 'Subscribe.Time.Update') {
-      console.log('[Red5ProSubscriber] ' + event.type + '.');
-      updateStatusFromEvent(event);
-      if (event.type === 'Subscribe.VideoDimensions.Change') {
-        onResolutionUpdate(event.data.width, event.data.height);
-      }
+    console.log('[Red5ProSubscriber] ' + event.type + '.');
+    updateStatusFromEvent(event);
+    if (event.type === 'Subscribe.VideoDimensions.Change') {
+      onResolutionUpdate(event.data.width, event.data.height);
     }
   }
   function onSubscribeFail (message) {
@@ -235,8 +160,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   // Request to unsubscribe.
   function unsubscribe () {
     return new Promise(function(resolve, reject) {
-      var subscriber = targetSubscriber
-      subscriber.unsubscribe()
+      targetSubscriber.unsubscribe()
         .then(function () {
           targetSubscriber.off('*', onSubscriberEvent);
           targetSubscriber = undefined;
@@ -251,47 +175,48 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     });
   }
 
-  // Define tech spefific configurations for each failover item.
-  var config = Object.assign({},
-    configuration,
-    defaultConfiguration,
-    getAuthenticationParams(), {
-      streamName: configuration.stream1
-    });
-  var rtcConfig = Object.assign({}, config, {
-    protocol: getSocketLocationFromProtocol().protocol,
-    port: getSocketLocationFromProtocol().port,
-    subscriptionId: 'subscriber-' + instanceId
-  })
-  var rtmpConfig = Object.assign({}, config, {
-    protocol: 'rtmp',
-    port: serverSettings.rtmpport,
-    width: config.cameraWidth,
-    height: config.cameraHeight,
-    backgroundColor: '#000000',
-    swf: '../../lib/red5pro/red5pro-subscriber.swf',
-    swfobjectURL: '../../lib/swfobject/swfobject.js',
-    productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
-  })
-  var hlsConfig = Object.assign({}, config, {
-    protocol: protocol,
-    port: isSecure ? serverSettings.hlssport : serverSettings.hlsport
-  })
+    // Kick off.
+    var config = Object.assign({},
+      configuration,
+      defaultConfiguration,
+      getAuthenticationParams());
 
-  // Define failover order.
-  var subscribeOrder = config.subscriberFailoverOrder
-        .split(',').map(function (item) {
-          return item.trim();
-        });
+    var rtcConfig = Object.assign({}, config, {
+      protocol: getSocketLocationFromProtocol().protocol,
+      port: getSocketLocationFromProtocol().port,
+      subscriptionId: 'subscriber-' + instanceId,
+      streamName: config.stream1
+    })
 
-  // Override for providing ?view= query param.
-  if (window.query('view')) {
-    subscribeOrder = [window.query('view')];
-  }
+    var rtmpConfig = Object.assign({}, config, {
+      protocol: 'rtmp',
+      port: serverSettings.rtmpport,
+      streamName: config.stream1,
+      width: config.cameraWidth,
+      height: config.cameraHeight,
+      backgroundColor: '#000000',
+      swf: '../../lib/red5pro/red5pro-subscriber.swf',
+      swfobjectURL: '../../lib/swfobject/swfobject.js',
+      productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
+    })
 
-  // Request to initialization and start subscribing through failover support.
-  var subscriber = new red5prosdk.Red5ProSubscriber()
-  subscriber.setPlaybackOrder(subscribeOrder)
+    var hlsConfig = Object.assign({}, config, {
+      protocol: protocol,
+      port: isSecure ? serverSettings.hlssport : serverSettings.hlsport,
+      streamName: config.stream1,
+      mimeType: 'application/x-mpegURL'
+    })
+    var subscribeOrder = config.subscriberFailoverOrder
+                          .split(',').map(function (item) {
+                            return item.trim();
+                          });
+
+    if (window.query('view')) {
+      subscribeOrder = [window.query('view')];
+    }
+
+    var subscriber = new red5prosdk.Red5ProSubscriber();
+    subscriber.setPlaybackOrder(subscribeOrder)
     .init({
       rtc: rtcConfig,
       rtmp: rtmpConfig,
@@ -299,10 +224,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     })
     .then(function (subscriberImpl) {
       streamTitle.innerText = configuration.stream1;
-      targetSubscriber = subscriberImpl
+      targetSubscriber = subscriberImpl;
       // Subscribe to events.
       targetSubscriber.on('*', onSubscriberEvent);
-      return targetSubscriber.subscribe()
+      return targetSubscriber.subscribe();
     })
     .then(function () {
       onSubscribeSuccess(targetSubscriber);
