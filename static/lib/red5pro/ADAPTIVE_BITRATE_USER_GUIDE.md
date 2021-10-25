@@ -1,4 +1,4 @@
-# Adaptive Bitrate User Guide for Red5 Pro WebRTC SDK
+# Adaptive Bitrate User Guide for Red5 Pro HTML SDK
 
 This document describes the processes required to publish and subscribe to streams with * [setABRVariantUpgradeSettings](#setabrvariantupgradesettings)
 
@@ -87,27 +87,24 @@ is the following:
 Your initialization configuration for an `HLSSubscriber` will look like the following (in following with the above examples):
 
 ```js
-import { HLSSubscriber } from 'red5pro-webrtc-sdk'
+(function (red5prosdk) {
 
-const start = async () => {
-
-  try {
-    const subscriber = new HLSSubscriber()
-    await subscriber.init({
-      host: '10.0.0.0',
-      app: 'live',
-      streamName: 'mystream',
-      protocol: 'html',
-      port: 5080
-    })
-    await subscriber.subscribe()
-  } catch (e) {
+  var subscriber = new red5prosdk.HLSSubscriber()
+  subscriber.init({
+    host: '10.0.0.0',
+    app: 'live',
+    streamName: 'mystream',
+    protocol: 'html',
+    port: 5080
+  })
+  .then(function () {
+    subscriber.subscribe()
+  })
+  .catch(function (e) {
     console.error(e)
-  }
+  })
 
-}
-
-start()
+})(window.red5prosdk)
 ```
 
 Internally, the Red5 Pro SDK will then request to subscribe to the HLS stream at:

@@ -32,51 +32,13 @@
     * [Lifecycle Events](SHARED_OBJECT_README.md#lifecycle-events-shared-object)
 * [Contributing](#contributing)
 
-# Quickstart
-
-> Important Note About `8.0.0` Release
-
-**Red5 Pro SDK has been published on NPM!**
-
-While currently not open source, the SDK build has been published to NPM to allow you to integrate into your projects with greater ease and dependency management.
-
-## Installation
-
-### As `script` in HTML page
-
-```
-<script src="https://unpkg.com/red5pro-html-sdk@latest/red5pro-sdk.min.js"></script>
-```
-
-... or if you know the version:
-
-```
-<script src="https://unpkg.com/red5pro-html-sdk@8.0.0/red5pro-sdk.min.js"></script>
-```
-
-## Using `npm` or `yarn` for you browser-based projects
-
-```
-npm install --save-dev red5pro-html-sdk
-```
-
-```
-yarn install --dev red5pro-html-sdk
-```
-
-### Usage
-
-All members exposed on the otherwise global `window.red5prosdk` if loading as a script on an HTML page are importable from the `red5pro-html-sdk` module:
-
-_publisher-example.js_
-
-```
-import { RTCPublisher } from 'red5pro-html-sdk'
-```
-
+## Quickstart
 To begin working with the *Red5 Pro HTML5 SDK* in your project:
 
-### Quick Start (browser)
+### Installation
+In a browser:  
+[download the latest release](https://account.red5pro.com/download)
+
 ```html
 <!doctype html>
 <html>
@@ -95,7 +57,7 @@ To begin working with the *Red5 Pro HTML5 SDK* in your project:
       <video id="red5pro-subscriber" width="640" height="480" controls autoplay></video>
     </div>
     <!-- Red5 Pro SDK -->
-    <script src="https://unpkg.com/red5pro-html-sdk@latest/red5pro-sdk.min.js"></script>
+    <script src="lib/red5pro/red5pro-sdk.min.js"></script>
     <!-- Create Pub/Sub -->
     <script>
       (function(red5prosdk) {
@@ -149,14 +111,14 @@ To begin working with the *Red5 Pro HTML5 SDK* in your project:
 ```
 
 # Requirements
-The **Red5 Pro WebRTC SDK** is intended to communicate with a [Red5 Pro Server](https://www.red5pro.com/), which allows for broadcasting and consuming live streams utilizing [WebRTC](https://developer.mozilla.org/en-US/docs/Web/Guide/API/WebRTC) and other protocols, including [RTMP](https://en.wikipedia.org/wiki/Real_Time_Messaging_Protocol) and [HLS](https://en.wikipedia.org/wiki/HTTP_Live_Streaming).
+The **Red5 Pro HTML SDK** is intended to communicate with a [Red5 Pro Server](https://www.red5pro.com/), which allows for broadcasting and consuming live streams utilizing [WebRTC](https://developer.mozilla.org/en-US/docs/Web/Guide/API/WebRTC) and other protocols, including [RTMP](https://en.wikipedia.org/wiki/Real_Time_Messaging_Protocol) and [HLS](https://en.wikipedia.org/wiki/HTTP_Live_Streaming).
 
 As such, you will need a distribution of the [Red5 Pro Server](https://www.red5pro.com/) running locally or accessible from the web, such as [Amazon Web Services](https://www.red5pro.com/docs/server/awsinstall/).
 
 > **[Click here to start using the Red5 Pro Server today!](https://account.red5pro.com/login)**
 
 # Usage
-This section describes using the **Red5 Pro WebRTC SDK** browser install to create sessions for a [Publisher](#publisher) and a [Subscriber](#subscriber).
+This section describes using the **Red5 Pro HTML SDK** browser install to create sessions for a [Publisher](#publisher) and a [Subscriber](#subscriber).
 
 ## Publisher
 Please refer to the [Publisher Readme](PUBLISHER_README.md) for information about setting up a broadcast session.
@@ -168,4 +130,4 @@ Please refer to the [Subscriber Readme](SUBSCRIBER_README.md) for information ab
 Please refer to the [SharedObject Documentation](SHARED_OBJECT_README.md) for information about using SharedObjects in both Publishers and Subscribers.
 
 # Contributing
-> Please refer to the [Contributing Documentation](CONTRIBUTING.md) to learn more about contributing to the development of the Red5 Pro WebRTC SDK.
+> Please refer to the [Contributing Documentation](CONTRIBUTING.md) to learn more about contributing to the development of the Red5 Pro HTML SDK.

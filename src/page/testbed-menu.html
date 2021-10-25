@@ -15,59 +15,57 @@
       <div id="back-link-container" style="text-align: left;">
         <p class="back-link"><a href="index.html">&lt; Settings</a></p>
         <p class="version-field">Testbed Version: {{ version }}</p>
-      </div>
-      <div id="settings-container">
-        <h1 class="centered">Red5 Pro HTML Testbed</h1>
-        <hr class="paddedHR" />
-        <ul id="test-list">
-            <li class="top-level-listing"><a href="testbed-menu-sm.html">Stream Manager Tests</a></li>
-            <li><a href="test/publish">Publish</a></li>
-            <li><a href="test/publishAppend">Publish - Append</a></li>
-            <li><a href="test/publishAuth">Publish - Authentication</a></li>
-            <li><a href="test/publishAvailableHDSettings">Publish - Browser Supported Resolutions</a></li>
-            <li><a href="test/publishCameraSource">Publish - Camera Source</a></li>
-            <li><a href="test/publishCustomSettingsWebRTC">Publish - Custom Video Settings</a></li>
-            <li><a href="test/publishAudioCustomSettingsWebRTC">Publish - Custom Video and Audio Settings</a></li>
-            <li><a href="test/publishMediaStreamCamera">Publish - Media Stream Source</a></li>
-            <li><a href="test/publishMute">Publish - Mute</a></li>
-            <li><a href="test/publishEncodings">Publish - Live Encodings</a></li>
-            <li><a href="test/publishUnpublish">Publish - Unpublish</a></li>
-            <li><a href="test/publishRemoteCall">Publish - Remote Call</a></li>
-            <li><a href="test/publishRoundTripAuth">Publish - RoundTrip Authentication</a></li>
-            <li><a href="test/publishScreenShare">Publish - ScreenShare</a></li>
-            <li><a href="test/publishSendLog">Publish - Send Log</a></li>
-            <li><a href="test/publishCall">Publish - Server Call</a></li>
-            <li><a href="test/publishSharedObject">Publish - Shared Object</a></li>
-            <li><a href="test/publishSocialPusher">Publish - Social Media Stream Push</a></li>
-            <li><a href="test/publishVP8">Publish - VP8</a></li>
-            <li></li>
-            <li><a href="test/conference">Conference</a></li>
-            <li><a href="test/twoWay">Two-Way</a></li>
-            <li><a href="test/sharedObject">Shared Object (WebSocket Only)</a></li>
-            <li></li>
-            <li><a href="test/subscribe">Subscribe</a></li>
-            <li><a href="test/subscribe360">Subscribe - 360 Player</a></li>
-            <li><a href="test/subscribeAudioOnly">Subscribe - Audio Only</a></li>
-            <li><a href="test/subscribeAuth">Subscribe - Authentication</a></li>
-            <li><a href="test/subscribeCluster">Subscribe - Cluster</a></li>
-            <li><a href="test/subscribeStandby">Subscribe - Enable Standby</a></li>
-            <li><a href="test/subscribeHLS">Subscribe - HLS Only</a></li>
-            <li><a href="test/subscribeInterstitial">Subscribe - Interstitial Media Insertion</a></li>
-            <li><a href="test/subscribeRoundTripAuth">Subscribe - RoundTrip Authentication</a></li>
-            <li><a href="test/subscribeRemoteCall">Subscribe - Remote Call</a></li>
-            <li><a href="test/subscribeReconnect">Subscribe - Reconnect</a></li>
-            <li><a href="test/subscribeRetryOnInvalidName">Subscribe - Retry On Connection</a></li>
-            <li><a href="test/subscribeScreenShare">Subscribe - ScreenShare</a></li>
-            <li><a href="test/subscribeSendLog">Subscribe - Send Log</a></li>
-            <li><a href="test/subscribeCall">Subscribe - Server Call</a></li>
-            <li><a href="test/subscribeSharedObject">Subscribe - Shared Object</a></li>
-            <li><a href="test/subscribeSwitch">Subscribe - Stream Switch</a></li>
-            <li><a href="test/subscribeTwoStreams">Subscribe - Two Streams</a></li>
-            <li><a href="test/subscribeVideoMute">Subscribe - Video Mute</a></li>
-            <li><a href="test/playbackVOD">Playback - VOD</a></li>
-            <li><a href="test/subscribevp8">Subscribe - VP8</a></li>
-            <!-- <li><a href="test/sharedObjectMultistream">Shared Object - Multistream</a></li> -->
-          </ul>
+    </div>
+    <div id="settings-container">
+      <h1 class="centered">Red5 Pro HTML Testbed</h1>
+      <hr class="paddedHR" />
+      <ul id="test-list">
+        <li class="top-level-listing"><a href="testbed-menu-sm.html">Stream Manager Tests</a></li>
+        <li class="top-level-listing"><a href="testbed-menu-mixer-sm.html">Stream Manager Mixer Tests</a></li>
+        <li><a href="test/publish">Publish</a></li>
+        <li><a href="test/publishAppend">Publish - Append</a></li>
+        <li><a href="test/publishAuth">Publish - Authentication</a></li>
+        <li><a href="test/publishAvailableHDSettings">Publish - Browser Supported Resolutions</a></li>
+        <li><a href="test/publishCameraSource">Publish - Camera Source</a></li>
+        <li><a href="test/publishCustomSettingsWebRTC">Publish - Custom Video Settings</a></li>
+        <li><a href="test/publishAudioCustomSettingsWebRTC">Publish - Custom Video and Audio Settings</a></li>
+        <li><a href="test/publishMediaStreamCamera">Publish - Media Stream Source</a></li>
+        <li><a href="test/publishMute">Publish - Mute</a></li>
+        <li><a href="test/publishEncodings">Publish - Live Encodings</a></li>
+        <li><a href="test/publishUnpublish">Publish - Unpublish</a></li>
+        <li><a href="test/publishRemoteCall">Publish - Remote Call</a></li>
+        <li><a href="test/publishRoundTripAuth">Publish - RoundTrip Authentication</a></li>
+        <li><a href="test/publishScreenShare">Publish - ScreenShare</a></li>
+        <li><a href="test/publishCall">Publish - Server Call</a></li>
+        <li><a href="test/publishSharedObject">Publish - Shared Object</a></li>
+        <li><a href="test/publishSocialPusher">Publish - Social Media Stream Push</a></li>
+        <li><a href="test/publishVP8">Publish - VP8</a></li>
+        <li></li>
+        <li><a href="test/conference">Conference</a></li>
+        <li><a href="test/twoWay">Two-Way</a></li>
+        <li><a href="test/sharedObject">Shared Object (WebSocket Only)</a></li>
+        <li></li>
+        <li><a href="test/subscribe">Subscribe</a></li>
+        <li><a href="test/subscribe360">Subscribe - 360 Player</a></li>
+        <li><a href="test/subscribeAudioOnly">Subscribe - Audio Only</a></li>
+        <li><a href="test/subscribeAuth">Subscribe - Authentication</a></li>
+        <li><a href="test/subscribeCluster">Subscribe - Cluster</a></li>
+        <li><a href="test/subscribeStandby">Subscribe - Enable Standby</a></li>
+        <li><a href="test/subscribeHLS">Subscribe - HLS Only</a></li>
+        <li><a href="test/subscribeRoundTripAuth">Subscribe - RoundTrip Authentication</a></li>
+        <li><a href="test/subscribeRemoteCall">Subscribe - Remote Call</a></li>
+        <li><a href="test/subscribeReconnect">Subscribe - Reconnect</a></li>
+        <li><a href="test/subscribeRetryOnInvalidName">Subscribe - Retry On Connection</a></li>
+        <li><a href="test/subscribeScreenShare">Subscribe - ScreenShare</a></li>
+        <li><a href="test/subscribeCall">Subscribe - Server Call</a></li>
+        <li><a href="test/subscribeSharedObject">Subscribe - Shared Object</a></li>
+        <li><a href="test/subscribeSwitch">Subscribe - Stream Switch</a></li>
+        <li><a href="test/subscribeTwoStreams">Subscribe - Two Streams</a></li>
+        <li><a href="test/subscribeVideoMute">Subscribe - Video Mute</a></li>
+        <li><a href="test/playbackVOD">Playback - VOD</a></li>
+        <li><a href="test/subscribevp8">Subscribe - VP8</a></li>
+        <!-- <li><a href="test/sharedObjectMultistream">Shared Object - Multistream</a></li> -->
+      </ul>
     </div>
   </body>
 </html>
