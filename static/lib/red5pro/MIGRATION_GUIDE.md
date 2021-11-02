@@ -1,15 +1,86 @@
-# Red5 Pro HTML SDK Migration Guide
+# Red5 Pro WebRTC SDK Migration Guide
 
 This documentation serves as a guide in migrating client-side code where a breaking change to the API has been made in a distribution.
+* [8.0.0 to 9.1.0](#migrating-from-800-to-910)
 * [7.2.0 to 8.0.0](#migrating-from-720-to-800)
 * [5.4.0 to 5.5.0](#migrating-from-540-to-550)
 * [5.0.0 to 5.4.0](#migrating-from-500-to-540)
 * [4.0.0 to 5.0.0](#migrating-from-400-to-500)
 * [3.5.0 to 4.0.0](#migrating-from-350-to-400)
 
+# Migrating from `8.0.0` to `9.1.0`
+
+No major bug fixes were introduced in `9.1.0`. The biggest update to `9.1.0` was the introduction of the `sendLog` API for `RTCPublisher` and `RTCSubscriber`.
+
+The `sendLog` API allows you - the developer - to send messages to the server while connected with a `RTCPublisher` or `RTCSubscriber` instance.
+
+The message signature for `sendLog` on both the `RTCPublisher` and `RTCSubscriber` is:
+
+```sh
+sendLog( <String>level, <String>message )
+```
+
+Valid `level` values are:
+
+* `TRACE`
+* `INFO`
+* `DEBUG`
+* `WARN`
+* `ERROR`
+
+Example (after already establishing an `RTCPublisher` session):
+
+```javascript
+rtcPublisher.sendLog('INFO', 'hello world')
+```
+
+or
+
+```javascript
+rtcPublisher.sendLog('INFO', JSON.stringify({hello: 'world'}))
+```
+
+# Important Note About `8.0.0` Release
+
+**Red5 Pro SDK has been published on NPM!**
+
+While currently not open source, the SDK build has been published to NPM to allow you to integrate into your projects with greater ease and dependency management.
+
+## Install as `script` in HTML page
+
+```
+<script src="https://unpkg.com/red5pro-webrtc-sdk@latest/red5pro-sdk.min.js"></script>
+```
+
+... or if you know the version:
+
+```
+<script src="https://unpkg.com/red5pro-webrtc-sdk@8.0.0/red5pro-sdk.min.js"></script>
+```
+
+## Install using `npm` or `yarn` for you browser-based projects
+
+```
+npm install --save-dev red5pro-webrtc-sdk
+```
+
+```
+yarn install --dev red5pro-webrtc-sdk
+```
+
+### Usage
+
+All members exposed on the otherwise global `window.red5prosdk` if loading as a script on an HTML page are importable from the `red5pro-webrtc-sdk` module:
+
+_publisher-example.js_
+
+```
+import { RTCPublisher } from 'red5pro-webrtc-sdk'
+```
+
 # Migrating from `7.2.0` to `8.0.0`
 
-The `7.3.0` release of the Red5 Pro HTML SDK includes the ability for WebRTC based clients - `RTCPublisher` and `RTCSubscriber` - to use WebSockets only for signaling purposes. Once they have finished their negotiation process and have begun broadcasting or consuming a stream, repsectively, they will open a `RTCDataChannel` connection and close the underlying `WebSocket` used for signaling.
+The `8.0.0` release of the Red5 Pro HTML SDK includes the ability for WebRTC based clients - `RTCPublisher` and `RTCSubscriber` - to use WebSockets only for signaling purposes. Once they have finished their negotiation process and have begun broadcasting or consuming a stream, repsectively, they will open a `RTCDataChannel` connection and close the underlying `WebSocket` used for signaling.
 
 The benefit of closing the `WebSocket` and switching to a `RTCDataChannel` after signaling is complete is cutting down on the number of open socket connections to the server; in a Stream Manager Proxy scenario, this can be a significant benefit as the Proxy is no longer needed to keep alive while the stream is being delivered to the Origin(s) or from the Edge(s).
 
@@ -55,11 +126,11 @@ The will return the actual underlying `RTCDataChannel` instance used in communic
 
 The following events have been added to the `RTCPublisher` and `RTCSubscriber` that can be listened to:
 
-| `DATA_CHANNEL_AVAILABLE` | 'WebRTC.DataChannel.Available' |  the underlying `RTCDataChannel` is available when `signalingServerOnly` configuration is used. |
-| `DATA_CHANNEL_OPEN` | 'WebRTC.DataChannel.Open' | When the underlying `RTCDataChannel` is opened when `signalingServerOnly` configuration is used.
-| `DATA_CHANNEL_CLOSE` | 'WebRTC.DataChannel.Close' | When the underlying `RTCDataChannel` is closed when `signalingServerOnly` configuration is used. |
-| `DATA_CHANNEL_ERROR` | 'WebRTC.DataChannel.Error' | When an error has occurred within the underlying `RTCDataChannel` when `signalingServerOnly` configuration is used. |
-| `DATA_CHANNEL_MESSAGE` | 'WebRTC.DataChannel.Message' | When a message has been delivered over the underlying `RTCDataChannel` when `signalingServerOnly` configuration is used. |
+| `DATA_CHANNEL_AVAILABLE` | 'WebRTC.DataChannel.Available' |  the underlying `RTCDataChannel` is available when `signalingSocketOnly` configuration is used. |
+| `DATA_CHANNEL_OPEN` | 'WebRTC.DataChannel.Open' | When the underlying `RTCDataChannel` is opened when `signalingSocketOnly` configuration is used.
+| `DATA_CHANNEL_CLOSE` | 'WebRTC.DataChannel.Close' | When the underlying `RTCDataChannel` is closed when `signalingSocketOnly` configuration is used. |
+| `DATA_CHANNEL_ERROR` | 'WebRTC.DataChannel.Error' | When an error has occurred within the underlying `RTCDataChannel` when `signalingSocketOnly` configuration is used. |
+| `DATA_CHANNEL_MESSAGE` | 'WebRTC.DataChannel.Message' | When a message has been delivered over the underlying `RTCDataChannel` when `signalingSocketOnly` configuration is used. |
 
 ---
 

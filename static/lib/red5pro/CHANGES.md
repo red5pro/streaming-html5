@@ -1,6 +1,10 @@
 # Changes
 
-## 8.1.0-beta.0
+## 9.1.2
+
+- Fix for `detachView` bug in WebRTC subscriber. (bustardcelly)
+
+## 9.1.0
 
 - Added `sendLog` API for `RTCPublisher` and `RTCSubscriber` to send log-level messages to server. (bustardcelly)
 
