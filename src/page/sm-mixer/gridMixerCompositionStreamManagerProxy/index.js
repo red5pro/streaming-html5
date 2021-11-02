@@ -718,6 +718,15 @@
     const doForward = true
     let mixingPage = getMixingPageFromSelector(mixingPageSelector.options[mixingPageSelector.selectedIndex].value)
 
+    if (mixerName === '' || path === '' || streamName === '' ||
+      width === '' || height === '' || framerate === '' || bitrate === '') {
+      alert('Invalid data found in Create Mixer Objects form. Only "Destination Mixer Name" can be left empty.')
+      return
+    } else if (streamName.indexOf('.') >= 0) {
+      alert('Stream Name cannot contain periods (.)')
+      return
+    }
+
     // this will inform the page that it is the final layer so the page can adapt as needed  
     if (mixers.length > 0 && destinationMixerName == "") {
       mixingPage = `${mixingPage}&layer=final`
@@ -812,6 +821,9 @@
 
     if (mixers.length <= 0) {
       alert(`At least one mixer must be provided`)
+      return
+    } else if (eventName == '' || digest == '' || location == '') {
+      alert(`"Event Name", "Digest" and "Mixer Region" must include a value.`)
       return
     }
 
