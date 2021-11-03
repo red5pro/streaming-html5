@@ -676,6 +676,9 @@
       }
       else if (json.type === 'activeCompositions') {
         parseCompositions(json)
+      } else if (json.type === 'mixerRegions') {
+        parseMixerRegions(json.regions)
+        return
       }
       else if (json.type === 'error') {
         console.warn(json)
@@ -687,6 +690,21 @@
     webSocket.onopen = () => {
       console.log('[websocket]::open')
     }
+  }
+
+  const parseMixerRegions = (regions) => {
+    const selector = document.getElementById('mixer-region-select')
+    selector.innerHTML = ''
+    //const emptyOption = document.createElement('option')
+    let i = 0
+    regions.forEach(region => {
+      const option = document.createElement('option')
+      option.value = region
+      option.innerHTML = region
+      option.selected = i == 0
+      i++
+      selector.appendChild(option)
+    })
   }
 
   const getMixingPageFromSelector = (selection) => {
@@ -808,7 +826,14 @@
     const eventName = document.getElementById('event').value
     const digest = document.getElementById('digest').value
     const transcodeComposition = document.getElementById('transcodeComposition').checked
-    const location = document.getElementById('location').value
+    const selector = document.getElementById('mixer-region-select')
+    let location = null
+    try {
+      location = selector.options[selector.selectedIndex].value;
+    } catch (error) {
+      alert(`Mixer Region not found. Make sure your environment has available Mixer nodes`)
+      return
+    }
 
     if (mixers.length <= 0) {
       alert(`At least one mixer must be provided`)
