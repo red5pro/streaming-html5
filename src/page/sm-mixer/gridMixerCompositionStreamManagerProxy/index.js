@@ -806,7 +806,7 @@
     }
 
     const eventName = document.getElementById('event').value
-    const digest = document.getElementById('digest').value
+    const digest = configuration.streamManagerAccessToken
     const transcodeComposition = document.getElementById('transcodeComposition').checked
     const location = document.getElementById('location').value
 
