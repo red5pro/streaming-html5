@@ -98,80 +98,100 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var frameWidth = 0;
   var frameHeight = 0;
 
-	// XXX socialpusher
-	var sendButton = document.getElementById('send-button');
-	var destUri = document.getElementById('dest-URI');
-	var streamKey = document.getElementById('stream-key');
-	var isForwarding = false;
-	var accessToken = configuration.streamManagerAccessToken;
+  // XXX socialpusher
+  var sendButton = document.getElementById('send-button');
+  var destUri = document.getElementById('dest-URI');
+  var streamKey = document.getElementById('stream-key');
+  var isForwarding = false;
+  var accessToken = configuration.streamManagerAccessToken;
 
-	// from https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/digest
-	async function digestMessage(message) {
-		const msgUint8 = new TextEncoder().encode(message);                           // encode as (utf-8) Uint8Array
-		const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8);           // hash the message
-		const hashArray = Array.from(new Uint8Array(hashBuffer));                     // convert buffer to byte array
-		const hashHex = hashArray.map(b => {
-				var result = b.toString(16).padStart(2, '0');
-				//console.log("b: " + b + " result: " + result);
-				return result;
-			}).join(''); // convert bytes to hex string
-		return hashHex;
-	}
+  // from https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/digest
+  async function digestMessage(message) {
+    const msgUint8 = new TextEncoder().encode(message);                           // encode as (utf-8) Uint8Array
+    const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8);           // hash the message
+    const hashArray = Array.from(new Uint8Array(hashBuffer));                     // convert buffer to byte array
+    const hashHex = hashArray.map(b => {
+        var result = b.toString(16).padStart(2, '0');
+        //console.log("b: " + b + " result: " + result);
+        return result;
+      }).join(''); // convert bytes to hex string
+    return hashHex;
+  }
 
-	function createSignature(timestamp) {
-		var action = isForwarding ? "provision.delete" : "provision.create";
-		var message = action + timestamp + passwd.value;
+  function createSignature(timestamp) {
+    var action = isForwarding ? "provision.delete" : "provision.create";
+    var message = action + timestamp + passwd.value;
 
-		return digestMessage(message);
-	}
+    return digestMessage(message);
+  }
 
-	sendButton.addEventListener('click', async function (event) {
-		const data = JSON.stringify({
-				provisions:[
-					{
-						guid:"any",
-						level:1,
-						context:configuration.app,
-						name:configuration.stream1,
-						parameters:{
-							destURI:destUri.value + "/" + streamKey.value
-						}
-					}
-				]
-			})
+  let attempts = 0
+  let attemptLimit = 10
+  async function pushItSocial () {
+    sendButton.disabled = true
+    const data = JSON.stringify({
+        provisions:[
+          {
+            guid:"any",
+            level:1,
+            context:config.app,
+            name:config.stream1,
+            parameters:{
+              destURI:destUri.value + "/" + streamKey.value
+            }
+          }
+        ]
+      })
+      
+    const xhr = new XMLHttpRequest()    
+    xhr.addEventListener('readystatechange', function() {
+      if (this.readyState === this.DONE) {
+        console.log(this.responseText)
 
-		const xhr = new XMLHttpRequest()
-		xhr.addEventListener('readystatechange', function() {
-			if (this.readyState === this.DONE) {
-				console.log(this.responseText)
+        try {
+          var response = JSON.parse(this.responseText);       
+          if (response.statusCode == 200) {
+            isForwarding = !isForwarding;
+            sendButton.disabled = false
+            sendButton.innerHTML = isForwarding ? "Stop Forwarding" : "Begin Forwarding";
+            console.log("isForwarding: " + isForwarding);
+          } else {
+            console.log("error status: " + response.statusCode);
+            throw new Error(response.statusCode)
+          }
+        } catch (e) {
+          if (++attempts < attemptLimit) {
+            var t = setTimeout(() => {
+              clearTimeout(t)
+              pushItSocial()
+            }, 1000)
+          }
+        }
+      }
+    })    
 
-				if (xhr.status == 201) {
-					isForwarding = !isForwarding;
-					sendButton.innerHTML = isForwarding ? "Stop Forwarding" : "Begin Forwarding";
-					console.log("isForwarding: " + isForwarding);
-				} else {
-					console.log("error status: " + xhr.status);
-				}
-			}
-		})
+    var uri = serverSettings.protocol + "://" + config.host + ":" + serverSettings.httpport + "/socialpusher/api?action=provision.";
+    uri += isForwarding ? "delete" : "create";
 
-		var host = configuration.host;
-		var app = configuration.app;
-		var streamName = configuration.stream1;
-		var port = serverSettings.httpport;
-		var baseUrl = protocol + '://' + host + ':' + port;
-		var apiVersion = configuration.streamManagerAPI || '4.0';
-		var uri = baseUrl + '/streammanager/api/' + apiVersion + '/socialpusher?accessToken=' + accessToken + "&action=provision.";
-		uri += isForwarding ? "delete" : "create";
+    var timestamp = Date.now();
+    uri += "&timestamp=" + timestamp;
 
-		xhr.open('POST', uri)
-		xhr.setRequestHeader('content-type', 'application/json')
-		xhr.send(data)
+    var signature = await createSignature(timestamp);
+    uri += "&signature=" + encodeURI(signature);
 
-		console.log("POST to uri: " + uri);
-		console.log("send data: " + data);
-	});
-	// XXX /socialpusher
+    xhr.open('POST', uri)
+    xhr.setRequestHeader('content-type', 'application/json')  
+    xhr.send(data)
+
+    console.log("POST to uri: " + uri);
+    console.log("send data: " + data);
+  }
+
+  sendButton.addEventListener('click', () => {
+    attempts = 0
+    pushItSocial()
+  });
+  // XXX /socialpusher
 
   function updateStatistics (b, p, w, h) {
     statisticsField.classList.remove('hidden');
@@ -254,26 +274,26 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
                 }
             }
             else{
-				var msg = "";
-				if(res.status == 400)
-				{
-					msg = "An invalid request was detected";
-				}
-				else if(res.status == 404)
-				{
-					msg = "Data for the request could not be located/provided.";
-				}
-				else if(res.status == 500)
-				{
-					msg = "Improper server state error was detected.";
-				}
-				else
-				{
-					msg = "Unknown error";
-				}
+        var msg = "";
+        if(res.status == 400)
+        {
+          msg = "An invalid request was detected";
+        }
+        else if(res.status == 404)
+        {
+          msg = "Data for the request could not be located/provided.";
+        }
+        else if(res.status == 500)
+        {
+          msg = "Improper server state error was detected.";
+        }
+        else
+        {
+          msg = "Unknown error";
+        }
 
-				throw new TypeError(msg);
-			}
+        throw new TypeError(msg);
+      }
           })
           .then(function (json) {
             resolve(json);
