@@ -202,8 +202,8 @@
     const destinationMixerName = ""
     let mixingPage = getMixingPageFromSelector(mixingPageSelector.options[mixingPageSelector.selectedIndex].value)
 
-    if (!eventName || !digest || !mixingPage || !path || !streamName || !width || !height || !framerate || !bitrate) {
-      alert(`At least one of eventName, digest, mixingPage, path, streamName, width, height, framerate or bitrate was not provided`)
+    if (!eventName || !digest || !mixingPage || !path || !streamName || !width || !height || !framerate || !bitrate || !location) {
+      alert('Invalid data found in Create Composition form. At least one of Event Name, Digest, Mixing Page, Scope, Stream Name, Width, Height, Framerate, Bitrate or Mixer Region was not provided')
       return
     }
 
