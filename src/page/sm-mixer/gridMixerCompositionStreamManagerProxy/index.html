@@ -506,22 +506,22 @@
                     <div class="tooltip">
                         <span class="tooltiptext">Width of the composite stream</span>
                         <label for="width">Width:</label><br>
-                        <input type="number" id="width" name="width" value="1280"><br>
+                        <input type="number" id="width" min="0" max="4096" name="width" value="1280"><br>
                     </div>
                     <div class="tooltip">
                         <span class="tooltiptext">Height of the composite stream</span>
                         <label for="height">Height:</label><br>
-                        <input type="number" id="height" name="height" value="720"><br>
+                        <input type="number" id="height" min="0" max="2160" name="height" value="720"><br>
                     </div>
                     <div class="tooltip">
                         <span class="tooltiptext">Framerate of the composite stream</span>
                         <label for="framerate">Framerate:</label><br>
-                        <input type="number" id="framerate" name="framerate" value="30"><br>
+                        <input type="number" id="framerate" min="0" max="60" name="framerate" value="30"><br>
                     </div>
                     <div class="tooltip">
                         <span class="tooltiptext">Bitrate of the composite stream</span>
                         <label for="bitrate">Bitrate:</label><br>
-                        <input type="number" id="bitrate" name="bitrate" value="1500"><br>
+                        <input type="number" id="bitrate" min="0" max="10000" name="bitrate" value="1500"><br>
                     </div>
                     <div class="tooltip">
                         <span class="tooltiptext">Mixer Name to publish to, or leave empty to publish to the Red5 Pro
