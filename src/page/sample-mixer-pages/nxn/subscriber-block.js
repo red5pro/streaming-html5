@@ -375,6 +375,7 @@
         this.reject(event)
         this.displayError(`${this.streamName} - ${event.type}`)
       } else if (event.type === 'Subscribe.Start') {
+        console.log(`Set window.connectedSubscribers for ${this.streamName}`)
         window.connectedSubscribers[this.streamName] = this
         this.mergeAudioStreams()
         this.resolve()
@@ -382,6 +383,7 @@
       } else if (event.type === 'Subscribe.Play.Unpublish') {
         //        this.unpublished = true
         this.stop()
+        console.log(`Subscribe.Play.Unpublish, delete window.connectedSubscribers for ${this.streamName}`)
         delete window.connectedSubscribers[this.streamName]
         this.mergeAudioStreams()
         this.start(this.baseConfiguration, this.requiresStreamManager)
@@ -405,6 +407,8 @@
           }
           this.currentStreamMode = streamingMode
         }
+      } else if (event.type === 'Subscribe.Stop') {
+        delete window.connectedSubscribers[this.streamName]
       } else if (event.type === 'Subscribe.Connection.Closed') {
         delete window.connectedSubscribers[this.streamName]
         if (!this.unpublished) {
@@ -583,6 +587,10 @@
      * Returns the stream name subscribing to.
      */
     getStreamName() {
+      if (this.roomName && this.roomName.length > 0) {
+        return `${this.roomName}/${this.streamName}`
+      }
+
       return this.streamName
     }
 

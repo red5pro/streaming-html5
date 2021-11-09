@@ -142,10 +142,13 @@
     } = event
     if (type === 'Subscribe.Start') {
       subscriber.getElementContainer().classList.remove('hidden')
-      const streamName = subscriber.getStreamName()
-      const idx = currentStreamsToSubscribeToListForWorker.indexOf(`/${streamName}`)
+
+      const streamName = `/${appContext}/${subscriber.getStreamName()}`
+      const idx = currentStreamsToSubscribeToListForWorker.indexOf(`${streamName}`)
       if (idx >= 0) {
         currentStreamsToSubscribeToListForWorker.splice(idx, 1)
+        console.log(`Subscribe start received, removed ${streamName} from worker pool`)
+        console.log(currentStreamsToSubscribeToListForWorker)
       }
       else {
         console.log(`Subscribe start received but stream ${streamName} not found in worker pool`)
@@ -181,6 +184,7 @@
     setInterval(() => {
       if (currentStreamsToSubscribeToListForWorker.length >= SUBSCRIBE_CONCURRENCY) {
         console.log('Too many pending subscribers, waiting...')
+        console.log(currentStreamsToSubscribeToListForWorker)
         return
       }
 
