@@ -156,6 +156,9 @@
     }
   })
 
+  const isValidString = (string) => {
+    return string.length <= 255 && !!string.match(/^[0-9a-z]+$/)
+  }
 
   const getMixingPageFromSelector = (selection) => {
     if (selection === 'focused') {
@@ -204,6 +207,11 @@
 
     if (!eventName || !digest || !mixingPage || !path || !streamName || !width || !height || !framerate || !bitrate) {
       alert(`At least one of eventName, digest, mixingPage, path, streamName, width, height, framerate or bitrate was not provided`)
+      return
+    }
+
+    if (!isValidString(eventName) || !isValidString(digest) || !isValidString(path) || !isValidString(streamName)) {
+      alert(`Event Name, Digest, Path and Stream Name must be alphanumeric and shorter than 256 characters`)
       return
     }
 
