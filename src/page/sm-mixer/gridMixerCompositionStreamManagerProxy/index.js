@@ -67,6 +67,7 @@
   const smToken = configuration.streamManagerAccessToken
 
   document.getElementById('streamName').value = configuration.stream1
+  document.getElementById('mixerName').value = Math.floor(Math.random() * 0x1000000).toString(16)
 
   const createCompositionForm = document.getElementById('create-composition-form');
   if (createCompositionForm.attachEvent) {
@@ -804,6 +805,7 @@
     })
 
     document.getElementById('create-mixers-form').reset()
+    document.getElementById('mixerName').value = Math.floor(Math.random() * 0x1000000).toString(16)
     // return false to prevent the default form behavior
     return false;
   }
