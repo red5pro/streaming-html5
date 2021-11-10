@@ -96,6 +96,7 @@
         constructor(streamName, parent) {
             this.subscriptionId = [streamName, 'sub'].join('-')
             this.streamName = streamName
+            this.room = undefined
             this.subscriber = undefined
             this.baseConfiguration = undefined
             this.requiresStreamManager = false
@@ -176,8 +177,11 @@
          */
         respond(event) {
             if (event.type === 'Subscribe.Time.Update') return
-            const id = this.subscriber ? this.subscriber.subscriptionId : 'UNKNOWN'
-            const displayName = `${this.streamName}/${id}`
+            //const id = this.subscriber ? this.subscriber.subscriptionId : 'UNKNOWN'
+            let displayName = `${this.streamName}`
+            if (this.room && this.room != '') {
+                displayName = `${this.room}/${displayName}`
+            }
             console.log(`[subscriber:${displayName}] + ${event.type}`)
             if (event.type !== 'Subscribe.Stop') {
                 this.displayInfo(`${displayName} - ${event.type}`)
@@ -267,6 +271,7 @@
                 }
             }
 
+            this.room = config.app.substring(config.app.indexOf('/') + 1)
             this.subscriber = new red5prosdk.RTCSubscriber()
             this.subscriber.on('*', this.onSubscriberEvent)
 

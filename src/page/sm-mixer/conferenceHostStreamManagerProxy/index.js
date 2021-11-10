@@ -156,7 +156,6 @@
     }
   })
 
-
   const getMixingPageFromSelector = (selection) => {
     if (selection === 'focused') {
       return `https://${configuration.host}/webrtcexamples/sample-mixer-pages/conference/?role=mixer&app=${getAppName(appContext)}&room=${roomName}&ws=${configuration.mixerBackendSocketField}&token=${Date.now()}&sm=true&smtoken=${configuration.streamManagerAccessToken}`
@@ -627,11 +626,17 @@
 
     if (filtered.length > 0) {
       const composition = filtered[0]
-      const compositionContext = composition.context
-      if (activeComposition == null) {
-        activeComposition = composition
-        eventRoomText.innerHTML = `Room: ${compositionContext}`
+      console.log('composition', composition)
+      let compositionContext = ''
+      if (composition.mixers && composition.mixers.length > 0) {
+        compositionContext = composition.mixers[0].path
+        compositionContext = compositionContext.substring(compositionContext.indexOf('/') + 1)
+        if (activeComposition == null) {
+          activeComposition = composition
+          eventRoomText.innerHTML = `Room: ${compositionContext}`
+        }
       }
+
 
       const mixers = composition.mixers
       const mixerObj = []
