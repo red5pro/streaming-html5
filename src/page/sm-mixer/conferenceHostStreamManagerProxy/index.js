@@ -189,7 +189,7 @@
 
     const eventName = document.getElementById('event').value
     const digest = document.getElementById('digest').value
-    const location = document.getElementById('location').value
+    //const location = document.getElementById('location').value
     const path = document.getElementById('scope').value
     const streamName = document.getElementById('streamName').value
     const width = String(document.getElementById('width').value)
@@ -202,8 +202,17 @@
     const destinationMixerName = ""
     let mixingPage = getMixingPageFromSelector(mixingPageSelector.options[mixingPageSelector.selectedIndex].value)
 
-    if (!eventName || !digest || !mixingPage || !path || !streamName || !width || !height || !framerate || !bitrate || !location) {
-      alert('Invalid data found in Create Composition form. At least one of Event Name, Digest, Mixing Page, Scope, Stream Name, Width, Height, Framerate, Bitrate or Mixer Region was not provided')
+    const selector = document.getElementById('mixer-region-select')
+    let location = null
+    try {
+      location = selector.options[selector.selectedIndex].value;
+    } catch (error) {
+      alert(`Mixer Region not found. Make sure your environment has available Mixer nodes`)
+      return
+    }
+
+    if (!eventName || !digest || !mixingPage || !path || !streamName || !width || !height || !framerate || !bitrate) {
+      alert(`At least one of eventName, digest, mixingPage, path, streamName, width, height, framerate or bitrate was not provided`)
       return
     }
 
@@ -458,6 +467,9 @@
       if (json.type === 'activeCompositions') {
         parseCompositions(json)
         return
+      } else if (json.type === 'mixerRegions') {
+        parseMixerRegions(json.regions)
+        return
       }
 
       if (json.room != getWaitingRoomContext()) {
@@ -472,6 +484,21 @@
         json.hasOwnProperty('streams') && parseExcludedList(json.streams)
       }
     }
+  }
+
+  const parseMixerRegions = (regions) => {
+    const selector = document.getElementById('mixer-region-select')
+    selector.innerHTML = ''
+    //const emptyOption = document.createElement('option')
+    let i = 0
+    regions.forEach(region => {
+      const option = document.createElement('option')
+      option.value = region
+      option.innerHTML = region
+      option.selected = i == 0
+      i++
+      selector.appendChild(option)
+    })
   }
 
   let confWebsocket = undefined
