@@ -11,6 +11,8 @@ let managerSockets = {}
 let videoWallSockets = {}
 let activeCompositions = {}
 
+let cachedMixerRegions = null
+
 module.exports = {
     registerWebSocketClient: (ws, params) => {
         console.log('Grid websocket connection open')
@@ -30,6 +32,7 @@ module.exports = {
         }
 
         saveWSConnection(ws, params)
+        module.exports.getAndSendValidRegions(ws)
         ws.on('message', function (message) {
             console.log('WebSocket message received')
             let json = message
@@ -83,9 +86,53 @@ module.exports = {
         }
 
         console.log('Grid: active streams: ', activeStreams)
+    },
+
+    getAndSendValidRegions: (ws) => {
+        if (cachedMixerRegions) {
+            console.log('Found cached Mixers in these regions', cachedMixerRegions)
+            ws.send(JSON.stringify({ "type": "mixerRegions", regions: cachedMixerRegions }))
+            return
+        }
+
+        let url = `${streamManagerHost}/streammanager/api/4.0/admin/nodegroup?accessToken=${smToken}`
+        makeGetRequest(url)
+            .then(response => {
+                const json = JSON.parse(response)
+                const nodeGroupNames = json.map(obj => obj.name)
+                console.log(nodeGroupNames)
+                let promises = []
+                nodeGroupNames.forEach(ng => {
+                    let url = `${streamManagerHost}/streammanager/api/4.0/admin/nodegroup/${ng}/node?accessToken=${smToken}`
+                    promises.push(makeGetRequest(url))
+                })
+
+                let regionSet = new Set()
+                Promise.all(promises)
+                    .then(results => {
+                        // console.log(results)
+                        results.forEach(details => {
+                            console.log(details)
+                            let nodes = JSON.parse(details)
+                            nodes.forEach(node => {
+                                if (node.role == 'mixer') {
+                                    regionSet.add(node.availabilityZone)
+                                }
+                            })
+                        })
+
+                        let regions = Array.from(regionSet)
+                        cachedMixerRegions = regions
+                        // invalidate cache
+                        setTimeout(() => {
+                            cachedMixerRegions = null
+                        }, 60000)
+                        console.log('Found Mixers in these regions', regions)
+                        ws.send(JSON.stringify({ "type": "mixerRegions", regions }))
+                    })
+            })
     }
 }
-
 
 const updateMixerWebSocketConnectedState = (mixerNodeId, eventName, isConnected) => {
 
@@ -370,6 +417,8 @@ const createComposition = function (ws, message) {
         .catch((error) => {
             const errorMessage = `Failed to create ${eventName} composition, received Stream Manager error: ` + JSON.stringify(error)
             console.log(errorMessage)
+            // clear cache in case regions changed
+            cachedMixerRegions = null
             sendError(ws, errorMessage)
         })
 }
@@ -741,3 +790,5 @@ const makeDeleteRequest = async function (url) {
         )
     })
 }
+
+
