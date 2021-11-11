@@ -187,8 +187,7 @@
     }
 
     const eventName = document.getElementById('event').value
-    const digest = document.getElementById('digest').value
-    //const location = document.getElementById('location').value
+    const digest = configuration.streamManagerAccessToken
     const path = document.getElementById('scope').value
     const streamName = document.getElementById('streamName').value
     const width = String(document.getElementById('width').value)

@@ -835,7 +835,7 @@
     }
 
     const eventName = document.getElementById('event').value
-    const digest = document.getElementById('digest').value
+    const digest = configuration.streamManagerAccessToken
     const transcodeComposition = document.getElementById('transcodeComposition').checked
     const selector = document.getElementById('mixer-region-select')
     let location = null
