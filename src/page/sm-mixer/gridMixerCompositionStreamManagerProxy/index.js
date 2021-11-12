@@ -718,7 +718,10 @@
     else {
       return `https://${red5ProHost}/webrtcexamples/sample-mixer-pages/nxn/index.html?sm=true&app=${appName}&ws=${websocketEndpoint}`
     }
+  }
 
+  const isValidString = (string) => {
+    return string.length <= 255 && !!string.match(/^[0-9a-z]+$/)
   }
 
   let mixers = []
@@ -749,6 +752,16 @@
     // this will inform the page that it is the final layer so the page can adapt as needed  
     if (mixers.length > 0 && destinationMixerName == "") {
       mixingPage = `${mixingPage}&layer=final`
+    }
+
+    if (!isValidString(mixerName) || !isValidString(path) || !isValidString(streamName)) {
+      alert(`Mixer Name, Path and Stream Name must be alphanumeric and shorter than 256 characters`)
+      return
+    }
+
+    if (destinationMixerName != '' && !isValidString(destinationMixerName)) {
+      alert(`Destination Mixer Name must be empty, or alphanumeric and shorter than 256 characters`)
+      return
     }
 
     const mixerObj = {
@@ -851,6 +864,11 @@
       return
     } else if (eventName == '' || digest == '' || location == '') {
       alert(`"Event Name", "Digest" and "Mixer Region" must include a value.`)
+      return
+    }
+
+    if (!isValidString(eventName) || !isValidString(digest) || !isValidString(location)) {
+      alert(`Event Name, Digest and Location must be alphanumeric and shorter than 256 characters`)
       return
     }
 

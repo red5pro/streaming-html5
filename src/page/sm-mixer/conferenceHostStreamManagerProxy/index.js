@@ -156,6 +156,10 @@
     }
   })
 
+  const isValidString = (string) => {
+    return string.length <= 255 && !!string.match(/^[0-9a-z]+$/)
+  }
+
   const getMixingPageFromSelector = (selection) => {
     if (selection === 'focused') {
       return `https://${configuration.host}/webrtcexamples/sample-mixer-pages/conference/?role=mixer&app=${getAppName(appContext)}&room=${roomName}&ws=${configuration.mixerBackendSocketField}&token=${Date.now()}&sm=true&smtoken=${configuration.streamManagerAccessToken}`
@@ -211,6 +215,11 @@
 
     if (!eventName || !digest || !mixingPage || !path || !streamName || !width || !height || !framerate || !bitrate) {
       alert(`At least one of eventName, digest, mixingPage, path, streamName, width, height, framerate or bitrate was not provided`)
+      return
+    }
+
+    if (!isValidString(eventName) || !isValidString(digest) || !isValidString(path) || !isValidString(streamName)) {
+      alert(`Event Name, Digest, Path and Stream Name must be alphanumeric and shorter than 256 characters`)
       return
     }
 
