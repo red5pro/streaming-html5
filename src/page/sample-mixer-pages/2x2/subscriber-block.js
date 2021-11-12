@@ -69,7 +69,7 @@
    */
   const subscriberTemplateNormal = `<div class="subscriber-container">
       <div class="red5pro-media-container-normal video-holder centered">
-        <video autoplay controls playsinline class="red5pro-subscriber"></video>
+        <video autoplay controls playsinline class="red5pro-subscriber" style="width:100%; height:100%;"></video>
       </div>
       <div class="subscriber-notifications"></div>
       <div class="centered">
@@ -138,7 +138,7 @@
     /*const mediaContainer = card.querySelector('.red5pro-media-container')
     console.log(slotIndex)
     if ((slotIndex+1) % 2 == 0){
-	mediaContainer.style.width = '170%'
+  mediaContainer.style.width = '170%'
     }
     else {
         mediaContainer.style.width = '170%'
@@ -163,7 +163,7 @@
 
     return `http://127.0.0.1:5080/live/streams.jsp`
 
-	  /*const loc = 'localhost' //window.location
+    /*const loc = 'localhost' //window.location
     const uri = new URL(loc)
     if (loc.port === '5080') {
       return `${loc.protocol}//${loc.hostname}:${loc.port}/${app}/streams.jsp`

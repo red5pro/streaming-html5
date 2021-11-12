@@ -69,7 +69,7 @@
    */
   const subscriberTemplate = `<div class="subscriber-container">
       <div class="red5pro-media-container video-holder centered">
-        <video autoplay controls playsinline class="red5pro-subscriber"></video>
+        <video autoplay controls playsinline class="red5pro-subscriber" style="width:100%; height:100%;"></video>
       </div>
       <div class="subscriber-notifications"></div>
       <div class="centered">

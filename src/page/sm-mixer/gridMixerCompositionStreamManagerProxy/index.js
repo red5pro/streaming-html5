@@ -67,6 +67,7 @@
   const smToken = configuration.streamManagerAccessToken
 
   document.getElementById('streamName').value = configuration.stream1
+  document.getElementById('mixerName').value = Math.floor(Math.random() * 0x1000000).toString(16)
 
   const createCompositionForm = document.getElementById('create-composition-form');
   if (createCompositionForm.attachEvent) {
@@ -676,6 +677,9 @@
       }
       else if (json.type === 'activeCompositions') {
         parseCompositions(json)
+      } else if (json.type === 'mixerRegions') {
+        parseMixerRegions(json.regions)
+        return
       }
       else if (json.type === 'error') {
         console.warn(json)
@@ -687,6 +691,21 @@
     webSocket.onopen = () => {
       console.log('[websocket]::open')
     }
+  }
+
+  const parseMixerRegions = (regions) => {
+    const selector = document.getElementById('mixer-region-select')
+    selector.innerHTML = ''
+    //const emptyOption = document.createElement('option')
+    let i = 0
+    regions.forEach(region => {
+      const option = document.createElement('option')
+      option.value = region
+      option.innerHTML = region
+      option.selected = i == 0
+      i++
+      selector.appendChild(option)
+    })
   }
 
   const getMixingPageFromSelector = (selection) => {
@@ -720,6 +739,15 @@
     const destinationMixerName = document.getElementById('destinationMixerName').value
     const doForward = true
     let mixingPage = getMixingPageFromSelector(mixingPageSelector.options[mixingPageSelector.selectedIndex].value)
+
+    if (mixerName === '' || path === '' || streamName === '' ||
+      width === '' || height === '' || framerate === '' || bitrate === '') {
+      alert('Invalid data found in Create Mixer Objects form. Only "Destination Mixer Name" can be left empty.')
+      return
+    } else if (streamName.indexOf('.') >= 0) {
+      alert('Stream Name cannot contain periods (.)')
+      return
+    }
 
     // this will inform the page that it is the final layer so the page can adapt as needed  
     if (mixers.length > 0 && destinationMixerName == "") {
@@ -790,6 +818,7 @@
     })
 
     document.getElementById('create-mixers-form').reset()
+    document.getElementById('mixerName').value = Math.floor(Math.random() * 0x1000000).toString(16)
     // return false to prevent the default form behavior
     return false;
   }
@@ -819,12 +848,22 @@
     }
 
     const eventName = document.getElementById('event').value
-    const digest = document.getElementById('digest').value
+    const digest = configuration.streamManagerAccessToken
     const transcodeComposition = document.getElementById('transcodeComposition').checked
-    const location = document.getElementById('location').value
+    const selector = document.getElementById('mixer-region-select')
+    let location = null
+    try {
+      location = selector.options[selector.selectedIndex].value;
+    } catch (error) {
+      alert(`Mixer Region not found. Make sure your environment has available Mixer nodes`)
+      return
+    }
 
     if (mixers.length <= 0) {
       alert(`At least one mixer must be provided`)
+      return
+    } else if (eventName == '' || digest == '' || location == '') {
+      alert(`"Event Name", "Digest" and "Mixer Region" must include a value.`)
       return
     }
 

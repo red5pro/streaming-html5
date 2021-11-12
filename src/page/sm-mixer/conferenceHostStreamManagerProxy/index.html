@@ -3,7 +3,7 @@
 <html>
 
 <head>
-    {{> meta title='Conference Participant SM Test'}}
+    {{> meta title='Conference Host SM Test'}}
     {{> header-scripts}}
     {{> header-stylesheets}}
     <style>
@@ -444,11 +444,6 @@
                         <input type="text" id="event" name="event" value="event1"><br>
                     </div>
                     <div class="tooltip">
-                        <span class="tooltiptext">Mixer password for Round Trip Authentication</span>
-                        <label for="digest">Digest:</label><br>
-                        <input type="text" id="digest" name="digest" value="password"><br>
-                    </div>
-                    <div class="tooltip">
                         <span class="tooltiptext">Page to load into the Mixer</span>
                         <label for="mixingPage">Mixing Page:</label><br>
                         <select name="mixingPage" id="mixingPage-select">
@@ -488,7 +483,8 @@
                     <div class="tooltip">
                         <span class="tooltiptext">Region where the Mixer is deployed</span>
                         <label for="location">Mixer Region:</label><br>
-                        <input type="text" id="location" value="eastus"><br>
+                        <select name="mixer-region-name" id="mixer-region-select">
+                        </select>
                     </div>
                     <br>
                     <button type="submit">Create Composition</button>

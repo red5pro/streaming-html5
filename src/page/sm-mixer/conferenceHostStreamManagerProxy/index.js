@@ -191,8 +191,7 @@
     }
 
     const eventName = document.getElementById('event').value
-    const digest = document.getElementById('digest').value
-    const location = document.getElementById('location').value
+    const digest = configuration.streamManagerAccessToken
     const path = document.getElementById('scope').value
     const streamName = document.getElementById('streamName').value
     const width = String(document.getElementById('width').value)
@@ -204,6 +203,15 @@
     const doForward = true
     const destinationMixerName = ""
     let mixingPage = getMixingPageFromSelector(mixingPageSelector.options[mixingPageSelector.selectedIndex].value)
+
+    const selector = document.getElementById('mixer-region-select')
+    let location = null
+    try {
+      location = selector.options[selector.selectedIndex].value;
+    } catch (error) {
+      alert(`Mixer Region not found. Make sure your environment has available Mixer nodes`)
+      return
+    }
 
     if (!eventName || !digest || !mixingPage || !path || !streamName || !width || !height || !framerate || !bitrate) {
       alert(`At least one of eventName, digest, mixingPage, path, streamName, width, height, framerate or bitrate was not provided`)
@@ -466,6 +474,9 @@
       if (json.type === 'activeCompositions') {
         parseCompositions(json)
         return
+      } else if (json.type === 'mixerRegions') {
+        parseMixerRegions(json.regions)
+        return
       }
 
       if (json.room != getWaitingRoomContext()) {
@@ -480,6 +491,21 @@
         json.hasOwnProperty('streams') && parseExcludedList(json.streams)
       }
     }
+  }
+
+  const parseMixerRegions = (regions) => {
+    const selector = document.getElementById('mixer-region-select')
+    selector.innerHTML = ''
+    //const emptyOption = document.createElement('option')
+    let i = 0
+    regions.forEach(region => {
+      const option = document.createElement('option')
+      option.value = region
+      option.innerHTML = region
+      option.selected = i == 0
+      i++
+      selector.appendChild(option)
+    })
   }
 
   let confWebsocket = undefined
@@ -608,11 +634,17 @@
 
     if (filtered.length > 0) {
       const composition = filtered[0]
-      const compositionContext = composition.context
-      if (activeComposition == null) {
-        activeComposition = composition
-        eventRoomText.innerHTML = `Room: ${compositionContext}`
+      console.log('composition', composition)
+      let compositionContext = ''
+      if (composition.mixers && composition.mixers.length > 0) {
+        compositionContext = composition.mixers[0].path
+        compositionContext = compositionContext.substring(compositionContext.indexOf('/') + 1)
+        if (activeComposition == null) {
+          activeComposition = composition
+          eventRoomText.innerHTML = `Room: ${compositionContext}`
+        }
       }
+
 
       const mixers = composition.mixers
       const mixerObj = []
