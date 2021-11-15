@@ -275,11 +275,13 @@
       streamsInRoom.forEach((stream) => streamNames.push(`${room}/${stream}`))
     })
 
+    console.log('current stream list', currentStreamListing)
     const payload = compareLists(currentStreamListing, streamNames)
-    console.log(payload)
+    console.log(payload, currentStreamListing)
     addStreams(payload.added)
     removeStreams(payload.removed)
 
+    console.log('new stream list', streamNames)
     currentStreamListing = streamNames
   }
 
@@ -303,8 +305,36 @@
    */
   const addStreams = (streams) => {
     if (!streams) return
-    const subscribers = streams.map(name => createListItem(name))
-    subscribers.forEach(item => mediaListContainer.querySelector('.list-holder').appendChild(item))
+    // add only streams that are not already in a mixer box 
+    // find streams already in mixer boxes (added by parsing the active composition message)
+    const mixerContainers = document.getElementsByClassName('mixer-container')
+    let mixerStreams = []
+    for (let i = 0; i < mixerContainers.length; i++) {
+      const items = mixerContainers.item(i).getElementsByClassName('media-list-item')
+      for (let j = 0; items && j < items.length; j++) {
+        const item = items[j]
+        const streamName = item.dataset.name
+        mixerStreams.push(streamName)
+      }
+    }
+
+    if (currentStreamListing.length == 0) {
+      mediaListContainer.querySelector('.list-holder').innerHTML = ''
+    }
+    const subscribers = streams.map(name => {
+      if (mixerStreams.indexOf(name) >= 0) {
+        console.log('Ignore stream ', name)
+        return null
+      }
+
+      return createListItem(name)
+    })
+
+    subscribers.forEach(item => {
+      if (item) {
+        mediaListContainer.querySelector('.list-holder').appendChild(item)
+      }
+    })
   }
 
   /**
@@ -374,6 +404,8 @@
       selectBox.innerHTML = ''
       selectBox.appendChild(emptyOption)
       mixerContainer.innerHTML = ''
+      currentStreamListing = []
+      requestActiveStreams()
       // get updated list
       requestActiveCompositions()
     }
@@ -385,7 +417,7 @@
       eventStateText.innerHTML = ''
       destroyCompositionButton.disabled = true
       currentStreamListing = []
-      mediaListContainer.querySelector('.list-holder').innerHTML = ''
+      //mediaListContainer.querySelector('.list-holder').innerHTML = ''
       // get updated list
       requestActiveStreams()
     }
@@ -445,7 +477,7 @@
         activeComposition = composition
       }
 
-      const compositionContext = composition.context
+      //const compositionContext = composition.context
       const mixers = composition.mixers
       const mixerObj = []
       let areAllConnected = true
