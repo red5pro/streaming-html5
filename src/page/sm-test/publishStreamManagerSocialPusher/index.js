@@ -125,7 +125,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 		return digestMessage(message);
 	}
 
-	sendButton.addEventListener('click', async function (event) {
+  let attempts = 0
+  let attemptLimit = 10
+  async function pushItSocial () {
+    sendButton.disabled = true
 		const data = JSON.stringify({
 				provisions:[
 					{
@@ -144,13 +147,24 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 		xhr.addEventListener('readystatechange', function() {
 			if (this.readyState === this.DONE) {
 				console.log(this.responseText)
-
-				if (xhr.status == 201) {
+		
+				var response = JSON.parse(this.responseText);       
+				if (response.statusCode >= 200 && response.statusCode < 300) {
 					isForwarding = !isForwarding;
+					sendButton.disabled = false
 					sendButton.innerHTML = isForwarding ? "Stop Forwarding" : "Begin Forwarding";
 					console.log("isForwarding: " + isForwarding);
+				} else if (response.statusCode == 504) {
+					// The server response 504 when the stream forwarding attempt fails due to timeout.
+					// Other failures should not be retried.
+					if (++attempts < attemptLimit) {
+						var t = setTimeout(() => {
+							clearTimeout(t)
+							pushItSocial()
+						}, 10000) // 10000: 10s; The server may take up to 7 seconds (plus client-to-server roundtrip latency) to respond.
+					}
 				} else {
-					console.log("error status: " + xhr.status);
+					console.log("error status: " + response.statusCode);
 				}
 			}
 		})
