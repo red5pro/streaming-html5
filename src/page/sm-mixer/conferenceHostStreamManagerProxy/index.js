@@ -157,7 +157,7 @@
   })
 
   const isValidString = (string) => {
-    return string.length <= 255 && !!string.match(/^[0-9a-z]+$/)
+    return string.length <= 255 && !!string.match(/^[0-9-_A-Za-]+$/)
   }
 
   const getMixingPageFromSelector = (selection) => {
