@@ -319,7 +319,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     var config = Object.assign({}, configuration);
     var connectParams = Object.assign({}, getAuthenticationParams(), {
       host: host,
-      app: app
+      app: app,
+      usePrivateProxy: configuration.streamManagerPrivateProxy
     });
     var rtcConfig = Object.assign({}, config, {
                       protocol: getSocketLocationFromProtocol().protocol,

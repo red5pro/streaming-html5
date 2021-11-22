@@ -227,7 +227,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       getAuthenticationParams(),
       {
         host: host,
-        app: configuration.app
+        app: configuration.app,
+        usePrivateProxy: configuration.streamManagerPrivateProxy
       }
     );
     var config = Object.assign({},

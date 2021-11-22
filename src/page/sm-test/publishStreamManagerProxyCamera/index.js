@@ -270,7 +270,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
                       app: configuration.proxy,
                       connectionParams: {
                         host: serverAddress,
-                        app: configuration.app
+                        app: configuration.app,
+                        usePrivateProxy: configuration.streamManagerPrivateProxy
                       },
                       mediaConstraints: mediaConstraints
                       });

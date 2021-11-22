@@ -118,6 +118,10 @@
         <hr class="paddedHR" />
         <h2 class="centered">Stream Manager Specific</h2>
         <p class="settings-field settings-collapsable">
+          <label class="settings-label">Use Private Proxy:</label>
+          <input type="checkbox" id="sm-private-field" style="vertical-align: middle;">
+        </p>
+        <p class="settings-field settings-collapsable">
           <label class="settings-label">Stream Manager Access Token:</label>
           <input id="sm-access-field" name="sm-access-field" placeholder="e.g., abc123">
         </p>
@@ -208,6 +212,7 @@
         var audioField = document.getElementById('audio-active-field');
         var muteAutoplayField = document.getElementById('mute-autoplay-field');
         var streamSwapButton = document.getElementById('stream-swap-btn');
+        var smPrivateField = document.getElementById('sm-private-field');
         var smRegionField = document.getElementById('sm-region-field');
         var smAccessField = document.getElementById('sm-access-field');
         var smAPIField = document.getElementById('sm-api-field');
@@ -359,6 +364,10 @@
           seal(configuration);
         });
 
+        smPrivateField.addEventListener('blur', function () {
+          configuration.streamManagerPrivateProxy = smPrivateField.value;
+          seal(configuration);
+        });
 
         smRegionField.addEventListener('blur', function () {
         configuration.streamManagerRegion = smRegionField.value;
@@ -395,6 +404,7 @@
           audioField.checked = config.useAudio ? true : false;
           muteAutoplayField.checked = config.muteOnAutoplayRestriction ? true : false;
           smRegionField.value = config.streamManagerRegion ? config.streamManagerRegion : '';
+          smPrivateField.value = config.streamManagerPrivateProxy;
           smAccessField.value = config.streamManagerAccessToken;
           smAPIField.value = config.streamManagerAPI;
           authEnabledField.checked = config.authentication.enabled ? true : false;

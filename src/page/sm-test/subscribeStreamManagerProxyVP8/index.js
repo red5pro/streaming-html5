@@ -187,7 +187,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       app: configuration.proxy,
       connectionParams: {
         host: host,
-        app: app
+        app: app,
+        usePrivateProxy: configuration.streamManagerPrivateProxy
       },
       subscriptionId: 'subscriber-' + instanceId,
       streamName: name

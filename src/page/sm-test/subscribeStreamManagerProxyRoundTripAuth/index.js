@@ -223,6 +223,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     proxyAuthConfiguration = {
       host: host,
       app: app,
+      usePrivateProxy: configuration.streamManagerPrivateProxy,
       username: usernameField.value,
       password: passwordField.value,
       token: tokenField.value
@@ -234,6 +235,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     proxyAuthConfiguration = {
       host: host,
       app: app,
+      usePrivateProxy: configuration.streamManagerPrivateProxy,
       username: usernameField.value,
       password: passwordField.value
     };
