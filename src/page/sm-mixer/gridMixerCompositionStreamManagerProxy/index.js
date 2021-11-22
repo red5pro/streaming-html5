@@ -83,11 +83,15 @@
     createMixersForm.addEventListener("submit", processCreateMixersForm);
   }
 
-
   const selectBox = document.getElementById("event-name-select");
   const destroyCompositionButton = document.getElementById('destroy-composition-button')
   const eventStateText = document.getElementById('event-state')
   const autoProvision = document.getElementById('add-stream-automatically')
+  autoProvision.addEventListener("change", () => {
+    if (autoProvision.checked) {
+      requestActiveStreams()
+    }
+  });
 
   let compositionEventName = null
   let activeComposition = null
@@ -554,30 +558,37 @@
   // Test auto provision of streams to composition
   // setTimeout(() => {
   //   compositionEventName = "event1"
+  //   if (!webSocket) {
+  //     webSocket = {
+  //       send: () => {
+  //         console.log('send')
+  //       }
+  //     }
+  //   }
   //   const comp = {
   //     "type": "activeCompositions", "list": [
   //       {
   //         "event": "event1", "transcodeComposition": false, "digest": "password", "location": ["nyc1"],
   //         "mixers": [
   //           {
-  //             "id": "red5pro-sm-node-nyc1-0634836652196", "mixerName": "ab", "location": "nyc1",
+  //             "id": "red5pro-sm-node-nyc1-0634836652196", "mixerName": "a", "location": "nyc1",
   //             "mixingPage": "",
-  //             "streamName": "vwall1", "path": "live", "destinationMixerName": "bc", "serverAddress": "",
+  //             "streamName": "final", "path": "live", "destinationMixerName": "", "serverAddress": "",
   //             "destination": "", "width": 1280, "height": 720, "framerate": 30, "bitrate": 1500,
   //             "doForward": true, "state": "INSERVICE", "streams": { "muted": [], "unmuted": [] }
   //           },
   //           {
-  //             "id": "red5pro-sm-node-nyc1-2634836652196", "mixerName": "bc", "location": "nyc1",
+  //             "id": "red5pro-sm-node-nyc1-2634836652196", "mixerName": "b", "location": "nyc1",
   //             "mixingPage": "",
-  //             "streamName": "vwall", "path": "live", "destinationMixerName": "", "serverAddress": "",
-  //             "destination": "", "width": 1280, "height": 720, "framerate": 30, "bitrate": 1500,
+  //             "streamName": "b", "path": "live", "destinationMixerName": "a", "serverAddress": "",
+  //             "destination": "a", "width": 1280, "height": 720, "framerate": 30, "bitrate": 1500,
   //             "doForward": true, "state": "INSERVICE", "streams": { "muted": [], "unmuted": [] }
   //           },
   //           {
-  //             "id": "red5pro-sm-node-nyc1-3634836652196", "mixerName": "dd", "location": "nyc1",
+  //             "id": "red5pro-sm-node-nyc1-3634836652196", "mixerName": "c", "location": "nyc1",
   //             "mixingPage": "",
-  //             "streamName": "vwall2", "path": "live", "destinationMixerName": "bc", "serverAddress": "",
-  //             "destination": "", "width": 1280, "height": 720, "framerate": 30, "bitrate": 1500,
+  //             "streamName": "c", "path": "live", "destinationMixerName": "a", "serverAddress": "",
+  //             "destination": "b", "width": 1280, "height": 720, "framerate": 30, "bitrate": 1500,
   //             "doForward": true, "state": "INSERVICE", "streams": { "muted": [], "unmuted": [] }
   //           }]
   //       }]
@@ -586,11 +597,20 @@
 
   //   let count = 0
   //   let streams = []
+  //   let sNames = ['final', 'b', 'c', 'n1', 'n2', 'n3']
   //   let interval = setInterval(() => {
-  //     streams.push(`stream-${count++}`)
+  //     console.log('run interval')
+  //     streams.push(sNames.at(count++))
+  //     //streams.push(`stream-${count++}`)
   //     const mockActiveStreams = { "type": "activeStreams", "list": [{ "room": "/live", streams }] }
-  //     parseStreams(mockActiveStreams)
-  //     if (count > 10) {
+  //     try {
+  //       parseStreams(mockActiveStreams)
+  //     } catch (e) {
+
+  //     }
+  //     console.log('count: ', count)
+  //     if (count > 5) {
+  //       console.log('clea interval')
   //       clearInterval(interval)
   //     }
   //   }, 1000)
@@ -1070,7 +1090,7 @@
       divElement.appendChild(mutedListHolderElement)
 
       mixerContainer.appendChild(divElement)
-      compositeStreamToDestinationMixerName[`/${mixerObjs[i].name}`] = mixerObjs[i].destinationMixerName
+      compositeStreamToDestinationMixerName[`/${mixerObjs[i].context}/${mixerObjs[i].name}`] = mixerObjs[i].destinationMixerName
       mixerNameToMixerBox[mixerObjs[i].mixerName] = unmutedListHolderElement
       if (mixerObjs.length <= 1 || mixerObjs[i].destinationMixerName != "") {
         mixerBoxes.push(unmutedListHolderElement)
