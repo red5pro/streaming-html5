@@ -103,6 +103,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   let attempts = 0
   let attemptLimit = 10
   async function pushItSocial () {
+		console.log("Begin pushItSocial()")
     sendButton.disabled = true
     const data = JSON.stringify({
         provisions:[
@@ -121,27 +122,27 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     const xhr = new XMLHttpRequest()    
     xhr.addEventListener('readystatechange', function() {
       if (this.readyState === this.DONE) {
-        console.log(this.responseText)
+		console.log(this.responseText)
 
-        try {
-          var response = JSON.parse(this.responseText);       
-          if (response.statusCode == 200) {
-            isForwarding = !isForwarding;
-            sendButton.disabled = false
-            sendButton.innerHTML = isForwarding ? "Stop Forwarding" : "Begin Forwarding";
-            console.log("isForwarding: " + isForwarding);
-          } else {
-            console.log("error status: " + response.statusCode);
-            throw new Error(response.statusCode)
-          }
-        } catch (e) {
-          if (++attempts < attemptLimit) {
-            var t = setTimeout(() => {
-              clearTimeout(t)
-              pushItSocial()
-            }, 1000)
-          }
-        }
+		if (this.status >= 200 && this.status < 300) {
+			isForwarding = !isForwarding;
+			sendButton.disabled = false
+			sendButton.innerHTML = isForwarding ? "Stop Forwarding" : "Begin Forwarding";
+			console.log("isForwarding: " + isForwarding);
+		} else if (this.status == 504) {
+			// The server response 504 when the stream forwarding attempt fails due to timeout.
+			// Other failures should not be retried.
+			if (++attempts < attemptLimit) {
+				console.log("Social media connection timed out. Retrying...");
+				var t = setTimeout(() => {
+					clearTimeout(t)
+					pushItSocial()
+				}, 10000) // 10000: 10s; The server may take up to 7 seconds (plus client-to-server roundtrip latency) to respond.
+			}
+		} else {
+			sendButton.disabled = false
+			console.log("error status: " + this.status);
+		}
       }
     })    
 
