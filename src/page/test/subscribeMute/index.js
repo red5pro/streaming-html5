@@ -75,13 +75,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     muteAudioButton.addEventListener('click', function () {
       if (!inStandby && targetSubscriber) {
         targetSubscriber.getMessageTransport().post({
-          muteAudio: true
+          mute: { muteAudio: true }
         })
         muteAudioButton.innerText = 'Unmute Audio';
         inStandby = !inStandby;
       } else if (inStandby && targetSubscriber) {
         targetSubscriber.getMessageTransport().post({
-          muteAudio: false
+          mute: { muteAudio: false }
         })
         muteAudioButton.innerText = 'Mute Audio';
         inStandby = !inStandby;
@@ -95,13 +95,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     muteVideoButton.addEventListener('click', function () {
       if (!inStandby && targetSubscriber) {
         targetSubscriber.getMessageTransport().post({
-          muteVideo: true
+          mute: { muteVideo: true }
         })
         muteVideoButton.innerText = 'Unmute Video';
         inStandby = !inStandby;
       } else if (inStandby && targetSubscriber) {
         targetSubscriber.getMessageTransport().post({
-          muteVideo: false
+          mute: { muteVideo: false }
         })
         muteVideoButton.innerText = 'Mute Video';
         inStandby = !inStandby;
