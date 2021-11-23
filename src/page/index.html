@@ -364,8 +364,8 @@
           seal(configuration);
         });
 
-        smPrivateField.addEventListener('blur', function () {
-          configuration.streamManagerPrivateProxy = smPrivateField.value;
+        smPrivateField.addEventListener('change', function () {
+          configuration.streamManagerPrivateProxy = !configuration.streamManagerPrivateProxy;
           seal(configuration);
         });
 
@@ -404,7 +404,7 @@
           audioField.checked = config.useAudio ? true : false;
           muteAutoplayField.checked = config.muteOnAutoplayRestriction ? true : false;
           smRegionField.value = config.streamManagerRegion ? config.streamManagerRegion : '';
-          smPrivateField.value = config.streamManagerPrivateProxy;
+          smPrivateField.checked = config.streamManagerPrivateProxy;
           smAccessField.value = config.streamManagerAccessToken;
           smAPIField.value = config.streamManagerAPI;
           authEnabledField.checked = config.authentication.enabled ? true : false;
