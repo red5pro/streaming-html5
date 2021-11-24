@@ -606,7 +606,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   const setUpParticipant = async (stream) => {
     try {
-
+      document.getElementById('subscriber-status-field').classList.add('hidden')
 
       console.log('participantConfig', participantConfig)
       const scope = getConferenceRoomContext()
