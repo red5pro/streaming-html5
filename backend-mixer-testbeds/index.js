@@ -39,7 +39,8 @@ app.post('/webhook', function (request, response) {
     /* expected body
        {
            "event":"stream-published"|"stream-unpublished",
-           "guid":"<app>/<room-1>/../<room-n>/<stream-name>"
+           "guid":"<app>/<room>/<stream-name>",
+           "clusterNodeType":"off"|"auto"|"origin"|"transcoder"|"edge"|"relay"
        }
     */
 
@@ -53,6 +54,13 @@ app.post('/webhook', function (request, response) {
         streamName
     } = getContextAndStreamNames(request.body.guid)
     const event = request.body.event
+    const clusterNodeType = request.body.clusterNodeType || "origin"
+    if (clusterNodeType != 'origin' && clusterNodeType != 'transcoder') {
+        // ignore calls from non ingest node types
+        response.status(200).send({ "result": true });
+        return
+    }
+
     if (event === 'stream-published') {
         conferenceBackend.registerPublishedStream(context, streamName)
         gridCompositionBackend.registerPublishedStream(context, streamName)
