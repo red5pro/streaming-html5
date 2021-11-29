@@ -54,8 +54,8 @@ app.post('/webhook', function (request, response) {
         streamName
     } = getContextAndStreamNames(request.body.guid)
     const event = request.body.event
-    const clusterNodeType = request.body.clusterNodeType || "origin"
-    if (clusterNodeType != 'origin' && clusterNodeType != 'transcoder') {
+    const clusterNodeType = request.body.clusterNodeType || "TYPE_ORIGIN"
+    if (clusterNodeType != 'TYPE_ORIGIN' && clusterNodeType != 'TYPE_TRANSCODER') {
         // ignore calls from non ingest node types
         response.status(200).send({ "result": true });
         return
