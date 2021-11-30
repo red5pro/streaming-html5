@@ -138,7 +138,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   document.getElementById('scope').value = appContext
   document.getElementById('streamName').value = roomName
-  document.getElementById('event').value = roomName
   const waitingRoomWall = document.querySelector('#waiting-room-wall')
   const selectBox = document.getElementById("event-name-select");
   const destroyCompositionButton = document.getElementById('destroy-composition-button')
@@ -182,7 +181,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   })
 
   const isValidString = (string) => {
-    return string.length <= 255 && !!string.match(/^[0-9a-z]+$/)
+    return string.length <= 255 && !!string.match(/^[\/0-9A-Z-_a-z]+$/)
   }
 
   const getMixingPageFromSelector = (selection) => {
@@ -215,7 +214,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       return
     }
 
-    const eventName = document.getElementById('event').value
+    const eventName = roomName
     const digest = configuration.streamManagerAccessToken
     const path = document.getElementById('scope').value
     const streamName = document.getElementById('streamName').value

@@ -439,11 +439,6 @@
                 <h2>Create Composition</h2>
                 <form id="create-composition-form">
                     <div class="tooltip">
-                        <span class="tooltiptext">Unique event name</span>
-                        <label class="tooltip" for="event">Event Name:</label><br>
-                        <input type="text" id="event" name="event" value="event1"><br>
-                    </div>
-                    <div class="tooltip">
                         <span class="tooltiptext">Page to load into the Mixer</span>
                         <label for="mixingPage">Mixing Page:</label><br>
                         <select name="mixingPage" id="mixingPage-select">
@@ -453,12 +448,12 @@
                     <div class="tooltip">
                         <span class="tooltiptext">App and Room scope for the composite stream</span>
                         <label for="scope">Scope:</label><br>
-                        <input type="text" id="scope" name="scope" value="live"><br>
+                        <input type="text" id="scope" name="scope" value="live" disabled><br>
                     </div>
                     <div class="tooltip">
                         <span class="tooltiptext">Stream name for the composite stream</span>
                         <label for="streamName">Stream Name:</label><br>
-                        <input type="text" id="streamName" name="streamName" value=""><br>
+                        <input type="text" id="streamName" name="streamName" value="" disabled><br>
                     </div>
                     <div class="tooltip">
                         <span class="tooltiptext">Width of the composite stream</span>

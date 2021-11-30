@@ -894,7 +894,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   const isValidString = (string) => {
-    return string.length <= 255 && !!string.match(/^[0-9a-z]+$/)
+    return string.length <= 255 && !!string.match(/^[\/0-9A-Z-_a-z]+$/)
   }
 
   let mixers = []
