@@ -459,6 +459,19 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         'event': selectedValue
       }
       webSocket.send(JSON.stringify(payload))
+
+      // move streams from mixers to main list 
+      const streamItems = mixerContainer.getElementsByClassName('media-list-item')
+      console.log(streamItems)
+      if (streamItems) {
+        const destinationSlot = document.getElementsByClassName('list-holder').item(0)
+        let i = streamItems.length - 1
+        while (i >= 0) {
+          updateSlotsOnSwap(streamItems.item(i).dataset.name, destinationSlot)
+          i = streamItems.length - 1
+        }
+      }
+
       // clean up
       mixerContainer.innerHTML = ''
       eventStateText.innerHTML = ''
@@ -637,6 +650,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   //     if (count > 5) {
   //       console.log('clea interval')
   //       clearInterval(interval)
+  //       destroyComposition()
   //     }
   //   }, 1000)
   // }, 3000)
@@ -736,7 +750,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
    * Update the slots and listings.
    */
   const updateSlotsOnSwap = (streamName, slot) => {
-    console.log('update ', streamName, 'to', slot)
+    console.log('updateSlotsOnSwap: update ', streamName, 'to', slot)
     const parentBox = slot.parentNode
     const mixerId = parentBox.dataset.mixerId || parentBox.dataset['mixer-id']
     const slotId = slot.dataset.listId || slot.dataset['list-id']
