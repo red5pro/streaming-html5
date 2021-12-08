@@ -63,7 +63,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var isSecure = protocol === 'https';
 
   var dryStreamTimer = 0;
-  var dryStreamTimerDelay = 10 * 1000; // 10 seconds
+  var dryStreamTimerDelay = 10 * 5000; // 5 seconds
   var hasReceivedPackets = false;
   function startDryStreamTimer () {
     hasReceivedPackets = false;
@@ -71,7 +71,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     dryStreamTimer = setTimeout(function () {
       clearTimeout(dryStreamTimer);
       if (!hasReceivedPackets) {
-        retryConnect()
+        setConnected(false)
       }
     }, dryStreamTimerDelay);
   }
