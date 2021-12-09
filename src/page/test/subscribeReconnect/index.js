@@ -66,14 +66,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var dryStreamTimerDelay = 5 * 1000; // 5 seconds
   var hasReceivedPackets = false;
   function startDryStreamTimer () {
-    console.log('[9014] :: startDryStreamTimer().')
     hasReceivedPackets = false;
     clearTimeout(dryStreamTimer)
     dryStreamTimer = setTimeout(function () {
-      console.log('[9014] :: clear dry timer.')
       clearTimeout(dryStreamTimer);
       if (!hasReceivedPackets) {
-        console.log('[9014] :: !hasReceivedPackets -> setConnected.')
         setConnected(false)
       }
     }, dryStreamTimerDelay);
@@ -95,7 +92,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     packetsReceived = p;
     updateStatistics(bitrate, packetsReceived, frameWidth, frameHeight);
     if (p > 0 && !hasReceivedPackets) {
-      console.log('[9014] :: hasReceivedPackets -> clear dry timer.')
       hasReceivedPackets = true;
       clearTimeout(dryStreamTimer);
     }
@@ -137,11 +133,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     if (event.type === red5prosdk.SubscriberEventTypes.CONNECTION_CLOSED ||
       event.type === red5prosdk.SubscriberEventTypes.CONNECT_FAILURE ||
       event.type === red5prosdk.SubscriberEventTypes.PLAY_UNPUBLISH) {
-      console.log('[9014] :: connect fail -> setConnected.')
         setConnected(false);
     }
     if (event.type === 'WebRTC.DataChannel.Error') {
-      console.log('[9014] :: channel error -> setConnected.')
       setConnected(false)
     }
     if (event.type === 'Subscribe.VideoDimensions.Change') {
@@ -247,13 +241,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     var retryTimeout;
     var connected = false;
     function retryConnect () {
-      console.log('[9014] :: retryConnect -> clearTimers.')
       clearTimeout(dryStreamTimer);
       clearTimeout(retryTimeout);
       if (!connected) {
-        console.log('[9014] :: retryConnect -> startTimer.')
         retryTimeout = setTimeout(function () {
-          console.log('[9014] :: timer up -> connect.')
           connect()
         }, 1000)
       }
@@ -261,13 +252,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     function setConnected (value) {
       connected = value;
       if (!connected) {
-        console.log('[9014] :: setConnected(false) -> retry.')
         retryConnect();
       }
     }
 
     function connect() {
-      console.log('[9014] :: connect -> clear retry.')
       clearTimeout(retryTimeout);
       // Assign new subscription id in off chance server rejects on subscriber already assigned.
       // Subscribers will be cleaned up, but if we try to immediately re-subscribe, we may get rejected.
@@ -275,7 +264,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
       var subscriber = new red5prosdk.Red5ProSubscriber()
       subscriber.on(red5prosdk.SubscriberEventTypes.CONNECT_FAILURE, function () {
-        console.log('[9014] :: connect failure init -> setConnected.')
         setConnected(false);
       });
       subscriber.setPlaybackOrder(subscribeOrder)
@@ -293,14 +281,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         })
         .then(function () {
           onSubscribeSuccess(targetSubscriber);
-          console.log('[9014] :: connect success -> setConnected.')
           setConnected(true);
         })
         .catch(function (error) {
           var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
           console.error('[Red5ProSubscriber] :: Error in subscribing - ' + jsonError);
           onSubscribeFail(jsonError);
-          console.log('[9014] :: connect catch error -> setConnected.')
           setConnected(false);
         });
     }
