@@ -72,7 +72,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var isSecure = protocol === 'https';
 
   var dryStreamTimer = 0;
-  var dryStreamTimerDelay = 10 * 5000; // 5 seconds
+  var dryStreamTimerDelay = 5 * 1000; // 5 seconds
   var hasReceivedPackets = false;
   function startDryStreamTimer () {
     hasReceivedPackets = false;
@@ -364,8 +364,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   function respondToEdge (response) {
-    clearTimeout(dryStreamTimer);
-    clearTimeout(retryTimeout);
     determineSubscriber(response)
       .then(function (subscriberImpl) {
         streamTitle.innerText = configuration.stream1;
