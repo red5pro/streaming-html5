@@ -593,7 +593,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
   }
 
-  // Test auto provision of streams to composition
+  // Uncomment to test auto provision of streams to composition
   // setTimeout(() => {
   //   compositionEventName = "event1"
   //   if (!webSocket) {
@@ -626,7 +626,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   //             "id": "red5pro-sm-node-nyc1-3634836652196", "mixerName": "c", "location": "nyc1",
   //             "mixingPage": "",
   //             "streamName": "c", "path": "live", "destinationMixerName": "a", "serverAddress": "",
-  //             "destination": "b", "width": 1280, "height": 720, "framerate": 30, "bitrate": 1500,
+  //             "destination": "a", "width": 1280, "height": 720, "framerate": 30, "bitrate": 1500,
   //             "doForward": true, "state": "INSERVICE", "streams": { "muted": [], "unmuted": [] }
   //           }]
   //       }]
@@ -638,8 +638,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   //   let sNames = ['final', 'b', 'c', 'n1', 'n2', 'n3']
   //   let interval = setInterval(() => {
   //     console.log('run interval')
-  //     streams.push(sNames.at(count++))
-  //     //streams.push(`stream-${count++}`)
+  //     if (count <= 5) {
+  //       streams.push(sNames.at(count))
+  //     } else {
+  //       console.log('clear stream ', streams.at(streams.length - 1))
+  //       streams.splice(streams.length - 3, 3)
+  //     }
+  //     count++
   //     const mockActiveStreams = { "type": "activeStreams", "list": [{ "room": "/live", streams }] }
   //     try {
   //       parseStreams(mockActiveStreams)
@@ -647,8 +652,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   //     }
   //     console.log('count: ', count)
-  //     if (count > 5) {
-  //       console.log('clea interval')
+  //     if (count > 6) {
+  //       console.log('clear interval')
   //       clearInterval(interval)
   //       destroyComposition()
   //     }
