@@ -76,10 +76,15 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   const resolutionField = document.querySelector('#resolution-field')
   const errorInfo = document.querySelector('.publisher-error')
 
+  const isAuthEnabled = configuration.mixerAuthenticationEnabled
+  var authenticationForm = document.getElementById('login-form')
   var usernameField = document.getElementById('username-field')
   var passwordField = document.getElementById('password-field')
   var tokenField = document.getElementById('token-field')
   var submitButton = document.getElementById('submit-button')
+  if (isAuthEnabled) {
+    authenticationForm.classList.remove('hidden')
+  }
 
   // Round Trip Authentication
   let username
@@ -87,30 +92,31 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   let token
 
   submitButton.addEventListener('click', () => {
-    username = usernameField.value
-    password = passwordField.value
-    token = tokenField.value
+    if (isAuthEnabled) {
+      username = usernameField.value
+      password = passwordField.value
+      token = tokenField.value
 
-    rtcConfig.connectionParams = {
-      ...rtcConfig.connectionParams,
-      username,
-      password,
-      token: JSON.stringify({ token, room: `${appContext}_wr` })
-    }
+      rtcConfig.connectionParams = {
+        ...rtcConfig.connectionParams,
+        username,
+        password,
+        token
+      }
 
-    publisherConfig.connectionParams = {
-      ...publisherConfig.connectionParams,
-      username,
-      password,
-      token: JSON.stringify({ token, room: `${appContext}_wr` })
-    }
+      publisherConfig.connectionParams = {
+        ...publisherConfig.connectionParams,
+        username,
+        password,
+        token
+      }
 
-
-    participantConfig.connectionParams = {
-      ...participantConfig.connectionParams,
-      username,
-      password,
-      token: JSON.stringify({ token, room: appContext })
+      participantConfig.connectionParams = {
+        ...participantConfig.connectionParams,
+        username,
+        password,
+        token
+      }
     }
 
     console.log('participantConfig', appContext, participantConfig)
@@ -179,10 +185,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     app: configuration.proxy,
     connectionParams: {
       host: configuration.host,
-      app: getWaitingRoomContext(),
-      username,
-      password,
-      token
+      app: getWaitingRoomContext()
     }
   })
 
@@ -603,7 +606,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   const setUpParticipant = async (stream) => {
     try {
-
+      document.getElementById('subscriber-status-field').classList.add('hidden')
 
       console.log('participantConfig', participantConfig)
       const scope = getConferenceRoomContext()

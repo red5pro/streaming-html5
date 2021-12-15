@@ -1,3 +1,28 @@
+/*
+Copyright © 2015 Infrared5, Inc. All rights reserved.
+
+The accompanying code comprising examples for use solely in conjunction with Red5 Pro (the "Example Code") 
+is  licensed  to  you  by  Infrared5  Inc.  in  consideration  of  your  agreement  to  the  following  
+license terms  and  conditions.  Access,  use,  modification,  or  redistribution  of  the  accompanying  
+code  constitutes your acceptance of the following license terms and conditions.
+
+Permission is hereby granted, free of charge, to you to use the Example Code and associated documentation 
+files (collectively, the "Software") without restriction, including without limitation the rights to use, 
+copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit 
+persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The Software shall be used solely in conjunction with Red5 Pro. Red5 Pro is licensed under a separate end 
+user  license  agreement  (the  "EULA"),  which  must  be  executed  with  Infrared5,  Inc.   
+An  example  of  the EULA can be found on our website at: https://account.red5pro.com/assets/LICENSE.txt.
+
+The above copyright notice and this license shall be included in all copies or portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,  INCLUDING  BUT  
+NOT  LIMITED  TO  THE  WARRANTIES  OF  MERCHANTABILITY, FITNESS  FOR  A  PARTICULAR  PURPOSE  AND  
+NONINFRINGEMENT.   IN  NO  EVENT  SHALL INFRARED5, INC. BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, 
+WHETHER IN  AN  ACTION  OF  CONTRACT,  TORT  OR  OTHERWISE,  ARISING  FROM,  OUT  OF  OR  IN CONNECTION 
+WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
 ((window, red5prosdk, SubscriberBlock) => {
 
   var serverSettings = (function () {
@@ -25,16 +50,16 @@
   //  red5prosdk.setLogLevel('debug')
 
   const rowCount = window.query('rows') || 2
-
   const cefId = window.query('cef-id') || 'default-mixer-id'
-  const appContext = window.query('app') || 'mixertestbeds'
+  const eventId = window.query('event-id') || 'default-event-id'
+  const appContext = window.query('app') || 'live'
   window.mixingLayer = window.query('layer') || 'top'
   const roomName = window.query('room') || ''
   const scope = roomName === '' ? appContext : `${appContext}/${roomName}`
   const sm = window.query('sm') || 'true'
   const requiresStreamManager = !sm ? false : !(sm && sm === 'false')
   const ws = window.query('ws') || 'null'
-  const webSocketEndpointForLayouts = `wss://${ws}?testbed=grid&type=cef&id=${cefId}`
+  const webSocketEndpointForLayouts = `wss://${ws}?testbed=grid&type=cef&id=${cefId}&event-id=${eventId}`
   const red5ProHost = window.query('host') || configuration.host
 
   // Round Trip Authentication
@@ -318,6 +343,7 @@
   resizeSlots()
   setSubscriberImages(new Array(9).fill('../../css/assets/Red5Pro_logo_white_red.svg'))
   window.addEventListener('resize', resizeSlots, true)
+
 })(window, window.red5prosdk, window.SubscriberBlock)
 
 

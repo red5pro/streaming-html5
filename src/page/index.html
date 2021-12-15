@@ -67,6 +67,16 @@
         <input id="stream2-field" name="stream2-field" value="stream2">
       </p>
       <hr class="paddedHR" />
+      <p class="settings-field settings-collapsable">
+        <label class="settings-label" for="level-input">Level:</label>
+        <select id="level-input" name="level-input">
+          <option value="TRACE">TRACE</option>
+          <option value="DEBUG" selected>DEBUG</option>
+          <option value="INFO">INFO</option>
+          <option value="WARN">WARN</option>
+          <option value="ERROR">ERROR</option>
+        </select>
+      </p>
       <h2 class="centered">WebRTC Specific</h2>
       <p class="settings-field settings-collapsable">
         <label class="settings-label">ICE server:</label>
@@ -148,9 +158,11 @@
       <h2 class="centered">Mixer Specific</h2>
       <p class="settings-field settings-collapsable">
         <label class="settings-label">Backend WebSocket For Compositions:</label>
-        <!--todo fix-->
         <input id="backend-composition-field" name="backend-composition-field" value="<mixer-mock-url>"
           placeholder="e.g., mydomain.com">
+        <label class="settings-label">Enable Round Trip Authentication:</label>
+        <input type="checkbox" id="enable-mixer-authentication-field" name="enable-mixer-authentication-field"
+          unchecked>
       </p>
       <hr class="paddedHR" />
       <p class="settings-field">
@@ -201,6 +213,7 @@
       var appField = document.getElementById('app-field');
       var stream1Field = document.getElementById('stream1-field');
       var stream2Field = document.getElementById('stream2-field');
+      var logLevelField = document.getElementById('level-input');
       var iceField = document.getElementById('ice-field');
       var iceUsername = document.getElementById('ice-username');
       var iceCredential = document.getElementById('ice-credential');
@@ -219,6 +232,7 @@
       var smRegionField = document.getElementById('sm-region-field');
       var smAccessField = document.getElementById('sm-access-field');
       var mixerBackendSocketField = document.getElementById('backend-composition-field');
+      var mixerAuthenticationEnabledField = document.getElementById('enable-mixer-authentication-field');
       var smAPIField = document.getElementById('sm-api-field');
       var authEnabledField = document.getElementById('auth-enabled-field');
       var authUsernameField = document.getElementById('auth-username-field');
@@ -267,6 +281,11 @@
         ]
         hideShowICEOptions();
         seal(configuration);
+      });
+
+      logLevelField.addEventListener('change', function () {
+        configuration.sendLogLevel = logLevelField.value.toUpperCase();
+        seal(configuration);  
       });
 
       iceUsername.addEventListener('blur', function () {
@@ -368,6 +387,11 @@
         seal(configuration);
       });
 
+      mixerAuthenticationEnabledField.addEventListener('change', function () {
+        configuration.mixerAuthenticationEnabled = mixerAuthenticationEnabledField.checked;
+        seal(configuration);
+      });
+
       smRegionField.addEventListener('blur', function () {
         configuration.streamManagerRegion = smRegionField.value;
         seal(configuration);
@@ -409,6 +433,8 @@
         authUsernameField.value = config.authentication.username;
         authPasswordField.value = config.authentication.password;
         authUsernameField.disabled = authPasswordField.disabled = !authEnabledField.checked;
+        mixerBackendSocketField.value = config.mixerBackendSocketField;
+        mixerAuthenticationEnabledField.checked = config.mixerAuthenticationEnabled ? config.mixerAuthenticationEnabled : false
 
         function selectFieldFromConfiguration(value, selectElem) {
           var i = selectElem.childNodes.length;
@@ -422,6 +448,7 @@
           }
           selectElem.value = value;
         }
+        selectFieldFromConfiguration(config.sendLogLevel, logLevelField);
         selectFieldFromConfiguration(config.iceTransport, iceTransportSelect);
         selectFieldFromConfiguration(config.rtcConfiguration.bundlePolicy, rtcBundlePolicySelect);
         selectFieldFromConfiguration(config.rtcConfiguration.iceTransportPolicy, rtcTransportPolicySelect);

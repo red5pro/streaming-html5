@@ -3,7 +3,7 @@
 <html>
 
 <head>
-    {{> meta title='Conference Participant SM Test'}}
+    {{> meta title='Conference Host SM Test'}}
     {{> header-scripts}}
     {{> header-stylesheets}}
     <style>
@@ -399,14 +399,14 @@
                 <p>
                     <span>To use this test, you must configure the Stream Manager token, backend WebSocket for
                         compositions endpoint and set the webapp to
-                        <em>mixertestbeds</em> in the <a href="../../index.html" target="_blank">Settings</a> page, and
+                        <em>live</em> in the <a href="../../index.html" target="_blank">Settings</a> page, and
                         publish to a room
                         scope using a round trip authentication Stream Manager testbed.</span>
                 </p>
             </div>
         </div>
         {{> test-title title='Stream Manager Conference Host Test'}}
-        <div id="login-form" class="settings-area">
+        <div id="login-form" class="settings-area hidden">
             <h3 class="centered info-title">Set a mock username, password and token for your session. Credentials will
                 not be validated</h3>
             <hr class="paddedHR">
@@ -442,11 +442,6 @@
                         <span class="tooltiptext">Unique event name</span>
                         <label class="tooltip" for="event">Event Name:</label><br>
                         <input type="text" id="event" name="event" value="event1"><br>
-                    </div>
-                    <div class="tooltip">
-                        <span class="tooltiptext">Mixer password for Round Trip Authentication</span>
-                        <label for="digest">Digest:</label><br>
-                        <input type="text" id="digest" name="digest" value="password"><br>
                     </div>
                     <div class="tooltip">
                         <span class="tooltiptext">Page to load into the Mixer</span>
@@ -488,7 +483,8 @@
                     <div class="tooltip">
                         <span class="tooltiptext">Region where the Mixer is deployed</span>
                         <label for="location">Mixer Region:</label><br>
-                        <input type="text" id="location" value="eastus"><br>
+                        <select name="mixer-region-name" id="mixer-region-select">
+                        </select>
                     </div>
                     <br>
                     <button type="submit">Create Composition</button>

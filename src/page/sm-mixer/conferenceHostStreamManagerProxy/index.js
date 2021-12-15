@@ -1,3 +1,28 @@
+/*
+Copyright © 2015 Infrared5, Inc. All rights reserved.
+
+The accompanying code comprising examples for use solely in conjunction with Red5 Pro (the "Example Code") 
+is  licensed  to  you  by  Infrared5  Inc.  in  consideration  of  your  agreement  to  the  following  
+license terms  and  conditions.  Access,  use,  modification,  or  redistribution  of  the  accompanying  
+code  constitutes your acceptance of the following license terms and conditions.
+
+Permission is hereby granted, free of charge, to you to use the Example Code and associated documentation 
+files (collectively, the "Software") without restriction, including without limitation the rights to use, 
+copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit 
+persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The Software shall be used solely in conjunction with Red5 Pro. Red5 Pro is licensed under a separate end 
+user  license  agreement  (the  "EULA"),  which  must  be  executed  with  Infrared5,  Inc.   
+An  example  of  the EULA can be found on our website at: https://account.red5pro.com/assets/LICENSE.txt.
+
+The above copyright notice and this license shall be included in all copies or portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,  INCLUDING  BUT  
+NOT  LIMITED  TO  THE  WARRANTIES  OF  MERCHANTABILITY, FITNESS  FOR  A  PARTICULAR  PURPOSE  AND  
+NONINFRINGEMENT.   IN  NO  EVENT  SHALL INFRARED5, INC. BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, 
+WHETHER IN  AN  ACTION  OF  CONTRACT,  TORT  OR  OTHERWISE,  ARISING  FROM,  OUT  OF  OR  IN CONNECTION 
+WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
 /**
  * Waiting Room Orchestrator in handling streams entering and exiting a room to be staged into a conference.
  */
@@ -46,9 +71,12 @@
   const appContext = configuration.app
   const appName = getRoomName(appContext)
   const roomName = getRoomName(appContext)
+  let iFramesrc = `./presenter-flow-viewer.html?sm=true&host=${configuration.host}&app=${getAppName(appContext)}&room=${roomName}&role=moderator&ws=${configuration.mixerBackendSocketField}&smtoken=${configuration.streamManagerAccessToken}`
   const mixingPageSelector = document.getElementById('mixingPage-select')
   const PARTICIPANT_APPENDIX = '_r5participator'
 
+  const isAuthEnabled = configuration.mixerAuthenticationEnabled
+  var authenticationForm = document.getElementById('login-form')
   var usernameField = document.getElementById('username-field');
   var passwordField = document.getElementById('password-field');
   var tokenField = document.getElementById('token-field');
@@ -62,7 +90,7 @@
   submitButton.addEventListener('click', () => {
     username = usernameField.value
     password = passwordField.value
-    token = JSON.stringify({ token: tokenField.value, room: `${appContext}_wr` })
+    token = tokenField.value
 
     rtcConfig.connectionParams = {
       ...rtcConfig.connectionParams,
@@ -76,6 +104,10 @@
       loginForm.classList.add('hidden')
     }
 
+    iFramesrc = `${iFramesrc}&username=${username}&password=${password}&token=${token}`
+    document.getElementById('conference-i-frame').src = iFramesrc
+
+    console.log('connect to socket- auth params submitted')
     setUpWaitingRoomWebSocket(waitingRoomWSEndpoint)
     setUpConferenceRoomWebSocket(conferenceRoomWSEndpoint)
   })
@@ -106,7 +138,6 @@
 
   document.getElementById('scope').value = appContext
   document.getElementById('streamName').value = roomName
-  document.getElementById('conference-i-frame').src = `./presenter-flow-viewer.html?sm=true&host=${configuration.host}&app=${getAppName(appContext)}&room=${roomName}&role=moderator&ws=${configuration.mixerBackendSocketField}&smtoken=${configuration.streamManagerAccessToken}`
   document.getElementById('event').value = roomName
   const waitingRoomWall = document.querySelector('#waiting-room-wall')
   const selectBox = document.getElementById("event-name-select");
@@ -146,13 +177,13 @@
     app: getWaitingRoomContext(),
     connectionParams: {
       host: configuration.host,
-      app: getWaitingRoomContext(),
-      username,
-      password,
-      token
+      app: getWaitingRoomContext()
     }
   })
 
+  const isValidString = (string) => {
+    return string.length <= 255 && !!string.match(/^[\/0-9-_A-Za-z]+$/)
+  }
 
   const getMixingPageFromSelector = (selection) => {
     if (selection === 'focused') {
@@ -185,8 +216,7 @@
     }
 
     const eventName = document.getElementById('event').value
-    const digest = document.getElementById('digest').value
-    const location = document.getElementById('location').value
+    const digest = configuration.streamManagerAccessToken
     const path = document.getElementById('scope').value
     const streamName = document.getElementById('streamName').value
     const width = String(document.getElementById('width').value)
@@ -199,8 +229,22 @@
     const destinationMixerName = ""
     let mixingPage = getMixingPageFromSelector(mixingPageSelector.options[mixingPageSelector.selectedIndex].value)
 
+    const selector = document.getElementById('mixer-region-select')
+    let location = null
+    try {
+      location = selector.options[selector.selectedIndex].value;
+    } catch (error) {
+      alert(`Mixer Region not found. Make sure your environment has available Mixer nodes`)
+      return
+    }
+
     if (!eventName || !digest || !mixingPage || !path || !streamName || !width || !height || !framerate || !bitrate) {
       alert(`At least one of eventName, digest, mixingPage, path, streamName, width, height, framerate or bitrate was not provided`)
+      return
+    }
+
+    if (!isValidString(eventName) || !isValidString(digest) || !isValidString(path) || !isValidString(streamName)) {
+      alert(`Event Name, Digest, Path and Stream Name must be alphanumeric and shorter than 256 characters`)
       return
     }
 
@@ -263,6 +307,15 @@
   const startSubscribers = (streamList) => {
     console.log(`[waitingroom]:: Starting new subscribers from list: ${streamList.join(',')}`)
     const subscribers = streamList.map(name => new SubscriberBlock(name, waitingRoomWall))
+    if (isAuthEnabled) {
+      rtcConfig.connectionParams = {
+        ...rtcConfig.connectionParams,
+        username,
+        password,
+        token
+      }
+    }
+
     // Create linked-list and start subscribing.
     subscribers.forEach((sub, index) => {
       decorateSubscriberForModeration(sub)
@@ -318,22 +371,22 @@
     const addLabel = document.createTextNode('add to conference')
     const exclusionButton = document.createElement('button')
     const exclusionLabel = document.createTextNode('exclude')
-    bar.classList.add('subscriber-moderation-field')
-    addButton.appendChild(addLabel)
     exclusionButton.classList.add('subscriber-exclusion-button')
     exclusionButton.appendChild(exclusionLabel)
+    bar.classList.add('subscriber-moderation-field')
+    addButton.appendChild(addLabel)
     bar.appendChild(addButton)
     bar.appendChild(exclusionButton)
     subscriber.getElementContainer().appendChild(bar)
-    exclusionButton.addEventListener('click', () => {
-      const streamName = devariantStreamName(subscriber.getStreamName())
-      // Note [TODO]:: streamName is now the top level GUID if transcoding.
-      onModeratorExcludeStream(rtcConfig.connectionParams.app, streamName)
-    })
     addButton.addEventListener('click', () => {
       const streamName = devariantStreamName(subscriber.getStreamName())
       // Note [TODO]:: streamName is now the top level GUID if transcoding.
       onModeratorAddConferenceStream(getConferenceRoomContext(), streamName)
+    })
+    exclusionButton.addEventListener('click', () => {
+      const streamName = devariantStreamName(subscriber.getStreamName())
+      // Note [TODO]:: streamName is now the top level GUID if transcoding.
+      onModeratorExcludeStream(rtcConfig.connectionParams.app, streamName)
     })
   }
 
@@ -446,6 +499,9 @@
       if (json.type === 'activeCompositions') {
         parseCompositions(json)
         return
+      } else if (json.type === 'mixerRegions') {
+        parseMixerRegions(json.regions)
+        return
       }
 
       if (json.room != getWaitingRoomContext()) {
@@ -460,6 +516,21 @@
         json.hasOwnProperty('streams') && parseExcludedList(json.streams)
       }
     }
+  }
+
+  const parseMixerRegions = (regions) => {
+    const selector = document.getElementById('mixer-region-select')
+    selector.innerHTML = ''
+    //const emptyOption = document.createElement('option')
+    let i = 0
+    regions.forEach(region => {
+      const option = document.createElement('option')
+      option.value = region
+      option.innerHTML = region
+      option.selected = i == 0
+      i++
+      selector.appendChild(option)
+    })
   }
 
   let confWebsocket = undefined
@@ -588,11 +659,17 @@
 
     if (filtered.length > 0) {
       const composition = filtered[0]
-      const compositionContext = composition.context
-      if (activeComposition == null) {
-        activeComposition = composition
-        eventRoomText.innerHTML = `Room: ${compositionContext}`
+      console.log('composition', composition)
+      let compositionContext = ''
+      if (composition.mixers && composition.mixers.length > 0) {
+        compositionContext = composition.mixers[0].path
+        compositionContext = compositionContext.substring(compositionContext.indexOf('/') + 1)
+        if (activeComposition == null) {
+          activeComposition = composition
+          eventRoomText.innerHTML = `Room: ${compositionContext}`
+        }
       }
+
 
       const mixers = composition.mixers
       const mixerObj = []
@@ -623,6 +700,18 @@
         console.warn(e)
       }
     }
+  }
+
+  // Main 
+
+  if (isAuthEnabled) {
+    authenticationForm.classList.remove('hidden')
+  }
+  else {
+    console.log('connect to socket- auth not enabled')
+    document.getElementById('conference-i-frame').src = iFramesrc
+    setUpWaitingRoomWebSocket(waitingRoomWSEndpoint)
+    setUpConferenceRoomWebSocket(conferenceRoomWSEndpoint)
   }
 
 })(window, window.red5prosdk, window.SubscriberBlock)

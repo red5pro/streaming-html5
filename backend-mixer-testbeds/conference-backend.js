@@ -1,13 +1,11 @@
 const request = require('request')
 const streamManagerHost = process.env.SM_HOST || 'http://127.0.0.1:7000'
-const restAdminToken = process.env.REST_ADMIN_TOKEN || '123abcz'
 const smToken = process.env.SM_TOKEN || 'abc123'
 
 const ERROR = 'error'
 const POLL_INTERVAL = 5000
 
 let clients = []
-let publisherCredentialsMap = {} // by room for stream suppression
 let streamList = {} // by room
 let excludedList = {} // by room
 let presenterList = {} // by room
@@ -18,14 +16,15 @@ let activeStreams = {}
 let mixerSockets = {}
 let activeCompositions = {}
 
-module.exports = {
+let cachedMixerRegions = null
 
+module.exports = {
     registerWebSocketClient: (ws, params) => {
         console.log('Conference websocket connection open')
         ws.room = params.room
         ws.isHost = params.hasOwnProperty('host') && params.host === 'true'
         ws.isMixer = params.hasOwnProperty('mixer') && params.mixer === 'true'
-
+        module.exports.getAndSendValidRegions(ws)
         postActiveList(ws, ws.room, streamList[ws.room])
         if (ws.isHost || ws.isMixer) {
             postConferenceList(ws, ws.room, conferenceList[ws.room])
@@ -55,28 +54,19 @@ module.exports = {
         })
     },
 
-    registerPublishedStream: (room, streamName, credentials) => {
+    registerPublishedStream: (room, streamName) => {
         let roomMap = streamList.hasOwnProperty(room) ? streamList[room] : undefined
         let excludedMap = excludedList.hasOwnProperty(room) ? excludedList[room] : undefined
-        let credentialsMap = publisherCredentialsMap.hasOwnProperty(room) ? publisherCredentialsMap[room] : undefined
 
         if ((!roomMap || roomMap.indexOf(streamName) === -1) &&
             (!excludedMap || excludedMap.indexOf(streamName) === -1)) {
-            console.log('Add stream: ' + streamName)
-            console.log(roomMap)
+            console.log(`Conference: add stream: ${room}/${streamName} to active streams list`)
             if (!roomMap) {
                 streamList[room] = []
             }
             streamList[room].push(streamName)
         }
-        if (!credentialsMap) {
-            credentialsMap = {}
-            publisherCredentialsMap[room] = credentialsMap
-        }
-
-        credentialsMap[streamName] = credentials
-        console.log(credentialsMap)
-        console.log(streamList[room])
+        console.log('Conference: streams in room', room, streamList[room])
 
         for (var i in clients) {
             if (clients[i].room != room) {
@@ -84,6 +74,8 @@ module.exports = {
             }
             postActiveList(clients[i], room, streamList[room])
         }
+
+        console.log(streamList)
     },
 
     unregisterUnpublishedStream: (room, streamName) => {
@@ -91,19 +83,18 @@ module.exports = {
         let excludedMap = excludedList.hasOwnProperty(room) ? excludedList[room] : undefined
         let conferenceMap = conferenceList.hasOwnProperty(room) ? conferenceList[room] : undefined
         let presenter = presenterList.hasOwnProperty(room) ? presenterList[room] : undefined
-        let credentialsMap = publisherCredentialsMap.hasOwnProperty(room) ? publisherCredentialsMap[room] : undefined
         let index
         if (roomMap) {
             index = roomMap.indexOf(streamName)
             if (index > -1) {
-                console.log('Remove stream: ' + streamName)
+                console.log('Conference: remove stream: ', `${room}/${streamName}`)
                 roomMap.splice(index, 1)
             }
         }
         if (conferenceMap) {
             index = conferenceMap.indexOf(streamName)
             if (index > -1) {
-                console.log('Remove conference stream: ' + streamName)
+                console.log('Conference: remove conference stream: ' + `${room}/${streamName}`)
                 conferenceMap.splice(index, 1)
             }
         }
@@ -111,9 +102,6 @@ module.exports = {
             if (presenter === streamName) {
                 presenter[room] = undefined
             }
-        }
-        if (credentialsMap && credentialsMap.hasOwnProperty(streamName)) {
-            delete credentialsMap[streamName]
         }
         if (excludedMap && roomMap.length <= 0) {
             console.log('delete excluded list')
@@ -125,6 +113,51 @@ module.exports = {
             }
             postActiveList(clients[i], room, streamList[room])
         }
+    },
+
+    getAndSendValidRegions: (ws) => {
+        if (cachedMixerRegions) {
+            console.log('Found cached Mixers in these regions', cachedMixerRegions)
+            ws.send(JSON.stringify({ "type": "mixerRegions", regions: cachedMixerRegions }))
+            return
+        }
+
+        let url = `${streamManagerHost}/streammanager/api/4.0/admin/nodegroup?accessToken=${smToken}`
+        makeGetRequest(url)
+            .then(response => {
+                const json = JSON.parse(response)
+                const nodeGroupNames = json.map(obj => obj.name)
+                console.log(nodeGroupNames)
+                let promises = []
+                nodeGroupNames.forEach(ng => {
+                    let url = `${streamManagerHost}/streammanager/api/4.0/admin/nodegroup/${ng}/node?accessToken=${smToken}`
+                    promises.push(makeGetRequest(url))
+                })
+
+                let regionSet = new Set()
+                Promise.all(promises)
+                    .then(results => {
+                        // console.log(results)
+                        results.forEach(details => {
+                            console.log(details)
+                            let nodes = JSON.parse(details)
+                            nodes.forEach(node => {
+                                if (node.role == 'mixer') {
+                                    regionSet.add(node.availabilityZone)
+                                }
+                            })
+                        })
+
+                        let regions = Array.from(regionSet)
+                        cachedMixerRegions = regions
+                        // invalidate cache
+                        setTimeout(() => {
+                            cachedMixerRegions = null
+                        }, 60000)
+                        console.log('Found Mixers in these regions', regions)
+                        ws.send(JSON.stringify({ "type": "mixerRegions", regions }))
+                    })
+            })
     }
 }
 
@@ -230,6 +263,8 @@ const createComposition = function (ws, message) {
         .catch((error) => {
             const errorMessage = `Failed to create ${eventName} composition, received Stream Manager error: ` + JSON.stringify(error)
             console.log(errorMessage)
+            // clear cache in case regions changed
+            cachedMixerRegions = null
             sendError(ws, errorMessage)
         })
 }
@@ -381,8 +416,15 @@ const destroyComposition = function (ws, message) {
     const url = `${streamManagerHost}/streammanager/api/4.0/composition/${eventName}?accessToken=${smToken}`
     makeDeleteRequest(url)
         .then((response) => {
-            const compositeStreamRoomName = getCompositeStreamRoomFromPayload(activeCompositions[eventName])
             console.log(`Composition ${eventName} has been destroyed. Received response: `, JSON.stringify(response))
+        })
+        .catch((error) => {
+            const errorMessage = `Received error when attempting to destroy ${eventName} composition. Stream Manager returned error: ` + JSON.stringify(error)
+            console.log(errorMessage)
+            sendError(ws, errorMessage)
+        })
+        .finally(() => {
+            const compositeStreamRoomName = getCompositeStreamRoomFromPayload(activeCompositions[eventName])
             delete activeCompositions[eventName]
             for (var i in clients) {
                 if (clients[i].isHost && (clients[i].room == compositeStreamRoomName || clients[i].room == compositeStreamRoomName + '_wr')) {
@@ -390,11 +432,6 @@ const destroyComposition = function (ws, message) {
                     postActiveStreams(clients[i])
                 }
             }
-        })
-        .catch((error) => {
-            const errorMessage = `Failed to destroy ${eventName} composition, received Stream Manager error: ` + JSON.stringify(error)
-            console.log(errorMessage)
-            sendError(ws, errorMessage)
         })
 }
 
@@ -477,25 +514,6 @@ var updateStreamListFromMessage = function (payload, ws) {
             presenterList[room] = conferenceMap.length > 0 ? conferenceMap[0] : undefined
         }
     } else if (payload.type === 'exclude') {
-        // StreamName will come in as top-level GUID.
-        // Note [TODO]: We need to shut down all variants.
-        // The terminateClient call will take care of this by shutting down 
-        // all clients that have published with a certain token
-        let credentialsMap = publisherCredentialsMap.hasOwnProperty(room) ? publisherCredentialsMap[room] : undefined
-        if (credentialsMap && credentialsMap.hasOwnProperty(streamName)) {
-            var credentials = credentialsMap[streamName]
-            if (streamManagerHost !== '') {
-                broadcastTerminateClient(credentials, '')
-            }
-            else {
-                terminateClient('127.0.0.1', credentials)
-            }
-        }
-        else {
-            console.warn('Could NOT find the token for stream ' + streamName + ' in room ' + room)
-            console.log(publisherCredentialsMap)
-        }
-
         if (!excludedMap) {
             excludedList[room] = []
         }
@@ -642,19 +660,6 @@ const sendError = function (ws, errorMessage) {
         error: errorMessage
     }
     ws.send(JSON.stringify(payload))
-}
-
-
-var terminateClient = function (host, credentials) {
-    var url = "http://" + host + `:5080/mixertestbeds/admin/suppress-client?adminToken=${restAdminToken}`
-    var json = { ...credentials }
-    makeRequest(url, json)
-}
-
-var broadcastTerminateClient = function (credentials, type) {
-    var url = streamManagerHost + `/mixertestbeds/admin/broadcast-suppress-client?adminToken=${restAdminToken}`
-    var json = { ...credentials, type: type != undefined ? type : "" }
-    makeRequest(url, json)
 }
 
 var makeRequest = function (url, body) {

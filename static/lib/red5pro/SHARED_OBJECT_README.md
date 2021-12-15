@@ -9,7 +9,7 @@
 
 ---
 
-# Shared Objects with Red5 Pro HTML SDK
+# Shared Objects with Red5 Pro WebRTC SDK
 
 Shared Objects provide a way to send, receive and store information between clients connected to the Red5 Pro Server.
 
@@ -27,39 +27,44 @@ Use of Shared objects requires an active connection. The active connection can b
 
 # Shared Objects and Red5ProSharedObjectSocket
 
-To establish a Shared Object connection when targeting an HTML-based client, a previously establish connection must be made and provided to the Shared Object instance. Though you can easily use a previously established connection from [a streaming client](#shared-objects-and-clients) you can also use the `Red5ProSharedObjectSocket` class from the HTML SDK.
+To establish a Shared Object connection when targeting an HTML-based client, a previously establish connection must be made and provided to the Shared Object instance. Though you can easily use a previously established connection from [a streaming client](#shared-objects-and-clients) you can also use the `Red5ProSharedObjectSocket` class from the WebRTC SDK.
 
 To instantiate and start a socket connection using the `Red5ProSharedObjectSocket` class:
 
 ```js
-(function (red5prosdk) {
+import { Red5ProSharedObjectSocket } from 'red5pro-webrtc-sdk'
 
-  var socket = new red5prosdk.Red5ProSharedObjectSocket()
-  socket.init({
+const start = async () => {
+
+  try {
+    const socket = new Red5ProSharedObjectSocket()
+    await socket.init({
       protocol: 'wss',
       port: 443,
       app: 'live'
     })
-    .then(function (socket) {
-      // Socket connection is established.
-      establishSharedObject(socket);
-    })
-    .catch(function (error) {
-      // An error has occurred in establishing a connection.
-    });
+    // Socket connection is established.
+  } catch (e) {
+    // An error has occurred in establishing a connection.
+  }
 
-})(window.red5prosdk);
+}
+
+start()
 ```
 
-> The `Red5ProSharedObjectSocket` class from the Red5 Pro HTML SDK is a proxy to an underlying `WebSocket` that provides convenience in communicating to and from the Red5 Pro Server.
+> The `Red5ProSharedObjectSocket` class from the Red5 Pro WebRTC SDK is a proxy to an underlying `WebSocket` that provides convenience in communicating to and from the Red5 Pro Server.
 
 Once the `Red5ProSharedObjectSocket` connection is available, it is provided to a `Red5ProSharedObject` instance - along with a shared object name - to establish a connection to the Remote Shared Object on the server:
 
 ```js
-var so;
+import { Red5ProSharedObject } from 'red5pro-webrtc-sdk'
+
+let so
+
 function establishSharedObject (socket) {
-  so = new red5prosdk.Red5ProSharedObject('sharedObjectTest', socket);
-  so.on('*', handleSharedObjectEvents);
+  so = new Red5ProSharedObject('sharedObjectTest', socket)
+  so.on('*', handleSharedObjectEvents)
 }
 
 function handleSharedObjectEvents (event) {
@@ -76,48 +81,57 @@ When using an already established client connection, the content of the stream i
 ## Creating a Shared Object with Publisher
 
 ```js
-(function (red5prosdk) {
+import { 
+  RTCPublisher,
+  Red5ProSharedObject
+} from 'red5pro-webrtc-sdk'
 
-  var so;
-  var publisher = new red5prosdk.Red5ProPublisher();
-  publisher.init(configuration)
-    // Resolve to proper publisher implementation as you normally would.
-    .then( function(publisherImpl) {
-      // Request to publish.
-      return publisherImpl.publish()
-    })
-    // Instantiate Shared Object with publisher instance.
-    .then( function(publisherImpl) {
-      so = new red5prosdk.Red5ProSharedObject('sharedObjectTest', publisherImpl);
-      so.on('*', handleSharedObjectEvents);
-    })
-    .catch( function(error) {
-      // handle possible error in instantiation od publisher implementation.
-    });
+const startPublisher = async () => {
 
-})(window.red5prosdk);
+  try {
+
+    // Note: Configuration not shown.
+    const publisher = await new RTCPublisher().init(configuration)
+    await publisher.publish()
+
+    const so = new Red5ProSharedObject('sharedObjectTest', publisher)
+    so.on('*', handleSharedObjectEvents)
+
+  } catch (e) {
+    console.error(e)
+  }
+
+}
+
+startPublisher()
 ```
 
 ## Creating a Shared Object with Subscriber Stream
 
 ```js
-(function (red5prosdk) {
+import { 
+  RTCSubscriber,
+  Red5ProSharedObject
+} from 'red5pro-webrtc-sdk'
 
-  var so;
-  var subscriber = new red5prosdk.Red5ProSubscriber();
-  subscriber.init(configuration)
-    .then( function(subscriberImpl) {
-      return subscriberImpl.subscribe();
-    })
-    .then( function(subscriberImpl) {
-      so = new red5pro.Red5ProSharedObject('sharedObjectTest', subscriberImpl);
-      so.on('*', handleSharedObjectEvents);
-    })
-    .catch( function(error) {
-      // handle possible error in instantiation od subscriber implementation.
-    });
+const startSubscriber = async () => {
 
-})(window.red5prosdk);
+  try {
+
+    // Note: Configuration not shown.
+    const subscriber = await new RTCSubscriber().init(configuration)
+    await subscriber.subscribe()
+
+    const so = new Red5ProSharedObject('sharedObjectTest', subscriber)
+    so.on('*', handleSharedObjectEvents)
+
+  } catch (e) {
+    console.error(e)
+  }
+
+}
+
+startSubscriber()
 ```
 
 # Shared Object API
@@ -133,8 +147,8 @@ The `Red5ProSharedObject` provides the following API that can be used after havi
 Closing a remote Shared Object instance is as easy as invoking `close`.
 
 ```js
-so.off('*', handleSharedObjectEvents);
-so.close();
+so.off('*', handleSharedObjectEvents)
+so.close()
 ```
 
 > The event delegate is also removed using the `off` method, since `SharedObject` is an instance of `EventEmitter`.
@@ -146,18 +160,18 @@ Remote Shared Objects use JSON for transmission, meaning that its structure is p
 This example simply uses a number to keep a count of how many people are connected to the object. As seen in the `PROPERTY_UPDATE` handler, value can be accessed from the object by name, and set using `setProperty`:
 
 ```js
-so.on(red5pro.SharedObjectEventTypes.PROPERTY_UPDATE, function (event) {
+so.on(red5pro.SharedObjectEventTypes.PROPERTY_UPDATE, event => {
 
   if (event.data.hasOwnProperty('count')) {
-    appendMessage('User count is: ' + event.data.count + '.');
+    appendMessage('User count is: ' + event.data.count + '.')
     if (!hasRegistered) {
-      hasRegistered = true;
-      so.setProperty('count', parseInt(event.data.count) + 1);
+      hasRegistered = true
+      so.setProperty('count', parseInt(event.data.count) + 1)
     }
   }
   else if (!hasRegistered) {
-    hasRegistered = true;
-    so.setProperty('count', 1);
+    hasRegistered = true
+    so.setProperty('count', 1)
   }
 
 });
@@ -173,7 +187,7 @@ function sendMessageOnSharedObject (message) {
   so.send('messageTransmit', {
     user: configuration.stream1,
     message: message
-  });
+  })
 
 }
 ```
@@ -190,7 +204,7 @@ function messageTransmit (message) { // eslint-disable-line no-unused-vars
   soField.value = ['User "' + message.user + '": ' + message.message, soField.value].join('\n');
 }
 
-so.on(red5pro.SharedObjectEventTypes.METHOD_UPDATE, function (event) {
+so.on(red5pro.SharedObjectEventTypes.METHOD_UPDATE, event => {
   soCallback[event.data.methodName].call(null, event.data.message);
 });
 ```
@@ -204,15 +218,15 @@ To subscribe to all events from a shared object:
 ```js
 function handleSharedObjectEvent (event) {
   // The name of the event:
-  var type = event.type;
+  var { type } = event
   // The name associated with the shared object instance:
-  var name = event.name;
+  var { name } = event
   // Optional data releated to the event (not available on all events):
-  var data = event.data;
+  var { data } = event
 }
 
-var so = new red5prosdk.Red5ProSharedObject();
-so.on('*', handleSharedObjectEvent);
+var so = new Red5ProSharedObject()
+so.on('*', handleSharedObjectEvent)
 ```
 
 > The `*` type assignment is considered a "Wildcard" subscription - all events being issued by the shared object instance will invoke the assign event handler.
@@ -220,19 +234,20 @@ so.on('*', handleSharedObjectEvent);
 To unsubscribe to all events from a shared object after assinging an event handler:
 
 ```js
-so.off('*', handleSharedObjectEvent);
+so.off('*', handleSharedObjectEvent)
 ```
 
 The following sections of this document describe the event types that can also be listened to directly, instead of using the `*` wildcard.
 
 ## Common Events
 
-The following events are common across all SharedObject implementations from the Red5 Pro HTML SDK. They can be accessed from the global `red5prosdk` object from the `SharedObjectEventTypes` attribute.
+The following events are common across all SharedObject implementations from the Red5 Pro WebRTC SDK. They can be accessed from the global `red5prosdk` object from the `SharedObjectEventTypes` attribute.
 
 | Access | Name | Meaning |
 | :--- | :---: | :--- |
 | CONNECT_SUCCESS | 'Connect.Success' | When the shared object has established a required remote connection. |
 | CONNECT_FAILURE | 'Connect.Failure' | When the shared object has failed to establish a required remote connection. |
 | PROPERTY_UPDATE | 'SharedObject.PropertyUpdate' | When an update to a property held on the shared object has been updated. |
+| PROPERTY_REMOVE | 'SharedObject.PropertyRemove' | When property held on the shared object has been removed. |
 | METHOD_UPDATE | 'SharedObject.MethodUpdate' | When a client has invoked a message to be received on connected clients. |
 | CONNECTION_CLOSED | 'SharedObject.Connection.Closed' | When the Shared Object is successfully `close`d on the server. |

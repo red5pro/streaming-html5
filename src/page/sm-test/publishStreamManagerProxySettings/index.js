@@ -214,6 +214,17 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
   setPublishableState(true);
 
+  function disablePublishButton () {
+    publishButton.disabled = true
+  }
+
+  function restorePublishButton () {
+    var t = setTimeout(function () {
+      clearTimeout(t)
+      publishButton.disabled = false
+    }, 5000);
+  }
+
   function onPublisherEvent (event) {
     console.log('[Red5ProPublisher] ' + event.type + '.');
     updateStatusFromEvent(event);
@@ -226,14 +237,16 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   function onPublishFail (message) {
     console.error('[Red5ProPublisher] Publish Error :: ' + message);
     setPublishableState(true);
+    restorePublishButton();
   }
   function onPublishSuccess (publisher) {
     console.log('[Red5ProPublisher] Publish Complete.');
     setPublishableState(false);
+    restorePublishButton();
     try {
       var pc = publisher.getPeerConnection();
       var stream = publisher.getMediaStream();
-      window.trackBitrate(pc, onBitrateUpdate);
+      window.trackBitrate(pc, onBitrateUpdate, onResolutionUpdate);
       statisticsField.classList.remove('hidden');
       stream.getVideoTracks().forEach(function (track) {
         var settings = track.getSettings();
@@ -248,11 +261,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     console.error('[Red5ProPublisher] Unpublish Error :: ' + message);
     statisticsField.classList.add('hidden');
     setPublishableState(true);
+    restorePublishButton();
   }
   function onUnpublishSuccess () {
     console.log('[Red5ProPublisher] Unpublish Complete.');
     statisticsField.classList.add('hidden');
     setPublishableState(true);
+    restorePublishButton();
   }
 
   function onDeviceError (error) {
@@ -439,6 +454,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         resolve();
         return;
       }
+      disablePublishButton();
       var publisher = targetPublisher;
       publisher.unpublish()
         .then(function () {
@@ -458,7 +474,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var retryCount = 0;
   var retryLimit = 3;
   function respondToOrigin (response) {
-    var delay = clearEstablishedStream() ? 200 : 0;
+    var delay = clearEstablishedStream() ? 1000 : 0;
+    disablePublishButton();
     var t = setTimeout(function (){
       clearTimeout(t);
       determinePublisher(response)
