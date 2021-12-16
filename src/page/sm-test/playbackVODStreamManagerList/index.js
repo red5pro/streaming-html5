@@ -169,38 +169,14 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     });
   }
 
-  // eslint-disable-next-line no-unused-vars
-  function requestEdge (configuration, vod) {
+  function generatePlaybackURL (configuration, filename) {
     var host = configuration.host;
     var app = configuration.app;
-    var port = serverSettings.httpport;
+    var port = serverSettings.httpport.length === 0 ? 443 : serverSettings.httpport;
     var baseUrl = protocol + '://' + host + ':' + port;
     var apiVersion = configuration.streamManagerAPI || '4.0';
-    var url = baseUrl + '/streammanager/api/' + apiVersion + '/media/' + app + '/' + vod;
-      return new Promise(function (resolve, reject) {
-        fetch(url)
-          .then(function (res) {
-            if (res.headers.get("content-type") &&
-              res.headers.get("content-type").toLowerCase().indexOf("application/json") >= 0) {
-                return res.json();
-            }
-            else {
-              throw new TypeError('[RequestVOD] :: Could not properly parse response.');
-            }
-          })
-          .then(function (json) {
-            if (json.errorMessage) {
-              throw new Error(json.errorMessage);
-            } else {
-              resolve(json);
-            }
-          })
-          .catch(function (error) {
-            console.error('[SubscribeStreamManagerTest] :: Error - Could not request Edge IP from Stream Manager. ' + error.message)
-            showErrorNotification(error.message);
-            reject(error)
-          });
-    });
+    var url = baseUrl + '/streammanager/api/' + apiVersion + '/file/' + app + '/' + filename;
+    return url
   }
 
   var mediafiles = [];
@@ -225,18 +201,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     if (!isNaN(index) && mediafiles.length > index) {
       var next = function () {
         var f = mediafiles[index];
-        var url = f.url;
-        var location = url.split('/');
-        mediafiles[index] = Object.assign({}, f, {
-          serverAddress: location[2],
-          scope: [location[3], location[4]].join('/'),
-          name: location[5]
-        })
-        var mediafile = mediafiles[index]
-        if (isMP4File(mediafile.url)) {
-          useMP4Fallback(mediafile.url);
+        var url = generatePlaybackURL(f.name);
+        if (isMP4File(url)) {
+          useMP4Fallback(url);
         } else {
-          copyFLVLocationToClipboard(mediafile)
+          copyFLVLocationToClipboard(url)
         }
       }
       unsubscribe().then(next).catch(next);
@@ -341,8 +310,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   function respondToPlaylist (response) {
     var pathReg = /([^/]+)/g;
-    var url = response.url;
     var name = response.name;
+    var url = generatePlaybackURL(configuration, name)
     var location = url.match(pathReg);
     var protocol = window.location.protocol.substring(0, window.location.protocol.length - 1)
     var host = window.location.hostname
@@ -352,7 +321,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       host = location[1].split(':').length > 1 ? location[1].split(':')[0] : location[1]
       port = location[1].split(':').length > 1 ? location[1].split(':')[1] : ''
     }
-    var app  = configuration.app;
+    var app  = 'streammanager/api/4.0/file/' + configuration.app;
     if (location.length > 4) {
       var paths = [location[2]]
       var pathIndex = 3;
@@ -383,17 +352,16 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       .catch(function (error) {
         var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
         console.error('[Red5ProSubscriber] :: Error in HLS playback. ' + jsonError);
-        useVideoJSFallback(response.url);
+        useVideoJSFallback(url);
 //        showErrorNotification('[Red5ProSubscriber] :: Error in HLS playback. ' + jsonError);
       });
   }
 
-  function copyFLVLocationToClipboard (response) {
-    console.log(response)
+  function copyFLVLocationToClipboard (url) {
     try {
-      navigator.clipboard.writeText(response.url)
+      navigator.clipboard.writeText(url)
         .then(function () {
-          console.log(response.url + ' add to clipboard!')
+          console.log(url + ' add to clipboard!')
         })
         .catch(function (e) {
           console.error(e)
