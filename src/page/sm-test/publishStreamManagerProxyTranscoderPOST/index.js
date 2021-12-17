@@ -110,9 +110,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   var accessToken = configuration.streamManagerAccessToken;
   var auth = configuration.authentication;
-  var authName = auth.username;
-  var authPass = auth.password;
-  var authToken = auth.token;
+  var authName = auth.enabled ? auth.username : '';
+  var authPass = auth.enabled ? auth.password : '';
+  var authToken = auth.enabled ? auth.token : '';
   var transcoderPOST = {
     meta: {
       authentication: {
