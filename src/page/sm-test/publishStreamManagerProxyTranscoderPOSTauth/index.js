@@ -112,11 +112,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var auth = configuration.authentication;
   var authName = auth.username;
   var authPass = auth.password;
+  var authToken = auth.token;
   var transcoderPOST = {
     meta: {
       authentication: {
         username: authName,
-        password: authPass
+        password: authPass,
+        token: authToken
       },
       stream: [],
       georules: {
