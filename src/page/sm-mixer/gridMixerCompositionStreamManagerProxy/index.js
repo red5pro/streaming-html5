@@ -1,3 +1,28 @@
+/*
+Copyright © 2015 Infrared5, Inc. All rights reserved.
+
+The accompanying code comprising examples for use solely in conjunction with Red5 Pro (the "Example Code") 
+is  licensed  to  you  by  Infrared5  Inc.  in  consideration  of  your  agreement  to  the  following  
+license terms  and  conditions.  Access,  use,  modification,  or  redistribution  of  the  accompanying  
+code  constitutes your acceptance of the following license terms and conditions.
+
+Permission is hereby granted, free of charge, to you to use the Example Code and associated documentation 
+files (collectively, the "Software") without restriction, including without limitation the rights to use, 
+copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit 
+persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The Software shall be used solely in conjunction with Red5 Pro. Red5 Pro is licensed under a separate end 
+user  license  agreement  (the  "EULA"),  which  must  be  executed  with  Infrared5,  Inc.   
+An  example  of  the EULA can be found on our website at: https://account.red5pro.com/assets/LICENSE.txt.
+
+The above copyright notice and this license shall be included in all copies or portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,  INCLUDING  BUT  
+NOT  LIMITED  TO  THE  WARRANTIES  OF  MERCHANTABILITY, FITNESS  FOR  A  PARTICULAR  PURPOSE  AND  
+NONINFRINGEMENT.   IN  NO  EVENT  SHALL INFRARED5, INC. BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, 
+WHETHER IN  AN  ACTION  OF  CONTRACT,  TORT  OR  OTHERWISE,  ARISING  FROM,  OUT  OF  OR  IN CONNECTION 
+WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
 /**
  * Editor Page allows for compositing which live stream should be accessed by which Mixer for composing.
  */
@@ -83,10 +108,15 @@
     createMixersForm.addEventListener("submit", processCreateMixersForm);
   }
 
-
   const selectBox = document.getElementById("event-name-select");
   const destroyCompositionButton = document.getElementById('destroy-composition-button')
   const eventStateText = document.getElementById('event-state')
+  const autoProvision = document.getElementById('add-stream-automatically')
+  autoProvision.addEventListener("change", () => {
+    if (autoProvision.checked) {
+      requestActiveStreams()
+    }
+  });
 
   let compositionEventName = null
   let activeComposition = null
@@ -125,6 +155,9 @@
       }
     };
   }
+
+
+
 
   /**
    * Event listener for drag start on subscriber blocks.
@@ -263,6 +296,8 @@
   // Stream List and Selection Logic
   ////////////
   let currentStreamListing = []
+  let counter = 0
+  let numberOfMixers = 0
   /**
    * Parse and filter incoming and dropped streams
    */
@@ -281,8 +316,52 @@
     addStreams(payload.added)
     removeStreams(payload.removed)
 
+    if (autoProvision.checked) {
+      console.log('auto provisioning mixers')
+      autoProvisionMixers(payload.added)
+    }
+
     console.log('new stream list', streamNames)
     currentStreamListing = streamNames
+  }
+
+  function autoProvisionMixers(streamsToAdd) {
+    if (activeComposition == null) {
+      console.log('no composition selected, ignoring auto provisioning')
+      return
+    }
+
+    console.log(compositeStreamToDestinationMixerName)
+    console.log(mixerNameToMixerBox)
+    streamsToAdd.forEach(stream => {
+      console.log(stream)
+      // if composite stream 
+      let slot
+      if (Object(compositeStreamToDestinationMixerName).hasOwnProperty(stream)) {
+        const destName = compositeStreamToDestinationMixerName[stream]
+        if (destName == "") {
+          console.log(`Skipping ${stream} because it is final composite stream`)
+          return
+        }
+
+        if (!mixerNameToMixerBox[destName]) {
+          console.log(`Could not find box for mixer ${destName}`)
+          return
+        }
+        slot = mixerNameToMixerBox[destName]
+        console.log(`adding ${stream} to ${destName}`)
+        updateSlotsOnSwap(stream, slot)
+        return
+      }
+
+      console.log(counter, mixerBoxes.length)
+      let nextMixer = parseInt(counter) % mixerBoxes.length
+      counter += 1
+      slot = mixerBoxes[nextMixer]
+      console.log(slot)
+      console.log(`adding ${stream} to ${nextMixer}`)
+      updateSlotsOnSwap(stream, slot)
+    })
   }
 
   // Simple list comparison.
@@ -380,6 +459,19 @@
         'event': selectedValue
       }
       webSocket.send(JSON.stringify(payload))
+
+      // move streams from mixers to main list 
+      const streamItems = mixerContainer.getElementsByClassName('media-list-item')
+      console.log(streamItems)
+      if (streamItems) {
+        const destinationSlot = document.getElementsByClassName('list-holder').item(0)
+        let i = streamItems.length - 1
+        while (i >= 0) {
+          updateSlotsOnSwap(streamItems.item(i).dataset.name, destinationSlot)
+          i = streamItems.length - 1
+        }
+      }
+
       // clean up
       mixerContainer.innerHTML = ''
       eventStateText.innerHTML = ''
@@ -475,6 +567,7 @@
       const composition = filtered[0]
       if (activeComposition == null) {
         activeComposition = composition
+        numberOfMixers = composition.mixers.length
       }
 
       //const compositionContext = composition.context
@@ -486,7 +579,7 @@
         if (state === 'disconnected') {
           areAllConnected &= false
         }
-        mixerObj.push({ id: mixer.id, context: mixer.path, name: mixer.streamName })
+        mixerObj.push({ id: mixer.id, mixerName: mixer.mixerName, context: mixer.path, name: mixer.streamName, destinationMixerName: mixer.destinationMixerName })
       })
 
       const htmlEventStateText = document.getElementById('event-state')
@@ -500,6 +593,72 @@
     }
   }
 
+  // Uncomment to test auto provision of streams to composition
+  // setTimeout(() => {
+  //   compositionEventName = "event1"
+  //   if (!webSocket) {
+  //     webSocket = {
+  //       send: () => {
+  //         console.log('send')
+  //       }
+  //     }
+  //   }
+  //   const comp = {
+  //     "type": "activeCompositions", "list": [
+  //       {
+  //         "event": "event1", "transcodeComposition": false, "digest": "password", "location": ["nyc1"],
+  //         "mixers": [
+  //           {
+  //             "id": "red5pro-sm-node-nyc1-0634836652196", "mixerName": "a", "location": "nyc1",
+  //             "mixingPage": "",
+  //             "streamName": "final", "path": "live", "destinationMixerName": "", "serverAddress": "",
+  //             "destination": "", "width": 1280, "height": 720, "framerate": 30, "bitrate": 1500,
+  //             "doForward": true, "state": "INSERVICE", "streams": { "muted": [], "unmuted": [] }
+  //           },
+  //           {
+  //             "id": "red5pro-sm-node-nyc1-2634836652196", "mixerName": "b", "location": "nyc1",
+  //             "mixingPage": "",
+  //             "streamName": "b", "path": "live", "destinationMixerName": "a", "serverAddress": "",
+  //             "destination": "a", "width": 1280, "height": 720, "framerate": 30, "bitrate": 1500,
+  //             "doForward": true, "state": "INSERVICE", "streams": { "muted": [], "unmuted": [] }
+  //           },
+  //           {
+  //             "id": "red5pro-sm-node-nyc1-3634836652196", "mixerName": "c", "location": "nyc1",
+  //             "mixingPage": "",
+  //             "streamName": "c", "path": "live", "destinationMixerName": "a", "serverAddress": "",
+  //             "destination": "a", "width": 1280, "height": 720, "framerate": 30, "bitrate": 1500,
+  //             "doForward": true, "state": "INSERVICE", "streams": { "muted": [], "unmuted": [] }
+  //           }]
+  //       }]
+  //   }
+  //   parseCompositions(comp)
+
+  //   let count = 0
+  //   let streams = []
+  //   let sNames = ['final', 'b', 'c', 'n1', 'n2', 'n3']
+  //   let interval = setInterval(() => {
+  //     console.log('run interval')
+  //     if (count <= 5) {
+  //       streams.push(sNames.at(count))
+  //     } else {
+  //       console.log('clear stream ', streams.at(streams.length - 1))
+  //       streams.splice(streams.length - 3, 3)
+  //     }
+  //     count++
+  //     const mockActiveStreams = { "type": "activeStreams", "list": [{ "room": "/live", streams }] }
+  //     try {
+  //       parseStreams(mockActiveStreams)
+  //     } catch (e) {
+
+  //     }
+  //     console.log('count: ', count)
+  //     if (count > 6) {
+  //       console.log('clear interval')
+  //       clearInterval(interval)
+  //       destroyComposition()
+  //     }
+  //   }, 1000)
+  // }, 3000)
 
   /*
   * Launch a mixer subscriber using the given configuration
@@ -596,6 +755,7 @@
    * Update the slots and listings.
    */
   const updateSlotsOnSwap = (streamName, slot) => {
+    console.log('updateSlotsOnSwap: update ', streamName, 'to', slot)
     const parentBox = slot.parentNode
     const mixerId = parentBox.dataset.mixerId || parentBox.dataset['mixer-id']
     const slotId = slot.dataset.listId || slot.dataset['list-id']
@@ -753,7 +913,7 @@
   }
 
   const isValidString = (string) => {
-    return string.length <= 255 && !!string.match(/^[0-9-_A-Za-z]+$/)
+    return string.length <= 255 && !!string.match(/^[\/0-9-_A-Za-z]+$/)
   }
 
   let mixers = []
@@ -904,6 +1064,8 @@
       return
     }
 
+    numberOfMixers = mixers.length
+
     // add event-id so we can identify what event a mixer is handling
     mixers.forEach(mixer => {
       mixer.mixingPage = `${mixer.mixingPage}&event-id=${eventName}`
@@ -939,6 +1101,9 @@
   /*
   * Creates the UI for the Mixer boxes
   */
+  const mixerBoxes = []
+  const mixerNameToMixerBox = {}
+  const compositeStreamToDestinationMixerName = {}
   const createMixerBoxes = (mixerObjs) => {
     for (let i = 0; i < mixerObjs.length; i++) {
       let unmutedPElement = document.createElement('p')
@@ -969,7 +1134,16 @@
       divElement.appendChild(mutedListHolderElement)
 
       mixerContainer.appendChild(divElement)
+      compositeStreamToDestinationMixerName[`/${mixerObjs[i].context}/${mixerObjs[i].name}`] = mixerObjs[i].destinationMixerName
+      mixerNameToMixerBox[mixerObjs[i].mixerName] = unmutedListHolderElement
+      if (mixerObjs.length <= 1 || mixerObjs[i].destinationMixerName != "") {
+        mixerBoxes.push(unmutedListHolderElement)
+      }
     }
+
+    console.log('create mixer boxes')
+    console.log(compositeStreamToDestinationMixerName)
+    console.log(mixerNameToMixerBox)
 
     slots = mixerContainer.querySelectorAll('.box')
     const mixerUnmutedLists = mixerContainer.querySelectorAll('.list-holder-unmuted')
