@@ -74,79 +74,99 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var frameHeight = 0;
 
   // XXX socialpusher
-	var sendButton = document.getElementById('send-button');
-	var destUri = document.getElementById('dest-URI');
-	var streamKey = document.getElementById('stream-key');
-	var passwd = document.getElementById('passwd');
-	var isForwarding = false;
+  var sendButton = document.getElementById('send-button');
+  var destUri = document.getElementById('dest-URI');
+  var streamKey = document.getElementById('stream-key');
+  var passwd = document.getElementById('passwd');
+  var isForwarding = false;
 
-	// from https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/digest
-	async function digestMessage(message) {
-	  const msgUint8 = new TextEncoder().encode(message);                           // encode as (utf-8) Uint8Array
-	  const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8);           // hash the message
-	  const hashArray = Array.from(new Uint8Array(hashBuffer));                     // convert buffer to byte array
-	  const hashHex = hashArray.map(b => {
-				var result = b.toString(16).padStart(2, '0');
-				//console.log("b: " + b + " result: " + result);
-				return result;
-			}).join(''); // convert bytes to hex string
-	  return hashHex;
-	}
+  // from https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/digest
+  async function digestMessage(message) {
+    const msgUint8 = new TextEncoder().encode(message);                           // encode as (utf-8) Uint8Array
+    const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8);           // hash the message
+    const hashArray = Array.from(new Uint8Array(hashBuffer));                     // convert buffer to byte array
+    const hashHex = hashArray.map(b => {
+        var result = b.toString(16).padStart(2, '0');
+        //console.log("b: " + b + " result: " + result);
+        return result;
+      }).join(''); // convert bytes to hex string
+    return hashHex;
+  }
 
-	function createSignature(timestamp) {
-		var action = isForwarding ? "provision.delete" : "provision.create";
-		var message = action + timestamp + passwd.value;
-		
-		return digestMessage(message);
-	}
+  function createSignature(timestamp) {
+    var action = isForwarding ? "provision.delete" : "provision.create";
+    var message = action + timestamp + passwd.value;
+    
+    return digestMessage(message);
+  }
 
-	sendButton.addEventListener('click', async function (event) {
-		const data = JSON.stringify({
-				provisions:[
-					{
-						guid:"any",
-						level:1,
-						context:config.app,
-						name:config.stream1,
-						parameters:{
-							destURI:destUri.value + "/" + streamKey.value
-						}
-					}
-				]
-			})
-		  
-		const xhr = new XMLHttpRequest()	  
-		xhr.addEventListener('readystatechange', function() {
-			if (this.readyState === this.DONE) {
-				console.log(this.responseText)
-				
-				var response = JSON.parse(this.responseText);				
-				if (response.statusCode == 200) {
-					isForwarding = !isForwarding;
-					sendButton.innerHTML = isForwarding ? "Stop Forwarding" : "Begin Forwarding";
-					console.log("isForwarding: " + isForwarding);
-				} else {
-					console.log("error status: " + response.statusCode);
-				}
+  let attempts = 0
+  let attemptLimit = 10
+  async function pushItSocial () {
+		console.log("Begin pushItSocial()")
+    sendButton.disabled = true
+    const data = JSON.stringify({
+        provisions:[
+          {
+            guid:"any",
+            level:1,
+            context:config.app,
+            name:config.stream1,
+            parameters:{
+              destURI:destUri.value + "/" + streamKey.value
+            }
+          }
+        ]
+      })
+      
+    const xhr = new XMLHttpRequest()    
+    xhr.addEventListener('readystatechange', function() {
+      if (this.readyState === this.DONE) {
+		console.log(this.responseText)
+
+		if (this.status >= 200 && this.status < 300) {
+			isForwarding = !isForwarding;
+			sendButton.disabled = false
+			sendButton.innerHTML = isForwarding ? "Stop Forwarding" : "Begin Forwarding";
+			console.log("isForwarding: " + isForwarding);
+		} else if (this.status == 504) {
+			// The server response 504 when the stream forwarding attempt fails due to timeout.
+			// Other failures should not be retried.
+			if (++attempts < attemptLimit) {
+				console.log("Social media connection timed out. Retrying...");
+				var t = setTimeout(() => {
+					clearTimeout(t)
+					pushItSocial()
+				}, 10000) // 10000: 10s; The server may take up to 7 seconds (plus client-to-server roundtrip latency) to respond.
 			}
-		})	  
+		} else {
+			sendButton.disabled = false
+			console.log("error status: " + this.status);
+		}
+      }
+    })    
 
-		var uri = serverSettings.protocol + "://" + config.host + ":" + serverSettings.httpport + "/socialpusher/api?action=provision.";
-		uri += isForwarding ? "delete" : "create";
+    var uri = serverSettings.protocol + "://" + config.host + ":" + serverSettings.httpport + "/socialpusher/api?action=provision.";
+    uri += isForwarding ? "delete" : "create";
 
-		var timestamp = Date.now();
-		uri += "&timestamp=" + timestamp;
+    var timestamp = Date.now();
+    uri += "&timestamp=" + timestamp;
 
-		var signature = await createSignature(timestamp);
-		uri += "&signature=" + encodeURI(signature);
+    var signature = await createSignature(timestamp);
+    uri += "&signature=" + encodeURI(signature);
 
-		xhr.open('POST', uri)
-		xhr.setRequestHeader('content-type', 'application/json')	
-		xhr.send(data)
+    xhr.open('POST', uri)
+    xhr.setRequestHeader('content-type', 'application/json')  
+    xhr.send(data)
 
-		console.log("POST to uri: " + uri);
-		console.log("send data: " + data);
-	});
+    console.log("POST to uri: " + uri);
+    console.log("send data: " + data);
+  }
+
+  sendButton.addEventListener('click', () => {
+    attempts = 0
+    pushItSocial()
+  });
   // XXX /socialpusher
 
 

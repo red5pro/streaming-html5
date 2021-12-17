@@ -1,0 +1,5 @@
+# 2x2 Grid
+
+This is an example of a 2x2 grid that can compose up to four streams into a single grid. Additionally, the 2x2 grid can be used together with the [3x3 grid](../3x3/) to create compositions of compositions. In that case, a first layer of mixers can use the 3x3 grid to compose a set of source streams and publish the mixed stream to a final mixer using the 2x2 grid, and thus creating a 6x6 grid composition.  
+
+The HTML5 page includes a 2x2 flex box grid with video players that can subscribe to live streams. The list of live streams is sent over WebSockets together with the action to apply to each stream. The actions include add, remove, mute and unmute. The streams to subscribe to and related actions are provided in real-time by a Host through the [Stream Manager Grid Mixer Composition Testbed](../../sm-mixer/gridMixerCompositionStreamManagerProxy/).
