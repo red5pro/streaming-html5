@@ -597,21 +597,21 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   //         "mixers": [
   //           {
   //             "id": "red5pro-sm-node-nyc1-0634836652196", "mixerName": "a", "location": "nyc1",
-  //             "mixingPage": "",
+  //             "mixingPage": "hh/2x2/",
   //             "streamName": "final", "path": "live", "destinationMixerName": "", "serverAddress": "",
   //             "destination": "", "width": 1280, "height": 720, "framerate": 30, "bitrate": 1500,
   //             "doForward": true, "state": "INSERVICE", "streams": { "muted": [], "unmuted": [] }
   //           },
   //           {
   //             "id": "red5pro-sm-node-nyc1-2634836652196", "mixerName": "b", "location": "nyc1",
-  //             "mixingPage": "",
+  //             "mixingPage": "hh/3x3/",
   //             "streamName": "b", "path": "live", "destinationMixerName": "a", "serverAddress": "",
   //             "destination": "a", "width": 1280, "height": 720, "framerate": 30, "bitrate": 1500,
   //             "doForward": true, "state": "INSERVICE", "streams": { "muted": [], "unmuted": [] }
   //           },
   //           {
   //             "id": "red5pro-sm-node-nyc1-3634836652196", "mixerName": "c", "location": "nyc1",
-  //             "mixingPage": "",
+  //             "mixingPage": "hh/2x2/",
   //             "streamName": "c", "path": "live", "destinationMixerName": "a", "serverAddress": "",
   //             "destination": "b", "width": 1280, "height": 720, "framerate": 30, "bitrate": 1500,
   //             "doForward": true, "state": "INSERVICE", "streams": { "muted": [], "unmuted": [] }
@@ -622,7 +622,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   //   let count = 0
   //   let streams = []
-  //   let sNames = ['final', 'b', 'c', 'n1', 'n2', 'n3']
+  //   let sNames = ['final', 'b', 'c', 'n1', 'n2', 'n3', 'b2', 'c2', 'n12', 'n22', 'n32']
   //   let interval = setInterval(() => {
   //     console.log('run interval')
   //     streams.push(sNames.at(count++))
@@ -634,9 +634,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   //     }
   //     console.log('count: ', count)
-  //     if (count > 5) {
+  //     if (count > 10) {
   //       console.log('clea interval')
   //       clearInterval(interval)
+  //       //destroyComposition()
   //     }
   //   }, 1000)
   // }, 3000)
@@ -750,6 +751,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       return
     }
 
+    if (!canAdd(streamName, mixerId, slot)) {
+      alert(`Mixer ${mixerId} is at maximum capacity`)
+      return
+    }
+
     const previousMixerId = getMixerIdFromStreamName(streamName)
     removeMediaFromPrevious(streamName)
     addMediaToBox(streamName, slot)
@@ -794,6 +800,30 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }))
   }
 
+  const canAdd = (streamName, destinationMixerId, slot) => {
+    const mixers = activeComposition.mixers
+    const mixerGridLimit = {}
+    mixers.forEach(mixer => {
+      if (mixer.mixingPage.indexOf('2x2') >= 0) {
+        mixerGridLimit[mixer.id] = 4
+      } else if (mixer.mixingPage.indexOf('3x3') >= 0) {
+        mixerGridLimit[mixer.id] = 9
+      }
+    })
+
+    console.log('Found grid limits: ', mixerGridLimit)
+    const streamsInComposition = slot.parentNode.getElementsByClassName('media-list-item')
+    console.log('Streams already in this mixer', streamsInComposition)
+    // if already present then add as its switching between mute/unmute
+    for (let i = 0; i < streamsInComposition.length; i++) {
+      if (streamsInComposition.item(i).dataset.name == streamName) {
+        return true
+      }
+    }
+
+    return !(mixerGridLimit[destinationMixerId] && mixerGridLimit[destinationMixerId] <= streamsInComposition.length)
+  }
+
   /**
    * Resizes each slot on change to window dimensions.
    */
@@ -811,7 +841,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       slotHeight = height / Math.ceil(COUNT / rows)
     }
 
-    //console.log(`Screen ${width}x${height}`)
+    //console.log(`Screen ${ width }x${ height }`)
     //console.log('New slot width ' + slotWidth)
     //console.log('New slot height ' + slotHeight)
     slots.forEach(slot => {
