@@ -141,7 +141,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   function displayServerAddress (serverAddress, proxyAddress) {
     proxyAddress = (typeof proxyAddress === 'undefined') ? 'N/A' : proxyAddress;
-    addressField.innerText = ' Proxy Address: ' + proxyAddress + ' | ' + ' Transcoer Address: ' + serverAddress;
+    addressField.innerText = ' Proxy Address: ' + proxyAddress + ' | ' + ' Transcoder Address: ' + serverAddress;
   }
 
   var bitrate = 0;
