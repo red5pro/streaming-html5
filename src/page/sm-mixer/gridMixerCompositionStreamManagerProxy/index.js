@@ -635,10 +635,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   //   let count = 0
   //   let streams = []
-  //   let sNames = ['final', 'b', 'c', 'n1', 'n2', 'n3']
+  //   let sNames = ['final', 'bdwewerwerwerwreewrwerwerwe', 'cbdwewerwerwerwreewrwerwerwe', 'n1', 'n2', 'n3', 'b2', 'c2', 'n12', 'n22', 'n32', 'b3', 'c3', 'n13', 'n23', 'n33']
   //   let interval = setInterval(() => {
   //     console.log('run interval')
-  //     if (count <= 5) {
+  //     if (count <= 15) {
   //       streams.push(sNames.at(count))
   //     } else {
   //       console.log('clear stream ', streams.at(streams.length - 1))
@@ -652,10 +652,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   //     }
   //     console.log('count: ', count)
-  //     if (count > 6) {
+  //     if (count > 16) {
   //       console.log('clear interval')
   //       clearInterval(interval)
-  //       destroyComposition()
+  //       //destroyComposition()
   //     }
   //   }, 1000)
   // }, 3000)
@@ -834,7 +834,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     //console.log('New slot width ' + slotWidth)
     //console.log('New slot height ' + slotHeight)
     slots.forEach(slot => {
-      slot.style.height = `${slotHeight}px`
+      //slot.style.height = `${slotHeight}px`
       const list = slot.querySelector('.list-holder')
       if (list) list.style.height = `${slotHeight - 20}px`
       const mutedList = slot.querySelector('.list-holder-muted')
@@ -844,7 +844,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     })
 
     const containerWidth = rows == 1 ? `${slotWidth * rows}px` : `${slotWidth * 3}px`
-    mixerContainer.style.width = `${slotWidth * 2}px`
+    //mixerContainer.style.width = `${slotWidth * 2}px`
   }
 
   /**
@@ -985,7 +985,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           Forward? ${doForward}<br>
           Destination Mixer Name: ${destinationMixerName}<br>
           </p>
-          <button type="button" id="remove-${id}">Delete</button>
+          <br>
+          <button class="ui-button small-ui-button red" type="button" id="remove-${id}">Delete</button>
         </div>`
 
     var template = document.createElement('template')
@@ -1107,21 +1108,22 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   const createMixerBoxes = (mixerObjs) => {
     for (let i = 0; i < mixerObjs.length; i++) {
       let unmutedPElement = document.createElement('p')
-      unmutedPElement.innerHTML = `Unmuted`
+      unmutedPElement.innerHTML = `Unmuted Streams:`
       let unmutedListHolderElement = document.createElement('div')
       unmutedListHolderElement.classList.add('list-holder-unmuted')
       unmutedListHolderElement.dataset.listId = Math.floor(Math.random() * 0x1000000).toString(16)
 
       let mutedPElement = document.createElement('p')
-      mutedPElement.innerHTML = `Muted`
+      mutedPElement.innerHTML = `Muted Streams:`
       let mutedListHolderElement = document.createElement('div')
       mutedListHolderElement.classList.add('list-holder-muted')
       mutedListHolderElement.dataset.listId = Math.floor(Math.random() * 0x1000000).toString(16)
 
       let pElement = document.createElement('p')
+      pElement.style['font-weight'] = 'bold'
       pElement.id = mixerObjs[i].id
       pElement.classList.add('mixer-name-and-state')
-      pElement.innerHTML = `Mixer ${i + 1} - Offline`
+      pElement.innerHTML = `Mixer ${mixerObjs[i].mixerName} - Offline`
 
       let divElement = document.createElement('div')
       divElement.classList.add('box')
