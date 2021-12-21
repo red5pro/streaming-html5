@@ -161,12 +161,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       return `${protocol}://${host}:${port}/streammanager/api/4.0/event/list`
     }
     const loc = window.location
-    if (loc.port === '5080') {
-      return `${loc.protocol}//${loc.hostname}:${loc.port}/${app}/streams.jsp`
-    }
-    else {
-      return `${loc.protocol}//${loc.hostname}/${app}/streams.jsp`
-    }
+    return `${loc.protocol}//${loc.hostname}:${port}/${app}/streams.jsp`
   }
 
   /**

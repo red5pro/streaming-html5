@@ -149,9 +149,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
    */
   const findNextAvailableSlot = () => {
     const len = slots.length
+    //console.log(len, slots)
     for (let i = 0; i < len; i++) {
       const slot = slots[i]
       const children = slot.children
+      //console.log('slot', slot, 'children', children)
       if (children && children.length === 0) {
         return slot
       }
@@ -207,6 +209,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   */
   const startSubscribersWorker = function () {
     setInterval(() => {
+      console.log('subscribe worker running')
       if (currentStreamsToSubscribeToListForWorker.length >= SUBSCRIBE_CONCURRENCY) {
         console.log('Too many pending subscribers, waiting...')
         console.log(currentStreamsToSubscribeToListForWorker)
@@ -226,7 +229,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       const candidatesList = streamToSubscribeQueue.slice(0, available);
       streamToSubscribeQueue = streamToSubscribeQueue.slice(available);
       currentStreamsToSubscribeToListForWorker = currentStreamsToSubscribeToListForWorker.concat(candidatesList)
-
+      resizeGridIfNeeded(candidatesList.length)
       startSubscribers(candidatesList)
     }, CHECK_FOR_TASKS_INTERVAL)
   }
@@ -241,6 +244,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     console.log(`[mixer]:: Starting new subscribers from list: ${JSON.stringify(streamList)}`)
     const subscribers = streamList.map(name => {
       let freeSlot = findNextAvailableSlot()
+      //console.log('slot for', name, freeSlot)
       let bl = new SubscriberBlock(name, freeSlot, SUBSCRIBE_RETRY_DELAY, utilizeSubscriberNotifications)
       activeSubscribers[name] = bl
       activeSubscribersCount++
@@ -256,6 +260,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         sub.start(baseConfig, requiresStreamManager)
       }
     })
+
   }
 
   /**
@@ -304,13 +309,44 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
   }
 
+  // setTimeout(() => {
+
+  //   // const streams = []
+  //   // for (let i = 0; i < 8; i++) {
+  //   //   streams.push(`/live/stream${i}`)
+  //   // }
+  //   // const message = {
+  //   //   'type': 'compositionUpdate',
+  //   //   'add': streams
+  //   // }
+
+  //   // processCompositionUpdate(message)
+
+  //   // let i = 0
+  //   // let it = setInterval(() => {
+  //   //   const streams = []
+  //   //   streams.push(`/live/stream${i++}`)
+  //   //   const message = {
+  //   //     'type': 'compositionUpdate',
+  //   //     'add': streams
+  //   //   }
+
+  //   //   processCompositionUpdate(message)
+
+  //   //   if (i > 7) {
+  //   //     clearInterval(it)
+  //   //   }
+  //   // }, 1500)
+  // }, 3000)
+
+
   /**
    * Processes the composition update messages sent by the Editor page and forwarded by the Node.js mixerServer.
    */
   const processCompositionUpdate = function (message) {
     if (Object.prototype.hasOwnProperty.call(message, 'add') && message.add.length > 0) {
       const streamsToAdd = getNewStreamsToAdd(message.add)
-      resizeGridIfNeeded(streamsToAdd.length)
+      //resizeGridIfNeeded(streamsToAdd.length)
       queueSubscribeStarts(streamsToAdd)
     }
 
@@ -332,12 +368,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     let rows = rowCount
     let currentGridSize = rows * cols
     const activeSubscribersCount = Object.keys(activeSubscribers).length
-    while (currentGridSize < activeSubscribersCount + newStreamsCount) {
+    while (currentGridSize <= activeSubscribersCount + newStreamsCount) {
       cols += 2
       rows += 1
       currentGridSize = rows * cols
     }
 
+    //console.log('rows', rows, 'rowCount', rowCount, 'cols', cols, 'colCount', colCount)
     if (rows != rowCount || cols != colCount) {
       enlargeGrid(rows, cols)
     }
