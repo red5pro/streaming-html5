@@ -368,9 +368,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   const decorateSubscriberForModeration = (subscriber) => {
     const bar = document.createElement('p')
     const addButton = document.createElement('button')
+    addButton.classList.add('ui-button')
+    addButton.classList.add('ui-small-button')
     const addLabel = document.createTextNode('add to conference')
     const exclusionButton = document.createElement('button')
     const exclusionLabel = document.createTextNode('exclude')
+    exclusionButton.classList.add('ui-button')
+    exclusionButton.classList.add('ui-small-button')
     exclusionButton.classList.add('subscriber-exclusion-button')
     exclusionButton.appendChild(exclusionLabel)
     bar.classList.add('subscriber-moderation-field')
@@ -417,6 +421,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       streamName: name
     }))
   }
+
+
+
 
   /**
    * Parses the provided stream list to determine which are new streams to
@@ -517,6 +524,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       }
     }
   }
+
 
   const parseMixerRegions = (regions) => {
     const selector = document.getElementById('mixer-region-select')
@@ -629,6 +637,80 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
     websocket.send(JSON.stringify(payload))
   }
+
+  // Uncomment to test auto provision of streams to composition
+  // setTimeout(() => {
+  //   compositionEventName = "event1"
+  //   conferenceListing = []
+  //   if (!websocket) {
+  //     websocket = {
+  //       send: () => {
+  //         console.log('send')
+  //       }
+  //     }
+  //   }
+  //   const comp = {
+  //     "type": "activeCompositions", "list": [
+  //       {
+  //         "event": "event1", "transcodeComposition": false, "digest": "password", "location": ["nyc1"],
+  //         "mixers": [
+  //           {
+  //             "id": "red5pro-sm-node-nyc1-0634836652196", "mixerName": "a", "location": "nyc1",
+  //             "mixingPage": "",
+  //             "streamName": "final", "path": "live", "destinationMixerName": "", "serverAddress": "",
+  //             "destination": "", "width": 1280, "height": 720, "framerate": 30, "bitrate": 1500,
+  //             "doForward": true, "state": "INSERVICE", "streams": { "muted": [], "unmuted": [] }
+  //           },
+  //           {
+  //             "id": "red5pro-sm-node-nyc1-2634836652196", "mixerName": "b", "location": "nyc1",
+  //             "mixingPage": "",
+  //             "streamName": "b", "path": "live", "destinationMixerName": "a", "serverAddress": "",
+  //             "destination": "a", "width": 1280, "height": 720, "framerate": 30, "bitrate": 1500,
+  //             "doForward": true, "state": "INSERVICE", "streams": { "muted": [], "unmuted": [] }
+  //           },
+  //           {
+  //             "id": "red5pro-sm-node-nyc1-3634836652196", "mixerName": "c", "location": "nyc1",
+  //             "mixingPage": "",
+  //             "streamName": "c", "path": "live", "destinationMixerName": "a", "serverAddress": "",
+  //             "destination": "a", "width": 1280, "height": 720, "framerate": 30, "bitrate": 1500,
+  //             "doForward": true, "state": "INSERVICE", "streams": { "muted": [], "unmuted": [] }
+  //           }]
+  //       }]
+  //   }
+  //   parseCompositions(comp)
+
+  //   let count = 0
+  //   let streams = []
+  //   let sNames = ['final', 'bdwewerwerwerwreewrwerwerwe', 'cbdwewerwerwerwreewrwerwerwe', 'n1', 'n2', 'n3', 'b2', 'c2', 'n12', 'n22', 'n32', 'b3', 'c3', 'n13', 'n23', 'n33']
+  //   let interval = setInterval(() => {
+  //     console.log('run interval')
+  //     if (count <= 15) {
+  //       streams.push(sNames.at(count))
+  //     } else {
+  //       console.log('clear stream ', streams.at(streams.length - 1))
+  //       streams.splice(streams.length - 3, 3)
+  //     }
+  //     count++
+  //     const mockActiveStreams = {
+  //       'type': 'active',
+  //       'room': 'live',
+  //       'streams':
+  //         ['stream1']
+  //     }
+
+  //     //try {
+  //     parseStreamList(mockActiveStreams.streams, conferenceListing, PARTICIPANT_APPENDIX)
+  //     // } catch (e) {
+
+  //     // }
+  //     console.log('count: ', count)
+  //     if (count > 16) {
+  //       console.log('clear interval')
+  //       clearInterval(interval)
+  //       //destroyComposition()
+  //     }
+  //   }, 1000)
+  // }, 3000)
 
   /**
    * Parses the activeCompositions messages from the websocket and updates the UI.

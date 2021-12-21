@@ -266,7 +266,7 @@
         }
 
         .media-list-item {
-            background-color: #ddd;
+            background-color: #ededed;
             padding: 10px;
             border: 1px solid black;
             cursor: move;
@@ -440,8 +440,16 @@
             padding-left: 12px;
         }
 
+        .tooltip>input {
+            padding-left: 0.4rem;
+        }
+
         .small-ui-button {
             padding: 0;
+        }
+
+        .medium-ui-button {
+            padding: 10px;
         }
 
         .destroy-composition-button {
@@ -514,7 +522,7 @@
                 <h3 style="font-weight: bold;">Create Composition:</h3>
                 <hr class="padded-hr">
                 <form id="create-mixers-form" style="width: 90%; margin: auto">
-                    <h4>Create Mixer Objects:</h4>
+                    <h4 style="margin-bottom: 5px;">Create Mixer Objects:</h4>
                     <div style="width: 90%; margin: auto">
                         <div class="tooltip">
                             <span class="tooltiptext">Unique name for the Mixer</span>
@@ -597,7 +605,7 @@
                     </div>
                     <br>
                     <br>
-                    <button class="ui-button" type="submit">Create Composition</button>
+                    <button class="ui-button medium-ui-button" type="submit">Create Composition</button>
                     <br>
                 </form>
                 <br>
