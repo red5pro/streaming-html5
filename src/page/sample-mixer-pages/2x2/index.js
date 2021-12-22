@@ -348,6 +348,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   resizeSlots()
   setSubscriberImages(new Array(9).fill('../../css/assets/Red5Pro_logo_white_red.svg'))
   window.addEventListener('resize', resizeSlots, true)
+
 })(window, window.red5prosdk, window.SubscriberBlock)
 
 

@@ -110,13 +110,15 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   var accessToken = configuration.streamManagerAccessToken;
   var auth = configuration.authentication;
-  var authName = auth.username;
-  var authPass = auth.password;
+  var authName = auth.enabled ? auth.username : '';
+  var authPass = auth.enabled ? auth.password : '';
+  var authToken = auth.enabled ? auth.token : undefined;
   var transcoderPOST = {
     meta: {
       authentication: {
         username: authName,
-        password: authPass
+        password: authPass,
+        token: authToken || 'token'
       },
       stream: [],
       georules: {
@@ -133,7 +135,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       ? {
         connectionParams: {
           username: auth.username,
-          password: auth.password
+          password: auth.password,
+          token: auth.token || 'token'
         }
       }
       : {};
@@ -141,7 +144,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   function displayServerAddress (serverAddress, proxyAddress) {
     proxyAddress = (typeof proxyAddress === 'undefined') ? 'N/A' : proxyAddress;
-    addressField.innerText = ' Proxy Address: ' + proxyAddress + ' | ' + ' Transcoer Address: ' + serverAddress;
+    addressField.innerText = ' Proxy Address: ' + proxyAddress + ' | ' + ' Transcoder Address: ' + serverAddress;
   }
 
   var bitrate = 0;
