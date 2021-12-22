@@ -151,27 +151,15 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   /**
    * Generates Red5 Pro URL to check for stream availability
    */
-  const getAvailableUrlBasedOnConfig = (config, sm = false) => {
-    console.log(config)
-    const {
-      host,
-      port,
-      app
-    } = config
-    const protocol = 'https'
-    if (sm) {
+  const getAvailableUrl = (streamManagerHost = null) => {
+    if (streamManagerHost != null) {
+      const protocol = 'https'
+      const host = streamManagerHost
+      const port = 443
       return `${protocol}://${host}:${port}/streammanager/api/4.0/event/list`
     }
 
     return `http://127.0.0.1:5080/live/streams.jsp`
-    /*
-    const loc = window.location
-    if (loc.port === '5080') {
-      return `${loc.protocol}//${loc.hostname}:${loc.port}/${app}/streams.jsp`
-    }
-    else {
-      return `${loc.protocol}//${loc.hostname}/${app}/streams.jsp`
-    }*/
   }
 
   /**
@@ -315,7 +303,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
      */
     resolve() {
       if (this.next) {
-        this.next.start(this.baseConfiguration, this.requiresStreamManager)
+        this.next.start(this.baseConfiguration, this.streamManagerHost)
       }
       this.next = undefined
     }
@@ -329,7 +317,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         console.error(event)
       }
       if (this.next) {
-        this.next.start(this.baseConfiguration, this.requiresStreamManager)
+        this.next.start(this.baseConfiguration, this.streamManagerHost)
       }
       this.next = undefined
     }
@@ -354,7 +342,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       } else if (event.type === 'Subscribe.Play.Unpublish') {
         //        this.unpublished = true
         this.stop()
-        this.start(this.baseConfiguration, this.requiresStreamManager)
+        this.start(this.baseConfiguration, this.streamManagerHost)
       } else if (event.type === 'Subscribe.Metadata') {
         const {
           streamingMode
@@ -444,15 +432,15 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
      *
      * @param {Object} config
      *        The configuration object for initialization.
-     * @param {Boolean} requiresStreamManager
-     *        Flag to intergate with Stream Manager for subscription.
+     * @param {String} streamManagerHost
+     *        Hostname of Stream Manager if used.
      */
-    async start(config, requiresStreamManager) {
+    async start(config, streamManagerHost = null) {
+      this.streamManagerHost = streamManagerHost
       this.cancelled = false
       this.unpublished = false
       this.baseConfiguration = JSON.parse(JSON.stringify(config))
       this.baseConfiguration.app = this.baseConfiguration.app + this.roomName
-      this.requiresStreamManager = requiresStreamManager
 
       // generate unique id for each time in case reconnect.
       const uid = Math.floor(Math.random() * 0x10000).toString(16)
@@ -471,30 +459,40 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         rtcConfig.mediaElementId = this.parent.id
       }
 
-      let availableUrl = getAvailableUrlBasedOnConfig(rtcConfig, this.requiresStreamManager)
       this.subscriber = new red5prosdk.RTCSubscriber()
       this.subscriber.on('*', this.onSubscriberEvent)
 
       this.displayInfo(`Requesting ${this.streamName}...`)
       try {
-        if (requiresStreamManager) {
-          const subscriberSM = await window.streamManagerUtil.getEdge(config.host, this.baseConfiguration.app, this.streamName)
+        let availableUrlLocal = getAvailableUrl()
+        const availableLocal = await getIsAvailable(availableUrlLocal, this.streamName, false)
+        if (!availableLocal) {
+          console.log('Stream not available locally, searching on Stream Manager')
+          let availableUrlSM = getAvailableUrl(this.streamManagerHost)
+          const availableSM = await getIsAvailable(availableUrlSM, this.streamName, true)
+          if (!availableSM) {
+            throw new Error(`${this.streamName} Not Available`)
+          }
+          this.requiresStreamManager = true
+        }
+
+        if (this.requiresStreamManager) {
+          rtcConfig.app = 'streammanager'
+          rtcConfig.protocol = 'wss'
+          rtcConfig.port = '443'
+          rtcConfig.host = this.streamManagerHost
+
+          const subscriberSM = await window.streamManagerUtil.getEdge(rtcConfig.host, this.baseConfiguration.app, this.streamName)
           const {
             serverAddress,
             scope
           } = subscriberSM
-          rtcConfig.app = 'streammanager'
           rtcConfig.connectionParams = {
             ...config.connectionParams, ...{
               host: serverAddress,
               app: scope
             }
           }
-        }
-
-        const available = await getIsAvailable(availableUrl, this.streamName, this.requiresStreamManager)
-        if (!available) {
-          throw new Error(`${this.streamName} Not Available`)
         }
 
         await this.subscriber.init(rtcConfig)
@@ -507,7 +505,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         console.error(e)
         this.reject()
         this.displayError(typeof e === 'string' ? e : e.message)
-        this.retryConnection(config, requiresStreamManager)
+        this.retryConnection(config, this.streamManagerHost)
       }
     }
 
@@ -516,10 +514,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
      *
      * @param {Object} config
      *        The configuration to use in initialization of subscriber.
-     * @param {Boolean} requiresStreamManager
-     *        Flag to use Stream Manager integration.
+     * @param {String} streamManagerHost
+     *        Hostname of the Stream Manager.
      */
-    async retryConnection(config, requiresStreamManager) {
+    async retryConnection(config, streamManagerHost = null) {
 
       try {
         clearTimeout(this.retryConnectTimeout)
@@ -532,12 +530,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         this.retryConnectTimeout = setTimeout(() => {
           this.displayInfo(`Retrying Connection for ${this.streamName}...`)
           clearTimeout(this.retryConnectTimeout)
-          this.start(config, requiresStreamManager)
+          this.start(config, streamManagerHost)
         }, RETRY_DELAY)
       } catch (e) {
         console.error(e)
         this.displayError(typeof e === 'string' ? e : e.message)
-        this.retryConnection(config, requiresStreamManager)
+        this.retryConnection(config, streamManagerHost)
       }
     }
 
