@@ -168,6 +168,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
    */
   const startSubscribers = (streamList) => {
     console.log('sub to ', streamList)
+    if (Object.keys(activeSubscribers).length >= rowCount * rowCount) {
+      console.warn('Page is already subscribing to the maximum number of streams. Ignore new subscribe request')
+      return
+    }
     console.log(`[mixer]:: Starting new subscribers from list: ${JSON.toString(streamList, null, 2)}`)
     const subscribers = streamList.map(name => {
       let freeSlot = findNextAvailableSlot()
