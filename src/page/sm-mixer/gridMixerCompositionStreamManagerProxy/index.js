@@ -462,12 +462,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
       // move streams from mixers to main list 
       const streamItems = mixerContainer.getElementsByClassName('media-list-item')
-      console.log(streamItems)
       if (streamItems) {
         const destinationSlot = document.getElementsByClassName('list-holder').item(0)
         let i = streamItems.length - 1
         while (i >= 0) {
-          updateSlotsOnSwap(streamItems.item(i).dataset.name, destinationSlot)
+          updateSlotsOnSwap(streamItems.item(i).dataset.name, destinationSlot, false)
           i = streamItems.length - 1
         }
       }
@@ -755,7 +754,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   /**
    * Update the slots and listings.
    */
-  const updateSlotsOnSwap = (streamName, slot) => {
+  const updateSlotsOnSwap = (streamName, slot, notifyWebSocket = true) => {
     console.log('updateSlotsOnSwap: update ', streamName, 'to', slot)
     const parentBox = slot.parentNode
     const mixerId = parentBox.dataset.mixerId || parentBox.dataset['mixer-id']
@@ -812,11 +811,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       })
     }
 
-    webSocket.send(JSON.stringify({
-      type: 'compositionUpdate',
-      event: compositionEventName,
-      list: updateList
-    }))
+    if (notifyWebSocket) {
+      webSocket.send(JSON.stringify({
+        type: 'compositionUpdate',
+        event: compositionEventName,
+        list: updateList
+      }))
+    }
   }
 
   const canAdd = (streamName, destinationMixerId, slot) => {

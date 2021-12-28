@@ -67,7 +67,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   const placeholderImage = '../../css/assets/Red5Pro_logo_white_red.svg'
   const CHECK_FOR_TASKS_INTERVAL = 1000
 
-  const red5ProHost = window.query('host') || configuration.host
+  const red5ProHost = window.query('host') || 'localhost'//configuration.host
+  const streamManagerHost = configuration.host
 
   // Round Trip Authentication
   const username = window.query('username') || 'default-username'
@@ -106,9 +107,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       : { protocol: 'wss', port: serverSettings.wssport };
   }
 
-  var defaultConfiguration = {
-    protocol: getSocketLocationFromProtocol().protocol,
-    port: getSocketLocationFromProtocol().port,
+  const defaultConfiguration = {
+    protocol: 'ws',
+    port: '5080',
     streamMode: configuration.recordBroadcast ? 'record' : 'live'
   }
 
@@ -118,12 +119,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     getUserMediaConfiguration())
 
   var baseConfig = Object.assign({}, config, {
-    protocol: getSocketLocationFromProtocol().protocol,
-    port: getSocketLocationFromProtocol().port,
+    host: red5ProHost,
+    protocol: 'ws',
+    port: 5080,
     streamName: configuration.stream1,
     app: scope,
     connectionParams: {
-      host: configuration.host,
+      host: red5ProHost,
       app: scope,
       username,
       password,
@@ -241,7 +243,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     console.log(`[mixer]:: Starting new subscribers from list: ${JSON.stringify(streamList)}`)
     const subscribers = streamList.map(name => {
       let freeSlot = findNextAvailableSlot()
-      let bl = new SubscriberBlock(name, freeSlot, SUBSCRIBE_RETRY_DELAY, utilizeSubscriberNotifications)
+      console.log('setting mute to ', audioMuted[name], 'for', name)
+      let bl = new SubscriberBlock(name, freeSlot, SUBSCRIBE_RETRY_DELAY, audioMuted[name], utilizeSubscriberNotifications)
       activeSubscribers[name] = bl
       activeSubscribersCount++
       return bl
@@ -253,7 +256,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         sub.next = subscribers[index + 1]
       }
       if (index === 0) {
-        sub.start(baseConfig, requiresStreamManager)
+        sub.start(baseConfig, streamManagerHost)
       }
     })
   }
@@ -304,6 +307,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
   }
 
+  const audioMuted = {}
   /**
    * Processes the composition update messages sent by the Editor page and forwarded by the Node.js mixerServer.
    */
@@ -319,11 +323,19 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
 
     if (Object.prototype.hasOwnProperty.call(message, 'mute') && message.mute.length > 0) {
-      muteStreams(message.mute)
+      let streamsToMute = message.mute
+      streamsToMute.forEach(s => {
+        audioMuted[s] = true
+        muteStream(s)
+      })
     }
 
     if (Object.prototype.hasOwnProperty.call(message, 'unmute') && message.unmute.length > 0) {
-      unmuteStreams(message.unmute)
+      let streamsToUnmute = message.unmute
+      streamsToUnmute.forEach(s => {
+        audioMuted[s] = false
+        unmuteStream(s)
+      })
     }
   }
 
@@ -333,7 +345,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     let currentGridSize = rows * cols
     const activeSubscribersCount = Object.keys(activeSubscribers).length
     while (currentGridSize < activeSubscribersCount + newStreamsCount) {
-      cols += 2
+      cols += 1
       rows += 1
       currentGridSize = rows * cols
     }
@@ -372,32 +384,20 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
   /**
-     * Mutes the specified streams in the composition.
+     * Mutes the specified stream in the composition.
      */
-  const muteStreams = function (muteArray) {
-    for (let stream of muteArray) {
-      if (activeSubscribers[stream]) {
-        console.log('mute stream: ', stream)
-        const video = document.getElementById(activeSubscribers[stream].subscriptionId)
-        if (video) {
-          video.muted = true
-        }
-      }
+  const muteStream = function (stream) {
+    if (activeSubscribers[stream]) {
+      activeSubscribers[stream].forceMuteOnSubscriber()
     }
   }
 
   /**
-   * Unmutes the specified streams from the composition.
+   * Unmutes the specified stream from the composition.
    */
-  const unmuteStreams = function (unmuteArray) {
-    for (let stream of unmuteArray) {
-      if (activeSubscribers[stream]) {
-        console.log('unmute stream: ', stream)
-        const video = document.getElementById(activeSubscribers[stream].subscriptionId)
-        if (video) {
-          video.muted = false
-        }
-      }
+  const unmuteStream = function (stream) {
+    if (activeSubscribers[stream]) {
+      activeSubscribers[stream].forceUnmuteOnSubscriber()
     }
   }
 

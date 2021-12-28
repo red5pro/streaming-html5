@@ -149,25 +149,17 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   /**
    * Generates Red5 Pro URL to check for stream availability
    */
-  const getAvailableUrlBasedOnConfig = (config, sm = false) => {
-    console.log(config)
-    const {
-      host,
-      port,
-      app
-    } = config
-    const protocol = 'https'
-    if (sm) {
+  const getAvailableUrl = (streamManagerHost = null) => {
+    if (streamManagerHost != null) {
+      const protocol = 'https'
+      const host = streamManagerHost
+      const port = 443
       return `${protocol}://${host}:${port}/streammanager/api/4.0/event/list`
     }
-    const loc = window.location
-    if (loc.port === '5080') {
-      return `${loc.protocol}//${loc.hostname}:${loc.port}/${app}/streams.jsp`
-    }
-    else {
-      return `${loc.protocol}//${loc.hostname}/${app}/streams.jsp`
-    }
+
+    return `http://127.0.0.1:5080/live/streams.jsp`
   }
+
 
   /**
    * Breaks string into room and stream name
@@ -196,12 +188,14 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
      * @param {HTMLNode} containerOrVideoElement
      *        Can be either the parenting container to append a generated subscriber UI to, or
      *          the target `video` element to assign the stream to.
+     * @param {Boolean} forceMute
+     *        Flag to force the subscriber to mute or unmute.
      * @param {Boolean} debug
      *        Flag to display debug information in UI.
      * @param {Object} client
      *        Optional delegate that receieves method/event invocations for publisher muting.
      */
-    constructor(streamName, containerOrVideoElement, retryDelay, debug = true, client = undefined) {
+    constructor(streamName, containerOrVideoElement, retryDelay, forceMute = true, debug = true, client = undefined) {
       this.retryDelay = retryDelay
       const { room, stream } = getRoomAndStreamFromStreamName(streamName)
       const uid = Math.floor(Math.random() * 0x10000).toString(16)
@@ -212,7 +206,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       this.baseConfiguration = undefined
       this.requiresStreamManager = false
       this.retryConnectTimeout = 0
-      this.forceMute = false
+      this.forceMute = forceMute
       this.next = undefined
       this.client = client
       this.currentStreamMode = 'Video/Audio'
@@ -311,7 +305,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
      */
     resolve() {
       if (this.next) {
-        this.next.start(this.baseConfiguration, this.requiresStreamManager)
+        this.next.start(this.baseConfiguration, this.streamManagerHost)
       }
       this.next = undefined
     }
@@ -325,7 +319,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         console.error(event)
       }
       if (this.next) {
-        this.next.start(this.baseConfiguration, this.requiresStreamManager)
+        this.next.start(this.baseConfiguration, this.streamManagerHost)
       }
       this.next = undefined
     }
@@ -334,10 +328,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     mergeAudioStreams() {
       var streams = []
       Object.keys(window.connectedSubscribers).forEach(s => {
-        const theStream = window.connectedSubscribers[s].subscriber.getMediaStream()
-        console.log(theStream)
-        if (theStream)
-          streams.push(theStream);
+        if (window.connectedSubscribers[s] && !window.connectedSubscribers[s].forceMute) {
+          const theStream = window.connectedSubscribers[s].subscriber.getMediaStream()
+          console.log(theStream)
+          if (theStream) {
+            streams.push(theStream)
+          }
+        }
       })
 
       console.log(streams)
@@ -354,6 +351,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         if (window.audioContext) {
           window.audioContext.close()
           window.audioContext = undefined
+        }
+
+        if (streams.length <= 0) {
+          return
         }
         // Initialize AudioContext object
         window.audioContext = new AudioContext();
@@ -411,7 +412,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         console.log(`Subscribe.Play.Unpublish, delete window.connectedSubscribers for ${this.streamName}`)
         delete window.connectedSubscribers[this.streamName]
         this.mergeAudioStreams()
-        this.start(this.baseConfiguration, this.requiresStreamManager)
+        this.start(this.baseConfiguration, this.streamManagerHost)
       } else if (event.type === 'Subscribe.Metadata') {
         const {
           streamingMode
@@ -504,15 +505,15 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
      *
      * @param {Object} config
      *        The configuration object for initialization.
-     * @param {Boolean} requiresStreamManager
-     *        Flag to intergate with Stream Manager for subscription.
+     * @param {String} streamManagerHost
+     *        Hostname of Stream Manager if used.
      */
-    async start(config, requiresStreamManager) {
+    async start(config, streamManagerHost = null) {
+      this.streamManagerHost = streamManagerHost
       this.cancelled = false
       this.unpublished = false
       this.baseConfiguration = JSON.parse(JSON.stringify(config))
       this.baseConfiguration.app = this.baseConfiguration.app + this.roomName
-      this.requiresStreamManager = requiresStreamManager
 
       // generate unique id for each time in case reconnect.
       const uid = Math.floor(Math.random() * 0x10000).toString(16)
@@ -531,14 +532,30 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         rtcConfig.mediaElementId = this.parent.id
       }
 
-      let availableUrl = getAvailableUrlBasedOnConfig(rtcConfig, this.requiresStreamManager)
       this.subscriber = new red5prosdk.RTCSubscriber()
       this.subscriber.on('*', this.onSubscriberEvent)
 
       this.displayInfo(`Requesting ${this.streamName}...`)
       try {
-        if (requiresStreamManager) {
-          const subscriberSM = await window.streamManagerUtil.getEdge(config.host, this.baseConfiguration.app, this.streamName)
+        let availableUrlLocal = getAvailableUrl()
+        const availableLocal = await getIsAvailable(availableUrlLocal, this.streamName, false)
+        if (!availableLocal) {
+          console.log('Stream not available locally, searching on Stream Manager')
+          let availableUrlSM = getAvailableUrl(this.streamManagerHost)
+          const availableSM = await getIsAvailable(availableUrlSM, this.streamName, true)
+          if (!availableSM) {
+            throw new Error(`${this.streamName} Not Available`)
+          }
+          this.requiresStreamManager = true
+        }
+
+        if (this.requiresStreamManager) {
+          rtcConfig.app = 'streammanager'
+          rtcConfig.protocol = 'wss'
+          rtcConfig.port = '443'
+          rtcConfig.host = this.streamManagerHost
+
+          const subscriberSM = await window.streamManagerUtil.getEdge(rtcConfig.host, this.baseConfiguration.app, this.streamName)
           const {
             serverAddress,
             scope
@@ -552,22 +569,21 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           }
         }
 
-        const available = await getIsAvailable(availableUrl, this.streamName, this.requiresStreamManager)
-        if (!available) {
-          throw new Error(`${this.streamName} Not Available`)
-        }
-
         await this.subscriber.init(rtcConfig)
         await this.subscriber.subscribe()
         if (this.forceMute) {
-          this.subscriber.mute()
+          console.log('force mute for stream', this.streamName)
+          this.forceMuteOnSubscriber()
+        } else {
+          console.log('force unmute for stream', this.streamName)
+          this.forceUnmuteOnSubscriber()
         }
 
       } catch (e) {
         console.error(e)
         this.reject()
         this.displayError(typeof e === 'string' ? e : e.message)
-        this.retryConnection(config, requiresStreamManager)
+        this.retryConnection(config, this.streamManagerHost)
       }
     }
 
@@ -576,10 +592,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
      *
      * @param {Object} config
      *        The configuration to use in initialization of subscriber.
-     * @param {Boolean} requiresStreamManager
-     *        Flag to use Stream Manager integration.
+     * @param {String} streamManagerHost
+     *        Hostname of Stream Manager.
      */
-    async retryConnection(config, requiresStreamManager) {
+    async retryConnection(config, streamManagerHost = null) {
 
       try {
         clearTimeout(this.retryConnectTimeout)
@@ -592,12 +608,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         this.retryConnectTimeout = setTimeout(() => {
           this.displayInfo(`Retrying Connection for ${this.streamName}...`)
           clearTimeout(this.retryConnectTimeout)
-          this.start(config, requiresStreamManager)
+          this.start(config, streamManagerHost)
         }, this.retryDelay)
       } catch (e) {
         console.error(e)
         this.displayError(typeof e === 'string' ? e : e.message)
-        this.retryConnection(config, requiresStreamManager)
+        this.retryConnection(config, streamManagerHost)
       }
     }
 
@@ -622,20 +638,22 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     /**
      * Request to force mute of audio playback.
      */
-    forceMute() {
+    forceMuteOnSubscriber() {
       this.forceMute = true
       if (this.subscriber) {
         this.subscriber.mute()
+        this.mergeAudioStreams()
       }
     }
 
     /**
      * Request to force unmute of audio playback.
      */
-    forceUnmute() {
+    forceUnmuteOnSubscriber() {
       this.forceMute = false
       if (this.subscriber) {
         this.subscriber.unmute()
+        this.mergeAudioStreams()
       }
     }
   }

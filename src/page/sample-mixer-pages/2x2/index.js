@@ -60,7 +60,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   const requiresStreamManager = !sm ? false : !(sm && sm === 'false')
   const ws = window.query('ws') || 'null'
   const webSocketEndpointForLayouts = `wss://${ws}?testbed=grid&type=cef&id=${cefId}&event-id=${eventId}`
-  const red5ProHost = window.query('host') || configuration.host
+  const red5ProHost = window.query('host') || 'localhost'//configuration.host
+  const streamManagerHost = configuration.host
 
   // Round Trip Authentication
   const username = window.query('username') || 'default-username'
@@ -91,16 +92,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     };
   }
 
-  var protocol = serverSettings.protocol;
-  function getSocketLocationFromProtocol() {
-    return !secureConnection
-      ? { protocol: 'ws', port: serverSettings.wsport }
-      : { protocol: 'wss', port: serverSettings.wssport };
-  }
-
-  var defaultConfiguration = {
-    protocol: getSocketLocationFromProtocol().protocol,
-    port: getSocketLocationFromProtocol().port,
+  const defaultConfiguration = {
+    protocol: 'ws',
+    port: '5080',
     streamMode: configuration.recordBroadcast ? 'record' : 'live'
   }
 
@@ -112,12 +106,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   // Red5 Pro configuration to subscribe
   var baseConfig = Object.assign({}, config, {
     host: red5ProHost,
-    protocol: secureConnection ? 'wss' : 'ws',
-    port: secureConnection ? '443' : 5080,
+    protocol: 'ws',
+    port: 5080,
     streamName: configuration.stream1,
     app: scope,
     connectionParams: {
-      host: configuration.host,
+      host: red5ProHost,
       app: scope,
       username,
       password,
@@ -192,7 +186,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         sub.next = subscribers[index + 1]
       }
       if (index === 0) {
-        sub.start(baseConfig, requiresStreamManager)
+        sub.start(baseConfig, streamManagerHost)
       }
     })
   }
