@@ -131,12 +131,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   function getAuthenticationParams () {
     var auth = configuration.authentication;
+    var authToken = (auth.enabled && !window.isEmpty(auth.token)) ? auth.token : undefined
     return auth && auth.enabled
       ? {
         connectionParams: {
           username: auth.username,
           password: auth.password,
-          token: auth.token || 'token'
+          token: authToken
         }
       }
       : {};
