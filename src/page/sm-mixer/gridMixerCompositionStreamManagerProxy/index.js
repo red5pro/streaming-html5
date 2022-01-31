@@ -462,12 +462,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
       // move streams from mixers to main list 
       const streamItems = mixerContainer.getElementsByClassName('media-list-item')
-      console.log(streamItems)
       if (streamItems) {
         const destinationSlot = document.getElementsByClassName('list-holder').item(0)
         let i = streamItems.length - 1
         while (i >= 0) {
-          updateSlotsOnSwap(streamItems.item(i).dataset.name, destinationSlot)
+          updateSlotsOnSwap(streamItems.item(i).dataset.name, destinationSlot, false)
           i = streamItems.length - 1
         }
       }
@@ -610,21 +609,21 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   //         "mixers": [
   //           {
   //             "id": "red5pro-sm-node-nyc1-0634836652196", "mixerName": "a", "location": "nyc1",
-  //             "mixingPage": "",
+  //             "mixingPage": "hh/2x2/",
   //             "streamName": "final", "path": "live", "destinationMixerName": "", "serverAddress": "",
   //             "destination": "", "width": 1280, "height": 720, "framerate": 30, "bitrate": 1500,
   //             "doForward": true, "state": "INSERVICE", "streams": { "muted": [], "unmuted": [] }
   //           },
   //           {
   //             "id": "red5pro-sm-node-nyc1-2634836652196", "mixerName": "b", "location": "nyc1",
-  //             "mixingPage": "",
+  //             "mixingPage": "hh/3x3/",
   //             "streamName": "b", "path": "live", "destinationMixerName": "a", "serverAddress": "",
   //             "destination": "a", "width": 1280, "height": 720, "framerate": 30, "bitrate": 1500,
   //             "doForward": true, "state": "INSERVICE", "streams": { "muted": [], "unmuted": [] }
   //           },
   //           {
   //             "id": "red5pro-sm-node-nyc1-3634836652196", "mixerName": "c", "location": "nyc1",
-  //             "mixingPage": "",
+  //             "mixingPage": "hh/2x2/",
   //             "streamName": "c", "path": "live", "destinationMixerName": "a", "serverAddress": "",
   //             "destination": "a", "width": 1280, "height": 720, "framerate": 30, "bitrate": 1500,
   //             "doForward": true, "state": "INSERVICE", "streams": { "muted": [], "unmuted": [] }
@@ -635,7 +634,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   //   let count = 0
   //   let streams = []
-  //   let sNames = ['final', 'b', 'c', 'n1', 'n2', 'n3']
+  //   let sNames = ['final', 'b', 'c', 'n1', 'n2', 'n3', 'b2', 'c2', 'n12', 'n22', 'n32']
   //   let interval = setInterval(() => {
   //     console.log('run interval')
   //     if (count <= 5) {
@@ -652,6 +651,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   //     }
   //     console.log('count: ', count)
+
   //     if (count > 6) {
   //       console.log('clear interval')
   //       clearInterval(interval)
@@ -754,7 +754,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   /**
    * Update the slots and listings.
    */
-  const updateSlotsOnSwap = (streamName, slot) => {
+  const updateSlotsOnSwap = (streamName, slot, notifyWebSocket = true) => {
     console.log('updateSlotsOnSwap: update ', streamName, 'to', slot)
     const parentBox = slot.parentNode
     const mixerId = parentBox.dataset.mixerId || parentBox.dataset['mixer-id']
@@ -766,6 +766,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
     const currentSlotId = getSlotIdFromStreamName(streamName)
     if (slotId === currentSlotId) {
+      return
+    }
+
+    if (!canAdd(streamName, mixerId, slot)) {
+      alert(`Mixer ${mixerId} is at maximum capacity`)
       return
     }
 
@@ -806,11 +811,37 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       })
     }
 
-    webSocket.send(JSON.stringify({
-      type: 'compositionUpdate',
-      event: compositionEventName,
-      list: updateList
-    }))
+    if (notifyWebSocket) {
+      webSocket.send(JSON.stringify({
+        type: 'compositionUpdate',
+        event: compositionEventName,
+        list: updateList
+      }))
+    }
+  }
+
+  const canAdd = (streamName, destinationMixerId, slot) => {
+    const mixers = activeComposition.mixers
+    const mixerGridLimit = {}
+    mixers.forEach(mixer => {
+      if (mixer.mixingPage.indexOf('2x2') >= 0) {
+        mixerGridLimit[mixer.id] = 4
+      } else if (mixer.mixingPage.indexOf('3x3') >= 0) {
+        mixerGridLimit[mixer.id] = 9
+      }
+    })
+
+    console.log('Found grid limits: ', mixerGridLimit)
+    const streamsInComposition = slot.parentNode.getElementsByClassName('media-list-item')
+    console.log('Streams already in this mixer', streamsInComposition)
+    // if already present then add as its switching between mute/unmute
+    for (let i = 0; i < streamsInComposition.length; i++) {
+      if (streamsInComposition.item(i).dataset.name == streamName) {
+        return true
+      }
+    }
+
+    return !(mixerGridLimit[destinationMixerId] && mixerGridLimit[destinationMixerId] <= streamsInComposition.length)
   }
 
   /**
@@ -830,7 +861,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       slotHeight = height / Math.ceil(COUNT / rows)
     }
 
-    //console.log(`Screen ${width}x${height}`)
+    //console.log(`Screen ${ width }x${ height }`)
     //console.log('New slot width ' + slotWidth)
     //console.log('New slot height ' + slotHeight)
     slots.forEach(slot => {

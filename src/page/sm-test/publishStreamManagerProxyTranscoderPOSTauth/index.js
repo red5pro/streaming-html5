@@ -112,13 +112,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var auth = configuration.authentication;
   var authName = auth.enabled ? auth.username : '';
   var authPass = auth.enabled ? auth.password : '';
-  var authToken = auth.enabled ? auth.token : undefined;
+  var authToken = (auth.enabled && !window.isEmpty(auth.token)) ? auth.token : undefined;
   var transcoderPOST = {
     meta: {
       authentication: {
         username: authName,
         password: authPass,
-        token: authToken || 'token'
+        token: authToken
       },
       stream: [],
       georules: {
@@ -131,15 +131,20 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   function getAuthenticationParams () {
     var auth = configuration.authentication;
-    return auth && auth.enabled
-      ? {
+    var authToken = (auth.enabled && !window.isEmpty(auth.token)) ? auth.token : undefined
+    var params = {}
+    if (auth && auth.enabled) {
+      params = {
         connectionParams: {
           username: auth.username,
-          password: auth.password,
-          token: auth.token || 'token'
+          password: auth.password
         }
       }
-      : {};
+      if (authToken) {
+        params.connectionParams.token = authToken
+      }
+    }
+    return params
   }
 
   function displayServerAddress (serverAddress, proxyAddress) {

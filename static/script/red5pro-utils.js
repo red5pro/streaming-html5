@@ -372,6 +372,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   window.getStreamList = getCompleteStreamList
   window.getIsStreamAvailable = getIsStreamAvailable
 
+  window.isEmpty = function (str) {
+    return (str && str.length === 0) || !!str
+  }
   window.query = getQueryVariable;
   window.exposePublisherGlobally = function (publisher) {
     window.r5pro_publisher = publisher;
