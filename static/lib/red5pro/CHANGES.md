@@ -1,5 +1,11 @@
 # Changes
 
+## 10.0.0
+
+- update to MUTE API post schema. (Todd Anderson)
+- adding Mute API to RTCSubscriber. (Todd Anderson)
+- introduction of RTCConferenceParticipant. (bustardcelly)
+
 ## 9.1.2
 
 - Fix for `detachView` bug in WebRTC subscriber. (bustardcelly)
