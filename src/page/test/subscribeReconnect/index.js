@@ -62,6 +62,20 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var protocol = serverSettings.protocol;
   var isSecure = protocol === 'https';
 
+  var dryStreamTimer = 0;
+  var dryStreamTimerDelay = 5 * 1000; // 5 seconds
+  var hasReceivedPackets = false;
+  function startDryStreamTimer () {
+    hasReceivedPackets = false;
+    clearTimeout(dryStreamTimer)
+    dryStreamTimer = setTimeout(function () {
+      clearTimeout(dryStreamTimer);
+      if (!hasReceivedPackets) {
+        setConnected(false)
+      }
+    }, dryStreamTimerDelay);
+  }
+
   var bitrate = 0;
   var packetsReceived = 0;
   var frameWidth = 0;
@@ -77,6 +91,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     bitrate = b;
     packetsReceived = p;
     updateStatistics(bitrate, packetsReceived, frameWidth, frameHeight);
+    if (p > 0 && !hasReceivedPackets) {
+      hasReceivedPackets = true;
+      clearTimeout(dryStreamTimer);
+    }
   }
 
   function onResolutionUpdate (w, h) {
@@ -134,6 +152,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
     if (subscriber.getType().toLowerCase() === 'rtc') {
       try {
+        startDryStreamTimer();
         window.trackBitrate(subscriber.getPeerConnection(), onBitrateUpdate, onResolutionUpdate, true);
       }
       catch (e) {
@@ -222,9 +241,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     var retryTimeout;
     var connected = false;
     function retryConnect () {
+      clearTimeout(dryStreamTimer);
       clearTimeout(retryTimeout);
       if (!connected) {
-        retryTimeout = setTimeout(connect, 1000)
+        retryTimeout = setTimeout(function () {
+          connect()
+        }, 1000)
       }
     }
     function setConnected (value) {
@@ -236,7 +258,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
     function connect() {
       clearTimeout(retryTimeout);
-
       // Assign new subscription id in off chance server rejects on subscriber already assigned.
       // Subscribers will be cleaned up, but if we try to immediately re-subscribe, we may get rejected.
       rtcConfig.subscriptionId = Math.floor(Math.random() * 0x10000).toString(16);

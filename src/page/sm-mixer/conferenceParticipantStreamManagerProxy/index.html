@@ -1,0 +1,454 @@
+<!doctype html>
+{{> license}}
+<html>
+
+<head>
+    {{> meta title='Conference Participant SM Test'}}
+    {{> header-scripts}}
+    {{> header-stylesheets}}
+    <style>
+        a {
+            color: #db1f26;
+            text-decoration: underline;
+        }
+
+        .test-notification {
+            border-top: 1px solid #dbdbdb;
+        }
+
+        .file-listing-section {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            background-color: #dbdbdb;
+        }
+
+        .file-listing-container {
+            margin: 20px;
+        }
+
+        @media (max-width:510px) {
+            .file-listing-section {
+                flex-direction: column;
+            }
+
+            .file-listing-container {
+                width: 100%;
+                margin: 20px 0;
+            }
+        }
+
+        .file-listing-container>p {
+            margin: 20px 0;
+        }
+
+        .file-listing {
+            margin: 12px;
+            background-color: #fff;
+            border: 1px solid #999;
+            overflow: scroll;
+            max-height: 200px;
+        }
+
+        .file-listing>p {
+            padding: 10px;
+            text-align: left;
+            cursor: pointer;
+        }
+
+        .file-listing>p.load-listing {
+            cursor: default;
+        }
+
+        .file-listing>p.item-separator {
+            border-bottom: 1px solid #999;
+        }
+
+
+        .conference-wall {
+            display: flex;
+            flex-flow: row wrap;
+            justify-content: space-evenly;
+            margin-bottom: 12px;
+            background: #fff;
+        }
+
+        .subscriber-block {
+            flex: 1;
+            margin: 5px;
+            width: 50%;
+            position: relative;
+        }
+
+        .subscriber-name-field {
+            position: relative;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            margin: 0;
+            padding: 4px;
+        }
+
+        .subscriber-exclusion-field {
+            position: absolute;
+            top: 0;
+            margin: 0;
+            padding: 10px;
+            right: 0;
+            background-color: #ff0000;
+        }
+
+        .red5pro-subscriber {
+            width: 100%;
+        }
+
+        .centered {
+            text-align: center;
+        }
+
+        .resolution-title-field {
+            background-color: #dbdbdb;
+            margin: 0;
+            padding: 12px;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            border-spacing: 0;
+        }
+
+        .table-entry {
+            padding: 10px;
+            border: 1px solid black;
+        }
+
+        .table-entry-option {
+            background-color: #fff;
+        }
+
+        .exclusion-alert-container {
+            width: 100%;
+            height: 100%;
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            align-content: center;
+        }
+
+        .exclusion-alert-field {
+            padding: 100px;
+            text-align: center;
+            background-color: #ff0000;
+            color: #fff;
+        }
+
+        .publisher-container {
+            position: relative;
+            margin: 0 12px 0 12px;
+            background-color: #000;
+            justify-content: center;
+            display: flex;
+            align-items: center;
+        }
+
+        .pip {
+            right: 0;
+            bottom: 0;
+            width: 80px;
+            height: 60px;
+            position: absolute;
+        }
+
+        .publisher-error {
+            position: relative;
+            background-color: #db1f26;
+            color: #fff;
+            padding: 12px;
+            margin: 0 12px 0 12px;
+            text-align: center;
+        }
+
+        #settings-container {
+            padding: 20px;
+        }
+
+        .settings-area {
+            padding: 5px;
+            background-color: #eeee;
+            margin: 12px;
+        }
+
+        .settings-field {
+            margin: 1rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .settings-label {
+            width: 45%;
+            display: inline-block;
+            margin-right: 1rem;
+            text-align: right;
+        }
+
+        .settings-field>input {
+            height: 1.5rem;
+            font-size: 1rem;
+            padding-left: 0.8rem;
+        }
+
+        .settings-field>select {
+            height: 1.5rem;
+            font-size: 1rem;
+            padding-left: 0.8rem;
+        }
+
+        body {
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            flex-wrap: wrap;
+        }
+
+        h1 {
+            margin: 16px;
+            border-bottom: 1px solid black;
+        }
+
+        h2 {
+            margin-top: 0;
+            margin-bottom: 0;
+            text-align: center;
+            width: 100%;
+        }
+
+        .card_subheader {
+            text-align: center;
+            font-size: 14px;
+            margin-top: 0.5em;
+        }
+
+        .card-holder {
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+        }
+
+        .card {
+            min-width: 400px;
+            background-color: #ddd;
+            padding: 12px;
+            margin: 10px;
+        }
+
+        .card_subheader {
+            text-align: center;
+            font-size: 14px;
+            margin-top: 0.5em;
+        }
+
+        .form_item {
+            display: flex;
+            flex-direction: row;
+        }
+
+        .form_item>label,
+        .form_item>input {
+            display: block;
+            width: 50%;
+        }
+
+        .form_item>label {
+            text-align: right;
+            margin-right: 12px;
+        }
+
+        .form>.form_button {
+            text-align: center;
+        }
+
+        .hidden {
+            visibility: hidden;
+        }
+
+        body {
+            margin: 12px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            background: #fff;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .section {
+            display: flex;
+            flex-direction: row;
+        }
+
+        .composite-section {
+            width: 70%;
+            margin: auto;
+        }
+
+        .subscribe-section {
+            flex-grow: 2;
+            background: #333;
+        }
+
+        .publish-section {
+            flex-grow: 1;
+        }
+
+        .subscriber-container,
+        .publisher-container {
+            margin: 0 12px 0 12px;
+        }
+
+        .status-details {
+            position: relative;
+            background-color: #333;
+            color: #fff;
+            padding: 12px;
+            margin: 0 12px 0 12px;
+            text-align: center;
+        }
+
+        .error-field {
+            color: #fff !important;
+            background-color: #DB1F26 !important;
+        }
+
+        @media screen and (max-width: 1028px) {
+            .section {
+                flex-direction: column;
+            }
+
+            .publish-section,
+            .subscribe-section {
+                margin: 12px;
+            }
+        }
+    </style>
+    <link href="//unpkg.com/video.js@7.0.0/dist/video-js.css" rel="stylesheet">
+    <script src="//unpkg.com/video.js@7.0.0/dist/video.min.js"></script>
+</head>
+
+<body>
+    {{> top-bar }}
+    {{> navigation isTestPage=true }}
+    <div id="app">
+        {{> settings-link}}
+        <div class="ice-background">
+            <div class="test-notification">
+                <p>
+                    <span>To use this test, you must configure the Stream Manager token, backend WebSocket for
+                        compositions endpoint and set the webapp to
+                        <em>live</em> in the <a href="../../index.html" target="_blank">Settings</a> page, and
+                        publish to a room scope using a round trip authentication Stream Manager testbed.
+                    </span>
+                </p>
+            </div>
+        </div>
+        {{> test-title title='Stream Manager Conference Participant Test'}}
+        <div id="login-form" class="settings-area hidden">
+            <h3 class="centered info-title">Set a mock username, password and token for your session. Credentials will
+                not be validated</h3>
+            <hr class="paddedHR">
+            <p class="settings-field settings-collapsable"><label for="username-field"
+                    class="settings-label">Username:</label><input id="username-field" name="username-field"></p>
+            <p class="settings-field settings-collapsable"><label for="password-field"
+                    class="settings-label">Password:</label><input id="password-field" name="password-field"></p>
+            <p class="settings-field settings-collapsable"><label for="token-field"
+                    class="settings-label">Token:</label><input id="token-field" name="token-field"></p>
+            <button id="submit-button" class="ui-button">Submit</button>
+        </div>
+        <div id="exclusion-alert" class="exclusion-alert-container hidden">
+            <p class="exclusion-alert-field">You have been excluded from this conference.</p>
+        </div>
+
+        <div class="section">
+            <div class="subscribe-section">
+                <p id="subscriber-status-field" class="status-details">On hold.</p>
+                <p class="status-details subscriber-details hidden"></p>
+                <div class="subscriber-container-composition">
+                    <video id="red5pro-subscriber-composition" width="100%" autoplay playsinline controls>
+                    </video>
+                </div>
+                <div class="subscriber-error hidden"></div>
+            </div>
+
+            <div class="publish-section">
+                <p id="publisher-status-field" class="status-details">On hold.</p>
+                <p id="statistics-field" class="centered status-field status-details hidden">
+                    <!-- only updated from WebRTC clients. -->
+                    Bitrate: <span id="bitrate-field" class="bitrate-field">N/A</span>.&nbsp;
+                    <br />
+                    Resolution: <span id="resolution-field" class="resolution-field">0x0</span>.
+                </p>
+                <div class="publisher-container">
+                    <video id="red5pro-participant" class="hidden" width=0 height=0></video>
+                    <video id="screenshare-publisher" class="hidden" width="320" height="240" autoplay playsinline
+                        controls muted>
+                    </video>
+                    <video id="red5pro-publisher" width="320" height="240" autoplay playsinline controls muted>
+                    </video>
+                </div>
+                <div class="publisher-error hidden"></div>
+                <div id="publisher-settings-container" class="settings-area">
+                    <div id="publisher-settings-setup">
+                        <p class="settings-field settings-collapsable">
+                            <label class="settings-label">Camera:</label>
+                            <select id="camera-select" class="control settings-control"></select>
+                        </p>
+                        <div id="resolution-section" class="hidden">
+                            <p class="centered resolution-title-field">Supported Constraints</p>
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <td class="table-entry">Resolution</td>
+                                        <td class="table-entry">Framerate</td>
+                                        <td class="table-entry">Bitrate (kbps)</td>
+                                        <td class="table-entry">Use In Provision</td>
+                                    </tr>
+                                </thead>
+                                <tbody id="resolution-container"></tbody>
+                            </table>
+                            <p class="settings-field" style="justify-content: center;">
+                                <button id="submit-provision-button">Submit Provision for Transcode</button>
+                            </p>
+                        </div>
+                        <p class="settings-field" style="justify-content: center;">
+                            <button id="broadcast-button">Start Broadcast</button>
+                        </p>
+                    </div>
+                    <div id="publisher-settings-active" class="hidden">
+                        <p class="settings-field settings-collapsable">
+                            <label class="settings-label">Audio:</label>
+                            <input id="audio-checkbox" type="checkbox" checked>
+                        </p>
+                        <p class="settings-field settings-collapsable">
+                            <label class="settings-label">Video:</label>
+                            <input id="video-checkbox" type="checkbox" checked>
+                        </p>
+                        <hr>
+                        <p class="settings-field hidden" style="justify-content: center;">
+                            <button id="screenshare-button">Share Screen</button>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {{> body-scripts}}
+    <script src="../../script/red5pro-utils.js"></script>
+    <script src="../../script/publisher-status.js"></script>
+    <script src="publisher-settings.js"></script>
+    <script src="index.js"></script>
+</body>
+
+</html>

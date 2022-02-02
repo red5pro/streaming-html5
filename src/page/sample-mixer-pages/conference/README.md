@@ -1,0 +1,3 @@
+# Conference Focused Layout
+
+This is an example of a focused layout for video conferences. The Layout includes a focused presenter shown in a large rectangle on the top row and a set of unfocused participants shown in small rectangles in the bottom row. The list of participants' live streams to add to the layout is sent over WebSockets together with their presenter role. The page dynamically processes this information to update the layout as participants are added or removed to the conference or the presenter is changed. The dynamic commands are provided in real-time by a Host through the [Stream Manager Conference Host Testbed](../../sm-mixer/conferenceHostStreamManagerProxy/).
