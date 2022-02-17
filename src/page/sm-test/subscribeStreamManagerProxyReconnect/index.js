@@ -169,6 +169,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       setConnected(false);
     } else if (event.type === 'WebRTC.DataChannel.Error') {
       setConnected(false)
+    } else if (event.type === 'Subscribe.Status') {
+      if (event.data.message.match(/already start/)) {
+        // The subscriber has been caught in a loop of starting with an Edge not having the stream.
+        // Need to kick it off again.
+        //        unsubscribe().then(retryConnect).catch(retryConnect)
+        setConnected(false)
+      }
     }
   }
   function onSubscribeFail (message) {
@@ -401,6 +408,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var retryTimeout;
   var connected = false;
   function retryConnect () {
+    hasReceivedPackets = false;
     clearTimeout(dryStreamTimer);
     clearTimeout(retryTimeout);
     if (!connected) {
