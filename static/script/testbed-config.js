@@ -70,7 +70,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       "port": 5080,
       "stream1": "stream1",
       "stream2": "stream2",
-      "app": "live",
+      "app": "flir",
       "proxy": "streammanager",
       "streamMode": "live",
       "cameraWidth": 640,
@@ -131,7 +131,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       "verboseLogging": true,
       "recordBroadcast": false,
       "streamManagerAPI": "4.0",
-      "streamManagerAccessToken": "xyz123",
+      "streamManagerAccessToken": "",
       "streamManagerRegion": undefined,
       "muteOnAutoplayRestriction": true,
       "authentication": {
