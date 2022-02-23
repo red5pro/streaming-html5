@@ -54,6 +54,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var updateStatusFromEvent = window.red5proHandlePublisherEvent; // defined in src/template/partial/status-field-publisher.hbs
 
   var targetPublisher;
+  var mediaStream;
+  var mediaStreamConstraints;
   var hostSocket;
   var roomName = window.query('room') || 'red5pro'; // eslint-disable-line no-unused-vars
   var streamName = window.query('streamName') || ['publisher', Math.floor(Math.random() * 0x10000).toString(16)].join('-');
@@ -109,7 +111,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   joinButton.addEventListener('click', function () {
     saveSettings();
-    doPublish(streamName);
+    doPublish(mediaStream, roomName, streamName);
     setPublishingUI(streamName);
   });
 
@@ -215,8 +217,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     console.log('[Red5ProPublisher] ' + event.type + '.');
     if (event.type === 'WebSocket.Message.Unhandled') {
       console.log(event);
-    } else if (event.type === red5prosdk.RTCPublisherEventTypes.MEDIA_STREAM_AVAILABLE) {
-      window.allowMediaStreamSwap(targetPublisher, targetPublisher.getOptions().mediaConstraints, document.getElementById('red5pro-publisher'));
     }
     updateStatusFromEvent(event);
   }
@@ -229,11 +229,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     window.red5propublisher = publisher;
     console.log('[Red5ProPublisher] Publish Complete.');
     // [NOTE] Moving SO setup until Package Sent amount is sufficient.
-    //    establishSharedObject(publisher, roomField.value, streamNameField.value);
-    if (publisher.getType().toUpperCase() !== 'RTC') {
-      // It's flash, let it go.
-      establishSocketHost(publisher, roomField.value, streamNameField.value);
-    }
     try {
       var pc = publisher.getPeerConnection();
       var stream = publisher.getMediaStream();
@@ -299,71 +294,68 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     hostSocket.onmessage = function (message) {
       var payload = JSON.parse(message.data)
       if (roomName === payload.room) {
-        streamsList = payload.streams
-        processStreams(streamsList, streamName);
+        processStreams(payload.streams, streamsList, roomName, streamName);
       }
     }
   }
 
-  function getRegionIfDefined () {
-    var region = configuration.streamManagerRegion;
-    if (typeof region === 'string' && region.length > 0 && region !== 'undefined') {
-      return region;
-    }
-    return undefined
+  function getUserMediaConfiguration () {
+    return {
+      mediaConstraints: {
+        audio: configuration.useAudio ? configuration.mediaConstraints.audio : false,
+        video: configuration.useVideo ? configuration.mediaConstraints.video : false
+      }
+    };
   }
 
-  function determinePublisher (jsonResponse) {
-    var host = jsonResponse.serverAddress;
-    var app = jsonResponse.scope;
-    var config = Object.assign({}, configuration);
-    var connectParams = Object.assign({}, getAuthenticationParams(), {
-      host: host,
-      app: app
+  const determinePublisher = async (mediaStream, room, name, bitrate = 256) => {
+
+    let config = Object.assign({},
+      configuration,
+      {
+        streamMode: configuration.recordBroadcast ? 'record' : 'live'
+      },
+      getAuthenticationParams(),
+      getUserMediaConfiguration());
+
+    let rtcConfig = Object.assign({}, config, {
+      protocol: getSocketLocationFromProtocol().protocol,
+      port: getSocketLocationFromProtocol().port,
+      bandwidth: {
+        video: bitrate
+      },
+      app: `live/${room}`,
+      streamName: name
     });
-    var rtcConfig = Object.assign({}, config, {
-                      protocol: getSocketLocationFromProtocol().protocol,
-                      port: getSocketLocationFromProtocol().port,
-                      streamName: streamName,
-                      app: configuration.proxy,
-                      connectionParams: connectParams,
-                      streamMode: configuration.recordBroadcast ? 'record' : 'live',
-                      bandwidth: {
-                        video: 256
-                      },
-                      mediaConstraints: {
-                        audio: true,
-                        video: {
-                          width: {
-                            exact: 320
-                          },
-                          height: {
-                            exact: 240
-                          },
-                          frameRate: {
-                            exact: 15
-                          }
-                        }
-                      }
-                   });
 
-    var publisher = new red5prosdk.RTCPublisher();
-    return publisher.init(rtcConfig);
-
+    let connectionParams = rtcConfig.connectionParams ? rtcConfig.connectionParams: {}
+    const payload = await window.streamManagerUtil.getOrigin(rtcConfig.host, rtcConfig.app, name)
+    const { scope, serverAddress } = payload
+    rtcConfig = {...rtcConfig, ...{
+      app: 'streammanager',
+      connectionParams: {...connectionParams, ...{
+        host: serverAddress,
+        app: scope
+      }}
+    }}
+    console.log('PUBLISH', name, rtcConfig)
+    var publisher = new red5prosdk.RTCPublisher()
+    return await publisher.initWithStream(rtcConfig, mediaStream)
   }
 
-  function doPublish (name) {
-    targetPublisher.publish(name)
-      .then(function () {
-        onPublishSuccess(targetPublisher);
-        updateInitialMediaOnPublisher();
-      })
-      .catch(function (error) {
-        var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
-        console.error('[Red5ProPublisher] :: Error in publishing - ' + jsonError);
-        console.error(error);
-        onPublishFail(jsonError);
-       });
+  const doPublish = async (stream, room, name) => {
+    try {
+      targetPublisher = await determinePublisher(stream, room, name, bitrate)
+      targetPublisher.on('*', onPublisherEvent)
+      await targetPublisher.publish()
+      onPublishSuccess(targetPublisher)
+      setPublishingUI(name)
+    } catch (error) {
+      var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
+      console.error('[Red5ProPublisher] :: Error in publishing - ' + jsonError);
+      console.error(error);
+      onPublishFail(jsonError);
+    }
   }
 
   function unpublish () {
@@ -385,93 +377,36 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     });
   }
 
-  function requestOrigin (configuration) {
-    var host = configuration.host;
-    var app = configuration.app;
-    var port = serverSettings.httpport;
-    var baseUrl = protocol + '://' + host + ':' + port;
-    var apiVersion = configuration.streamManagerAPI || '4.0';
-    var region = getRegionIfDefined();
-    var url = baseUrl + '/streammanager/api/' + apiVersion + '/event/' + app + '/' + streamName + '?action=broadcast';
-    if (region) {
-      url += '&region=' + region;
+  const startPreview = async () => {
+    const element = document.querySelector('#red5pro-publisher')
+    const constraints = {
+      audio: true,
+      video: {
+        width: {
+          exact: 640
+        },
+        height: {
+          exact: 480
+        },
+        frameRate: {
+          min: 15
+        }
+      }
     }
-      return new Promise(function (resolve, reject) {
-        fetch(url)
-          .then(function (res) {
-            if(res.status == 200){
-                if (res.headers.get("content-type") && res.headers.get("content-type").toLowerCase().indexOf("application/json") >= 0) {
-                    return res.json();
-                }
-                else {
-                  throw new TypeError('Could not properly parse response.');
-                }
-            } else {
-              var msg = "";
-              if(res.status == 400) {
-                msg = "An invalid request was detected";
-              } else if(res.status == 404) {
-                msg = "Data for the request could not be located/provided.";
-              } else if(res.status == 500) {
-                msg = "Improper server state error was detected.";
-              } else {
-                msg = "Unknown error";
-              }
-              throw new TypeError(msg);
-            }
-          })
-          .then(function (json) {
-            resolve(json);
-          })
-          .catch(function (error) {
-            var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
-            console.error('[PublisherStreamManagerTest] :: Error - Could not request Origin IP from Stream Manager. ' + jsonError)
-            reject(error)
-          });
-    });
-  }
-
-  var retryCount = 0;
-  var retryLimit = 3;
-  function respondToOrigin (response) {
-    determinePublisher(response)
-      .then(function (publisherImpl) {
-        targetPublisher = publisherImpl;
-        targetPublisher.on('*', onPublisherEvent);
-        return targetPublisher.preview();
+    try {
+      mediaStream = await navigator.mediaDevices.getUserMedia(constraints)
+      mediaStreamConstraints = constraints
+      element.srcObject = mediaStream
+      window.allowMediaStreamSwap(element, constraints, mediaStream, (activeStream, activeConstraints) => {
+        mediaStream = activeStream
+        mediaStreamConstraints = activeConstraints
+        console.log(mediaStream, mediaStreamConstraints)
       })
-      .catch(function (error) {
-        var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
-        console.error('[Red5ProPublisher] :: Error in access of Origin IP: ' + jsonError);
-        updateStatusFromEvent({
-          type: red5prosdk.PublisherEventTypes.CONNECT_FAILURE
-        });
-        onPublishFail(jsonError);
-      });
-  }
-
-  function respondToOriginFailure (error) {
-    if (retryCount++ < retryLimit) {
-      var retryTimer = setTimeout(function () {
-        clearTimeout(retryTimer);
-        startup();
-      }, 1000);
-    }
-    else {
-      var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
-      updateStatusFromEvent({
-        type: red5prosdk.PublisherEventTypes.CONNECT_FAILURE
-      });
-      console.error('[Red5ProPublisher] :: Retry timeout in publishing - ' + jsonError);
+    } catch (e) {
+      console.error(e)
     }
   }
-
-  function startup () {
-    requestOrigin(configuration)
-      .then(respondToOrigin)
-      .catch(respondToOriginFailure);
-  }
-  startup();
+  startPreview()
 
   var shuttingDown = false;
   function shutdown () {
@@ -491,32 +426,49 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   var streamsList = [];
   var subscribersEl = document.getElementById('subscribers');
-  function processStreams (streamlist, exclusion) {
-    var nonPublishers = streamlist.filter(function (name) {
+  function processStreams (list, previousList, roomName, exclusion) {
+    var nonPublishers = list.filter(function (name) {
       return name !== exclusion;
     });
-    var list = nonPublishers.filter(function (name, index, self) {
-      return (index == self.indexOf(name)) &&
-        !document.getElementById(window.getConferenceSubscriberElementId(name));
+    var existing = nonPublishers.filter((name, index, self) => {
+      return (index == self.indexOf(name) && previousList.indexOf(name) !== -1)
+    })
+    var toAdd = nonPublishers.filter(function (name, index, self) {
+      return (index == self.indexOf(name) && previousList.indexOf(name) === -1)
+    })
+    var toRemove = previousList.filter((name, index, self) => {
+      return (index == self.indexOf(name) && list.indexOf(name) === -1)
+    })
+    window.ConferenceSubscriberUtil.removeAll(toRemove)
+    streamsList = list
+
+    var subscribers = toAdd.map(function (name, index) {
+      return new window.ConferenceSubscriberItem(name, subscribersEl, index, () => {});
     });
-    var subscribers = list.map(function (name, index) {
-      return new window.ConferenceSubscriberItem(name, subscribersEl, index);
-    });
+
+    // Below is a linked list to subscriber sequentially.
+    /*
     var i, length = subscribers.length - 1;
     var sub;
     for(i = 0; i < length; i++) {
       sub = subscribers[i];
       sub.next = subscribers[sub.index+1];
     }
+    */
     if (subscribers.length > 0) {
       var baseSubscriberConfig = Object.assign({},
-                                  configuration,
-                                  {
-                                    protocol: getSocketLocationFromProtocol().protocol,
-                                    port: getSocketLocationFromProtocol().port
-                                  },
-                                  getAuthenticationParams());
-      subscribers[0].execute(baseSubscriberConfig, serverSettings, configuration.proxy, getRegionIfDefined());
+        configuration,
+        {
+          protocol: getSocketLocationFromProtocol().protocol,
+          port: getSocketLocationFromProtocol().port
+        },
+        getAuthenticationParams(), 
+        {
+          app: `live/${roomName}`
+        });
+      subscribers.forEach(s => s.execute(baseSubscriberConfig))
+      // Below is to be used if using sequential subsciber logic explained above.
+      //      subscribers[0].execute(baseSubscriberConfig);
     }
 
     updatePublishingUIOnStreamCount(nonPublishers.length);
