@@ -401,6 +401,21 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         mediaStream = activeStream
         mediaStreamConstraints = activeConstraints
         console.log(mediaStream, mediaStreamConstraints)
+        // If we have a broadcast going, just swap tracks live.
+        if (targetPublisher && targetPublisher.getPeerConnection()) {
+          const connection = targetPublisher.getPeerConnection()
+          const senders = connection.getSenders()
+          const videoTrack = mediaStream.getVideoTracks()[0]
+          const audioTrack = mediaStream.getAudioTracks()[0]
+          if (videoTrack) {
+            const video = senders.find(s => s.track.kind === videoTrack.kind)
+            video.replaceTrack(videoTrack)
+          }
+          if (audioTrack) {
+            const audio = senders.find(s => s.track.kind === audioTrack.kind)
+            audio.replaceTrack(audioTrack)
+          }
+        }
       })
     } catch (e) {
       console.error(e)
