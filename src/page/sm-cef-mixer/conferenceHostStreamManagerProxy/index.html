@@ -90,7 +90,6 @@
         .section {
             display: flex;
             flex-direction: row;
-            margin: 12px;
             height: 100%;
             position: relative;
         }
@@ -206,6 +205,7 @@
         .view-container {
             flex: 3;
             height: 100%;
+            border-top: 1px solid #dbdbdb;
         }
 
         .waiting-room-container {
@@ -213,7 +213,7 @@
             flex: 1;
             flex-direction: column;
             padding: 15px;
-            border: 1px solid #aaa;
+            border: 1px solid #dbdbdb;
             box-sizing: border-box;
         }
 
@@ -260,9 +260,14 @@
             background-color: #ddd;
         }
 
+        .ui-small-button {
+            width: 40%;
+            padding: 0;
+        }
+
         .subscriber-exclusion-button {
             color: #fff;
-            background-color: #ff0000;
+            background-color: #eb4c34;
         }
 
         .red5pro-subscriber {
@@ -345,7 +350,6 @@
         .tooltip {
             position: relative;
             display: inline-block;
-            border-bottom: 1px dotted black;
         }
 
         .tooltip .tooltiptext {
@@ -383,6 +387,37 @@
         .tooltip:hover .tooltiptext {
             visibility: visible;
             opacity: 1;
+        }
+
+        .settings-area {
+            background-color: #eeee;
+            padding-left: 12px;
+        }
+
+        .padded-hr {
+            display: block;
+            width: 100%;
+            height: 1px;
+            border: 0;
+            border-top: 1px solid #dbdbdb;
+        }
+
+        .small-margin {
+            margin: 5px;
+        }
+
+        .destroy-composition-button {
+            padding: 0;
+            background-color: #eb4c34;
+            width: 90%;
+        }
+
+        .medium-ui-button {
+            padding: 10px;
+        }
+
+        .tooltip>input {
+            padding-left: 0.4rem;
         }
     </style>
     <link href="//unpkg.com/video.js@7.0.0/dist/video-js.css" rel="stylesheet">
@@ -423,72 +458,78 @@
         </div>
 
         <div class="section">
-
-            <div class="composition-editor-container" id="composition-editor">
+            <div class="composition-editor-container settings-area" id="composition-editor">
+                <h3 style="font-weight: bold; padding-top: 5px;">Active Composition</h3>
+                <hr class="padded-hr">
                 <div>
-                    <h2>Active Compositions</h2>
-                    <p id="event-name">Name: </p>
-                    <select name="event-name" id="event-name-select" onchange="compositionSelected();">
-                        <option name=""></option>
-                    </select>
-                    <p id="event-room">Room:</p>
-                    <p id="event-state">State:</p>
-                    <button id="destroy-composition-button" disabled onclick="destroyComposition()">Destroy</button>
+                    <p class="small-margin" id="event-name">Name:
+                        <select name="event-name" id="event-name-select" onchange="compositionSelected();">
+                            <option name=""></option>
+                        </select>
+                    </p>
+                    <p class="small-margin" id="event-room">Room:</p>
+                    <p class="small-margin" id="event-state">State:</p>
+                    <button class="ui-button destroy-composition-button small-margin" id="destroy-composition-button"
+                        disabled onclick="destroyComposition()">Destroy Composition</button>
                 </div>
                 <br>
-                <h2>Create Composition</h2>
-                <form id="create-composition-form">
-                    <div class="tooltip">
-                        <span class="tooltiptext">Unique event name</span>
-                        <label class="tooltip" for="event">Event Name:</label><br>
-                        <input type="text" id="event" name="event" value="event1"><br>
-                    </div>
-                    <div class="tooltip">
-                        <span class="tooltiptext">Page to load into the Mixer</span>
-                        <label for="mixingPage">Mixing Page:</label><br>
-                        <select name="mixingPage" id="mixingPage-select">
-                            <option name="focused" selected>focused</option>
-                        </select><br>
-                    </div>
-                    <div class="tooltip">
-                        <span class="tooltiptext">App and Room scope for the composite stream</span>
-                        <label for="scope">Scope:</label><br>
-                        <input type="text" id="scope" name="scope" value="live"><br>
-                    </div>
-                    <div class="tooltip">
-                        <span class="tooltiptext">Stream name for the composite stream</span>
-                        <label for="streamName">Stream Name:</label><br>
-                        <input type="text" id="streamName" name="streamName" value=""><br>
-                    </div>
-                    <div class="tooltip">
-                        <span class="tooltiptext">Width of the composite stream</span>
-                        <label for="width">Width:</label><br>
-                        <input type="number" id="width" name="width" value="1280"><br>
-                    </div>
-                    <div class="tooltip">
-                        <span class="tooltiptext">Height of the composite stream</span>
-                        <label for="height">Height:</label><br>
-                        <input type="number" id="height" name="height" value="720"><br>
-                    </div>
-                    <div class="tooltip">
-                        <span class="tooltiptext">Framerate of the composite stream</span>
-                        <label for="framerate">Framerate:</label><br>
-                        <input type="number" id="framerate" name="framerate" value="30"><br>
-                    </div>
-                    <div class="tooltip">
-                        <span class="tooltiptext">Bitrate of the composite stream</span>
-                        <label for="bitrate">Bitrate:</label><br>
-                        <input type="number" id="bitrate" name="bitrate" value="1500"><br>
-                    </div>
-                    <div class="tooltip">
-                        <span class="tooltiptext">Region where the Mixer is deployed</span>
-                        <label for="location">Mixer Region:</label><br>
-                        <select name="mixer-region-name" id="mixer-region-select">
-                        </select>
-                    </div>
-                    <br>
-                    <button type="submit">Create Composition</button>
-                </form>
+                <h3 style="font-weight: bold; padding-top: 5px;">Create Composition</h3>
+                <hr class="padded-hr">
+                <div class="small-margin">
+                    <form id="create-composition-form">
+                        <div class="tooltip">
+                            <span class="tooltiptext">Unique event name</span>
+                            <label class="tooltip" for="event">Event Name:</label><br>
+                            <input type="text" id="event" name="event" value="event1"><br>
+                        </div>
+                        <div class="tooltip">
+                            <span class="tooltiptext">Page to load into the Mixer</span>
+                            <label for="mixingPage">Mixing Page:</label><br>
+                            <select name="mixingPage" id="mixingPage-select">
+                                <option name="focused" selected>focused</option>
+                            </select><br>
+                        </div>
+                        <div class="tooltip">
+                            <span class="tooltiptext">App and Room scope for the composite stream</span>
+                            <label for="scope">Scope:</label><br>
+                            <input type="text" id="scope" name="scope" value="live"><br>
+                        </div>
+                        <div class="tooltip">
+                            <span class="tooltiptext">Stream name for the composite stream</span>
+                            <label for="streamName">Stream Name:</label><br>
+                            <input type="text" id="streamName" name="streamName" value=""><br>
+                        </div>
+                        <div class="tooltip">
+                            <span class="tooltiptext">Width of the composite stream</span>
+                            <label for="width">Width:</label><br>
+                            <input type="number" id="width" name="width" value="1280"><br>
+                        </div>
+                        <div class="tooltip">
+                            <span class="tooltiptext">Height of the composite stream</span>
+                            <label for="height">Height:</label><br>
+                            <input type="number" id="height" name="height" value="720"><br>
+                        </div>
+                        <div class="tooltip">
+                            <span class="tooltiptext">Framerate of the composite stream</span>
+                            <label for="framerate">Framerate:</label><br>
+                            <input type="number" id="framerate" name="framerate" value="30"><br>
+                        </div>
+                        <div class="tooltip">
+                            <span class="tooltiptext">Bitrate of the composite stream</span>
+                            <label for="bitrate">Bitrate:</label><br>
+                            <input type="number" id="bitrate" name="bitrate" value="1500"><br>
+                        </div>
+                        <div class="tooltip">
+                            <span class="tooltiptext">Region where the Mixer is deployed</span>
+                            <label for="location">Mixer Region:</label><br>
+                            <select name="mixer-region-name" id="mixer-region-select">
+                            </select>
+                        </div>
+                        <br>
+                        <br>
+                        <button class="ui-button medium-ui-button" type="submit">Create Composition</button>
+                    </form>
+                </div>
                 <br>
             </div>
 
