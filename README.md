@@ -318,15 +318,15 @@ To define the **Host** with the server instance's IP, click the _Host_ field f t
 
 ### Mixer - Stream Manager Examples
 
-| **[Stream Manager Proxy Conference Participant](src/page/sm-mixer/conferenceParticipantStreamManagerProxy)**
+| **[Stream Manager Proxy Conference Participant](src/page/sm-cef-mixer/conferenceParticipantStreamManagerProxy)**
 | :-----
 | *Demonstrates utilizing the Red5 Pro Stream Manager API to join a video conference with a single return stream.*
 
-| **[Stream Manager Proxy Conference Host](src/page/sm-mixer/conferenceHostStreamManagerProxy)**
+| **[Stream Manager Proxy Conference Host](src/page/sm-cef-mixer/conferenceHostStreamManagerProxy)**
 | :-----
 | *Demonstrates utilizing the Red5 Pro Stream Manager API to host and manage a video conference with a single return stream.*
 
-| **[Stream Manager Grid Composition Host](src/page/sm-mixer/gridMixerCompositionStreamManagerProxy)**
+| **[Stream Manager Grid Composition Host](src/page/sm-cef-mixer/gridMixerCompositionStreamManagerProxy)**
 | :-----
 | *Demonstrates utilizing the Red5 Pro Stream Manager API to create and manage a composition of several live streams into a single stream.*
 
