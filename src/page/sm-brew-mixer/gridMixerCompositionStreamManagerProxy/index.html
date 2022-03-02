@@ -156,23 +156,17 @@
             align-content: baseline;
         }
 */
-        .media-list-container {
-            border: 1px solid #ccc;
-            flex: 1;
-            display: flex;
-            flex-wrap: wrap;
-            flex-direction: column;
-            width: 100%;
-            padding: 5px;
-            align-content: baseline;
+        .right-side {
+            width: 65%;
         }
 
         .mixer-container {
             display: grid;
             grid-gap: 0px;
-            width: 50%;
-            grid-template-columns: 1fr 1fr 1fr;
-            grid-template-rows: 1fr 1fr;
+            width: 100%;
+            /*TODO adapt template*/
+            grid-template-columns: 1fr;
+            grid-template-rows: 1fr;
             align-items: stretch;
             color: #444;
             margin: 0px;
@@ -223,13 +217,6 @@
             height: 60%;
             flex: 1;
             align-content: flex-start;
-        }
-
-        .media-list-container_controls {
-            display: flex;
-            flex-direction: row;
-            justify-content: space-between;
-            width: 100%;
         }
 
         .red5pro-subscriber {
@@ -473,9 +460,55 @@
         .small-margin {
             margin: 5px;
         }
+
+        .main-controls-container {
+            display: flex;
+            flex-direction: row;
+        }
+
+        .controls-container {
+            display: flex;
+        }
+
+        .panSlider {
+            width: 45px;
+            height: 10px;
+        }
+
+        .border {
+            border: 1px solid black;
+        }
+
+        .padded {
+            padding: 10px;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .text-bold {
+            font-weight: bold;
+        }
+
+        .row-container {
+            display: flex;
+            flex-direction: row;
+        }
+
+        .column-container {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .center-content {
+            justify-content: center;
+        }
     </style>
     <link href="//unpkg.com/video.js@7.0.0/dist/video-js.css" rel="stylesheet">
     <script src="//unpkg.com/video.js@7.0.0/dist/video.min.js"></script>
+    <!-- TODO TODO REMOVE -->
+    <script src="mock-fetch.js"></script>
 </head>
 
 <body>
@@ -504,7 +537,7 @@
                     <h3 style="font-weight: bold; padding-top: 5px;">Active Composition</h3>
                     <hr class="padded-hr">
                     <p class="small-margin" id="event-name">Name:
-                        <select name="event-name" id="event-name-select" onchange="compositionSelected();">
+                        <select name="event-name" id="event-name-select" onchange="compositionNameSelected();">
                             <option name=""></option>
                         </select>
                     </p>
@@ -528,15 +561,6 @@
                             <span class="tooltiptext">Unique name for the Mixer</span>
                             <label for="mixerName">Mixer Name:</label><br>
                             <input type="text" id="mixerName" name="mixerName" value="1"><br>
-                        </div>
-                        <div class="tooltip">
-                            <span class="tooltiptext">Page to load into the Mixer</span>
-                            <label for="mixingPage">Mixing Page:</label><br>
-                            <select name="mixingPage" id="mixingPage-select">
-                                <option name="2x2">2x2</option>
-                                <option name="3x3">3x3</option>
-                                <option name="NxN">NxN</option>
-                            </select><br>
                         </div>
                         <div class="tooltip">
                             <span class="tooltiptext">App and room scope of the composite stream</span>
@@ -567,6 +591,23 @@
                             <span class="tooltiptext">Bitrate of the composite stream</span>
                             <label for="bitrate">Bitrate:</label><br>
                             <input type="number" id="bitrate" min="0" name="bitrate" value="1500"><br>
+                        </div>
+                        <div class="tooltip">
+                            <span class="tooltiptext">Sample rate for the audio of the mixed stream</span>
+                            <label for="sample-rate">Sample Rate:</label><br>
+                            <input type="number" id="sample-rate" min="44100" name="sample-rate" value="44100"><br>
+                        </div>
+                        <!-- Only 2 channels are supported for now so keep this hidden -->
+                        <div class="tooltip hidden">
+                            <span class="tooltiptext">Number of audio channels for mixed stream</span>
+                            <label for="audio-channels">Audio Channels:</label><br>
+                            <input type="number" id="audio-channels" name="audio-channels" value="2"><br>
+                        </div>
+                        <div class="tooltip hidden">
+                            <span class="tooltiptext">Number of aditional audio channels created for the mixed
+                                stream</span>
+                            <label for="submixes">Submixes:</label><br>
+                            <input type="number" id="submixes" name="submixes" value="1"><br>
                         </div>
                         <div class="tooltip">
                             <span class="tooltiptext">Mixer Name to publish to, or leave empty to publish to the Red5
@@ -610,13 +651,104 @@
                 </form>
                 <br>
             </div>
-            <div class="media-list-container">
-                <h3 style="font-weight: bold;">Active Streams</h3>
-                <hr class="padded-hr">
-                <div class="list-holder" data-list="stream-list-container"></div>
+            <div class="column-container">
+                <br>
+                <p class="text-bold text-center">Add Streams To Mixer</p>
+                <div class="row-container padded">
+                    <p class="small-margin">Stream:
+                        <select id="active-streams-select">
+                            <option name="" selected></option>
+                        </select>
+                    </p>
+                    <p class="small-margin">Destination Mixer:
+                        <select id="destination-mixer-select">
+                            <option name="" selected></option>
+                        </select>
+                    </p>
+                    <input type="button" class="" value="Add to Mixer" onclick="addStreamToMixer()" />
+                </div>
+                <br>
+                <p class="text-bold text-center">Composition Settings</p>
+                <div id="videoControlTemplate" class="padded">
+                    <div class="row-container center-content">
+                        <p class="small-margin">Mixer:
+                            <select name="stream-name" id="mixer-control-select" onchange="mixerNameSelected();">
+                                <option name="" selected></option>
+                            </select>
+                        </p>
+                        <p class="small-margin" id="stream-name">Stream:
+                            <select name="stream-name" id="stream-control-select" onchange="updateUIFromNodeGraph()">
+                                <option name="" selected></option>
+                            </select>
+                        </p>
+                        <input type="button" class="" value="Remove" onclick="removeStreamFromMixer()" />
+                    </div>
+                    </br>
+                    <div class="main-controls-container">
+                        <div id="video-control">
+                            <p class="text-center text-bold ">Video Controls</p>
+                            <input type="color" id="bgColor" name="bgColor" value="#000000"
+                                oninput="updateMixerNodeGraph()"><label for="bgColor">Background Color</label>
+                            <div class="controls-container">
+                                <div class="padded">
+                                    <label>destX<br />
+                                        <input type="range" id="dest-x" name="destX" min="0" max="100" orient="vertical"
+                                            oninput="updateMixerNodeGraph()">
+                                    </label>
+                                </div>
+                                <div class="padded">
+                                    <label>destY<br />
+                                        <input type="range" id="dest-y" name="destY" min="0" max="100" orient="vertical"
+                                            oninput="updateMixerNodeGraph()">
+                                    </label>
+                                </div>
+                                <div class="padded">
+                                    <label>destW<br />
+                                        <input type="range" id="dest-width" name="destWidth" min="0" max="100"
+                                            orient="vertical" oninput="updateMixerNodeGraph()">
+                                    </label>
+                                </div>
+                                <div class="padded">
+                                    <label>destH<br />
+                                        <input type="range" id="dest-height" name="destHeight" min="0" max="100"
+                                            orient="vertical" oninput="updateMixerNodeGraph()">
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="audio-control">
+                            <p class="text-center text-bold ">Audio Controls</p>
+                            <div class="controls-container">
+                                <div class="padded">
+                                    <label>Pan<br />
+                                        <input type="range" id="pan" name="pan" min="-100" max="100" orient="horizontal"
+                                            class="panSlider" oninput="updateMixerNodeGraph()">
+                                    </label>
+                                </div>
+                                <br />
+                                <div class="padded">
+                                    <label>Volume<br />
+                                        <input type="range" id="gain" name="gain" min="-30" max="0" orient="vertical"
+                                            oninput="updateMixerNodeGraph()">
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <div class="mixer-container " data-mixer-id="mixer1">
+            <div class="stream-section">
+                {{> status-field-subscriber}}
+                {{> statistics-field packets_field='Packets Received'}}
+                <div class="centered">
+                    <p id="address-field" class="address-field">Edge Address: N/A</p>
+                </div>
+                <div class="centered">
+                    <video id="red5pro-subscriber" controls autoplay playsinline
+                        class="red5pro-subscriber red5pro-media red5pro-media-background" width="640" height="480">
+                    </video>
+                </div>
             </div>
         </div>
 
@@ -624,11 +756,10 @@
 
     </div>
     {{> body-scripts}}
+    <script src="streaming-utils.js"></script>
+    <script src="composition-utils.js"></script>
     <script src="../../script/red5pro-utils.js"></script>
     <script src="../../script/publisher-status.js"></script>
-    <!--<script src="util.js"></script>
-    <script src="sm-util.js"></script>-->
-    <!--<script src="publisher-status.js"></script>-->
     <script src="index.js"></script>
 </body>
 

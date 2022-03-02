@@ -23,9 +23,6 @@ NONINFRINGEMENT.   IN  NO  EVENT  SHALL INFRARED5, INC. BE LIABLE FOR ANY CLAIM,
 WHETHER IN  AN  ACTION  OF  CONTRACT,  TORT  OR  OTHERWISE,  ARISING  FROM,  OUT  OF  OR  IN CONNECTION 
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
-/**
- * Editor Page allows for compositing which live stream should be accessed by which Mixer for composing.
- */
 ((window, red5prosdk) => {
 
 
@@ -53,43 +50,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     return {}
   })();
 
-  const getRoomName = (context) => {
-    const splits = context.split('/')
-    if (splits.length > 1) {
-      splits.splice(0, 1)
-      return splits.join('/')
-    }
-
-    return context
-  }
-
-  const getAppName = (context) => {
-    const splits = context.split('/')
-    return splits[0]
-  }
-
-  const appName = getAppName(configuration.app)
-  const roomName = getRoomName(configuration.app)
-
-  var protocol = serverSettings.protocol;
-  var isSecure = protocol === 'https';
-  function getSocketLocationFromProtocol() {
-    return !isSecure
-      ? { protocol: 'ws', port: serverSettings.wsport }
-      : { protocol: 'wss', port: serverSettings.wssport };
-  }
-
-  var defaultConfiguration = {
-    protocol: getSocketLocationFromProtocol().protocol,
-    port: getSocketLocationFromProtocol().port,
-    streamMode: configuration.recordBroadcast ? 'record' : 'live'
-  }
-
-  const COUNT = 6
-
   const websocketEndpoint = configuration.mixerBackendSocketField
-  const red5ProHost = configuration.host
   const smToken = configuration.streamManagerAccessToken
+  // guid of the stream published by the final mixer, eg. live/stream1
+  // player subscribes to this
+  let compositeStreamDetails = {
+    path: null, streamName: null, width: null, height: null
+  }
 
   document.getElementById('streamName').value = configuration.stream1
   document.getElementById('mixerName').value = Math.floor(Math.random() * 0x1000000).toString(16)
@@ -123,10 +90,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   let existingCompositions = []
 
   const mainContainer = document.querySelector('.main-container')
-  const mediaListContainer = document.querySelector('.media-list-container')
-  const mixerContainer = document.querySelector('.mixer-container')
-  let slots = mixerContainer.querySelectorAll('.box')
-  const mixingPageSelector = document.getElementById('mixingPage-select')
+  //const mixerContainer = document.querySelector('.mixer-container')
+  const streamNameControlSelector = document.getElementById('stream-control-select')
+  const activeStreamsSelector = document.getElementById('active-streams-select')
+  const destinationMixerSelector = document.getElementById('destination-mixer-select')
+  const mixerControlSelector = document.getElementById('mixer-control-select')
+  //let slots = mixerContainer.querySelectorAll('.box')
 
   mainContainer.style['max-width'] = window.innerWidth
 
@@ -139,13 +108,52 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   let secureConnection = !isIPOrLocalhost
   let wsProtocol = isIPOrLocalhost ? 'ws' : 'wss'
   const baseWebSocketUrl = `${wsProtocol}://${websocketEndpoint}`
-
-  let slotWidth
-  let slotHeight
+  var protocol = serverSettings.protocol;
 
   let mixerSubscribers = {}
-  let switchableChannels = 0
 
+  const nodeGraphMap = {}
+
+  const defaultNodeGraph = {
+    "rootVideoNode": {
+      "node": "CompositorNode",
+      "nodes": [
+        {
+          "red": 0.0,
+          "green": 0.0,
+          "blue": 0.0,
+          "alpha": 1.0,
+          "node": "SolidColorNode"
+        }
+      ]
+    },
+    "rootAudioNode": {
+      "node": "SumNode",
+      "nodes": [
+      ]
+    }
+  }
+
+
+  const videoSourceNodeTemplate = {
+    "streamGuid": "live/stream1",
+    "sourceX": 0,
+    "sourceY": 0,
+    "sourceWidth": -1,
+    "sourceHeight": -1,
+    "destX": 160,
+    "destY": 120,
+    "destWidth": 320,
+    "destHeight": 240,
+    "node": "VideoSourceNode"
+  }
+
+  const audioSourceNodeTemplate = {
+    "streamGuid": "live/stream1",
+    "pan": 0.0,
+    "gain": 0.0,
+    "node": "AudioSourceNode"
+  }
 
   function getUserMediaConfiguration() {
     return {
@@ -156,31 +164,16 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     };
   }
 
-
-
-
-  /**
-   * Event listener for drag start on subscriber blocks.
-   */
-  const onDragStart = event => {
-    const {
-      target
-    } = event
-    event.dataTransfer.setData('text/plain', target.dataset.name)
-    event.dataTransfer.effectAllowed = 'move'
-  }
-
-  /**
-   * Event listener for drag over on subscriber blocks.
-   */
-  const onDragOver = event => {
-    const {
-      currentTarget
-    } = event
-    event.preventDefault()
-    event.dataTransfer.dropEffect = 'move'
-    currentTarget.classList.add('box-drag-over')
-  }
+  var updateStatusFromEvent = function (event) {
+    var subTypes = red5prosdk.SubscriberEventTypes;
+    switch (event.type) {
+      case subTypes.CONNECT_FAILURE:
+      case subTypes.SUBSCRIBE_FAIL:
+        shutdownVideoElement();
+        break;
+    }
+    window.red5proHandleSubscriberEvent(event); // defined in src/template/partial/status-field-subscriber.hbs
+  };
 
   // Generic container HTML element for the mixer subscriber block.
   const subscriberTemplate = `
@@ -194,103 +187,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     </div>
   </div>`
 
-
-  /**
-   * Event listener for drag out on subscriber blocks.
-   */
-  const onDragOut = event => {
-    const {
-      currentTarget
-    } = event
-    currentTarget.classList.remove('box-drag-over')
-  }
-
-  /**
-   * Event listener for drag drop on subscriber blocks.
-   */
-  const onDrop = event => {
-    const {
-      currentTarget,
-      dataTransfer
-    } = event
-    event.preventDefault()
-    const data = dataTransfer.getData('text/plain')
-    currentTarget.classList.remove('box-drag-over')
-    updateSlotsOnSwap(data, currentTarget)
-  }
-
-  /**
-   * Creates a list item displaying the provided stream name and
-   *  button to add it to a switchable channel.
-   */
-  const createListItem = name => {
-    const uid = Math.floor(Math.random() * 0x10000).toString(16)
-    const item = document.createElement('div')
-    const p = document.createElement('p')
-    const label = document.createTextNode(name)
-    p.appendChild(label)
-
-    item.appendChild(p)
-    //item.appendChild(divChannelAction)
-    item.dataset.name = name
-    item.classList.add('media-list-item')
-    item.draggable = true
-    item.ondragstart = onDragStart
-    return item
-  }
-
   function escape(str) {
     return (str + '').replace(/[/"']/g, '\\$&')
   }
 
-  /**
-   * Adds media label to target mixer box.
-   */
-  const addMediaToBox = (streamName, box) => {
-    const item = createListItem(streamName)
-    box.appendChild(item)
-  }
-
-  /**
-   * Removes media label from listing.
-   */
-  const removeMediaFromPrevious = name => {
-    console.log('remove from previous')
-    const item = mainContainer.querySelector(escape(`[data-name=${name}]`))
-    if (item && item.parentNode) {
-      // item is in `list-holder` 
-      const id = getSlotIdFromStreamName(name) //getIdFromStreamName(name)
-      item.parentNode.removeChild(item)
-      return id
-    }
-  }
-
-  /**
-  * Accesses the id based on the stream name and DOM elements.
-  */
-  const getSlotIdFromStreamName = name => {
-    const item = mainContainer.querySelector(escape(`[data-name=${name}]`))
-    if (item) {
-      // item is in `list-holder` 
-      const box = item.parentNode
-      return box.dataset.list || box.dataset.listId
-    }
-    return undefined
-  }
-
-  /**
-  * Returns the id of a Mixer that is composing a specific stream name.
-  */
-  const getMixerIdFromStreamName = name => {
-    const item = mainContainer.querySelector(escape(`[data-name=${name}]`))
-    if (item && item.parentNode) {
-      // mixerId assign to slot box.
-      // item is in a `list-holder` child of slot box.
-      const box = item.parentNode.parentNode
-      return box.dataset.mixerId || box.dataset['mixer-id']
-    }
-    return undefined
-  }
 
   ////////////
   // Stream List and Selection Logic
@@ -310,9 +210,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       streamsInRoom.forEach((stream) => streamNames.push(`${room}/${stream}`))
     })
 
-    console.log('current stream list', currentStreamListing)
+    //console.log('current stream list', currentStreamListing)
     const payload = compareLists(currentStreamListing, streamNames)
-    console.log(payload, currentStreamListing)
+    //console.log(payload, currentStreamListing)
     addStreams(payload.added)
     removeStreams(payload.removed)
 
@@ -321,7 +221,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       autoProvisionMixers(payload.added)
     }
 
-    console.log('new stream list', streamNames)
+    //console.log('new stream list', streamNames)
     currentStreamListing = streamNames
   }
 
@@ -331,37 +231,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       return
     }
 
-    console.log(compositeStreamToDestinationMixerName)
-    console.log(mixerNameToMixerBox)
-    streamsToAdd.forEach(stream => {
-      console.log(stream)
-      // if composite stream 
-      let slot
-      if (Object(compositeStreamToDestinationMixerName).hasOwnProperty(stream)) {
-        const destName = compositeStreamToDestinationMixerName[stream]
-        if (destName == "") {
-          console.log(`Skipping ${stream} because it is final composite stream`)
-          return
-        }
-
-        if (!mixerNameToMixerBox[destName]) {
-          console.log(`Could not find box for mixer ${destName}`)
-          return
-        }
-        slot = mixerNameToMixerBox[destName]
-        console.log(`adding ${stream} to ${destName}`)
-        updateSlotsOnSwap(stream, slot)
-        return
-      }
-
-      console.log(counter, mixerBoxes.length)
-      let nextMixer = parseInt(counter) % mixerBoxes.length
-      counter += 1
-      slot = mixerBoxes[nextMixer]
-      console.log(slot)
-      console.log(`adding ${stream} to ${nextMixer}`)
-      updateSlotsOnSwap(stream, slot)
-    })
+    // todo implement
   }
 
   // Simple list comparison.
@@ -384,35 +254,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
    */
   const addStreams = (streams) => {
     if (!streams) return
-    // add only streams that are not already in a mixer box 
-    // find streams already in mixer boxes (added by parsing the active composition message)
-    const mixerContainers = document.getElementsByClassName('mixer-container')
-    let mixerStreams = []
-    for (let i = 0; i < mixerContainers.length; i++) {
-      const items = mixerContainers.item(i).getElementsByClassName('media-list-item')
-      for (let j = 0; items && j < items.length; j++) {
-        const item = items[j]
-        const streamName = item.dataset.name
-        mixerStreams.push(streamName)
-      }
-    }
 
-    if (currentStreamListing.length == 0) {
-      mediaListContainer.querySelector('.list-holder').innerHTML = ''
-    }
-    const subscribers = streams.map(name => {
-      if (mixerStreams.indexOf(name) >= 0) {
-        console.log('Ignore stream ', name)
-        return null
-      }
-
-      return createListItem(name)
-    })
-
-    subscribers.forEach(item => {
-      if (item) {
-        mediaListContainer.querySelector('.list-holder').appendChild(item)
-      }
+    streams.forEach(name => {
+      addItemToSelector(activeStreamsSelector, name)
     })
   }
 
@@ -424,105 +268,138 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     console.log(`Remove streams: ${streams.join(',')}`)
     let removeMap = {}
     streams.forEach(name => {
-      const previousMixerId = getMixerIdFromStreamName(name)
-      removeMediaFromPrevious(name)
-      if (previousMixerId) {
-        if (!Object.hasOwnProperty.call(removeMap, 'previousMixerId')) {
-          removeMap[previousMixerId] = []
-        }
-        removeMap[previousMixerId].push(name)
-      }
+      // remove from active list 
+      removeItemFromSelector(activeStreamsSelector, name, false)
+      // remove from mixer stream selector if there 
+      removeItemFromSelector(streamNameControlSelector, name, false)
+
+      // todo inform mixer/update nodegraph 
     })
 
-    // post the update to the WebSocket server so it can forward it to the mixers
-    Object.keys(removeMap).forEach(key => {
-      const list = removeMap[key]
-      webSocket.send(JSON.stringify({
-        type: 'compositionUpdate',
-        event: compositionEventName,
-        list: [{
-          'cef-id': key,
-          remove: list
-        }]
-      }))
-    })
+    // remove from active list selector if stream was there 
+    //removeItemsFromSelector(activeStreamsSelector, streams)
+    // TODO remove from mixers if there instead 
+
   }
 
   /*
   * Destroys a composition and associated UI
   */
   window.destroyComposition = () => {
-    const selectedValue = selectBox.options[selectBox.selectedIndex].value;
-    if (selectedValue != '') {
-      const payload = {
-        'type': 'destroyComposition',
-        'event': selectedValue
+    const eventName = selectBox.options[selectBox.selectedIndex].value;
+    if (eventName != '') {
+      deleteComposition(eventName, smToken)
+        .then(response => {
+          console.log(`Composition ${eventName} deleted`)
+
+          // clean up selectors
+          removeAllItemsFromSelector(destinationMixerSelector, true)
+          removeAllItemsFromSelector(mixerControlSelector, true)
+          removeAllItemsFromSelector(streamNameControlSelector, true)
+          removeItemFromSelector(selectBox, eventName, true)
+
+          // clean up
+          eventStateText.innerHTML = ''
+          destroyCompositionButton.disabled = true
+        })
+        .catch(error => console.warn(error))
+    }
+  }
+
+  window.addStreamToMixer = () => {
+    const streamName = activeStreamsSelector.options[activeStreamsSelector.selectedIndex].value;
+    const mixerId = destinationMixerSelector.options[destinationMixerSelector.selectedIndex].value;
+    if (streamName != '' && mixerId != '') {
+
+      let mixerNodeGraph = nodeGraphMap[mixerId]
+      if (!mixerNodeGraph) {
+        console.log(`Could not find node graph for mixer ${mixerId}`)
+        return
       }
-      webSocket.send(JSON.stringify(payload))
 
-      // move streams from mixers to main list 
-      const streamItems = mixerContainer.getElementsByClassName('media-list-item')
-      if (streamItems) {
-        const destinationSlot = document.getElementsByClassName('list-holder').item(0)
-        let i = streamItems.length - 1
-        while (i >= 0) {
-          updateSlotsOnSwap(streamItems.item(i).dataset.name, destinationSlot, false)
-          i = streamItems.length - 1
-        }
+      let updatedMixerNodeGraph = JSON.parse(JSON.stringify(mixerNodeGraph))
+      let videoNode = JSON.parse(JSON.stringify(videoSourceNodeTemplate))
+      videoNode.streamGuid = streamName
+      updatedMixerNodeGraph.rootVideoNode.nodes.push(videoNode)
+
+      let audioNodes = updatedMixerNodeGraph.rootAudioNode.nodes
+      let matches = audioNodes.filter(node => node.streamGuid === streamName)
+      let audioNode
+      if (matches.length <= 0) {
+        audioNode = JSON.parse(JSON.stringify(audioSourceNodeTemplate))
+        audioNode.streamGuid = streamName
+        audioNodes.push(audioNode)
+      } else {
+        audioNode = matches[0]
+      }
+      // unmuted - gain(-100,0)
+      audioNode.gain = 0
+
+      updateNodeGraphInMixer(compositionEventName, updatedMixerNodeGraph, smToken)
+        .then(result => {
+          console.log(`Successfully updated node graph for composition ${compositionEventName}`)
+          nodeGraphMap[mixerId] = updatedMixerNodeGraph
+          refreshStreamNamesInStreamControlSelector()
+        })
+        .catch(error => console.log(`could not update node graph for composition ${compositionEventName}: `, error))
+        .finally(() => console.log('current node graphs', nodeGraphMap))
+    }
+  }
+
+  window.removeStreamFromMixer = () => {
+    const streamName = streamNameControlSelector.options[streamNameControlSelector.selectedIndex].value;
+    const mixerId = mixerControlSelector.options[mixerControlSelector.selectedIndex].value;
+    if (streamName != '' && mixerId != '') {
+
+      let mixerNodeGraph = nodeGraphMap[mixerId]
+      if (!mixerNodeGraph) {
+        console.log(`Could not find node graph for mixer ${mixerId}`)
+        return
       }
 
-      // clean up
-      mixerContainer.innerHTML = ''
-      eventStateText.innerHTML = ''
-      const emptyOption = selectBox.childNodes.item(0)
-      selectBox.innerHTML = ''
-      selectBox.appendChild(emptyOption)
+      console.log(streamName, 'current', mixerNodeGraph)
+      let updatedMixerNodeGraph = JSON.parse(JSON.stringify(mixerNodeGraph))
+      // remove video 
+      updatedMixerNodeGraph.rootVideoNode.nodes = updatedMixerNodeGraph.rootVideoNode.nodes.filter(node => node.streamGuid != streamName)
+      // remove audio 
+      updatedMixerNodeGraph.rootAudioNode.nodes = updatedMixerNodeGraph.rootAudioNode.nodes.filter(node => node.streamGuid != streamName)
 
-      destroyCompositionButton.disabled = true
+      console.log('updated', updatedMixerNodeGraph)
+      updateNodeGraphInMixer(compositionEventName, updatedMixerNodeGraph, smToken)
+        .then(result => {
+          console.log(`Successfully updated node graph for composition ${compositionEventName}`)
+          nodeGraphMap[mixerId] = updatedMixerNodeGraph
+          refreshStreamNamesInStreamControlSelector()
+        })
+        .catch(error => console.log(`could not update node graph for composition ${compositionEventName}: `, error))
+        .finally(() => console.log('current node graphs', nodeGraphMap))
     }
   }
 
   /*
   * Updates the UI based on the composition selected from a drop down list 
   */
-  window.compositionSelected = () => {
+  window.compositionNameSelected = () => {
     const selectedValue = selectBox.options[selectBox.selectedIndex].value;
 
     if (selectedValue != '') {
       compositionEventName = selectedValue
-      // clean up
-      const emptyOption = selectBox.childNodes.item(0)
-      selectBox.innerHTML = ''
-      selectBox.appendChild(emptyOption)
-      mixerContainer.innerHTML = ''
-      currentStreamListing = []
-      requestActiveStreams()
-      // get updated list
-      requestActiveCompositions()
+      fetchCompositionData(compositionEventName, smToken)
+        .then(data => {
+          // TODO TODO get node graphs and build UI
+        })
+        .catch(error => console.warn(error))
     }
     else {
       // clean up
       compositionEventName = null
       activeComposition = null
-      mixerContainer.innerHTML = ''
       eventStateText.innerHTML = ''
       destroyCompositionButton.disabled = true
       currentStreamListing = []
-      //mediaListContainer.querySelector('.list-holder').innerHTML = ''
       // get updated list
       requestActiveStreams()
     }
-  }
-
-  /*
-  * Request active compositions from WebSocket server
-  */
-  const requestActiveCompositions = () => {
-    const payload = {
-      'type': 'getActiveCompositions'
-    }
-
-    webSocket.send(JSON.stringify(payload))
   }
 
   /*
@@ -536,149 +413,70 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     webSocket.send(JSON.stringify(payload))
   }
 
-  /**
-   * Parses the activeCompositions messages from the websocket and updates the UI.
-   */
-  const parseCompositions = (json) => {
-    existingCompositions = []
-    const emptyOption = document.createElement('option')
-    const filtered = json.list ? json.list.filter(comp => {
-      if (existingCompositions.length == 0) {
-        selectBox.innerHTML = ''
-        emptyOption.value = ''
-        selectBox.appendChild(emptyOption)
-      }
-
-      existingCompositions.push(comp.event)
-      const option = document.createElement('option')
-      option.value = comp.event
-      option.innerHTML = comp.event
-
-      if (comp.event == compositionEventName) {
-        option.selected = true
-        destroyCompositionButton.disabled = false
-      }
-      selectBox.appendChild(option)
-      return comp.event === compositionEventName
-    }) : []
-
-    if (filtered.length > 0) {
-      const composition = filtered[0]
-      if (activeComposition == null) {
-        activeComposition = composition
-        numberOfMixers = composition.mixers.length
-      }
-
-      //const compositionContext = composition.context
-      const mixers = composition.mixers
-      const mixerObj = []
-      let areAllConnected = true
-      mixers.forEach((mixer) => {
-        const state = mixer.state
-        if (state === 'disconnected') {
-          areAllConnected &= false
-        }
-        mixerObj.push({ id: mixer.id, mixerName: mixer.mixerName, context: mixer.path, name: mixer.streamName, destinationMixerName: mixer.destinationMixerName })
-      })
-
-      const htmlEventStateText = document.getElementById('event-state')
-      htmlEventStateText.innerHTML = areAllConnected ? 'State: Composing' : 'State: Pending'
-      if (mixerContainer.children.length <= 0) {
-        createMixerBoxes(mixerObj)
-        resizeSlots()
-      }
-
-      updateSlotStreams(mixers)
-    }
-  }
-
   // Uncomment to test auto provision of streams to composition
-  // setTimeout(() => {
-  //   compositionEventName = "event1"
-  //   if (!webSocket) {
-  //     webSocket = {
-  //       send: () => {
-  //         console.log('send')
-  //       }
-  //     }
-  //   }
-  //   const comp = {
-  //     "type": "activeCompositions", "list": [
-  //       {
-  //         "event": "event1", "transcodeComposition": false, "digest": "password", "location": ["nyc1"],
-  //         "mixers": [
-  //           {
-  //             "id": "red5pro-sm-node-nyc1-0634836652196", "mixerName": "a", "location": "nyc1",
-  //             "mixingPage": "hh/2x2/",
-  //             "streamName": "final", "path": "live", "destinationMixerName": "", "serverAddress": "",
-  //             "destination": "", "width": 1280, "height": 720, "framerate": 30, "bitrate": 1500,
-  //             "doForward": true, "state": "INSERVICE", "streams": { "muted": [], "unmuted": [] }
-  //           },
-  //           {
-  //             "id": "red5pro-sm-node-nyc1-2634836652196", "mixerName": "b", "location": "nyc1",
-  //             "mixingPage": "hh/3x3/",
-  //             "streamName": "b", "path": "live", "destinationMixerName": "a", "serverAddress": "",
-  //             "destination": "a", "width": 1280, "height": 720, "framerate": 30, "bitrate": 1500,
-  //             "doForward": true, "state": "INSERVICE", "streams": { "muted": [], "unmuted": [] }
-  //           },
-  //           {
-  //             "id": "red5pro-sm-node-nyc1-3634836652196", "mixerName": "c", "location": "nyc1",
-  //             "mixingPage": "hh/2x2/",
-  //             "streamName": "c", "path": "live", "destinationMixerName": "a", "serverAddress": "",
-  //             "destination": "a", "width": 1280, "height": 720, "framerate": 30, "bitrate": 1500,
-  //             "doForward": true, "state": "INSERVICE", "streams": { "muted": [], "unmuted": [] }
-  //           }]
-  //       }]
-  //   }
-  //   parseCompositions(comp)
+  setTimeout(() => {
+    compositionEventName = "event1"
+    if (!webSocket) {
+      webSocket = {
+        send: () => {
+          console.log('send')
+        }
+      }
+    }
+    /*const comp = {
+      "type": "activeCompositions", "list": [
+        {
+          "event": "event1", "transcodeComposition": false, "digest": "password", "location": ["nyc1"],
+          "mixers": [
+            {
+              "id": "red5pro-sm-node-nyc1-0634836652196", "mixerName": "a", "location": "nyc1",
+              "streamName": "final", "path": "live", "destinationMixerName": "", "serverAddress": "",
+              "destination": "", "width": 1280, "height": 720, "framerate": 30, "bitrate": 1500,
+              "doForward": true, "state": "INSERVICE", "streams": { "muted": [], "unmuted": [] }
+            },
+            {
+              "id": "red5pro-sm-node-nyc1-2634836652196", "mixerName": "b", "location": "nyc1",
+              "streamName": "b", "path": "live", "destinationMixerName": "a", "serverAddress": "",
+              "destination": "a", "width": 1280, "height": 720, "framerate": 30, "bitrate": 1500,
+              "doForward": true, "state": "INSERVICE", "streams": { "muted": [], "unmuted": [] }
+            },
+            {
+              "id": "red5pro-sm-node-nyc1-3634836652196", "mixerName": "c", "location": "nyc1",
+              "streamName": "c", "path": "live", "destinationMixerName": "a", "serverAddress": "",
+              "destination": "a", "width": 1280, "height": 720, "framerate": 30, "bitrate": 1500,
+              "doForward": true, "state": "INSERVICE", "streams": { "muted": [], "unmuted": [] }
+            }]
+        }]
+    }
+    parseCompositions(comp)*/
 
-  //   let count = 0
-  //   let streams = []
-  //   let sNames = ['final', 'b', 'c', 'n1', 'n2', 'n3', 'b2', 'c2', 'n12', 'n22', 'n32']
-  //   let interval = setInterval(() => {
-  //     console.log('run interval')
-  //     if (count <= 15) {
-  //       streams.push(sNames.at(count))
-  //     } else {
-  //       console.log('clear stream ', streams.at(streams.length - 1))
-  //       streams.splice(streams.length - 3, 3)
-  //     }
-  //     count++
-  //     const mockActiveStreams = { "type": "activeStreams", "list": [{ "room": "/live", streams }] }
-  //     try {
-  //       parseStreams(mockActiveStreams)
-  //     } catch (e) {
+    let count = 0
+    let streams = []
+    let sNames = ['final', 'b', 'c', 'n1', 'n2', 'n3', 'b2', 'c2', 'n12', 'n22', 'n32']
+    let interval = setInterval(() => {
+      //console.log('run interval')
+      if (count <= 15) {
+        streams.push(sNames.at(count))
+      } else {
+        //console.log('clear stream ', streams.at(streams.length - 1))
+        streams.splice(streams.length - 3, 3)
+      }
+      count++
+      const mockActiveStreams = { "type": "activeStreams", "list": [{ "room": "/live", streams }] }
+      try {
+        parseStreams(mockActiveStreams)
+      } catch (e) {
 
-  //     }
-  //     console.log('count: ', count)
-  //     if (count > 16) {
-  //       console.log('clear interval')
-  //       clearInterval(interval)
-  //       //destroyComposition()
-  //     }
-  //   }, 1000)
-  // }, 3000)
+      }
+      //console.log('count: ', count)
+      if (count > 16) {
+        //console.log('clear interval')
+        clearInterval(interval)
+        //destroyComposition()
+      }
+    }, 1000)
+  }, 3000)
 
-  /*
-  * Launch a mixer subscriber using the given configuration
-  */
-  const subscribe = async (mixerId, rtcConfig) => {
-
-    const rtcSubscriber = new red5prosdk.RTCSubscriber()
-    console.log(rtcConfig)
-    rtcSubscriber.init(rtcConfig)
-      .then(function () {
-        rtcSubscriber.subscribe();
-      })
-      .then(function () {
-        console.log('Playing!');
-        mixerSubscribers[mixerId] = rtcSubscriber
-      })
-      .catch(function (err) {
-        console.log('Could not play: ' + err);
-        subscribeRetry(3000, mixerId, rtcConfig)
-      });
-  }
 
   /*
   * Returns the URL to use to check for stream availability
@@ -697,184 +495,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
     return `http://${host}:5080/live/streams.jsp`
 
-  }
-
-  /*
-  * Retries to subscribe after timeout
-  */
-  const subscribeRetry = (wait, mixerId, config) => {
-    window.setTimeout((mixerId, config) => {
-      subscribe(mixerId, config)
-    }, wait, mixerId, config)
-  }
-
-  /**
-     * Adds streams to target mixer slots.
-     */
-  const updateSlotStreams = (mixers) => {
-    slots.forEach((slot, index) => {
-      // update mixer Online/Offline state
-      const state = mixers[index].isWebSocketConnected ? 'Online' : 'Offline'
-      const p = slot.querySelector('.mixer-name-and-state')
-      p.innerHTML = p.innerHTML.substring(0, p.innerHTML.indexOf('-')) + '- ' + state
-
-      const mixerId = mixers[index].id
-      let mutedStreamNames = []
-      let unmutedStreamNames = []
-      if (Object.hasOwnProperty.call(mixers[index], 'streams')) {
-        if (Object.hasOwnProperty.call(mixers[index].streams, 'muted')) {
-          mutedStreamNames = mixers[index].streams.muted
-        }
-        if (Object.hasOwnProperty.call(mixers[index].streams, 'unmuted')) {
-          unmutedStreamNames = mixers[index].streams.unmuted
-        }
-      }
-
-      console.log(`UPDATE ${mixerId}, with muted streams ${mutedStreamNames.join(',')} and unmuted streams ${unmutedStreamNames.join(',')}`)
-      const mutedList = slot.querySelector('.list-holder-muted')
-      const unmutedList = slot.querySelector('.list-holder-unmuted')
-      mutedStreamNames.forEach(streamName => {
-        let exists = mutedList.querySelector(escape(`[data-name=${streamName}]`))
-        if (!exists || exists.length === 0) {
-          removeMediaFromPrevious(streamName)
-          addMediaToBox(streamName, mutedList)
-        }
-      })
-      unmutedStreamNames.forEach(streamName => {
-        let exists = unmutedList.querySelector(escape(`[data-name=${streamName}]`))
-        if (!exists || exists.length === 0) {
-          removeMediaFromPrevious(streamName)
-          addMediaToBox(streamName, unmutedList)
-        }
-      })
-    })
-  }
-
-  /**
-   * Update the slots and listings.
-   */
-  const updateSlotsOnSwap = (streamName, slot, notifyWebSocket = true) => {
-    console.log('updateSlotsOnSwap: update ', streamName, 'to', slot)
-    const parentBox = slot.parentNode
-    const mixerId = parentBox.dataset.mixerId || parentBox.dataset['mixer-id']
-    const slotId = slot.dataset.listId || slot.dataset['list-id']
-    let isMuted = false
-    if (slot && slot.classList.contains('list-holder-muted')) {
-      isMuted = true
-    }
-
-    const currentSlotId = getSlotIdFromStreamName(streamName)
-    if (slotId === currentSlotId) {
-      return
-    }
-
-    if (!canAdd(streamName, mixerId, slot)) {
-      alert(`Mixer ${mixerId} is at maximum capacity`)
-      return
-    }
-
-    const previousMixerId = getMixerIdFromStreamName(streamName)
-    removeMediaFromPrevious(streamName)
-    addMediaToBox(streamName, slot)
-    let updateList = []
-    if (slotId) {
-      let add = []
-      let mute = []
-      let unmute = []
-      if (mixerId != previousMixerId) {
-        add = [streamName]
-      }
-
-      if (isMuted) {
-        mute.push(streamName)
-      }
-      else {
-        unmute.push(streamName)
-      }
-
-      updateList.push({
-        'cef-id': mixerId,
-        add,
-        mute,
-        unmute
-      })
-    }
-    if (previousMixerId && slotId != previousMixerId && previousMixerId != 'stream-list-container') {
-      let remove = []
-      if (mixerId != previousMixerId) {
-        remove = [streamName]
-      }
-      updateList.push({
-        'cef-id': previousMixerId,
-        remove
-      })
-    }
-
-    if (notifyWebSocket) {
-      webSocket.send(JSON.stringify({
-        type: 'compositionUpdate',
-        event: compositionEventName,
-        list: updateList
-      }))
-    }
-  }
-
-  const canAdd = (streamName, destinationMixerId, slot) => {
-    const mixers = activeComposition.mixers
-    const mixerGridLimit = {}
-    mixers.forEach(mixer => {
-      if (mixer.mixingPage.indexOf('2x2') >= 0) {
-        mixerGridLimit[mixer.id] = 4
-      } else if (mixer.mixingPage.indexOf('3x3') >= 0) {
-        mixerGridLimit[mixer.id] = 9
-      }
-    })
-
-    console.log('Found grid limits: ', mixerGridLimit)
-    const streamsInComposition = slot.parentNode.getElementsByClassName('media-list-item')
-    console.log('Streams already in this mixer', streamsInComposition)
-    // if already present then add as its switching between mute/unmute
-    for (let i = 0; i < streamsInComposition.length; i++) {
-      if (streamsInComposition.item(i).dataset.name == streamName) {
-        return true
-      }
-    }
-
-    return !(mixerGridLimit[destinationMixerId] && mixerGridLimit[destinationMixerId] <= streamsInComposition.length)
-  }
-
-  /**
-   * Resizes each slot on change to window dimensions.
-   */
-  const resizeSlots = () => {
-    const width = window.innerWidth
-    const height = window.innerHeight
-
-    const rows = 4
-    //const rows = Math.ceil(slots.length / 3)
-    if (width > height) {
-      slotHeight = height / Math.ceil(COUNT / rows)
-      slotWidth = height / rows
-    } else {
-      slotWidth = width / rows
-      slotHeight = height / Math.ceil(COUNT / rows)
-    }
-
-    //console.log(`Screen ${ width }x${ height }`)
-    //console.log('New slot width ' + slotWidth)
-    //console.log('New slot height ' + slotHeight)
-    slots.forEach(slot => {
-      //slot.style.height = `${slotHeight}px`
-      const list = slot.querySelector('.list-holder')
-      if (list) list.style.height = `${slotHeight - 20}px`
-      const mutedList = slot.querySelector('.list-holder-muted')
-      if (mutedList) mutedList.style.height = `${slotHeight / 2}px`
-      const unmutedList = slot.querySelector('.list-holder-unmuted')
-      if (unmutedList) unmutedList.style.height = `${slotHeight / 2}px`
-    })
-
-    const containerWidth = rows == 1 ? `${slotWidth * rows}px` : `${slotWidth * 3}px`
-    //mixerContainer.style.width = `${slotWidth * 2}px`
   }
 
   /**
@@ -896,9 +516,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
       if (json.type === 'activeStreams') {
         parseStreams(json)
-      }
-      else if (json.type === 'activeCompositions') {
-        parseCompositions(json)
       } else if (json.type === 'mixerRegions') {
         parseMixerRegions(json.regions)
         return
@@ -930,18 +547,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     })
   }
 
-  const getMixingPageFromSelector = (selection) => {
-    if (selection === '2x2') {
-      return `https://${red5ProHost}/webrtcexamples/sample-mixer-pages/2x2/index.html?sm=true&app=${appName}&ws=${websocketEndpoint}`
-    }
-    else if (selection === '3x3') {
-      return `https://${red5ProHost}/webrtcexamples/sample-mixer-pages/3x3/index.html?sm=true&app=${appName}&ws=${websocketEndpoint}`
-    }
-    else {
-      return `https://${red5ProHost}/webrtcexamples/sample-mixer-pages/nxn/index.html?sm=true&app=${appName}&ws=${websocketEndpoint}`
-    }
-  }
-
   const isValidString = (string) => {
     return string.length <= 255 && !!string.match(/^[\/0-9-_A-Za-z]+$/)
   }
@@ -951,29 +556,26 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     if (e.preventDefault) e.preventDefault();
 
     const mixerName = document.getElementById('mixerName').value
-    //let mixingPage = document.getElementById('mixingPage').value
     const path = document.getElementById('scope').value
     const streamName = document.getElementById('streamName').value
     const width = String(document.getElementById('width').value)
     const height = String(document.getElementById('height').value)
     const framerate = document.getElementById('framerate').value
     const bitrate = document.getElementById('bitrate').value
+    const audioSampleRate = document.getElementById('sample-rate').value
+    const audioChannels = document.getElementById('audio-channels').value
+    const submixes = document.getElementById('submixes').value
     const destinationMixerName = document.getElementById('destinationMixerName').value
     const doForward = true
-    let mixingPage = getMixingPageFromSelector(mixingPageSelector.options[mixingPageSelector.selectedIndex].value)
 
     if (mixerName === '' || path === '' || streamName === '' ||
-      width === '' || height === '' || framerate === '' || bitrate === '') {
+      width === '' || height === '' || framerate === '' || bitrate === '' || audioSampleRate === ''
+      || audioChannels === '' || submixes === '') {
       alert('Invalid data found in Create Mixer Objects form. Only "Destination Mixer Name" can be left empty.')
       return
     } else if (streamName.indexOf('.') >= 0) {
       alert('Stream Name cannot contain periods (.)')
       return
-    }
-
-    // this will inform the page that it is the final layer so the page can adapt as needed  
-    if (mixers.length > 0 && destinationMixerName == "") {
-      mixingPage = `${mixingPage}&layer=final`
     }
 
     if (!isValidString(mixerName) || !isValidString(path) || !isValidString(streamName)) {
@@ -988,13 +590,15 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
     const mixerObj = {
       mixerName,
-      mixingPage,
-      streamName,
       path,
+      streamName,
       width,
       height,
       framerate,
       bitrate,
+      audioSampleRate,
+      audioChannels,
+      submixes,
       doForward,
       destinationMixerName
     }
@@ -1005,13 +609,15 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         <div class="content" id="${id}-content">
           <p>
           Mixer Name: ${mixerName}<br>
-          Mixing Page: ${mixingPage}<br>
           Scope: ${path}<br>
           Stream Name: ${streamName}<br>
           Width: ${width}<br>
           Height: ${height}<br>
           Framerate: ${framerate}<br>
-          bitrate: ${bitrate}<br>
+          Bitrate: ${bitrate}<br>
+          Audio Sample Rate: ${audioSampleRate}<br>
+          Audio Channels: ${audioChannels}<br>
+          Submixes: ${submixes}<br>
           Forward? ${doForward}<br>
           Destination Mixer Name: ${destinationMixerName}<br>
           </p>
@@ -1046,16 +652,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     return false;
   }
 
-  function isStringAValidUrl(string) {
-    try {
-      new URL(string);
-    } catch (e) {
-      return false;
-    }
-
-    return true;
-  }
-
   /*
    * Posts a create composition message to the WebSocket server with the 
    * data provided by the user. The server will forward the data to the Stream 
@@ -1078,8 +674,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     try {
       location = selector.options[selector.selectedIndex].value;
     } catch (error) {
-      alert(`Mixer Region not found. Make sure your environment has available Mixer nodes`)
-      return
+      location = 'nyc3'
+      /// TODO TODO REMOVE
+      // alert(`Mixer Region not found. Make sure your environment has available Mixer nodes`)
+      //return
     }
 
     if (mixers.length <= 0) {
@@ -1097,13 +695,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
     numberOfMixers = mixers.length
 
-    // add event-id so we can identify what event a mixer is handling
-    mixers.forEach(mixer => {
-      mixer.mixingPage = `${mixer.mixingPage}&event-id=${eventName}`
-    })
-
     const createCompositionMessage = {
-      type: 'createComposition',
       event: eventName,
       digest,
       transcodeComposition,
@@ -1111,114 +703,388 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       location: [location]
     }
 
-    webSocket.send(JSON.stringify(createCompositionMessage))
+    eventStateText.innerHTML = `State: Pending`
+    createCompositionOnStreamManager(createCompositionMessage, smToken)
+      .then(data => {
+        compositionEventName = eventName
+        eventStateText.innerHTML = `State: Creating Node Graph`
+        addItemToSelector(selectBox, compositionEventName)
+        selectItemInSelector(selectBox, compositionEventName)
+        destroyCompositionButton.disabled = false
+        createCompositionUI(data)
+        return provisionMixers(data)
+      })
+      .then(response => {
+        console.log(`Provisioned mixers`)
+        eventStateText.innerHTML = `State: Composing`
+        subscribeToMixedStream(compositeStreamDetails.path, compositeStreamDetails.streamName)
+      })
+      .catch((error) => {
+        console.error('Error:', error);
+        eventStateText.innerHTML = `State: Failed`
+      })
+
     console.log('create composition message submitted')
     console.log(createCompositionMessage)
 
-    compositionEventName = eventName
-    eventStateText.innerHTML = `State: Pending`
-
-    //document.getElementById('create-composition-form').reset()
-    //document.getElementById('create-mixers-form').reset()
     mixers = []
     document.getElementById('mixers').innerHTML = ''
-    //mixingPage.value = `https://${red5ProHost}/webrtcexamples/sample-mixer-pages/3x3/index.html?sm=true&app=${appName}&ws=${websocketEndpoint}`
-    //document.getElementById('streamName').value = configuration.stream1
 
     // return false to prevent the default form behavior
     return false;
   }
 
-  /*
-  * Creates the UI for the Mixer boxes
-  */
-  const mixerBoxes = []
-  const mixerNameToMixerBox = {}
-  const compositeStreamToDestinationMixerName = {}
-  const createMixerBoxes = (mixerObjs) => {
-    for (let i = 0; i < mixerObjs.length; i++) {
-      let unmutedPElement = document.createElement('p')
-      unmutedPElement.innerHTML = `Unmuted Streams:`
-      let unmutedListHolderElement = document.createElement('div')
-      unmutedListHolderElement.classList.add('list-holder-unmuted')
-      unmutedListHolderElement.dataset.listId = Math.floor(Math.random() * 0x1000000).toString(16)
+  // https://stackoverflow.com/questions/14603205/how-to-convert-hex-string-into-a-bytes-array-and-a-bytes-array-in-the-hex-strin
+  function hexToBytes(hex) {
+    for (var bytes = [], c = 0; c < hex.length; c += 2)
+      bytes.push(parseInt(hex.substr(c, 2), 16));
+    return bytes;
+  }
 
-      let mutedPElement = document.createElement('p')
-      mutedPElement.innerHTML = `Muted Streams:`
-      let mutedListHolderElement = document.createElement('div')
-      mutedListHolderElement.classList.add('list-holder-muted')
-      mutedListHolderElement.dataset.listId = Math.floor(Math.random() * 0x1000000).toString(16)
+  function bytesToHex(bytes) {
+    for (var hex = [], i = 0; i < bytes.length; i++) {
+      var current = bytes[i] < 0 ? bytes[i] + 256 : bytes[i];
+      hex.push((current >>> 4).toString(16));
+      hex.push((current & 0xF).toString(16));
+    }
+    return hex.join("");
+  }
 
-      let pElement = document.createElement('p')
-      pElement.style['font-weight'] = 'bold'
-      pElement.id = mixerObjs[i].id
-      pElement.classList.add('mixer-name-and-state')
-      pElement.innerHTML = `Mixer ${mixerObjs[i].mixerName} - Offline`
+  window.updateMixerNodeGraph = () => {
+    const streamName = streamNameControlSelector.options[streamNameControlSelector.selectedIndex].value;
+    const mixerId = mixerControlSelector.options[mixerControlSelector.selectedIndex].value;
+    if (streamName != '' && mixerId != '') {
+      let mixerNodeGraph = nodeGraphMap[mixerId]
+      if (!mixerNodeGraph) {
+        console.log(`Could not find node graph for mixer ${mixerId}`)
+        return
+      }
 
-      let divElement = document.createElement('div')
-      divElement.classList.add('box')
-      divElement.classList.add('a')
-      divElement.dataset.mixerId = mixerObjs[i].id
-      divElement.append(pElement)
-      divElement.appendChild(unmutedPElement)
-      divElement.appendChild(unmutedListHolderElement)
-      divElement.appendChild(mutedPElement)
-      divElement.appendChild(mutedListHolderElement)
+      let updatedMixerNodeGraph = JSON.parse(JSON.stringify(mixerNodeGraph))
+      // background color to SolidColorNode
+      const bytes = hexToBytes(document.getElementById("bgColor").value.substring(1));
+      const solidColorNodes = updatedMixerNodeGraph.rootVideoNode.nodes.filter(node => node.node == 'SolidColorNode')
+      if (solidColorNodes.length > 0) {
+        solidColorNodes[0].red = bytes[0] / 255.0;
+        solidColorNodes[0].green = bytes[1] / 255.0;
+        solidColorNodes[0].blue = bytes[2] / 255.0;
+        solidColorNodes[0].alpha = 1.0;
+      }
 
-      mixerContainer.appendChild(divElement)
-      compositeStreamToDestinationMixerName[`/${mixerObjs[i].context}/${mixerObjs[i].name}`] = mixerObjs[i].destinationMixerName
-      mixerNameToMixerBox[mixerObjs[i].mixerName] = unmutedListHolderElement
-      if (mixerObjs.length <= 1 || mixerObjs[i].destinationMixerName != "") {
-        mixerBoxes.push(unmutedListHolderElement)
+      const videoNodes = updatedMixerNodeGraph.rootVideoNode.nodes.filter(node => node.node == 'VideoSourceNode' && node.streamGuid == streamName)
+      if (videoNodes.length > 0) {
+        // 0-100% of composite stream resolution
+        let w = compositeStreamDetails.width
+        let h = compositeStreamDetails.height
+        let destX = (document.getElementById('dest-x').value / 100) * w
+        let destY = (document.getElementById('dest-y').value / 100) * h
+        // size cannot be larger than composite stream resolution
+        let destWidth = Math.min(w, (document.getElementById('dest-width').value / 100) * w)
+        let destHeight = Math.min(h, (document.getElementById('dest-height').value / 100) * h)
+        // force entire stream to stay in view
+        destX = Math.min(w - destWidth, destX)
+        destY = Math.min(h - destHeight, destY)
+
+        videoNodes[0].destX = destX
+        videoNodes[0].destY = destY
+        videoNodes[0].destWidth = destWidth
+        videoNodes[0].destHeight = destHeight
+      }
+
+      const audioNodes = updatedMixerNodeGraph.rootAudioNode.nodes.filter(node => node.node == 'AudioSourceNode' && node.streamGuid == streamName)
+      if (audioNodes.length > 0) {
+        audioNodes[0].pan = document.getElementById('pan').value;
+        audioNodes[0].gain = document.getElementById('gain').value;
+      }
+
+      console.log(videoNodes, audioNodes, updatedMixerNodeGraph)
+      updateNodeGraphInMixer(compositionEventName, updatedMixerNodeGraph, smToken)
+        .then(result => {
+          console.log(`Successfully updated node graph for composition ${compositionEventName}`)
+          nodeGraphMap[mixerId] = updatedMixerNodeGraph
+        })
+        .catch(error => console.log(`could not update node graph for composition ${compositionEventName}: `, error))
+        .finally(() => console.log('current node graphs', nodeGraphMap))
+    }
+  }
+
+  window.updateUIFromNodeGraph = () => {
+    const streamName = streamNameControlSelector.options[streamNameControlSelector.selectedIndex].value;
+    const mixerId = mixerControlSelector.options[mixerControlSelector.selectedIndex].value;
+    console.log('updateUIFromNodeGraph', streamName, mixerId)
+    if (streamName != '' && mixerId != '') {
+      let mixerNodeGraph = nodeGraphMap[mixerId]
+      if (!mixerNodeGraph) {
+        console.log(`Could not find node graph for mixer ${mixerId}`)
+        return
+      }
+
+      // background color from node SolidColorNode
+      const solidColorNodes = mixerNodeGraph.rootVideoNode.nodes.filter(node => node.node == 'SolidColorNode')
+      if (solidColorNodes.length > 0) {
+        let r = Math.floor(solidColorNodes[0].red * 255.0);
+        let g = Math.floor(solidColorNodes[0].green * 255.0);
+        let b = Math.floor(solidColorNodes[0].blue * 255.0);
+        var hex = bytesToHex([r, g, b]);
+        document.getElementById("bgColor").value = "#" + hex;
+      }
+
+      const videoNodes = mixerNodeGraph.rootVideoNode.nodes.filter(node => node.node == 'VideoSourceNode' && node.streamGuid == streamName)
+      if (videoNodes.length > 0) {
+        // 0-100% of composite stream resolution
+        let w = compositeStreamDetails.width
+        let h = compositeStreamDetails.height
+        document.getElementById('dest-x').value = (videoNodes[0].destX / w) * 100;
+        document.getElementById('dest-y').value = (videoNodes[0].destY / h) * 100;
+        document.getElementById('dest-width').value = (videoNodes[0].destWidth / w) * 100;
+        document.getElementById('dest-height').value = (videoNodes[0].destHeight / h) * 100;
+      }
+
+      const audioNodes = mixerNodeGraph.rootAudioNode.nodes.filter(node => node.node == 'AudioSourceNode' && node.streamGuid == streamName)
+      if (audioNodes.length > 0) {
+        document.getElementById('pan').value = audioNodes[0].pan
+        document.getElementById('gain').value = audioNodes[0].gain
       }
     }
+  }
 
-    console.log('create mixer boxes')
-    console.log(compositeStreamToDestinationMixerName)
-    console.log(mixerNameToMixerBox)
-
-    slots = mixerContainer.querySelectorAll('.box')
-    const mixerUnmutedLists = mixerContainer.querySelectorAll('.list-holder-unmuted')
-    const mixerMutedLists = mixerContainer.querySelectorAll('.list-holder-muted')
-    const streamList = mediaListContainer.querySelectorAll('.list-holder')
-    Array.from(mixerUnmutedLists).concat(Array.from(mixerMutedLists)).concat(Array.from(streamList)).forEach(list => {
-      list.ondragover = onDragOver
-      list.ondragleave = onDragOut
-      list.ondrop = onDrop
+  const addMixerNamesToMixerSelectors = (mixerDataArray) => {
+    mixerDataArray.forEach(mixer => {
+      addItemToSelector(mixerControlSelector, mixer.mixerName, mixer.id)
+      addItemToSelector(destinationMixerSelector, mixer.mixerName, mixer.id)
+      if (mixer.destinationMixerName == '') {
+        compositeStreamDetails = {
+          path: mixer.path,
+          streamName: mixer.streamName,
+          width: mixer.width,
+          height: mixer.height
+        }
+        console.log('saved composite stream details', compositeStreamDetails)
+      }
     })
   }
 
-  /*
-  * Converts a string with comma separated values into an array
-  */
-  const getMixerPagesFromText = (text) => {
-    if (!text) return []
-    return text.split(',')
-    /*let list = []
-    let start = 0
-    let index = text.indexOf(',')
-    while (index > start) {
-      let page = text.substring(start, index)
-      list.push(page)
-      start = index + 1
-      index = text.indexOf(',', start)
+  const createCompositionUI = (compositionData) => {
+    if (activeComposition == null) {
+      activeComposition = compositionData
+      numberOfMixers = compositionData.mixers.length
     }
-    if (start == 0) {
-      list.push(text)
-    }
-    else if (start <= text.length - 1) {
-      list.push(text.substring(start))
-    }
-    return list*/
+
+    //createDOMElementsForMixers(compositionData.mixers)
+    addMixerNamesToMixerSelectors(compositionData.mixers)
   }
+
+  window.mixerNameSelected = () => {
+    const selectedMixer = mixerControlSelector.options[mixerControlSelector.selectedIndex].value
+    if (selectedMixer == '') {
+      return
+    }
+
+    if (!nodeGraphMap[selectedMixer]) {
+      console.log(`Node graph not found for mixer ${selectedMixer}`)
+      return
+    }
+
+    // load streams in stream selector
+    const streams = new Set()
+    const nodeGraph = nodeGraphMap[selectedMixer]
+    nodeGraph.rootVideoNode.nodes.forEach(node => {
+      if (node.streamGuid) {
+        streams.add(node.streamGuid)
+      }
+    })
+    nodeGraph.rootAudioNode.nodes.forEach(node => {
+      if (node.streamGuid) {
+        streams.add(node.streamGuid)
+      }
+    })
+
+    console.log('streams', streams)
+
+    streams.forEach(stream => addItemToSelector(streamNameControlSelector, stream))
+  }
+
+  const refreshStreamNamesInStreamControlSelector = () => {
+    const selectedMixer = mixerControlSelector.options[mixerControlSelector.selectedIndex].value
+    if (selectedMixer == '') {
+      return
+    }
+
+    if (!nodeGraphMap[selectedMixer]) {
+      console.log(`Node graph not found for mixer ${selectedMixer}`)
+      return
+    }
+
+    const streamsInSelector = new Set()
+    for (let i = 0; i < streamNameControlSelector.options.length; i++) {
+      let name = streamNameControlSelector.options[i].name
+      if (name && name != '') {
+        console.log('add', name, 'to streamsInSelector')
+        streamsInSelector.add(name)
+      }
+    }
+
+    // load streams in stream selector
+    const currentStreams = new Set()
+    const nodeGraph = nodeGraphMap[selectedMixer]
+    nodeGraph.rootVideoNode.nodes.forEach(node => {
+      if (node.streamGuid) {
+        currentStreams.add(node.streamGuid)
+      }
+    })
+    nodeGraph.rootAudioNode.nodes.forEach(node => {
+      if (node.streamGuid) {
+        currentStreams.add(node.streamGuid)
+      }
+    })
+
+    console.log('current streams', currentStreams)
+    console.log('streams in selector', streamsInSelector)
+    const streamsToAdd = new Set()
+    const streamsToRemove = new Set()
+    streamsInSelector.forEach(stream => {
+      if (!currentStreams.has(stream)) {
+        streamsToRemove.add(stream)
+      }
+    })
+    currentStreams.forEach(stream => {
+      if (!streamsInSelector.has(stream)) {
+        streamsToAdd.add(stream)
+      }
+    })
+
+    console.log(streamsToAdd, streamsToRemove)
+    streamsToAdd.forEach(stream => addItemToSelector(streamNameControlSelector, stream))
+    streamsToRemove.forEach(stream => removeItemFromSelector(streamNameControlSelector, stream))
+  }
+
+  const addItemToSelector = (selector, name, value = null) => {
+    if (itemInSelector(selector, name)) {
+      console.log('item is already in selector')
+      return
+    }
+
+    console.log(`adding ${name} to `, selector, selector.selectedIndex)
+    const option = document.createElement('option')
+    option.value = value == null ? name : value
+    option.name = name
+    option.innerHTML = name
+    selector.appendChild(option)
+    console.log('after adding to ', selector, selector.selectedIndex)
+  }
+
+  const removeItemFromSelector = (selector, name, selectEmpty = false) => {
+    // remove composition from selector 
+    for (var i = 0; i < selector.options.length; i++) {
+      if (selector.options[i].text == '' && selectEmpty) {
+        selector.options[i].selected = true;
+      } else if (selector.options[i].text == name) {
+        selector.options.remove(i)
+        return;
+      }
+    }
+  }
+
+  const removeAllItemsFromSelector = (selector, leaveEmptyItem = true) => {
+    // remove composition from selector 
+    let i = 0
+    while (i < selector.options.length) {
+      if (selector.options[i].text == '' && leaveEmptyItem) {
+        selector.options[i].selected = true;
+        i++
+        continue
+      }
+
+      selector.options.remove(i)
+    }
+  }
+
+  const itemInSelector = (selector, name) => {
+    for (var i = 0; i < selector.options.length; i++) {
+      if (selector.options[i].text == name) {
+        return true
+      }
+    }
+  }
+
+  const selectItemInSelector = (selector, name) => {
+    for (var i = 0; i < selector.options.length; i++) {
+      if (selector.options[i].text == name) {
+        selector.options[i].selected = true;
+        return
+      }
+    }
+  }
+
+  const provisionMixers = (compositionDetails) => {
+    return new Promise((resolve, reject) => {
+      if (!compositionDetails.mixers) {
+        reject(`No mixers found in composition data`)
+        return
+      }
+
+      const nodeGraphs = []
+      compositionDetails.mixers.forEach(mixer => {
+        const copy = JSON.parse(JSON.stringify(defaultNodeGraph))
+        copy.mixerName = mixer.mixerName
+        nodeGraphs.push(copy)
+        nodeGraphMap[mixer.id] = copy
+      })
+
+      updateNodeGraphInMixer(compositionDetails.event, nodeGraphs, smToken)
+        .then(result => resolve(result))
+        .catch(error => {
+          nodeGraphMap = {}
+          reject(error)
+        })
+    })
+  }
+
+  const fetchExistingCompositionsFromStreamManager = () => {
+    console.log('Requesting active compositions from Stream Manager')
+    const url = `${location.protocol}://${location.host}/streammanager/api/4.0/composition?accessToken=${smToken}`
+    console.log(location.protocol, location.host, url)
+    fetch(url, {
+      method: 'GET'
+    })
+      .then(response => {
+        return response.json()
+      })
+      .then(data => {
+        console.log('Success:', data)
+        parseCompositionNames(data)
+      })
+      .catch((error) => {
+        console.error('Error:', error);
+      });
+  }
+
+  const parseCompositionNames = (compositionEventsArray) => {
+    existingCompositions = []
+    const emptyOption = document.createElement('option')
+    compositionEventsArray.forEach(event => {
+      if (existingCompositions.length == 0) {
+        selectBox.innerHTML = ''
+        emptyOption.value = ''
+        emptyOption.name = ''
+        selectBox.appendChild(emptyOption)
+      }
+
+      existingCompositions.push(event)
+      addItemToSelector(selectBox, event)
+    })
+  }
+
+
+
 
   // Main
   // Setup WebSocket
-  resizeSlots()
-  window.addEventListener('resize', resizeSlots, true)
   const uid = Math.floor(Math.random() * 0x10000).toString(16)
   const webSocketEndpoint = `${baseWebSocketUrl}?testbed=grid&type=manager&id=${uid}`
-  setUpWebSocket(webSocketEndpoint)
+  // TODO Uncomment
+  //setUpWebSocket(webSocketEndpoint)
+  fetchExistingCompositionsFromStreamManager()
 
 
   // Cheap way to shut things down on navigate away from page.
@@ -1230,5 +1096,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   window.addEventListener('pagehide', shutdown)
   window.addEventListener('beforeunload', shutdown)
+
+
 })(window,
   window.red5prosdk)
