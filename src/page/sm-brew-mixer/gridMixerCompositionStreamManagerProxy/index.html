@@ -140,7 +140,7 @@
             display: flex;
             flex-direction: row;
             flex: 1;
-            height: 100%;
+            height: 125%;
             position: relative;
         }
 
@@ -431,6 +431,18 @@
             padding-left: 0.4rem;
         }
 
+        .add-ui-button {
+            width: 4em;
+            background-color: rgba(106, 184, 91, 0.933);
+            padding: 0;
+        }
+
+        .remove-ui-button {
+            width: 8em;
+            background-color: rgba(184, 91, 91, 0.933);
+            padding: 0;
+        }
+
         .small-ui-button {
             padding: 0;
         }
@@ -464,6 +476,7 @@
         .main-controls-container {
             display: flex;
             flex-direction: row;
+            justify-content: center;
         }
 
         .controls-container {
@@ -491,18 +504,37 @@
             font-weight: bold;
         }
 
-        .row-container {
+        .column-container {
             display: flex;
             flex-direction: row;
+            justify-content: center;
         }
 
-        .column-container {
+        .row-container {
             display: flex;
             flex-direction: column;
         }
 
         .center-content {
             justify-content: center;
+        }
+
+        .popuptext {
+            width: 100%;
+            text-align: center;
+            border-radius: 6px;
+            padding: 16px 0;
+            z-index: 1;
+        }
+
+        .red-background {
+            background-color: rgb(255, 65, 65);
+            z-index: 1;
+        }
+
+        .green-background {
+            background-color: rgb(72, 243, 86);
+            z-index: 1;
         }
     </style>
     <link href="//unpkg.com/video.js@7.0.0/dist/video-js.css" rel="stylesheet">
@@ -544,12 +576,12 @@
                     <p class="small-margin" id="event-state">State:</p>
                     <button class="ui-button destroy-composition-button small-margin" id="destroy-composition-button"
                         disabled onclick="destroyComposition()">Destroy Composition</button>
-                    <div class="tooltip small-margin">
+                    <!-- <div class="tooltip small-margin">
                         <span class="tooltiptext">Check to have the page auto assign streams to mixers in round robin
                             fashion</span>
                         <p>Automatically add streams to the selected composition?</p>
                         <input id="add-stream-automatically" type="checkbox" unchecked />
-                    </div>
+                    </div>-->
                 </div>
                 <br>
                 <h3 style="font-weight: bold;">Create Composition:</h3>
@@ -651,88 +683,99 @@
                 </form>
                 <br>
             </div>
-            <div class="column-container">
-                <br>
-                <p class="text-bold text-center">Add Streams To Mixer</p>
-                <div class="row-container padded">
-                    <p class="small-margin">Stream:
+            <div class="row-container" style="width: 35%;">
+                <h3 class="text-bold text-center">Composition Settings</h3>
+                <div class="column-container padded">
+                    <p class="small-margin">Add Stream:
                         <select id="active-streams-select">
                             <option name="" selected></option>
                         </select>
                     </p>
-                    <p class="small-margin">Destination Mixer:
+                    <p class="small-margin">To Mixer:
                         <select id="destination-mixer-select">
                             <option name="" selected></option>
                         </select>
                     </p>
-                    <input type="button" class="" value="Add to Mixer" onclick="addStreamToMixer()" />
+                    <input type="button" class="ui-button add-ui-button" value="Add" onclick="addStreamToMixer()" />
                 </div>
-                <br>
-                <p class="text-bold text-center">Composition Settings</p>
+
                 <div id="videoControlTemplate" class="padded">
-                    <div class="row-container center-content">
-                        <p class="small-margin">Mixer:
+                    <div class="column-container center-content">
+                        <p class="small-margin">Update Settings in Mixer:
                             <select name="stream-name" id="mixer-control-select" onchange="mixerNameSelected();">
                                 <option name="" selected></option>
                             </select>
                         </p>
-                        <p class="small-margin" id="stream-name">Stream:
+                        <p class="small-margin" id="stream-name">For Stream:
                             <select name="stream-name" id="stream-control-select" onchange="updateUIFromNodeGraph()">
                                 <option name="" selected></option>
                             </select>
                         </p>
-                        <input type="button" class="" value="Remove" onclick="removeStreamFromMixer()" />
+                    </div>
+                    <div class="popuptext" id="popup-container">
+                        <p id="popup-text"></p>
                     </div>
                     </br>
-                    <div class="main-controls-container">
-                        <div id="video-control">
-                            <p class="text-center text-bold ">Video Controls</p>
-                            <input type="color" id="bgColor" name="bgColor" value="#000000"
-                                oninput="updateMixerNodeGraph()"><label for="bgColor">Background Color</label>
-                            <div class="controls-container">
-                                <div class="padded">
-                                    <label>destX<br />
-                                        <input type="range" id="dest-x" name="destX" min="0" max="100" orient="vertical"
-                                            oninput="updateMixerNodeGraph()">
-                                    </label>
+                    </br>
+                    </br>
+                    <div class="row-container hidden" id="controls-box">
+                        <div class="main-controls-container">
+                            <div id="video-control">
+                                <p class="text-center text-bold ">Video Controls</p>
+                                <div class="controls-container">
+                                    <div class="padded">
+                                        <label>destX<br />
+                                            <input type="range" id="dest-x" name="destX" min="0" max="100"
+                                                orient="vertical" oninput="updateMixerNodeGraph()">
+                                        </label>
+                                    </div>
+                                    <div class="padded">
+                                        <label>destY<br />
+                                            <input type="range" id="dest-y" name="destY" min="0" max="100"
+                                                orient="vertical" oninput="updateMixerNodeGraph()">
+                                        </label>
+                                    </div>
+                                    <div class="padded">
+                                        <label>dest. Width<br />
+                                            <input type="range" id="dest-width" name="destWidth" min="0" max="100"
+                                                orient="vertical" oninput="updateMixerNodeGraph()">
+                                        </label>
+                                    </div>
+                                    <div class="padded">
+                                        <label>dest. Height<br />
+                                            <input type="range" id="dest-height" name="destHeight" min="0" max="100"
+                                                orient="vertical" oninput="updateMixerNodeGraph()">
+                                        </label>
+                                    </div>
                                 </div>
-                                <div class="padded">
-                                    <label>destY<br />
-                                        <input type="range" id="dest-y" name="destY" min="0" max="100" orient="vertical"
-                                            oninput="updateMixerNodeGraph()">
-                                    </label>
-                                </div>
-                                <div class="padded">
-                                    <label>destW<br />
-                                        <input type="range" id="dest-width" name="destWidth" min="0" max="100"
-                                            orient="vertical" oninput="updateMixerNodeGraph()">
-                                    </label>
-                                </div>
-                                <div class="padded">
-                                    <label>destH<br />
-                                        <input type="range" id="dest-height" name="destHeight" min="0" max="100"
-                                            orient="vertical" oninput="updateMixerNodeGraph()">
-                                    </label>
+                            </div>
+                            <div id="audio-control">
+                                <p class="text-center text-bold ">Audio Controls</p>
+                                <div class="controls-container">
+                                    <div class="padded">
+                                        <label>Pan<br />
+                                            <input type="range" id="pan" name="pan" min="-100" max="100"
+                                                orient="horizontal" class="panSlider" oninput="updateMixerNodeGraph()">
+                                        </label>
+                                    </div>
+                                    <br />
+                                    <div class="padded">
+                                        <label>Volume<br />
+                                            <input type="range" id="gain" name="gain" min="-30" max="0"
+                                                orient="vertical" oninput="updateMixerNodeGraph()">
+                                        </label>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                        <div id="audio-control">
-                            <p class="text-center text-bold ">Audio Controls</p>
-                            <div class="controls-container">
-                                <div class="padded">
-                                    <label>Pan<br />
-                                        <input type="range" id="pan" name="pan" min="-100" max="100" orient="horizontal"
-                                            class="panSlider" oninput="updateMixerNodeGraph()">
-                                    </label>
-                                </div>
-                                <br />
-                                <div class="padded">
-                                    <label>Volume<br />
-                                        <input type="range" id="gain" name="gain" min="-30" max="0" orient="vertical"
-                                            oninput="updateMixerNodeGraph()">
-                                    </label>
-                                </div>
+                        <br>
+                        <div class="column-container" style="justify-content: space-evenly;">
+                            <div style="text-align: center;">
+                                <label for="bgColor">Background Color </label><input type="color" id="bgColor"
+                                    name="bgColor" value="#000000" oninput="updateMixerNodeGraph()">
                             </div>
+                            <input type="button" class="ui-button remove-ui-button" value="Remove Stream"
+                                onclick="removeStreamFromMixer()" />
                         </div>
                     </div>
                 </div>

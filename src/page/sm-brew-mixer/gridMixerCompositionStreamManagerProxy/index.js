@@ -78,12 +78,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   const selectBox = document.getElementById("event-name-select");
   const destroyCompositionButton = document.getElementById('destroy-composition-button')
   const eventStateText = document.getElementById('event-state')
-  const autoProvision = document.getElementById('add-stream-automatically')
+  /*const autoProvision = document.getElementById('add-stream-automatically')
   autoProvision.addEventListener("change", () => {
     if (autoProvision.checked) {
       requestActiveStreams()
     }
-  });
+  });*/
 
   let compositionEventName = null
   let activeComposition = null
@@ -212,16 +212,15 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
     //console.log('current stream list', currentStreamListing)
     const payload = compareLists(currentStreamListing, streamNames)
-    //console.log(payload, currentStreamListing)
+    console.log('add', payload.added, 'remove', payload.removed)
     addStreams(payload.added)
     removeStreams(payload.removed)
 
-    if (autoProvision.checked) {
+    /*if (autoProvision.checked) {
       console.log('auto provisioning mixers')
       autoProvisionMixers(payload.added)
-    }
+    }*/
 
-    //console.log('new stream list', streamNames)
     currentStreamListing = streamNames
   }
 
@@ -230,7 +229,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       console.log('no composition selected, ignoring auto provisioning')
       return
     }
-
     // todo implement
   }
 
@@ -273,13 +271,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       // remove from mixer stream selector if there 
       removeItemFromSelector(streamNameControlSelector, name, false)
 
-      // todo inform mixer/update nodegraph 
+      Object.keys(nodeGraphMap).forEach(mixerId => {
+        console.log('remove ', name, 'from', mixerId)
+        doRemoveStreamFromMixer(mixerId, name)
+      })
     })
-
-    // remove from active list selector if stream was there 
-    //removeItemsFromSelector(activeStreamsSelector, streams)
-    // TODO remove from mixers if there instead 
-
   }
 
   /*
@@ -317,10 +313,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         return
       }
 
+      let newNodes = {}
       let updatedMixerNodeGraph = JSON.parse(JSON.stringify(mixerNodeGraph))
       let videoNode = JSON.parse(JSON.stringify(videoSourceNodeTemplate))
       videoNode.streamGuid = streamName
       updatedMixerNodeGraph.rootVideoNode.nodes.push(videoNode)
+      newNodes['video'] = videoNode
 
       let audioNodes = updatedMixerNodeGraph.rootAudioNode.nodes
       let matches = audioNodes.filter(node => node.streamGuid === streamName)
@@ -332,16 +330,22 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       } else {
         audioNode = matches[0]
       }
+      newNodes['audio'] = audioNode
       // unmuted - gain(-100,0)
       audioNode.gain = 0
 
       updateNodeGraphInMixer(compositionEventName, updatedMixerNodeGraph, smToken)
         .then(result => {
-          console.log(`Successfully updated node graph for composition ${compositionEventName}`)
-          nodeGraphMap[mixerId] = updatedMixerNodeGraph
+          const message = `Successfully updated node graph for composition ${compositionEventName}`
+          console.log(message)
+          updateNodesInLocalNodeGraph(mixerId, newNodes)
           refreshStreamNamesInStreamControlSelector()
+          showPopupMessage(message)
         })
-        .catch(error => console.log(`could not update node graph for composition ${compositionEventName}: `, error))
+        .catch(error => {
+          console.log(`Could not update node graph for composition ${compositionEventName}: `, error)
+          showPopupMessage(`Failed to update node graph. Check console logs`, true)
+        })
         .finally(() => console.log('current node graphs', nodeGraphMap))
     }
   }
@@ -349,31 +353,55 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   window.removeStreamFromMixer = () => {
     const streamName = streamNameControlSelector.options[streamNameControlSelector.selectedIndex].value;
     const mixerId = mixerControlSelector.options[mixerControlSelector.selectedIndex].value;
-    if (streamName != '' && mixerId != '') {
+    doRemoveStreamFromMixer(mixerId, streamName)
+  }
 
-      let mixerNodeGraph = nodeGraphMap[mixerId]
-      if (!mixerNodeGraph) {
-        console.log(`Could not find node graph for mixer ${mixerId}`)
-        return
-      }
-
-      console.log(streamName, 'current', mixerNodeGraph)
-      let updatedMixerNodeGraph = JSON.parse(JSON.stringify(mixerNodeGraph))
-      // remove video 
-      updatedMixerNodeGraph.rootVideoNode.nodes = updatedMixerNodeGraph.rootVideoNode.nodes.filter(node => node.streamGuid != streamName)
-      // remove audio 
-      updatedMixerNodeGraph.rootAudioNode.nodes = updatedMixerNodeGraph.rootAudioNode.nodes.filter(node => node.streamGuid != streamName)
-
-      console.log('updated', updatedMixerNodeGraph)
-      updateNodeGraphInMixer(compositionEventName, updatedMixerNodeGraph, smToken)
-        .then(result => {
-          console.log(`Successfully updated node graph for composition ${compositionEventName}`)
-          nodeGraphMap[mixerId] = updatedMixerNodeGraph
-          refreshStreamNamesInStreamControlSelector()
-        })
-        .catch(error => console.log(`could not update node graph for composition ${compositionEventName}: `, error))
-        .finally(() => console.log('current node graphs', nodeGraphMap))
+  const doRemoveStreamFromMixer = (mixerId, streamName) => {
+    if (streamName == '' || mixerId == '') {
+      return
     }
+
+    let mixerNodeGraph = nodeGraphMap[mixerId]
+    if (!mixerNodeGraph) {
+      console.log(`Could not find node graph for mixer ${mixerId}`)
+      return
+    }
+
+    console.log(streamName, 'current', mixerNodeGraph)
+    let updatedMixerNodeGraph = JSON.parse(JSON.stringify(mixerNodeGraph))
+    // remove video 
+    updatedMixerNodeGraph.rootVideoNode.nodes = updatedMixerNodeGraph.rootVideoNode.nodes.filter(node => node.streamGuid != streamName)
+    // remove audio 
+    updatedMixerNodeGraph.rootAudioNode.nodes = updatedMixerNodeGraph.rootAudioNode.nodes.filter(node => node.streamGuid != streamName)
+
+    console.log('updated', updatedMixerNodeGraph)
+    updateNodeGraphInMixer(compositionEventName, updatedMixerNodeGraph, smToken)
+      .then(result => {
+        const message = `Successfully updated node graph for composition ${compositionEventName}`
+        console.log(message)
+        removeStreamFromLocalNodeGraph(mixerId, streamName)
+        refreshStreamNamesInStreamControlSelector()
+        showOrHideControls(mixerId, streamNameControlSelector.options[streamNameControlSelector.selectedIndex].value)
+        showPopupMessage(message)
+      })
+      .catch(error => {
+        const message = 'Failed to update node graph. Check console logs.'
+        console.log(`could not update node graph for composition ${compositionEventName}: `, error)
+        showPopupMessage(message, true)
+      })
+      .finally(() => console.log('current node graphs', nodeGraphMap))
+  }
+
+  const showPopupMessage = (message, isFailure = false) => {
+    const popup = document.getElementById('popup-text')
+    popup.innerHTML = message
+    const container = document.getElementById('popup-container')
+    container.classList.remove('hidden')
+    container.classList.add(isFailure ? 'red-background' : 'green-background')
+    setTimeout(() => {
+      container.classList.add('hidden')
+      container.classList.remove(isFailure ? 'red-background' : 'green-background')
+    }, isFailure ? 2000 : 1500)
   }
 
   /*
@@ -455,7 +483,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     let sNames = ['final', 'b', 'c', 'n1', 'n2', 'n3', 'b2', 'c2', 'n12', 'n22', 'n32']
     let interval = setInterval(() => {
       //console.log('run interval')
-      if (count <= 15) {
+      if (count <= 10) {
         streams.push(sNames.at(count))
       } else {
         //console.log('clear stream ', streams.at(streams.length - 1))
@@ -464,12 +492,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       count++
       const mockActiveStreams = { "type": "activeStreams", "list": [{ "room": "/live", streams }] }
       try {
+        console.log(mockActiveStreams)
         parseStreams(mockActiveStreams)
       } catch (e) {
 
       }
       //console.log('count: ', count)
-      if (count > 16) {
+      if (count > 12) {
         //console.log('clear interval')
         clearInterval(interval)
         //destroyComposition()
@@ -718,10 +747,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         console.log(`Provisioned mixers`)
         eventStateText.innerHTML = `State: Composing`
         subscribeToMixedStream(compositeStreamDetails.path, compositeStreamDetails.streamName)
+        showPopupMessage(`Created new composition.`)
       })
       .catch((error) => {
         console.error('Error:', error);
         eventStateText.innerHTML = `State: Failed`
+        showPopupMessage('Failed to create composition. Check console.logs.', true)
       })
 
     console.log('create composition message submitted')
@@ -750,7 +781,20 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     return hex.join("");
   }
 
+  let updateTimer = null
   window.updateMixerNodeGraph = () => {
+    if (updateTimer) {
+      return
+    }
+
+    // wait for a bit to prevent making too many calls
+    updateTimer = setTimeout(() => {
+      doUpdateMixerNodeGraph()
+      updateTimer = null
+    }, 500)
+  }
+
+  const doUpdateMixerNodeGraph = () => {
     const streamName = streamNameControlSelector.options[streamNameControlSelector.selectedIndex].value;
     const mixerId = mixerControlSelector.options[mixerControlSelector.selectedIndex].value;
     if (streamName != '' && mixerId != '') {
@@ -763,12 +807,14 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       let updatedMixerNodeGraph = JSON.parse(JSON.stringify(mixerNodeGraph))
       // background color to SolidColorNode
       const bytes = hexToBytes(document.getElementById("bgColor").value.substring(1));
+      const newNodes = {}
       const solidColorNodes = updatedMixerNodeGraph.rootVideoNode.nodes.filter(node => node.node == 'SolidColorNode')
       if (solidColorNodes.length > 0) {
         solidColorNodes[0].red = bytes[0] / 255.0;
         solidColorNodes[0].green = bytes[1] / 255.0;
         solidColorNodes[0].blue = bytes[2] / 255.0;
         solidColorNodes[0].alpha = 1.0;
+        newNodes['color'] = solidColorNodes[0]
       }
 
       const videoNodes = updatedMixerNodeGraph.rootVideoNode.nodes.filter(node => node.node == 'VideoSourceNode' && node.streamGuid == streamName)
@@ -789,28 +835,85 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         videoNodes[0].destY = destY
         videoNodes[0].destWidth = destWidth
         videoNodes[0].destHeight = destHeight
+        newNodes['video'] = videoNodes[0]
       }
 
       const audioNodes = updatedMixerNodeGraph.rootAudioNode.nodes.filter(node => node.node == 'AudioSourceNode' && node.streamGuid == streamName)
       if (audioNodes.length > 0) {
         audioNodes[0].pan = document.getElementById('pan').value;
         audioNodes[0].gain = document.getElementById('gain').value;
+        newNodes['audio'] = audioNodes[0]
       }
 
       console.log(videoNodes, audioNodes, updatedMixerNodeGraph)
       updateNodeGraphInMixer(compositionEventName, updatedMixerNodeGraph, smToken)
         .then(result => {
-          console.log(`Successfully updated node graph for composition ${compositionEventName}`)
-          nodeGraphMap[mixerId] = updatedMixerNodeGraph
+          const message = `Successfully updated node graph for composition ${compositionEventName}`
+          console.log(message)
+          updateNodesInLocalNodeGraph(mixerId, newNodes)
+          showPopupMessage(message)
         })
-        .catch(error => console.log(`could not update node graph for composition ${compositionEventName}: `, error))
+        .catch(error => {
+          const message = `Failed to update node graph. Check console logs.`
+          console.log(`could not update node graph for composition ${compositionEventName}: `, error)
+          showPopupMessage(message, true)
+        })
         .finally(() => console.log('current node graphs', nodeGraphMap))
+    }
+  }
+
+  const removeStreamFromLocalNodeGraph = (mixerId, streamName) => {
+    if (!nodeGraphMap[mixerId]) {
+      return
+    }
+
+    // remove video 
+    nodeGraphMap[mixerId].rootVideoNode.nodes = nodeGraphMap[mixerId].rootVideoNode.nodes.filter(node => node.streamGuid != streamName)
+    // remove audio 
+    nodeGraphMap[mixerId].rootAudioNode.nodes = nodeGraphMap[mixerId].rootAudioNode.nodes.filter(node => node.streamGuid != streamName)
+  }
+
+  const updateNodesInLocalNodeGraph = (mixerId, newNodes) => {
+    if (!nodeGraphMap[mixerId]) {
+      return
+    }
+
+    let videoNodes = nodeGraphMap[mixerId].rootVideoNode.nodes
+    // keep nodes that were not changed
+    const newVideoNode = newNodes['video']
+    const newColorNode = newNodes['color']
+    if (newVideoNode || newColorNode) {
+      videoNodes = videoNodes.filter(node => {
+        return !((newColorNode && node.node == 'SolidColorNode') ||
+          (newVideoNode && newVideoNode.node == node.node && newVideoNode.streamGuid == node.streamGuid))
+      })
+
+      if (newVideoNode) {
+        videoNodes.push(newVideoNode)
+      }
+
+      if (newColorNode) {
+        videoNodes.push(newColorNode)
+      }
+
+      nodeGraphMap[mixerId].rootVideoNode.nodes = videoNodes
+    }
+
+    let audioNodes = nodeGraphMap[mixerId].rootAudioNode.nodes
+    const newAudioNode = newNodes['audio']
+    if (newAudioNode) {
+      audioNodes = audioNodes.filter(node => {
+        return !(newAudioNode.node == node.node && newAudioNode.streamGuid == node.streamGuid)
+      })
+      audioNodes.push(newAudioNode)
+      nodeGraphMap[mixerId].rootAudioNode.nodes = audioNodes
     }
   }
 
   window.updateUIFromNodeGraph = () => {
     const streamName = streamNameControlSelector.options[streamNameControlSelector.selectedIndex].value;
     const mixerId = mixerControlSelector.options[mixerControlSelector.selectedIndex].value;
+    showOrHideControls(mixerId, streamName)
     console.log('updateUIFromNodeGraph', streamName, mixerId)
     if (streamName != '' && mixerId != '') {
       let mixerNodeGraph = nodeGraphMap[mixerId]
@@ -874,8 +977,21 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     addMixerNamesToMixerSelectors(compositionData.mixers)
   }
 
+  const showOrHideControls = (selectedMixer, selectedStream) => {
+    const controlsDiv = document.getElementById('controls-box')
+    if (selectedMixer && selectedMixer != '' && selectedStream && selectedStream != '') {
+      if (controlsDiv.classList.contains('hidden')) {
+        controlsDiv.classList.remove('hidden')
+      }
+    } else {
+      controlsDiv.classList.add('hidden')
+    }
+  }
+
   window.mixerNameSelected = () => {
     const selectedMixer = mixerControlSelector.options[mixerControlSelector.selectedIndex].value
+    const streamName = streamNameControlSelector.options[streamNameControlSelector.selectedIndex].value;
+    showOrHideControls(selectedMixer, streamName)
     if (selectedMixer == '') {
       return
     }
