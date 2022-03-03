@@ -45,7 +45,7 @@ The Stream Manager URI requires the **access token**.
 `https://qasmjune2020.red5.org:/streammanager/api/4.0/interstitial?accessToken=xyz123`
 
 ## Standalone
-In a standalone environment, forwarding requests are POSTed directly to the SocialPusher plugin.
+In a standalone environment, forwarding requests are POSTed directly to the interstitial API.
 
 ### Example URI
 `http://localhost:5080/live/interstitial`
