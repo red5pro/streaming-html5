@@ -137,7 +137,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       "authentication": {
         "enabled": false,
         "username": "user",
-        "password": "pass"
+        "password": "pass",
+        "token": "token"
       },
       "mixerBackendSocketField": "",
       "mixerAuthenticationEnabled": false

@@ -1,20 +1,23 @@
 <!doctype html>
 {{> license}}
 <html>
-  <head>
-    {{> meta title='Red5 Pro HTML SDK Testbed'}}
-    <link rel="stylesheet" href="css/reset.css">
-    <link rel="stylesheet" href="css/testbed.css">
-    <script src="script/testbed-config.js"></script>
-    <link rel='stylesheet' href='//fonts.googleapis.com/css?family=Lato%3A100%2C200%2C300%2C400%2C500%2C600%2C700%2C800%2C900%2C100i%2C200i%2C300i%2C400i%2C500i%2C600i%2C700i%2C800i%2C900i&#038;subset=latin&#038;ver=5.2.3' type='text/css' media='all' />
-  </head>
-  <body>
-    {{> top-bar }}
-    {{> navigation isTestPage=false }}
-    <div id="app">
-      <div id="back-link-container" style="text-align: left;">
-        <p class="back-link"><a href="index.html">&lt; Settings</a></p>
-        <p class="version-field">Testbed Version: {{ version }}</p>
+<head>
+  {{> meta title='Red5 Pro HTML SDK Testbed'}}
+  <link rel="stylesheet" href="css/reset.css">
+  <link rel="stylesheet" href="css/testbed.css">
+  <script src="script/testbed-config.js"></script>
+  <link rel='stylesheet'
+    href='//fonts.googleapis.com/css?family=Lato%3A100%2C200%2C300%2C400%2C500%2C600%2C700%2C800%2C900%2C100i%2C200i%2C300i%2C400i%2C500i%2C600i%2C700i%2C800i%2C900i&#038;subset=latin&#038;ver=5.2.3'
+    type='text/css' media='all' />
+</head>
+
+<body>
+  {{> top-bar }}
+  {{> navigation isTestPage=false }}
+  <div id="app">
+    <div id="back-link-container" style="text-align: left;">
+      <p class="back-link"><a href="index.html">&lt; Settings</a></p>
+      <p class="version-field">Testbed Version: {{ version }}</p>
     </div>
     <div id="settings-container">
       <h1 class="centered">Red5 Pro HTML Testbed</h1>
@@ -51,8 +54,8 @@
         <li><a href="test/subscribeAuth">Subscribe - Authentication</a></li>
         <li><a href="test/subscribeCluster">Subscribe - Cluster</a></li>
         <!--        <li><a href="test/subscribeStandby">Subscribe - Enable Standby</a></li> -->
-        <li><a href="test/subscribeMute">Subscribe - Mute API</a></li>
         <li><a href="test/subscribeHLS">Subscribe - HLS Only</a></li>
+        <li><a href="test/subscribeMute">Subscribe - Mute API</a></li>
         <li><a href="test/subscribeInterstitial">Subscribe - Interstitial</a></li>
         <li><a href="test/subscribeRoundTripAuth">Subscribe - RoundTrip Authentication</a></li>
         <li><a href="test/subscribeRemoteCall">Subscribe - Remote Call</a></li>
@@ -66,8 +69,10 @@
         <li><a href="test/subscribeVideoMute">Subscribe - Video Mute</a></li>
         <li><a href="test/playbackVOD">Playback - VOD</a></li>
         <li><a href="test/subscribevp8">Subscribe - VP8</a></li>
+        <li><a href="test/subscribeAMFMetadata">Subscribe - AMF Metadata</a></li>
+        <li><a href="test/subscribeAMFMetadataVOD">Subscribe - AMF Metadata VOD</a></li>
         <!-- <li><a href="test/sharedObjectMultistream">Shared Object - Multistream</a></li> -->
       </ul>
     </div>
-  </body>
+</body>
 </html>
