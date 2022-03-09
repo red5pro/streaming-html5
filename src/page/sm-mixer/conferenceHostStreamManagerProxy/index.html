@@ -1,0 +1,511 @@
+<!doctype html>
+{{> license}}
+<html>
+
+<head>
+    {{> meta title='Conference Host SM Test'}}
+    {{> header-scripts}}
+    {{> header-stylesheets}}
+    <style>
+        a {
+            color: #db1f26;
+            text-decoration: underline;
+        }
+
+        .test-notification {
+            border-top: 1px solid #dbdbdb;
+        }
+
+        .file-listing-section {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            background-color: #dbdbdb;
+        }
+
+        .file-listing-container {
+            margin: 20px;
+        }
+
+        @media (max-width:510px) {
+            .file-listing-section {
+                flex-direction: column;
+            }
+
+            .file-listing-container {
+                width: 100%;
+                margin: 20px 0;
+            }
+        }
+
+        .file-listing-container>p {
+            margin: 20px 0;
+        }
+
+        .file-listing {
+            margin: 12px;
+            background-color: #fff;
+            border: 1px solid #999;
+            overflow: scroll;
+            max-height: 200px;
+        }
+
+        .file-listing>p {
+            padding: 10px;
+            text-align: left;
+            cursor: pointer;
+        }
+
+        .file-listing>p.load-listing {
+            cursor: default;
+        }
+
+        .file-listing>p.item-separator {
+            border-bottom: 1px solid #999;
+        }
+
+        /* end */
+        html,
+        body {
+            height: 100%;
+        }
+
+        body {
+            background: #fff;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .flex-parent {
+            display: flex;
+            flex: 1;
+        }
+
+        .section {
+            display: flex;
+            flex-direction: row;
+            margin: 12px;
+            height: 100%;
+            position: relative;
+        }
+
+        .subscribe-section {
+            flex-grow: 2;
+        }
+
+        .status-details {
+            position: relative;
+            background-color: #333;
+            color: #fff;
+            padding: 12px;
+            margin: 0 12px 0 12px;
+            text-align: center;
+        }
+
+        .error-field {
+            width: 100%;
+            color: #fff !important;
+            background-color: #DB1F26 !important;
+        }
+
+        @media screen and (max-width: 1028px) {
+            .section {
+                flex-direction: column;
+            }
+
+            .publish-section,
+            .subscribe-section {
+                margin: 12px;
+            }
+        }
+
+
+
+        .red5pro-media-container {
+            /*width: 100%;*/
+            flex: 1;
+            height: 0;
+            display: flex;
+            justify-content: center;
+        }
+
+        .red5pro-subscriber {
+            width: 100%;
+        }
+
+        .loading-icon {
+            width: 50px;
+            height: 50px;
+            color: #fff;
+            position: absolute;
+        }
+
+        .subscriber-notifications {
+            right: 0;
+            top: 0;
+            position: absolute;
+        }
+
+        .audio-notification,
+        .video-notification {
+            background-color: #000;
+            color: #fff;
+            padding: 4px;
+            margin: 0;
+        }
+
+        .subscriber-container {
+            max-height: 75%;
+            position: relative;
+            background-color: #000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .subscriber-error {
+            position: relative;
+            background-color: #db1f26;
+            color: #fff;
+            padding: 12px;
+            margin: 0 12px 0 12px;
+            text-align: center;
+        }
+
+        .red5pro-screenshare-fullscreen {
+            display: block;
+            box-sizing: border-box;
+            position: relative;
+            line-height: 0px;
+            width: 100vw !important;
+            height: 100vh !important;
+            overflow: hidden !important;
+            object-fit: contain;
+        }
+
+        .subscriber-container:fullscreen {
+            height: 100%;
+            width: 100%;
+            margin: 0;
+            background-color: #000;
+        }
+
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            box-sizing: border-box;
+        }
+
+        .view-container {
+            flex: 3;
+            height: 100%;
+        }
+
+        .waiting-room-container {
+            display: flex;
+            flex: 1;
+            flex-direction: column;
+            padding: 15px;
+            border: 1px solid #aaa;
+            box-sizing: border-box;
+        }
+
+        .waiting-room-wall {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            flex-flow: row wrap;
+            justify-content: flex-start;
+            overflow-y: scroll;
+        }
+
+        .subscriber-block {
+            flex: 1;
+            margin: 5px;
+            min-width: 240px;
+            max-width: 320px;
+            width: 100%;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            min-height: 240px;
+        }
+
+        .subscriber-block-conference {
+            min-width: none !important;
+            max-width: none !important;
+        }
+
+        .subscriber-name-field {
+            position: relative;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            margin: 0;
+            padding: 4px;
+        }
+
+        .subscriber-moderation-field {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            margin: 0px;
+            background-color: #ddd;
+        }
+
+        .subscriber-exclusion-button {
+            color: #fff;
+            background-color: #ff0000;
+        }
+
+        .red5pro-subscriber {
+            width: 100%;
+        }
+
+        .centered {
+            text-align: center;
+        }
+
+        .resolution-title-field {
+            background-color: #dbdbdb;
+            margin: 0;
+            padding: 12px;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            border-spacing: 0;
+        }
+
+        .table-entry {
+            padding: 10px;
+            border: 1px solid black;
+        }
+
+        .table-entry-option {
+            background-color: #fff;
+        }
+
+        .exclusion-alert-container {
+            width: 100%;
+            height: 100%;
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            align-content: center;
+        }
+
+        .exclusion-alert-field {
+            padding: 100px;
+            text-align: center;
+            background-color: #ff0000;
+            color: #fff;
+        }
+
+        .collapsible {
+            background-color: #eee;
+            color: #444;
+            cursor: pointer;
+            padding: 18px;
+            width: 100%;
+            border: none;
+            text-align: left;
+            outline: none;
+            font-size: 15px;
+        }
+
+        .active,
+        .collapsible:hover {
+            background-color: #ccc;
+        }
+
+        .content {
+            padding: 0 18px;
+            display: none;
+            overflow: hidden;
+            background-color: #f1f1f1;
+        }
+
+        .composition-editor-container {
+            height: 100%;
+            width: 15%;
+            overflow-y: scroll;
+            overflow-x: hidden;
+        }
+
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            border-bottom: 1px dotted black;
+        }
+
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 120px;
+            background-color: #555;
+            color: #fff;
+            text-align: center;
+            padding: 5px 0;
+            border-radius: 6px;
+
+            /* tooltip text position*/
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -60px;
+
+            /* Fade */
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .tooltip .tooltiptext::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #555 transparent transparent transparent;
+        }
+
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+    </style>
+    <link href="//unpkg.com/video.js@7.0.0/dist/video-js.css" rel="stylesheet">
+    <script src="//unpkg.com/video.js@7.0.0/dist/video.min.js"></script>
+</head>
+
+<body>
+    {{> top-bar }}
+    {{> navigation isTestPage=true }}
+    <div id="app" style="height:70%">
+        {{> settings-link}}
+        <div class="ice-background">
+            <div class="test-notification">
+                <p>
+                    <span>To use this test, you must configure the Stream Manager token, backend WebSocket for
+                        compositions endpoint and set the webapp to
+                        <em>live</em> in the <a href="../../index.html" target="_blank">Settings</a> page, and
+                        publish to a room
+                        scope using a round trip authentication Stream Manager testbed.</span>
+                </p>
+            </div>
+        </div>
+        {{> test-title title='Stream Manager Conference Host Test'}}
+        <div id="login-form" class="settings-area hidden">
+            <h3 class="centered info-title">Set a mock username, password and token for your session. Credentials will
+                not be validated</h3>
+            <hr class="paddedHR">
+            <p class="settings-field settings-collapsable"><label for="username-field"
+                    class="settings-label">Username:</label><input id="username-field" name="username-field"></p>
+            <p class="settings-field settings-collapsable"><label for="password-field"
+                    class="settings-label">Password:</label><input id="password-field" name="password-field"></p>
+            <p class="settings-field settings-collapsable"><label for="token-field"
+                    class="settings-label">Token:</label><input id="token-field" name="token-field"></p>
+            <button id="submit-button" class="ui-button">Submit</button>
+        </div>
+        <div id="exclusion-alert" class="exclusion-alert-container hidden">
+            <p class="exclusion-alert-field">You have been excluded from this conference.</p>
+        </div>
+
+        <div class="section">
+
+            <div class="composition-editor-container" id="composition-editor">
+                <div>
+                    <h2>Active Compositions</h2>
+                    <p id="event-name">Name: </p>
+                    <select name="event-name" id="event-name-select" onchange="compositionSelected();">
+                        <option name=""></option>
+                    </select>
+                    <p id="event-room">Room:</p>
+                    <p id="event-state">State:</p>
+                    <button id="destroy-composition-button" disabled onclick="destroyComposition()">Destroy</button>
+                </div>
+                <br>
+                <h2>Create Composition</h2>
+                <form id="create-composition-form">
+                    <div class="tooltip">
+                        <span class="tooltiptext">Unique event name</span>
+                        <label class="tooltip" for="event">Event Name:</label><br>
+                        <input type="text" id="event" name="event" value="event1"><br>
+                    </div>
+                    <div class="tooltip">
+                        <span class="tooltiptext">Page to load into the Mixer</span>
+                        <label for="mixingPage">Mixing Page:</label><br>
+                        <select name="mixingPage" id="mixingPage-select">
+                            <option name="focused" selected>focused</option>
+                        </select><br>
+                    </div>
+                    <div class="tooltip">
+                        <span class="tooltiptext">App and Room scope for the composite stream</span>
+                        <label for="scope">Scope:</label><br>
+                        <input type="text" id="scope" name="scope" value="live"><br>
+                    </div>
+                    <div class="tooltip">
+                        <span class="tooltiptext">Stream name for the composite stream</span>
+                        <label for="streamName">Stream Name:</label><br>
+                        <input type="text" id="streamName" name="streamName" value=""><br>
+                    </div>
+                    <div class="tooltip">
+                        <span class="tooltiptext">Width of the composite stream</span>
+                        <label for="width">Width:</label><br>
+                        <input type="number" id="width" name="width" value="1280"><br>
+                    </div>
+                    <div class="tooltip">
+                        <span class="tooltiptext">Height of the composite stream</span>
+                        <label for="height">Height:</label><br>
+                        <input type="number" id="height" name="height" value="720"><br>
+                    </div>
+                    <div class="tooltip">
+                        <span class="tooltiptext">Framerate of the composite stream</span>
+                        <label for="framerate">Framerate:</label><br>
+                        <input type="number" id="framerate" name="framerate" value="30"><br>
+                    </div>
+                    <div class="tooltip">
+                        <span class="tooltiptext">Bitrate of the composite stream</span>
+                        <label for="bitrate">Bitrate:</label><br>
+                        <input type="number" id="bitrate" name="bitrate" value="1500"><br>
+                    </div>
+                    <div class="tooltip">
+                        <span class="tooltiptext">Region where the Mixer is deployed</span>
+                        <label for="location">Mixer Region:</label><br>
+                        <select name="mixer-region-name" id="mixer-region-select">
+                        </select>
+                    </div>
+                    <br>
+                    <button type="submit">Create Composition</button>
+                </form>
+                <br>
+            </div>
+
+            <div class="view-container">
+                <iframe id="conference-i-frame" src=""></iframe>
+            </div>
+            <div class="waiting-room-container">
+                <p><span>Waiting room for: </span><strong><span id="room-field">?</span></strong></p>
+                <div id="waiting-room-wall" class="waiting-room-wall subscribe-section"></div>
+            </div>
+        </div>
+    </div>
+    {{> body-scripts}}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/uuid/8.1.0/uuidv4.min.js"></script>
+    <script src="../../script/red5pro-utils.js"></script>
+    <script src="../../script/conference-subscriber-block.js"></script>
+    <script src="index.js"></script>
+</body>
+
+</html>
