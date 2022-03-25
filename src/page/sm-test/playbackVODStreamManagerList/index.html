@@ -52,6 +52,9 @@
       .file-listing > p.item-separator {
         border-bottom: 1px solid #999; 
       }
+      .param-setting {
+        padding-top: 10px;
+      }
     </style>
     <link href="//unpkg.com/video.js@7.0.0/dist/video-js.css" rel="stylesheet">
     <script src="//unpkg.com/video.js@7.0.0/dist/video.min.js"></script>
@@ -71,6 +74,12 @@
       {{> test-title title='Stream Manager Playback VOD Listing Test'}}
       <div class="centered" style="margin-bottom:10px;"><em>This example requires the use of cloud storage to access the VOD files.</em></div>
       <div class="stream-section">
+        <div class="centered file-listing-section">
+          <p class="param-setting">
+            <label for="param-name1" class="strong">Retrieve From Cloud Storage:</label>
+            <input type="checkbox" id="use-cloudstorage-checkbox" name="use_cloud_storage" unchecked>
+          </p>
+        </div>
         <div class="centered file-listing-section">
           <div class="file-listing-container">
             <p class="file-listing-title"><span class="strong">Media Files (FLV &amp; MP4)</span></p>
