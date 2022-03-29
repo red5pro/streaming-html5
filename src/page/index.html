@@ -154,6 +154,10 @@
         <label class="settings-label">Password:</label>
         <input id="auth-password-field" name="auth-password-field" disabled>
       </p>
+      <p class="settings-field settings-collapsable">
+        <label class="settings-label">Token:</label>
+        <input id="auth-token-field" name="auth-token-field" disabled>
+      </p>
       <hr class="paddedHR" />
       <h2 class="centered">Mixer Specific</h2>
       <p class="settings-field settings-collapsable">
@@ -237,6 +241,7 @@
       var authEnabledField = document.getElementById('auth-enabled-field');
       var authUsernameField = document.getElementById('auth-username-field');
       var authPasswordField = document.getElementById('auth-password-field');
+      var authTokenField = document.getElementById('auth-token-field');
 
       function hideShowICEOptions() {
         var isTurnServer = turnRegex.test(iceField.value);
@@ -296,6 +301,18 @@
             }
           ]
         }
+        hideShowICEOptions();
+        seal(configuration);
+      });
+
+      iceUsername.addEventListener('blur', function () {
+        if (configuration.rtcConfiguration.iceServers.length <= 0) {
+          configuration.rtcConfiguration.iceServers = [
+            {
+              "urls": iceField.value
+            }
+          ]
+        }
         configuration.rtcConfiguration.iceServers[0].username = iceUsername.value;
         seal(configuration);
       });
@@ -340,7 +357,7 @@
 
       authEnabledField.addEventListener('change', function () {
         configuration.authentication.enabled = authEnabledField.checked;
-        authUsernameField.disabled = authPasswordField.disabled = !configuration.authentication.enabled;
+        authUsernameField.disabled = authPasswordField.disabled = authTokenField.disabled = !configuration.authentication.enabled;
         seal(configuration);
       });
       authUsernameField.addEventListener('blur', function () {
@@ -349,6 +366,10 @@
       });
       authPasswordField.addEventListener('blur', function () {
         configuration.authentication.password = authPasswordField.value;
+        seal(configuration);
+      });
+      authTokenField.addEventListener('blur', function () {
+        configuration.authentication.token = authTokenField.value;
         seal(configuration);
       });
 
@@ -432,6 +453,7 @@
         authEnabledField.checked = config.authentication.enabled ? true : false;
         authUsernameField.value = config.authentication.username;
         authPasswordField.value = config.authentication.password;
+        authTokenField.value = config.authentication.token;
         authUsernameField.disabled = authPasswordField.disabled = !authEnabledField.checked;
         mixerBackendSocketField.value = config.mixerBackendSocketField;
         mixerAuthenticationEnabledField.checked = config.mixerAuthenticationEnabled ? config.mixerAuthenticationEnabled : false
