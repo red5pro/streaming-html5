@@ -63,6 +63,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       playback(filename);
     }
   });
+  var useCloudStorageCheckbox = document.getElementById('use-cloudstorage-checkbox');
 
   var protocol = serverSettings.protocol;
   var isSecure = protocol === 'https';
@@ -201,7 +202,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     var port = serverSettings.httpport;
     var baseUrl = protocol + '://' + host + ':' + port;
     var apiVersion = configuration.streamManagerAPI || '4.0';
-    var url = baseUrl + '/streammanager/api/' + apiVersion + '/media/' + app + '/playlists';
+    var url = baseUrl + '/streammanager/api/' + apiVersion + '/media/' + app + '/playlists' + '?useCloud=' + useCloudStorageCheckbox.checked;
     if (configuration.authentication.enabled) {
       url += `?${getAuthQueryParams()}`
     }

@@ -55,6 +55,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var errorNotification = document.getElementById('error-notification');
   var mediaListing = document.getElementById('media-file-listing');
   var playlistListing = document.getElementById('playlist-listing');
+  var useCloudStorageCheckbox = document.getElementById('use-cloudstorage-checkbox');
+  useCloudStorageCheckbox.addEventListener('change', refreshList);
 
   var subscriberNode = '<video id="red5pro-subscriber" controls autoplay playsinline class="red5pro-subscriber red5pro-media red5pro-media-background" width="640" height="480"></video>';
 
@@ -154,7 +156,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     var port = serverSettings.httpport;
     var baseUrl = protocol + '://' + host + ':' + port;
     var apiVersion = configuration.streamManagerAPI || '4.0';
-    var url = baseUrl + '/streammanager/api/' + apiVersion + '/media/' + app + '/' + vodType;
+    var url = baseUrl + '/streammanager/api/' + apiVersion + '/media/' + app + '/' + vodType + '?useCloud=' + useCloudStorageCheckbox.checked;
     if (configuration.authentication.enabled) {
       url += `?${getAuthQueryParams()}`
     }
@@ -410,6 +412,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         getPlaylists();
         console.info(error);
       });
+  }
+
+  function refreshList() {
+    getMediaFiles();
   }
 
   // start.
