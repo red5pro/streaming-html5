@@ -55,6 +55,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var errorNotification = document.getElementById('error-notification');
   var mediaListing = document.getElementById('media-file-listing');
   var playlistListing = document.getElementById('playlist-listing');
+  var useCloudStorageCheckbox = document.getElementById('use-cloudstorage-checkbox');
+  useCloudStorageCheckbox.addEventListener('change', refreshList);
 
   var subscriberNode = '<video id="red5pro-subscriber" controls autoplay playsinline class="red5pro-subscriber red5pro-media red5pro-media-background" width="640" height="480"></video>';
 
@@ -100,6 +102,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   function useMP4Fallback (url) {
+    if (configuration.authentication.enabled) {
+      url += `?${getAuthQueryParams()}`
+    }
     console.log('[subscribe] Playback MP4: ' + url);
     var element = document.getElementById('red5pro-subscriber');
     var source = document.createElement('source');
@@ -109,6 +114,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   function useVideoJSFallback (url) {
+    if (configuration.authentication.enabled) {
+      url += `?${getAuthQueryParams()}`
+    }
     console.log('[subscribe] Playback HLS: ' + url);
     var videoElement = document.getElementById('red5pro-subscriber');
     videoElement.classList.add('video-js');
@@ -132,13 +140,26 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     errorNotification.classList.add('hidden');
   }
 
+  function getAuthQueryParams () {
+    var auth = configuration.authentication
+    var kv = []
+    for (var key in auth) {
+      if (key === 'enabled' || auth[key] === '') continue
+      kv.push(`${key}=${auth[key]}`)
+    }
+    return kv.join('&')
+  }
+
   function requestVOD (configuration, vodType /* mediafiles | playlists */) {
     var host = configuration.host;
     var app = configuration.app;
     var port = serverSettings.httpport;
     var baseUrl = protocol + '://' + host + ':' + port;
     var apiVersion = configuration.streamManagerAPI || '4.0';
-    var url = baseUrl + '/streammanager/api/' + apiVersion + '/media/' + app + '/' + vodType;
+    var url = baseUrl + '/streammanager/api/' + apiVersion + '/media/' + app + '/' + vodType + '?useCloud=' + useCloudStorageCheckbox.checked;
+    if (configuration.authentication.enabled) {
+      url += `?${getAuthQueryParams()}`
+    }
     return new Promise(function (resolve, reject) {
         fetch(url)
           .then(function (res) {
@@ -163,40 +184,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           })
           .catch(function (error) {
             console.error('[SubscribeStreamManagerTest] :: Error - Could not request Playlists from Stream Manager. ' + error.message)
-            showErrorNotification(error.message);
-            reject(error)
-          });
-    });
-  }
-
-  // eslint-disable-next-line no-unused-vars
-  function requestEdge (configuration, vod) {
-    var host = configuration.host;
-    var app = configuration.app;
-    var port = serverSettings.httpport;
-    var baseUrl = protocol + '://' + host + ':' + port;
-    var apiVersion = configuration.streamManagerAPI || '4.0';
-    var url = baseUrl + '/streammanager/api/' + apiVersion + '/media/' + app + '/' + vod;
-      return new Promise(function (resolve, reject) {
-        fetch(url)
-          .then(function (res) {
-            if (res.headers.get("content-type") &&
-              res.headers.get("content-type").toLowerCase().indexOf("application/json") >= 0) {
-                return res.json();
-            }
-            else {
-              throw new TypeError('[RequestVOD] :: Could not properly parse response.');
-            }
-          })
-          .then(function (json) {
-            if (json.errorMessage) {
-              throw new Error(json.errorMessage);
-            } else {
-              resolve(json);
-            }
-          })
-          .catch(function (error) {
-            console.error('[SubscribeStreamManagerTest] :: Error - Could not request Edge IP from Stream Manager. ' + error.message)
             showErrorNotification(error.message);
             reject(error)
           });
@@ -425,6 +412,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         getPlaylists();
         console.info(error);
       });
+  }
+
+  function refreshList() {
+    getMediaFiles();
   }
 
   // start.

@@ -137,7 +137,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       params = {
         connectionParams: {
           username: auth.username,
-          password: auth.password
+          password: auth.password,
+          token: auth.token
         }
       }
       if (authToken) {

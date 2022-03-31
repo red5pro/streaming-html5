@@ -23,10 +23,10 @@ NONINFRINGEMENT.   IN  NO  EVENT  SHALL INFRARED5, INC. BE LIABLE FOR ANY CLAIM,
 WHETHER IN  AN  ACTION  OF  CONTRACT,  TORT  OR  OTHERWISE,  ARISING  FROM,  OUT  OF  OR  IN CONNECTION 
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
-(function(window, document, red5prosdk) {
+(function (window, document, red5prosdk) {
   'use strict';
 
-  var serverSettings = (function() {
+  var serverSettings = (function () {
     var settings = sessionStorage.getItem('r5proServerSettings');
     try {
       return JSON.parse(settings);
@@ -55,7 +55,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var submitButton = document.getElementById('submit-button');
   submitButton.addEventListener('click', onsubmit)
 
-  function onsubmit (event) {
+  function onsubmit(event) {
     event.preventDefault()
     event.stopImmediatePropagation();
     var filename = nameInput.value;
@@ -75,13 +75,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   var protocol = serverSettings.protocol;
   var isSecure = protocol === 'https';
-  function getSocketLocationFromProtocol () {
+  function getSocketLocationFromProtocol() {
     return !isSecure
-      ? {protocol: 'ws', port: serverSettings.wsport}
-      : {protocol: 'wss', port: serverSettings.wssport};
+      ? { protocol: 'ws', port: serverSettings.wsport }
+      : { protocol: 'wss', port: serverSettings.wssport };
   }
 
-  var defaultConfiguration = (function(useVideo, useAudio) {
+  var defaultConfiguration = (function (useVideo, useAudio) {
     var c = {
       protocol: getSocketLocationFromProtocol().protocol,
       port: getSocketLocationFromProtocol().port
@@ -96,41 +96,63 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   })(configuration.useVideo, configuration.useAudio);
 
   // Local lifecycle notifications.
-  function onSubscriberEvent (event) {
+  function onSubscriberEvent(event) {
     console.log('[Red5ProSubscriber] ' + event.type + '.');
   }
-  function onSubscribeFail (message) {
+  function onSubscribeFail(message) {
     console.error('[Red5ProSubsriber] Subscribe Error :: ' + message);
   }
-  function onSubscribeSuccess () {
+  function onSubscribeSuccess() {
     console.log('[Red5ProSubsriber] Subscribe Complete.');
   }
-  function onUnsubscribeFail (message) {
+  function onUnsubscribeFail(message) {
     console.error('[Red5ProSubsriber] Unsubscribe Error :: ' + message);
   }
-  function onUnsubscribeSuccess () {
+  function onUnsubscribeSuccess() {
     console.log('[Red5ProSubsriber] Unsubscribe Complete.');
   }
 
-  function isMP4File (filename) {
+  function isMP4File(filename) {
     return filename.indexOf('.mp4') !== -1;
   }
 
-  function isHLSFile (filename) {
+  function isHLSFile(filename) {
     return filename.indexOf('.m3u8') !== -1;
   }
 
-  function getFileURL (filename) {
-    var baseURL = protocol + '://' + configuration.host + 
-                  ':' + (isSecure ? serverSettings.hlssport : serverSettings.hlsport) + 
-                  '/' + configuration.app;
-    if (isMP4File(filename)) {
-      return baseURL + '/streams/' + filename;
+  function getAuthQueryParams() {
+    var auth = configuration.authentication
+    var kv = []
+    for (var key in auth) {
+      if (key === 'enabled' || auth[key] === '') continue
+      kv.push(`${key}=${auth[key]}`)
     }
-    return [baseURL, filename].join('/');
+    return kv.join('&')
   }
 
-  function useMP4Fallback (url) {
+  async function getFileURL(filename) {
+    var baseURL = protocol + '://' + configuration.host +
+      ':' + (isSecure ? serverSettings.hlssport : serverSettings.hlsport) +
+      '/' + configuration.app;
+    let url;
+    if (isMP4File(filename)) {
+      url = baseURL + '/streams/' + filename;
+    } else {
+      url = [baseURL, filename].join('/');
+    }
+
+    return fetch(url, {
+      redirect: 'follow'
+    })
+      .then(response => {
+        return response.url
+      })
+  }
+
+  function useMP4Fallback(url) {
+    if (configuration.authentication.enabled) {
+      url += `?${getAuthQueryParams()}`
+    }
     console.log('[subscribe] Playback MP4: ' + url);
     if (url.indexOf('streams/') === -1) {
       var paths = url.split('/');
@@ -144,7 +166,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     element.appendChild(source);
   }
 
-  function useVideoJSFallback (url) {
+  function useVideoJSFallback(url) {
+    if (configuration.authentication.enabled) {
+      url += `?${getAuthQueryParams()}`
+    }
     console.log('[subscribe] Playback HLS: ' + url);
     var videoElement = document.getElementById('red5pro-subscriber');
     videoElement.classList.add('video-js');
@@ -159,7 +184,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     });
   }
 
-  function determineSubscriber (streamName) {
+  function determineSubscriber(streamName) {
     var config = Object.assign({}, configuration, defaultConfiguration);
     var hlsConfig = Object.assign({}, config, {
       protocol: protocol,
@@ -172,8 +197,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   // Request to unsubscribe.
-  function unsubscribe () {
-    return new Promise(function(resolve, reject) {
+  function unsubscribe() {
+    return new Promise(function (resolve, reject) {
       var subscriber = targetSubscriber
       if (subscriber) {
         subscriber.unsubscribe()
@@ -194,7 +219,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     });
   }
 
-  function determineStreamNameFromFilename (filename) {
+  function determineStreamNameFromFilename(filename) {
     var parts = filename.split('.');
     var ext = parts[1];
     if (ext === 'm3u8') {
@@ -205,30 +230,31 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   function playback(filename) {
     var streamName = determineStreamNameFromFilename(filename);
-    var start = function () {
+    var start = async function () {
+      let url = await getFileURL(filename)
       if (isMP4File(filename)) {
-        useMP4Fallback(getFileURL(filename));
+        useMP4Fallback(url);
         return
       }
       // Kick off.
       determineSubscriber(streamName)
-        .then(function(subscriberImpl) {
+        .then(function (subscriberImpl) {
           targetSubscriber = subscriberImpl;
           // Subscribe to events.
           targetSubscriber.on('*', onSubscriberEvent);
           return targetSubscriber.subscribe();
         })
-        .then(function() {
+        .then(function () {
           onSubscribeSuccess();
         })
-        .catch(function (error) {
+        .catch(async function (error) {
           var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
           console.error('[Red5ProSubscriber] :: Error in subscribing - ' + jsonError);
           onSubscribeFail(jsonError);
           if (isHLSFile(filename)) {
-            useVideoJSFallback(getFileURL(filename));
+            useVideoJSFallback(url);
           } else if (isMP4File(filename)) {
-            useMP4Fallback(getFileURL(filename));
+            useMP4Fallback(url);
           }
         });
     };
@@ -253,7 +279,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   function shutdown() {
     if (shuttingDown) return;
     shuttingDown = true;
-    function clearRefs () {
+    function clearRefs() {
       if (targetSubscriber) {
         targetSubscriber.off('*', onSubscriberEvent);
       }

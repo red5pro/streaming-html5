@@ -63,6 +63,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       playback(filename);
     }
   });
+  var useCloudStorageCheckbox = document.getElementById('use-cloudstorage-checkbox');
 
   var protocol = serverSettings.protocol;
   var isSecure = protocol === 'https';
@@ -128,6 +129,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   function useMP4Fallback (url) {
+    if (configuration.authentication.enabled) {
+      url += `?${getAuthQueryParams()}`
+    }
     console.log('[subscribe] Playback MP4: ' + url);
     if (url.indexOf('streams/') === -1) {
       var paths = url.split('/');
@@ -164,6 +168,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   function useVideoJSFallback (url) {
+    if (configuration.authentication.enabled) {
+      url += `?${getAuthQueryParams()}`
+    }
     console.log('[subscribe] Playback HLS: ' + url);
     var videoElement = document.getElementById('red5pro-subscriber');
     videoElement.classList.add('video-js');
@@ -179,13 +186,26 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
 
+  function getAuthQueryParams () {
+    var auth = configuration.authentication
+    var kv = []
+    for (var key in auth) {
+      if (key === 'enabled' || auth[key] === '') continue
+      kv.push(`${key}=${auth[key]}`)
+    }
+    return kv.join('&')
+  }
+
   function requestPlaylist (configuration, vod) {
     var host = configuration.host;
     var app = configuration.app;
     var port = serverSettings.httpport;
     var baseUrl = protocol + '://' + host + ':' + port;
     var apiVersion = configuration.streamManagerAPI || '4.0';
-    var url = baseUrl + '/streammanager/api/' + apiVersion + '/media/' + app + '/playlists';
+    var url = baseUrl + '/streammanager/api/' + apiVersion + '/media/' + app + '/playlists' + '?useCloud=' + useCloudStorageCheckbox.checked;
+    if (configuration.authentication.enabled) {
+      url += `?${getAuthQueryParams()}`
+    }
     return new Promise(function (resolve, reject) {
         fetch(url)
           .then(function (res) {
