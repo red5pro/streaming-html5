@@ -290,7 +290,7 @@ Be aware that overriding `onGetUserMedia` you are losing the logic from the Red5
 
 # Lifecycle Events
 
-This section describes the events dispatched from the Publisher of the Red5 Pro HTML SDK.
+This section describes the events dispatched from the Publisher of the Red5 Pro WebRTC SDK.
 
 * [Listening to Publisher Events](#listening-to-publisher-events)
 * [Common Events](#common-events)
@@ -328,7 +328,7 @@ The following sections of this document describe the event types that can also b
 
 ## Common Events
 
-The following events are common across all Publisher implementations from the Red5 Pro HTML SDK. They can be accessed from the global `red5prosdk` object from the `PublisherEventTypes` attribute.
+The following events are common across all Publisher implementations from the Red5 Pro WebRTC SDK. They can be accessed from the global `red5prosdk` object from the `PublisherEventTypes` attribute.
 
 | Access | Name | Meaning |
 | :--- | :---: | :--- |
