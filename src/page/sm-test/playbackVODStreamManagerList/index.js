@@ -158,7 +158,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     var apiVersion = configuration.streamManagerAPI || '4.0';
     var url = baseUrl + '/streammanager/api/' + apiVersion + '/media/' + app + '/' + vodType + '?useCloud=' + useCloudStorageCheckbox.checked;
     if (configuration.authentication.enabled) {
-      url += `?${getAuthQueryParams()}`
+      url += `&${getAuthQueryParams()}`
     }
     return new Promise(function (resolve, reject) {
         fetch(url)
