@@ -1,0 +1,47 @@
+<!doctype html>
+{{> license}}
+<html>
+  <head>
+    {{> meta title='WebRTC Subscriber Stream Manager Proxy Mute API Test'}}
+    {{> header-scripts}}
+    {{> header-stylesheets}}
+    <style>
+      .control-container {
+        display: flex;
+        flex-direction: row;
+        background-color: #dbdbdb;
+        padding: 20px;  }
+      .control-container > button:nth-child(even) {
+        margin-left: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    {{> top-bar }}
+    {{> navigation isTestPage=true }}
+    <div id="app">
+      {{> settings-link}}
+      {{> test-info testTitle='Subscriber Stream Manager Proxy Mute API Test (WebRTC)'}}
+      <div class="stream-section">
+        {{> status-field-subscriber}}
+        {{> statistics-field packets_field='Packets Received'}}
+        <div class="centered"><p id="address-field" class="address-field">Edge Address: N/A</p></div>
+        <div class="centered">
+          <video id="red5pro-subscriber"
+                  controls="controls" autoplay="autoplay" playsinline
+                  class="red5pro-subscriber red5pro-media red5pro-media-background"
+                  width="640" height="480">
+          </video>
+        </div>
+        <div class="centered">
+          <p class="control-container">
+            <button id="mute-audio-button" class="ui-button" disabled>Mute Audio</button>
+            <button id="mute-video-button" class="ui-button" disabled>Mute Video</button>
+          </p>
+        </div>
+      </div>
+    </div>
+    {{> body-scripts}}
+    <script src="index.js"></script>
+  </body>
+</html>

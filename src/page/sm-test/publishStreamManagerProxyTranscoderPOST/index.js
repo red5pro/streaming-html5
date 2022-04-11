@@ -109,13 +109,16 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   };
 
   var accessToken = configuration.streamManagerAccessToken;
-  var authName = '';
-  var authPass = '';
+  var auth = configuration.authentication;
+  var authName = auth.enabled ? auth.username : '';
+  var authPass = auth.enabled ? auth.password : '';
+  var authToken = (auth.enabled && !window.isEmpty(auth.token)) ? auth.token : undefined;
   var transcoderPOST = {
     meta: {
       authentication: {
         username: authName,
-        password: authPass
+        password: authPass,
+        token: authToken
       },
       stream: [],
       georules: {
@@ -132,7 +135,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       ? {
         connectionParams: {
           username: auth.username,
-          password: auth.password
+          password: auth.password,
+          token: auth.token
         }
       }
       : {};
