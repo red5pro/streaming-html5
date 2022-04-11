@@ -280,7 +280,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         app: 'streammanager',
         connectionParams: {
           host: edgeList[i].serverAddress,
-          app: app 
+          app: app,
+          usePrivateProxy: configuration.streamManagerPrivateProxy
         },
         streamName: edgeList[i].name
       });

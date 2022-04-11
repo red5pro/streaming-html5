@@ -478,7 +478,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           protocol: getSocketLocationFromProtocol().protocol,
           port: getSocketLocationFromProtocol().port
         },
-        getAuthenticationParams(), 
+        getAuthenticationParams(),
         {
           app: `live/${roomName}`
         });

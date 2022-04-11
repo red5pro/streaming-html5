@@ -271,7 +271,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       app: configuration.proxy,
       connectionParams: {
         host: host,
-        app: app
+        app: app,
+        usePrivateProxy: configuration.streamManagerPrivateProxy
       },
       subscriptionId: 'subscriber-' + (Math.floor(Math.random() * 0x10000).toString(16)),
       streamName: config.stream1
