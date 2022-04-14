@@ -373,7 +373,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   window.getIsStreamAvailable = getIsStreamAvailable
 
   window.isEmpty = function (str) {
-    return (str && str.length === 0) || !!str
+    return (str && str.length === 0) || !str
   }
   window.query = getQueryVariable;
   window.exposePublisherGlobally = function (publisher) {

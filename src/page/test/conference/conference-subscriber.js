@@ -35,6 +35,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   var subscriberMap = {};
+  var ConferenceSubscriberItemMap = {}
   var streamNameField = document.getElementById('streamname-field');
   var updateSuscriberStatusFromEvent = window.red5proHandleSubscriberEvent;
   var subscriberTemplate = '' +
@@ -62,6 +63,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   function getSubscriberElementId (streamName) {
     return ['red5pro', 'subscriber', streamName].join('-');
+  }
+
+  function getSubscriberElementContainerId (streamName) {
+    return [getSubscriberElementId(streamName), 'container'].join('-')
   }
 
   function getSubscriberAudioElementId (streamName) {
@@ -135,7 +140,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     this.toggleVideoPoster = this.toggleVideoPoster.bind(this);
     this.handleAudioDecoyVolumeChange = this.handleAudioDecoyVolumeChange.bind(this);
     this.handleStreamingModeMetadata = this.handleStreamingModeMetadata.bind(this);
+
+    this.resetTimout = 0
+    this.disposed = false
+    ConferenceSubscriberItemMap[this.streamName] = this
   }
+
   SubscriberItem.prototype.handleAudioDecoyVolumeChange = function (event) {
     if (this.audioDecoy) {
       this.audioDecoy.setVolume(event.data.volume);
@@ -171,6 +181,33 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       video.classList.remove('hidden');
     }
   }
+  SubscriberItem.prototype.respond = function (event) {
+    if (event.type === 'Subscribe.Time.Update') return;
+
+    console.log('TEST', '[subscriber:' + this.streamName + '] ' + event.type);
+    var inFailedState = updateSuscriberStatusFromEvent(event, this.statusField);
+    if (event.type === 'Subscribe.Metadata') {
+      if (event.data.streamingMode) {
+        this.toggleVideoPoster(!event.data.streamingMode.match(/Video/));
+      }
+    } else if (event.type === 'Subscriber.Play.Unpublish') {
+      this.dispose()
+    } else if (event.type === 'Subscribe.Connection.Closed') {
+      this.close()
+    } else if (event.type === 'Connect.Failure') {
+      this.reject()
+      this.close()
+    } else if (event.type === 'Subscribe.Fail') {
+      this.reject()
+      this.close()
+    } else if (event.type === 'Subscribe.Start') {
+      this.resolve()
+    }
+
+    if (inFailedState) {
+      this.close();
+    }
+  }
   SubscriberItem.prototype.resolve = function () {
     if (this.next) {
       this.next.execute(this.baseConfiguration);
@@ -182,7 +219,50 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       this.next.execute(this.baseConfiguration);
     }
   }
-  SubscriberItem.prototype.execute = function (config) {
+  SubscriberItem.prototype.reset = function () {
+    clearTimeout(this.resetTimeout)
+    if (this.disposed) return
+
+    this.statusField.innerText = 'Retrying...'
+    this.resetTimeout = setTimeout(() => {
+      clearTimeout(this.resetTimeout);
+      console.log('TEST', '[subscriber:' + this.streamName + '] retry.')
+      this.execute(this.baseConfiguration)
+    }, 2000)
+  }
+  SubscriberItem.prototype.dispose = function () {
+    clearTimeout(this.resetTimeout)
+    this.disposed = true
+    this.close()
+  }
+  SubscriberItem.prototype.close = function () {
+    const cleanup = () => {
+      this.statusField.innerText = 'Closing...'
+      if (!this.disposed) {
+        this.reset()
+      } else {
+        var el = document.getElementById(getSubscriberElementId(this.streamName) + '-container')
+        if (el) {
+          el.parentNode.removeChild(el);
+        }
+        console.log('TEST', 'To disposeDD ' + this.streamName)
+        delete ConferenceSubscriberItem[this.streamName]
+        delete subscriberMap[this.streamName]
+      }
+    }
+    if (this.subscriber) {
+      this.subscriber.off('*', this.respond);
+      this.subscriber.unsubscribe().then(cleanup).catch(cleanup);
+      this.subscriber = undefined
+    } else {
+      try { cleanup() } catch (e) {}
+    }
+    if (this.audioDecoy) {
+      removeAudioSubscriberDecoy(this.streamName, this.audioDecoy);
+    }
+  }
+  SubscriberItem.prototype.execute = async function (config) {
+    clearTimeout(this.resetTimeout)
     this.baseConfiguration = config;
     var self = this;
     var name = this.streamName;
@@ -190,71 +270,38 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     var rtcConfig = Object.assign({}, config, {
                       streamName: name,
                       subscriptionId: [this.subscriptionId, uid].join('-'),
-                      mediaElementId: getSubscriberElementId(name)
-                    });
-    this.subscriber = new red5prosdk.RTCSubscriber();
-    this.subscriber.on('Connect.Success', this.resolve.bind(this));
-    this.subscriber.on('Connect.Failure', this.reject.bind(this));
-    var sub = this.subscriber;
-    var handleStreamingModeMetadata = this.handleStreamingModeMetadata;
-    var toggleVideoPoster = this.toggleVideoPoster;
-    var statusField = this.statusField;
-    var reject = this.reject.bind(this);
-    var closeCalled = false;
-    var close = function (event) { // eslint-disable-line no-unused-vars
-      if(closeCalled) return;
-      closeCalled = true;
-      function cleanup () {
-        var el = document.getElementById(getSubscriberElementId(name) + '-container')
-        el.parentNode.removeChild(el);
-        sub.off('*', respond);
-        sub.off('Subscribe.Fail', fail);
-      }
-      sub.off('Subscribe.Connection.Closed', close);
-      sub.unsubscribe().then(cleanup).catch(cleanup);
-      if (self.audioDecoy) {
-        removeAudioSubscriberDecoy(self.streamName, self.audioDecoy);
-      }
-      delete subscriberMap[name];
-    };
-    var fail = function (event) { // eslint-disable-line no-unused-vars
-      close();
-      var t = setTimeout(function () {
-        clearTimeout(t);
-        new SubscriberItem(self.streamName, self.parent, self.index).execute();
-      }, 2000);
-    };
-    var respond = function (event) {
-      if (event.type === 'Subscribe.Time.Update') return;
-      console.log('[subscriber:' + name + '] ' + event.type);
-      var inFailedState = updateSuscriberStatusFromEvent(event, statusField);
-      if (event.type === 'Subscribe.Metadata') {
-        if (event.data.streamingMode) {
-          handleStreamingModeMetadata(event.data.streamingMode)
-          toggleVideoPoster(!event.data.streamingMode.match(/Video/));
-        }
-      }
-      if (inFailedState) {
-        close();
-      }
-    };
+                      mediaElementId: getSubscriberElementId(this.streamName)
+    });
 
-    this.subscriber.on('Subscribe.Connection.Closed', close);
-    this.subscriber.on('Subscribe.Fail', fail);
-    this.subscriber.on('*', respond);
+    try {
+      this.subscriber = new red5prosdk.RTCSubscriber()
+      this.subscriber.on('*',  (e) => this.respond(e))
 
-    this.subscriber.init(rtcConfig)
-      .then(function (subscriber) {
-        subscriberMap[name] = subscriber;
-        return subscriber.subscribe();
-      })
-      .catch(function (error) {
-        console.log('[subscriber:' + name + '] Error');
-        reject(error);
-      });
+      await this.subscriber.init(rtcConfig)
+      subscriberMap[this.streamName] = this.subscriber
+      await this.subscriber.subscribe()
+      clearTimeout(this.resetTimeout)
+    } catch (error) {
+      console.log('[subscriber:' + name + '] Error')
+      self.reject(error)
+      self.close()
+    }
   }
 
+  window.getConferenceSubscriberElementContainerId = getSubscriberElementContainerId;
   window.getConferenceSubscriberElementId = getSubscriberElementId;
   window.ConferenceSubscriberItem = SubscriberItem;
+  window.ConferenceSubscriberUtil = {
+    removeAll: names => {
+      while (names.length > 0) {
+        let name = names.shift()
+        //        console.log('TEST', 'TO shift: ' + name, ConferenceSubscriberItemMap)
+        let item = ConferenceSubscriberItemMap[name]
+        if (item) {
+          item.dispose()
+        }
+      }
+    }
+  }
 
 })(window, document, window.red5prosdk);

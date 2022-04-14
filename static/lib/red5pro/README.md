@@ -9,8 +9,8 @@
 
 ---
 
-# Red5 Pro HTML5 SDK
-> The **Red5 Pro HTML5 SDK** allows you to integrate live streaming video into your desktop and mobile browser.
+# Red5 Pro WebRTC SDK
+> The **Red5 Pro WebRTC SDK** allows you to integrate live streaming video into your desktop and mobile browser.
 
 * [Quickstart](#quickstart)
   * [Installation](#installation)
@@ -18,12 +18,9 @@
 * [Usage](#usage)
   * [Publisher](#publisher)
     * [WebRTC](PUBLISHER_README.md#webrtc)
-    * [Flash/RTMP](PUBLISHER_README.md#flash)
-    * [Auto Failover](PUBLISHER_README.md#auto-failover-and-order)
     * [Lifecycle Events](PUBLISHER_README.md#lifecycle-events)
   * [Subscriber](#subscriber)
     * [WebRTC](SUBSCRIBER_README.md#webrtc)
-    * [Flash/RTMP](SUBSCRIBER_README.md#flash)
     * [HLS](SUBSCRIBER_README.md#hls)
     * [Auto Failover](SUBSCRIBER_README.md#auto-failover-and-order)
     * [Lifecycle Events](SUBSCRIBER_README.md#lifecycle-events)
