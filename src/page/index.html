@@ -1,37 +1,47 @@
 <!doctype html>
 {{> license}}
 <html>
-  <head>
-    {{> meta title='Red5 Pro HTML SDK Testbed'}}
-    <link rel="stylesheet" href="css/reset.css">
-    <link rel="stylesheet" href="css/testbed.css">
-    <script src="script/testbed-config.js"></script>
-    <link rel='stylesheet' href='//fonts.googleapis.com/css?family=Lato%3A100%2C200%2C300%2C400%2C500%2C600%2C700%2C800%2C900%2C100i%2C200i%2C300i%2C400i%2C500i%2C600i%2C700i%2C800i%2C900i&#038;subset=latin&#038;ver=5.2.3' type='text/css' media='all' />
-    <style>
-      .ice-option {
-        margin-top: 1.2rem;
-      }
-      .hidden {
-        display: none;
-      }
-    </style>
-  </head>
-  <body>
-    {{> top-bar }}
-    {{> navigation isTestPage=false }}
-    <div id="app">
-      <div id="back-link-container" style="text-align: left;">
-        <p class="back-link"><a href="testbed-menu.html">&lt; Testbed Menu</a></p>
-        <p class="version-field">Testbed Version: {{ version }}</p>
-      </div>
-      <div class="ice-background hidden">
-        <div class="test-notification">
-        <p>If these example pages are served over HTTPS, it is required that the target <code>host</code> is also accessible over HTTPS.</p>
-        <br/>
-        <p>If you are viewing these examples from the <code>webrtcexamples</code> webapp shipped with the Red5 Pro Server, you should not have to worry about Cross Origin Resource Sharing (CORS) issues running from either <code>localhost</code> or on TLS from a remote deploy</p>
-        <br/>
-        <p>Otherwise, if you are viewing these examples from another origin other than the target Red5 Pro Server defined as <code>host</code> please be sure that the required CORS settings are in place to communicate properly. <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS" target="_blank">More info about CORS</a>.</p>
-        </div>
+
+<head>
+  {{> meta title='Red5 Pro HTML SDK Testbed'}}
+  <link rel="stylesheet" href="css/reset.css">
+  <link rel="stylesheet" href="css/testbed.css">
+  <script src="script/testbed-config.js"></script>
+  <link rel='stylesheet'
+    href='//fonts.googleapis.com/css?family=Lato%3A100%2C200%2C300%2C400%2C500%2C600%2C700%2C800%2C900%2C100i%2C200i%2C300i%2C400i%2C500i%2C600i%2C700i%2C800i%2C900i&#038;subset=latin&#038;ver=5.2.3'
+    type='text/css' media='all' />
+  <style>
+    .ice-option {
+      margin-top: 1.2rem;
+    }
+
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+  {{> top-bar }}
+  {{> navigation isTestPage=false }}
+  <div id="app">
+    <div id="back-link-container" style="text-align: left;">
+      <p class="back-link"><a href="testbed-menu.html">&lt; Testbed Menu</a></p>
+      <p class="version-field">Testbed Version: {{ version }}</p>
+    </div>
+    <div class="ice-background hidden">
+      <div class="test-notification">
+        <p>If these example pages are served over HTTPS, it is required that the target <code>host</code> is also
+          accessible over HTTPS.</p>
+        <br />
+        <p>If you are viewing these examples from the <code>webrtcexamples</code> webapp shipped with the Red5 Pro
+          Server, you should not have to worry about Cross Origin Resource Sharing (CORS) issues running from either
+          <code>localhost</code> or on TLS from a remote deploy</p>
+        <br />
+        <p>Otherwise, if you are viewing these examples from another origin other than the target Red5 Pro Server
+          defined as <code>host</code> please be sure that the required CORS settings are in place to communicate
+          properly. <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS" target="_blank">More
+            info about CORS</a>.</p>
       </div>
       <div id="settings-container">
         <h1 class="centered">Settings</h1>
@@ -130,67 +140,76 @@
           <input id="sm-api-field" name="sm-api-field" placeholder="e.g., 4.0">
         </p>
         <p class="settings-field settings-collapsable">
+
         <label class="settings-label">Region:</label>
         <input id="sm-region-field" name="sm-region-field" value="sm-region">
-        </p>
-        <hr class="paddedHR" />
-        <h2 class="centered">Authentication</h2>
-        <p class="settings-field">
-          <label class="settings-label">Authentication Enabled:</label>
-          <input type="checkbox" id="auth-enabled-field" name="auth-enabled-field" style="vertical-align: middle;">
-        <p class="settings-field settings-collapsable">
-          <label class="settings-label">Username:</label>
-          <input id="auth-username-field" name="auth-username-field" disabled>
-        </p>
-        <p class="settings-field settings-collapsable">
-          <label class="settings-label">Password:</label>
-          <input id="auth-password-field" name="auth-password-field" disabled>
-        </p>
-        </p>
-        <hr class="paddedHR" />
-        <p class="settings-field">
-          <label class="settings-label">Verbose R5 Logging:</label>
-          <input type="checkbox" id="logging-field" name="logging-field" style="vertical-align: middle;">
-        </p>
-        <p class="settings-field">
-          <label class="settings-label">Video Active:</label>
-          <input type="checkbox" id="video-active-field" name="video-active-field" style="vertical-align: middle;">
-        </p>
-        <p class="settings-field">
-          <label class="settings-label">Audio Active:</label>
-          <input type="checkbox" id="audio-active-field" name="audio-active-field" style="vertical-align: middle;">
-        </p>
-        <p class="settings-field">
-          <label class="settings-label">Record Broadcast:</label>
-          <input type="checkbox" id="record-field" name="record-field" style="vertical-align: middle;">
-        </p>
-        <p class="settings-field">
-          <label class="settings-label">Mute on Autoplay Restriction:</label>
-          <input type="checkbox" id="mute-autoplay-field" name="mute-autoplay-field" style="vertical-align: middle;">
-        </p>
-      </div>
+      </p>
+      <hr class="paddedHR" />
+      <h2 class="centered">Authentication</h2>
+      <p class="settings-field">
+        <label class="settings-label">Authentication Enabled:</label>
+        <input type="checkbox" id="auth-enabled-field" name="auth-enabled-field" style="vertical-align: middle;">
+      </p>
+      <p class="settings-field settings-collapsable">
+        <label class="settings-label">Username:</label>
+        <input id="auth-username-field" name="auth-username-field" disabled>
+      </p>
+      <p class="settings-field settings-collapsable">
+        <label class="settings-label">Password:</label>
+        <input id="auth-password-field" name="auth-password-field" disabled>
+      </p>
+      <p class="settings-field settings-collapsable">
+        <label class="settings-label">Token:</label>
+        <input id="auth-token-field" name="auth-token-field" disabled>
+      </p>
+      <hr class="paddedHR" />
+      <h2 class="centered">Mixer Specific</h2>
+      <p class="settings-field settings-collapsable">
+        <label class="settings-label">Backend WebSocket For Compositions:</label>
+        <input id="backend-composition-field" name="backend-composition-field" value="<mixer-mock-url>"
+          placeholder="e.g., mydomain.com">
+        <label class="settings-label">Enable Round Trip Authentication:</label>
+        <input type="checkbox" id="enable-mixer-authentication-field" name="enable-mixer-authentication-field"
+          unchecked>
+      </p>
+      <hr class="paddedHR" />
+      <p class="settings-field">
+        <label class="settings-label">Verbose R5 Logging:</label>
+        <input type="checkbox" id="logging-field" name="logging-field" style="vertical-align: middle;">
+      </p>
+      <p class="settings-field">
+        <label class="settings-label">Video Active:</label>
+        <input type="checkbox" id="video-active-field" name="video-active-field" style="vertical-align: middle;">
+      </p>
+      <p class="settings-field">
+        <label class="settings-label">Audio Active:</label>
+        <input type="checkbox" id="audio-active-field" name="audio-active-field" style="vertical-align: middle;">
+      </p>
+      <p class="settings-field">
+        <label class="settings-label">Record Broadcast:</label>
+        <input type="checkbox" id="record-field" name="record-field" style="vertical-align: middle;">
+      </p>
+      <p class="settings-field">
+        <label class="settings-label">Mute on Autoplay Restriction:</label>
+        <input type="checkbox" id="mute-autoplay-field" name="mute-autoplay-field" style="vertical-align: middle;">
+      </p>
     </div>
-    <script>
-      (function (window, document, red5pro) {
+  </div>
+  <script>
+    (function (window, document, red5pro) {
 
-        var turnRegex = /^turn\:/;
-        var iceOptions = Array.prototype.slice.call(document.getElementsByClassName('ice-option')).concat(Array.prototype.slice.call(document.getElementsByClassName('ice-option-field')));
-        var configuration = (function () {
-          var conf = sessionStorage.getItem('r5proTestBed');
-          try {
-            return JSON.parse(conf);
-          }
-          catch (e) {
-            console.error('Could not read testbed configuration from sessionstorage: ' + e.message);
-          }
-          return {}
-        })();
-
-        console.log('Settings:\r\n' + JSON.stringify(configuration, null, 2));
-
-        function seal (config) {
-          sessionStorage.setItem('r5proTestBed', JSON.stringify(config));
+      var turnRegex = /^turn\:/;
+      var iceOptions = Array.prototype.slice.call(document.getElementsByClassName('ice-option')).concat(Array.prototype.slice.call(document.getElementsByClassName('ice-option-field')));
+      var configuration = (function () {
+        var conf = sessionStorage.getItem('r5proTestBed');
+        try {
+          return JSON.parse(conf);
         }
+        catch (e) {
+          console.error('Could not read testbed configuration from sessionstorage: ' + e.message);
+        }
+        return {}
+      })();
 
         var hostField = document.getElementById('host-field');
         var appField = document.getElementById('app-field');
@@ -234,33 +253,45 @@
             }
           }
         }
+      }
 
-        hostField.addEventListener('blur', function () {
-          configuration.host = hostField.value;
-          seal(configuration);
-        });
+      hostField.addEventListener('blur', function () {
+        configuration.host = hostField.value;
+        seal(configuration);
+      });
 
-        appField.addEventListener('blur', function () {
-          configuration.app = appField.value;
-          seal(configuration);
-        });
+      appField.addEventListener('blur', function () {
+        configuration.app = appField.value;
+        seal(configuration);
+      });
 
-        stream1Field.addEventListener('blur', function () {
-          configuration.stream1 = stream1Field.value;
-          seal(configuration);
-        });
+      stream1Field.addEventListener('blur', function () {
+        configuration.stream1 = stream1Field.value;
+        seal(configuration);
+      });
 
-        stream2Field.addEventListener('blur', function () {
-          configuration.stream2 = stream2Field.value;
-          seal(configuration);
-        });
+      stream2Field.addEventListener('blur', function () {
+        configuration.stream2 = stream2Field.value;
+        seal(configuration);
+      });
 
-        logLevelField.addEventListener('change', function () {
-          configuration.sendLogLevel = logLevelField.value.toUpperCase();
-          seal(configuration);  
-        })
+      iceField.addEventListener('blur', function () {
+        configuration.rtcConfiguration.iceServers = [
+          {
+            "urls": iceField.value
+          }
+        ]
+        hideShowICEOptions();
+        seal(configuration);
+      });
 
-        iceField.addEventListener('blur', function () {
+      logLevelField.addEventListener('change', function () {
+        configuration.sendLogLevel = logLevelField.value.toUpperCase();
+        seal(configuration);  
+      });
+
+      iceUsername.addEventListener('blur', function () {
+        if (configuration.rtcConfiguration.iceServers.length <= 0) {
           configuration.rtcConfiguration.iceServers = [
             {
               "urls": iceField.value
@@ -422,19 +453,21 @@
                 break;
               }
             }
-            selectElem.value = value;
           }
-          selectFieldFromConfiguration(config.sendLogLevel, logLevelField);
-          selectFieldFromConfiguration(config.iceTransport, iceTransportSelect);
-          selectFieldFromConfiguration(config.rtcConfiguration.bundlePolicy, rtcBundlePolicySelect);
-          selectFieldFromConfiguration(config.rtcConfiguration.iceTransportPolicy, rtcTransportPolicySelect);
-          selectFieldFromConfiguration(config.rtcConfiguration.rtcpMuxPolicy, rtcpMuxPolicySelect);
+          selectElem.value = value;
         }
+        selectFieldFromConfiguration(config.sendLogLevel, logLevelField);
+        selectFieldFromConfiguration(config.iceTransport, iceTransportSelect);
+        selectFieldFromConfiguration(config.rtcConfiguration.bundlePolicy, rtcBundlePolicySelect);
+        selectFieldFromConfiguration(config.rtcConfiguration.iceTransportPolicy, rtcTransportPolicySelect);
+        selectFieldFromConfiguration(config.rtcConfiguration.rtcpMuxPolicy, rtcpMuxPolicySelect);
+      }
 
-        populate(configuration);
-        hideShowICEOptions();
+      populate(configuration);
+      hideShowICEOptions();
 
-      })(this, document, window.red5prosk);
-    </script>
-  </body>
+    })(this, document, window.red5prosk);
+  </script>
+</body>
+
 </html>

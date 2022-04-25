@@ -130,7 +130,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       ? {
         connectionParams: {
           username: auth.username,
-          password: auth.password
+          password: auth.password,
+          token: auth.token
         }
       }
       : {};
@@ -193,41 +194,28 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     if (region) {
       url += '&region=' + region;
     }
-      return new Promise(function (resolve, reject) {
-        fetch(url)
+    return new Promise(function (resolve, reject) {
+      fetch(url)
           .then(function (res) {
             if(res.status == 200){
-                if (res.headers.get("content-type") && res.headers.get("content-type").toLowerCase().indexOf("application/json") >= 0) {
-                    return res.json();
-                }
-                else {
-                    throw new TypeError('Could not properly parse response.');
-                }
+              if (res.headers.get("content-type") && res.headers.get("content-type").toLowerCase().indexOf("application/json") >= 0) {
+                return res.json();
+              } else {
+                throw new TypeError('Could not properly parse response.');
+              }
+            } else {
+              var msg = "";
+              if(res.status == 400) {
+                msg = "An invalid request was detected";
+              } else if(res.status == 404) {
+                msg = "Data for the request could not be located/provided.";
+              } else if(res.status == 500) {
+                msg = "Improper server state error was detected.";
+              } else {
+                msg = "Unknown error";
+              }
+              throw new TypeError(msg);
             }
-            else{
-				var msg = "";
-				if(res.status == 400)
-				{
-					msg = "An invalid request was detected";
-				}
-				else if(res.status == 404)
-				{
-					msg = "Data for the request could not be located/provided.";
-				}
-				else if(res.status == 500)
-				{
-					msg = "Improper server state error was detected.";
-				}
-				else
-				{
-					msg = "Unknown error";
-				}
-
-
-				throw new TypeError(msg);
-			}
-
-
           })
           .then(function (json) {
             resolve(json);
