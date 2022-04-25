@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width">
+  <title>Capture</title>
+  <style>
+    html,
+    body {
+      height: 100%;
+    }
+
+    body {
+      background: #fff;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .flex-parent {
+      display: flex;
+      flex: 1;
+    }
+
+    .section {
+      display: flex;
+      flex-direction: row;
+      margin: 12px;
+      height: 100%;
+      position: relative;
+    }
+
+    .subscribe-section {
+      flex-grow: 2;
+    }
+
+    .status-details {
+      position: relative;
+      background-color: #333;
+      color: #fff;
+      padding: 12px;
+      margin: 0 12px 0 12px;
+      text-align: center;
+    }
+
+    .error-field {
+      width: 100%;
+      color: #fff !important;
+      background-color: #DB1F26 !important;
+    }
+
+    @media screen and (max-width: 1028px) {
+      .section {
+        flex-direction: column;
+      }
+
+      .publish-section,
+      .subscribe-section {
+        margin: 12px;
+      }
+    }
+
+    body {
+      height: 100vh;
+      margin: 0;
+    }
+
+    .main-container {
+      display: flex;
+      flex-direction: column;
+      background-color: #fff;
+      color: #444;
+    }
+
+    .presenter-container {
+      flex: 1;
+      display: flex;
+      align-items: stretch;
+      margin: 10px;
+      height: 66vh;
+    }
+
+    .section-container {
+      flex: 1;
+      display: flex;
+      flex-direction: row;
+      margin: 10px;
+    }
+
+    .subscriber-name-field {
+      width: 100%;
+      position: relative;
+      background-color: #333;
+      color: #fff;
+      text-align: center;
+      margin: 0;
+      padding: 4px;
+    }
+
+    .subscriber-moderation-field {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px;
+      margin: 0px;
+      background-color: #ddd;
+    }
+
+    .subscriber-exclusion-button {
+      color: #fff;
+      background-color: #ff0000;
+    }
+
+    .box {
+      flex: 1;
+      background-color: #444;
+      color: #fff;
+      border-radius: 5px;
+      padding: 20px;
+      font-size: 150%;
+      margin: 10px 0px;
+    }
+
+    .subscriber-block {
+      flex: 1;
+      margin: 5px;
+      width: 100%;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .presenter-container>.subscriber-block {
+      max-height: 480px;
+    }
+
+    .section-container>.subscriber-block {
+      min-width: 240px;
+      max-width: 320px;
+      min-height: 240px;
+    }
+
+    .section-container>.box min-height: 240px;
+    }
+
+    @media screen and (max-width: 900px) {
+      .main-container {
+        flex-direction: column;
+      }
+
+      .section-container {
+        flex-direction: row;
+        max-width: 100%;
+        overflow-y: unset;
+        max-height: 120px;
+      }
+
+      .section-container>.box,
+      .section-container>.subscriber-container {
+        max-height: 120px;
+        min-height: unset;
+        margin: 0 5px;
+      }
+    }
+
+    @media screen and (max-width: 500px) {
+      .section-container {
+        flex-wrap: wrap;
+      }
+    }
+
+    .red5pro-media-container {
+      /*width: 100%;*/
+      flex: 1;
+      height: 0;
+      display: flex;
+      justify-content: center;
+    }
+
+    .red5pro-subscriber {
+      width: 100%;
+    }
+
+    .loading-icon {
+      width: 50px;
+      height: 50px;
+      color: #fff;
+      position: absolute;
+    }
+
+    .subscriber-notifications {
+      right: 0;
+      top: 0;
+      position: absolute;
+    }
+
+    .audio-notification,
+    .video-notification {
+      background-color: #000;
+      color: #fff;
+      padding: 4px;
+      margin: 0;
+    }
+
+    .subscriber-container {
+      max-height: 75%;
+      position: relative;
+      background-color: #000;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .subscriber-error {
+      position: relative;
+      background-color: #db1f26;
+      color: #fff;
+      padding: 12px;
+      margin: 0 12px 0 12px;
+      text-align: center;
+    }
+
+    .red5pro-screenshare-fullscreen {
+      display: block;
+      box-sizing: border-box;
+      position: relative;
+      line-height: 0px;
+      width: 100vw !important;
+      height: 100vh !important;
+      overflow: hidden !important;
+      object-fit: contain;
+    }
+
+    .subscriber-container:fullscreen {
+      height: 100%;
+      width: 100%;
+      margin: 0;
+      background-color: #000;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="main-container">
+    <div class="presenter-container">
+    </div>
+    <div class="section-container">
+    </div>
+    {{> body-scripts}}
+    <script src="../../script/conference-subscriber-block.js"></script>
+    <script src="../../script/red5pro-utils.js"></script>
+    <script src="presenter-flow-viewer.js"></script>
+</body>
+
+</html>

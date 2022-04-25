@@ -1,11 +1,44 @@
 # Red5 Pro WebRTC SDK Migration Guide
 
 This documentation serves as a guide in migrating client-side code where a breaking change to the API has been made in a distribution.
+* [8.0.0 to 9.1.0](#migrating-from-800-to-910)
 * [7.2.0 to 8.0.0](#migrating-from-720-to-800)
 * [5.4.0 to 5.5.0](#migrating-from-540-to-550)
 * [5.0.0 to 5.4.0](#migrating-from-500-to-540)
 * [4.0.0 to 5.0.0](#migrating-from-400-to-500)
 * [3.5.0 to 4.0.0](#migrating-from-350-to-400)
+
+# Migrating from `8.0.0` to `9.1.0`
+
+No major bug fixes were introduced in `9.1.0`. The biggest update to `9.1.0` was the introduction of the `sendLog` API for `RTCPublisher` and `RTCSubscriber`.
+
+The `sendLog` API allows you - the developer - to send messages to the server while connected with a `RTCPublisher` or `RTCSubscriber` instance.
+
+The message signature for `sendLog` on both the `RTCPublisher` and `RTCSubscriber` is:
+
+```sh
+sendLog( <String>level, <String>message )
+```
+
+Valid `level` values are:
+
+* `TRACE`
+* `INFO`
+* `DEBUG`
+* `WARN`
+* `ERROR`
+
+Example (after already establishing an `RTCPublisher` session):
+
+```javascript
+rtcPublisher.sendLog('INFO', 'hello world')
+```
+
+or
+
+```javascript
+rtcPublisher.sendLog('INFO', JSON.stringify({hello: 'world'}))
+```
 
 # Important Note About `8.0.0` Release
 
