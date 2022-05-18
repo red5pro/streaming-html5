@@ -10,13 +10,13 @@ The page supports three layouts for the compositions:
 Additionally, the 3x3 and 2x2 grids can be used together to create compositions of compositions. 
 
 Before using the testbed publish one or more live streams as follows:
-1. Open the `Red5 Pro Testbed Settings Page`, and set the Web App to `live`. On the same page, scroll to the Mixer Specific section and set the `Backend WebSocket For Compositions` endpoint to point to the [WebSocket server](../../../../backend-mixer-testbeds)
+1. Open the `Red5 Pro Testbed Settings Page`, and set the Web App to `live`. On the same page, scroll to the Mixer Specific section and set the `Backend WebSocket For Compositions` endpoint to point to the [WebSocket server](https://github.com/red5pro/nodejs-mixer-backend/tree/main/backend-mixer-testbeds)
 2. While on the `Mixer Specific` section, check `Enable Round Trip Authentication` if the Round Trip Authentication was configured in the `live` app.
 3. If the Round Trip Authentication is enabled on the `live` app, head to the `Publish - Stream Manager Proxy RoundTrip Authentication` testbed by clicking `Testbed Menu` -> `Stream Manager Tests` -> `Publish - Stream Manager Proxy RoundTrip Authentication`. Otherwise, head to the `Publish - Stream Manager Proxy` testbed by clicking `Testbed Menu` -> `Stream Manager Tests` -> `Publish - Stream Manager Proxy`
 4. If using the `Publish - Stream Manager Proxy RoundTrip Authentication`, provide a set of mock username, password, and token and click `Submit`.
    
 Use the `Grid Composition Manager` testbed as follows:
-1. Open the `Red5 Pro Testbed Settings Page`, and set the Web App to `live`. On the same page, scroll to the Mixer Specific section and set the `Backend WebSocket For Compositions` endpoint to point to the [WebSocket server](../../../../backend-mixer-testbeds)
+1. Open the `Red5 Pro Testbed Settings Page`, and set the Web App to `live`. On the same page, scroll to the Mixer Specific section and set the `Backend WebSocket For Compositions` endpoint to point to the [WebSocket server](https://github.com/red5pro/nodejs-mixer-backend/tree/main/backend-mixer-testbeds)
 2. Head to the `Grid Composition Manager` testbed by clicking `Testbed Menu` -> `Stream Manager Mixer Tests` -> `Grid Composition Manager`. 
 3. Create a mixer object using the `Create Mixer Objects` form by providing the following values:
    * Mixer Name - A name for the Mixer.
