@@ -265,6 +265,10 @@ To define the **Host** with the server instance's IP, click the _Host_ field f t
 | :-----
 | *An example of using the Standby API to request a "pause" in receiving video and audio data on the MediaStream while also maintaining a connection of the client to the server.*
 
+| **[Stream Switch](src/page/test/subscribeSwitch)**
+| :-----
+| *An example that demonstrates switching of the current subscriber's stream to another live stream through WebRTC.*
+
 | **[Two Streams](src/page/test/subscribeTwoStreams)**
 | :-----
 | *An example that subscribes to two streams, using the `Stream1 Name` and `Stream 2 Name` variables from the settings page.*
