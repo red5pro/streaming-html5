@@ -2,8 +2,7 @@
   "parser": "babel-eslint",
   "env": {
     "browser": true,
-    "node": true,
-    "es6": true
+    "es2021": true
   },
   "rules": {
     "no-console": 0
@@ -11,5 +10,11 @@
   "globals": {
 
   },
-  "extends": "eslint:recommended"
+  "parser": "@babel/eslint-parser",
+  "parserOptions": {
+    "requireConfigFile": false,
+    "babelOptions": {
+      "presets": ["@babel/preset-react"]
+    }
+  }
 }

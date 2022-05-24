@@ -1,440 +1,487 @@
 <!doctype html>
 {{> license}}
 <html>
-  <head>
-    {{> meta title='Red5 Pro HTML SDK Testbed'}}
-    <link rel="stylesheet" href="css/reset.css">
-    <link rel="stylesheet" href="css/testbed.css">
-    <script src="script/testbed-config.js"></script>
-    <link rel='stylesheet' href='//fonts.googleapis.com/css?family=Lato%3A100%2C200%2C300%2C400%2C500%2C600%2C700%2C800%2C900%2C100i%2C200i%2C300i%2C400i%2C500i%2C600i%2C700i%2C800i%2C900i&#038;subset=latin&#038;ver=5.2.3' type='text/css' media='all' />
-    <style>
-      .ice-option {
-        margin-top: 1.2rem;
-      }
-      .hidden {
-        display: none;
-      }
-    </style>
-  </head>
-  <body>
-    {{> top-bar }}
-    {{> navigation isTestPage=false }}
-    <div id="app">
-      <div id="back-link-container" style="text-align: left;">
-        <p class="back-link"><a href="testbed-menu.html">&lt; Testbed Menu</a></p>
-        <p class="version-field">Testbed Version: {{ version }}</p>
-      </div>
-      <div class="ice-background hidden">
-        <div class="test-notification">
-        <p>If these example pages are served over HTTPS, it is required that the target <code>host</code> is also accessible over HTTPS.</p>
-        <br/>
-        <p>If you are viewing these examples from the <code>webrtcexamples</code> webapp shipped with the Red5 Pro Server, you should not have to worry about Cross Origin Resource Sharing (CORS) issues running from either <code>localhost</code> or on TLS from a remote deploy</p>
-        <br/>
-        <p>Otherwise, if you are viewing these examples from another origin other than the target Red5 Pro Server defined as <code>host</code> please be sure that the required CORS settings are in place to communicate properly. <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS" target="_blank">More info about CORS</a>.</p>
-        </div>
-      </div>
-      <div id="settings-container">
-        <h1 class="centered">Settings</h1>
-        <hr class="paddedHR" />
-        <h2 class="centered">General</h2>
-        <p class="settings-field settings-collapsable">
-          <label class="settings-label">Host:</label>
-          <input id="host-field" name="host-field" value="localhost">
-        </p>
-        <p class="settings-field settings-collapsable">
-          <label class="settings-label">WebApp:</label>
-          <input id="app-field" name="app-field" value="live">
-        </p>
-        <p class="settings-field settings-collapsable">
-          <label class="settings-label">Stream1 Name:</label>
-          <input id="stream1-field" name="stream1-field" value="stream1">
-        </p>
-        <p id="stream-swap-btn" class="settings-field settings-collapsable swap-streams-link"><span>Swap Stream Names</span></p>
-        <p class="settings-field settings-collapsable">
-          <label class="settings-label">Stream2 Name:</label>
-          <input id="stream2-field" name="stream2-field" value="stream2">
-        </p>
-        <p class="settings-field settings-collapsable">
-          <label class="settings-label" for="level-input">Level:</label>
-          <select id="level-input" name="level-input">
-            <option value="TRACE">TRACE</option>
-            <option value="DEBUG" selected>DEBUG</option>
-            <option value="INFO">INFO</option>
-            <option value="WARN">WARN</option>
-            <option value="ERROR">ERROR</option>
-          </select>
-        </p>
-        <hr class="paddedHR" />
-        <h2 class="centered">WebRTC Specific</h2>
-        <p class="settings-field settings-collapsable">
-          <label class="settings-label">ICE server:</label>
-          <input id="ice-field" name="ice-field" value="stun:stun2.l.google.com:19302">
-          <label class="settings-label ice-option hidden">ICE username:</label>
-          <input id="ice-username" class="ice-option-field hidden" name="ice-username" value="" placeholder="required for TURN">
-          <label class="settings-label ice-option hidden">ICE credential:</label>
-          <input id="ice-credential" class="ice-option-field hidden" name="ice-crential" value="" placeholder="required for TURN">
-        </p>
-        <p class="settings-field settings-collapsable">
-          <label class="settings-label">Candidate Pool Size:</label>
-          <input type="number" id="rtc-pool-size" name="rtc-pool-size"
-            min="0"
-            value="0"
-            style="min-width: 120px">
-        </p>
-        <p class="settings-field settings-collapsable">
-          <label class="settings-label">ICE Transport:</label>
-          <select id="ice-transport" name="ice-transport" style="min-width: 120px">
-            <option value="udp">UDP</option>
-            <option value="tcp">TCP</option>
-          </select>
-        </p>
-        <p class="settings-field settings-collapsable">
-          <label class="settings-label">Bundle Policy:</label>
-          <select id="rtc-bundle-policy" name="rtc-bundle-policy" style="min-width: 120px">
-            <option value="balanced">balanced</option>
-            <option value="max-compat">max-compat</option>
-            <option value="max-bundle">max-bundle</option>
-          </select>
-        </p>
-        <p class="settings-field settings-collapsable">
-          <label class="settings-label">Transport Policy:</label>
-          <select id="rtc-transport-policy" name="rtc-transport-policy" style="min-width: 120px">
-            <option value="none">none</option>
-            <option value="relay">relay</option>
-            <option value="all">all</option>
-          </select>
-        </p>
-        <p class="settings-field settings-collapsable">
-          <label class="settings-label">Mux Policy:</label>
-          <select id="rtc-mux-policy" name="rtc-mux-policy" style="min-width: 120px">
-            <option value="negotiate">negotiate</option>
-            <option value="require">require</option>
-          </select>
-        </p>
-        <p class="settings-field settings-collapsable">
-          <label class="settings-label">Switch to Data Channel After Connection:</label>
-          <input type="checkbox" id="rtc-signal-socket-field" style="vertical-align: middle;">
-        </p>
-        <hr class="paddedHR" />
-        <h2 class="centered">Stream Manager Specific</h2>
-        <p class="settings-field settings-collapsable">
-          <label class="settings-label">Stream Manager Access Token:</label>
-          <input id="sm-access-field" name="sm-access-field" placeholder="e.g., abc123">
-        </p>
-        <p class="settings-field settings-collapsable">
-          <label class="settings-label">Stream Manager API Level:</label>
-          <input id="sm-api-field" name="sm-api-field" placeholder="e.g., 4.0">
-        </p>
-        <p class="settings-field settings-collapsable">
-        <label class="settings-label">Region:</label>
-        <input id="sm-region-field" name="sm-region-field" value="sm-region">
-        </p>
-        <hr class="paddedHR" />
-        <h2 class="centered">Authentication</h2>
-        <p class="settings-field">
-          <label class="settings-label">Authentication Enabled:</label>
-          <input type="checkbox" id="auth-enabled-field" name="auth-enabled-field" style="vertical-align: middle;">
-        <p class="settings-field settings-collapsable">
-          <label class="settings-label">Username:</label>
-          <input id="auth-username-field" name="auth-username-field" disabled>
-        </p>
-        <p class="settings-field settings-collapsable">
-          <label class="settings-label">Password:</label>
-          <input id="auth-password-field" name="auth-password-field" disabled>
-        </p>
-        <p class="settings-field settings-collapsable">
-          <label class="settings-label">Token:</label>
-          <input id="auth-token-field" name="auth-token-field" disabled>
-        </p>
-        </p>
-        <hr class="paddedHR" />
-        <p class="settings-field">
-          <label class="settings-label">Verbose R5 Logging:</label>
-          <input type="checkbox" id="logging-field" name="logging-field" style="vertical-align: middle;">
-        </p>
-        <p class="settings-field">
-          <label class="settings-label">Video Active:</label>
-          <input type="checkbox" id="video-active-field" name="video-active-field" style="vertical-align: middle;">
-        </p>
-        <p class="settings-field">
-          <label class="settings-label">Audio Active:</label>
-          <input type="checkbox" id="audio-active-field" name="audio-active-field" style="vertical-align: middle;">
-        </p>
-        <p class="settings-field">
-          <label class="settings-label">Record Broadcast:</label>
-          <input type="checkbox" id="record-field" name="record-field" style="vertical-align: middle;">
-        </p>
-        <p class="settings-field">
-          <label class="settings-label">Mute on Autoplay Restriction:</label>
-          <input type="checkbox" id="mute-autoplay-field" name="mute-autoplay-field" style="vertical-align: middle;">
-        </p>
+
+<head>
+  {{> meta title='Red5 Pro HTML SDK Testbed'}}
+  <link rel="stylesheet" href="css/reset.css">
+  <link rel="stylesheet" href="css/testbed.css">
+  <script src="script/testbed-config.js"></script>
+  <link rel='stylesheet'
+    href='//fonts.googleapis.com/css?family=Lato%3A100%2C200%2C300%2C400%2C500%2C600%2C700%2C800%2C900%2C100i%2C200i%2C300i%2C400i%2C500i%2C600i%2C700i%2C800i%2C900i&#038;subset=latin&#038;ver=5.2.3'
+    type='text/css' media='all' />
+  <style>
+    .ice-option {
+      margin-top: 1.2rem;
+    }
+
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+  {{> top-bar }}
+  {{> navigation isTestPage=false }}
+  <div id="app">
+    <div id="back-link-container" style="text-align: left;">
+      <p class="back-link"><a href="testbed-menu.html">&lt; Testbed Menu</a></p>
+      <p class="version-field">Testbed Version: {{ version }}</p>
+    </div>
+    <div class="ice-background hidden">
+      <div class="test-notification">
+        <p>If these example pages are served over HTTPS, it is required that the target <code>host</code> is also
+          accessible over HTTPS.</p>
+        <br />
+        <p>If you are viewing these examples from the <code>webrtcexamples</code> webapp shipped with the Red5 Pro
+          Server, you should not have to worry about Cross Origin Resource Sharing (CORS) issues running from either
+          <code>localhost</code> or on TLS from a remote deploy</p>
+        <br />
+        <p>Otherwise, if you are viewing these examples from another origin other than the target Red5 Pro Server
+          defined as <code>host</code> please be sure that the required CORS settings are in place to communicate
+          properly. <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS" target="_blank">More
+            info about CORS</a>.</p>
       </div>
     </div>
-    <script>
-      (function (window, document, red5pro) {
+    <div id="settings-container">
+      <h1 class="centered">Settings</h1>
+      <hr class="paddedHR" />
+      <h2 class="centered">General</h2>
+      <p class="settings-field settings-collapsable">
+        <label class="settings-label">Host:</label>
+        <input id="host-field" name="host-field" value="localhost">
+      </p>
+      <p class="settings-field settings-collapsable">
+        <label class="settings-label">WebApp:</label>
+        <input id="app-field" name="app-field" value="live">
+      </p>
+      <p class="settings-field settings-collapsable">
+        <label class="settings-label">Stream1 Name:</label>
+        <input id="stream1-field" name="stream1-field" value="stream1">
+      </p>
+      <p id="stream-swap-btn" class="settings-field settings-collapsable swap-streams-link"><span>Swap Stream
+          Names</span></p>
+      <p class="settings-field settings-collapsable">
+        <label class="settings-label">Stream2 Name:</label>
+        <input id="stream2-field" name="stream2-field" value="stream2">
+      </p>
+      <hr class="paddedHR" />
+      <p class="settings-field settings-collapsable">
+        <label class="settings-label" for="level-input">Level:</label>
+        <select id="level-input" name="level-input">
+          <option value="TRACE">TRACE</option>
+          <option value="DEBUG" selected>DEBUG</option>
+          <option value="INFO">INFO</option>
+          <option value="WARN">WARN</option>
+          <option value="ERROR">ERROR</option>
+        </select>
+      </p>
+      <h2 class="centered">WebRTC Specific</h2>
+      <p class="settings-field settings-collapsable">
+        <label class="settings-label">ICE server:</label>
+        <input id="ice-field" name="ice-field" value="stun:stun2.l.google.com:19302">
+        <label class="settings-label ice-option hidden">ICE username:</label>
+        <input id="ice-username" class="ice-option-field hidden" name="ice-username" value=""
+          placeholder="required for TURN">
+        <label class="settings-label ice-option hidden">ICE credential:</label>
+        <input id="ice-credential" class="ice-option-field hidden" name="ice-crential" value=""
+          placeholder="required for TURN">
+      </p>
+      <p class="settings-field settings-collapsable">
+        <label class="settings-label">Candidate Pool Size:</label>
+        <input type="number" id="rtc-pool-size" name="rtc-pool-size" min="0" value="0" style="min-width: 120px">
+      </p>
+      <p class="settings-field settings-collapsable">
+        <label class="settings-label">ICE Transport:</label>
+        <select id="ice-transport" name="ice-transport" style="min-width: 120px">
+          <option value="udp">UDP</option>
+          <option value="tcp">TCP</option>
+        </select>
+      </p>
+      <p class="settings-field settings-collapsable">
+        <label class="settings-label">Bundle Policy:</label>
+        <select id="rtc-bundle-policy" name="rtc-bundle-policy" style="min-width: 120px">
+          <option value="balanced">balanced</option>
+          <option value="max-compat">max-compat</option>
+          <option value="max-bundle">max-bundle</option>
+        </select>
+      </p>
+      <p class="settings-field settings-collapsable">
+        <label class="settings-label">Transport Policy:</label>
+        <select id="rtc-transport-policy" name="rtc-transport-policy" style="min-width: 120px">
+          <option value="none">none</option>
+          <option value="relay">relay</option>
+          <option value="all">all</option>
+        </select>
+      </p>
+      <p class="settings-field settings-collapsable">
+        <label class="settings-label">Mux Policy:</label>
+        <select id="rtc-mux-policy" name="rtc-mux-policy" style="min-width: 120px">
+          <option value="negotiate">negotiate</option>
+          <option value="require">require</option>
+        </select>
+      </p>
+      <p class="settings-field settings-collapsable">
+        <label class="settings-label">Switch to Data Channel After Connection:</label>
+        <input type="checkbox" id="rtc-signal-socket-field" style="vertical-align: middle;">
+      </p>
+      <hr class="paddedHR" />
+      <h2 class="centered">Stream Manager Specific</h2>
+      <p class="settings-field settings-collapsable">
+        <label class="settings-label">Stream Manager Access Token:</label>
+        <input id="sm-access-field" name="sm-access-field" placeholder="e.g., abc123">
+      </p>
+      <p class="settings-field settings-collapsable">
+        <label class="settings-label">Stream Manager API Level:</label>
+        <input id="sm-api-field" name="sm-api-field" placeholder="e.g., 4.0">
+      </p>
+      <p class="settings-field settings-collapsable">
+        <label class="settings-label">Region:</label>
+        <input id="sm-region-field" name="sm-region-field" value="sm-region">
+      </p>
+      <hr class="paddedHR" />
+      <h2 class="centered">Authentication</h2>
+      <p class="settings-field">
+        <label class="settings-label">Authentication Enabled:</label>
+        <input type="checkbox" id="auth-enabled-field" name="auth-enabled-field" style="vertical-align: middle;">
+      </p>
+      <p class="settings-field settings-collapsable">
+        <label class="settings-label">Username:</label>
+        <input id="auth-username-field" name="auth-username-field" disabled>
+      </p>
+      <p class="settings-field settings-collapsable">
+        <label class="settings-label">Password:</label>
+        <input id="auth-password-field" name="auth-password-field" disabled>
+      </p>
+      <p class="settings-field settings-collapsable">
+        <label class="settings-label">Token:</label>
+        <input id="auth-token-field" name="auth-token-field" disabled>
+      </p>
+      <hr class="paddedHR" />
+      <h2 class="centered">Mixer Specific</h2>
+      <p class="settings-field settings-collapsable">
+        <label class="settings-label">Backend WebSocket For Compositions:</label>
+        <input id="backend-composition-field" name="backend-composition-field" value="<mixer-mock-url>"
+          placeholder="e.g., mydomain.com">
+        <label class="settings-label">Enable Round Trip Authentication:</label>
+        <input type="checkbox" id="enable-mixer-authentication-field" name="enable-mixer-authentication-field"
+          unchecked>
+      </p>
+      <hr class="paddedHR" />
+      <p class="settings-field">
+        <label class="settings-label">Verbose R5 Logging:</label>
+        <input type="checkbox" id="logging-field" name="logging-field" style="vertical-align: middle;">
+      </p>
+      <p class="settings-field">
+        <label class="settings-label">Video Active:</label>
+        <input type="checkbox" id="video-active-field" name="video-active-field" style="vertical-align: middle;">
+      </p>
+      <p class="settings-field">
+        <label class="settings-label">Audio Active:</label>
+        <input type="checkbox" id="audio-active-field" name="audio-active-field" style="vertical-align: middle;">
+      </p>
+      <p class="settings-field">
+        <label class="settings-label">Record Broadcast:</label>
+        <input type="checkbox" id="record-field" name="record-field" style="vertical-align: middle;">
+      </p>
+      <p class="settings-field">
+        <label class="settings-label">Mute on Autoplay Restriction:</label>
+        <input type="checkbox" id="mute-autoplay-field" name="mute-autoplay-field" style="vertical-align: middle;">
+      </p>
+    </div>
+  </div>
+  <script>
+    (function (window, document, red5pro) {
 
-        var turnRegex = /^turn\:/;
-        var iceOptions = Array.prototype.slice.call(document.getElementsByClassName('ice-option')).concat(Array.prototype.slice.call(document.getElementsByClassName('ice-option-field')));
-        var configuration = (function () {
-          var conf = sessionStorage.getItem('r5proTestBed');
-          try {
-            return JSON.parse(conf);
-          }
-          catch (e) {
-            console.error('Could not read testbed configuration from sessionstorage: ' + e.message);
-          }
-          return {}
-        })();
-
-        console.log('Settings:\r\n' + JSON.stringify(configuration, null, 2));
-
-        function seal (config) {
-          sessionStorage.setItem('r5proTestBed', JSON.stringify(config));
+      var turnRegex = /^turn\:/;
+      var iceOptions = Array.prototype.slice.call(document.getElementsByClassName('ice-option')).concat(Array.prototype.slice.call(document.getElementsByClassName('ice-option-field')));
+      var configuration = (function () {
+        var conf = sessionStorage.getItem('r5proTestBed');
+        try {
+          return JSON.parse(conf);
         }
+        catch (e) {
+          console.error('Could not read testbed configuration from sessionstorage: ' + e.message);
+        }
+        return {}
+      })();
 
-        var hostField = document.getElementById('host-field');
-        var appField = document.getElementById('app-field');
-        var stream1Field = document.getElementById('stream1-field');
-        var stream2Field = document.getElementById('stream2-field');
-        var logLevelField = document.getElementById('level-input');
-        var iceField = document.getElementById('ice-field');
-        var iceUsername = document.getElementById('ice-username');
-        var iceCredential = document.getElementById('ice-credential');
-        var iceTransportSelect = document.getElementById('ice-transport');
-        var rtcCandidatePoolSize = document.getElementById('rtc-pool-size');
-        var rtcBundlePolicySelect = document.getElementById('rtc-bundle-policy');
-        var rtcTransportPolicySelect = document.getElementById('rtc-transport-policy');
-        var rtcpMuxPolicySelect = document.getElementById('rtc-mux-policy');
-        var rtcSignalSocketField = document.getElementById('rtc-signal-socket-field');
-        var loggingField = document.getElementById('logging-field');
-        var recordField = document.getElementById('record-field');
-        var videoField = document.getElementById('video-active-field');
-        var audioField = document.getElementById('audio-active-field');
-        var muteAutoplayField = document.getElementById('mute-autoplay-field');
-        var streamSwapButton = document.getElementById('stream-swap-btn');
-        var smRegionField = document.getElementById('sm-region-field');
-        var smAccessField = document.getElementById('sm-access-field');
-        var smAPIField = document.getElementById('sm-api-field');
-        var authEnabledField = document.getElementById('auth-enabled-field');
-        var authUsernameField = document.getElementById('auth-username-field');
-        var authPasswordField = document.getElementById('auth-password-field');
-        var authTokenField = document.getElementById('auth-token-field');
+      console.log('Settings:\r\n' + JSON.stringify(configuration, null, 2));
 
-        function hideShowICEOptions () {
-          var isTurnServer = turnRegex.test(iceField.value);
-          var i = iceOptions.length;
-          while (--i > -1) {
-            if (isTurnServer) {
-              iceOptions[i].classList.remove('hidden');
-              iceUsername.focus();
-            } else {
-              iceOptions[i].classList.add('hidden');
-              delete configuration.rtcConfiguration.iceServers[0].username;
-              delete configuration.rtcConfiguration.iceServers[0].credential;
-            }
+      function seal(config) {
+        sessionStorage.setItem('r5proTestBed', JSON.stringify(config));
+      }
+
+      var hostField = document.getElementById('host-field');
+      var appField = document.getElementById('app-field');
+      var stream1Field = document.getElementById('stream1-field');
+      var stream2Field = document.getElementById('stream2-field');
+      var logLevelField = document.getElementById('level-input');
+      var iceField = document.getElementById('ice-field');
+      var iceUsername = document.getElementById('ice-username');
+      var iceCredential = document.getElementById('ice-credential');
+      var iceTransportSelect = document.getElementById('ice-transport');
+      var rtcCandidatePoolSize = document.getElementById('rtc-pool-size');
+      var rtcBundlePolicySelect = document.getElementById('rtc-bundle-policy');
+      var rtcTransportPolicySelect = document.getElementById('rtc-transport-policy');
+      var rtcpMuxPolicySelect = document.getElementById('rtc-mux-policy');
+      var rtcSignalSocketField = document.getElementById('rtc-signal-socket-field');
+      var loggingField = document.getElementById('logging-field');
+      var recordField = document.getElementById('record-field');
+      var videoField = document.getElementById('video-active-field');
+      var audioField = document.getElementById('audio-active-field');
+      var muteAutoplayField = document.getElementById('mute-autoplay-field');
+      var streamSwapButton = document.getElementById('stream-swap-btn');
+      var smRegionField = document.getElementById('sm-region-field');
+      var smAccessField = document.getElementById('sm-access-field');
+      var mixerBackendSocketField = document.getElementById('backend-composition-field');
+      var mixerAuthenticationEnabledField = document.getElementById('enable-mixer-authentication-field');
+      var smAPIField = document.getElementById('sm-api-field');
+      var authEnabledField = document.getElementById('auth-enabled-field');
+      var authUsernameField = document.getElementById('auth-username-field');
+      var authPasswordField = document.getElementById('auth-password-field');
+      var authTokenField = document.getElementById('auth-token-field');
+
+      function hideShowICEOptions() {
+        var isTurnServer = turnRegex.test(iceField.value);
+        var i = iceOptions.length;
+        while (--i > -1) {
+          if (isTurnServer) {
+            iceOptions[i].classList.remove('hidden');
+            iceUsername.focus();
+          } else {
+            iceOptions[i].classList.add('hidden');
+            delete configuration.rtcConfiguration.iceServers[0].username;
+            delete configuration.rtcConfiguration.iceServers[0].credential;
           }
         }
+      }
 
-        hostField.addEventListener('blur', function () {
-          configuration.host = hostField.value;
-          seal(configuration);
-        });
+      hostField.addEventListener('blur', function () {
+        configuration.host = hostField.value;
+        seal(configuration);
+      });
 
-        appField.addEventListener('blur', function () {
-          configuration.app = appField.value;
-          seal(configuration);
-        });
+      appField.addEventListener('blur', function () {
+        configuration.app = appField.value;
+        seal(configuration);
+      });
 
-        stream1Field.addEventListener('blur', function () {
-          configuration.stream1 = stream1Field.value;
-          seal(configuration);
-        });
+      stream1Field.addEventListener('blur', function () {
+        configuration.stream1 = stream1Field.value;
+        seal(configuration);
+      });
 
-        stream2Field.addEventListener('blur', function () {
-          configuration.stream2 = stream2Field.value;
-          seal(configuration);
-        });
+      stream2Field.addEventListener('blur', function () {
+        configuration.stream2 = stream2Field.value;
+        seal(configuration);
+      });
 
-        logLevelField.addEventListener('change', function () {
-          configuration.sendLogLevel = logLevelField.value.toUpperCase();
-          seal(configuration);  
-        })
+      iceField.addEventListener('blur', function () {
+        configuration.rtcConfiguration.iceServers = [
+          {
+            "urls": iceField.value
+          }
+        ]
+        hideShowICEOptions();
+        seal(configuration);
+      });
 
-        iceField.addEventListener('blur', function () {
+      logLevelField.addEventListener('change', function () {
+        configuration.sendLogLevel = logLevelField.value.toUpperCase();
+        seal(configuration);  
+      });
+
+      iceUsername.addEventListener('blur', function () {
+        if (configuration.rtcConfiguration.iceServers.length <= 0) {
           configuration.rtcConfiguration.iceServers = [
             {
               "urls": iceField.value
             }
           ]
-          hideShowICEOptions();
-          seal(configuration);
-        });
+        }
+        hideShowICEOptions();
+        seal(configuration);
+      });
 
-        iceUsername.addEventListener('blur', function () {
-          if (configuration.rtcConfiguration.iceServers.length <= 0) {
-            configuration.rtcConfiguration.iceServers = [
-              {
-                "urls": iceField.value
-              }
-            ]
-          }
-          configuration.rtcConfiguration.iceServers[0].username = iceUsername.value;
-          seal(configuration);
-        });
+      iceUsername.addEventListener('blur', function () {
+        if (configuration.rtcConfiguration.iceServers.length <= 0) {
+          configuration.rtcConfiguration.iceServers = [
+            {
+              "urls": iceField.value
+            }
+          ]
+        }
+        configuration.rtcConfiguration.iceServers[0].username = iceUsername.value;
+        seal(configuration);
+      });
 
-        iceCredential.addEventListener('blur', function () {
-          if (configuration.rtcConfiguration.iceServers.length <= 0) {
-            configuration.rtcConfiguration.iceServers = [
-              {
-                "urls": iceField.value
-              }
-            ]
-          }
-          configuration.rtcConfiguration.iceServers[0].credential = iceCredential.value;
-          seal(configuration);
-        });
+      iceCredential.addEventListener('blur', function () {
+        if (configuration.rtcConfiguration.iceServers.length <= 0) {
+          configuration.rtcConfiguration.iceServers = [
+            {
+              "urls": iceField.value
+            }
+          ]
+        }
+        configuration.rtcConfiguration.iceServers[0].credential = iceCredential.value;
+        seal(configuration);
+      });
 
-        // <select> change event not supported in Gecko?
-        iceTransportSelect.addEventListener('change', function (event) {
-          configuration.iceTransport = event.target.value;
-          seal(configuration);
-        });
-        rtcBundlePolicySelect.addEventListener('change', function (event) {
-          configuration.rtcConfiguration.bundlePolicy = event.target.value;
-          seal(configuration);
-        });
-        rtcTransportPolicySelect.addEventListener('change', function (event) {
-          configuration.rtcConfiguration.iceTransportPolicy = event.target.value;
-          seal(configuration);
-        });
-        rtcpMuxPolicySelect.addEventListener('change', function (event) {
-          configuration.rtcConfiguration.rtcpMuxPolicy = event.target.value;
-          seal(configuration);
-        });
-        rtcCandidatePoolSize.addEventListener('blur', function (event) {
-          configuration.rtcConfiguration.iceCandidatePoolSize = parseInt(event.target.value, 10);
-          seal(configuration);
-        });
-        rtcSignalSocketField.addEventListener('change', function () {
-          configuration.signalingSocketOnly = rtcSignalSocketField.checked;
-          seal(configuration);
-        });
+      // <select> change event not supported in Gecko?
+      iceTransportSelect.addEventListener('change', function (event) {
+        configuration.iceTransport = event.target.value;
+        seal(configuration);
+      });
+      rtcBundlePolicySelect.addEventListener('change', function (event) {
+        configuration.rtcConfiguration.bundlePolicy = event.target.value;
+        seal(configuration);
+      });
+      rtcTransportPolicySelect.addEventListener('change', function (event) {
+        configuration.rtcConfiguration.iceTransportPolicy = event.target.value;
+        seal(configuration);
+      });
+      rtcpMuxPolicySelect.addEventListener('change', function (event) {
+        configuration.rtcConfiguration.rtcpMuxPolicy = event.target.value;
+        seal(configuration);
+      });
+      rtcCandidatePoolSize.addEventListener('blur', function (event) {
+        configuration.rtcConfiguration.iceCandidatePoolSize = parseInt(event.target.value, 10);
+        seal(configuration);
+      });
+      rtcSignalSocketField.addEventListener('change', function () {
+        configuration.signalingSocketOnly = rtcSignalSocketField.checked;
+        seal(configuration);
+      });
 
-        authEnabledField.addEventListener('change', function () {
-          configuration.authentication.enabled = authEnabledField.checked;
-          authUsernameField.disabled = authPasswordField.disabled = !configuration.authentication.enabled;
-          seal(configuration);
-        });
-        authUsernameField.addEventListener('blur', function () {
-          configuration.authentication.username = authUsernameField.value;
-          seal(configuration);
-        });
-        authPasswordField.addEventListener('blur', function () {
-          configuration.authentication.password = authPasswordField.value;
-          seal(configuration);
-        });
-        authTokenField.addEventListener('blur', function () {
-          configuration.authentication.token = authTokenField.value;
-          seal(configuration);
-        });
+      authEnabledField.addEventListener('change', function () {
+        configuration.authentication.enabled = authEnabledField.checked;
+        authUsernameField.disabled = authPasswordField.disabled = authTokenField.disabled = !configuration.authentication.enabled;
+        seal(configuration);
+      });
+      authUsernameField.addEventListener('blur', function () {
+        configuration.authentication.username = authUsernameField.value;
+        seal(configuration);
+      });
+      authPasswordField.addEventListener('blur', function () {
+        configuration.authentication.password = authPasswordField.value;
+        seal(configuration);
+      });
+      authTokenField.addEventListener('blur', function () {
+        configuration.authentication.token = authTokenField.value;
+        seal(configuration);
+      });
 
-        loggingField.addEventListener('change', function () {
-          configuration.verboseLogging = !configuration.verboseLogging;
-          seal(configuration);
-        });
+      loggingField.addEventListener('change', function () {
+        configuration.verboseLogging = !configuration.verboseLogging;
+        seal(configuration);
+      });
 
-        recordField.addEventListener('change', function () {
-          configuration.recordBroadcast = !configuration.recordBroadcast;
-          seal(configuration);
-        });
+      recordField.addEventListener('change', function () {
+        configuration.recordBroadcast = !configuration.recordBroadcast;
+        seal(configuration);
+      });
 
-        videoField.addEventListener('change', function () {
-          configuration.useVideo = !configuration.useVideo;
-          seal(configuration);
-        });
+      videoField.addEventListener('change', function () {
+        configuration.useVideo = !configuration.useVideo;
+        seal(configuration);
+      });
 
-        audioField.addEventListener('change', function () {
-          configuration.useAudio = !configuration.useAudio;
-          seal(configuration);
-        });
+      audioField.addEventListener('change', function () {
+        configuration.useAudio = !configuration.useAudio;
+        seal(configuration);
+      });
 
-        muteAutoplayField.addEventListener('change', function () {
-          configuration.muteOnAutoplayRestriction = !configuration.muteOnAutoplayRestriction;
-          seal(configuration);
-        });
+      muteAutoplayField.addEventListener('change', function () {
+        configuration.muteOnAutoplayRestriction = !configuration.muteOnAutoplayRestriction;
+        seal(configuration);
+      });
 
-        smAccessField.addEventListener('blur', function () {
-          configuration.streamManagerAccessToken = smAccessField.value;
-          seal(configuration);
-        });
+      smAccessField.addEventListener('blur', function () {
+        configuration.streamManagerAccessToken = smAccessField.value;
+        seal(configuration);
+      });
 
+      mixerBackendSocketField.addEventListener('blur', function () {
+        configuration.mixerBackendSocketField = mixerBackendSocketField.value;
+        seal(configuration);
+      });
 
-        smRegionField.addEventListener('blur', function () {
+      mixerAuthenticationEnabledField.addEventListener('change', function () {
+        configuration.mixerAuthenticationEnabled = mixerAuthenticationEnabledField.checked;
+        seal(configuration);
+      });
+
+      smRegionField.addEventListener('blur', function () {
         configuration.streamManagerRegion = smRegionField.value;
         seal(configuration);
-        });
+      });
 
-        smAPIField.addEventListener('blur', function () {
-          configuration.streamManagerAPI = smAPIField.value;
-          seal(configuration);
-        });
+      smAPIField.addEventListener('blur', function () {
+        configuration.streamManagerAPI = smAPIField.value;
+        seal(configuration);
+      });
 
-        streamSwapButton.addEventListener('click', function () {
-          var stream1Value = stream1Field.value;
-          var stream2Value = stream2Field.value;
-          configuration.stream1 = stream2Value;
-          configuration.stream2 = stream1Value;
-          seal(configuration);
-          populate(configuration);
-        });
-
-        function populate (config) {
-          hostField.value = config.host;
-          appField.value = config.app;
-          stream1Field.value = config.stream1;
-          stream2Field.value = config.stream2;
-          iceField.value = config.rtcConfiguration.iceServers[0].urls;
-          iceUsername.value = config.rtcConfiguration.iceServers[0].username || '';
-          iceCredential.value = config.rtcConfiguration.iceServers[0].credential || '';
-          rtcCandidatePoolSize.value = config.rtcConfiguration.iceCandidatePoolSize || 0;
-          rtcSignalSocketField.checked = config.signalingSocketOnly || true;
-          loggingField.checked = config.verboseLogging ? true : false;
-          recordField.checked = config.recordBroadcast ? true : false;
-          videoField.checked = config.useVideo ? true : false;
-          audioField.checked = config.useAudio ? true : false;
-          muteAutoplayField.checked = config.muteOnAutoplayRestriction ? true : false;
-          smRegionField.value = config.streamManagerRegion ? config.streamManagerRegion : '';
-          smAccessField.value = config.streamManagerAccessToken;
-          smAPIField.value = config.streamManagerAPI;
-          authEnabledField.checked = config.authentication.enabled ? true : false;
-          authUsernameField.value = config.authentication.username;
-          authPasswordField.value = config.authentication.password;
-          authTokenField.value = config.authentication.token;
-          authUsernameField.disabled = authPasswordField.disabled = authTokenField.disabled = !authEnabledField.checked;
-
-          function selectFieldFromConfiguration (value, selectElem) {
-            var i = selectElem.childNodes.length;
-            var option;
-            while (--i > -1) {
-              option = selectElem.childNodes[i];
-              if (option.value === value) {
-                option.selected = true;
-                break;
-              }
-            }
-            selectElem.value = value;
-          }
-          selectFieldFromConfiguration(config.sendLogLevel, logLevelField);
-          selectFieldFromConfiguration(config.iceTransport, iceTransportSelect);
-          selectFieldFromConfiguration(config.rtcConfiguration.bundlePolicy, rtcBundlePolicySelect);
-          selectFieldFromConfiguration(config.rtcConfiguration.iceTransportPolicy, rtcTransportPolicySelect);
-          selectFieldFromConfiguration(config.rtcConfiguration.rtcpMuxPolicy, rtcpMuxPolicySelect);
-        }
-
+      streamSwapButton.addEventListener('click', function () {
+        var stream1Value = stream1Field.value;
+        var stream2Value = stream2Field.value;
+        configuration.stream1 = stream2Value;
+        configuration.stream2 = stream1Value;
+        seal(configuration);
         populate(configuration);
-        hideShowICEOptions();
+      });
 
-      })(this, document, window.red5prosk);
-    </script>
-  </body>
+      function populate(config) {
+        hostField.value = config.host;
+        appField.value = config.app;
+        stream1Field.value = config.stream1;
+        stream2Field.value = config.stream2;
+        iceField.value = config.rtcConfiguration.iceServers[0].urls;
+        iceUsername.value = config.rtcConfiguration.iceServers[0].username || '';
+        iceCredential.value = config.rtcConfiguration.iceServers[0].credential || '';
+        rtcCandidatePoolSize.value = config.rtcConfiguration.iceCandidatePoolSize || 0;
+        rtcSignalSocketField.checked = config.signalingSocketOnly || true;
+        loggingField.checked = config.verboseLogging ? true : false;
+        recordField.checked = config.recordBroadcast ? true : false;
+        videoField.checked = config.useVideo ? true : false;
+        audioField.checked = config.useAudio ? true : false;
+        muteAutoplayField.checked = config.muteOnAutoplayRestriction ? true : false;
+        smRegionField.value = config.streamManagerRegion ? config.streamManagerRegion : '';
+        smAccessField.value = config.streamManagerAccessToken;
+        smAPIField.value = config.streamManagerAPI;
+        authEnabledField.checked = config.authentication.enabled ? true : false;
+        authUsernameField.value = config.authentication.username;
+        authPasswordField.value = config.authentication.password;
+        authTokenField.value = config.authentication.token;
+        authUsernameField.disabled = authPasswordField.disabled = !authEnabledField.checked;
+        mixerBackendSocketField.value = config.mixerBackendSocketField;
+        mixerAuthenticationEnabledField.checked = config.mixerAuthenticationEnabled ? config.mixerAuthenticationEnabled : false
+
+        function selectFieldFromConfiguration(value, selectElem) {
+          var i = selectElem.childNodes.length;
+          var option;
+          while (--i > -1) {
+            option = selectElem.childNodes[i];
+            if (option.value === value) {
+              option.selected = true;
+              break;
+            }
+          }
+          selectElem.value = value;
+        }
+        selectFieldFromConfiguration(config.sendLogLevel, logLevelField);
+        selectFieldFromConfiguration(config.iceTransport, iceTransportSelect);
+        selectFieldFromConfiguration(config.rtcConfiguration.bundlePolicy, rtcBundlePolicySelect);
+        selectFieldFromConfiguration(config.rtcConfiguration.iceTransportPolicy, rtcTransportPolicySelect);
+        selectFieldFromConfiguration(config.rtcConfiguration.rtcpMuxPolicy, rtcpMuxPolicySelect);
+      }
+
+      populate(configuration);
+      hideShowICEOptions();
+
+    })(this, document, window.red5prosk);
+  </script>
+</body>
+
 </html>
