@@ -250,7 +250,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   let metadataSet = new Set()
   function processAMFData(data, video) {
-    console.log('received data: ', data);
+    //console.log('received data: ', data);
     const eventTimeMs = data.eventTimeMs
     if (!metadataSet.has(eventTimeMs)) {
       metadataSet.add(eventTimeMs)
