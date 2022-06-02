@@ -159,6 +159,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   function enableMetadataMonitor(video) {
+    console.log('enabled metadata monitor');
     const textTracks = typeof video.textTracks === 'function' ? video.textTracks() : video.textTracks
     if (textTracks) {
       video.addTextTrack('metadata')
@@ -201,10 +202,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   let metadataSet = new Set()
   function processAMFData(data, video) {
-    //console.log('received data: ', data)
+    //console.log('received data: ', data);
     const eventTimeMs = data.eventTimeMs
-    if (data.creator && !metadataSet.has(data.title)) {
-      metadataSet.add(data.title)
+    if (!metadataSet.has(eventTimeMs)) {
+      metadataSet.add(eventTimeMs)
       let now = new Date().getTime()
       if (now > playbackStart + eventTimeMs) {
         const p = document.getElementById('metadata')
@@ -213,12 +214,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         }
       } else {
         setTimeout(() => {
+          let now = new Date().getTime();
+          console.log('showing', data, 'after', now - playbackStart, 'ms');
           const p = document.getElementById('metadata')
           if (p) {
             p.innerHTML = JSON.stringify(data)
           }
         }, (playbackStart + eventTimeMs) - now)
-        console.log('showing ', data.creator, (playbackStart + eventTimeMs) - now)
       }
     }
   }
