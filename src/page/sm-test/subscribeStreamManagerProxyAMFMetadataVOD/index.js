@@ -137,16 +137,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     return kv.join('&')
   }
 
-  function useMP4Fallback(url) {
-    if (configuration.authentication.enabled) {
-      url += `?${getAuthQueryParams()}`
-    }
+  function useMP4Playback(url) {
     console.log('[subscribe] Playback MP4: ' + url);
-    if (url.indexOf('streams/') === -1) {
-      var paths = url.split('/');
-      paths.splice(paths.length - 1, 0, 'streams');
-      url = paths.join('/');
-    }
     var element = document.getElementById('red5pro-subscriber');
     var source = document.createElement('source');
     source.type = 'video/mp4;codecs="avc1.42E01E, mp4a.40.2"';
@@ -154,27 +146,27 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     element.appendChild(source);
   }
 
-  function useFLVFallback(host, app, streamName) {
-    console.log('[subscribe] Playback FLV: ' + streamName);
-    var container = document.getElementById('red5pro-subscriber');
-    var parent = container ? container.parentNode : document.getElementById('video-container');
-    if (container && parent) {
-      parent.removeChild(container);
-    }
-    var flashElement = generateFlashEmbedObject('red5pro-subscriber');
-    var flashvars = document.createElement('param');
-    flashvars.name = 'flashvars';
-    flashvars.value = 'stream=' + streamName + '&' +
-      'app=' + app + '&' +
-      'host=' + host + '&' +
-      'muted=false&' +
-      'autoplay=true&' +
-      'backgroundColor=#000000&' +
-      'buffer=0.5&' +
-      'autosize=true';
-    flashElement.appendChild(flashvars);
-    parent.appendChild(flashElement);
-  }
+  // function useMP4Playback(host, app, streamName) {
+  //   console.log('[subscribe] Playback FLV: ' + streamName);
+  //   var container = document.getElementById('red5pro-subscriber');
+  //   var parent = container ? container.parentNode : document.getElementById('video-container');
+  //   if (container && parent) {
+  //     parent.removeChild(container);
+  //   }
+  //   var flashElement = generateFlashEmbedObject('red5pro-subscriber');
+  //   var flashvars = document.createElement('param');
+  //   flashvars.name = 'flashvars';
+  //   flashvars.value = 'stream=' + streamName + '&' +
+  //     'app=' + app + '&' +
+  //     'host=' + host + '&' +
+  //     'muted=false&' +
+  //     'autoplay=true&' +
+  //     'backgroundColor=#000000&' +
+  //     'buffer=0.5&' +
+  //     'autosize=true';
+  //   flashElement.appendChild(flashvars);
+  //   parent.appendChild(flashElement);
+  // }
 
   let playbackStart
   function useHLSJSFallback(url) {
@@ -279,9 +271,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     var port = serverSettings.httpport;
     var baseUrl = protocol + '://' + host + ':' + port;
     var apiVersion = configuration.streamManagerAPI || '4.0';
-    var url = baseUrl + '/streammanager/api/' + apiVersion + '/media/' + app + '/playlists';
+    var url = baseUrl + '/streammanager/api/' + apiVersion + '/media/' + app + '/playlists?useCloud=true';
     if (configuration.authentication.enabled) {
-      url += `?${getAuthQueryParams()}`
+      url += `&${getAuthQueryParams()}`
     }
     return new Promise(function (resolve, reject) {
       fetch(url)
@@ -325,13 +317,16 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     });
   }
 
-  function requestEdge(configuration, vod) {
+  function requestMP4VOD(configuration, vod) {
     var host = configuration.host;
     var app = configuration.app;
     var port = serverSettings.httpport;
     var baseUrl = protocol + '://' + host + ':' + port;
     var apiVersion = configuration.streamManagerAPI || '4.0';
-    var url = baseUrl + '/streammanager/api/' + apiVersion + '/media/' + app + '/' + vod;
+    var url = baseUrl + '/streammanager/api/' + apiVersion + '/media/' + app + '/' + vod + '/mediafiles?useCloud=true';
+    if (configuration.authentication.enabled) {
+      url += `&${getAuthQueryParams()}`
+    }
     return new Promise(function (resolve, reject) {
       fetch(url)
         .then(function (res) {
@@ -358,13 +353,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     });
   }
 
-  function forceFallback(edgeData) {
-    if (isMP4File(edgeData.url)) {
-      useMP4Fallback(edgeData.url);
-    } else {
-      useFLVFallback(edgeData.serverAddress, edgeData.scope, edgeData.name);
-    }
-  }
+  // function forceFallback(edgeData) {
+  //   if (isMP4File(edgeData.url)) {
+  //     useMP4Fallback(edgeData.url);
+  //   } else {
+  //     useFLVFallback(edgeData.serverAddress, edgeData.scope, edgeData.name);
+  //   }
+  // }
 
   // Request to unsubscribe.
   function unsubscribe() {
@@ -449,49 +444,65 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       });
   }
 
-  function respondToEdge(response) {
-    edgeData = response;
-    var host = edgeData.serverAddress;
-    var name = edgeData.name;
-    var app = edgeData.scope;
-    edgeData.url = 'http://' + host + ':5080/' + app + '/' + name;
+  function respondToMP4VOD(response) {
+    let mediafiles = response.mediafiles
+    if (!mediafiles) {
+      console.warn('Response does not include any mediafiles');
+      return;
+    }
 
-    var config = Object.assign({}, configuration, defaultConfiguration);
-    var rtmpConfig = Object.assign({}, config, {
-      host: host,
-      app: app,
-      protocol: 'rtmp',
-      port: serverSettings.rtmpport,
-      streamName: name,
-      backgroundColor: '#000000',
-      width: 640,
-      height: 480,
-      swf: '../../lib/red5pro/red5pro-subscriber.swf',
-      swfobjectURL: '../../lib/swfobject/swfobject.js',
-      productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
-    });
+    let matches = mediafiles.filter(media => media.name === configuration.stream1);
+    if (!matches || matches.length <= 0) {
+      console.warn(`Could not find recording for ${configuration.stream1}`);
+      return;
+    }
 
-    new red5prosdk.RTMPSubscriber().init(rtmpConfig)
-      .then(function (subscriberImpl) {
-        targetSubscriber = subscriberImpl;
-        // Subscribe to events.
-        targetSubscriber.on('*', onSubscriberEvent);
-        return targetSubscriber.subscribe();
-      })
-      .then(function () {
-        onSubscribeSuccess();
-      })
-      .catch(function (error) { // eslint-disable-line no-unused-vars
-        try {
-          forceFallback(edgeData)
-        } catch (e) {
-          console.error('[Red5ProSubscriber] :: Error in subscribing - ' + e.message);
-          onSubscribeFail(e.message);
-        }
-      });
+    let url = matches[0].url
+    useMP4Playback(url);
+
+
+    // edgeData = response;
+    // var host = edgeData.serverAddress;
+    // var name = edgeData.name;
+    // var app = edgeData.scope;
+    // edgeData.url = 'http://' + host + ':5080/' + app + '/' + name;
+
+    // var config = Object.assign({}, configuration, defaultConfiguration);
+    // var rtmpConfig = Object.assign({}, config, {
+    //   host: host,
+    //   app: app,
+    //   protocol: 'rtmp',
+    //   port: serverSettings.rtmpport,
+    //   streamName: name,
+    //   backgroundColor: '#000000',
+    //   width: 640,
+    //   height: 480,
+    //   swf: '../../lib/red5pro/red5pro-subscriber.swf',
+    //   swfobjectURL: '../../lib/swfobject/swfobject.js',
+    //   productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
+    // });
+
+    // new red5prosdk.RTMPSubscriber().init(rtmpConfig)
+    //   .then(function (subscriberImpl) {
+    //     targetSubscriber = subscriberImpl;
+    //     // Subscribe to events.
+    //     targetSubscriber.on('*', onSubscriberEvent);
+    //     return targetSubscriber.subscribe();
+    //   })
+    //   .then(function () {
+    //     onSubscribeSuccess();
+    //   })
+    //   .catch(function (error) { // eslint-disable-line no-unused-vars
+    //     try {
+    //       forceFallback(edgeData)
+    //     } catch (e) {
+    //       console.error('[Red5ProSubscriber] :: Error in subscribing - ' + e.message);
+    //       onSubscribeFail(e.message);
+    //     }
+    //   });
   }
 
-  function respondToEdgeFailure(error) {
+  function respondToPlaybackFailure(error) {
     if (retryCount++ < retryLimit) {
       var retryTimer = setTimeout(function () {
         clearTimeout(retryTimer);
@@ -509,11 +520,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     if (configuration.subscriberFailoverOrder.toLowerCase() === 'hls') {
       requestPlaylist(configuration, configuration.stream1)
         .then(respondToPlaylist)
-        .catch(respondToEdgeFailure)
+        .catch(respondToPlaybackFailure)
     } else {
-      requestEdge(configuration, configuration.stream1)
-        .then(respondToEdge)
-        .catch(respondToEdgeFailure);
+      requestMP4VOD(configuration, configuration.stream1)
+        .then(respondToMP4VOD)
+        .catch(respondToPlaybackFailure);
     }
   }
 
