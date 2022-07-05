@@ -277,7 +277,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     var url = baseUrl + '/streammanager/api/' + apiVersion + '/event/' + app + '/' + streamName + '?action=subscribe';
     var region = getRegionIfDefined();
     if (region) {
-      url += '&region=' + region;
+      url += '&region=' + region + '&strict=true';
     }
       return new Promise(function (resolve, reject) {
         fetch(url)
