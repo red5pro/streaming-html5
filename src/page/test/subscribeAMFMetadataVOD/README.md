@@ -46,10 +46,10 @@ function enableMetadataMonitor(video) {
 
 let metadataSet = new Set()
 function processAMFData(data, video) {
-  //console.log('received data: ', data)
+  //console.log('received data: ', data);
   const eventTimeMs = data.eventTimeMs
-  if (data.creator && !metadataSet.has(data.title)) {
-    metadataSet.add(data.title)
+  if (!metadataSet.has(eventTimeMs)) {
+    metadataSet.add(eventTimeMs)
     let now = new Date().getTime()
     if (now > playbackStart + eventTimeMs) {
       const p = document.getElementById('metadata')
@@ -58,12 +58,13 @@ function processAMFData(data, video) {
       }
     } else {
       setTimeout(() => {
+        let now = new Date().getTime();
+        console.log('showing', data, 'after', now - playbackStart, 'ms');
         const p = document.getElementById('metadata')
         if (p) {
           p.innerHTML = JSON.stringify(data)
         }
       }, (playbackStart + eventTimeMs) - now)
-      console.log('showing ', data.creator, (playbackStart + eventTimeMs) - now)
     }
   }
 }

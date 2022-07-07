@@ -47,25 +47,50 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
     return {}
   })();
+
   red5prosdk.setLogLevel(configuration.verboseLogging ? red5prosdk.LOG_LEVELS.TRACE : red5prosdk.LOG_LEVELS.WARN);
 
-  var targetSubscriber;
 
-  var updateStatusFromEvent = window.red5proHandleSubscriberEvent; // defined in src/template/partial/status-field-subscriber.hbs
-  var instanceId = Math.floor(Math.random() * 0x10000).toString(16);
+  var targetPublisher;
+
+  var updateStatusFromEvent = window.red5proHandlePublisherEvent; // defined in src/template/partial/status-field-publisher.hbs
   var streamTitle = document.getElementById('stream-title');
   var statisticsField = document.getElementById('statistics-field');
   var bitrateField = document.getElementById('bitrate-field');
   var packetsField = document.getElementById('packets-field');
   var resolutionField = document.getElementById('resolution-field');
+  var submitButton = document.getElementById('submit-button');
+  let metadataField = document.getElementById('metadata-field');
 
   var protocol = serverSettings.protocol;
-  var isSecure = protocol === 'https';
+  var isSecure = protocol == 'https';
+  function getSocketLocationFromProtocol() {
+    return !isSecure
+      ? { protocol: 'ws', port: serverSettings.wsport }
+      : { protocol: 'wss', port: serverSettings.wssport };
+  }
 
   var bitrate = 0;
-  var packetsReceived = 0;
+  var packetsSent = 0;
   var frameWidth = 0;
   var frameHeight = 0;
+
+  submitButton.addEventListener('click', function () {
+    if (!targetPublisher) {
+      console.warn('A stream must be published before metadata can be sent!');
+      return;
+    }
+
+    let data = metadataField.value;
+    if (data === '') {
+      return;
+    }
+
+    console.log(`sending metadata: ${data}`);
+    targetPublisher.send('onMetaData', { 'metadata': data });
+
+    metadataField.value = '';
+  });
 
   function updateStatistics(b, p, w, h) {
     statisticsField.classList.remove('hidden');
@@ -76,89 +101,44 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   function onBitrateUpdate(b, p) {
     bitrate = b;
-    packetsReceived = p;
-    updateStatistics(bitrate, packetsReceived, frameWidth, frameHeight);
+    packetsSent = p;
+    updateStatistics(bitrate, packetsSent, frameWidth, frameHeight);
   }
 
   function onResolutionUpdate(w, h) {
     frameWidth = w;
     frameHeight = h;
-    updateStatistics(bitrate, packetsReceived, frameWidth, frameHeight);
+    updateStatistics(bitrate, packetsSent, frameWidth, frameHeight);
   }
 
-  // Determines the ports and protocols based on being served over TLS.
-  function getSocketLocationFromProtocol() {
-    return !isSecure
-      ? { protocol: 'ws', port: serverSettings.wsport }
-      : { protocol: 'wss', port: serverSettings.wssport };
+  function onPublisherEvent(event) {
+    console.log('[Red5ProPublisher] ' + event.type + '.');
+    updateStatusFromEvent(event);
   }
-
-  // Base configuration to extend in providing specific tech failover configurations.
-  var defaultConfiguration = (function (useVideo, useAudio) {
-    var c = {
-      protocol: getSocketLocationFromProtocol().protocol,
-      port: getSocketLocationFromProtocol().port
-    };
-    if (!useVideo) {
-      c.videoEncoding = red5prosdk.PlaybackVideoEncoder.NONE;
+  function onPublishFail(message) {
+    console.error('[Red5ProPublisher] Publish Error :: ' + message);
+  }
+  function onPublishSuccess(publisher) {
+    console.log('[Red5ProPublisher] Publish Complete.');
+    try {
+      var pc = publisher.getPeerConnection();
+      var stream = publisher.getMediaStream();
+      window.trackBitrate(pc, onBitrateUpdate, onResolutionUpdate);
+      statisticsField.classList.remove('hidden');
+      stream.getVideoTracks().forEach(function (track) {
+        var settings = track.getSettings();
+        onResolutionUpdate(settings.width, settings.height);
+      });
     }
-    if (!useAudio) {
-      c.audioEncoding = red5prosdk.PlaybackAudioEncoder.NONE;
-    }
-    return c;
-  })(configuration.useVideo, configuration.useAudio);
-
-  document.getElementById('red5pro-subscriber').addEventListener('loadedmetadata', (event) => {
-    console.log(event);
-  });
-  document.getElementById('red5pro-subscriber').addEventListener('loadeddata', (event) => {
-    console.log(event);
-  });
-
-  // Local lifecycle notifications.
-  function onSubscriberEvent(event) {
-    if (event.type == 'Subscribe.Metadata') {
-      processAMFData(event)
-    }
-
-    if (event.type !== 'Subscribe.Time.Update') {
-      console.log('[Red5ProSubscriber] ' + event.type + '.');
-      updateStatusFromEvent(event);
-      if (event.type === 'Subscribe.VideoDimensions.Change') {
-        onResolutionUpdate(event.data.width, event.data.height);
-      }
+    catch (e) {
+      // no tracking for you!
     }
   }
-  function processAMFData(event) {
-    const data = event.data
-    console.log('received data: ', data)
-    const p = document.getElementById('metadata')
-    if (p) {
-      p.innerHTML = JSON.stringify(data)
-    }
+  function onUnpublishFail(message) {
+    console.error('[Red5ProPublisher] Unpublish Error :: ' + message);
   }
-  function onSubscribeFail(message) {
-    console.error('[Red5ProSubsriber] Subscribe Error :: ' + message);
-  }
-  function onSubscribeSuccess(subscriber) {
-    console.log('[Red5ProSubsriber] Subscribe Complete.');
-    if (window.exposeSubscriberGlobally) {
-      window.exposeSubscriberGlobally(subscriber);
-    }
-    if (subscriber.getType().toLowerCase() === 'rtc') {
-      try {
-        window.trackBitrate(subscriber.getPeerConnection(), onBitrateUpdate, onResolutionUpdate, true);
-      }
-      catch (e) {
-        //
-      }
-    }
-  }
-  function onUnsubscribeFail(message) {
-    console.error('[Red5ProSubsriber] Unsubscribe Error :: ' + message);
-  }
-  function onUnsubscribeSuccess() {
-    console.log('[Red5ProSubsriber] Unsubscribe Complete.');
+  function onUnpublishSuccess() {
+    console.log('[Red5ProPublisher] Unpublish Complete.');
   }
 
   function getAuthenticationParams() {
@@ -174,99 +154,107 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       : {};
   }
 
-  // Request to unsubscribe.
-  function unsubscribe() {
+  function getUserMediaConfiguration() {
+    return {
+      mediaConstraints: {
+        audio: configuration.useAudio ? configuration.mediaConstraints.audio : false,
+        video: configuration.useVideo ? configuration.mediaConstraints.video : false
+      }
+    };
+  }
+
+  function getRTMPMediaConfiguration() {
+    return {
+      mediaConstraints: {
+        audio: configuration.useAudio ? configuration.mediaConstraints.audio : false,
+        video: configuration.useVideo ? {
+          width: configuration.cameraWidth,
+          height: configuration.cameraHeight
+        } : false
+      }
+    }
+  }
+
+  function unpublish() {
     return new Promise(function (resolve, reject) {
-      var subscriber = targetSubscriber
-      subscriber.unsubscribe()
+      var publisher = targetPublisher;
+      publisher.unpublish()
         .then(function () {
-          targetSubscriber.off('*', onSubscriberEvent);
-          targetSubscriber = undefined;
-          onUnsubscribeSuccess();
+          onUnpublishSuccess();
           resolve();
         })
         .catch(function (error) {
-          var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
-          onUnsubscribeFail(jsonError);
+          var jsonError = typeof error === 'string' ? error : JSON.stringify(error, 2, null);
+          onUnpublishFail('Unmount Error ' + jsonError);
           reject(error);
         });
     });
   }
 
-  // Define tech spefific configurations for each failover item.
   var config = Object.assign({},
     configuration,
-    defaultConfiguration,
-    getAuthenticationParams(), {
-    streamName: configuration.stream1
-  });
+    {
+      streamMode: configuration.recordBroadcast ? 'record' : 'live'
+    },
+    getAuthenticationParams(),
+    getUserMediaConfiguration());
+
   var rtcConfig = Object.assign({}, config, {
     protocol: getSocketLocationFromProtocol().protocol,
     port: getSocketLocationFromProtocol().port,
-    subscriptionId: 'subscriber-' + instanceId
-  })
+    streamName: config.stream1,
+  });
   var rtmpConfig = Object.assign({}, config, {
     protocol: 'rtmp',
     port: serverSettings.rtmpport,
-    width: config.cameraWidth,
-    height: config.cameraHeight,
+    streamName: config.stream1,
     backgroundColor: '#000000',
-    swf: '../../lib/red5pro/red5pro-subscriber.swf',
+    swf: '../../lib/red5pro/red5pro-publisher.swf',
     swfobjectURL: '../../lib/swfobject/swfobject.js',
     productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
-  })
-  var hlsConfig = Object.assign({}, config, {
-    protocol: protocol,
-    port: isSecure ? serverSettings.hlssport : serverSettings.hlsport
-  })
-
-  // Define failover order.
-  var subscribeOrder = config.subscriberFailoverOrder
-    .split(',').map(function (item) {
-      return item.trim();
+  }, getRTMPMediaConfiguration());
+  var publishOrder = config.publisherFailoverOrder
+    .split(',')
+    .map(function (item) {
+      return item.trim()
     });
 
-  // Override for providing ?view= query param.
   if (window.query('view')) {
-    subscribeOrder = [window.query('view')];
+    publishOrder = [window.query('view')];
   }
 
-  // Request to initialization and start subscribing through failover support.
-  var subscriber = new red5prosdk.Red5ProSubscriber()
-  subscriber.setPlaybackOrder(subscribeOrder)
+  var publisher = new red5prosdk.Red5ProPublisher()
+  publisher.setPublishOrder(publishOrder)
     .init({
       rtc: rtcConfig,
-      rtmp: rtmpConfig,
-      hls: hlsConfig
+      rtmp: rtmpConfig
     })
-    .then(function (subscriberImpl) {
+    .then(function (publisherImpl) {
       streamTitle.innerText = configuration.stream1;
-      targetSubscriber = subscriberImpl
-      // Subscribe to events.
-      targetSubscriber.on('*', onSubscriberEvent);
-      return targetSubscriber.subscribe()
+      targetPublisher = publisherImpl;
+      targetPublisher.on('*', onPublisherEvent);
+      return targetPublisher.publish();
     })
     .then(function () {
-      onSubscribeSuccess(targetSubscriber);
+      onPublishSuccess(targetPublisher);
     })
     .catch(function (error) {
       var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
-      console.error('[Red5ProSubscriber] :: Error in subscribing - ' + jsonError);
-      onSubscribeFail(jsonError);
+      console.error('[Red5ProPublisher] :: Error in publishing - ' + jsonError);
+      onPublishFail(jsonError);
     });
 
-  // Clean up.
   var shuttingDown = false;
   function shutdown() {
     if (shuttingDown) return;
     shuttingDown = true;
     function clearRefs() {
-      if (targetSubscriber) {
-        targetSubscriber.off('*', onSubscriberEvent);
+      if (targetPublisher) {
+        targetPublisher.off('*', onPublisherEvent);
       }
-      targetSubscriber = undefined;
+      targetPublisher = undefined;
     }
-    unsubscribe().then(clearRefs).catch(clearRefs);
+    unpublish().then(clearRefs).catch(clearRefs);
     window.untrackBitrate();
   }
   window.addEventListener('pagehide', shutdown);
