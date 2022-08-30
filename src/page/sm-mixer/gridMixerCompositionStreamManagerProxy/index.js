@@ -1,26 +1,26 @@
 /*
 Copyright © 2015 Infrared5, Inc. All rights reserved.
 
-The accompanying code comprising examples for use solely in conjunction with Red5 Pro (the "Example Code") 
-is  licensed  to  you  by  Infrared5  Inc.  in  consideration  of  your  agreement  to  the  following  
-license terms  and  conditions.  Access,  use,  modification,  or  redistribution  of  the  accompanying  
+The accompanying code comprising examples for use solely in conjunction with Red5 Pro (the "Example Code")
+is  licensed  to  you  by  Infrared5  Inc.  in  consideration  of  your  agreement  to  the  following
+license terms  and  conditions.  Access,  use,  modification,  or  redistribution  of  the  accompanying
 code  constitutes your acceptance of the following license terms and conditions.
 
-Permission is hereby granted, free of charge, to you to use the Example Code and associated documentation 
-files (collectively, the "Software") without restriction, including without limitation the rights to use, 
-copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit 
+Permission is hereby granted, free of charge, to you to use the Example Code and associated documentation
+files (collectively, the "Software") without restriction, including without limitation the rights to use,
+copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit
 persons to whom the Software is furnished to do so, subject to the following conditions:
 
-The Software shall be used solely in conjunction with Red5 Pro. Red5 Pro is licensed under a separate end 
-user  license  agreement  (the  "EULA"),  which  must  be  executed  with  Infrared5,  Inc.   
+The Software shall be used solely in conjunction with Red5 Pro. Red5 Pro is licensed under a separate end
+user  license  agreement  (the  "EULA"),  which  must  be  executed  with  Infrared5,  Inc.
 An  example  of  the EULA can be found on our website at: https://account.red5pro.com/assets/LICENSE.txt.
 
 The above copyright notice and this license shall be included in all copies or portions of the Software.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,  INCLUDING  BUT  
-NOT  LIMITED  TO  THE  WARRANTIES  OF  MERCHANTABILITY, FITNESS  FOR  A  PARTICULAR  PURPOSE  AND  
-NONINFRINGEMENT.   IN  NO  EVENT  SHALL INFRARED5, INC. BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, 
-WHETHER IN  AN  ACTION  OF  CONTRACT,  TORT  OR  OTHERWISE,  ARISING  FROM,  OUT  OF  OR  IN CONNECTION 
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,  INCLUDING  BUT
+NOT  LIMITED  TO  THE  WARRANTIES  OF  MERCHANTABILITY, FITNESS  FOR  A  PARTICULAR  PURPOSE  AND
+NONINFRINGEMENT.   IN  NO  EVENT  SHALL INFRARED5, INC. BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+WHETHER IN  AN  ACTION  OF  CONTRACT,  TORT  OR  OTHERWISE,  ARISING  FROM,  OUT  OF  OR  IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 /**
@@ -258,7 +258,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     console.log('remove from previous')
     const item = mainContainer.querySelector(escape(`[data-name=${name}]`))
     if (item && item.parentNode) {
-      // item is in `list-holder` 
+      // item is in `list-holder`
       const id = getSlotIdFromStreamName(name) //getIdFromStreamName(name)
       item.parentNode.removeChild(item)
       return id
@@ -271,7 +271,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   const getSlotIdFromStreamName = name => {
     const item = mainContainer.querySelector(escape(`[data-name=${name}]`))
     if (item) {
-      // item is in `list-holder` 
+      // item is in `list-holder`
       const box = item.parentNode
       return box.dataset.list || box.dataset.listId
     }
@@ -335,7 +335,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     console.log(mixerNameToMixerBox)
     streamsToAdd.forEach(stream => {
       console.log(stream)
-      // if composite stream 
+      // if composite stream
       let slot
       if (Object(compositeStreamToDestinationMixerName).hasOwnProperty(stream)) {
         const destName = compositeStreamToDestinationMixerName[stream]
@@ -384,7 +384,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
    */
   const addStreams = (streams) => {
     if (!streams) return
-    // add only streams that are not already in a mixer box 
+    // add only streams that are not already in a mixer box
     // find streams already in mixer boxes (added by parsing the active composition message)
     const mixerContainers = document.getElementsByClassName('mixer-container')
     let mixerStreams = []
@@ -460,7 +460,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       }
       webSocket.send(JSON.stringify(payload))
 
-      // move streams from mixers to main list 
+      // move streams from mixers to main list
       const streamItems = mixerContainer.getElementsByClassName('media-list-item')
       if (streamItems) {
         const destinationSlot = document.getElementsByClassName('list-holder').item(0)
@@ -483,7 +483,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   /*
-  * Updates the UI based on the composition selected from a drop down list 
+  * Updates the UI based on the composition selected from a drop down list
   */
   window.compositionSelected = () => {
     const selectedValue = selectBox.options[selectBox.selectedIndex].value;
@@ -828,7 +828,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         mixerGridLimit[mixer.id] = 4
       } else if (mixer.mixingPage.indexOf('3x3') >= 0) {
         mixerGridLimit[mixer.id] = 9
+      } else if (mixer.mixingPage.indexOf('7x7') >= 0) {
+        mixerGridLimit[mixer.id] = 49
       }
+
     })
 
     console.log('Found grid limits: ', mixerGridLimit)
@@ -938,6 +941,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     else if (selection === '3x3') {
       return `https://${red5ProHost}/webrtcexamples/sample-mixer-pages/3x3/index.html?sm=true&app=${appName}&ws=${websocketEndpoint}`
     }
+    else if (selection === '7x7') {
+      return `https://${red5ProHost}/webrtcexamples/sample-mixer-pages/7x7/index.html?sm=true&app=${appName}&ws=${websocketEndpoint}`
+    }
     else {
       return `https://${red5ProHost}/webrtcexamples/sample-mixer-pages/nxn/index.html?sm=true&app=${appName}&ws=${websocketEndpoint}`
     }
@@ -972,7 +978,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       return
     }
 
-    // this will inform the page that it is the final layer so the page can adapt as needed  
+    // this will inform the page that it is the final layer so the page can adapt as needed
     if (mixers.length > 0 && destinationMixerName == "") {
       mixingPage = `${mixingPage}&layer=final`
     }
@@ -1057,9 +1063,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   /*
-   * Posts a create composition message to the WebSocket server with the 
-   * data provided by the user. The server will forward the data to the Stream 
-   * Manager to create the actual composition  
+   * Posts a create composition message to the WebSocket server with the
+   * data provided by the user. The server will forward the data to the Stream
+   * Manager to create the actual composition
    */
   function processCreateCompositionForm(e) {
     if (e.preventDefault) e.preventDefault();

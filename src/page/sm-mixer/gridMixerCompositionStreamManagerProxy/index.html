@@ -495,6 +495,7 @@
                         <select name="mixingPage" id="mixingPage-select">
                             <option name="2x2">2x2</option>
                             <option name="3x3">3x3</option>
+                            <option name="7x7">7x7</option>
                             <option name="NxN">NxN</option>
                         </select><br>
                     </div>
@@ -511,12 +512,12 @@
                     <div class="tooltip">
                         <span class="tooltiptext">Width of the composite stream</span>
                         <label for="width">Width:</label><br>
-                        <input type="number" id="width" min="0" max="4096" name="width" value="1280"><br>
+                        <input type="number" id="width" min="0" max="4096" name="width" value="1920"><br>
                     </div>
                     <div class="tooltip">
                         <span class="tooltiptext">Height of the composite stream</span>
                         <label for="height">Height:</label><br>
-                        <input type="number" id="height" min="0" max="2160" name="height" value="720"><br>
+                        <input type="number" id="height" min="0" max="2160" name="height" value="1080"><br>
                     </div>
                     <div class="tooltip">
                         <span class="tooltiptext">Framerate of the composite stream</span>
@@ -526,7 +527,7 @@
                     <div class="tooltip">
                         <span class="tooltiptext">Bitrate of the composite stream</span>
                         <label for="bitrate">Bitrate:</label><br>
-                        <input type="number" id="bitrate" min="0" name="bitrate" value="1500"><br>
+                        <input type="number" id="bitrate" min="0" name="bitrate" value="4500000"><br>
                     </div>
                     <div class="tooltip">
                         <span class="tooltiptext">Mixer Name to publish to, or leave empty to publish to the Red5 Pro
