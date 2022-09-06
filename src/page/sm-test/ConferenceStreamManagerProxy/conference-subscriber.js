@@ -35,14 +35,19 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   var subscriberMap = {};
+  var ConferenceSubscriberItemMap = {}
   var streamNameField = document.getElementById('streamname-field');
   var updateSuscriberStatusFromEvent = window.red5proHandleSubscriberEvent;
   var subscriberTemplate = '' +
-        '<div class="subscriber-session centered">' +
+        '<div class="subscriber-session">' +
           '<p class="subscriber-status-field">On hold.</p>' +
+          '<p class="centered status-field statistics-field hidden">' +
+            '<span>Bitrate: </span><span class="bitrate-field">N/A</span>.&nbsp;<span>Packets In: <span class="packets-field">N/A</span>.' +
+            '<br/>' +
+            '<span>Resolution: <span class="resolution-field">0x0</span>' +
         '</div>' +
-        '<div class="video-holder centered">' +
-          '<video autoplay controls playsinline class="red5pro-subscriber red5pro-media red5pro-background"></video>' +
+        '<div class="video-holder">' +
+          '<video autoplay controls playsinline width="100%" height="100%" class="red5pro-subscriber red5pro-media red5pro-media-background"></video>' +
         '</div>' +
         '<div class="audio-holder centered hidden">' +
           '<audio autoplay playsinline class="red5pro-media"></audio>' +
@@ -55,7 +60,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   function templateContent (templateHTML) {
     var div = document.createElement('div');
-    div.classList.add('subscriber-container');
+    //div.classList.add('subscriber-container');
     div.innerHTML = templateHTML;
     return div;
   }
@@ -64,8 +69,30 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     return ['red5pro', 'subscriber', streamName].join('-');
   }
 
+  function getSubscriberElementContainerId (streamName) {
+    return [getSubscriberElementId(streamName), 'container'].join('-')
+  }
+
   function getSubscriberAudioElementId (streamName) {
     return ['red5pro', 'subscriber', streamName, 'audio'].join('-');
+  }
+
+  function removeLoadingIcon (container) {
+    var icon = container.querySelector('.loading-icon');
+    if (icon) {
+      icon.parentNode.removeChild(icon)
+    }
+  }
+
+  function addLoadingIcon (container) {
+    var icon = container.querySelector('.loading-icon');
+    if (!icon) {
+      var loadingIcon = document.createElement('img');
+      loadingIcon.src = '../../images/loading.svg';
+      loadingIcon.classList.add('stream-play-button');
+      loadingIcon.classList.add('loading-icon');
+      container.appendChild(loadingIcon);
+    }
   }
 
   function generateNewSubscriberDOM (streamName, subId, parent) {
@@ -81,7 +108,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     subscriberIdField.innerText = '(' + subId + ')';
     videoElement.id = videoId;
     audioElement.id = audioId;
-    card.id = [videoId, 'container'].join('-');
+    card.id = getSubscriberElementContainerId(streamName);
+    card.style.position = 'relative'
+    card.style.margin = '4px'
     return card;
   }
 
@@ -120,69 +149,32 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     decoy.unsubscribe();
   }
 
-  function requestEdge (configuration, serverSettings, streamName, optionalRegion) {
-    var host = configuration.host;
-    var app = configuration.app;
-    var port = serverSettings.httpport;
-    var baseUrl = serverSettings.protocol + '://' + host + ':' + port;
-    var apiVersion = configuration.streamManagerAPI || '4.0';
-    var url = baseUrl + '/streammanager/api/' + apiVersion + '/event/' + app + '/' + streamName + '?action=subscribe';
-    if (optionalRegion) {
-      url += '&region=' + optionalRegion
-    }
-      return new Promise(function (resolve, reject) {
-        fetch(url)
-          .then(function (res) {
-            if(res.status == 200){
-                if (res.headers.get("content-type") && res.headers.get("content-type").toLowerCase().indexOf("application/json") >= 0) {
-                    return res.json();
-                }
-                else {
-                  throw new TypeError('Could not properly parse response.');
-                }
-            } else {
-              var msg = "";
-              if(res.status == 400) {
-                msg = "An invalid request was detected";
-              } else if(res.status == 404) {
-                msg = "Data for the request could not be located/provided.";
-              } else if(res.status == 500) {
-                msg = "Improper server state error was detected.";
-              } else {
-                msg = "Unknown error";
-              }
-              throw new TypeError(msg);
-            }
-          })
-          .then(function (json) {
-            resolve(json);
-          })
-          .catch(function (error) {
-            var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
-            console.error('[SubscribeStreamManagerTest] :: Error - Could not request Origin IP from Stream Manager. ' + jsonError)
-            reject(error)
-          });
-    });
-  }
-
-  var SubscriberItem = function (subStreamName, parent, index) {
-    this.subscriptionId = [streamNameField.value, 'sub'].join('-');
-    this.streamName = subStreamName;
+  var SubscriberItem = function (subStreamName, parent, index, requestLayoutFn) {
+    this.subscriptionId = [subStreamName, 'sub'].join('-');
+    this.streamName = subStreamName
     this.subscriber = undefined;
     this.baseConfiguration = undefined;
-    this.serverSettings = undefined;
-    this.proxyScope = undefined;
-    this.region = undefined;
     this.streamingMode = undefined;
     this.audioDecoy = undefined; // Used when initial mode is `Audio`.
     this.index = index;
     this.next = undefined;
     this.parent = parent;
+    this.requestLayoutFn = requestLayoutFn
+    this.statsTicket = undefined
+
     this.card = generateNewSubscriberDOM(this.streamName, this.subscriptionId, this.parent);
     this.statusField = this.card.getElementsByClassName('subscriber-status-field')[0];
+    this.statisticsField = this.card.querySelector('.statistics-field')
     this.toggleVideoPoster = this.toggleVideoPoster.bind(this);
     this.handleAudioDecoyVolumeChange = this.handleAudioDecoyVolumeChange.bind(this);
     this.handleStreamingModeMetadata = this.handleStreamingModeMetadata.bind(this);
+
+    this.resetTimout = 0
+    this.disposed = false
+    ConferenceSubscriberItemMap[this.streamName] = this
+
+    addLoadingIcon(this.card)
+    this.requestLayoutFn.call(null)
   }
   SubscriberItem.prototype.handleAudioDecoyVolumeChange = function (event) {
     if (this.audioDecoy) {
@@ -219,114 +211,168 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       video.classList.remove('hidden');
     }
   }
+  SubscriberItem.prototype.respond = function (event) {
+    if (event.type === 'Subscribe.Time.Update') return;
+
+    console.log('TEST', '[subscriber:' + this.streamName + '] ' + event.type);
+    var inFailedState = updateSuscriberStatusFromEvent(event, this.statusField);
+    if (event.type === 'Subscribe.Metadata') {
+      if (event.data.streamingMode) {
+        this.handleStreamingModeMetadata(event.data.streamingMode)
+        this.toggleVideoPoster(!event.data.streamingMode.match(/Video/));
+      }
+    } else if (event.type === 'Subscriber.Play.Unpublish') {
+      this.dispose()
+    } else if (event.type === 'Subscribe.Connection.Closed') {
+      this.close()
+    } else if (event.type === 'Connect.Failure') {
+      this.reject()
+      this.close()
+    } else if (event.type === 'Subscribe.Fail') {
+      this.reject()
+      this.close()
+    } else if (event.type === 'Subscribe.Start') {
+      this.resolve()
+    }
+
+    if (inFailedState) {
+      this.close();
+    }
+  }
   SubscriberItem.prototype.resolve = function () {
+    removeLoadingIcon(this.card)
     if (this.next) {
-      this.next.execute(this.baseConfiguration, this.serverSettings, this.proxyScope, this.region);
+      console.log('TEST', new Date().getTime(), '[subscriber:' + this.streamName + '] next ->. ' + this.next.streamName)
+      this.next.execute(this.baseConfiguration);
+      this.next = undefined
     }
   }
   SubscriberItem.prototype.reject = function (event) {
     console.error(event);
+    removeLoadingIcon(this.card)
     if (this.next) {
-      this.next.execute(this.baseConfiguration, this.serverSettings, this.proxyScope, this.region);
+      this.next.execute(this.baseConfiguration);
+      this.next = undefined
     }
   }
-  SubscriberItem.prototype.execute = function (config, settings, proxyScope, optionalRegion) {
+  SubscriberItem.prototype.reset = function () {
+    clearTimeout(this.resetTimeout)
+    if (this.disposed) return
+
+    this.statusField.innerText = 'Retrying...'
+    this.resetTimeout = setTimeout(() => {
+      clearTimeout(this.resetTimeout);
+      console.log('TEST', '[subscriber:' + this.streamName + '] retry.')
+      this.execute(this.baseConfiguration)
+    }, 2000)
+  }
+  SubscriberItem.prototype.dispose = function () {
+    clearTimeout(this.resetTimeout)
+    this.disposed = true
+    this.close()
+  }
+  SubscriberItem.prototype.close = function () {
+    const cleanup = () => {
+      this.statusField.innerText = 'Closing...'
+      if (!this.disposed) {
+        this.reset()
+      } else {
+        var el = document.getElementById(getSubscriberElementId(this.streamName) + '-container')
+        if (el) {
+          el.parentNode.removeChild(el);
+        }
+        console.log('TEST', 'To disposeDD ' + this.streamName)
+        delete ConferenceSubscriberItem[this.streamName]
+        delete subscriberMap[this.streamName]
+      }
+      this.requestLayoutFn()
+    }
+    if (this.statsTicket) {
+      window.untrackBitrate(this.statsTicket)
+      this.statsTicket = undefined
+    }
+    if (this.subscriber) {
+      this.subscriber.off('*', this.respond);
+      this.subscriber.unsubscribe().then(cleanup).catch(cleanup);
+      this.subscriber = undefined
+    } else {
+      try { cleanup() } catch (e) {}
+    }
+    if (this.audioDecoy) {
+      removeAudioSubscriberDecoy(this.streamName, this.audioDecoy);
+    }
+  }
+  SubscriberItem.prototype.execute = async function (config) {
+    clearTimeout(this.resetTimeout)
+    addLoadingIcon(this.card)
+    this.unexpectedClose = true
+
     this.baseConfiguration = config;
-    this.serverSettings = settings;
-    this.proxyScope = proxyScope;
-    this.region = optionalRegion;
     var self = this;
     var name = this.streamName;
     var uid = Math.floor(Math.random() * 0x10000).toString(16);
     var rtcConfig = Object.assign({}, config, {
                       streamName: name,
                       subscriptionId: [this.subscriptionId, uid].join('-'),
-                      mediaElementId: getSubscriberElementId(name)
-                    });
-    this.subscriber = new red5prosdk.RTCSubscriber();
-    this.subscriber.on('Connect.Success', this.resolve.bind(this));
-    this.subscriber.on('Connect.Failure', this.reject.bind(this));
-    var sub = this.subscriber;
-    var handleStreamingModeMetadata = this.handleStreamingModeMetadata;
-    var toggleVideoPoster = this.toggleVideoPoster;
-    var statusField = this.statusField;
-    var reject = this.reject.bind(this);
-    var closeCalled = false;
-    var close = function (event) { // eslint-disable-line no-unused-vars
-      if(closeCalled) return;
-      closeCalled = true;
-      function cleanup () {
-        var el = document.getElementById(getSubscriberElementId(name) + '-container')
-        el.parentNode.removeChild(el);
-        sub.off('*', respond);
-        sub.off('Subscribe.Fail', fail);
-      }
-      sub.off('Subscribe.Connection.Closed', fail);
-      sub.unsubscribe().then(cleanup).catch(cleanup);
-      if (self.audioDecoy) {
-        removeAudioSubscriberDecoy(self.streamName, self.audioDecoy);
-      }
-      delete subscriberMap[name];
-    };
-    var fail = function (event) { // eslint-disable-line no-unused-vars
-      close();
-      var t = setTimeout(function () {
-        clearTimeout(t);
-        new SubscriberItem(self.streamName, self.parent, self.index).execute(self.baseConfiguration, self.serverSettings, self.proxyScope, self.region);
-      }, 2000);
-    };
-    var respond = function (event) {
-      if (event.type === 'Subscribe.Time.Update') return;
-      console.log('[subscriber:' + name + '] ' + event.type);
-      var inFailedState = updateSuscriberStatusFromEvent(event, statusField);
-      if (event.type === 'Subscribe.Metadata') {
-        if (event.data.streamingMode) {
-          handleStreamingModeMetadata(event.data.streamingMode)
-          toggleVideoPoster(!event.data.streamingMode.match(/Video/));
-        }
-      }
-      if (inFailedState) {
-        close();
-      }
-    };
+                      mediaElementId: getSubscriberElementId(this.streamName)
+    });
 
-    // NOTE: Reconnect logic is for an Edge disappearing and having to move to another.
-    // If the stream is unpublished, we don't need to try and re-subscribe as the
-    // manifest of streams is maintained by the Shared Object.
-    this.subscriber.on('Subscribe.Play.Unpublish', close);
-    // TODO: This Closed without Unpublish has to be treated as Edge Loss.
-    this.subscriber.on('Subscribe.Connection.Closed', fail);
-    this.subscriber.on('Subscribe.Fail', fail);
-    this.subscriber.on('*', respond);
-
-    requestEdge(this.baseConfiguration, this.serverSettings, this.streamName, this.region)
-      .then(function (jsonResponse) {
-        if (jsonResponse.errorMessage) {
-          throw new Error(jsonResponse.errorMessage);
+    try {
+      const payload = await window.streamManagerUtil.getEdge(rtcConfig.host, rtcConfig.app, name)
+      const { scope, serverAddress } = payload
+      rtcConfig = {...rtcConfig, ...{
+        app: 'streammanager',
+        connectionParams: {
+          host: serverAddress,
+          app: scope
         }
-        var connectParams = Object.assign({}, rtcConfig.connectionParams, {
-          host: jsonResponse.serverAddress,
-          app: jsonResponse.scope
-        })
-        rtcConfig.app = proxyScope
-        rtcConfig.connectionParams = connectParams;
-        self.subscriber.init(rtcConfig)
-          .then(function (subscriber) {
-            subscriberMap[name] = subscriber;
-            return subscriber.subscribe();
-           })
-          .catch(function (error) {
-            console.log('[subscriber:' + name + '] Error - ' + (error.hasOwnProperty('message') ? error.message : error));
-            reject(error);
-          });
-      })
-      .catch(function (error) {
-        console.log('[subscriber:' + name + '] Error - ' + (error.hasOwnProperty('message') ? error.message : error));
-        fail();
-      });
+      }}
+
+      this.subscriber = new red5prosdk.RTCSubscriber()
+      this.subscriber.on('*',  (e) => this.respond(e))
+
+      await this.subscriber.init(rtcConfig)
+      subscriberMap[this.streamName] = this.subscriber
+      self.requestLayoutFn.call(null)
+      await this.subscriber.subscribe()
+      clearTimeout(this.resetTimeout)
+      this.statsTicket = window.trackBitrate(this.subscriber.getPeerConnection(), (b, p) => this.handleStats(b, p), (w, h) => this.handleResolution(w, h), true, true)
+
+    } catch (error) {
+      console.log('[subscriber:' + name + '] Error')
+      self.reject(error)
+      self.close()
+    }
   }
 
+  SubscriberItem.prototype.handleStats = function (bitrate, packets) {
+    this.statisticsField.classList.remove('hidden')
+    const bitrateField = this.statisticsField.querySelector('.bitrate-field')
+    const packetsField = this.statisticsField.querySelector('.packets-field')
+    bitrateField.innerText = Math.floor(bitrate)
+    packetsField.innerText = Math.round(packets)
+  }
+
+  SubscriberItem.prototype.handleResolution = function (width, height) {
+    this.statisticsField.classList.remove('hidden')
+    const resField = this.statisticsField.querySelector('.resolution-field')
+    resField.innerText = `${width}x${height}`
+  }
+
+  window.getConferenceSubscriberElementContainerId = getSubscriberElementContainerId;
   window.getConferenceSubscriberElementId = getSubscriberElementId;
   window.ConferenceSubscriberItem = SubscriberItem;
+  window.ConferenceSubscriberUtil = {
+    removeAll: names => {
+      while (names.length > 0) {
+        let name = names.shift()
+        //        console.log('TEST', 'TO shift: ' + name, ConferenceSubscriberItemMap)
+        let item = ConferenceSubscriberItemMap[name]
+        if (item) {
+          item.dispose()
+        }
+      }
+    }
+  }
 
 })(window, document, window.red5prosdk);

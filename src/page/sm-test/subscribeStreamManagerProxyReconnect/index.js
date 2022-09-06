@@ -71,6 +71,20 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var protocol = proxyLocal ? 'https' : serverSettings.protocol;
   var isSecure = protocol === 'https';
 
+  var dryStreamTimer = 0;
+  var dryStreamTimerDelay = 5 * 1000; // 5 seconds
+  var hasReceivedPackets = false;
+  function startDryStreamTimer () {
+    hasReceivedPackets = false;
+    clearTimeout(dryStreamTimer)
+    dryStreamTimer = setTimeout(function () {
+      clearTimeout(dryStreamTimer);
+      if (!hasReceivedPackets) {
+        setConnected(false)
+      }
+    }, dryStreamTimerDelay);
+  }
+
   var bitrate = 0;
   var packetsReceived = 0;
   var frameWidth = 0;
@@ -87,6 +101,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     bitrate = b;
     packetsReceived = p;
     updateStatistics(bitrate, packetsReceived, frameWidth, frameHeight);
+    if (p > 0 && !hasReceivedPackets) {
+      hasReceivedPackets = true;
+      clearTimeout(dryStreamTimer);
+    }
   }
 
   function onResolutionUpdate (w, h) {
@@ -129,7 +147,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       ? {
         connectionParams: {
           username: auth.username,
-          password: auth.password
+          password: auth.password,
+          token: auth.token
         }
       }
       : {};
@@ -151,6 +170,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       setConnected(false);
     } else if (event.type === 'WebRTC.DataChannel.Error') {
       setConnected(false)
+    } else if (event.type === 'Subscribe.Status') {
+      if (event.data.message.match(/already start/)) {
+        // The subscriber has been caught in a loop of starting with an Edge not having the stream.
+        // Need to kick it off again.
+        //        unsubscribe().then(retryConnect).catch(retryConnect)
+        setConnected(false)
+      }
     }
   }
   function onSubscribeFail (message) {
@@ -163,6 +189,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
     if (subscriber.getType().toLowerCase() === 'rtc') {
       try {
+        startDryStreamTimer();
         window.trackBitrate(subscriber.getPeerConnection(), onBitrateUpdate, onResolutionUpdate, true);
       }
       catch (e) {
@@ -195,7 +222,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     var url = baseUrl + '/streammanager/api/' + apiVersion + '/event/' + app + '/' + streamName + '?action=subscribe';
     var region = getRegionIfDefined();
     if (region) {
-      url += '&region=' + region;
+      url += '&region=' + region + '&strict=true';
     }
       return new Promise(function (resolve, reject) {
         fetch(url)
@@ -382,6 +409,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var retryTimeout;
   var connected = false;
   function retryConnect () {
+    hasReceivedPackets = false;
+    clearTimeout(dryStreamTimer);
     clearTimeout(retryTimeout);
     if (!connected) {
       retryTimeout = setTimeout(startup, 1000)

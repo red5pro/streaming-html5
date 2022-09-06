@@ -125,14 +125,21 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   function getAuthenticationParams () {
     var auth = configuration.authentication;
-    return auth && auth.enabled
-      ? {
+    var authToken = (auth.enabled && !window.isEmpty(auth.token)) ? auth.token : undefined
+    var params = {}
+    if (auth && auth.enabled) {
+      params = {
         connectionParams: {
           username: auth.username,
-          password: auth.password
+          password: auth.password,
+          token: auth.token
         }
       }
-      : {};
+      if (authToken) {
+        params.connectionParams.token = authToken
+      }
+    }
+    return params
   }
 
   function displayServerAddress (serverAddress, proxyAddress) {
@@ -191,7 +198,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     var url = baseUrl + '/streammanager/api/' + apiVersion + '/event/' + app + '/' + streamName + '?action=subscribe';
     var region = getRegionIfDefined();
     if (region) {
-      url += '&region=' + region;
+      url += '&region=' + region + '&strict=true';
     }
       return new Promise(function (resolve, reject) {
         fetch(url)

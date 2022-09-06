@@ -1,0 +1,100 @@
+<!doctype html>
+{{> license}}
+<html>
+
+<head>
+  {{> meta title='Playback - AMF Metadata VOD'}}
+  {{> header-scripts}}
+  {{> header-stylesheets}}
+  <style>
+    a {
+      color: #db1f26;
+      text-decoration: underline;
+    }
+
+    .test-notification {
+      text-align: center;
+      max-width: 720px;
+    }
+
+    .settings-area {
+      background-color: #eeee;
+    }
+
+    .settings-field {
+      padding-top: 1rem;
+    }
+
+    .settings-field,
+    .settings-field>input {
+      font-size: 1em;
+    }
+
+    .settings-label {
+      width: auto;
+    }
+  </style>
+  <link href="//unpkg.com/video.js@7.0.0/dist/video-js.css" rel="stylesheet">
+  <script src="//unpkg.com/video.js@7.0.0/dist/video.min.js"></script>
+</head>
+
+<body>
+  {{> top-bar }}
+  {{> navigation isTestPage=true }}
+  <div id="app">
+    {{> settings-link}}
+    <div class="ice-background">
+      <div class="test-notification">
+        <p>
+          <span>To use this test, you must first publish a recorded broadcast using the <a href="../publishRecord"
+              target="_blank">Publish - Record</a> test.</span>
+          <br><br>
+          <span>You can view a list of available Videos on Demand (VODs), by requesting <a id="mediafiles-link"
+              href="/live/mediafiles" target="_blank">mediafiles</a> and <a id="playlists-link" href="/live/playlists"
+              target="_blank">playlists</a>.</span>
+          <br>
+          <span>The URLs returned from <strong>mediafiles</strong> will contain FLV and - optionally - MP4 files, while
+            the URLs returned from <strong>playlists</strong> will be HLS videos with the <strong>m3u8</strong> file
+            extension.</span>
+          <hr class="paddedHR" />
+          <span>Once you have a recorded stream, enter the filename - </span><span class="strong">with
+            extension</span><span> - name below.</span>
+          <br><br>
+          <span><strong>Note:</strong> Due to the sunsetting of Flash Player in browsers, FLV playback is no longer
+            available.</span>
+          <br><span>Please provide a <strong>HLS</strong> (extension: <em>.m3u8</em>).</span>
+        </p>
+      </div>
+    </div>
+    {{> test-title title='Playback VOD  with AMF Metadata Test'}}
+    <div class="stream-section">
+      <div class="centered settings-area">
+        <form method="POST" onsubmit="return onsubmit()" action="#">
+          <p class="settings-field settings-collapsable">
+            <label for="name-input" class="settings-label">Name:</label>
+            <input type="text" name="name-input" id="name-input" placeholder="stream1.m3u8">
+          </p>
+          <p>
+            <button id="submit-button" class="ui-button">Play File</button>
+          </p>
+        </form>
+      </div>
+      <div id="video-container" class="centered">
+        <video id="red5pro-subscriber" controls autoplay playsinline
+          class="red5pro-subscriber red5pro-media red5pro-media-background" width="640" height="480">
+        </video>
+      </div>
+      <div class="centered">
+        <br>
+        <h3>Received AMF Metadata:</h3>
+        <br>
+        <p id="metadata"></p>
+      </div>
+    </div>
+  </div>
+  {{> body-scripts}}
+  <script src="index.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+</body>
+
+</html>

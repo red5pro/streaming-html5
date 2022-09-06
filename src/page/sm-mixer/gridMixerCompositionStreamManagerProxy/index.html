@@ -1,0 +1,592 @@
+<!doctype html>
+{{> license}}
+<html>
+
+<head>
+    {{> meta title='Grid Composition Manager SM Test'}}
+    {{> header-scripts}}
+    {{> header-stylesheets}}
+    <style>
+        a {
+            color: #db1f26;
+            text-decoration: underline;
+        }
+
+        .test-notification {
+            border-top: 1px solid #dbdbdb;
+        }
+
+        .file-listing-section {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            background-color: #dbdbdb;
+        }
+
+        .file-listing-container {
+            margin: 20px;
+        }
+
+        @media (max-width:510px) {
+            .file-listing-section {
+                flex-direction: column;
+            }
+
+            .file-listing-container {
+                width: 100%;
+                margin: 20px 0;
+            }
+        }
+
+        .file-listing-container>p {
+            margin: 20px 0;
+        }
+
+        .file-listing {
+            margin: 12px;
+            background-color: #fff;
+            border: 1px solid #999;
+            overflow: scroll;
+            max-height: 200px;
+        }
+
+        .file-listing>p {
+            padding: 10px;
+            text-align: left;
+            cursor: pointer;
+        }
+
+        .file-listing>p.load-listing {
+            cursor: default;
+        }
+
+        .file-listing>p.item-separator {
+            border-bottom: 1px solid #999;
+        }
+
+
+        html,
+        body {
+            height: 100%;
+        }
+
+        body {
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .flex-parent {
+            display: flex;
+            flex: 1;
+        }
+
+        .section {
+            display: flex;
+            flex-direction: row;
+            margin: 12px;
+            height: 100%;
+            position: relative;
+        }
+
+        .subscribe-section {
+            flex-grow: 2;
+        }
+
+        .line {
+            width: 112px;
+            height: 47px;
+            border-bottom: 4px solid black;
+            position: absolute;
+        }
+
+        .status-details {
+            position: relative;
+            background-color: #333;
+            color: #fff;
+            padding: 12px;
+            margin: 0 12px 0 12px;
+            text-align: center;
+        }
+
+        .error-field {
+            width: 100%;
+            color: #fff !important;
+            background-color: #DB1F26 !important;
+        }
+
+        @media screen and (max-width: 1028px) {
+            .section {
+                flex-direction: column;
+            }
+
+            .publish-section,
+            .subscribe-section {
+                margin: 12px;
+            }
+        }
+
+        body {
+            height: 100vh;
+            margin: 0;
+        }
+
+        .main-container {
+            display: flex;
+            flex-direction: row;
+            flex: 1;
+            margin: 12px;
+            height: 100%;
+            position: relative;
+        }
+
+        /*
+        .composition-editor-container {
+            border: 1px solid black;
+            flex: 1;
+            overflow-y: scroll;
+            display: flex;
+            flex-wrap: wrap;
+            flex-direction: column;
+            padding: 5px;
+            align-content: baseline;
+        }
+*/
+        .media-list-container {
+            border: 1px solid black;
+            flex: 1;
+            display: flex;
+            flex-wrap: wrap;
+            flex-direction: column;
+            width: 50%;
+            max-width: 500px;
+            padding: 20px;
+            align-content: baseline;
+        }
+
+        .mixer-container {
+            display: grid;
+            grid-gap: 0px;
+            grid-template-columns: 1fr 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            align-items: stretch;
+            color: #444;
+            margin: 0px;
+            flex-grow: 1;
+        }
+
+        .box {
+            flex: 1;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+        }
+
+        .box>p {
+            margin: 0px;
+
+        }
+
+        .box-drag-over {
+            outline: 2px solid #00ff00;
+        }
+
+        .list-holder {
+            display: flex;
+            flex-direction: column;
+            flex-wrap: nowrap;
+            overflow-y: scroll;
+            max-width: 500px;
+            height: 50%;
+            flex: 1;
+            align-content: flex-start;
+        }
+
+        .list-holder-muted {
+            display: flex;
+            flex-direction: column;
+            flex-wrap: nowrap;
+            overflow-y: scroll;
+            height: 50%;
+            flex: 1;
+            align-content: flex-start;
+        }
+
+        .list-holder-unmuted {
+            display: flex;
+            flex-direction: column;
+            flex-wrap: nowrap;
+            overflow-y: scroll;
+            height: 50%;
+            flex: 1;
+            align-content: flex-start;
+        }
+
+        .media-list-container_controls {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            width: 100%;
+            padding: 10px;
+        }
+
+        .red5pro-subscriber {
+            object-fit: cover;
+        }
+
+        .subscriber-block {
+            flex: 1;
+            height: 100%;
+            /*
+  height: 360px;
+  width: 100%;
+  */
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .subscriber-name-field {
+            position: relative;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            margin: 0;
+            padding: 4px;
+        }
+
+        .subscriber-moderation-field {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            margin: 0px;
+            background-color: #ddd;
+        }
+
+        .media-list-item {
+            background-color: #ddd;
+            padding: 10px;
+            border: 1px solid black;
+            cursor: move;
+            height: max-content;
+            width: max-content;
+            margin: 5px;
+        }
+
+        @media screen and (max-width: 640px) {
+            .main-container {
+                display: flex;
+                flex-direction: column;
+            }
+        }
+
+        .collapsible {
+            background-color: #eee;
+            color: #444;
+            cursor: pointer;
+            padding: 18px;
+            width: 100%;
+            border: none;
+            text-align: left;
+            outline: none;
+            font-size: 15px;
+        }
+
+        .active,
+        .collapsible:hover {
+            background-color: #ccc;
+        }
+
+        .content {
+            padding: 0 18px;
+            display: none;
+            overflow: hidden;
+            background-color: #f1f1f1;
+        }
+
+        .composition-editor-container {
+            height: 100%;
+            width: 15%;
+            overflow-y: scroll;
+            overflow-x: hidden;
+        }
+
+        .red5pro-media-container {
+            width: 100%;
+            flex: 1;
+            height: 0;
+            display: flex;
+            justify-content: center;
+        }
+
+        .red5pro-subscriber {
+            width: 100%;
+        }
+
+        .loading-icon {
+            width: 25px;
+            height: 25px;
+            color: #fff;
+            position: absolute;
+        }
+
+        .subscriber-notifications {
+            right: 0;
+            top: 0;
+            position: absolute;
+        }
+
+        .subscriber-grabber {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 30px;
+            height: 30px;
+            margin: 0;
+            cursor: move;
+            background-color: #ff0000;
+        }
+
+        .audio-notification,
+        .video-notification {
+            background-color: #000;
+            color: #fff;
+            padding: 4px;
+            margin: 0;
+        }
+
+        .subscriber-container {
+            position: relative;
+            background-color: #000;
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            height: 100%;
+        }
+
+        .subscriber-error {
+            position: relative;
+            background-color: #db1f26;
+            color: #fff;
+            padding: 12px;
+            margin: 0 12px 0 12px;
+            text-align: center;
+        }
+
+        .red5pro-screenshare-fullscreen {
+            display: block;
+            box-sizing: border-box;
+            position: relative;
+            line-height: 0px;
+            width: 100vw !important;
+            height: 100vh !important;
+            overflow: hidden !important;
+            object-fit: contain;
+        }
+
+        .subscriber-container:fullscreen {
+            height: 100%;
+            width: 100%;
+            margin: 0;
+            background-color: #000;
+        }
+
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            border-bottom: 1px dotted black;
+        }
+
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 120px;
+            background-color: #555;
+            color: #fff;
+            text-align: center;
+            padding: 5px 0;
+            border-radius: 6px;
+
+            /* tooltip text position*/
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -60px;
+
+            /* Fade */
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .tooltip .tooltiptext::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #555 transparent transparent transparent;
+        }
+
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+    </style>
+    <link href="//unpkg.com/video.js@7.0.0/dist/video-js.css" rel="stylesheet">
+    <script src="//unpkg.com/video.js@7.0.0/dist/video.min.js"></script>
+</head>
+
+<body>
+    {{> top-bar }}
+    {{> navigation isTestPage=true }}
+    <div id="app" style="height:70%">
+        {{> settings-link}}
+        <div class="ice-background">
+            <div class="test-notification">
+                <p>
+                    <span>To use this test, you must configure the backend WebSocket for
+                        compositions endpoint and set the webapp to <em>live</em> in the <a href="../../index.html"
+                            target="_blank">Settings</a> page and publish a few streams with the
+                        round trip authentication examples. The streams will appear in the active stream section.
+                    </span>
+                </p>
+            </div>
+        </div>
+        {{> test-title title='Stream Manager Grid Composition Test'}}
+        <div id="exclusion-alert" class="exclusion-alert-container hidden">
+            <p class="exclusion-alert-field">You have been excluded from this conference.</p>
+        </div>
+        <div class="main-container">
+            <div class="composition-editor-container" id="composition-editor">
+                <div>
+                    <h3>Active Composition:</h3>
+                    <p id="event-name">Name: </p>
+                    <select name="event-name" id="event-name-select" onchange="compositionSelected();">
+                        <option name=""></option>
+                    </select>
+                    <p id="event-state">State:</p>
+                    <button id="destroy-composition-button" disabled onclick="destroyComposition()">Destroy</button>
+                    <div class="tooltip">
+                        <span class="tooltiptext">Check to have the page auto assign streams to mixers</span>
+                        <p>Automatically Add Streams to Composition?</p>
+                        <input id="add-stream-automatically" type="checkbox" unchecked />
+                    </div>
+                </div>
+                <br>
+                <h3>Create Composition</h3>
+                <form id="create-mixers-form">
+                    <br>
+                    <h4>Create Mixer Objects:</h4>
+                    <br>
+                    <div class="tooltip">
+                        <span class="tooltiptext">Unique name for the Mixer</span>
+                        <label for="mixerName">Mixer Name:</label><br>
+                        <input type="text" id="mixerName" name="mixerName" value="1"><br>
+                    </div>
+                    <div class="tooltip">
+                        <span class="tooltiptext">Page to load into the Mixer</span>
+                        <label for="mixingPage">Mixing Page:</label><br>
+                        <select name="mixingPage" id="mixingPage-select">
+                            <option name="2x2">2x2</option>
+                            <option name="3x3">3x3</option>
+                            <option name="7x7">7x7</option>
+                            <option name="NxN">NxN</option>
+                        </select><br>
+                    </div>
+                    <div class="tooltip">
+                        <span class="tooltiptext">App and room scope of the composite stream</span>
+                        <label for="scope">Scope:</label><br>
+                        <input type="text" id="scope" name="scope" value="live"><br>
+                    </div>
+                    <div class="tooltip">
+                        <span class="tooltiptext">Stream Name of the composite stream</span>
+                        <label for="streamName">Stream Name:</label><br>
+                        <input type="text" id="streamName" name="streamName" value=""><br>
+                    </div>
+                    <div class="tooltip">
+                        <span class="tooltiptext">Width of the composite stream</span>
+                        <label for="width">Width:</label><br>
+                        <input type="number" id="width" min="0" max="4096" name="width" value="1920"><br>
+                    </div>
+                    <div class="tooltip">
+                        <span class="tooltiptext">Height of the composite stream</span>
+                        <label for="height">Height:</label><br>
+                        <input type="number" id="height" min="0" max="2160" name="height" value="1080"><br>
+                    </div>
+                    <div class="tooltip">
+                        <span class="tooltiptext">Framerate of the composite stream</span>
+                        <label for="framerate">Framerate:</label><br>
+                        <input type="number" id="framerate" min="0" max="60" name="framerate" value="30"><br>
+                    </div>
+                    <div class="tooltip">
+                        <span class="tooltiptext">Bitrate of the composite stream</span>
+                        <label for="bitrate">Bitrate:</label><br>
+                        <input type="number" id="bitrate" min="0" name="bitrate" value="4500000"><br>
+                    </div>
+                    <div class="tooltip">
+                        <span class="tooltiptext">Mixer Name to publish to, or leave empty to publish to the Red5 Pro
+                            Cluster</span>
+                        <label for="destinationMixerName">Destination Mixer Name:</label><br>
+                        <input type="text" id="destinationMixerName" name="destinationMixerName"><br>
+                    </div>
+                    <br>
+                    <button type="submit">Add Mixer</button>
+                </form>
+                <br>
+                <p>Mixers For Composition:</p>
+                <div id="mixers" style="border: thin solid #000">
+
+                </div>
+                <br>
+                <form id="create-composition-form">
+                    <div class="tooltip">
+                        <span class="tooltiptext">Unique event name</span>
+                        <label for="event">Event Name:</label><br>
+                        <input type="text" id="event" name="event" value="event1"><br>
+                    </div>
+                    <div class="tooltip">
+                        <span class="tooltiptext">Check to transcode the composite stream</span>
+                        <label for="transcodeComposition">Transcode Composition:</label><br>
+                        <input type="checkbox" id="transcodeComposition" name="transcodeComposition"><br>
+                    </div>
+                    <div class="tooltip">
+                        <span class="tooltiptext">Region where the Mixer is deployed</span>
+                        <label for="location">Mixer Region:</label><br>
+                        <select name="mixer-region-name" id="mixer-region-select">
+                        </select>
+                    </div>
+                    <br>
+                    <button type="submit">Create Composition</button>
+                </form>
+            </div>
+            <div class="media-list-container">
+                <div class="media-list-container_controls">
+                    <h3>Active Streams</h3>
+                </div>
+                <hr>
+                <div class="list-holder" data-list="stream-list-container"></div>
+            </div>
+
+            <div class="mixer-container " data-mixer-id="mixer1">
+            </div>
+        </div>
+
+
+
+    </div>
+    {{> body-scripts}}
+    <script src="../../script/red5pro-utils.js"></script>
+    <script src="../../script/publisher-status.js"></script>
+    <!--<script src="util.js"></script>
+    <script src="sm-util.js"></script>-->
+    <!--<script src="publisher-status.js"></script>-->
+    <script src="index.js"></script>
+</body>
+
+</html>

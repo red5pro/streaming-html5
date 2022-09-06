@@ -100,7 +100,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       ? {
         connectionParams: {
           username: auth.username,
-          password: auth.password
+          password: auth.password,
+          token: auth.token
         }
       }
       : {};
@@ -311,7 +312,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     var region = getRegionIfDefined();
     var url = 'https://' + smHost + '/streammanager/api/' + version + '/event/' + smApp + '/' + streamName + '?action=subscribe&endpoints=' + amount;
     if (region) {
-      url += '&region=' + region;
+      url += '&region=' + region + '&strict=true';
     }
     return new Promise(function (resolve, reject) { // eslint-disable-line no-unused-vars
       fetch(url)

@@ -82,7 +82,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       ? {
         connectionParams: {
           username: auth.username,
-          password: auth.password
+          password: auth.password,
+          token: auth.token
         }
       }
       : {};
@@ -111,7 +112,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 		const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8);           // hash the message
 		const hashArray = Array.from(new Uint8Array(hashBuffer));                     // convert buffer to byte array
 		const hashHex = hashArray.map(b => {
-				var result = b.toString(16); // NO leading zeros
+				var result = b.toString(16).padStart(2, '0');
 				//console.log("b: " + b + " result: " + result);
 				return result;
 			}).join(''); // convert bytes to hex string
@@ -125,7 +126,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 		return digestMessage(message);
 	}
 
-	sendButton.addEventListener('click', async function (event) {
+  let attempts = 0
+  let attemptLimit = 10
+  async function pushItSocial () {
+		console.log("Begin pushItSocial()")
+		sendButton.disabled = true
 		const data = JSON.stringify({
 				provisions:[
 					{
@@ -144,13 +149,25 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 		xhr.addEventListener('readystatechange', function() {
 			if (this.readyState === this.DONE) {
 				console.log(this.responseText)
-
-				if (xhr.status == 201) {
+		
+				if (this.status >= 200 && this.status < 300) {
 					isForwarding = !isForwarding;
+					sendButton.disabled = false
 					sendButton.innerHTML = isForwarding ? "Stop Forwarding" : "Begin Forwarding";
 					console.log("isForwarding: " + isForwarding);
+				} else if (this.status == 504) {
+					// The server response 504 when the stream forwarding attempt fails due to timeout.
+					// Other failures should not be retried.
+					if (++attempts < attemptLimit) {
+						console.log("Social media connection timed out. Retrying...");
+						var t = setTimeout(() => {
+							clearTimeout(t)
+							pushItSocial()
+						}, 10000) // 10000: 10s; The server may take up to 7 seconds (plus client-to-server roundtrip latency) to respond.
+					}
 				} else {
-					console.log("error status: " + xhr.status);
+					sendButton.disabled = false
+					console.log("error status: " + this.status);
 				}
 			}
 		})
@@ -170,6 +187,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 		console.log("POST to uri: " + uri);
 		console.log("send data: " + data);
+	}
+
+	sendButton.addEventListener('click', () => {
+		attempts = 0
+		pushItSocial()
 	});
 	// XXX /socialpusher
 
@@ -204,7 +226,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     try {
       var pc = publisher.getPeerConnection();
       var stream = publisher.getMediaStream();
-      window.trackBitrate(pc, onBitrateUpdate);
+      window.trackBitrate(pc, onBitrateUpdate, onResolutionUpdate);
       statisticsField.classList.remove('hidden');
       stream.getVideoTracks().forEach(function (track) {
         var settings = track.getSettings();
