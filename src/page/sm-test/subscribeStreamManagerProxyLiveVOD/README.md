@@ -2,7 +2,7 @@
 
 This is an example of being able to seek to a specific time within a live stream. It uses Fragmented MP4 (a.k.a. FMP4) to save `ts` files on a server that are appended to a `m3u8` and loaded and played back within a `video` container utilizing the [HLS.JS](https://github.com/video-dev/hls.js/) library.
 
-**Please refer to the [Basic Subscriber Documentation](../subscribeStreamManagerProxy/README.md) to learn more about the basic setup.**
+**Please refer to the [Basic Subscriber Documentation](../subscribe/README.md) to learn more about the basic setup.**
 
 ## Example Code
 - **[index.html](index.html)**
@@ -12,7 +12,16 @@ This is an example of being able to seek to a specific time within a live stream
 
 This example requires the following configuration properties in order to allow HLS recording on the server to support `FMP4` playback:
 
+_File:_
+
 **conf/hlsconfig.xml**
+
+_Edits:_
+
+```xml
+<property name="outputFormat" value="FMP4"/>
+<property name="forceVODRecord" value="true"/>
+```
 
 # Client Requirements
 
@@ -43,6 +52,21 @@ const rtcConfig = {...config, ...{
 
 [https://github.com/red5pro/streaming-html5/blob/feature/greatdane06_honorlock_vod_HON-18/src/page/test/subscribeLiveVOD/index.js#L165-L170](https://github.com/red5pro/streaming-html5/blob/feature/greatdane06_honorlock_vod_HON-18/src/page/test/subscribeLiveVOD/index.js#L165-L170)
 
+## Custom Controls
+
+Additionally, the `video` element used in playback of the live and VOD streams requires using the custom controls provided by the SDK.
+
+To turn them on, you will need to define the `controls` property on the `video` element along with assigning the `red5pro-media` class to the element. The `red5pro-media` class declaration can be found i the **red5pro** CSS file shipped with the SDK.
+
+```html
+<video id="red5pro-subscriber"
+  controls="controls"
+  autoplay="autoplay"
+  playsinline
+  class="red5pro-media"
+</video>
+```
+
 # Example
 
 Aside from the initialization configuration of `enableLiveSeek` described above, the subscription to a live stream is the same as you would normally do as a developer.
@@ -57,5 +81,4 @@ The following events are available when `enableLiveSeek` is set to `true`:
 | LIVE_SEEK_DISABLED | 'WebRTC.LiveSeek.Disabled' | When `enableLiveSeek` is used to playback Live VOD and HLS video has not been loaded nor available to seek. |
 | LIVE_SEEK_LOADING | 'WebRTC.LiveSeek.FragmentLoading' | When `enableLiveSeek` is used to playback Live VOD and HLS video in currently loading a fragment during seeking. |
 | LIVE_SEEK_LOADED | 'WebRTC.LiveSeek.FragmentLoaded' | When `enableLiveSeek` is used to playback Live VOD and HLS video has completed loading a fragment during seeking. |
-
 

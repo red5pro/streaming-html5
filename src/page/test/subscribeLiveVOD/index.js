@@ -37,7 +37,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   red5prosdk.setLogLevel(configuration.verboseLogging ? red5prosdk.LOG_LEVELS.TRACE : red5prosdk.LOG_LEVELS.WARN)
 
   let subscriber
-  let instanceId = Math.floor(Math.random() * 0x10000).toString(16);
+  let instanceId = Math.floor(Math.random() * 0x10000).toString(16)
   let protocol = serverSettings.protocol
   let isSecure = protocol === 'https'
 
@@ -47,88 +47,95 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   const bitrateField = document.getElementById('bitrate-field')
   const packetsField = document.getElementById('packets-field')
   const resolutionField = document.getElementById('resolution-field')
+  const eventsField = document.querySelector('.events-field')
 
   let bitrate = 0
   let packetsReceived = 0
   let frameWidth = 0
   let frameHeight = 0
 
-  function updateStatistics (b, p, w, h) {
-    statisticsField.classList.remove('hidden');
-    bitrateField.innerText = b === 0 ? 'N/A' : Math.floor(b);
-    packetsField.innerText = p;
-    resolutionField.innerText = (w || 0) + 'x' + (h || 0);
+  const updateStatistics = (b, p, w, h) => {
+    statisticsField.classList.remove('hidden')
+    bitrateField.innerText = b === 0 ? 'N/A' : Math.floor(b)
+    packetsField.innerText = p
+    resolutionField.innerText = (w || 0) + 'x' + (h || 0)
   }
 
-  function onBitrateUpdate (b, p) {
-    bitrate = b;
-    packetsReceived = p;
-    updateStatistics(bitrate, packetsReceived, frameWidth, frameHeight);
+  const onBitrateUpdate = (b, p) => {
+    bitrate = b
+    packetsReceived = p
+    updateStatistics(bitrate, packetsReceived, frameWidth, frameHeight)
   }
 
-  function onResolutionUpdate (w, h) {
-    frameWidth = w;
-    frameHeight = h;
-    updateStatistics(bitrate, packetsReceived, frameWidth, frameHeight);
+  const onResolutionUpdate = (w, h) => {
+    frameWidth = w
+    frameHeight = h
+    updateStatistics(bitrate, packetsReceived, frameWidth, frameHeight)
   }
 
   // Determines the ports and protocols based on being served over TLS.
-  function getSocketLocationFromProtocol () {
+  const getSocketLocationFromProtocol = () => {
     return !isSecure
       ? {protocol: 'ws', port: serverSettings.wsport}
-      : {protocol: 'wss', port: serverSettings.wssport};
+      : {protocol: 'wss', port: serverSettings.wssport}
   }
 
   // Base configuration to extend in providing specific tech failover configurations.
-  let defaultConfiguration = (function(useVideo, useAudio) {
-    let c = {
-      protocol: getSocketLocationFromProtocol().protocol,
-      port: getSocketLocationFromProtocol().port
-    };
+  let defaultConfiguration = ((useVideo, useAudio) => {
+    const { protocol, port } = getSocketLocationFromProtocol()
+    let c = { protocol, port }
     if (!useVideo) {
-      c.videoEncoding = red5prosdk.PlaybackVideoEncoder.NONE;
+      c.videoEncoding = red5prosdk.PlaybackVideoEncoder.NONE
     }
     if (!useAudio) {
-      c.audioEncoding = red5prosdk.PlaybackAudioEncoder.NONE;
+      c.audioEncoding = red5prosdk.PlaybackAudioEncoder.NONE
     }
-    return c;
-  })(configuration.useVideo, configuration.useAudio);
+    return c
+  })(configuration.useVideo, configuration.useAudio)
 
   // Local lifecycle notifications.
-  function onSubscriberEvent (event) {
-    if (event.type !== 'Subscribe.Time.Update') {
-      console.log('[Red5ProSubscriber] ' + event.type + '.');
-      updateStatusFromEvent(event);
-      if (event.type === 'Subscribe.VideoDimensions.Change') {
-        onResolutionUpdate(event.data.width, event.data.height);
+  const onSubscriberEvent = event => {
+    const { type, data } = event
+    if (type !== 'Subscribe.Time.Update') {
+      console.log('[Red5ProSubscriber] ' + type + '.')
+      updateStatusFromEvent(event)
+      if (type === 'Subscribe.VideoDimensions.Change') {
+        onResolutionUpdate(data.width, data.height)
+      } else if (type.match(/.*\.LiveSeek/g)) {
+        eventsField.innerText = type
+        if (data.error) {
+          console.log('[Red5ProSubscriber::Error', data.error)
+        }
       }
     }
   }
-  function onSubscribeFail (message) {
-    console.error('[Red5ProSubsriber] Subscribe Error :: ' + message);
+
+  const onSubscribeFail = message => {
+    console.error('[Red5ProSubsriber] Subscribe Error :: ' + message)
   }
-  function onSubscribeSuccess (subscriber) {
-    console.log('[Red5ProSubsriber] Subscribe Complete.');
+
+  const onSubscribeSuccess = subscriber => {
+    console.log('[Red5ProSubsriber] Subscribe Complete.')
     if (window.exposeSubscriberGlobally) {
-      window.exposeSubscriberGlobally(subscriber);
+      window.exposeSubscriberGlobally(subscriber)
     }
     if (subscriber.getType().toLowerCase() === 'rtc') {
       try {
-        window.trackBitrate(subscriber.getPeerConnection(), onBitrateUpdate, onResolutionUpdate, true);
+        window.trackBitrate(subscriber.getPeerConnection(), onBitrateUpdate, onResolutionUpdate, true)
       } catch (e) {
         //
       }
     }
   }
-  function onUnsubscribeFail (message) {
-    console.error('[Red5ProSubsriber] Unsubscribe Error :: ' + message);
+  const onUnsubscribeFail = message => {
+    console.error('[Red5ProSubsriber] Unsubscribe Error :: ' + message)
   }
-  function onUnsubscribeSuccess () {
-    console.log('[Red5ProSubsriber] Unsubscribe Complete.');
+  const onUnsubscribeSuccess = () => {
+    console.log('[Red5ProSubsriber] Unsubscribe Complete.')
   }
 
-  function getAuthenticationParams () {
-    const auth = configuration.authentication;
+  const getAuthenticationParams = () => {
+    const auth = configuration.authentication
     return auth && auth.enabled
       ? {
         connectionParams: {
@@ -136,7 +143,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           password: auth.password
         }
       }
-      : {};
+      : {}
   }
 
   // Request to unsubscribe.
@@ -144,18 +151,19 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     if (subscriber) {
       try {
         await subscriber.unsubscribe()
+        subscriber.off('*', onSubscriberEvent)        
         onUnsubscribeSuccess()
       } catch (error) {
         const jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
         onUnsubscribeFail(jsonError)
         throw error
+      } finally {
+        subscriber = undefined
       }
-      subscriber.off('*', onSubscriberEvent)
-      subscriber = undefined
     }
   }
 
-  // Define tech spefific configurations for each failover item.
+  // Define configuration(s).
   const config = {...configuration,
     ...defaultConfiguration,
     ...getAuthenticationParams(),
@@ -163,8 +171,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     streamName: configuration.stream1
   }}
   const rtcConfig = {...config, ...{
-    protocol: getSocketLocationFromProtocol().protocol,
-    port: getSocketLocationFromProtocol().port,
     subscriptionId: 'subscriber-' + instanceId,
     enableLiveSeek: true
   }}

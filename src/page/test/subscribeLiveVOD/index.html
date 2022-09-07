@@ -14,7 +14,10 @@
       .red5pro-media-control-bar {
         z-index: 100;
       }
-    </style>
+      .events-field {
+        background-color: beige;
+      }
+    </style>a
   </head>
   <body>
     {{> top-bar }}
@@ -35,6 +38,7 @@
       <div class="stream-section">
         {{> status-field-subscriber}}
         {{> statistics-field packets_field='Packets Received'}}
+        <div class="centered status-field events-field">...</div>
         <div class="centered">
           <video id="red5pro-subscriber"
                   controls="controls" autoplay="autoplay" playsinline

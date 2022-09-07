@@ -12,7 +12,16 @@ This is an example of being able to seek to a specific time within a live stream
 
 This example requires the following configuration properties in order to allow HLS recording on the server to support `FMP4` playback:
 
+_File:_
+
 **conf/hlsconfig.xml**
+
+_Edits:_
+
+```xml
+<property name="outputFormat" value="FMP4"/>
+<property name="forceVODRecord" value="true"/>
+```
 
 # Client Requirements
 
@@ -34,14 +43,29 @@ The initialization configuration property of `enableLiveSeek` is a `Boolean` val
 
 ```js
 const rtcConfig = {...config, ...{
-  protocol: getSocketLocationFromProtocol().protocol,
-  port: getSocketLocationFromProtocol().port,
   subscriptionId: 'subscriber-' + instanceId,
   enableLiveSeek: true
 }}
 ```
 
 [https://github.com/red5pro/streaming-html5/blob/feature/greatdane06_honorlock_vod_HON-18/src/page/test/subscribeLiveVOD/index.js#L165-L170](https://github.com/red5pro/streaming-html5/blob/feature/greatdane06_honorlock_vod_HON-18/src/page/test/subscribeLiveVOD/index.js#L165-L170)
+
+## Custom Controls
+
+Additionally, the `video` element used in playback of the live and VOD streams requires using the custom controls provided by the SDK.
+
+To turn them on, you will need to define the `controls` property on the `video` element along with assigning the `red5pro-media` class to the element. The `red5pro-media` class declaration can be found i the **red5pro-media.css** CSS file shipped with the SDK.
+
+```html
+<video id="red5pro-subscriber"
+  controls="controls"
+  autoplay="autoplay"
+  playsinline
+  class="red5pro-media"
+</video>
+```
+
+> You can provide your own custom controls and/or class declarations easily following this [guideline](https://www.red5pro.com/docs/development/playbackcontrols/overview/).
 
 # Example
 
