@@ -47,95 +47,99 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   const bitrateField = document.getElementById('bitrate-field')
   const packetsField = document.getElementById('packets-field')
   const resolutionField = document.getElementById('resolution-field')
+  const eventsField = document.querySelector('.events-field')
 
   let bitrate = 0
   let packetsReceived = 0
   let frameWidth = 0
   let frameHeight = 0
 
-  function updateStatistics (b, p, w, h) {
-    statisticsField.classList.remove('hidden');
-    bitrateField.innerText = b === 0 ? 'N/A' : Math.floor(b);
-    packetsField.innerText = p;
-    resolutionField.innerText = (w || 0) + 'x' + (h || 0);
+  const updateStatistics = (b, p, w, h) => {
+    statisticsField.classList.remove('hidden')
+    bitrateField.innerText = b === 0 ? 'N/A' : Math.floor(b)
+    packetsField.innerText = p
+    resolutionField.innerText = (w || 0) + 'x' + (h || 0)
   }
 
-  function onBitrateUpdate (b, p) {
-    bitrate = b;
-    packetsReceived = p;
-    updateStatistics(bitrate, packetsReceived, frameWidth, frameHeight);
+  const onBitrateUpdate = (b, p) => {
+    bitrate = b
+    packetsReceived = p
+    updateStatistics(bitrate, packetsReceived, frameWidth, frameHeight)
   }
 
-  function onResolutionUpdate (w, h) {
-    frameWidth = w;
-    frameHeight = h;
-    updateStatistics(bitrate, packetsReceived, frameWidth, frameHeight);
+  const onResolutionUpdate = (w, h) => {
+    frameWidth = w
+    frameHeight = h
+    updateStatistics(bitrate, packetsReceived, frameWidth, frameHeight)
   }
 
   // Determines the ports and protocols based on being served over TLS.
-  function getSocketLocationFromProtocol () {
+  const getSocketLocationFromProtocol = () => {
     return !isSecure
       ? {protocol: 'ws', port: serverSettings.wsport}
-      : {protocol: 'wss', port: serverSettings.wssport};
+      : {protocol: 'wss', port: serverSettings.wssport}
   }
 
   // Base configuration to extend in providing specific tech failover configurations.
   let defaultConfiguration = (function(useVideo, useAudio) {
-    let c = {
-      protocol: getSocketLocationFromProtocol().protocol,
-      port: getSocketLocationFromProtocol().port
-    };
-    if (!useVideo) {
-      c.videoEncoding = red5prosdk.PlaybackVideoEncoder.NONE;
+const { protocol, port } = getSocketLocationFromProtocol()
+    let c = { protocol, port }    if (!useVideo) {
+      c.videoEncoding = red5prosdk.PlaybackVideoEncoder.NONE
     }
     if (!useAudio) {
-      c.audioEncoding = red5prosdk.PlaybackAudioEncoder.NONE;
+      c.audioEncoding = red5prosdk.PlaybackAudioEncoder.NONE
     }
     return c;
-  })(configuration.useVideo, configuration.useAudio);
+  })(configuration.useVideo, configuration.useAudio)
 
   // Local lifecycle notifications.
-  function onSubscriberEvent (event) {
-    if (event.type !== 'Subscribe.Time.Update') {
-      console.log('[Red5ProSubscriber] ' + event.type + '.');
+   const onSubscriberEvent = event => {
+    const { type, data } = event
+    if (type !== 'Subscribe.Time.Update') {
+      console.log('[Red5ProSubscriber] ' + type + '.')
       updateStatusFromEvent(event);
-      if (event.type === 'Subscribe.VideoDimensions.Change') {
-        onResolutionUpdate(event.data.width, event.data.height);
+      if (type === 'Subscribe.VideoDimensions.Change') {
+        onResolutionUpdate(data.width, data.height)
+      } else if (type.match(/.*\.LiveSeek/g)) {
+        eventsField.innerText = type
+        if (data.error) {
+          console.log('[Red5ProSubscriber::Error', data.error)
+        }
       }
     }
   }
-  function onSubscribeFail (message) {
-    console.error('[Red5ProSubsriber] Subscribe Error :: ' + message);
+   const onSubscribeFail = message => {
+    console.error('[Red5ProSubsriber] Subscribe Error :: ' + message)
   }
-  function onSubscribeSuccess (subscriber) {
-    console.log('[Red5ProSubsriber] Subscribe Complete.');
+  const onSubscribeSuccess = subscriber => {
+    console.log('[Red5ProSubsriber] Subscribe Complete.')
     if (window.exposeSubscriberGlobally) {
-      window.exposeSubscriberGlobally(subscriber);
+      window.exposeSubscriberGlobally(subscriber)
     }
     if (subscriber.getType().toLowerCase() === 'rtc') {
       try {
-        window.trackBitrate(subscriber.getPeerConnection(), onBitrateUpdate, onResolutionUpdate, true);
+        window.trackBitrate(subscriber.getPeerConnection(), onBitrateUpdate, onResolutionUpdate, true)
       } catch (e) {
         //
       }
     }
   }
-  function onUnsubscribeFail (message) {
-    console.error('[Red5ProSubsriber] Unsubscribe Error :: ' + message);
+  const onUnsubscribeFail = message => {
+    console.error('[Red5ProSubsriber] Unsubscribe Error :: ' + message)
   }
-  function onUnsubscribeSuccess () {
-    console.log('[Red5ProSubsriber] Unsubscribe Complete.');
+  const onUnsubscribeSuccess = () => {
+    console.log('[Red5ProSubsriber] Unsubscribe Complete.')
   }
 
-  function getRegionIfDefined () {
-    const region = configuration.streamManagerRegion;
+  const getRegionIfDefined = () => {
+    const region = configuration.streamManagerRegion
     if (typeof region === 'string' && region.length > 0 && region !== 'undefined') {
-      return region;
+      return region
     }
     return undefined
   }
 
-  function requestEdge (configuration) {
+  const requestEdge = (configuration) => {
     const host = configuration.host;
     const app = configuration.app;
     const port = serverSettings.httpport;
@@ -181,7 +185,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     });
   }
 
-  function getAuthenticationParams () {
+  const getAuthenticationParams = () => {
     const auth = configuration.authentication;
     return auth && auth.enabled
       ? {
@@ -216,9 +220,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     ... {
     streamName: configuration.stream1
   }}
-  let rtcConfig = {...config, ...{
-    protocol: getSocketLocationFromProtocol().protocol,
-    port: getSocketLocationFromProtocol().port,
+  const rtcConfig = {...config, ...{
     subscriptionId: 'subscriber-' + instanceId,
     enableLiveSeek: true
   }}
@@ -262,7 +264,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   var retryCount = 0;
   var retryLimit = 3;
-  function respondToEdge (response) {
+  const respondToEdge = (response) => {
     const {
       scope,
       serverAddress
@@ -270,24 +272,24 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     subscribe(serverAddress, scope)
   }
 
-  function respondToEdgeFailure (error) {
+  const respondToEdgeFailure = (error) => {
     if (retryCount++ < retryLimit) {
       var retryTimer = setTimeout(function () {
-        clearTimeout(retryTimer);
-        startup();
-      }, 1000);
+        clearTimeout(retryTimer)
+        startup()
+      }, 1000)
     }
     else {
-      var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
-      console.error('[Red5ProSubscriber] :: Retry timeout in subscribing - ' + jsonError);
+      var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
+      console.error('[Red5ProSubscriber] :: Retry timeout in subscribing - ' + jsonError)
     }
   }
 
   // Start
-  function startup () {
+  const startup = () => {
     requestEdge(rtcConfig)
       .then(respondToEdge)
-      .catch(respondToEdgeFailure);
+      .catch(respondToEdgeFailure)
   }
   startup()
 

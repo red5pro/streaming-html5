@@ -43,8 +43,6 @@ The initialization configuration property of `enableLiveSeek` is a `Boolean` val
 
 ```js
 const rtcConfig = {...config, ...{
-  protocol: getSocketLocationFromProtocol().protocol,
-  port: getSocketLocationFromProtocol().port,
   subscriptionId: 'subscriber-' + instanceId,
   enableLiveSeek: true
 }}
@@ -56,7 +54,7 @@ const rtcConfig = {...config, ...{
 
 Additionally, the `video` element used in playback of the live and VOD streams requires using the custom controls provided by the SDK.
 
-To turn them on, you will need to define the `controls` property on the `video` element along with assigning the `red5pro-media` class to the element. The `red5pro-media` class declaration can be found i the **red5pro** CSS file shipped with the SDK.
+To turn them on, you will need to define the `controls` property on the `video` element along with assigning the `red5pro-media` class to the element. The `red5pro-media` class declaration can be found i the **red5pro-media.css** CSS file shipped with the SDK.
 
 ```html
 <video id="red5pro-subscriber"
@@ -66,6 +64,8 @@ To turn them on, you will need to define the `controls` property on the `video` 
   class="red5pro-media"
 </video>
 ```
+
+> You can provide your own custom controls and/or class declarations easily following this [guideline](https://www.red5pro.com/docs/development/playbackcontrols/overview/).
 
 # Example
 
@@ -81,4 +81,5 @@ The following events are available when `enableLiveSeek` is set to `true`:
 | LIVE_SEEK_DISABLED | 'WebRTC.LiveSeek.Disabled' | When `enableLiveSeek` is used to playback Live VOD and HLS video has not been loaded nor available to seek. |
 | LIVE_SEEK_LOADING | 'WebRTC.LiveSeek.FragmentLoading' | When `enableLiveSeek` is used to playback Live VOD and HLS video in currently loading a fragment during seeking. |
 | LIVE_SEEK_LOADED | 'WebRTC.LiveSeek.FragmentLoaded' | When `enableLiveSeek` is used to playback Live VOD and HLS video has completed loading a fragment during seeking. |
+
 
