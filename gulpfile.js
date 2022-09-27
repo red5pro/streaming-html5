@@ -36,7 +36,9 @@ gulp.task('compile', function (cb) {
 
 gulp.task('move-scripts', gulp.series('compile', function (cb) {
 
-  gulp.src([path.join(sourceDirectory, 'page', '**', '*.js'), path.join(sourceDirectory, 'page', '**', '*.swf')])
+  gulp.src([path.join(sourceDirectory, 'page', '**', '*.js'),
+            path.join(sourceDirectory, 'page', '**', '*.css'),
+            path.join(sourceDirectory, 'page', '**', '*.swf')])
     .pipe(gulp.dest(buildDirectory))
     .on('end', cb);
 
