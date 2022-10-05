@@ -1,0 +1,52 @@
+<!doctype html>
+{{> license}}
+<html>
+  <head>
+    {{> meta title='Publish Stream Manager Mute API Test'}}
+    {{> header-scripts}}
+    {{> header-stylesheets}}
+    <style>
+      .control-container {
+        display: flex;
+        flex-direction: row;
+        background-color: #dbdbdb;
+        padding: 20px;  }
+      .control-container > button:nth-child(even) {
+        margin-left: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    {{> top-bar }}
+    {{> navigation isTestPage=true }}
+    <div id="app">
+      {{> settings-link}}
+      <div class="ice-background">
+      <div class="test-notification">
+        <p>In order to properly run the Stream Manager examples, you will need to configure you server for cluster infrastructure as described in the following documentation:</p>
+        <p><a href="https://www.red5pro.com/docs/server/autoscale/" target="_blank">https://www.red5pro.com/docs/server/autoscale/</a></p>
+      </div>
+      </div>
+      {{> test-info testTitle='Publish Stream Manager Mute API Test'}}
+      <div class="stream-section">
+        {{> status-field-publisher}}
+        {{> statistics-field packets_field='Packets Sent'}}
+        <div class="centered"><p id="address-field" class="address-field">Origin Address: N/A</p></div>
+        <div class="centered">
+          <video id="red5pro-publisher" class="red5pro-publisher"
+                 controls autoplay playsinline muted>
+          </video>
+        </div>
+        <div class="centered">
+          <p class="control-container">
+            <button id="mute-audio-button" class="ui-button">Mute Audio (Client)</button>
+            <button id="mute-video-button" class="ui-button">Mute Video (Client)</button>
+          </p>
+        </div>
+      </div>
+    </div>
+    <script src="../../script/mock-fetch.js"></script>
+    {{> body-scripts}}
+    <script src="index.js"></script>
+  </body>
+</html>
