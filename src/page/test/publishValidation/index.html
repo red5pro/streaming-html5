@@ -2,22 +2,21 @@
 {{> license}}
 <html>
   <head>
-    {{> meta title='Publish Stream Manager Proxy Validation Test'}}
+    {{> meta title='Publish Validation Test'}}
     {{> header-scripts}}
     {{> header-stylesheets}}
-    <link rel="stylesheet" href="index.css">
+    <link rel="stylesheet" href="index.css" />
   </head>
   <body>
     {{> top-bar }}
     {{> navigation isTestPage=true }}
     <div id="app">
       {{> settings-link}}
-      {{> sm-proxy-notification}}
-      {{> test-info testTitle='Publish Stream Manager Proxy Validation Test'}}
+      {{> test-info testTitle='Publish Validation Test'}}
       <div class="stream-section">
         <div id="validation-container" class="validation-container">
           <h2>Validation Parameters</h2>
-          <p class="validation-subheader">Provide validation parameters to be used in the Stream Manager request and Origin connection requests.</p>
+          <p class="validation-subheader">Provide validation parameters to be used in connection requests.</p>
           <form id="validation-form" class="validation-form" action="#" method="post">
             <div id="param-field1" class="param-field">
               <p class="param-setting">
@@ -36,18 +35,13 @@
         {{> status-field-publisher}}
         {{> statistics-field packets_field='Packets Sent'}}
         <div class="centered">
-          <p id="address-field" class="address-field">Origin Address: N/A</p>
-        </div>
-        <div class="centered">
           <video id="red5pro-publisher" class="red5pro-publisher"
-               controls autoplay playsinline muted>
+                 controls autoplay playsinline muted>
           </video>
         </div>
       </div>
     </div>
     {{> body-scripts}}
-    <script src="../../lib/red5pro-ext/red5pro-ext-stream-manager.min.js"></script>
     <script src="index.js"></script>
   </body>
 </html>
-
