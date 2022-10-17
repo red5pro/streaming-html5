@@ -77,20 +77,20 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var frameWidth = 0;
   var frameHeight = 0;
 
-	// XXX stream switch
+  // XXX stream switch
 
-	var streamPath = document.getElementById('stream-path');
-	var sendButton = document.getElementById('send-button');
-	sendButton.addEventListener('click', function (event) {
-		if (targetSubscriber !== undefined && streamPath.value !== '') {
-			targetSubscriber.callServer("switchStreams", [{
-				path: streamPath.value,
-				isImmediate: true,
-			}]);
-		}
-	});
+  var streamPath = document.getElementById('stream-path');
+  var sendButton = document.getElementById('send-button');
+  sendButton.addEventListener('click', function (event) {
+    if (targetSubscriber !== undefined && streamPath.value !== '') {
+      targetSubscriber.callServer("switchStreams", [{
+        path: streamPath.value,
+        isImmediate: true,
+      }]);
+    }
+  });
 
-	// XXX /stream switch
+  // XXX /stream switch
 
   function updateStatistics (b, p, w, h) {
     statisticsField.classList.remove('hidden');
@@ -221,27 +221,27 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
                 }
             }
             else{
-				var msg = "";
-				if(res.status == 400)
-				{
-					msg = "An invalid request was detected";
-				}
-				else if(res.status == 404)
-				{
-					msg = "Data for the request could not be located/provided.";
-				}
-				else if(res.status == 500)
-				{
-					msg = "Improper server state error was detected.";
-				}
-				else
-				{
-					msg = "Unknown error";
-				}
+        var msg = "";
+        if(res.status == 400)
+        {
+          msg = "An invalid request was detected";
+        }
+        else if(res.status == 404)
+        {
+          msg = "Data for the request could not be located/provided.";
+        }
+        else if(res.status == 500)
+        {
+          msg = "Improper server state error was detected.";
+        }
+        else
+        {
+          msg = "Unknown error";
+        }
 
 
-				throw new TypeError(msg);
-			}
+        throw new TypeError(msg);
+      }
 
 
           })

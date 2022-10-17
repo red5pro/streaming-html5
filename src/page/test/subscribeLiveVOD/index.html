@@ -1,0 +1,58 @@
+<!doctype html>
+{{> license}}
+<html>
+  <head>
+    {{> meta title='Subscriber Live VOD Test'}}
+    {{> header-scripts}}
+    {{> header-stylesheets}}
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <style>
+      .red5pro-media-container {
+        display: relative!important;
+        height: 480px;
+      }
+      .red5pro-media-control-bar {
+        z-index: 100;
+      }
+      .events-field {
+        background-color: beige;
+      }
+      #red5pro-hls-vod {
+        background-color: #000;
+      }
+    </style>a
+  </head>
+  <body>
+    {{> top-bar }}
+    {{> navigation isTestPage=true }}
+    <div id="app">
+      {{> settings-link}}
+      <div class="ice-background">
+        <div class="test-notification">
+          <p>This example requires that the HLS Recording is setup properly server-side. Within the <strong>conf/hlsconfig.xml</strong> file, you will need to define the following properties:
+          <br><br>
+          <code>&lt;property name="outputFormat" value="FMP4"/&gt;</code>
+          <br>
+          <code>&lt;property name="forceVODRecord" value="true"/&gt;</code>
+          <br><br><em>You will need to restart the server after making the configuration changes</em>.</p>
+        </div>
+      </div>
+      {{> test-info testTitle='Subscriber Live VOD Test'}}
+      <div class="stream-section">
+        {{> status-field-subscriber}}
+        {{> statistics-field packets_field='Packets Received'}}
+        <div class="centered status-field events-field">...</div>
+        <div class="centered">
+          <video id="red5pro-subscriber"
+                  controls="controls" autoplay="autoplay" playsinline
+                  class="red5pro-subscriber red5pro-media red5pro-media-background"
+                  width="640" height="480">
+          </video>
+        </div>
+      </div>
+    </div>
+    {{> body-scripts}}
+    {{> mobile-subscriber-util}}
+    <script src="index.js"></script>
+  </body>
+</html>
