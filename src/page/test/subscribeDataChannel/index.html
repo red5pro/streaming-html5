@@ -13,6 +13,15 @@
       {{> settings-link}}
       {{> test-info testTitle='Subscriber Data Channel Messaging'}}
       <div class="stream-section">
+        <div class="instructions-block">
+          <p class="settings-field settings-collapsable">
+            <label for="dc-input" class="label-style settings-label">Data Channel Name:</label>
+            <input name="dc-input" id="dc-input" value="red5pro" />
+          </p>
+          <p>
+            <button id="subscribe-button" class="control ui-button" disabled>Subscribe</button>
+          </p>
+        </div>
         {{> status-field-subscriber}}
         {{> statistics-field packets_field='Packets Received'}}
         <div class="centered">
