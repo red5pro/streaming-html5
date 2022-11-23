@@ -149,7 +149,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     updateStatusFromSubscribeEvent(event, subStatusField);
     if (event.type === 'Subscribe.VideoDimensions.Change') {
       var resolutionField = statisticsFields[1].getElementsByClassName('resolution-field')[0];
-      resolutionField.innerText = event.data.width + 'x' + event.data.height;
+      resolutionField.text = event.data.width + 'x' + event.data.height;
     }
   }
   function onSubscribeFail (message) {
@@ -169,18 +169,25 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           var frameHeight = 0;
           var bitrateField = statisticsFields[index].getElementsByClassName('bitrate-field')[0];
           var packetsField = statisticsFields[index].getElementsByClassName('packets-field')[0];
+          var resolutionField = statisticsFields[index].getElementsByClassName('resolution-field')[0];
 
-          var updateStatisticsField = function (b, p) {
+          var updateStatisticsField = function (b, p, w, h) {
             statisticsFields[index].classList.remove('hidden');
             bitrateField.innerText =  Math.floor(b);
             packetsField.innerText = p;
+            resolutionField.innerText = w + 'x' + h;
           }
           var onBitrateUpdate = function (b, p) {
             bitrate = b;
             packets = p
             updateStatisticsField(bitrate, packets, frameWidth, frameHeight);
           }
-          window.trackBitrate(sub.getPeerConnection(), onBitrateUpdate, null, true, true);
+          var onResolutionUpdate = function (w, h) {
+            frameWidth = w;
+            frameHeight = h;
+            updateStatisticsField(bitrate, packets, frameWidth, frameHeight);
+          }
+          window.trackBitrate(sub.getPeerConnection(), onBitrateUpdate, onResolutionUpdate, true, true);
         } catch (e) {
           //
         }
@@ -221,7 +228,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     var url = baseUrl + '/streammanager/api/' + apiVersion + '/event/' + app + '/' + streamName + '?action=' + action;
     var region = getRegionIfDefined();
     if (region) {
-      url += '&region=' + region + '&strict=true';
+      url += '&region=' + region;
     }
     return new Promise(function (resolve, reject) {
       fetch(url)
@@ -347,7 +354,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     var found = false;
     var address = undefined
     for (var i = listIn.length - 1; i >= 0; i--) {
-      found = listIn[i].name === configuration.stream2;
+      found = listIn[i].name === configuration.stream1;
       address = listIn[i].serverAddress
       if(found) break;
     }
@@ -377,7 +384,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     // Kick off.
     determineSubscriber(address)
     .then(function(subscriberImpl) {
-        subStreamTitle.innerText = configuration.stream2;
+        subStreamTitle.innerText = configuration.stream1;
         targetSubscriber = subscriberImpl;
         // Subscribe to events.
         targetSubscriber.on('*', onSubscriberEvent);
@@ -405,13 +412,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         app: configuration.app
       },
       subscriptionId: 'subscriber-' + instanceId,
-      streamName: config.stream2
+      streamName: config.stream1
     })
     var rtmpConfig = Object.assign({}, config, {
       host: serverAddress,
       protocol: 'rtmp',
       port: serverSettings.rtmpport,
-      streamName: config.stream2,
+      streamName: config.stream1,
       mimeType: 'rtmp/flv',
       useVideoJS: false,
       width: config.cameraWidth,
@@ -424,7 +431,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       host: serverAddress,
       protocol: protocol,
       port: isSecure ? serverSettings.hlssport : serverSettings.hlsport,
-      streamName: config.stream2,
+      streamName: config.stream1,
       mimeType: 'application/x-mpegURL'
     })
 
