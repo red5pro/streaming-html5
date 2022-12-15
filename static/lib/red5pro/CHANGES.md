@@ -1,5 +1,10 @@
 # Changes
 
+## 10.6.0
+
+- Adding doNotSwitch to subscriber offer. (Todd Anderson)
+- Fix for stereo subscribers with Chrome (Paul Gregoire)
+
 ## 10.0.0
 
 - update to MUTE API post schema. (Todd Anderson)
