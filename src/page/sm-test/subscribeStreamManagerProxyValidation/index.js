@@ -153,6 +153,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     var region = getRegionIfDefined();
     if (region) {
       kvObject.region = region;
+      kvObject.strict = 'true';
     }
     var nodes = validationForm.childNodes;
     var i = 0, length = nodes.length;

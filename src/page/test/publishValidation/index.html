@@ -1,0 +1,47 @@
+<!doctype html>
+{{> license}}
+<html>
+  <head>
+    {{> meta title='Publish Validation Test'}}
+    {{> header-scripts}}
+    {{> header-stylesheets}}
+    <link rel="stylesheet" href="index.css" />
+  </head>
+  <body>
+    {{> top-bar }}
+    {{> navigation isTestPage=true }}
+    <div id="app">
+      {{> settings-link}}
+      {{> test-info testTitle='Publish Validation Test'}}
+      <div class="stream-section">
+        <div id="validation-container" class="validation-container">
+          <h2>Validation Parameters</h2>
+          <p class="validation-subheader">Provide validation parameters to be used in connection requests.</p>
+          <form id="validation-form" class="validation-form" action="#" method="post">
+            <div id="param-field1" class="param-field">
+              <p class="param-setting">
+                <label for="param-name1">Param Name:</label>
+                <input type="text" id="param-name1" name="param_name1">
+              </p>
+              <p class="param-setting">
+                <label for="param-value1">Param Value:</label>
+                <input type="text" id="param-value1" name="param_value1">
+              </p>
+              <button id="add-param-btn" class="add-param-btn" type="button">+</button>
+            </div>
+          </form>
+          <button id="validation-submit-btn" class="ui-button">Start Publishing</button>
+        </div>
+        {{> status-field-publisher}}
+        {{> statistics-field packets_field='Packets Sent'}}
+        <div class="centered">
+          <video id="red5pro-publisher" class="red5pro-publisher"
+                 controls autoplay playsinline muted>
+          </video>
+        </div>
+      </div>
+    </div>
+    {{> body-scripts}}
+    <script src="index.js"></script>
+  </body>
+</html>

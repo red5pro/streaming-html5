@@ -171,14 +171,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           token: auth.token
         }
       }
-      : {
-        // TODO remove
-        connectionParams: {
-          username: 'a',
-          password: 'v',
-          token: 't'
-        }
-      };
+      : {};
   }
 
   // Request to unsubscribe.
