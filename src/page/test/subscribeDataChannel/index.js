@@ -51,6 +51,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   var targetSubscriber;
 
+  var subscribeButton = document.querySelector('#subscribe-button')
+  var dcInput = document.querySelector('#dc-input')
+
   var updateStatusFromEvent = window.red5proHandleSubscriberEvent; // defined in src/template/partial/status-field-subscriber.hbs
   var instanceId = Math.floor(Math.random() * 0x10000).toString(16);
   var streamTitle = document.getElementById('stream-title');
@@ -161,9 +164,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     return content
   }
 
-  function createMessageContent (jsonString) {
+  function createMessageContent (json) {
     closePreviousModal()
-    var json = JSON.parse(jsonString)
     var data = json.data || json
     var style = 'padding: 10px'
     var content = document.createElement('div')
@@ -218,7 +220,15 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         // event.data.message.data will be either a String or ArrayBuffer/Blob
         var data = event.data.message.data
         if (typeof data === 'string') {
-          showModal(createMessageContent(data))
+          try {
+            var json = JSON.parse(event.data.message.data)
+            // Otherwise is an invoke.
+            if (!json.hasOwnProperty('send')) {
+              showModal(createMessageContent(json))
+            }
+          } catch (e) {
+            // drop.
+          }
         } else {
           showModal(createAudioPlaybackContent(data))
         }
@@ -322,29 +332,38 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     subscribeOrder = [window.query('view')];
   }
 
-  // Request to initialization and start subscribing through failover support.
-  var subscriber = new red5prosdk.Red5ProSubscriber()
-  subscriber.setPlaybackOrder(subscribeOrder)
-    .init({
-      rtc: rtcConfig,
-      rtmp: rtmpConfig,
-      hls: hlsConfig
-    })
-    .then(function (subscriberImpl) {
-      streamTitle.innerText = configuration.stream1;
-      targetSubscriber = subscriberImpl
-      // Subscribe to events.
-      targetSubscriber.on('*', onSubscriberEvent);
-      return targetSubscriber.subscribe()
-    })
-    .then(function () {
-      onSubscribeSuccess(targetSubscriber);
-    })
-    .catch(function (error) {
-      var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
-      console.error('[Red5ProSubscriber] :: Error in subscribing - ' + jsonError);
-      onSubscribeFail(jsonError);
-    });
+  function start () {
+    subscribeButton.disabled = true
+    // Update datachannel name
+    rtcConfig.dataChannelConfiguration = { name:  dcInput.value }
+
+    var subscriber = new red5prosdk.Red5ProSubscriber()
+    subscriber.setPlaybackOrder(subscribeOrder)
+      .init({
+        rtc: rtcConfig,
+        rtmp: rtmpConfig,
+        hls: hlsConfig
+      })
+      .then(function (subscriberImpl) {
+        streamTitle.innerText = configuration.stream1;
+        targetSubscriber = subscriberImpl
+        // Subscribe to events.
+        targetSubscriber.on('*', onSubscriberEvent);
+        return targetSubscriber.subscribe()
+      })
+      .then(function () {
+        onSubscribeSuccess(targetSubscriber);
+      })
+      .catch(function (error) {
+        var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
+        console.error('[Red5ProSubscriber] :: Error in subscribing - ' + jsonError);
+        onSubscribeFail(jsonError);
+        subscribeButton.disabled = false
+      });
+  }
+
+  subscribeButton.disabled = false
+  subscribeButton.addEventListener('click', start)
 
   // Clean up.
   var shuttingDown = false;
