@@ -23,6 +23,15 @@
       {{> settings-link}}
       {{> test-info testTitle='Publish DataChannel Messaging'}}
       <div class="stream-section">
+        <div class="instructions-block">
+          <p class="settings-field settings-collapsable">
+            <label for="dc-input" class="label-style settings-label">Data Channel Name:</label>
+            <input name="dc-input" id="dc-input" value="red5pro" />
+          </p>
+          <p>
+            <button id="publish-button" class="control ui-button" disabled>Publish</button>
+          </p>
+        </div>
         {{> status-field-publisher}}
         {{> statistics-field packets_field='Packets Sent'}}
         <div id="video-container" class="centered">

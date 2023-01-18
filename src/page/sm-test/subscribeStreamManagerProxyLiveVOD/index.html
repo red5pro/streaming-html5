@@ -29,11 +29,11 @@
       {{> settings-link}}
       <div class="ice-background">
         <div class="test-notification">
-          <p>This example requires that the HLS Recording is setup properly server-side. Within the <strong>conf/hlsconfig.xml</strong> file, you will need to define the following properties:
+          <p>This example requires that the HLS Recording is setup properly on the autoscale nodes. Within the <strong>conf/hlsconfig.xml</strong> file, you will need to define the following properties:
           <br><br>
           <code>&lt;property name="outputFormat" value="FMP4"/&gt;</code>
           <br>
-          <code>&lt;property name="forceVODRecord" value="true"/&gt;</code>
+          <code>&lt;property name="dvrPlaylist" value="true"/&gt;</code>
           <br><br><em>You will need to restart the server after making the configuration changes</em>.</p>
         </div>
       </div>
