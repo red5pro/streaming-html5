@@ -51,6 +51,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   var targetPublisher;
 
+  var publishButton = document.querySelector('#publish-button')
+  var dcInput = document.querySelector('#dc-input')
+
   var updateStatusFromEvent = window.red5proHandlePublisherEvent; // defined in src/template/partial/status-field-publisher.hbs
   var streamTitle = document.getElementById('stream-title');
   var sendRPCButton = document.getElementById('send-rpc-button');
@@ -140,7 +143,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   });
 
   sendMessageButton.addEventListener('click', () => {
-    const message = JSON.stringify({message: messageInput.value, timestamp: new Date()})
+    const message = JSON.stringify({message: messageInput.value, timestamp: new Date().getTime()})
     console.log(`Sending along message: ${message}`)
     targetPublisher.getDataChannel().send(message)
   })
@@ -266,7 +269,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
   }
 
-  function determinePublisher () {
+  function determinePublisher (dcName) {
 
     var config = Object.assign({},
                       configuration,
@@ -279,7 +282,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     var rtcConfig = Object.assign({}, config, {
                       protocol: getSocketLocationFromProtocol().protocol,
                       port: getSocketLocationFromProtocol().port,
-                      streamName: config.stream1
+                      streamName: config.stream1,
+                      dataChannelConfiguration: { name: dcName }
                    });
 
     var rtmpConfig = Object.assign({}, config, {
@@ -326,22 +330,29 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     });
   }
 
-  // Kick off.
-  determinePublisher()
-    .then(function (publisherImpl) {
-      streamTitle.innerText = configuration.stream1;
-      targetPublisher = publisherImpl;
-      targetPublisher.on('*', onPublisherEvent);
-      return targetPublisher.publish();
-    })
-    .then(function () {
-      onPublishSuccess(targetPublisher);
-    })
-    .catch(function (error) {
-      var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
-      console.error('[Red5ProPublisher] :: Error in publishing - ' + jsonError);
-      onPublishFail(jsonError);
-     });
+  function start () {
+    publishButton.disabled = true
+    
+    determinePublisher(dcInput.value)
+      .then(function (publisherImpl) {
+        streamTitle.innerText = configuration.stream1;
+        targetPublisher = publisherImpl;
+        targetPublisher.on('*', onPublisherEvent);
+        return targetPublisher.publish();
+      })
+      .then(function () {
+        onPublishSuccess(targetPublisher);
+      })
+      .catch(function (error) {
+        var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
+        console.error('[Red5ProPublisher] :: Error in publishing - ' + jsonError);
+        onPublishFail(jsonError);
+        publishButton.disabled = false
+       });
+  }
+
+  publishButton.disabled = false
+  publishButton.addEventListener('click', start)
 
   var shuttingDown = false;
   function shutdown() {
