@@ -87,20 +87,32 @@
                 </select>
               </p>
               <p class="settings-field settings-collapsable">
+                <label for="merchant-input" class="settings-label">Merchant:</label>
+                <input id="merchant-input" name="key-input" value="red5" placeholder="Merchant" />
+              </p>
+              <p class="settings-field settings-collapsable">
+                <label for="user-input" class="settings-label">User:</label>
+                <input id="user-input" name="key-input" value="test" placeholder="User" />
+              </p>
+              <p class="settings-field settings-collapsable">
+                <label for="session-input" class="settings-label">Session:</label>
+                <input id="session-input" name="key-input" value="p0" placeholder="User" />
+              </p>
+              <p class="settings-field settings-collapsable">
                 <label for="type-select" class="settings-label">Encryption Type:</label>
                 <select id="type-select" name="type-select" style="width: 45%">
-                  <option value="widevine" selected>Widevine</option>
+                  <option value="widevine">Widevine</option>
                   <option value="playready">PlayReady</option>
                   <option value="fairplay">FairPlay</option>
-                  <option value="ClearKey">ClearKey</option>
+                  <option value="clearkey" selected>ClearKey</option>
                 </select>
               </p>
               <p class="settings-field settings-collapsable">
                 <label for="key-input" class="settings-label">Key Id / IV:</label>
-                <input id="key-input" name="key-input" />
+                <input id="key-input" name="key-input" placeholder="Key Id / IV" value=""/>
               </p>
             </div>
-            <div>
+            <div style="background-color: black;">
               <video id="red5pro-subscriber"
                       controls="controls" autoplay="autoplay" playsinline
                       class="red5pro-subscriber"
@@ -108,7 +120,7 @@
               </video>        
             </div>
             <div>
-              <button>Decrypt</button>
+              <button id="decrypt-button" class="ui-button">Decrypt</button>
             </div>
           </div>
         </div>
