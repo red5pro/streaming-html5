@@ -16,25 +16,32 @@
         flex-wrap: wrap;
         row-gap: 20px;
       }
-      .settings-area {
-        background-color: #eeee;
-        padding-bottom: 10px;
-      }
-      .settings-field {
-        background-color: #eeee;
-        padding: 10px;
-        margin: unset!important;
-      }
-      .settings-field, .settings-field > input {
-        font-size: 1em; 
-      }
+
       .info-title {
         padding: 20px 10px;
         box-sizing: border-box;
+        background-color: #eeee;
       }
       .paddedHR {
         margin: 0!important;
         margin-top: 10px;
+      }
+      .nsettings {
+        display: grid;
+        grid-template-columns: max-content max-content;
+        grid-gap: 10px;
+        background-color: #eeee;
+        padding: 20px;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .nsettings label {
+        text-align: right;
+      }
+
+      .nsettings input, .nsettings select {
+        font-size: 1em;
       }
     </style>
   </head>
@@ -77,40 +84,35 @@
               <br/>
               <span>Resolution: <span id="decrypted-resolution-field" class="resolution-field">0x0</span>.
             </p>
-            <div class="settings-area">
-              <p class="centered info-title">Enter the following information to playback decrypted video:</p>
-              <hr class="paddedHR">
-              <p class="settings-field settings-collapsable">
-                <label for="env-select" class="settings-label">castLabs Environment:</label>
+            <div class="centered info-title">
+              <p>Enter the following information to playback decrypted video:</p>
+            </div>
+            <hr class="paddedHR">
+            <div class="nsettings">
+                <label for="env-select">castLabs Environment:</label>
                 <select id="env-select" name="env-select" style="width: 45%">
                   <option value="Staging" selected>Staging</option>
                 </select>
-              </p>
-              <p class="settings-field settings-collapsable">
-                <label for="merchant-input" class="settings-label">Merchant:</label>
+
+                <label for="merchant-input">Merchant:</label>
                 <input id="merchant-input" name="key-input" value="red5" placeholder="Merchant" />
-              </p>
-              <p class="settings-field settings-collapsable">
-                <label for="user-input" class="settings-label">User:</label>
+
+                <label for="user-input">User:</label>
                 <input id="user-input" name="key-input" value="test" placeholder="User" />
-              </p>
-              <p class="settings-field settings-collapsable">
-                <label for="session-input" class="settings-label">Session:</label>
-                <input id="session-input" name="key-input" value="p0" placeholder="User" />
-              </p>
-              <p class="settings-field settings-collapsable">
-                <label for="type-select" class="settings-label">Encryption Type:</label>
+
+                <label for="session-input">Session:</label>
+                <input id="session-input" name="key-input" value="p0" placeholder="Session" />
+
+                <label for="type-select">Encryption Type:</label>
                 <select id="type-select" name="type-select" style="width: 45%">
                   <option value="widevine">Widevine</option>
                   <option value="playready">PlayReady</option>
                   <option value="fairplay">FairPlay</option>
                   <option value="clearkey" selected>ClearKey</option>
                 </select>
-              </p>
-              <p class="settings-field settings-collapsable">
-                <label for="key-input" class="settings-label">Key Id / IV:</label>
-                <input id="key-input" name="key-input" placeholder="Key Id / IV" value=""/>
-              </p>
+
+                <label for="key-input">Key Id / IV:</label>
+                <input id="key-input" name="key-input" placeholder="Key Id / IV" />
             </div>
             <div style="background-color: black;">
               <video id="red5pro-subscriber"
