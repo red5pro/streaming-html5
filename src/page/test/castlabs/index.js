@@ -136,6 +136,16 @@ const monitorBitrate = (pc, bitrateField, packetsField, resolutionField) => {
     }, true)
 }
 
+const monitor = (sub, typePrefix) => {
+  document.querySelector(`#${typePrefix}-statistics-field`).classList.remove('hidden')
+  const ticket = monitorBitrate(sub.getPeerConnection(), 
+    document.querySelector(`#${typePrefix}-bitrate-field`),
+    document.querySelector(`#${typePrefix}-packets-field`),
+    document.querySelector(`#${typePrefix}-resolution-field`)
+  ) 
+  monitorTickets.push(ticket)
+}
+
 const eventExclusions = ['Subscribe.Time.Update', 'Subscribe.Playback.Change', 'Subscribe.Volume.Change']
 const statusExclusions = [...eventExclusions,
   'Subscribe.Metadata', 'WebRTC.DataChannel.Open',
@@ -173,13 +183,8 @@ const encryptedPlayback = async () => {
     encryptedSubscriber.on('*', event => onEncryptedSubscriberEvent(event))
     await encryptedSubscriber.subscribe()
 
-    document.querySelector('#encrypted-statistics-field').classList.remove('hidden')
-    const ticket = monitorBitrate(encryptedSubscriber.getPeerConnection(), 
-      document.querySelector('#encrypted-bitrate-field'),
-      document.querySelector('#encrypted-packets-field'),
-      document.querySelector('#encrypted-resolution-field')
-    ) 
-    monitorTickets.push(ticket)
+    // UI.
+    monitor(subscriber, 'decrypted')
   } catch (e) {
     console.error(e)
   }
@@ -214,25 +219,48 @@ const decryptPlayback = async () => {
         keyId: encryption === EncryptTypes.CBCS ? null : keyIdOrIV,
         iv: encryption !== EncryptTypes.CBCS ? null : keyIdOrIV
       }
+      // castLabs.
       setDrm(element, drmConfig)
 
-      element.addEventListener('keyframeneeded', () => console.log('NEEDS KEYFRAME'))
-      document.querySelector('#decrypted-statistics-field').classList.remove('hidden')
-      const ticket = monitorBitrate(encryptedSubscriber.getPeerConnection(), 
-        document.querySelector('#decrypted-bitrate-field'),
-        document.querySelector('#decrypted-packets-field'),
-        document.querySelector('#decrypted-resolution-field')
-      ) 
-      monitorTickets.push(ticket)
-
-      window.subscriber = subscriber
+      // UI.
+      monitor(subscriber, 'decrypted')
   } catch (e) {
       console.error(e)
       decryptButton.disabled = false
   }
 }
 
-// TODO: Cleanup
-
+// Start.
 encryptedPlayback()
 decryptButton.onclick = () => decryptPlayback()
+
+  // Clean up.
+let shuttingDown = false
+const shutdown = async () => {
+  if (shuttingDown) return
+
+  shuttingDown = true
+  while (monitorTickets.length > 0) {
+    window.untrackBitrate(monitorTickets.unshift())
+  }
+
+  try {
+    encryptedSubscriber.off('*', onEncryptedSubscriberEvent)
+    await encryptedSubscriber.unsubscribe()
+  } catch (e) {
+    console.warn(e)
+  } finally {
+    encryptedSubscriber = undefined
+  }
+
+  try {
+    subscriber.off('*', onDecryptedSubscriberEvent)
+    await subscriber.unsubscribe()
+  } catch (e) {
+    console.warn(e)
+  } finally {
+    subscriber = undefined
+  }
+}
+window.addEventListener('pagehide', () => shutdown());
+window.addEventListener('beforeunload', () => shutdown());
