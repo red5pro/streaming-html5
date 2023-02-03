@@ -101,6 +101,35 @@ const getAuthenticationParams = () => {
     : {}
 }
 
+const getRegionIfDefined = () => {
+  var region = configuration.streamManagerRegion
+  if (typeof region === 'string' && region.length > 0 && region !== 'undefined') {
+    return region
+  }
+  return undefined
+}
+
+const getEdgeConnection = async (config, settings) => {
+  const { host, app, stream1: streamName, streamManagerAPI: version } = config
+  const { protocol, httpport } = settings
+  const url = `${protocol}://${host}:${port}/streammanager/api/${version}/event/${app}/${streamName}?action=subscribe` 
+  let region = getRegionIfDefined()
+  if (region) {
+    url += '&region=' + region + '&strict=true'
+  }
+  try {
+    const response = await fetch(url)
+    const json = await response.json()
+    if (json.errorMessage) {
+      throw new Error(json.errorMessage)
+    }
+    const { serverAddress, scope } = json
+    return { host: serverAddress, app: scope }
+  } catch (e) {
+    console.error(e)
+  }
+}
+
 let subscriber
 let encryptedSubscriber
 let monitorTickets = []
@@ -108,6 +137,8 @@ let monitorTickets = []
 const decryptButton = document.querySelector('#decrypt-button')
 const encrypedStatusField = document.querySelector('#encrypted-status-field')
 const decryptedStatusField = document.querySelector('#decrypted-status-field')
+const encryptedAddressField = document.querySelector('#encrypted-address-field')
+const decryptedAddressField = document.querySelector('#decrypted-address-field')
 const { port, protocol } = getPortAndProtocol(configuration.host)
 const baseConfig = {
   ...configuration, 
@@ -187,14 +218,22 @@ const onDecryptedSubscriberEvent = event => {
 
 const encryptedPlayback = async () => {
   try {
-    const { rtcConfiguration } = baseConfig
+    const { proxy } = configuration
+    const { rtcConfiguration, connectionParams } = baseConfig
+    const edgeConnection = await getEdgeConnection(baseConfig, serverSettings)
+    const connParams = connectionParams ? {...connectionParams, ...edgeConnection} : edgeConnection
     const config = {...baseConfig,
+      app: proxy,
       mediaElementId: 'red5pro-encrypted',
       rtcConfiguration: {
         ...rtcConfiguration,
         encodedInsertableStreams: false
-      }
+      },
+      connectionParams: connParams
     }
+    const { host } = connParams
+    encryptedAddressField.innerText = `Edge Address: ${host}`
+    
     encryptedSubscriber = await new red5prosdk.RTCSubscriber().init(config)
     encryptedSubscriber.on('*', event => onEncryptedSubscriberEvent(event))
     await encryptedSubscriber.subscribe()
@@ -203,7 +242,7 @@ const encryptedPlayback = async () => {
     monitor(encryptedSubscriber, 'encrypted')
   } catch (e) {
     console.error(e)
-    encryptedStatusField.innerText = typeof e === 'string' ? e : e.message
+    encrypedStatusField.innerText = typeof e === 'string' ? e : e.message
   }
 }
 
@@ -216,7 +255,19 @@ const decryptPlayback = async () => {
           worker: worker
       }
 
-      subscriber = await new red5prosdk.RTCSubscriber().init(baseConfig, transforms)
+      const { proxy } = configuration
+      const { connectionParams } = baseConfig
+      const edgeConnection = await getEdgeConnection(baseConfig, serverSettings)
+      const connParams = connectionParams ? {...connectionParams, ...edgeConnection} : edgeConnection
+      const config = {
+        ...baseConfig,
+        app: proxy,
+        connectionParams: connParams
+      }
+      const { host } = connParams
+      decryptedAddressField.innerText = `Edge Address: ${host}`
+
+      subscriber = await new red5prosdk.RTCSubscriber().init(config, transforms)
       subscriber.on('*', event => onDecryptedSubscriberEvent(event))
       await subscriber.subscribe()
 
