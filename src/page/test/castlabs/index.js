@@ -48,9 +48,6 @@ var configuration = (function () {
 })();
 red5prosdk.setLogLevel(configuration.verboseLogging ? red5prosdk.LOG_LEVELS.TRACE : red5prosdk.LOG_LEVELS.WARN);
 
-let encryptedSubscriber
-let subscriber
-
 const EncryptTypes = {
   CBCS: 'cbcs',
   CENC: 'cenc'
@@ -91,7 +88,13 @@ const getEncryptionTypeFromValue = value => {
 
 const encryptKeyValue = value => new Uint8Array(atob(value).split("").map(c => c.charCodeAt(0)))
 
+let subscriber
+let encryptedSubscriber
+let monitorTickets = []
+
 const decryptButton = document.querySelector('#decrypt-button')
+const encrtypedStatusField = document.querySelector('#encrypted-status-field')
+const decryptedStatusField = document.querySelector('#decrypted-status-field')
 const { port, protocol } = getPortAndProtocol(configuration.host)
 const baseConfig = {...configuration,
   protocol,
@@ -122,17 +125,38 @@ worker.onmessage = (m) => {
     }
 }
 
+const monitorBitrate = (pc, bitrateField, packetsField, resolutionField) => {
+  return trackBitrate(pc,
+    (b, p) => {
+      bitrateField.innerText = b === 0 ? 'N/A' : Math.floor(b)
+      packetsField.innerText = p
+    }, 
+    (w, h) => {
+      resolutionField.innerText = `${w}x${h}`
+    }, true)
+}
+
 const eventExclusions = ['Subscribe.Time.Update', 'Subscribe.Playback.Change', 'Subscribe.Volume.Change']
+const statusExclusions = [...eventExclusions,
+  'Subscribe.Metadata', 'WebRTC.DataChannel.Open',
+  'WebRTC.DataChannel.Available', 'MessageTransport.Change',
+  'Subscribe.VideoDimensions.Change', 'Subscribe.Autoplay.Muted']
 const onEncryptedSubscriberEvent = event => {
     const { type } = event
     if (eventExclusions.indexOf(type) > -1) return
     console.log(`[Subscriber::Encrypted] ${type}`)
+
+    if (statusExclusions.indexOf(type) > -1) return
+    encrtypedStatusField.innerText = type
 }
 
 const onDecryptedSubscriberEvent = event => {
     const { type } = event
     if (eventExclusions.indexOf(type) > -1) return
     console.log(`[Subscriber::Decrypted] ${type}`)
+
+    if (statusExclusions.indexOf(type) > -1) return
+    decryptedStatusField.innerText = type
 }
 
 const encryptedPlayback = async () => {
@@ -148,6 +172,14 @@ const encryptedPlayback = async () => {
     encryptedSubscriber = await new red5prosdk.RTCSubscriber().init(config)
     encryptedSubscriber.on('*', event => onEncryptedSubscriberEvent(event))
     await encryptedSubscriber.subscribe()
+
+    document.querySelector('#encrypted-statistics-field').classList.remove('hidden')
+    const ticket = monitorBitrate(encryptedSubscriber.getPeerConnection(), 
+      document.querySelector('#encrypted-bitrate-field'),
+      document.querySelector('#encrypted-packets-field'),
+      document.querySelector('#encrypted-resolution-field')
+    ) 
+    monitorTickets.push(ticket)
   } catch (e) {
     console.error(e)
   }
@@ -185,11 +217,22 @@ const decryptPlayback = async () => {
       setDrm(element, drmConfig)
 
       element.addEventListener('keyframeneeded', () => console.log('NEEDS KEYFRAME'))
+      document.querySelector('#decrypted-statistics-field').classList.remove('hidden')
+      const ticket = monitorBitrate(encryptedSubscriber.getPeerConnection(), 
+        document.querySelector('#decrypted-bitrate-field'),
+        document.querySelector('#decrypted-packets-field'),
+        document.querySelector('#decrypted-resolution-field')
+      ) 
+      monitorTickets.push(ticket)
+
+      window.subscriber = subscriber
   } catch (e) {
       console.error(e)
-      descryptButton.disabled = false
+      decryptButton.disabled = false
   }
 }
+
+// TODO: Cleanup
 
 encryptedPlayback()
 decryptButton.onclick = () => decryptPlayback()
