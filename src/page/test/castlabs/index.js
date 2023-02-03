@@ -50,9 +50,18 @@ red5prosdk.setLogLevel(configuration.verboseLogging ? red5prosdk.LOG_LEVELS.TRAC
 
 let encryptedSubscriber
 let subscriber
-let encryption = 'cbcs'
-let iv = encryption !== 'cbcs' ? null : new Uint8Array([0xd5, 0xfb, 0xd6, 0xb8, 0x2e, 0xd9, 0x3e, 0x4e, 0xf9, 0x8a, 0xe4, 0x09, 0x31, 0xee, 0x33, 0xb7])
-let keyId = encryption === 'cbcs' ? null : new Uint8Array([0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x30, 0x31, 0x32, 0x33, 0x34, 0x35])
+
+const EncryptTypes = {
+  CBCS: 'cbcs',
+  CENC: 'cenc'
+}
+
+const EntryptionTypeValues = {
+  CLEARKEY: 'clearkey',
+  WIDEVINE: 'widevine',
+  FAIRPLAY: 'fairplay',
+  PLAYREADY: 'playready'
+}
 
 const getPortAndProtocol = host => {
   let ipReg = /^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/
@@ -63,11 +72,32 @@ const getPortAndProtocol = host => {
   return { port, protocol }
 }
 
+const getValueFromId = id => {
+  try {
+    const el = document.querySelector(`#${id}`)
+    return el ? el.value : undefined
+  } catch (e) {
+    console.error(e)
+  }
+  return undefined
+}
+
+const getEncryptionTypeFromValue = value => {
+  if (value.toLowerCase() === EntryptionTypeValues.CLEARKEY.toLowerCase()) {
+    return EncryptTypes.CBCS
+  }
+  return EncryptTypes.CENC
+}
+
+const encryptKeyValue = value => new Uint8Array(atob(value).split("").map(c => c.charCodeAt(0)))
+
+const decryptButton = document.querySelector('#decrypt-button')
 const { port, protocol } = getPortAndProtocol(configuration.host)
 const baseConfig = {...configuration,
   protocol,
   port,
   streamName: configuration.stream1,
+  mediaElementId: 'red5pro-subscriber',
   rtcConfiguration: {
       iceServers: [{urls: 'stun:stun2.l.google.com:19302'}],
       iceCandidatePoolSize: 2,
@@ -93,23 +123,30 @@ worker.onmessage = (m) => {
 }
 
 const eventExclusions = ['Subscribe.Time.Update', 'Subscribe.Playback.Change', 'Subscribe.Volume.Change']
-const onSubscriberEvent = event => {
+const onEncryptedSubscriberEvent = event => {
     const { type } = event
     if (eventExclusions.indexOf(type) > -1) return
-    console.log(type)
+    console.log(`[Subscriber::Encrypted] ${type}`)
+}
+
+const onDecryptedSubscriberEvent = event => {
+    const { type } = event
+    if (eventExclusions.indexOf(type) > -1) return
+    console.log(`[Subscriber::Decrypted] ${type}`)
 }
 
 const encryptedPlayback = async () => {
   try {
     const { rtcConfiguration } = baseConfig
-    encryptedSubscriber = await new red5prosdk.RTCSubscriber().init({...baseConfig,
+    const config = {...baseConfig,
       mediaElementId: 'red5pro-encrypted',
       rtcConfiguration: {
         ...rtcConfiguration,
         encodedInsertableStreams: false
       }
-    })
-    window.encryptedSubscriber = encryptedSubscriber
+    }
+    encryptedSubscriber = await new red5prosdk.RTCSubscriber().init(config)
+    encryptedSubscriber.on('*', event => onEncryptedSubscriberEvent(event))
     await encryptedSubscriber.subscribe()
   } catch (e) {
     console.error(e)
@@ -117,6 +154,7 @@ const encryptedPlayback = async () => {
 }
 
 const decryptPlayback = async () => {
+  decryptButton.disabled = true
   try {
       const transforms = {
           video: videoTransformFunction,
@@ -125,27 +163,33 @@ const decryptPlayback = async () => {
       }
 
       subscriber = await new red5prosdk.RTCSubscriber().init(baseConfig, transforms)
-      subscriber.on('*', event => onSubscriberEvent(event))
+      subscriber.on('*', event => onDecryptedSubscriberEvent(event))
       await subscriber.subscribe()
+
+      const element = document.querySelector(`#${baseConfig.mediaElementId}`)
+      const encryption = getEncryptionTypeFromValue(getValueFromId('type-select'))
+      const keyIdOrIV = encryptKeyValue(getValueFromId('key-input'))
 
       const drmConfig = {
         environment: Environments.Staging,
-        merchant: 'red5',
-        userId: 'test',
-        sessionId: 'p0',
+        merchant: getValueFromId('merchant-input'),
+        userId: getValueFromId('user-input'),
+        sessionId: getValueFromId('session-input'),
         assetId: null,
         variantId: null,
         audioEncrypted: false,
         encryption,
-        keyId,
-        iv
+        keyId: encryption === EncryptTypes.CBCS ? null : keyIdOrIV,
+        iv: encryption !== EncryptTypes.CBCS ? null : keyIdOrIV
       }
-      setDRM(baseConfig.mediaElementId, drmConfig)
+      setDrm(element, drmConfig)
 
       element.addEventListener('keyframeneeded', () => console.log('NEEDS KEYFRAME'))
   } catch (e) {
       console.error(e)
+      descryptButton.disabled = false
   }
 }
 
 encryptedPlayback()
+decryptButton.onclick = () => decryptPlayback()
