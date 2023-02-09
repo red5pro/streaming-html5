@@ -114,6 +114,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     catch (e) {
       // no tracking for you!
     }
+    if (window.exposePublisherGlobally) {
+      window.exposePublisherGlobally(publisher);
+    }
   }
   function onUnpublishFail (message) {
     console.error('[Red5ProPublisher] Unpublish Error :: ' + message);
