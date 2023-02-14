@@ -82,8 +82,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   // Base configuration to extend in providing specific tech failover configurations.
   let defaultConfiguration = (function(useVideo, useAudio) {
-const { protocol, port } = getSocketLocationFromProtocol()
-    let c = { protocol, port }    if (!useVideo) {
+    const { protocol, port } = getSocketLocationFromProtocol()
+    let c = { protocol, port }    
+    if (!useVideo) {
       c.videoEncoding = red5prosdk.PlaybackVideoEncoder.NONE
     }
     if (!useAudio) {
