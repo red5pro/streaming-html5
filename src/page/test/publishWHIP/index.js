@@ -26,88 +26,88 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 (function(window, document, red5prosdk) {
   'use strict';
 
-  var serverSettings = (function() {
-    var settings = sessionStorage.getItem('r5proServerSettings');
+  const serverSettings = (() => {
+    const settings = sessionStorage.getItem('r5proServerSettings')
     try {
-      return JSON.parse(settings);
+      return JSON.parse(settings)
     }
     catch (e) {
-      console.error('Could not read server settings from sessionstorage: ' + e.message);
-    }
-    return {};
-  })();
-
-  var configuration = (function () {
-    var conf = sessionStorage.getItem('r5proTestBed');
-    try {
-      return JSON.parse(conf);
-    }
-    catch (e) {
-      console.error('Could not read testbed configuration from sessionstorage: ' + e.message);
+      console.error('Could not read server settings from sessionstorage: ' + e.message)
     }
     return {}
-  })();
+  })()
 
-  red5prosdk.setLogLevel(configuration.verboseLogging ? red5prosdk.LOG_LEVELS.TRACE : red5prosdk.LOG_LEVELS.WARN);
+  const configuration = (() => {
+    const conf = sessionStorage.getItem('r5proTestBed')
+    try {
+      return JSON.parse(conf)
+    }
+    catch (e) {
+      console.error('Could not read testbed configuration from sessionstorage: ' + e.message)
+    }
+    return {}
+  })()
+
+  red5prosdk.setLogLevel(configuration.verboseLogging ? red5prosdk.LOG_LEVELS.TRACE : red5prosdk.LOG_LEVELS.WARN)
 
 
-  var targetPublisher;
+  let targetPublisher
 
-  var updateStatusFromEvent = window.red5proHandlePublisherEvent; // defined in src/template/partial/status-field-publisher.hbs
-  var streamTitle = document.getElementById('stream-title');
-  var statisticsField = document.getElementById('statistics-field');
-  var bitrateField = document.getElementById('bitrate-field');
-  var packetsField = document.getElementById('packets-field');
-  var resolutionField = document.getElementById('resolution-field');
+  const updateStatusFromEvent = window.red5proHandlePublisherEvent; // defined in src/template/partial/status-field-publisher.hbs
+  const streamTitle = document.getElementById('stream-title');
+  const statisticsField = document.getElementById('statistics-field');
+  const bitrateField = document.getElementById('bitrate-field');
+  const packetsField = document.getElementById('packets-field');
+  const resolutionField = document.getElementById('resolution-field');
 
-  var protocol = serverSettings.protocol;
-  var isSecure = protocol == 'https';
-  function getSocketLocationFromProtocol () {
+  const protocol = serverSettings.protocol
+  const isSecure = protocol == 'https'
+  const getSocketLocationFromProtocol = () => {
     return !isSecure
       ? {protocol: 'ws', port: serverSettings.wsport}
-      : {protocol: 'wss', port: serverSettings.wssport};
+      : {protocol: 'wss', port: serverSettings.wssport}
   }
 
-  var bitrate = 0;
-  var packetsSent = 0;
-  var frameWidth = 0;
-  var frameHeight = 0;
+  let bitrate = 0
+  let packetsSent = 0
+  let frameWidth = 0
+  let frameHeight = 0
 
-  function updateStatistics (b, p, w, h) {
+  const updateStatistics = (b, p, w, h) => {
     statisticsField.classList.remove('hidden');
     bitrateField.innerText = b === 0 ? 'N/A' : Math.floor(b);
     packetsField.innerText = p;
     resolutionField.innerText = (w || 0) + 'x' + (h || 0);
   }
 
-  function onBitrateUpdate (b, p) {
+  const onBitrateUpdate = (b, p) => {
     bitrate = b;
     packetsSent = p;
     updateStatistics(bitrate, packetsSent, frameWidth, frameHeight);
   }
 
-  function onResolutionUpdate (w, h) {
+  const onResolutionUpdate = (w, h) => {
     frameWidth = w;
     frameHeight = h;
     updateStatistics(bitrate, packetsSent, frameWidth, frameHeight);
   }
 
-  function onPublisherEvent (event) {
+  const onPublisherEvent = event => {
     console.log('[Red5ProPublisher] ' + event.type + '.');
     updateStatusFromEvent(event);
   }
-  function onPublishFail (message) {
+  const onPublishFail = message => {
     console.error('[Red5ProPublisher] Publish Error :: ' + message);
   }
-  function onPublishSuccess (publisher) {
+  const onPublishSuccess = publisher => {
     console.log('[Red5ProPublisher] Publish Complete.');
     try {
-      var pc = publisher.getPeerConnection();
-      var stream = publisher.getMediaStream();
+      const pc = publisher.getPeerConnection();
+      const stream = publisher.getMediaStream();
       window.trackBitrate(pc, onBitrateUpdate, onResolutionUpdate);
       statisticsField.classList.remove('hidden');
       stream.getVideoTracks().forEach(function (track) {
-        var settings = track.getSettings();
+        const settings = track.getSettings();
         onResolutionUpdate(settings.width, settings.height);
       });
     }
@@ -115,15 +115,15 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       // no tracking for you!
     }
   }
-  function onUnpublishFail (message) {
+  const onUnpublishFail = (message) => {
     console.error('[Red5ProPublisher] Unpublish Error :: ' + message);
   }
-  function onUnpublishSuccess () {
+  const onUnpublishSuccess = () => {
     console.log('[Red5ProPublisher] Unpublish Complete.');
   }
 
-  function getAuthenticationParams () {
-    var auth = configuration.authentication;
+  const getAuthenticationParams = () => {
+    let auth = configuration.authentication;
     return auth && auth.enabled
       ? {
         connectionParams: {
@@ -135,7 +135,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       : {};
   }
 
-  function getUserMediaConfiguration () {
+  const getUserMediaConfiguration = () => {
     return {
       mediaConstraints: {
         audio: configuration.useAudio ? configuration.mediaConstraints.audio : false,
@@ -144,7 +144,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     };
   }
 
-  function getRTMPMediaConfiguration () {
+  const getRTMPMediaConfiguration = () => {
     return {
       mediaConstraints: {
         audio: configuration.useAudio ? configuration.mediaConstraints.audio : false,
@@ -156,16 +156,16 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
   }
 
-  function unpublish () {
+  const unpublish = () => {
     return new Promise(function (resolve, reject) {
-      var publisher = targetPublisher;
+      const publisher = targetPublisher;
       publisher.unpublish()
         .then(function () {
           onUnpublishSuccess();
           resolve();
         })
         .catch(function (error) {
-          var jsonError = typeof error === 'string' ? error : JSON.stringify(error, 2, null);
+          const jsonError = typeof error === 'string' ? error : JSON.stringify(error, 2, null);
           onUnpublishFail('Unmount Error ' + jsonError);
           reject(error);
         });
@@ -183,8 +183,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   const start = async () => {
     try {
       const rtcConfig = {...config, 
-        protocol: getSocketLocationFromProtocol().protocol,
-        port: getSocketLocationFromProtocol().port,
+        protocol: 'wss',// getSocketLocationFromProtocol().protocol,
+        port: 443,// getSocketLocationFromProtocol().port,
         streamName: config.stream1,
       }
       const protocol = rtcConfig.protocol === 'ws' ? 'http' : 'https'
@@ -217,11 +217,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   start()
 
-  var shuttingDown = false;
-  function shutdown() {
+  let shuttingDown = false;
+  const shutdown = () => {
     if (shuttingDown) return;
     shuttingDown = true;
-    function clearRefs () {
+    const clearRefs = () => {
       if (targetPublisher) {
         targetPublisher.off('*', onPublisherEvent);
       }
