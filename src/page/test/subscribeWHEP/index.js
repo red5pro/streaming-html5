@@ -119,10 +119,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
   }
   function onSubscribeFail (message) {
-    console.error('[Red5ProSubsriber] Subscribe Error :: ' + message);
+    console.error('[Red5ProSubscriber] Subscribe Error :: ' + message);
   }
   function onSubscribeSuccess (subscriber) {
-    console.log('[Red5ProSubsriber] Subscribe Complete.');
+    console.log('[Red5ProSubscriber] Subscribe Complete.');
     if (window.exposeSubscriberGlobally) {
       window.exposeSubscriberGlobally(subscriber);
     }
@@ -136,10 +136,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
   }
   function onUnsubscribeFail (message) {
-    console.error('[Red5ProSubsriber] Unsubscribe Error :: ' + message);
+    console.error('[Red5ProSubscriber] Unsubscribe Error :: ' + message);
   }
   function onUnsubscribeSuccess () {
-    console.log('[Red5ProSubsriber] Unsubscribe Complete.');
+    console.log('[Red5ProSubscriber] Unsubscribe Complete.');
   }
 
   function getAuthenticationParams () {
