@@ -202,7 +202,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
       targetSubscriber = await new red5prosdk.WHEPClient().init(rtcConfig)
       targetSubscriber.on('*', onSubscriberEvent)
-      targetSubscriber.subscribe()
+      await targetSubscriber.subscribe()
+      streamTitle.innerText = streamName
       onSubscribeSuccess(targetSubscriber)
 
     } catch (error) {

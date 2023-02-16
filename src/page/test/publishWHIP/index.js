@@ -201,7 +201,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
       targetPublisher = await new red5prosdk.WHIPClient().init(rtcConfig)
       targetPublisher.on('*', onPublisherEvent)
-      targetPublisher.publish()
+      await targetPublisher.publish()
+      streamTitle.innerText = streamName
       onPublishSuccess(targetPublisher)
 
     } catch (error) {
