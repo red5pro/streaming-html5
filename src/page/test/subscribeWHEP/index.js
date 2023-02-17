@@ -115,6 +115,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       updateStatusFromEvent(event);
       if (event.type === 'Subscribe.VideoDimensions.Change') {
         onResolutionUpdate(event.data.width, event.data.height);
+      } else if (event.type === 'WebRTC.PeerConnection.Open') {
+        try {
+          window.trackBitrate(subscriber.getPeerConnection(), onBitrateUpdate, onResolutionUpdate, true);
+        }
+        catch (e) {
+          //
+        }
       }
     }
   }
@@ -125,14 +132,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     console.log('[Red5ProSubscriber] Subscribe Complete.');
     if (window.exposeSubscriberGlobally) {
       window.exposeSubscriberGlobally(subscriber);
-    }
-    if (subscriber.getType().toLowerCase() === 'rtc') {
-      try {
-        window.trackBitrate(subscriber.getPeerConnection(), onBitrateUpdate, onResolutionUpdate, true);
-      }
-      catch (e) {
-        //
-      }
     }
   }
   function onUnsubscribeFail (message) {
