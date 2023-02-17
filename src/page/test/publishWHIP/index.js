@@ -96,8 +96,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     console.log('[Red5ProPublisher] ' + event.type + '.');
     if (event.type === 'WebRTC.PeerConnection.Open') {
       try {
-        const pc = publisher.getPeerConnection();
-        const stream = publisher.getMediaStream();
+        const pc = targetPublisher.getPeerConnection();
+        const stream = targetPublisher.getMediaStream();
         window.trackBitrate(pc, onBitrateUpdate, onResolutionUpdate);
         statisticsField.classList.remove('hidden');
         stream.getVideoTracks().forEach(function (track) {

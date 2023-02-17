@@ -117,7 +117,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         onResolutionUpdate(event.data.width, event.data.height);
       } else if (event.type === 'WebRTC.PeerConnection.Open') {
         try {
-          window.trackBitrate(subscriber.getPeerConnection(), onBitrateUpdate, onResolutionUpdate, true);
+          window.trackBitrate(targetSubscriber.getPeerConnection(), onBitrateUpdate, onResolutionUpdate, true);
         }
         catch (e) {
           //
