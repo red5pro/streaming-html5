@@ -194,7 +194,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       // If you want to keep all the internal default settings for a Subscriber,
       //  you would just send the `whepUrl` and reference to the target `video` element
       //  in the constructor call:
-      // targetPublisher = new red5prosdk.WHEPClient(whepUrl, document.querySelector('#red5pro-subscriber'))
+      // targetSubscriber = new red5prosdk.WHEPClient(whepUrl, document.querySelector('#red5pro-subscriber'))
 
       // Since we have additionally settings that may differ from the default configuration for a Subscriber
       //  we will use the API similar to an `RTCSubscriber` with empty constructor args:
