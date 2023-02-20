@@ -221,7 +221,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     ... {
     streamName: configuration.stream1
   }}
-  const rtcConfig = {...config, ...{
+  let rtcConfig = {...config, ...{
     subscriptionId: 'subscriber-' + instanceId,
     enableLiveSeek: true
   }}
