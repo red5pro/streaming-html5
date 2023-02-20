@@ -106,6 +106,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         if (data.error) {
           console.log('[Red5ProSubscriber::Error', data.error)
         }
+      } else if (type === 'Subscribe.Play.Unpublish') {
+        showModal(generateUnpublishContent())
       }
     }
   }
@@ -144,6 +146,41 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         }
       }
       : {}
+  }
+
+  const generateUnpublishContent = () => {
+    const content = document.createElement('div')
+    const line1 = document.createElement('p')
+    line1.innerHTML = `The Broadcast for <span style="color: #db1f26;">${configuration.stream1}</span> has ended.`
+    const line2 = document.createElement('p')
+    const text = document.createTextNode('You will continue to have the ability to scrub and playback the stream up until this point.')
+    line2.appendChild(text)
+    content.appendChild(line1)
+    content.appendChild(document.createElement('br'))
+    content.appendChild(line2)
+    return content
+  }
+
+  const showModal = content => {
+    var style = 'padding: 10px; line-height: 1.3em;'
+    content.style = style
+    const div = document.createElement('div')
+    div.classList.add('modal')
+    const container = document.createElement('div')
+    const button = document.createElement('a')
+    const close = document.createTextNode('close')
+    button.href = "#"
+    button.appendChild(close)
+    button.classList.add('modal-close')
+    container.appendChild(button)
+    container.appendChild(content)
+    div.appendChild(container)
+    document.body.appendChild(div)
+    button.addEventListener('click', event => {
+      event.preventDefault()
+      document.body.removeChild(div)
+      return false
+    })
   }
 
   // Request to unsubscribe.
