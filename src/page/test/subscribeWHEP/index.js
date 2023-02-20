@@ -26,98 +26,99 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 (function(window, document, red5prosdk) {
   'use strict';
 
-  var serverSettings = (function() {
-    var settings = sessionStorage.getItem('r5proServerSettings');
+  const serverSettings = (() => {
+    const settings = sessionStorage.getItem('r5proServerSettings');
     try {
-      return JSON.parse(settings);
+      return JSON.parse(settings)
     }
     catch (e) {
-      console.error('Could not read server settings from sessionstorage: ' + e.message);
+      console.error('Could not read server settings from sessionstorage: ' + e.message)
     }
     return {};
   })();
 
-  var configuration = (function () {
-    var conf = sessionStorage.getItem('r5proTestBed');
+  const configuration = (() => {
+    const conf = sessionStorage.getItem('r5proTestBed')
     try {
-      return JSON.parse(conf);
+      return JSON.parse(conf)
     }
     catch (e) {
-      console.error('Could not read testbed configuration from sessionstorage: ' + e.message);
+      console.error('Could not read testbed configuration from sessionstorage: ' + e.message)
     }
     return {}
   })();
-  red5prosdk.setLogLevel(configuration.verboseLogging ? red5prosdk.LOG_LEVELS.TRACE : red5prosdk.LOG_LEVELS.WARN);
+  red5prosdk.setLogLevel(configuration.verboseLogging ? red5prosdk.LOG_LEVELS.TRACE : red5prosdk.LOG_LEVELS.WARN)
 
-  var targetSubscriber;
+  let targetSubscriber
 
-  var updateStatusFromEvent = window.red5proHandleSubscriberEvent; // defined in src/template/partial/status-field-subscriber.hbs
-  var instanceId = Math.floor(Math.random() * 0x10000).toString(16);
-  var streamTitle = document.getElementById('stream-title');
-  var statisticsField = document.getElementById('statistics-field');
-  var bitrateField = document.getElementById('bitrate-field');
-  var packetsField = document.getElementById('packets-field');
-  var resolutionField = document.getElementById('resolution-field');
+  const updateStatusFromEvent = window.red5proHandleSubscriberEvent // defined in src/template/partial/status-field-subscriber.hbs
+  const instanceId = Math.floor(Math.random() * 0x10000).toString(16)
+  const streamTitle = document.getElementById('stream-title')
+  const statisticsField = document.getElementById('statistics-field')
+  const bitrateField = document.getElementById('bitrate-field')
+  const packetsField = document.getElementById('packets-field')
+  const resolutionField = document.getElementById('resolution-field')
 
-  var protocol = serverSettings.protocol;
-  var isSecure = protocol === 'https';
+  const protocol = serverSettings.protocol
+  const isSecure = protocol === 'https'
 
-  var bitrate = 0;
-  var packetsReceived = 0;
-  var frameWidth = 0;
-  var frameHeight = 0;
+  let bitrate = 0
+  let packetsReceived = 0
+  let frameWidth = 0
+  let frameHeight = 0
 
-  function updateStatistics (b, p, w, h) {
-    statisticsField.classList.remove('hidden');
-    bitrateField.innerText = b === 0 ? 'N/A' : Math.floor(b);
-    packetsField.innerText = p;
-    resolutionField.innerText = (w || 0) + 'x' + (h || 0);
+  const updateStatistics = (b, p, w, h) => {
+    statisticsField.classList.remove('hidden')
+    bitrateField.innerText = b === 0 ? 'N/A' : Math.floor(b)
+    packetsField.innerText = p
+    resolutionField.innerText = (w || 0) + 'x' + (h || 0)
   }
 
-  function onBitrateUpdate (b, p) {
-    bitrate = b;
-    packetsReceived = p;
-    updateStatistics(bitrate, packetsReceived, frameWidth, frameHeight);
+  const onBitrateUpdate = (b, p) => {
+    bitrate = b
+    packetsReceived = p
+    updateStatistics(bitrate, packetsReceived, frameWidth, frameHeight)
   }
 
-  function onResolutionUpdate (w, h) {
-    frameWidth = w;
-    frameHeight = h;
-    updateStatistics(bitrate, packetsReceived, frameWidth, frameHeight);
+  const onResolutionUpdate = (w, h) => {
+    frameWidth = w
+    frameHeight = h
+    updateStatistics(bitrate, packetsReceived, frameWidth, frameHeight)
   }
 
   // Determines the ports and protocols based on being served over TLS.
-  function getSocketLocationFromProtocol () {
+  const getSocketLocationFromProtocol = () => {
     return !isSecure
       ? {protocol: 'ws', port: serverSettings.wsport}
-      : {protocol: 'wss', port: serverSettings.wssport};
+      : {protocol: 'wss', port: serverSettings.wssport}
   }
 
   // Base configuration to extend in providing specific tech failover configurations.
-  var defaultConfiguration = (function(useVideo, useAudio) {
-    var c = {
+  const defaultConfiguration = ((useVideo, useAudio) => {
+    let c = {
       protocol: getSocketLocationFromProtocol().protocol,
       port: getSocketLocationFromProtocol().port
-    };
+    }
     if (!useVideo) {
-      c.videoEncoding = red5prosdk.PlaybackVideoEncoder.NONE;
+      c.videoEncoding = red5prosdk.PlaybackVideoEncoder.NONE
     }
     if (!useAudio) {
-      c.audioEncoding = red5prosdk.PlaybackAudioEncoder.NONE;
+      c.audioEncoding = red5prosdk.PlaybackAudioEncoder.NONE
     }
-    return c;
-  })(configuration.useVideo, configuration.useAudio);
+    return c
+  })(configuration.useVideo, configuration.useAudio)
 
   // Local lifecycle notifications.
-  function onSubscriberEvent (event) {
-    if (event.type !== 'Subscribe.Time.Update') {
-      console.log('[Red5ProSubscriber] ' + event.type + '.');
-      updateStatusFromEvent(event);
-      if (event.type === 'Subscribe.VideoDimensions.Change') {
-        onResolutionUpdate(event.data.width, event.data.height);
-      } else if (event.type === 'WebRTC.PeerConnection.Open') {
+  const onSubscriberEvent = (event) => {
+    const { type, data } = event
+    if (type !== 'Subscribe.Time.Update') {
+      console.log('[Red5ProSubscriber] ' + type + '.')
+      updateStatusFromEvent(event)
+      if (type === 'Subscribe.VideoDimensions.Change') {
+        onResolutionUpdate(data.width, data.height)
+      } else if (type === 'WebRTC.PeerConnection.Open') {
         try {
-          window.trackBitrate(targetSubscriber.getPeerConnection(), onBitrateUpdate, onResolutionUpdate, true);
+          window.trackBitrate(targetSubscriber.getPeerConnection(), onBitrateUpdate, onResolutionUpdate, true)
         }
         catch (e) {
           //
@@ -125,24 +126,24 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       }
     }
   }
-  function onSubscribeFail (message) {
-    console.error('[Red5ProSubscriber] Subscribe Error :: ' + message);
+  const onSubscribeFail = (message) => {
+    console.error('[Red5ProSubscriber] Subscribe Error :: ' + message)
   }
-  function onSubscribeSuccess (subscriber) {
-    console.log('[Red5ProSubscriber] Subscribe Complete.');
+  const onSubscribeSuccess = (subscriber) => {
+    console.log('[Red5ProSubscriber] Subscribe Complete.')
     if (window.exposeSubscriberGlobally) {
-      window.exposeSubscriberGlobally(subscriber);
+      window.exposeSubscriberGlobally(subscriber)
     }
   }
-  function onUnsubscribeFail (message) {
-    console.error('[Red5ProSubscriber] Unsubscribe Error :: ' + message);
+  const onUnsubscribeFail = (message) => {
+    console.error('[Red5ProSubscriber] Unsubscribe Error :: ' + message)
   }
-  function onUnsubscribeSuccess () {
-    console.log('[Red5ProSubscriber] Unsubscribe Complete.');
+  const onUnsubscribeSuccess = () => {
+    console.log('[Red5ProSubscriber] Unsubscribe Complete.')
   }
 
-  function getAuthenticationParams () {
-    var auth = configuration.authentication;
+  const getAuthenticationParams = () => {
+    var auth = configuration.authentication
     return auth && auth.enabled
       ? {
         connectionParams: {
@@ -151,26 +152,21 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           token: auth.token
         }
       }
-      : {};
+      : {}
   }
 
   // Request to unsubscribe.
-  function unsubscribe () {
-    return new Promise(function(resolve, reject) {
-      var subscriber = targetSubscriber
-      subscriber.unsubscribe()
-        .then(function () {
-          targetSubscriber.off('*', onSubscriberEvent);
-          targetSubscriber = undefined;
-          onUnsubscribeSuccess();
-          resolve();
-        })
-        .catch(function (error) {
-          var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
-          onUnsubscribeFail(jsonError);
-          reject(error);
-        });
-    });
+  const unsubscribe = async () => {
+    try {
+      await targetSubscriber.unsubscribe()
+      targetSubscriber.off('*', onSubscriberEvent)
+      onUnsubscribeSuccess()
+    } catch (error) {
+      var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
+      onUnsubscribeFail(jsonError)
+    } finally {
+      targetSubscriber = undefined
+    }
   }
 
   const authParams = getAuthenticationParams()
@@ -208,7 +204,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     } catch (error) {
       const jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
       console.error('[Red5ProSubscriber] :: Error in subscribing - ' + jsonError)
-      onPublishFail(jsonError)
+      onSubscribeFail(jsonError)
       if (targetSubscriber) {
         targetSubscriber.off('*', onSubscriberEvent) 
       }
@@ -219,18 +215,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   start()
 
   // Clean up.
-  var shuttingDown = false;
-  function shutdown() {
-    if (shuttingDown) return;
-    shuttingDown = true;
-    function clearRefs () {
-      if (targetSubscriber) {
-        targetSubscriber.off('*', onSubscriberEvent);
-      }
-      targetSubscriber = undefined;
-    }
-    unsubscribe().then(clearRefs).catch(clearRefs);
-    window.untrackBitrate();
+  let shuttingDown = false
+  const shutdown = () => {
+    if (shuttingDown) return
+    shuttingDown = true
+    window.untrackBitrate()
+    unsubscribe()
   }
   window.addEventListener('pagehide', shutdown);
   window.addEventListener('beforeunload', shutdown);
