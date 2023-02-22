@@ -325,7 +325,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
             } catch (e) {
                 console.error(e)
-                this.displayError(typeof e === 'string' ? e : e.message)
                 this.retryConnection(config, requiresStreamManager)
             }
         }
