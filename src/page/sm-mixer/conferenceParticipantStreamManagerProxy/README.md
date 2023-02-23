@@ -29,6 +29,6 @@ The `Conference Participant` testbed can be used as follows:
 1. Open the `Red5 Pro Testbed Settings Page`, and set WebApp to `live/<room>`, where `<room>` is a room scope. On the same page, scroll to the `Mixer Specific` section and set the `Backend WebSocket For Compositions` endpoint to point to the [WebSocket server](https://github.com/red5pro/nodejs-mixer-backend/tree/main/backend-mixer-testbeds)
 2. While on the `Mixer Specific` section, check `Enable Round Trip Authentication` if the Round Trip Authentication was configured in the `live` app.
 3. Head to the `Conference Participant` testbed by clicking `Testbed Menu` -> `Stream Manager Mixer Tests` -> `Conference Participant`. 
-4. If `Enable Round Trip Authentication` was checked at step 3, provide a set of mock username, password, and token then click Submit
+4. If `Enable Round Trip Authentication` was checked at step 3, provide `username`, `password`, and `token` then click Submit
 5. Click `Start Broadcast` to join the waiting room of the video conference for the room `<room>` configured on the `Settings` page.
 6. When the `Conference Host` in the same room adds the participant to the conference, the participant will receive back the mixed conference stream. See the [Conference Host Testbed](../conferenceHostStreamManagerProxy).
