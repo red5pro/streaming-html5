@@ -259,7 +259,11 @@ const { protocol, port } = getSocketLocationFromProtocol()
   }}
   const rtcConfig = {...config, ...{
     subscriptionId: 'subscriber-' + instanceId,
-    enableLiveSeek: true
+    liveSeek: {
+      enabled: true,
+      // Point to CDN which will store the HLS DVR files...
+      baseURL: 'https://mycdn.com/',
+    }
   }}
 
   const subscribe = async (serverAddress, scope) => {

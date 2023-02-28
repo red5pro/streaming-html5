@@ -209,7 +209,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }}
   const rtcConfig = {...config, ...{
     subscriptionId: 'subscriber-' + instanceId,
-    enableLiveSeek: true
+    liveSeek: {
+      enabled: true,
+    }
   }}
 
   const subscribe = async () => {
