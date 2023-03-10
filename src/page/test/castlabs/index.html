@@ -64,7 +64,7 @@
               Packets Received: <span id="encrypted-packets-field" class="packets-field">N/A</span>.
               <br/>
               <span>Resolution: <span id="encrypted-resolution-field" class="resolution-field">0x0</span>.
-            </p>            
+            </p>
             <div class="settings-area">
               <p class="centered info-title">Encrypted Playback</p>
             </div>
@@ -98,31 +98,24 @@
                 <label for="merchant-input">Merchant:</label>
                 <input id="merchant-input" name="key-input" value="red5" placeholder="Merchant" />
 
-                <label for="user-input">User:</label>
-                <input id="user-input" name="key-input" value="test" placeholder="User" />
-
-                <label for="session-input">Session:</label>
-                <input id="session-input" name="key-input" value="p0" placeholder="Session" />
-
-                <label for="type-select">Encryption Type:</label>
-                <select id="type-select" name="type-select">
-                  <option value="widevine">Widevine</option>
-                  <option value="playready">PlayReady</option>
-                  <option value="fairplay">FairPlay</option>
-                  <option value="clearkey" selected>ClearKey</option>
+                <label for="scheme-select">Encryption Scheme:</label>
+                <select id="scheme-select" name="scheme-select">
+                  <option value="cbcs" selected>CBCS</option>
+                  <option value="cenc">CENC</option>
                 </select>
 
-                <label for="key-input">Key Id / IV:</label>
-                <input id="key-input" name="key-input" placeholder="Key Id / IV" />
+                <label for="key-input" title="16 bytes in hex format">Key Id:</label>
+                <input id="key-input" name="key-input" value="00000000000000000000000000000001" placeholder="Key Id" style="width:18em" />
+                <label for="iv-input" title="16 bytes in hex format">IV:</label>
+                <input id="iv-input" name="iv-input" value="d5fbd6b82ed93e4ef98ae40931ee33b7" placeholder="IV" style="width:18em" />
             </div>
             <div style="background-color: black;">
               <video id="red5pro-subscriber"
-                      controls
                       autoplay
                       playsinline
                       class="red5pro-subscriber"
                       width="320" height="240">
-              </video>        
+              </video>
             </div>
             <div>
               <button id="decrypt-button" class="ui-button">Decrypt</button>
