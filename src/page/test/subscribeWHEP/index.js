@@ -179,8 +179,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   const start = async () => {
     try {
       const rtcConfig = {...config, 
-        protocol: 'wss',// getSocketLocationFromProtocol().protocol,
-        port: 443,// getSocketLocationFromProtocol().port,
+        protocol: getSocketLocationFromProtocol().protocol,
+        port: getSocketLocationFromProtocol().port,
         streamName: config.stream1,
       }
       const protocol = rtcConfig.protocol === 'ws' ? 'http' : 'https'
