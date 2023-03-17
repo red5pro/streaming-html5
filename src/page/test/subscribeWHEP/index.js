@@ -51,6 +51,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   let targetSubscriber
 
+  const trickleCheck = document.querySelector('#trickle-check')
+  const subscribeButton = document.querySelector('#subscribe-btn')
+
   const updateStatusFromEvent = window.red5proHandleSubscriberEvent // defined in src/template/partial/status-field-subscriber.hbs
   const instanceId = Math.floor(Math.random() * 0x10000).toString(16)
   const streamTitle = document.getElementById('stream-title')
@@ -182,6 +185,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         protocol: getSocketLocationFromProtocol().protocol,
         port: getSocketLocationFromProtocol().port,
         streamName: config.stream1,
+        trickleIce: trickleCheck.checked
       }
       const protocol = rtcConfig.protocol === 'ws' ? 'http' : 'https'
       const { host, port, app, streamName } = rtcConfig
@@ -212,7 +216,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
   }
 
-  start()
+  subscribeButton.addEventListener('click', () => {
+    start()
+  })
 
   // Clean up.
   let shuttingDown = false

@@ -5,6 +5,13 @@
     {{> meta title='Publish WHIP'}}
     {{> header-scripts}}
     {{> header-stylesheets}}
+    <style>
+      .controls {
+        padding: 10px;
+        background-color: #eee;
+        margin: 10px 0;
+      }
+    </style>
   </head>
   <body>
     {{> top-bar }}
@@ -19,6 +26,15 @@
           <video id="red5pro-publisher" class="red5pro-publisher"
                  controls autoplay playsinline muted>
           </video>
+        </div>
+        <div class="centered controls">
+          <p>
+            <span id="tricklet-control">
+              <input type="checkbox" name="trickle-check" id="trickle-check">
+              <label for="trickle-check" style="margin-right: 10px; font-size: 0.8em">Trickle Ice Candidates</label>
+            </span>
+            <button id="publish-unpublish-btn">Publish</button>
+          </p>
         </div>
       </div>
     </div>

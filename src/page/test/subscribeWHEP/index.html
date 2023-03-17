@@ -5,6 +5,13 @@
     {{> meta title='Subscriber WHEP'}}
     {{> header-scripts}}
     {{> header-stylesheets}}
+    <style>
+      .controls {
+        padding: 10px;
+        background-color: #eee;
+        margin: 10px 0;
+      }
+    </style>
   </head>
   <body>
     {{> top-bar }}
@@ -21,6 +28,15 @@
                   class="red5pro-subscriber red5pro-media red5pro-media-background"
                   width="640" height="480">
           </video>
+        </div>
+        <div class="centered controls">
+          <p>
+            <span id="trickle-control">
+              <input type="checkbox" name="trickle-check" id="trickle-check">
+              <label for="trickle-check" style="margin-right: 10px; font-size: 0.8em">Trickle Ice Candidates</label>
+            </span>
+            <button id="subscribe-btn">Subscribe</button>
+          </p>
         </div>
       </div>
     </div>

@@ -53,6 +53,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   let targetPublisher
 
+  const trickleCheck = document.querySelector('#trickle-check')
+  const publishButton = document.querySelector('#publish-unpublish-btn')
+
   const updateStatusFromEvent = window.red5proHandlePublisherEvent; // defined in src/template/partial/status-field-publisher.hbs
   const streamTitle = document.getElementById('stream-title');
   const statisticsField = document.getElementById('statistics-field');
@@ -183,11 +186,14 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   const start = async () => {
+    publishButton.disabled = true
+    trickleCheck.disabled = true
     try {
       const rtcConfig = {...config, 
         protocol: getSocketLocationFromProtocol().protocol,
         port: getSocketLocationFromProtocol().port,
         streamName: config.stream1,
+        trickleIce: trickleCheck.checked
       }
       const protocol = rtcConfig.protocol === 'ws' ? 'http' : 'https'
       const { host, port, app, streamName } = rtcConfig
@@ -215,10 +221,14 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         targetPublisher.off('*', onPublisherEvent) 
       }
       targetPublisher = undefined
+      publishButton.disabled = false
+      trickleCheck.disabled = false
     }
   }
 
-  start()
+  publishButton.addEventListener('click', () => {
+    start()
+  })
 
   let shuttingDown = false;
   const shutdown = () => {
