@@ -12,6 +12,37 @@
         margin: 10px 0;
       }
     </style>
+    <style>
+      code {
+        padding: 0 0.5rem;
+        background-color: #fff;
+      }
+      .settings-area {
+        padding-top: 10px;
+        background-color: #eeee;
+      }
+      .settings-field {
+        display: flex;
+        align-items: center;
+      }
+      .control-container {
+        display: flex;
+        flex-direction: row;
+        background-color: #dbdbdb;
+        padding: 20px;  }
+      .control-container > button:nth-child(even) {
+        margin-left: 20px;
+      }
+      @media (max-width:510px) {
+        .control-container {
+          flex-direction: column;
+        }
+        .control-container > button:nth-child(even) {
+          margin-left: 0px;
+          margin-top: 20px;
+        }
+      }
+    </style>
   </head>
   <body>
     {{> top-bar }}
@@ -27,14 +58,17 @@
                  controls autoplay playsinline muted>
           </video>
         </div>
-        <div class="centered controls">
-          <p>
-            <span id="tricklet-control">
-              <input type="checkbox" name="trickle-check" id="trickle-check">
-              <label for="trickle-check" style="margin-right: 10px; font-size: 0.8em">Trickle Ice Candidates</label>
-            </span>
-            <button id="publish-unpublish-btn">Publish</button>
+        <div class="settings-area">
+          <p class="settings-field settings-collapsable">
+            <label class="settings-label">Trickle Ice Candidates:</label>
+            <input type="checkbox" id="trickle-check" class="control settings-control">
           </p>
+          <p class="control-container">
+            <button id="publish-unpublish-btn" class="ui-button">Publish</button>
+          </p>
+          <div class="test-notification">
+            <p>By enabling <strong>Trickle Ice Candidates</strong>, candidates will be sent in batches after the initial offer as opposed to candidates being sent along with the initial offer SDP if disabled.</p>
+          </div>
         </div>
       </div>
     </div>
