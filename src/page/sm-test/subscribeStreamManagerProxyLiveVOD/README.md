@@ -59,28 +59,33 @@ The schema for the `liveSeek` configuration is as follows:
 
 * `enabled` : a boolean flag of whether live seek is enabled or disabled.
 * `baseURL` : (optional) the base URL to access the HLS files that are generated for live seek streams.
+* `fullURL` : (optional) the full URL to access the HLS files that are generated for live seek streams.
 * `hlsjsRef` : (optional) the [HLS.JS](https://github.com/video-dev/hls.js/) reference. If you load HLS.js in a script tag, the SDK will check the `window` global for `Hls`, otherwise provide a reference to the loaded HLS.js.
+
+> **NOTE**: When utilizing `Live Seek` over Stream Manager, you are required to provide either a `baseURL` or `fullURL`.
 
 ```js
 const rtcConfig = {...config, ...{
   subscriptionId: 'subscriber-' + instanceId,
   liveSeek: {
-    enabled: true,
-    // Point to the CDN that will store the HLS DVR files...
-    baseURL: 'https://mycdn.com'
+    enabled: true
   }
 }}
 ```
 
 **baseURL**
 
-> NOTE: This is required when employing Live Seek over Stream Manager.
-
 The `baseURL` is the base endpoint URL from which the SDK will access the recorded HLS files. By default, the SDK will assume the base URL is the `host` of the initialization configuration, but when utilizing autoscale, the HLS files will not be accessible from the edge. As such, the server should be configured to upload the HLS files to a remote location - such as a CDN.
 
 The storage of the HLS files should follow the convention of `<baseURL>/<app scope>`, where `app scope` is where the live broadcast stream is streaming to and the bucket name within the CDN; do not include the `app scope` in the `baseURL` property.
 
 > For example, if your live broadcast is streaming to the `live` app scope under the name of `stream1`, and your CDN resides at `https://yourcdn/company`, then just provide `https://yourcdn/company` as the `baseURL` and the SDK will attempt to access the HLS files at `https://yourcdn/company/live/stream1.m3u8`.
+
+**fullURL**
+
+The `fullURL` could be provided that will be the full URL path to the HLS file used in live seek. If this is provided, it will use this _untouched_ and load the file directly.
+
+> For example, if you provide `https://yourcdn/company/live/stream1.m3u8` as the `fullURL`, that file will be requested.
 
 **hlsjsRef**
 

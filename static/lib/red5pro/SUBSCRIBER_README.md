@@ -67,13 +67,78 @@ _It is *highly* recommended to include [adapter.js](https://github.com/webrtcHac
 | subscriptionId | [x] | auto-generated | A unique string representing the requesting client. |
 | connectionParams | [-] | `undefined` | An object of connection parameters to send to the server upon connection request. |
 | videoEncoding | [-] | *None* | Specifies target video encoder. |
-| audio Encoding | [-] | *None* | Specifies target audio encoder. |
+| audioEncoding | [-] | *None* | Specifies target audio encoder. |
 | autoLayoutOrientation | [-] | `true` | Flag to allow SDK to auto-orientation the layout of `video` element based on broadcast metadata. _Mobile publishers broadcast with orientation._ |
 | muteOnAutoplayRestriction | [-] | `true` | Flag to attempt to mute the `video` element when `autoplay` is restricted in the browser. [See section on Autoplay Restrictions](#autoplay-restrictions) |
 | maintainConnectionOnSubscribeErrors | [-] | `false` | Flag to maintain previously established `WebSocket` connection on any failure within the `subscribe` request flow. [Example](https://github.com/red5pro/streaming-html5/tree/master/src/page/test/subscribeRetryOnInvalidName) |
 | signalingSocketOnly | [-] | `true` | Flag to indicate whether the `WebSocket` should only be used for signaling while establishing a connection. Afterward, all data between client and server will be sent over an `RTCDataChannel`.
 | dataChannelConfiguration | [-] | `{name: "red5pro"}` | An object used in configuring a n `RTCDataChannel`. _Only used when `signalingSocketOnly` is defined as `true`_ |
 | maintainStreamVariant | [-] | `false` | Flag to instruct the server - when utilizing transcoding - to not switch subscriber stream variants when network conditions change. By setting this to `true`, when you request to playback a stream that is transcoded, the server will not deliver a variant of higher or lower quality dependending on current network conditions. |
+| liveSeek | [-] | *None* | Configuration object to enable live seek capability. See [Live Seek](#live-seek) for more information.
+
+#### Live Seek
+
+You can enable live seek capabilities for a live playback by providing a `liveSeek` configuration in the initialization configuration for `RTCSubscriber`.
+
+The schema for the `liveSeek` configuration is as follows:
+
+```js
+{
+  enabled: <boolean>,
+  baseURL: <string>,
+  hlsjsRef: <hls.js reference>
+}
+```
+
+* `enabled` : a boolean flag of whether live seek is enabled or disabled.
+* `baseURL` : (optional) the base URL to access the HLS files that are generated for live seek streams.
+* `hlsjsRef` : (optional) the [HLS.JS](https://github.com/video-dev/hls.js/) reference. If you load HLS.js in a script tag, the SDK will check the `window` global for `Hls`, otherwise provide a reference to the loaded HLS.js.
+
+##### Server Requirements
+
+To enable live seek capability, the following configuration properties are required on the server in order to allow HLS recording to support `FMP4` playback:
+
+_File:_
+
+**conf/hlsconfig.xml**
+
+_Edits:_
+
+```xml
+<property name="outputFormat" value="FMP4"/>
+<property name="forceVODRecord" value="true"/>
+```
+
+##### Client Requirements
+
+**baseURL**
+
+The `baseURL` is the base endpoint URL from which the SDK will access the recorded HLS files. By default, the SDK will assume the base URL is the `host` of the initialization configuration, but when utilizing autoscale, the HLS files will not be accessible from the edge. As such, the server should be configured to upload the HLS files to a remote location - such as a CDN.
+
+The storage of the HLS files should follow the convention of `<baseURL>/<app scope>`, where `app scope` is where the live broadcast stream is streaming to and the bucket name within the CDN; do not include the `app scope` in the `baseURL` property.
+
+> For example, if your live broadcast is streaming to the `live` app scope under the name of `stream1`, and your CDN resides at `https://yourcdn/company`, then just provide `https://yourcdn/company` as the `baseURL` and the SDK will attempt to access the HLS files at `https://yourcdn/company/live/stream1.m3u8`.
+
+**hlsjsRef**
+
+The SDK requires the dependency of [HLS.JS](https://github.com/video-dev/hls.js/) 3rd-party library in order to achieve live seek of a stream.
+
+If you include it as a `script` tag source in your page, you do not have to set the `hlsjsRef` property, as the SDK will check the `window` global for the existance of `Hls`. In the chance that you did not include the UMD distribution of the library and instead are using it modularly, you need to provide a reference to the `Hls` import.
+
+**Custom Controls**
+
+Additionally, the `video` element used in playback of the live and VOD streams requires using the custom controls provided by the SDK.
+
+To turn them on, you will need to define the `controls` property on the `video` element along with assigning the `red5pro-media` class to the element. The `red5pro-media` class declaration can be found i the **red5pro-media.css** CSS file shipped with the SDK.
+
+```html
+<video id="red5pro-subscriber"
+  controls="controls"
+  autoplay="autoplay"
+  playsinline
+  class="red5pro-media"
+</video>
+```
 
 #### Video Encoding Configuration
 

@@ -52,13 +52,15 @@ The schema for the `liveSeek` configuration is as follows:
 ```js
 {
   enabled: <boolean>,
-  baseURL: <string>,
+  baseURL: <string | undefined>,
+  fullURL: <string | undefined>,
   hlsjsRef: <hls.js reference>
 }
 ```
 
 * `enabled` : a boolean flag of whether live seek is enabled or disabled.
 * `baseURL` : (optional) the base URL to access the HLS files that are generated for live seek streams.
+* `fullURL` : (optional) the full URL to access the HLS files that are generated for live seek streams.
 * `hlsjsRef` : (optional) the [HLS.JS](https://github.com/video-dev/hls.js/) reference. If you load HLS.js in a script tag, the SDK will check the `window` global for `Hls`, otherwise provide a reference to the loaded HLS.js.
 
 ```js
@@ -77,6 +79,12 @@ The `baseURL` is the base endpoint URL from which the SDK will access the record
 The storage of the HLS files should follow the convention of `<baseURL>/<app scope>`, where `app scope` is where the live broadcast stream is streaming to and the bucket name within the CDN; do not include the `app scope` in the `baseURL` property.
 
 > For example, if your live broadcast is streaming to the `live` app scope under the name of `stream1`, and your CDN resides at `https://yourcdn/company`, then just provide `https://yourcdn/company` as the `baseURL` and the SDK will attempt to access the HLS files at `https://yourcdn/company/live/stream1.m3u8`.
+
+**fullURL**
+
+The `fullURL` could be provided that will be the full URL path to the HLS file used in live seek. If this is provided, it will use this _untouched_ and load the file directly.
+
+> For example, if you provide `https://yourcdn/company/live/stream1.m3u8` as the `fullURL`, that file will be requested.
 
 **hlsjsRef**
 

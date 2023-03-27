@@ -41,6 +41,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   let protocol = serverSettings.protocol
   let isSecure = protocol === 'https'
 
+  const subscribeButton = document.getElementById('subscribe-button')
+  const baseCheck = document.getElementById('base-check')
+  const fullCheck = document.getElementById('full-check')
+  const urlInput = document.getElementById('url-input')
+
   const updateStatusFromEvent = window.red5proHandleSubscriberEvent // defined in src/template/partial/status-field-subscriber.hbs
   const streamTitle = document.getElementById('stream-title')
   const statisticsField = document.getElementById('statistics-field')
@@ -207,15 +212,18 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     ... {
     streamName: configuration.stream1
   }}
-  const rtcConfig = {...config, ...{
-    subscriptionId: 'subscriber-' + instanceId,
-    liveSeek: {
-      enabled: true,
-    }
-  }}
-
-  const subscribe = async () => {
+  
+  const subscribe = async (optionalBaseURL, optionalFullURL) => {
     try {
+      const rtcConfig = {...config, ...{
+        subscriptionId: 'subscriber-' + instanceId,
+        liveSeek: {
+          enabled: true,
+          baseURL: optionalBaseURL,
+          fullURL: optionalFullURL
+        }
+      }}
+      
       subscriber = await new red5prosdk.RTCSubscriber().init(rtcConfig)
       subscriber.on('*', onSubscriberEvent)
       streamTitle.innerText = configuration.stream1
@@ -243,8 +251,23 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   window.addEventListener('pagehide', shutdown)
   window.addEventListener('beforeunload', shutdown)
 
+  baseCheck.onchange = () => {
+    if (baseCheck.checked) {
+      fullCheck.checked = false
+    }
+  }
+  fullCheck.onchange = () => {
+    if (fullCheck.checked) {
+      baseCheck.checked = false
+    }
+  }
+
   // Start
-  subscribe()
+  subscribeButton.addEventListener('click', () => {
+    const baseURL = baseCheck.checked ? urlInput.value : undefined
+    const fullURL = fullCheck.checked ? urlInput.value : undefined
+    subscribe(baseURL, fullURL)
+  })
 
 })(this, document, window.red5prosdk)
 

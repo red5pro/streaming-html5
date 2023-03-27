@@ -41,6 +41,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   let protocol = serverSettings.protocol
   let isSecure = protocol === 'https'
 
+  const subscribeButton = document.getElementById('subscribe-button')
+  const baseCheck = document.getElementById('base-check')
+  const fullCheck = document.getElementById('full-check')
+  const urlInput = document.getElementById('url-input')
+
   const updateStatusFromEvent = window.red5proHandleSubscriberEvent // defined in src/template/partial/status-field-subscriber.hbs
   const streamTitle = document.getElementById('stream-title')
   const statisticsField = document.getElementById('statistics-field')
@@ -83,7 +88,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   // Base configuration to extend in providing specific tech failover configurations.
   let defaultConfiguration = (function(useVideo, useAudio) {
 const { protocol, port } = getSocketLocationFromProtocol()
-    let c = { protocol, port }    if (!useVideo) {
+    let c = { protocol, port }
+    if (!useVideo) {
       c.videoEncoding = red5prosdk.PlaybackVideoEncoder.NONE
     }
     if (!useAudio) {
@@ -249,28 +255,19 @@ const { protocol, port } = getSocketLocationFromProtocol()
       subscriber = undefined
     }
   }
-
-  // Define tech specific configurations for each failover item.
-  const config = {...configuration,
-    ...defaultConfiguration,
-    ...getAuthenticationParams(),
-    ... {
-    streamName: configuration.stream1
-  }}
-  const rtcConfig = {...config, ...{
-    subscriptionId: 'subscriber-' + instanceId,
-    liveSeek: {
-      enabled: true,
-      // Point to CDN which will store the HLS DVR files...
-      baseURL: 'https://mycdn.com/',
-    }
-  }}
-
-  const subscribe = async (serverAddress, scope) => {
+  
+  const subscribe = async (serverAddress, scope, baseURL, fullURL) => {
     try {
-      const connParams = rtcConfig.connectionParams || {}
-      rtcConfig = {...rtcConfig, ...{
-        app: configuration.proxy,
+      const connParams = config.connectionParams || {}
+      const rtcConfig = {...config, ...{
+        subscriptionId: 'subscriber-' + instanceId,
+        liveSeek: {
+          enabled: true,
+          // Point to CDN which will store the HLS DVR files...
+          baseURL,
+          fullURL,
+        },
+        // app: configuration.proxy,
         connectionParams: {...connParams, ...{
           host: serverAddress,
           app: scope
@@ -303,16 +300,8 @@ const { protocol, port } = getSocketLocationFromProtocol()
   window.addEventListener('pagehide', shutdown)
   window.addEventListener('beforeunload', shutdown)
 
-  var retryCount = 0;
-  var retryLimit = 3;
-  const respondToEdge = (response) => {
-    const {
-      scope,
-      serverAddress
-    } = response
-    subscribe(serverAddress, scope)
-  }
-
+  let retryCount = 0;
+  let retryLimit = 3;
   const respondToEdgeFailure = (error) => {
     if (retryCount++ < retryLimit) {
       var retryTimer = setTimeout(function () {
@@ -327,12 +316,45 @@ const { protocol, port } = getSocketLocationFromProtocol()
   }
 
   // Start
-  const startup = () => {
-    requestEdge(rtcConfig)
-      .then(respondToEdge)
+  const startup = (config, baseURL, fullURL) => {
+    requestEdge(config)
+      .then((response) => {
+        const {
+          scope,
+          serverAddress
+        } = response
+        subscribe(serverAddress, scope, baseURL, fullURL)
+      })
       .catch(respondToEdgeFailure)
   }
-  startup()
+
+  baseCheck.onchange = () => {
+    if (baseCheck.checked) {
+      fullCheck.checked = false
+    }
+  }
+  fullCheck.onchange = () => {
+    if (fullCheck.checked) {
+      baseCheck.checked = false
+    }
+  }
+
+  // Start
+  // Define tech specific configurations for each failover item.
+  const config = {...configuration,
+    ...defaultConfiguration,
+    ...getAuthenticationParams(),
+    ... {
+    streamName: configuration.stream1
+  }}
+  subscribeButton.addEventListener('click', () => {
+    const baseURL = baseCheck.checked ? urlInput.value : undefined
+    const fullURL = fullCheck.checked ? urlInput.value : undefined
+    if (!baseURL && !fullURL) {
+      return;
+    }
+    startup(config, baseURL, fullURL)
+  })
 
 })(this, document, window.red5prosdk)
 

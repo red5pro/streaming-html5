@@ -7,6 +7,33 @@
     {{> header-stylesheets}}
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <style>
+      .test-notification {
+        text-align: center;
+        max-width: 720px;
+      }
+      .info {
+        text-align: left;
+        padding: 20px 20px 0px 20px;
+        line-height: 1.4em;
+      }
+      .settings-area {
+        background-color: #eeee;
+      }
+      .settings-field {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px;
+        column-gap: 10px;
+      }
+      .settings-field, .settings-field > input {
+        font-size: 1em;
+        flex-grow: 2;
+      }
+      .settings-label {
+        width: auto;
+      }
       .red5pro-media-container {
         display: relative!important;
         height: 480px;
@@ -16,6 +43,24 @@
       }
       .events-field {
         background-color: beige;
+      }
+      .control-container {
+        display: flex;
+        flex-direction: row;
+        background-color: #dbdbdb;
+        padding: 20px;
+      }
+      .control-container > button:nth-child(even) {
+        margin-left: 20px;
+      }
+      .settings-flex {
+        margin: 20px;
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+      }
+      li {
+        margin-bottom: 10px;
       }
       #red5pro-hls-vod {
         background-color: #000;
@@ -39,6 +84,37 @@
       </div>
       {{> test-info testTitle='Subscriber SM Proxy Live VOD Test'}}
       <div class="stream-section">
+        <div class="centered settings-area">
+          <div class="info">
+            When using Live Seek over Stream Manager, you must provide either a <strong>baseURL</strong> or <strong>fullURL</strong> to be used in locating the HLS file associated with the live broadcast that will provide live seeking capability.
+            <br><br>
+            Typically, this will be the location of a CDN that the HLS files are transferred to during a live broadcast.
+            <br><br>
+            <ul style="list-style: unset; padding-left: 10px;">
+              <li><strong>baseURL</strong> will be used as the base URL to access the HLS file. The <strong>baseURL</strong> will be appended with the <strong>app context</strong> and <strong>streamName</strong> to form the full URL. e.g., <code>https://mycdn/bucketname/</code></li>
+              <li><strong>fullURL</strong> will be used as the full URL to access the HLS file. e.g., <code>https://mycdn/bucketname/live/stream1.m3u8</code></li>
+            </ul>
+            <hr/>
+          </div>
+          <p class="settings-field settings-collapsable">
+            <label for="url-input">Provide optional URL:</label>
+            <input id="url-input" type="text" placeholder="Provide baseURL or fullURL"/>
+          </p>
+          <p class="settings-flex settings-collapsable">
+            <span>
+              <input id="base-check" type="checkbox"/>
+              <label for="base-check">Use as baseURL</label>
+            </span>
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            <span>
+              <input id="full-check" type="checkbox"/>
+              <label for="full-check">Use as fullURL</label>
+            </span>
+          </p>
+          <p class="control-container">
+            <button id="subscribe-button" class="ui-button">Subscribe</button>
+          </p>
+        </div>
         {{> status-field-subscriber}}
         {{> statistics-field packets_field='Packets Received'}}
         <div class="centered status-field events-field">...</div>
@@ -53,6 +129,7 @@
     </div>
     {{> body-scripts}}
     {{> mobile-subscriber-util}}
+    <script src="../../script/mock-fetch.js"></script>
     <script src="index.js"></script>
   </body>
 </html>
