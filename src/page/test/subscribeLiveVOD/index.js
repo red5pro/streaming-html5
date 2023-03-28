@@ -214,6 +214,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }}
   
   const subscribe = async (optionalBaseURL, optionalFullURL) => {
+    subscribeButton.disabled = true
+    urlInput.disabled = true
+    
     try {
       const rtcConfig = {...config, ...{
         subscriptionId: 'subscriber-' + instanceId,
@@ -233,6 +236,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
       console.error('[Red5ProSubscriber] :: Error in subscribing - ' + jsonError)
       onSubscribeFail(jsonError)
+      subscribeButton.disabled = false
+      urlInput.disabled = false
     }
   }
 

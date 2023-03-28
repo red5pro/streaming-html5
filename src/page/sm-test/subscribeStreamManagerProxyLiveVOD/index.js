@@ -257,6 +257,8 @@ const { protocol, port } = getSocketLocationFromProtocol()
   }
   
   const subscribe = async (serverAddress, scope, baseURL, fullURL) => {
+    subscribeButton.disabled = true
+    urlInput.disabled = true
     try {
       const connParams = config.connectionParams || {}
       const rtcConfig = {...config, ...{
@@ -282,6 +284,8 @@ const { protocol, port } = getSocketLocationFromProtocol()
       var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
       console.error('[Red5ProSubscriber] :: Error in subscribing - ' + jsonError)
       onSubscribeFail(jsonError)
+      subscribeButton.disabled = false
+      urlInput.disabled = false
     }
   }
 
