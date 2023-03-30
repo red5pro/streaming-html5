@@ -85,14 +85,20 @@ The schema for the `liveSeek` configuration is as follows:
 ```js
 {
   enabled: <boolean>,
-  baseURL: <string>,
-  hlsjsRef: <hls.js reference>
+  baseURL: <string|undefinde>,
+  fullURL: <string|undefined>,
+  hlsjsRef: <hls.js reference>,
+  usePlaybackControlsUI: <boolean>
 }
 ```
 
 * `enabled` : a boolean flag of whether live seek is enabled or disabled.
 * `baseURL` : (optional) the base URL to access the HLS files that are generated for live seek streams.
+* `fullURL` : (optional) the full URL to access the HLS files that are generated for live seek streams.
 * `hlsjsRef` : (optional) the [HLS.JS](https://github.com/video-dev/hls.js/) reference. If you load HLS.js in a script tag, the SDK will check the `window` global for `Hls`, otherwise provide a reference to the loaded HLS.js.
+* `hlsElement` : (optional) the target `video` element to attach the HLS Media to. If left undefined, the SDK will create and maintain the target element (recommended).
+* `options` : (optional) the configuration options for [HLS.JS](https://github.com/video-dev/hls.js/blob/master/docs/API.md#fine-tuning). Default is: `{debug: false, backBufferLength: 0}`.
+* `usePlaybackControlsUI` : (optional) flag to use the custom controls provided by the SDK. Default is `true`. **If setting this to `false`, you must provide your own UI controls and interface with the API to control playback.**
 
 ##### Server Requirements
 
@@ -118,6 +124,12 @@ The `baseURL` is the base endpoint URL from which the SDK will access the record
 The storage of the HLS files should follow the convention of `<baseURL>/<app scope>`, where `app scope` is where the live broadcast stream is streaming to and the bucket name within the CDN; do not include the `app scope` in the `baseURL` property.
 
 > For example, if your live broadcast is streaming to the `live` app scope under the name of `stream1`, and your CDN resides at `https://yourcdn/company`, then just provide `https://yourcdn/company` as the `baseURL` and the SDK will attempt to access the HLS files at `https://yourcdn/company/live/stream1.m3u8`.
+
+**fullURL**
+
+The `fullURL` could be provided that will be the full URL path to the HLS file used in live seek. If this is provided, it will use this _untouched_ and load the file directly.
+
+> For example, if you provide `https://yourcdn/company/live/stream1.m3u8` as the `fullURL`, that file will be requested.
 
 **hlsjsRef**
 
@@ -580,11 +592,11 @@ The following events are specific to the `RTCSubscriber` implementation and acce
 | DATA_CHANNEL_CLOSE | 'WebRTC.DataChannel.Close' | When the underlying `RTCDataChannel` is closed when `signalingServerOnly` configuration is used. |
 | DATA_CHANNEL_ERROR | 'WebRTC.DataChannel.Error' | When an error has occurred within the underlying `RTCDataChannel` when `signalingServerOnly` configuration is used. |
 | DATA_CHANNEL_MESSAGE | 'WebRTC.DataChannel.Message' | When a message has been delivered over the underlying `RTCDataChannel` when `signalingServerOnly` configuration is used. |
-| LIVE_SEEK_ENABLED | 'WebRTC.LiveSeek.Enabled' | When `enableLiveSeek` is used to playback Live VOD and the HLS video has been loaded and available to seek. |
-| LIVE_SEEK_DISABLED | 'WebRTC.LiveSeek.Disabled' | When `enableLiveSeek` is used to playback Live VOD and HLS video has not been loaded nor available to seek. |
-| LIVE_SEEK_ERROR | 'WebRTC.LiveSeek.Error' | When `enableLiveSeek` is used to playback Live VOD and HLS video and an error in playback has occurred. Inspect the `error` attribute on the event for more details. |
-| LIVE_SEEK_LOADING | 'WebRTC.LiveSeek.FragmentLoading' | When `enableLiveSeek` is used to playback Live VOD and HLS video in currently loading a fragment during seeking. |
-| LIVE_SEEK_LOADED | 'WebRTC.LiveSeek.FragmentLoaded' | When `enableLiveSeek` is used to playback Live VOD and HLS video has completed loading a fragment during seeking. |
+| LIVE_SEEK_ENABLED | 'WebRTC.LiveSeek.Enabled' | When `liveSeek` is used to playback Live VOD and the HLS video has been loaded and available to seek. |
+| LIVE_SEEK_DISABLED | 'WebRTC.LiveSeek.Disabled' | When `liveSeek` is used to playback Live VOD and HLS video has not been loaded nor available to seek. |
+| LIVE_SEEK_ERROR | 'WebRTC.LiveSeek.Error' | When `liveSeek` is used to playback Live VOD and HLS video and an error in playback has occurred. Inspect the `error` attribute on the event for more details. |
+| LIVE_SEEK_LOADING | 'WebRTC.LiveSeek.FragmentLoading' | When `liveSeek` is used to playback Live VOD and HLS video in currently loading a fragment during seeking. |
+| LIVE_SEEK_LOADED | 'WebRTC.LiveSeek.FragmentLoaded' | When `liveSeek` is used to playback Live VOD and HLS video has completed loading a fragment during seeking. |
 
 ## HLS Subscriber Events
 

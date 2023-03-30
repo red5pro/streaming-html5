@@ -23,7 +23,7 @@ NONINFRINGEMENT.   IN  NO  EVENT  SHALL INFRARED5, INC. BE LIABLE FOR ANY CLAIM,
 WHETHER IN  AN  ACTION  OF  CONTRACT,  TORT  OR  OTHERWISE,  ARISING  FROM,  OUT  OF  OR  IN CONNECTION 
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
-(function(window, document, red5prosdk) {
+(function(window, document, red5prosdk, CustomControls) {
 
   const serverSettings = (() => {
     const settings = sessionStorage.getItem('r5proServerSettings')
@@ -37,6 +37,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   red5prosdk.setLogLevel(configuration.verboseLogging ? red5prosdk.LOG_LEVELS.TRACE : red5prosdk.LOG_LEVELS.WARN)
 
   let subscriber
+  let controls
+
   let instanceId = Math.floor(Math.random() * 0x10000).toString(16)
   let protocol = serverSettings.protocol
   let isSecure = protocol === 'https'
@@ -45,6 +47,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   const baseCheck = document.getElementById('base-check')
   const fullCheck = document.getElementById('full-check')
   const urlInput = document.getElementById('url-input')
+  const controlsCheck = document.getElementById('controls-check')
+  const customControls = document.querySelector('.custom-controls')
 
   const updateStatusFromEvent = window.red5proHandleSubscriberEvent // defined in src/template/partial/status-field-subscriber.hbs
   const streamTitle = document.getElementById('stream-title')
@@ -102,7 +106,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   const onSubscriberEvent = event => {
     const { type, data } = event
     if (type !== 'Subscribe.Time.Update') {
-      console.log('[Red5ProSubscriber] ' + type + '.')
+      console.log('[Red5ProSubscriber] ' + type + '.', data)
       updateStatusFromEvent(event)
       if (type === 'Subscribe.VideoDimensions.Change') {
         onResolutionUpdate(data.width, data.height)
@@ -114,6 +118,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       } else if (type === 'Subscribe.Play.Unpublish') {
         showModal(generateUnpublishContent())
       }
+    } else {
+      // console.log('TIME', data)
     }
   }
 
@@ -213,22 +219,30 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     streamName: configuration.stream1
   }}
   
-  const subscribe = async (optionalBaseURL, optionalFullURL) => {
+  const subscribe = async (optionalBaseURL, optionalFullURL, useCustomControls) => {
     subscribeButton.disabled = true
     urlInput.disabled = true
-    
+    if (useCustomControls) {
+      customControls.classList.remove('hidden')
+    }
+    window.scrollTo(0, document.body.scrollHeight)
+
     try {
       const rtcConfig = {...config, ...{
         subscriptionId: 'subscriber-' + instanceId,
         liveSeek: {
           enabled: true,
           baseURL: optionalBaseURL,
-          fullURL: optionalFullURL
+          fullURL: optionalFullURL,
+          usePlaybackControlsUI: !useCustomControls,
+          options: {debug: true, backBufferLength: 0},
         }
       }}
       
       subscriber = await new red5prosdk.RTCSubscriber().init(rtcConfig)
       subscriber.on('*', onSubscriberEvent)
+      controls = new CustomControls(subscriber)
+
       streamTitle.innerText = configuration.stream1
       await subscriber.subscribe()
       onSubscribeSuccess(subscriber)
@@ -238,6 +252,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       onSubscribeFail(jsonError)
       subscribeButton.disabled = false
       urlInput.disabled = false
+      window.scrollTo(0, 0)
     }
   }
 
@@ -269,10 +284,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   // Start
   subscribeButton.addEventListener('click', () => {
+    const useCustomControls = controlsCheck.checked
     const baseURL = baseCheck.checked ? urlInput.value : undefined
     const fullURL = fullCheck.checked ? urlInput.value : undefined
-    subscribe(baseURL, fullURL)
+    subscribe(baseURL, fullURL, useCustomControls)
   })
 
-})(this, document, window.red5prosdk)
+})(this, document, window.red5prosdk, window.CustomControls)
 
