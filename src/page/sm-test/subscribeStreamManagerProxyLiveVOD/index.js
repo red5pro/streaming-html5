@@ -256,9 +256,14 @@ const { protocol, port } = getSocketLocationFromProtocol()
     }
   }
   
-  const subscribe = async (serverAddress, scope, baseURL, fullURL) => {
+  const subscribe = async (serverAddress, scope, baseURL, fullURL, useCustomControls) => {
     subscribeButton.disabled = true
     urlInput.disabled = true
+    if (useCustomControls) {
+      customControls.classList.remove('hidden')
+    }
+    window.scrollTo(0, document.body.scrollHeight)
+
     try {
       const connParams = config.connectionParams || {}
       const rtcConfig = {...config, ...{
@@ -268,6 +273,8 @@ const { protocol, port } = getSocketLocationFromProtocol()
           // Point to CDN which will store the HLS DVR files...
           baseURL,
           fullURL,
+          usePlaybackControlsUI: !useCustomControls,
+          options: {debug: true, backBufferLength: 0},
         },
         // app: configuration.proxy,
         connectionParams: {...connParams, ...{
@@ -286,6 +293,7 @@ const { protocol, port } = getSocketLocationFromProtocol()
       onSubscribeFail(jsonError)
       subscribeButton.disabled = false
       urlInput.disabled = false
+      window.scrollTo(0, 0)
     }
   }
 
@@ -320,14 +328,14 @@ const { protocol, port } = getSocketLocationFromProtocol()
   }
 
   // Start
-  const startup = (config, baseURL, fullURL) => {
+  const startup = (config, baseURL, fullURL, useCustomControls) => {
     requestEdge(config)
       .then((response) => {
         const {
           scope,
           serverAddress
         } = response
-        subscribe(serverAddress, scope, baseURL, fullURL)
+        subscribe(serverAddress, scope, baseURL, fullURL, useCustomControls)
       })
       .catch(respondToEdgeFailure)
   }
@@ -352,6 +360,7 @@ const { protocol, port } = getSocketLocationFromProtocol()
     streamName: configuration.stream1
   }}
   subscribeButton.addEventListener('click', () => {
+    const useCustomControls = controlsCheck.checked
     const baseURL = baseCheck.checked ? urlInput.value : undefined
     const fullURL = fullCheck.checked ? urlInput.value : undefined
     if (!baseURL && !fullURL) {

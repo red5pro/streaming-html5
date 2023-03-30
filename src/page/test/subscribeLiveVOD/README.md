@@ -52,9 +52,12 @@ The schema for the `liveSeek` configuration is as follows:
 ```js
 {
   enabled: <boolean>,
-  baseURL: <string | undefined>,
+  baseURL: <string | undefinde>,
   fullURL: <string | undefined>,
-  hlsjsRef: <hls.js reference>
+  hlsjsRef: <hls.js reference | undefined>,
+  hlsElement: <HTMLVideoElement | undefined>,
+  options: <object | undefined>,
+  usePlaybackControlsUI: <boolean>
 }
 ```
 
@@ -62,6 +65,9 @@ The schema for the `liveSeek` configuration is as follows:
 * `baseURL` : (optional) the base URL to access the HLS files that are generated for live seek streams.
 * `fullURL` : (optional) the full URL to access the HLS files that are generated for live seek streams.
 * `hlsjsRef` : (optional) the [HLS.JS](https://github.com/video-dev/hls.js/) reference. If you load HLS.js in a script tag, the SDK will check the `window` global for `Hls`, otherwise provide a reference to the loaded HLS.js.
+* `hlsElement` : (optional) the target `video` element to attach the HLS Media to. If left undefined, the SDK will create and maintain the target element (recommended).
+* `options` : (optional) the configuration options for [HLS.JS](https://github.com/video-dev/hls.js/blob/master/docs/API.md#fine-tuning). Default is: `{debug: false, backBufferLength: 0}`.
+* `usePlaybackControlsUI` : (optional) flag to use the custom controls provided by the SDK. Default is `true`. **If setting this to `false`, you must provide your own UI controls and interface with the API to control playback.**
 
 ```js
 const rtcConfig = {...config, ...{

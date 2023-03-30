@@ -7,6 +7,18 @@
     {{> header-stylesheets}}
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <style>
+     /* #red5pro-hls-vod, #red5pro-subscriber {
+        position: unset!important;
+        display: block!important;
+      }
+      .red5pro-media-container {
+        display: flex!important;
+        flex-direction: column;
+        height: unset!important;
+      }
+      .red5pro-media-volume-slider {
+        display: none!important;
+      } */
       .test-notification {
         text-align: center;
         max-width: 720px;
@@ -18,6 +30,7 @@
       }
       .settings-area {
         background-color: #eeee;
+        margin-bottom: 20px;
       }
       .settings-field {
         display: flex;
@@ -46,18 +59,31 @@
       }
       .control-container {
         display: flex;
-        flex-direction: row;
+        flex-direction: column;
         background-color: #dbdbdb;
+        row-gap: 10px;
+        column-gap: 10px;
         padding: 20px;
+        align-items: center;
       }
       .control-container > button:nth-child(even) {
         margin-left: 20px;
+      }
+      .control-container_controls {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        column-gap: 10px;
       }
       .settings-flex {
         margin: 20px;
         display: flex;
         flex-direction: row;
         justify-content: center;
+      }
+      .custom-controls {
+        background-color: #dbdbdb;
+        padding: 20px;
       }
       li {
         margin-bottom: 10px;
@@ -112,6 +138,10 @@
             </span>
           </p>
           <p class="control-container">
+            <p class="control-container_controls">
+              <input id="controls-check" type="checkbox"/>
+              <label for="controls-check">Use External Controls</label>
+            </p>
             <button id="subscribe-button" class="ui-button">Subscribe</button>
           </p>
         </div>
@@ -124,6 +154,19 @@
                   class="red5pro-subscriber red5pro-media red5pro-media-background"
                   width="640" height="480">
           </video>
+        </div>
+        <div class="custom-controls hidden">
+          <p style="display: flex; justify-content: center; align-items: center;">
+            <button id="play-pause-button">Play</button>
+            &nbsp;&nbsp;
+            <button id="mute-unmute-button">Mute</button>
+            &nbsp;&nbsp;
+            <input style="flex-grow: 2;" id="scrubber" type="range" min="0" max="100" step="1" value="0" />
+            &nbsp;&nbsp;
+            <span id="time-display">00:00:00</span>
+            &nbsp;&nbsp;
+            <button id="fullscreen-button">Fullscreen</button>
+          </p>
         </div>
       </div>
     </div>
