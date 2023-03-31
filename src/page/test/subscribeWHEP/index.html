@@ -54,15 +54,21 @@
           </video>
         </div>
         <div class="settings-area">
+          <p style="text-align: center;">WHEP Session Settings</p>
+          <hr>
           <p class="settings-field settings-collapsable">
-            <label class="settings-label">Trickle Ice Candidates:</label>
+            <label class="settings-label">Signaling Channel:</label>
+            <input type="checkbox" id="channel-check" class="control settings-control">
+          </p>
+          <p class="settings-field settings-collapsable">
+            <label class="settings-label">Trickle Ice Candidates&ast;:</label>
             <input type="checkbox" id="trickle-check" class="control settings-control">
           </p>
           <p class="control-container">
             <button id="subscribe-btn" class="ui-button">Subscribe</button>
           </p>
           <div class="test-notification">
-            <p>By enabling <strong>Trickle Ice Candidates</strong>, candidates will be sent in batches after the initial offer as opposed to candidates being sent along with the initial offer SDP if disabled.</p>
+            <p>&ast; By enabling <strong>Trickle Ice Candidates</strong>, candidates will be sent in batches after the initial offer as opposed to candidates being sent along with the initial offer SDP if disabled.</p>
           </div>
         </div>
       </div>

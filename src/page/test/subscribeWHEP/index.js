@@ -51,6 +51,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   let targetSubscriber
 
+  const channelCheck = document.querySelector('#channel-check')
   const trickleCheck = document.querySelector('#trickle-check')
   const subscribeButton = document.querySelector('#subscribe-btn')
 
@@ -180,11 +181,15 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   const start = async () => {
+    subscribeButton.disabled = true
+    trickleCheck.disabled = true
+    channelCheck.disabled = true
     try {
       const rtcConfig = {...config, 
         protocol: getSocketLocationFromProtocol().protocol,
         port: getSocketLocationFromProtocol().port,
         streamName: config.stream1,
+        enableChannelSignaling: channelCheck.checked,
         trickleIce: trickleCheck.checked
       }
       const protocol = rtcConfig.protocol === 'ws' ? 'http' : 'https'
@@ -213,6 +218,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         targetSubscriber.off('*', onSubscriberEvent) 
       }
       targetSubscriber = undefined
+      subscribeButton.disabled = false
+      trickleCheck.disabled = false
+      channelCheck.disabled = false
     }
   }
 

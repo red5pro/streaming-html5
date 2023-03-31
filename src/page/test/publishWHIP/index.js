@@ -53,6 +53,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   let targetPublisher
 
+  const channelCheck = document.querySelector('#channel-check')
   const trickleCheck = document.querySelector('#trickle-check')
   const publishButton = document.querySelector('#publish-unpublish-btn')
 
@@ -188,11 +189,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   const start = async () => {
     publishButton.disabled = true
     trickleCheck.disabled = true
+    channelCheck.disabled = true
     try {
       const rtcConfig = {...config, 
         protocol: getSocketLocationFromProtocol().protocol,
         port: getSocketLocationFromProtocol().port,
         streamName: config.stream1,
+        enableChannelSignaling: channelCheck.checked,
         trickleIce: trickleCheck.checked
       }
       const protocol = rtcConfig.protocol === 'ws' ? 'http' : 'https'
@@ -223,6 +226,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       targetPublisher = undefined
       publishButton.disabled = false
       trickleCheck.disabled = false
+      channelCheck.disabled = false
     }
   }
 
