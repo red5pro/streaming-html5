@@ -162,20 +162,21 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
   }
 
-  const unpublish = () => {
-    return new Promise(function (resolve, reject) {
-      const publisher = targetPublisher;
-      publisher.unpublish()
-        .then(function () {
-          onUnpublishSuccess();
-          resolve();
-        })
-        .catch(function (error) {
-          const jsonError = typeof error === 'string' ? error : JSON.stringify(error, 2, null);
-          onUnpublishFail('Unmount Error ' + jsonError);
-          reject(error);
-        });
-    });
+  const unpublish = async () => {
+    try {
+      await targetPublisher.unpublish()
+      targetPublisher.off('*', onPublisherEvent)
+      onUnpublishSuccess()
+    } catch (error) {
+      var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
+      onUnpublishFail(jsonError)
+    } finally {
+      targetPublisher = undefined
+      trickleCheck.disabled = false
+      channelCheck.disabled = false
+      publishButton.disabled = false
+      publishButton.innerText = 'Publish'
+    }
   }
 
   const authParams = getAuthenticationParams()
@@ -215,6 +216,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       await targetPublisher.publish()
       streamTitle.innerText = streamName
       onPublishSuccess(targetPublisher)
+      publishButton.disabled = false
+      publishButton.innerText = 'Unpublish'
 
     } catch (error) {
       const jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
@@ -230,7 +233,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
   }
 
-  publishButton.addEventListener('click', () => {
+  publishButton.addEventListener('click', async () => {
+    if (targetPublisher) {
+      await unpublish()
+      return
+    }
     start()
   })
 

@@ -170,6 +170,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       onUnsubscribeFail(jsonError)
     } finally {
       targetSubscriber = undefined
+      trickleCheck.disabled = false
+      channelCheck.disabled = false
+      subscribeButton.disabled = false
+      subscribeButton.innerText = 'Subscribe'
     }
   }
 
@@ -209,6 +213,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       await targetSubscriber.subscribe()
       streamTitle.innerText = streamName
       onSubscribeSuccess(targetSubscriber)
+      subscribeButton.disabled = false
+      subscribeButton.innerText = 'Unsubscribe'
 
     } catch (error) {
       const jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
@@ -224,7 +230,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
   }
 
-  subscribeButton.addEventListener('click', () => {
+  subscribeButton.addEventListener('click', async () => {
+    if (targetSubscriber) {
+      await unsubscribe()
+      return
+    }
     start()
   })
 
