@@ -1,336 +1,367 @@
 /*
 Copyright © 2015 Infrared5, Inc. All rights reserved.
 
-The accompanying code comprising examples for use solely in conjunction with Red5 Pro (the "Example Code") 
-is  licensed  to  you  by  Infrared5  Inc.  in  consideration  of  your  agreement  to  the  following  
-license terms  and  conditions.  Access,  use,  modification,  or  redistribution  of  the  accompanying  
+The accompanying code comprising examples for use solely in conjunction with Red5 Pro (the "Example Code")
+is  licensed  to  you  by  Infrared5  Inc.  in  consideration  of  your  agreement  to  the  following
+license terms  and  conditions.  Access,  use,  modification,  or  redistribution  of  the  accompanying
 code  constitutes your acceptance of the following license terms and conditions.
 
-Permission is hereby granted, free of charge, to you to use the Example Code and associated documentation 
-files (collectively, the "Software") without restriction, including without limitation the rights to use, 
-copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit 
+Permission is hereby granted, free of charge, to you to use the Example Code and associated documentation
+files (collectively, the "Software") without restriction, including without limitation the rights to use,
+copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit
 persons to whom the Software is furnished to do so, subject to the following conditions:
 
-The Software shall be used solely in conjunction with Red5 Pro. Red5 Pro is licensed under a separate end 
-user  license  agreement  (the  "EULA"),  which  must  be  executed  with  Infrared5,  Inc.   
+The Software shall be used solely in conjunction with Red5 Pro. Red5 Pro is licensed under a separate end
+user  license  agreement  (the  "EULA"),  which  must  be  executed  with  Infrared5,  Inc.
 An  example  of  the EULA can be found on our website at: https://account.red5pro.com/assets/LICENSE.txt.
 
 The above copyright notice and this license shall be included in all copies or portions of the Software.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,  INCLUDING  BUT  
-NOT  LIMITED  TO  THE  WARRANTIES  OF  MERCHANTABILITY, FITNESS  FOR  A  PARTICULAR  PURPOSE  AND  
-NONINFRINGEMENT.   IN  NO  EVENT  SHALL INFRARED5, INC. BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, 
-WHETHER IN  AN  ACTION  OF  CONTRACT,  TORT  OR  OTHERWISE,  ARISING  FROM,  OUT  OF  OR  IN CONNECTION 
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,  INCLUDING  BUT
+NOT  LIMITED  TO  THE  WARRANTIES  OF  MERCHANTABILITY, FITNESS  FOR  A  PARTICULAR  PURPOSE  AND
+NONINFRINGEMENT.   IN  NO  EVENT  SHALL INFRARED5, INC. BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+WHETHER IN  AN  ACTION  OF  CONTRACT,  TORT  OR  OTHERWISE,  ARISING  FROM,  OUT  OF  OR  IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
-(function(window, document, red5prosdk) {
-  'use strict';
+;(function (window, document, red5prosdk) {
+  'use strict'
 
-  var serverSettings = (function() {
-    var settings = sessionStorage.getItem('r5proServerSettings');
+  var serverSettings = (function () {
+    var settings = sessionStorage.getItem('r5proServerSettings')
     try {
-      return JSON.parse(settings);
-    }
-    catch (e) {
-      console.error('Could not read server settings from sessionstorage: ' + e.message);
-    }
-    return {};
-  })();
-
-  var configuration = (function () {
-    var conf = sessionStorage.getItem('r5proTestBed');
-    try {
-      return JSON.parse(conf);
-    }
-    catch (e) {
-      console.error('Could not read testbed configuration from sessionstorage: ' + e.message);
+      return JSON.parse(settings)
+    } catch (e) {
+      console.error(
+        'Could not read server settings from sessionstorage: ' + e.message
+      )
     }
     return {}
-  })();
-  red5prosdk.setLogLevel(configuration.verboseLogging ? red5prosdk.LOG_LEVELS.TRACE : red5prosdk.LOG_LEVELS.WARN);
+  })()
 
-  var targetPublisher;
+  var configuration = (function () {
+    var conf = sessionStorage.getItem('r5proTestBed')
+    try {
+      return JSON.parse(conf)
+    } catch (e) {
+      console.error(
+        'Could not read testbed configuration from sessionstorage: ' + e.message
+      )
+    }
+    return {}
+  })()
+  red5prosdk.setLogLevel(
+    configuration.verboseLogging
+      ? red5prosdk.LOG_LEVELS.TRACE
+      : red5prosdk.LOG_LEVELS.WARN
+  )
 
-  var updateStatusFromEvent = window.red5proHandlePublisherEvent; // defined in src/template/partial/status-field-publisher.hbs
-  var streamTitle = document.getElementById('stream-title');
-  var statisticsField = document.getElementById('statistics-field');
+  var targetPublisher
 
-  var cameraSelect = document.getElementById('camera-select');
-  var micSelect = document.getElementById('mic-select');
-  var sampleRateField = document.getElementById('sample-rate-field');
-  var sampleSizeField = document.getElementById('sample-size-field');
-  var channelField  =document.getElementById('channel-field');
-  var bandwidthAudioField = document.getElementById('audio-bitrate-field');
-  var echoCheck = document.getElementById('echo-check');
-  var noiseCheck = document.getElementById('noise-check');
-  var gainCheck = document.getElementById('gain-check');
-  var publishButton = document.getElementById('publish-button');
+  var updateStatusFromEvent = window.red5proHandlePublisherEvent // defined in src/template/partial/status-field-publisher.hbs
+  var streamTitle = document.getElementById('stream-title')
+  var statisticsField = document.getElementById('statistics-field')
 
-  var settingsControls = document.getElementsByClassName('settings-control');
+  var cameraSelect = document.getElementById('camera-select')
+  var micSelect = document.getElementById('mic-select')
+  var sampleRateField = document.getElementById('sample-rate-field')
+  var sampleSizeField = document.getElementById('sample-size-field')
+  var channelField = document.getElementById('channel-field')
+  var bandwidthAudioField = document.getElementById('audio-bitrate-field')
+  var echoCheck = document.getElementById('echo-check')
+  var noiseCheck = document.getElementById('noise-check')
+  var gainCheck = document.getElementById('gain-check')
+  var publishButton = document.getElementById('publish-button')
 
-  var bitrateField = document.getElementById('bitrate-field');
-  var packetsField = document.getElementById('packets-field');
-  var resolutionField = document.getElementById('resolution-field');
+  var settingsControls = document.getElementsByClassName('settings-control')
 
-  var isShowingModal = false;
-  var constraintInfoNotices = [];
-  function showModal (content) {
-    isShowingModal = true;
-    var div = document.createElement('div');
-    div.classList.add('modal');
-    var container = document.createElement('div');
-    var button = document.createElement('a');
-    var close = document.createTextNode('close');
-    button.href = "#";
-    button.appendChild(close);
-    button.classList.add('modal-close');
-    container.appendChild(button);
-    container.appendChild(content);
-    div.appendChild(container);
-    document.body.appendChild(div);
+  var bitrateField = document.getElementById('bitrate-field')
+  var packetsField = document.getElementById('packets-field')
+  var resolutionField = document.getElementById('resolution-field')
+
+  var isShowingModal = false
+  var constraintInfoNotices = []
+  function showModal(content) {
+    isShowingModal = true
+    var div = document.createElement('div')
+    div.classList.add('modal')
+    var container = document.createElement('div')
+    var button = document.createElement('a')
+    var close = document.createTextNode('close')
+    button.href = '#'
+    button.appendChild(close)
+    button.classList.add('modal-close')
+    container.appendChild(button)
+    container.appendChild(content)
+    div.appendChild(container)
+    document.body.appendChild(div)
     button.addEventListener('click', function (event) {
-      event.preventDefault();
-      document.body.removeChild(div);
-      isShowingModal = false;
-      showConstraintInfo();
-      return false;
-    });
+      event.preventDefault()
+      document.body.removeChild(div)
+      isShowingModal = false
+      showConstraintInfo()
+      return false
+    })
   }
-  function generateLine (text) {
-    var p = document.createElement('p');
-    var t = document.createTextNode(text);
-    p.appendChild(t);
-    return p;
-  }  
-  function contentFromConstraintInfo (info) {
-    var content = document.createElement('div');
-    var video;
+  function generateLine(text) {
+    var p = document.createElement('p')
+    var t = document.createTextNode(text)
+    p.appendChild(t)
+    return p
+  }
+  function contentFromConstraintInfo(info) {
+    var content = document.createElement('div')
+    var video
     var findDim = function (dimObject) {
       if (typeof dimObject === 'number') {
-        return dimObject;
+        return dimObject
+      } else if (typeof dimObject === 'undefined') {
+        return 'N/A'
       }
-      else if (typeof dimObject === 'undefined') {
-        return 'N/A';
+      if (typeof dimObject.exact !== 'undefined') {
+        return dimObject.exact
       }
-      if (dimObject.hasOwnProperty('exact')) {
-        return dimObject.exact;
-      }
-      return dimObject.min;
+      return dimObject.min
     }
     if (info.accepted) {
-      video = info.accepted.video;
+      video = info.accepted.video
       content.appendChild(generateLine('Accepted!'))
-      content.appendChild(document.createElement('br'));
-      content.appendChild(generateLine('Resolution: ' + video.width + 'x' + video.height))
-      content.appendChild(document.createElement('br'));
-      content.appendChild(generateLine('Framerate: ' + video.frameRate));
+      content.appendChild(document.createElement('br'))
+      content.appendChild(
+        generateLine('Resolution: ' + video.width + 'x' + video.height)
+      )
+      content.appendChild(document.createElement('br'))
+      content.appendChild(generateLine('Framerate: ' + video.frameRate))
     } else if (info.constraints) {
-      video = info.constraints.video;
+      video = info.constraints.video
       content.appendChild(generateLine('Rejected.'))
-      content.appendChild(document.createElement('br'));
-      content.appendChild(generateLine('Resolution: ' + findDim(video.width) + 'x' + findDim(video.height)))
-      content.appendChild(document.createElement('br'));
-      content.appendChild(generateLine('Framerate: ' + findDim(video.frameRate)));
+      content.appendChild(document.createElement('br'))
+      content.appendChild(
+        generateLine(
+          'Resolution: ' + findDim(video.width) + 'x' + findDim(video.height)
+        )
+      )
+      content.appendChild(document.createElement('br'))
+      content.appendChild(
+        generateLine('Framerate: ' + findDim(video.frameRate))
+      )
     }
-    return content;
+    return content
   }
-  function showConstraintInfo () {
+  function showConstraintInfo() {
     if (!isShowingModal && constraintInfoNotices.length > 0) {
-      var info = constraintInfoNotices.shift();
-      showModal(contentFromConstraintInfo(info));
+      var info = constraintInfoNotices.shift()
+      showModal(contentFromConstraintInfo(info))
     }
   }
-  function showConstraintError (type, reason) {
-    var content = document.createElement('div');
-    content.appendChild(generateLine('Error'));
-    content.appendChild(document.createElement('br'));
-    content.appendChild(generateLine(type + ': ' + reason));
-    showModal(content);
+  function showConstraintError(type, reason) {
+    var content = document.createElement('div')
+    content.appendChild(generateLine('Error'))
+    content.appendChild(document.createElement('br'))
+    content.appendChild(generateLine(type + ': ' + reason))
+    showModal(content)
   }
 
-  var bitrate = 0;
-  var packetsSent = 0;
-  var frameWidth = 0;
-  var frameHeight = 0;
+  var bitrate = 0
+  var packetsSent = 0
+  var frameWidth = 0
+  var frameHeight = 0
 
-  function updateStatistics (b, p, w, h) {
-    statisticsField.classList.remove('hidden');
-    bitrateField.innerText = b === 0 ? 'N/A' : Math.floor(b);
-    packetsField.innerText = p;
-    resolutionField.innerText = (w || 0) + 'x' + (h || 0);
+  function updateStatistics(b, p, w, h) {
+    statisticsField.classList.remove('hidden')
+    bitrateField.innerText = b === 0 ? 'N/A' : Math.floor(b)
+    packetsField.innerText = p
+    resolutionField.innerText = (w || 0) + 'x' + (h || 0)
   }
 
-  function onBitrateUpdate (b, p) {
-    bitrate = b;
-    packetsSent = p;
-    updateStatistics(bitrate, packetsSent, frameWidth, frameHeight);
+  function onBitrateUpdate(b, p) {
+    bitrate = b
+    packetsSent = p
+    updateStatistics(bitrate, packetsSent, frameWidth, frameHeight)
   }
 
-  function onResolutionUpdate (w, h) {
-    frameWidth = w;
-    frameHeight = h;
-    updateStatistics(bitrate, packetsSent, frameWidth, frameHeight);
+  function onResolutionUpdate(w, h) {
+    frameWidth = w
+    frameHeight = h
+    updateStatistics(bitrate, packetsSent, frameWidth, frameHeight)
   }
 
-  streamTitle.innerText = configuration.stream1;
+  streamTitle.innerText = configuration.stream1
 
-  var protocol = serverSettings.protocol;
-  var isSecure = protocol == 'https';
+  var protocol = serverSettings.protocol
+  var isSecure = protocol == 'https'
 
-  var isPublishable = true;
-  function setPublishableState (isPublishableFlag) {
-    isPublishable = isPublishableFlag;
-    var i = settingsControls.length;
+  var isPublishable = true
+  function setPublishableState(isPublishableFlag) {
+    isPublishable = isPublishableFlag
+    var i = settingsControls.length
     while (--i > -1) {
       if (!isPublishable) {
-        settingsControls[i].setAttribute('disabled', 'disabled');
+        settingsControls[i].setAttribute('disabled', 'disabled')
       } else {
-        settingsControls[i].removeAttribute('disabled');
+        settingsControls[i].removeAttribute('disabled')
       }
     }
-    publishButton.innerText = isPublishable ? 'Start Publish' : 'Stop Publish';
+    publishButton.innerText = isPublishable ? 'Start Publish' : 'Stop Publish'
   }
-  setPublishableState(true);
+  setPublishableState(true)
 
-  function getSocketLocationFromProtocol () {
+  function getSocketLocationFromProtocol() {
     return !isSecure
-      ? {protocol: 'ws', port: serverSettings.wsport}
-      : {protocol: 'wss', port: serverSettings.wssport};
+      ? { protocol: 'ws', port: serverSettings.wsport }
+      : { protocol: 'wss', port: serverSettings.wssport }
   }
   var defaultConfiguration = {
     protocol: getSocketLocationFromProtocol().protocol,
     port: getSocketLocationFromProtocol().port,
-    streamMode: configuration.recordBroadcast ? 'record' : 'live'
-  };
+    streamMode: configuration.recordBroadcast ? 'record' : 'live',
+  }
 
-  function onPublisherEvent (event) {
-    console.log('[Red5ProPublisher] ' + event.type + '.');
-    updateStatusFromEvent(event);
+  function onPublisherEvent(event) {
+    console.log('[Red5ProPublisher] ' + event.type + '.')
+    updateStatusFromEvent(event)
   }
-  function onPublishFail (message) {
-    console.error('[Red5ProPublisher] Publish Error :: ' + message);
-    setPublishableState(true);
+  function onPublishFail(message) {
+    console.error('[Red5ProPublisher] Publish Error :: ' + message)
+    setPublishableState(true)
   }
-  function onPublishSuccess (publisher) {
-    console.log('[Red5ProPublisher] Publish Complete.');
-    setPublishableState(false);
-    var media = publisher.getMediaStream();
-    console.log("Requested Constraints: " + JSON.stringify(media.getAudioTracks()[0].getConstraints(), null, 2))
-    console.log("Accepted Constraints: " + JSON.stringify(media.getAudioTracks()[0].getSettings(), null, 2))
+  function onPublishSuccess(publisher) {
+    console.log('[Red5ProPublisher] Publish Complete.')
+    setPublishableState(false)
+    var media = publisher.getMediaStream()
+    console.log(
+      'Requested Constraints: ' +
+        JSON.stringify(media.getAudioTracks()[0].getConstraints(), null, 2)
+    )
+    console.log(
+      'Accepted Constraints: ' +
+        JSON.stringify(media.getAudioTracks()[0].getSettings(), null, 2)
+    )
     try {
-      var pc = publisher.getPeerConnection();
-      var stream = publisher.getMediaStream();
-      window.trackBitrate(pc, onBitrateUpdate);
-      statisticsField.classList.remove('hidden');
+      var pc = publisher.getPeerConnection()
+      var stream = publisher.getMediaStream()
+      window.trackBitrate(pc, onBitrateUpdate)
+      statisticsField.classList.remove('hidden')
       stream.getVideoTracks().forEach(function (track) {
-        var settings = track.getSettings();
-        onResolutionUpdate(settings.width, settings.height);
-      });
-    }
-    catch (e) {
+        var settings = track.getSettings()
+        onResolutionUpdate(settings.width, settings.height)
+      })
+    } catch (e) {
       // no tracking for you!
     }
   }
-  function onUnpublishFail (message) {
-    console.error('[Red5ProPublisher] Unpublish Error :: ' + message);
-    statisticsField.classList.add('hidden');
-    setPublishableState(true);
+  function onUnpublishFail(message) {
+    console.error('[Red5ProPublisher] Unpublish Error :: ' + message)
+    statisticsField.classList.add('hidden')
+    setPublishableState(true)
   }
-  function onUnpublishSuccess () {
-    console.log('[Red5ProPublisher] Unpublish Complete.');
-    statisticsField.classList.add('hidden');
-    setPublishableState(true);
-  }
-
-  function onDeviceError (error) {
-    console.error('Could not access devices: ' + error);
+  function onUnpublishSuccess() {
+    console.log('[Red5ProPublisher] Unpublish Complete.')
+    statisticsField.classList.add('hidden')
+    setPublishableState(true)
   }
 
-  function listDevices (devices) {
+  function onDeviceError(error) {
+    console.error('Could not access devices: ' + error)
+  }
+
+  function listDevices(devices) {
     var cameras = devices.filter(function (item) {
-      return item.kind === 'videoinput';
+      return item.kind === 'videoinput'
     })
     var mics = devices.filter(function (item) {
-      return item.kind === 'audioinput';
+      return item.kind === 'audioinput'
     })
     var options = cameras.map(function (camera, index) {
-      return '<option value="' + camera.deviceId + '">' + (camera.label || 'camera ' + index) + '</option>';
-    });
+      return (
+        '<option value="' +
+        camera.deviceId +
+        '">' +
+        (camera.label || 'camera ' + index) +
+        '</option>'
+      )
+    })
     var micOptions = mics.map(function (mic, index) {
-      return '<option value="' + mic.deviceId + '">' + (mic.label || 'mic ' + index) + '</option>';
-    });
-    cameraSelect.innerHTML = options.join(' ');
-    micSelect.innerHTML = micOptions.join(' ');
+      return (
+        '<option value="' +
+        mic.deviceId +
+        '">' +
+        (mic.label || 'mic ' + index) +
+        '</option>'
+      )
+    })
+    cameraSelect.innerHTML = options.join(' ')
+    micSelect.innerHTML = micOptions.join(' ')
   }
 
-  function clearEstablishedStream () {
-    var pubElement = document.getElementById('red5pro-publisher');
+  function clearEstablishedStream() {
+    var pubElement = document.getElementById('red5pro-publisher')
     if (pubElement.srcObject) {
       pubElement.srcObject.getTracks().forEach(function (track) {
-        track.stop();
-      });
-      return true;
+        track.stop()
+      })
+      return true
     }
-    return false;
+    return false
   }
 
-  function establishInitialStream () {
-    var stream;
-    var constraints = getUserMediaConfiguration();
-    var pubElement = document.getElementById('red5pro-publisher');
-    var delay = clearEstablishedStream() ? 200 : 0;
+  function establishInitialStream() {
+    var stream
+    var constraints = getUserMediaConfiguration()
+    var pubElement = document.getElementById('red5pro-publisher')
+    var delay = clearEstablishedStream() ? 200 : 0
     var t = setTimeout(function () {
-      clearTimeout(t);
-      navigator.mediaDevices.getUserMedia(constraints)
+      clearTimeout(t)
+      navigator.mediaDevices
+        .getUserMedia(constraints)
         .then(function (mediastream) {
-          stream = mediastream;
+          stream = mediastream
           return navigator.mediaDevices.enumerateDevices()
         })
         .then(function (devices) {
-          listDevices(devices);
+          listDevices(devices)
           stream.getVideoTracks().forEach(function (track) {
-            cameraSelect.value = track.getSettings().deviceId;
-          });
+            cameraSelect.value = track.getSettings().deviceId
+          })
           stream.getAudioTracks().forEach(function (track) {
-            micSelect.value = track.getSettings().deviceId;
-          });
-          pubElement.srcObject = stream;
+            micSelect.value = track.getSettings().deviceId
+          })
+          pubElement.srcObject = stream
         })
         .catch(function (error) {
-          console.error(error);
-          showConstraintError(error.message, error.constraint || 'N/A');
-        });
-    }, delay);
+          console.error(error)
+          showConstraintError(error.message, error.constraint || 'N/A')
+        })
+    }, delay)
   }
 
-  function onMediaSelect () {
+  function onMediaSelect() {
     if (!configuration.useVideo) {
-      return;
+      return
     }
-    updateStatistics(0, 0, 0, 0);
-    statisticsField.classList.add('hidden');
+    updateStatistics(0, 0, 0, 0)
+    statisticsField.classList.add('hidden')
     unpublish()
       .then(restart)
       .catch(function (error) {
-        console.error('[Red5ProPublisher] :: Error in unpublishing - ' + error);
-        restart();
-       });
+        console.error('[Red5ProPublisher] :: Error in unpublishing - ' + error)
+        restart()
+      })
   }
 
-  function getAuthenticationParams () {
-    var auth = configuration.authentication;
+  function getAuthenticationParams() {
+    var auth = configuration.authentication
     return auth && auth.enabled
       ? {
-        connectionParams: {
-          username: auth.username,
-          password: auth.password,
-          token: auth.token
+          connectionParams: {
+            username: auth.username,
+            password: auth.password,
+            token: auth.token,
+          },
         }
-      }
-      : {};
+      : {}
   }
 
-  function getUserMediaConfiguration () {
+  function getUserMediaConfiguration() {
     var config = {
       audio: {
         autoGainControl: gainCheck.checked,
@@ -338,129 +369,146 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         echoCancellation: echoCheck.checked,
         noiseSuppression: noiseCheck.checked,
         sampleRate: parseInt(sampleRateField.value, 10),
-        sampleSize: parseInt(sampleSizeField.value, 10)
+        sampleSize: parseInt(sampleSizeField.value, 10),
       },
-      video: configuration.useVideo ? {
-        width: { exact: 640 },
-        height: { exact: 480 },
-        frameRate: { min: 15 }
-      } : false
-    };
-    if (configuration.useVideo && cameraSelect.value && cameraSelect.value.length > 0) {
-      var v = Object.assign(config.video, {deviceId: { exact: cameraSelect.value }});
-      config.video = v;
+      video: configuration.useVideo
+        ? {
+            width: { exact: 640 },
+            height: { exact: 480 },
+            frameRate: { min: 15 },
+          }
+        : false,
+    }
+    if (
+      configuration.useVideo &&
+      cameraSelect.value &&
+      cameraSelect.value.length > 0
+    ) {
+      var v = Object.assign(config.video, {
+        deviceId: { exact: cameraSelect.value },
+      })
+      config.video = v
     }
     if (micSelect.value && micSelect.value.length > 0) {
       config.audio.deviceId = { exact: micSelect.value }
     }
-    return config;
+    return config
   }
 
-  function determinePublisher () {
-    var config = Object.assign({},
-                      configuration,
-                      defaultConfiguration,
-                      getAuthenticationParams(),
-                      {
-                        bandwidth: {
-                          audio: parseInt(bandwidthAudioField.value),
-                          video: 512
-                        },
-                        mediaConstraints: getUserMediaConfiguration()
-                      });
+  function determinePublisher() {
+    const { preferWhipWhep } = configuration
+    const { WHIPClient, RTCPublisher } = red5prosdk
 
-    console.log('-----');
-    console.log(JSON.stringify(config, null, 2));
-    console.log('-----');
-    var rtcConfig = Object.assign({}, config, {
-                      protocol: getSocketLocationFromProtocol().protocol,
-                      port: getSocketLocationFromProtocol().port,
-                      streamName: config.stream1
-                   });
-    var pub = new red5prosdk.RTCPublisher();
-    pub.on('*', onPublisherEvent);
-    return pub.init(rtcConfig);
+    var config = Object.assign()
+
+    console.log('-----')
+    console.log(JSON.stringify(config, null, 2))
+    console.log('-----')
+    var rtcConfig = Object.assign(
+      {},
+      configuration,
+      defaultConfiguration,
+      getAuthenticationParams(),
+      {
+        bandwidth: {
+          audio: parseInt(bandwidthAudioField.value),
+          video: 512,
+        },
+        mediaConstraints: getUserMediaConfiguration(),
+        protocol: getSocketLocationFromProtocol().protocol,
+        port: getSocketLocationFromProtocol().port,
+        streamName: configuration.stream1,
+      }
+    )
+    var pub = preferWhipWhep ? new WHIPClient() : new RTCPublisher()
+    pub.on('*', onPublisherEvent)
+    return pub.init(rtcConfig)
   }
 
-  function unpublish () {
+  function unpublish() {
     return new Promise(function (resolve, reject) {
       if (!targetPublisher) {
-        resolve();
-        return;
+        resolve()
+        return
       }
-      var publisher = targetPublisher;
-      publisher.unpublish()
+      var publisher = targetPublisher
+      publisher
+        .unpublish()
         .then(function () {
-          onUnpublishSuccess();
-          publisher.off('*', onPublisherEvent);
-          resolve();
+          onUnpublishSuccess()
+          publisher.off('*', onPublisherEvent)
+          resolve()
         })
         .catch(function (error) {
-          var jsonError = typeof error === 'string' ? error : JSON.stringify(error, 2, null);
-          onUnpublishFail('Unmount Error ' + jsonError);
-          reject(error);
-        });
-      targetPublisher = undefined;
-    });
+          var jsonError =
+            typeof error === 'string' ? error : JSON.stringify(error, 2, null)
+          onUnpublishFail('Unmount Error ' + jsonError)
+          reject(error)
+        })
+      targetPublisher = undefined
+    })
   }
 
-  function startStopPublish () {
+  function startStopPublish() {
     if (isPublishable) {
-      setPublishableState(false);
+      setPublishableState(false)
       // delay by 200 milliseconds to allow for clearage of previous stream.
-      var delay = clearEstablishedStream() ? 200 : 0;
-      var t = setTimeout(function (){
-        clearTimeout(t);
+      var delay = clearEstablishedStream() ? 200 : 0
+      var t = setTimeout(function () {
+        clearTimeout(t)
         determinePublisher()
           .then(function (publisherImpl) {
-            streamTitle.innerText = configuration.stream1;
-            targetPublisher = publisherImpl;
+            streamTitle.innerText = configuration.stream1
+            targetPublisher = publisherImpl
             return targetPublisher.publish()
           })
           .then(function () {
-            onPublishSuccess(targetPublisher);
+            onPublishSuccess(targetPublisher)
           })
           .catch(function (error) {
-            var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
-            console.error('[Red5ProPublisher] :: Error in publishing - ' + jsonError);
-            onPublishFail(jsonError);
-          });
-      }, delay);
+            var jsonError =
+              typeof error === 'string' ? error : JSON.stringify(error, null, 2)
+            console.error(
+              '[Red5ProPublisher] :: Error in publishing - ' + jsonError
+            )
+            onPublishFail(jsonError)
+          })
+      }, delay)
     } else {
-      shutdown(false);
+      shutdown(false)
     }
   }
 
   function restart() {
-    establishInitialStream();
+    establishInitialStream()
   }
 
-  navigator.mediaDevices.enumerateDevices()
+  navigator.mediaDevices
+    .enumerateDevices()
     .then(function (devices) {
-      listDevices(devices);
-      establishInitialStream();
+      listDevices(devices)
+      establishInitialStream()
     })
-    .catch(onDeviceError);
+    .catch(onDeviceError)
 
-  cameraSelect.addEventListener('change', onMediaSelect);
-  micSelect.addEventListener('change', onMediaSelect);
+  cameraSelect.addEventListener('change', onMediaSelect)
+  micSelect.addEventListener('change', onMediaSelect)
 
-  publishButton.addEventListener('click', startStopPublish);
+  publishButton.addEventListener('click', startStopPublish)
 
-  var shuttingDown = false;
-  function shutdown (trackShutdown) {
-    if (shuttingDown) return;
-    shuttingDown = (typeof trackShutdown === 'boolean') ? trackShutdown : true;
-    function clearRefs () {
+  var shuttingDown = false
+  function shutdown(trackShutdown) {
+    if (shuttingDown) return
+    shuttingDown = typeof trackShutdown === 'boolean' ? trackShutdown : true
+    function clearRefs() {
       if (targetPublisher) {
-        targetPublisher.off('*', onPublisherEvent);
+        targetPublisher.off('*', onPublisherEvent)
       }
-      targetPublisher = undefined;
+      targetPublisher = undefined
     }
-    unpublish().then(clearRefs).catch(clearRefs);
-    window.untrackBitrate();
+    unpublish().then(clearRefs).catch(clearRefs)
+    window.untrackBitrate()
   }
-  window.addEventListener('pagehide', shutdown);
-  window.addEventListener('beforeunload', shutdown);
-
-})(this, document, window.red5prosdk);
+  window.addEventListener('pagehide', shutdown)
+  window.addEventListener('beforeunload', shutdown)
+})(this, document, window.red5prosdk)
