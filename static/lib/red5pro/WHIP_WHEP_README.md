@@ -35,7 +35,7 @@ https://<your server deployment FQDN>/<app scope>/whip/endpoint/<stream name>
 ```
 
 - `app scope` - the target webapp scope to stream to. Typically `live`.
-- `stream nam` - the unique name of the stream to publish on.
+- `stream name` - the unique name of the stream to publish on.
 
 ## Using Similar API to RTCPublisher
 
@@ -55,6 +55,13 @@ await publisher.publish()
 By not supplying any arguments to the `WHIPClient` constructor, you are instructing the SDK that you will call the subsequent `init` and `publish` methods to start a connection and playback session.
 
 > Please refer to the [Publisher](PUBLISHER_README.md) documentation for more information related for configuration details and lifecycle.
+
+## Additional WHIP Configuration Properties.
+
+There are two additional configuration properties that pertain to WHIP clients only:
+
+- `trickleIce`: flag to send candidates after establishing a connection and generation. Default: _false_. By default, the SDK will send ICE candidates in the original POST to WHIP. By turning this to _true_, it will send an initial SDP with candidates and then trickle in candidates as generated.
+- `enableChannelSignaling`: flag to also open a data channel for messaging. Default: _true_. You can turn this to _false_ to not open an additional data channel, though **be warned that this will also turn off any essential messaging that comes from the server.**
 
 # WHEPClient
 
@@ -86,7 +93,7 @@ https://<your server deployment FQDN>/<app scope>/whep/endpoint/<stream name>?re
 ```
 
 - `app scope` - the target webapp scope to stream to. Typically `live`.
-- `stream nam` - the name of the stream to subscribe to.
+- `stream name` - the name of the stream to subscribe to.
 - `unqique id` - the `resourceId` query param needs to be a unique id for each subscriber.
 
 ## Using Similar API to RTCSubscriber
@@ -107,3 +114,10 @@ await subscriber.subscribe()
 By not supplying any arguments to the `WHEPClient` constructor, you are instructing the SDK that you will call the subsequent `init` and `subscribe` methods to start a connection and playback session.
 
 > Please refer to the [Subscriber](SUBSCRIBER_README.md) documentation for more information related for configuration details and lifecycle.
+
+## Additional WHEP Configuration Properties.
+
+There are two additional configuration properties that pertain to WHEP clients only:
+
+- `trickleIce`: flag to send candidates after establishing a connection and generation. Default: _false_. By default, the SDK will send ICE candidates in the original POST to WHEP. By turning this to _true_, it will send an initial SDP with candidates and then trickle in candidates as generated.
+- `enableChannelSignaling`: flag to also open a data channel for messaging. Default: _true_. You can turn this to _false_ to not open an additional data channel, though **be warned that this will also turn off any essential messaging that comes from the server.**
