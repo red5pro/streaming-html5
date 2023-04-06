@@ -100,10 +100,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         updateStatusFromEvent(event, document.getElementById(field))
       }
       if (event.type === 'Subscribe.VideoDimensions.Change') {
-        var index = field.indexOf('stream1') !== -1 ? 0 : 1
+        var index = field.indexOf(configuration.stream1) !== -1 ? 0 : 1
         var resolutionField =
           statisticsFields[1].getElementsByClassName('resolution-field')[index]
-        resolutionField.text = event.data.width + 'x' + event.data.height
+        if (resolutionField) {
+          resolutionField.innerText = event.data.width + 'x' + event.data.height
+        }
       }
     }
   }

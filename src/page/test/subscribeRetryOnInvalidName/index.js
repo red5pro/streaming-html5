@@ -224,9 +224,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     })
   }
 
-  const { preferWhipWhep } = configuration
-  const { WHEPClient, RTCSubscriber } = red5prosdk
-
+  // This test requires WebSocket connection. No WHEP support.
   var config = Object.assign(
     {
       maintainConnectionOnSubscribeErrors: true,
@@ -237,7 +235,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   )
   config.streamName = config.stream1
 
-  var subscriber = preferWhipWhep ? new WHEPClient() : new RTCSubscriber()
+  var subscriber = new red5prosdk.RTCSubscriber()
   subscriber.on(
     red5prosdk.SubscriberEventTypes.SUBSCRIBE_INVALID_NAME,
     function () {
