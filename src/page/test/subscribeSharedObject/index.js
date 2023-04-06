@@ -126,13 +126,16 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     if (event.type === 'Subscribe.VideoDimensions.Change') {
       onResolutionUpdate(event.data.width, event.data.height)
     }
+    // Wait until we have a transport channel before starting Shared Object.
+    if (event.type === 'MessageTransport.Change') {
+      establishSharedObject(targetSubscriber)
+    }
   }
   function onSubscribeFail(message) {
     console.error('[Red5ProSubsriber] Subscribe Error :: ' + message)
   }
   function onSubscribeSuccess(subscriber) {
     console.log('[Red5ProSubsriber] Subscribe Complete.')
-    establishSharedObject(subscriber)
     if (window.exposeSubscriberGlobally) {
       window.exposeSubscriberGlobally(subscriber)
     }

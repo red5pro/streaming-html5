@@ -108,6 +108,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   function onPublisherEvent(event) {
     console.log('[Red5ProPublisher] ' + event.type + '.')
     updateStatusFromEvent(event)
+    // Wait until we have a transport channel before starting Shared Object.
+    if (event.type === 'MessageTransport.Change') {
+      establishSharedObject(targetPublisher)
+    }
   }
   function onPublishFail(message) {
     console.error('[Red5ProPublisher] Publish Error :: ' + message)
@@ -115,7 +119,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   function onPublishSuccess(publisher) {
     console.log('[Red5ProPublisher] Publish Complete.')
 
-    establishSharedObject(publisher)
     try {
       var pc = publisher.getPeerConnection()
       var stream = publisher.getMediaStream()
