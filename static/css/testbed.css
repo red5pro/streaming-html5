@@ -205,6 +205,13 @@ a, a:hover, a:focus {
   margin: 1rem;
 }
 
+.settings-info {
+  margin: 0 2rem 1rem 2rem;
+  font-size: 0.8rem;
+  color: #666;
+  text-align: center;
+}
+
 .settings-label {
   width: 45%;
   display: inline-block;
