@@ -42,5 +42,21 @@
       testBody.parentNode.insertBefore(node, testBody);
     }
 
+    if (configuration.preferWhipWhep) {
+      var node = document.createElement('div');
+      node.classList.add('hint-block', 'auth-alert');
+      var note = document.createElement('span');
+      note.classList.add('strong');
+      note.innerHTML = '*WHIP/WHEP Client is enabled for this test*';
+      var link = document.createElement('a');
+      link.innerText = 'Click here to disable.';
+      link.href= '../../index.html';
+      link.classList.add('auth-link');
+      node.appendChild(note);
+      node.appendChild(link);
+      var testBody = document.getElementById('back-link-container').nextElementSibling;
+      testBody.parentNode.insertBefore(node, testBody);
+    }
+
   })(this);
 </script>
