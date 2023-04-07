@@ -107,8 +107,24 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   /**
    * Request to get Edge on stream managaer to consume stream from stream manager proxy.
    */
-  const getEdge = async (host, context, streamName) => {
-    const url = `https://${host}/streammanager/api/${apiVersion}/event/${context}/${streamName}?action=subscribe`
+  const getEdge = async (
+    host,
+    context,
+    streamName,
+    region = undefined,
+    endpoints = NaN,
+    strict = false
+  ) => {
+    let url = `https://${host}/streammanager/api/${apiVersion}/event/${context}/${streamName}?action=subscribe`
+    if (region) {
+      url += `&region=${region}`
+    }
+    if (strict) {
+      url += '&strict=true'
+    }
+    if (!isNaN(endpoints) && endpoints > 0) {
+      url += `&endpoints=${endpoints}`
+    }
     const result = await fetch(url)
     const { status } = result
     if (status >= 200 && status < 300) {
