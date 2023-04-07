@@ -229,9 +229,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   function determinePublisher() {
-    const { preferWhipWhep } = configuration
-    const { WHIPClient, RTCPublisher } = red5prosdk
-
+    // Shared Object is RTCPublisher and RTCSubscriber Only. No WHIP/WHEP client support.
     var rtcConfig = Object.assign(
       {},
       configuration,
@@ -246,7 +244,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       }
     )
 
-    var publisher = preferWhipWhep ? new WHIPClient() : new RTCPublisher()
+    var publisher = new red5prosdk.RTCPublisher()
     return publisher.init(rtcConfig)
   }
 
