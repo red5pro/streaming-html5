@@ -306,11 +306,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   function setupAudio(jsonResponse) {
-    var { preferWhipWhep } = configuration
+    var { app, proxy, preferWhipWhep } = configuration
     var { WHIPClient, RTCPublisher } = red5prosdk
     var { params } = jsonResponse
     var host = jsonResponse.serverAddress
-    var app = jsonResponse.scope
+    var scope = jsonResponse.scope
     var name = jsonResponse.name
     var { protocol, port } = getSocketLocationFromProtocol()
 
@@ -322,7 +322,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       port,
       streamName: `${name}_audio`,
       mediaElementId: 'red5pro-audio',
-      app: configuration.proxy,
+      app: preferWhipWhep ? app : proxy,
       mediaConstraints: {
         audio: true,
         video: false,
@@ -332,7 +332,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         : {
             ...connectionParams,
             host: host,
-            app: app,
+            app: scope,
           },
     })
     var publisher = preferWhipWhep ? new WHIPClient() : new RTCPublisher()
@@ -354,11 +354,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   function setupPublisher(jsonResponse, mediaStream) {
-    var { preferWhipWhep } = configuration
+    var { app, proxy, preferWhipWhep } = configuration
     var { WHIPClient, RTCPublisher } = red5prosdk
     var { params } = jsonResponse
     var host = jsonResponse.serverAddress
-    var app = jsonResponse.scope
+    var scope = jsonResponse.scope
     var name = jsonResponse.name
     var { protocol, port } = getSocketLocationFromProtocol()
 
@@ -369,7 +369,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       protocol,
       port,
       streamName: name,
-      app: configuration.proxy,
+      app: preferWhipWhep ? app : proxy,
       bandwidth: {
         video: parseInt(bandwidthVideoField.value),
       },
@@ -379,7 +379,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         : {
             ...connectionParams,
             host: host,
-            app: app,
+            app: scope,
           },
     })
     var publisher = preferWhipWhep ? new WHIPClient() : new RTCPublisher()

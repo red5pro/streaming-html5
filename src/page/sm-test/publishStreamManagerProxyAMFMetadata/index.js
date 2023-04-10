@@ -203,11 +203,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   function determinePublisher(jsonResponse) {
-    var { preferWhipWhep } = configuration
+    var { app, proxy, preferWhipWhep } = configuration
     var { WHIPClient, RTCPublisher } = red5prosdk
     var { params } = jsonResponse
     var host = jsonResponse.serverAddress
-    var app = jsonResponse.scope
+    var scope = jsonResponse.scope
     var name = jsonResponse.name
     var { protocol, port } = getSocketLocationFromProtocol()
 
@@ -223,13 +223,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         protocol,
         port,
         streamName: name,
-        app: configuration.proxy,
+        app: preferWhipWhep ? app : proxy,
         connectionParams: preferWhipWhep
           ? connectionParams
           : {
               ...connectionParams,
               host: host,
-              app: app,
+              app: scope,
             },
       }
     )
