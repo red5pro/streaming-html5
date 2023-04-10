@@ -253,7 +253,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   function determinePublisher(serverAddress) {
-    var { preferWhipWhep } = configuration
+    var { app, proxy, preferWhipWhep } = configuration
     var { WHIPClient, RTCPublisher } = red5prosdk
     var { params } = getQueryParameters()
     var { protocol, port } = getSocketLocationFromProtocol()
@@ -269,13 +269,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         protocol,
         port,
         streamName: configuration.stream1,
-        app: configuration.proxy,
+        app: preferWhipWhep ? app : proxy,
         connectionParams: preferWhipWhep
           ? connectionParams
           : {
               ...connectionParams,
               host: serverAddress,
-              app: configuration.app,
+              app: app,
             },
       }
     )
@@ -399,7 +399,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   function determineSubscriber(serverAddress) {
-    var { preferWhipWhep } = configuration
+    var { app, proxy, preferWhipWhep } = configuration
     var { WHEPClient, RTCSubscriber } = red5prosdk
     var { params } = getQueryParameters()
     var { protocol, port } = getSocketLocationFromProtocol()
@@ -415,14 +415,14 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         protocol,
         port,
         streamName: configuration.stream2,
-        app: configuration.proxy,
+        app: preferWhipWhep ? app : proxy,
         subscriptionId: 'subscriber-' + instanceId,
         connectionParams: preferWhipWhep
           ? connectionParams
           : {
               ...connectionParams,
               host: serverAddress,
-              app: configuration.app,
+              app: app,
             },
       }
     )

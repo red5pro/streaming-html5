@@ -291,7 +291,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   function setupSubscribers(edgeList) {
-    const { preferWhipWhep } = configuration
+    const { app, proxy, preferWhipWhep } = configuration
     var i = 0,
       length = edgeList.length
     var id
@@ -304,19 +304,19 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     for (i; i < length; i++) {
       id = ['red5pro-subscriber', edgeList[i].name, i].join('-')
       container.appendChild(generateVideoElement(id))
-      var app = edgeList[i].scope
-      app = app.charAt(0) === '/' ? app.substr(1, app.length) : app
+      var scope = edgeList[i].scope
+      scope = scope.charAt(0) === '/' ? scope.substr(1, scope.length) : scope
       var subConfig = Object.assign({}, baseConfig, {
         mediaElementId: id,
         host: streamManagerAddress.value,
-        app: configuration.proxy,
+        app: preferWhipWhep ? app : proxy,
         streamName: edgeList[i].name,
         connectionParams: preferWhipWhep
           ? connectionParams
           : {
               ...connectionParams,
               host: edgeList[i].serverAddres,
-              app: app,
+              app: scope,
             },
       })
 
