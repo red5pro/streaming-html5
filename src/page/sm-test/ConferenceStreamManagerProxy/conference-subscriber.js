@@ -26,148 +26,166 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 /**
  * Handles generating and monitoring Subscribers for Conference example.
  */
-(function (window, document, red5prosdk) {
-  'use strict';
+;(function (window, document, red5prosdk) {
+  'use strict'
 
-  var isMoz = false;
+  var isMoz = false
   if (window.adapter) {
-    isMoz = window.adapter.browserDetails.browser.toLowerCase() === 'firefox';
+    isMoz = window.adapter.browserDetails.browser.toLowerCase() === 'firefox'
   }
 
-  var subscriberMap = {};
+  var subscriberMap = {}
   var ConferenceSubscriberItemMap = {}
-  var streamNameField = document.getElementById('streamname-field');
-  var updateSuscriberStatusFromEvent = window.red5proHandleSubscriberEvent;
-  var subscriberTemplate = '' +
-        '<div class="subscriber-session">' +
-          '<p class="subscriber-status-field">On hold.</p>' +
-          '<p class="centered status-field statistics-field hidden">' +
-            '<span>Bitrate: </span><span class="bitrate-field">N/A</span>.&nbsp;<span>Packets In: <span class="packets-field">N/A</span>.' +
-            '<br/>' +
-            '<span>Resolution: <span class="resolution-field">0x0</span>' +
-        '</div>' +
-        '<div class="video-holder">' +
-          '<video autoplay controls playsinline width="100%" height="100%" class="red5pro-subscriber red5pro-media red5pro-media-background"></video>' +
-        '</div>' +
-        '<div class="audio-holder centered hidden">' +
-          '<audio autoplay playsinline class="red5pro-media"></audio>' +
-        '</div>' +
-        '<div class="centered">' +
-          '<p class="subscriber-name-field"></span></p>' +
-          '<p class="subscriber-id-field"></span></p>' +
-          '</p>' +
-        '</div>';
+  var streamNameField = document.getElementById('streamname-field')
+  var updateSuscriberStatusFromEvent = window.red5proHandleSubscriberEvent
+  var subscriberTemplate =
+    '' +
+    '<div class="subscriber-session">' +
+    '<p class="subscriber-status-field">On hold.</p>' +
+    '<p class="centered status-field statistics-field hidden">' +
+    '<span>Bitrate: </span><span class="bitrate-field">N/A</span>.&nbsp;<span>Packets In: <span class="packets-field">N/A</span>.' +
+    '<br/>' +
+    '<span>Resolution: <span class="resolution-field">0x0</span>' +
+    '</div>' +
+    '<div class="video-holder">' +
+    '<video autoplay controls playsinline width="100%" height="100%" class="red5pro-subscriber red5pro-media red5pro-media-background"></video>' +
+    '</div>' +
+    '<div class="audio-holder centered hidden">' +
+    '<audio autoplay playsinline class="red5pro-media"></audio>' +
+    '</div>' +
+    '<div class="centered">' +
+    '<p class="subscriber-name-field"></span></p>' +
+    '<p class="subscriber-id-field"></span></p>' +
+    '</p>' +
+    '</div>'
 
-  function templateContent (templateHTML) {
-    var div = document.createElement('div');
+  function templateContent(templateHTML) {
+    var div = document.createElement('div')
     //div.classList.add('subscriber-container');
-    div.innerHTML = templateHTML;
-    return div;
+    div.innerHTML = templateHTML
+    return div
   }
 
-  function getSubscriberElementId (streamName) {
-    return ['red5pro', 'subscriber', streamName].join('-');
+  function getSubscriberElementId(streamName) {
+    return ['red5pro', 'subscriber', streamName].join('-')
   }
 
-  function getSubscriberElementContainerId (streamName) {
+  function getSubscriberElementContainerId(streamName) {
     return [getSubscriberElementId(streamName), 'container'].join('-')
   }
 
-  function getSubscriberAudioElementId (streamName) {
-    return ['red5pro', 'subscriber', streamName, 'audio'].join('-');
+  function getSubscriberAudioElementId(streamName) {
+    return ['red5pro', 'subscriber', streamName, 'audio'].join('-')
   }
 
-  function removeLoadingIcon (container) {
-    var icon = container.querySelector('.loading-icon');
+  function removeLoadingIcon(container) {
+    var icon = container.querySelector('.loading-icon')
     if (icon) {
       icon.parentNode.removeChild(icon)
     }
   }
 
-  function addLoadingIcon (container) {
-    var icon = container.querySelector('.loading-icon');
+  function addLoadingIcon(container) {
+    var icon = container.querySelector('.loading-icon')
     if (!icon) {
-      var loadingIcon = document.createElement('img');
-      loadingIcon.src = '../../images/loading.svg';
-      loadingIcon.classList.add('stream-play-button');
-      loadingIcon.classList.add('loading-icon');
-      container.appendChild(loadingIcon);
+      var loadingIcon = document.createElement('img')
+      loadingIcon.src = '../../images/loading.svg'
+      loadingIcon.classList.add('stream-play-button')
+      loadingIcon.classList.add('loading-icon')
+      container.appendChild(loadingIcon)
     }
   }
 
-  function generateNewSubscriberDOM (streamName, subId, parent) {
-    var card = templateContent(subscriberTemplate);
-    parent.appendChild(card);
-    var videoId = getSubscriberElementId(streamName);
-    var audioId = getSubscriberAudioElementId(streamName);
-    var videoElement = card.getElementsByClassName('red5pro-media')[0];
-    var audioElement = card.getElementsByClassName('red5pro-media')[1];
-    var subscriberNameField = card.getElementsByClassName('subscriber-name-field')[0];
-    var subscriberIdField = card.getElementsByClassName('subscriber-id-field')[0];
-    subscriberNameField.innerText = streamName;
-    subscriberIdField.innerText = '(' + subId + ')';
-    videoElement.id = videoId;
-    audioElement.id = audioId;
-    card.id = getSubscriberElementContainerId(streamName);
+  function generateNewSubscriberDOM(streamName, subId, parent) {
+    var card = templateContent(subscriberTemplate)
+    parent.appendChild(card)
+    var videoId = getSubscriberElementId(streamName)
+    var audioId = getSubscriberAudioElementId(streamName)
+    var videoElement = card.getElementsByClassName('red5pro-media')[0]
+    var audioElement = card.getElementsByClassName('red5pro-media')[1]
+    var subscriberNameField = card.getElementsByClassName(
+      'subscriber-name-field'
+    )[0]
+    var subscriberIdField = card.getElementsByClassName(
+      'subscriber-id-field'
+    )[0]
+    subscriberNameField.innerText = streamName
+    subscriberIdField.innerText = '(' + subId + ')'
+    videoElement.id = videoId
+    audioElement.id = audioId
+    card.id = getSubscriberElementContainerId(streamName)
     card.style.position = 'relative'
     card.style.margin = '4px'
-    return card;
+    return card
   }
 
-  function addAudioSubscriberDecoy (streamName, config, cb) {
-    var uid = Math.floor(Math.random() * 0x10000).toString(16);
-    var elementId = getSubscriberAudioElementId(streamName);
+  function addAudioSubscriberDecoy(streamName, config, cb) {
+    var uid = Math.floor(Math.random() * 0x10000).toString(16)
+    var elementId = getSubscriberAudioElementId(streamName)
     var extension = {
       streamName: streamName,
       mediaElementId: elementId,
-      subscriptionId: ['subscriber-audio', uid].join('-')
-    };
-    console.log('[audio:decoy] Adding audio decoy for ' + streamName);
+      subscriptionId: ['subscriber-audio', uid].join('-'),
+    }
+    console.log('[audio:decoy] Adding audio decoy for ' + streamName)
     new red5prosdk.RTCSubscriber()
       .init(Object.assign(config, extension))
       .then(function (aSubscriber) {
         cb(aSubscriber)
-        console.log('[audio:decoy] Initialized ' + streamName);
+        console.log('[audio:decoy] Initialized ' + streamName)
         /*
         aSubscriber.on('*', function (event) {
           console.log('[audio:decoy:' + streamName + ':' + elementId + '] ' + event.type);
         });
         */
-        return aSubscriber.subscribe();
+        return aSubscriber.subscribe()
       })
       .then(function () {
-        console.log('[audio:decoy] Subscribing to ' + streamName);
+        console.log('[audio:decoy] Subscribing to ' + streamName)
       })
       .catch(function (error) {
-        console.log('[audio:decoy] Error in subscribing to ' + streamName);
-        console.log(error);
-      });
+        console.log('[audio:decoy] Error in subscribing to ' + streamName)
+        console.log(error)
+      })
   }
 
-  function removeAudioSubscriberDecoy (streamName, decoy) {
-    console.log('[audio:decoy] Removing audio decoy for ' + streamName);
-    decoy.unsubscribe();
+  function removeAudioSubscriberDecoy(streamName, decoy) {
+    console.log('[audio:decoy] Removing audio decoy for ' + streamName)
+    decoy.unsubscribe()
   }
 
-  var SubscriberItem = function (subStreamName, parent, index, requestLayoutFn) {
-    this.subscriptionId = [subStreamName, 'sub'].join('-');
+  var SubscriberItem = function (
+    subStreamName,
+    parent,
+    index,
+    requestLayoutFn
+  ) {
+    this.subscriptionId = [subStreamName, 'sub'].join('-')
     this.streamName = subStreamName
-    this.subscriber = undefined;
-    this.baseConfiguration = undefined;
-    this.streamingMode = undefined;
-    this.audioDecoy = undefined; // Used when initial mode is `Audio`.
-    this.index = index;
-    this.next = undefined;
-    this.parent = parent;
+    this.subscriber = undefined
+    this.baseConfiguration = undefined
+    this.streamingMode = undefined
+    this.audioDecoy = undefined // Used when initial mode is `Audio`.
+    this.index = index
+    this.next = undefined
+    this.parent = parent
     this.requestLayoutFn = requestLayoutFn
     this.statsTicket = undefined
 
-    this.card = generateNewSubscriberDOM(this.streamName, this.subscriptionId, this.parent);
-    this.statusField = this.card.getElementsByClassName('subscriber-status-field')[0];
+    this.card = generateNewSubscriberDOM(
+      this.streamName,
+      this.subscriptionId,
+      this.parent
+    )
+    this.statusField = this.card.getElementsByClassName(
+      'subscriber-status-field'
+    )[0]
     this.statisticsField = this.card.querySelector('.statistics-field')
-    this.toggleVideoPoster = this.toggleVideoPoster.bind(this);
-    this.handleAudioDecoyVolumeChange = this.handleAudioDecoyVolumeChange.bind(this);
-    this.handleStreamingModeMetadata = this.handleStreamingModeMetadata.bind(this);
+    this.toggleVideoPoster = this.toggleVideoPoster.bind(this)
+    this.handleAudioDecoyVolumeChange =
+      this.handleAudioDecoyVolumeChange.bind(this)
+    this.handleStreamingModeMetadata =
+      this.handleStreamingModeMetadata.bind(this)
 
     this.resetTimout = 0
     this.disposed = false
@@ -178,48 +196,60 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
   SubscriberItem.prototype.handleAudioDecoyVolumeChange = function (event) {
     if (this.audioDecoy) {
-      this.audioDecoy.setVolume(event.data.volume);
+      this.audioDecoy.setVolume(event.data.volume)
     }
   }
-  SubscriberItem.prototype.handleStreamingModeMetadata = function (streamingMode) {
-    if (isMoz) return; // It works in Firefox!
-    var self = this;
+  SubscriberItem.prototype.handleStreamingModeMetadata = function (
+    streamingMode
+  ) {
+    if (isMoz) return // It works in Firefox!
+    var self = this
     if (this.streamingMode !== streamingMode) {
-      var previousStreamingMode = this.streamingMode;
+      var previousStreamingMode = this.streamingMode
       if (streamingMode === 'Audio' && previousStreamingMode === undefined) {
         // Then, we have started playback of an Audio only stream because
         // the broadcaster has turned off their Camera stream.
         // There is a bug in some browsers that will not allow A/V bundled streams
         // to playback JUST audio on initial subscription in a <video> element; they only allow <audio>.
-        addAudioSubscriberDecoy(this.streamName, this.baseConfiguration, function (subscriberInst) {
-          self.audioDecoy = subscriberInst;
-          self.subscriber.on('Subscribe.Volume.Change', self.handleAudioDecoyVolumeChange);
-        });
+        addAudioSubscriberDecoy(
+          this.streamName,
+          this.baseConfiguration,
+          function (subscriberInst) {
+            self.audioDecoy = subscriberInst
+            self.subscriber.on(
+              'Subscribe.Volume.Change',
+              self.handleAudioDecoyVolumeChange
+            )
+          }
+        )
       } else if (this.audioDecoy) {
-        removeAudioSubscriberDecoy(this.streamName, this.audioDecoy);
-        this.subscriber.off('Subscribe.Volume.Change', this.handleAudioDecoyVolumeChange)
-        this.audioDecoy = undefined;
+        removeAudioSubscriberDecoy(this.streamName, this.audioDecoy)
+        this.subscriber.off(
+          'Subscribe.Volume.Change',
+          this.handleAudioDecoyVolumeChange
+        )
+        this.audioDecoy = undefined
       }
     }
-    this.streamingMode = streamingMode;
+    this.streamingMode = streamingMode
   }
   SubscriberItem.prototype.toggleVideoPoster = function (showPoster) {
-    var video = document.getElementById(getSubscriberElementId(this.streamName));
+    var video = document.getElementById(getSubscriberElementId(this.streamName))
     if (showPoster) {
-      video.classList.add('hidden');
+      video.classList.add('hidden')
     } else {
-      video.classList.remove('hidden');
+      video.classList.remove('hidden')
     }
   }
   SubscriberItem.prototype.respond = function (event) {
-    if (event.type === 'Subscribe.Time.Update') return;
+    if (event.type === 'Subscribe.Time.Update') return
 
-    console.log('TEST', '[subscriber:' + this.streamName + '] ' + event.type);
-    var inFailedState = updateSuscriberStatusFromEvent(event, this.statusField);
+    console.log('TEST', '[subscriber:' + this.streamName + '] ' + event.type)
+    var inFailedState = updateSuscriberStatusFromEvent(event, this.statusField)
     if (event.type === 'Subscribe.Metadata') {
       if (event.data.streamingMode) {
         this.handleStreamingModeMetadata(event.data.streamingMode)
-        this.toggleVideoPoster(!event.data.streamingMode.match(/Video/));
+        this.toggleVideoPoster(!event.data.streamingMode.match(/Video/))
       }
     } else if (event.type === 'Subscriber.Play.Unpublish') {
       this.dispose()
@@ -236,22 +266,26 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
 
     if (inFailedState) {
-      this.close();
+      this.close()
     }
   }
   SubscriberItem.prototype.resolve = function () {
     removeLoadingIcon(this.card)
     if (this.next) {
-      console.log('TEST', new Date().getTime(), '[subscriber:' + this.streamName + '] next ->. ' + this.next.streamName)
-      this.next.execute(this.baseConfiguration);
+      console.log(
+        'TEST',
+        new Date().getTime(),
+        '[subscriber:' + this.streamName + '] next ->. ' + this.next.streamName
+      )
+      this.next.execute(this.baseConfiguration)
       this.next = undefined
     }
   }
   SubscriberItem.prototype.reject = function (event) {
-    console.error(event);
+    console.error(event)
     removeLoadingIcon(this.card)
     if (this.next) {
-      this.next.execute(this.baseConfiguration);
+      this.next.execute(this.baseConfiguration)
       this.next = undefined
     }
   }
@@ -261,7 +295,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
     this.statusField.innerText = 'Retrying...'
     this.resetTimeout = setTimeout(() => {
-      clearTimeout(this.resetTimeout);
+      clearTimeout(this.resetTimeout)
       console.log('TEST', '[subscriber:' + this.streamName + '] retry.')
       this.execute(this.baseConfiguration)
     }, 2000)
@@ -277,12 +311,14 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       if (!this.disposed) {
         this.reset()
       } else {
-        var el = document.getElementById(getSubscriberElementId(this.streamName) + '-container')
+        var el = document.getElementById(
+          getSubscriberElementId(this.streamName) + '-container'
+        )
         if (el) {
-          el.parentNode.removeChild(el);
+          el.parentNode.removeChild(el)
         }
         console.log('TEST', 'To disposeDD ' + this.streamName)
-        delete ConferenceSubscriberItem[this.streamName]
+        delete ConferenceSubscriberItemMap[this.streamName]
         delete subscriberMap[this.streamName]
       }
       this.requestLayoutFn()
@@ -292,52 +328,75 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       this.statsTicket = undefined
     }
     if (this.subscriber) {
-      this.subscriber.off('*', this.respond);
-      this.subscriber.unsubscribe().then(cleanup).catch(cleanup);
+      this.subscriber.off('*', this.respond)
+      this.subscriber.unsubscribe().then(cleanup).catch(cleanup)
       this.subscriber = undefined
     } else {
-      try { cleanup() } catch (e) {}
+      try {
+        cleanup()
+      } catch (e) {
+        console.warn(e)
+      }
     }
     if (this.audioDecoy) {
-      removeAudioSubscriberDecoy(this.streamName, this.audioDecoy);
+      removeAudioSubscriberDecoy(this.streamName, this.audioDecoy)
     }
   }
-  SubscriberItem.prototype.execute = async function (config) {
+  SubscriberItem.prototype.execute = async function (
+    config,
+    preferWhipWhep = false
+  ) {
     clearTimeout(this.resetTimeout)
     addLoadingIcon(this.card)
     this.unexpectedClose = true
 
-    this.baseConfiguration = config;
-    var self = this;
-    var name = this.streamName;
-    var uid = Math.floor(Math.random() * 0x10000).toString(16);
+    this.baseConfiguration = config
+    var self = this
+    var name = this.streamName
+    var uid = Math.floor(Math.random() * 0x10000).toString(16)
     var rtcConfig = Object.assign({}, config, {
-                      streamName: name,
-                      subscriptionId: [this.subscriptionId, uid].join('-'),
-                      mediaElementId: getSubscriberElementId(this.streamName)
-    });
+      streamName: name,
+      subscriptionId: [this.subscriptionId, uid].join('-'),
+      mediaElementId: getSubscriberElementId(this.streamName),
+    })
 
     try {
-      const payload = await window.streamManagerUtil.getEdge(rtcConfig.host, rtcConfig.app, name)
-      const { scope, serverAddress } = payload
-      rtcConfig = {...rtcConfig, ...{
-        app: 'streammanager',
-        connectionParams: {
-          host: serverAddress,
-          app: scope
+      if (!preferWhipWhep) {
+        const payload = await window.streamManagerUtil.getEdge(
+          rtcConfig.host,
+          rtcConfig.app,
+          name
+        )
+        const { scope, serverAddress } = payload
+        rtcConfig = {
+          ...rtcConfig,
+          ...{
+            app: 'streammanager',
+            connectionParams: {
+              host: serverAddress,
+              app: scope,
+            },
+          },
         }
-      }}
+      }
 
-      this.subscriber = new red5prosdk.RTCSubscriber()
-      this.subscriber.on('*',  (e) => this.respond(e))
+      this.subscriber = preferWhipWhep
+        ? new red5prosdk.WHEPClient()
+        : new red5prosdk.RTCSubscriber()
+      this.subscriber.on('*', (e) => this.respond(e))
 
       await this.subscriber.init(rtcConfig)
       subscriberMap[this.streamName] = this.subscriber
       self.requestLayoutFn.call(null)
       await this.subscriber.subscribe()
       clearTimeout(this.resetTimeout)
-      this.statsTicket = window.trackBitrate(this.subscriber.getPeerConnection(), (b, p) => this.handleStats(b, p), (w, h) => this.handleResolution(w, h), true, true)
-
+      this.statsTicket = window.trackBitrate(
+        this.subscriber.getPeerConnection(),
+        (b, p) => this.handleStats(b, p),
+        (w, h) => this.handleResolution(w, h),
+        true,
+        true
+      )
     } catch (error) {
       console.log('[subscriber:' + name + '] Error')
       self.reject(error)
@@ -359,11 +418,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     resField.innerText = `${width}x${height}`
   }
 
-  window.getConferenceSubscriberElementContainerId = getSubscriberElementContainerId;
-  window.getConferenceSubscriberElementId = getSubscriberElementId;
-  window.ConferenceSubscriberItem = SubscriberItem;
+  window.getConferenceSubscriberElementContainerId =
+    getSubscriberElementContainerId
+  window.getConferenceSubscriberElementId = getSubscriberElementId
+  window.ConferenceSubscriberItem = SubscriberItem
   window.ConferenceSubscriberUtil = {
-    removeAll: names => {
+    removeAll: (names) => {
       while (names.length > 0) {
         let name = names.shift()
         //        console.log('TEST', 'TO shift: ' + name, ConferenceSubscriberItemMap)
@@ -372,7 +432,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           item.dispose()
         }
       }
-    }
+    },
   }
-
-})(window, document, window.red5prosdk);
+})(window, document, window.red5prosdk)
