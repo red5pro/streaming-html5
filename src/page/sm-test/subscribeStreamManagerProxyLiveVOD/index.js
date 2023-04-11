@@ -37,6 +37,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   red5prosdk.setLogLevel(configuration.verboseLogging ? red5prosdk.LOG_LEVELS.TRACE : red5prosdk.LOG_LEVELS.WARN)
 
   let subscriber
+  let controls
+
   let instanceId = Math.floor(Math.random() * 0x10000).toString(16);
   let protocol = serverSettings.protocol
   let isSecure = protocol === 'https'
@@ -286,6 +288,8 @@ const { protocol, port } = getSocketLocationFromProtocol()
       }}
       subscriber = await new red5prosdk.RTCSubscriber().init(rtcConfig)
       subscriber.on('*', onSubscriberEvent)
+      controls = new CustomControls(subscriber)
+    
       streamTitle.innerText = configuration.stream1
       await subscriber.subscribe()
       onSubscribeSuccess(subscriber)
@@ -372,5 +376,5 @@ const { protocol, port } = getSocketLocationFromProtocol()
     startup(config, baseURL, fullURL, useCustomControls)
   })
 
-})(this, document, window.red5prosdk)
+})(this, document, window.red5prosdk, window.CustomControls)
 
