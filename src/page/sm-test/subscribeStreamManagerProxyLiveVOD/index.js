@@ -23,7 +23,7 @@ NONINFRINGEMENT.   IN  NO  EVENT  SHALL INFRARED5, INC. BE LIABLE FOR ANY CLAIM,
 WHETHER IN  AN  ACTION  OF  CONTRACT,  TORT  OR  OTHERWISE,  ARISING  FROM,  OUT  OF  OR  IN CONNECTION 
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
-(function(window, document, red5prosdk) {
+(function(window, document, red5prosdk, CustomControls) {
 
   const serverSettings = (() => {
     const settings = sessionStorage.getItem('r5proServerSettings')
@@ -45,6 +45,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   const baseCheck = document.getElementById('base-check')
   const fullCheck = document.getElementById('full-check')
   const urlInput = document.getElementById('url-input')
+  const controlsCheck = document.getElementById('controls-check')
+  const customControls = document.querySelector('.custom-controls')
 
   const updateStatusFromEvent = window.red5proHandleSubscriberEvent // defined in src/template/partial/status-field-subscriber.hbs
   const streamTitle = document.getElementById('stream-title')
@@ -359,6 +361,7 @@ const { protocol, port } = getSocketLocationFromProtocol()
     ... {
     streamName: configuration.stream1
   }}
+  
   subscribeButton.addEventListener('click', () => {
     const useCustomControls = controlsCheck.checked
     const baseURL = baseCheck.checked ? urlInput.value : undefined
@@ -366,7 +369,7 @@ const { protocol, port } = getSocketLocationFromProtocol()
     if (!baseURL && !fullURL) {
       return;
     }
-    startup(config, baseURL, fullURL)
+    startup(config, baseURL, fullURL, useCustomControls)
   })
 
 })(this, document, window.red5prosdk)
