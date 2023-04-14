@@ -335,7 +335,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   const determinePublisher = async (mediaStream, room, name, bitrate = 256) => {
     const { app, preferWhipWhep } = configuration
-    const { WHEPClient, RTCPublisher } = red5prosdk
+    const { WHIPClient, RTCPublisher } = red5prosdk
     let config = Object.assign(
       {},
       configuration,
@@ -381,7 +381,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       }
     }
     console.log('PUBLISH', name, rtcConfig)
-    var publisher = preferWhipWhep ? new WHEPClient() : new RTCPublisher()
+    var publisher = preferWhipWhep ? new WHIPClient() : new RTCPublisher()
     return await publisher.initWithStream(rtcConfig, mediaStream)
   }
 
