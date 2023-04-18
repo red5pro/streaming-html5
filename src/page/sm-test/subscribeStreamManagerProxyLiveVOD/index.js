@@ -280,7 +280,7 @@ const { protocol, port } = getSocketLocationFromProtocol()
           usePlaybackControlsUI: !useCustomControls,
           options: {debug: true, backBufferLength: 0},
         },
-        // app: configuration.proxy,
+        app: configuration.proxy,
         connectionParams: {...connParams, ...{
           host: serverAddress,
           app: scope
@@ -320,11 +320,11 @@ const { protocol, port } = getSocketLocationFromProtocol()
 
   let retryCount = 0;
   let retryLimit = 3;
-  const respondToEdgeFailure = (error) => {
+  const respondToEdgeFailure = (error, config, baseURL, fullURL, useCustomControls) => {
     if (retryCount++ < retryLimit) {
       var retryTimer = setTimeout(function () {
         clearTimeout(retryTimer)
-        startup()
+        startup(config, baseURL, fullURL, useCustomControls)
       }, 1000)
     }
     else {
@@ -343,7 +343,9 @@ const { protocol, port } = getSocketLocationFromProtocol()
         } = response
         subscribe(serverAddress, scope, baseURL, fullURL, useCustomControls)
       })
-      .catch(respondToEdgeFailure)
+      .catch(error => {
+        respondToEdgeFailure(error, config, baseURL, fullURL, useCustomControls)
+      })
   }
 
   baseCheck.onchange = () => {
@@ -363,7 +365,6 @@ const { protocol, port } = getSocketLocationFromProtocol()
     ...defaultConfiguration,
     ...getAuthenticationParams(),
     ... {
-    app: configuration.proxy,  
     streamName: configuration.stream1
   }}
   
