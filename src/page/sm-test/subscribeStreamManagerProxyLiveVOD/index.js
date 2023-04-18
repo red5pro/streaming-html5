@@ -363,6 +363,7 @@ const { protocol, port } = getSocketLocationFromProtocol()
     ...defaultConfiguration,
     ...getAuthenticationParams(),
     ... {
+    app: configuration.proxy,  
     streamName: configuration.stream1
   }}
   
