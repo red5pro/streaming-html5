@@ -298,7 +298,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           audio: parseInt(bandwidthAudioField.value),
           video: transcoderConfig.properties.videoBR / 1000,
         },
-        mediaConstraints: getUserMediaConfiguration(transcoderConfig),
         connectionParams: preferWhipWhep
           ? connectionParams
           : {
