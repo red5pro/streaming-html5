@@ -187,6 +187,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       channelCheck.disabled = false
       subscribeButton.disabled = false
       subscribeButton.innerText = 'Subscribe'
+      updateStatistics(0, 0, 0, 0)
     }
   }
 

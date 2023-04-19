@@ -60,7 +60,7 @@ By not supplying any arguments to the `WHIPClient` constructor, you are instruct
 
 There are two additional configuration properties that pertain to WHIP clients only:
 
-- `trickleIce`: flag to send candidates after establishing a connection and generation. Default: _false_. By default, the SDK will send ICE candidates in the original POST to WHIP. By turning this to _true_, it will send an initial SDP with candidates and then trickle in candidates as generated.
+- `trickleIce`: flag to send candidates after establishing a connection and generation. Default: _true_. By default, the SDK will send ICE candidates in a patch after POST of an Offer. By turning this to _false_, it will send an all candidates along in the POST of the Offer.
 - `enableChannelSignaling`: flag to also open a data channel for messaging. Default: _true_. You can turn this to _false_ to not open an additional data channel, though **be warned that this will also turn off any essential messaging that comes from the server.**
 
 # WHEPClient
@@ -119,5 +119,5 @@ By not supplying any arguments to the `WHEPClient` constructor, you are instruct
 
 There are two additional configuration properties that pertain to WHEP clients only:
 
-- `trickleIce`: flag to send candidates after establishing a connection and generation. Default: _false_. By default, the SDK will send ICE candidates in the original POST to WHEP. By turning this to _true_, it will send an initial SDP with candidates and then trickle in candidates as generated.
+- `trickleIce`: flag to send candidates after establishing a connection and generation. Default: _true_. By default, the SDK will send ICE candidates in a patch after POST of an Offer. By turning this to _false_, it will send an all candidates along in the POST of the Offer.
 - `enableChannelSignaling`: flag to also open a data channel for messaging. Default: _true_. You can turn this to _false_ to not open an additional data channel, though **be warned that this will also turn off any essential messaging that comes from the server.**
