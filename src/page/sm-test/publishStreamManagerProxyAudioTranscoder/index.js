@@ -458,10 +458,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   function submitTranscode() {
+    const { host, app, stream1 } = configuration
     var streams = generateTranscoderPost(configuration.stream1, transcoderForms)
     transcoderPOST.meta.stream = streams
     streamManagerUtil
-      .postTranscode(transcoderPOST)
+      .postTranscode(host, app, stream1, transcoderPOST)
       .then(function (response) {
         if (response.errorMessage) {
           console.error(
