@@ -163,6 +163,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     this.subscriptionId = [subStreamName, 'sub'].join('-')
     this.streamName = subStreamName
     this.subscriber = undefined
+    this.preferWhipWhep = true
     this.baseConfiguration = undefined
     this.streamingMode = undefined
     this.audioDecoy = undefined // Used when initial mode is `Audio`.
@@ -277,7 +278,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         new Date().getTime(),
         '[subscriber:' + this.streamName + '] next ->. ' + this.next.streamName
       )
-      this.next.execute(this.baseConfiguration)
+      this.next.execute(this.baseConfiguratio, this.preferWhipWhep)
       this.next = undefined
     }
   }
@@ -285,7 +286,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     console.error(event)
     removeLoadingIcon(this.card)
     if (this.next) {
-      this.next.execute(this.baseConfiguration)
+      this.next.execute(this.baseConfiguration, this.preferWhipWhep)
       this.next = undefined
     }
   }
@@ -297,7 +298,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     this.resetTimeout = setTimeout(() => {
       clearTimeout(this.resetTimeout)
       console.log('TEST', '[subscriber:' + this.streamName + '] retry.')
-      this.execute(this.baseConfiguration)
+      this.execute(this.baseConfiguration, this.preferWhipWhep)
     }, 2000)
   }
   SubscriberItem.prototype.dispose = function () {
@@ -351,6 +352,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     this.unexpectedClose = true
 
     this.baseConfiguration = config
+    this.preferWhipWhep = preferWhipWhep
     var self = this
     var name = this.streamName
     var uid = Math.floor(Math.random() * 0x10000).toString(16)

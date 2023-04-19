@@ -134,6 +134,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     this.subscriptionId = [streamNameField.value, 'sub'].join('-')
     this.streamName = subStreamName
     this.subscriber = undefined
+    this.preferWhep = true
     this.baseConfiguration = undefined
     this.streamingMode = undefined
     this.audioDecoy = undefined // Used when initial mode is `Audio`.
@@ -235,13 +236,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
   SubscriberItem.prototype.resolve = function () {
     if (this.next) {
-      this.next.execute(this.baseConfiguration)
+      this.next.execute(this.baseConfiguration, this.preferWhep)
     }
   }
   SubscriberItem.prototype.reject = function (event) {
     console.error(event)
     if (this.next) {
-      this.next.execute(this.baseConfiguration)
+      this.next.execute(this.baseConfiguration, this.preferWhep)
     }
   }
   SubscriberItem.prototype.reset = function () {
@@ -252,7 +253,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     this.resetTimeout = setTimeout(() => {
       clearTimeout(this.resetTimeout)
       console.log('TEST', '[subscriber:' + this.streamName + '] retry.')
-      this.execute(this.baseConfiguration)
+      this.execute(this.baseConfiguration, this.preferWhep)
     }, 2000)
   }
   SubscriberItem.prototype.dispose = function () {
@@ -292,10 +293,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
   SubscriberItem.prototype.execute = async function (
     config,
-    preferWhep = false
+    preferWhep = true
   ) {
     clearTimeout(this.resetTimeout)
     this.baseConfiguration = config
+    this.preferWhep = preferWhep
     var self = this
     var name = this.streamName
     var uid = Math.floor(Math.random() * 0x10000).toString(16)
