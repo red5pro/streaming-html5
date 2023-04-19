@@ -6,6 +6,9 @@
     {{> header-scripts}}
     {{> header-stylesheets}}
     <style>
+      .hidden {
+        display: none!important;
+      }
       code {
         padding: 0 0.5rem;
         background-color: #fff;
@@ -62,17 +65,20 @@
           </p>
           <p class="settings-field settings-collapsable">
             <label class="settings-label">Trickle Ice Candidates&ast;:</label>
-            <input type="checkbox" id="trickle-check" class="control settings-control" checked>
+            <input type="checkbox" id="trickle-check" class="control settings-control" checked disabled>
           </p>
-          <p class="settings-field settings-collapsable">
+          <p class="settings-field settings-collapsable hidden">
             <label class="settings-label">Post Empty Offer:</label>
-            <input type="checkbox" id="post-check" class="control settings-control" checked>
+            <input type="checkbox" id="post-check" class="control settings-control" disabled>
           </p>
           <p class="control-container">
             <button id="subscribe-btn" class="ui-button">Subscribe</button>
           </p>
           <div class="test-notification">
-            <p>&ast; By enabling <strong>Trickle Ice Candidates</strong>, candidates will be sent in batches after the initial offer as opposed to candidates being sent along with the initial offer SDP if disabled.</p>
+            <p>
+              <span>&ast; By enabling <strong>Trickle Ice Candidates</strong>, candidates will be sent in batches after the initial offer as opposed to candidates being sent along with the initial offer SDP if disabled.</span>
+              <span><em>This is currently a requirement for WHEP clients.</em></span>
+            </p>
           </div>
         </div>
       </div>
