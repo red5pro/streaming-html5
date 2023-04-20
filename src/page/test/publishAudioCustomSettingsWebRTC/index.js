@@ -399,11 +399,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     const { preferWhipWhep } = configuration
     const { WHIPClient, RTCPublisher } = red5prosdk
 
-    var config = Object.assign()
-
-    console.log('-----')
-    console.log(JSON.stringify(config, null, 2))
-    console.log('-----')
     var rtcConfig = Object.assign(
       {},
       configuration,
@@ -420,6 +415,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         streamName: configuration.stream1,
       }
     )
+    console.log('-----')
+    console.log(JSON.stringify(rtcConfig, null, 2))
+    console.log('-----')
     var pub = preferWhipWhep ? new WHIPClient() : new RTCPublisher()
     pub.on('*', onPublisherEvent)
     return pub.init(rtcConfig)
