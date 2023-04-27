@@ -56,7 +56,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   )
 
   var targetSubscriber
-  var audioSubscriber
 
   var updateStatusFromEvent = window.red5proHandleSubscriberEvent // defined in src/template/partial/status-field-subscriber.hbs
   var proxyLocal = window.query('local')
@@ -193,13 +192,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
   }
 
-  function onSubscriberAudioEvent(event) {
-    if (event.type !== 'Subscribe.Time.Update') {
-      console.log('[Red5ProSubscriber:AUDIO] ' + event.type + '.')
-      updateStatusFromEvent(event)
-    }
-  }
-
   function onSubscribeFail(message) {
     console.error('[Red5ProSubsriber] Subscribe Error :: ' + message)
   }
@@ -300,7 +292,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       })
       .then(function () {
         onSubscribeSuccess(targetSubscriber)
-        setupAudio(rtcConfig)
       })
       .catch(function (error) {
         var jsonError =
@@ -310,71 +301,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         )
         onSubscribeFail(jsonError)
       })
-  }
-
-  function marshalMuteOperation(audioSub) {
-    if (targetSubscriber) {
-      var videoElement = document.getElementById('red5pro-subscriber')
-      var muteButtonList = document.getElementsByClassName(
-        'red5pro-media-muteunmute-button'
-      )
-      if (muteButtonList.length > 0) {
-        muteButtonList[0].addEventListener('click', function () {
-          if (videoElement.muted) {
-            audioSub.mute()
-          } else {
-            audioSub.unmute()
-          }
-        })
-      }
-    }
-  }
-
-  function setupAudio(configuration) {
-    const { preferWhipWhep } = configuration
-    const { WHEPClient, RTCSubscriber } = red5prosdk
-    var audioConfig = Object.assign({}, configuration, {
-      subscriptionId: 'subscriber-' + instanceId + '-audio',
-      streamName: configuration.streamName + '_audio',
-      mediaElementId: 'red5pro-audio',
-    })
-    const subscriber = preferWhipWhep ? new WHEPClient() : new RTCSubscriber()
-    subscriber
-      .init(audioConfig)
-      .then(function (subscriberImpl) {
-        audioSubscriber = subscriberImpl
-        audioSubscriber.on('*', onSubscriberAudioEvent)
-        return audioSubscriber.subscribe()
-      })
-      .then(function () {
-        console.log('[Red5ProSubscriber:AUDIO] :: Complete')
-        marshalMuteOperation(audioSubscriber)
-        checkForAudioMuteSafari(targetSubscriber, audioSubscriber)
-      })
-      .catch(function (error) {
-        var jsonError =
-          typeof error === 'string' ? error : JSON.stringify(error, null, 2)
-        console.error(
-          '[Red5ProSubscriber] :: Error in subscribing - ' + jsonError
-        )
-        onSubscribeFail(jsonError)
-      })
-  }
-
-  function checkForAudioMuteSafari(videoSubscriber, audioSubscriber) {
-    var videoElement = videoSubscriber.getPlayer()
-    var audioElement = audioSubscriber.getPlayer()
-    var timeout = setTimeout(function () {
-      clearTimeout(timeout)
-      if (videoElement.played.length === 0) {
-        checkForAudioMuteSafari(videoSubscriber, audioSubscriber)
-      } else {
-        if (videoElement.played.length !== audioElement.played.length) {
-          audioElement.muted = true
-          videoSubscriber.mute()
-        }
-      }
-    }, 1000)
   }
 
   const requestEdge = async (configuration) => {
@@ -413,17 +339,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       if (targetSubscriber) {
         targetSubscriber.off('*', onSubscriberEvent)
       }
-      if (audioSubscriber) {
-        audioSubscriber.off('*', onSubscriberAudioEvent)
-      }
       targetSubscriber = undefined
-      audioSubscriber = undefined
     }
     unsubscribe(targetSubscriber)
       .then(function () {
-        if (audioSubscriber) {
-          return unsubscribe(audioSubscriber)
-        }
         return true
       })
       .then(clearRefs)

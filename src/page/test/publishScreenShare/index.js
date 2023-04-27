@@ -58,22 +58,18 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   )
 
   var targetPublisher
-  var audioPublisher
 
   var updateStatusFromEvent = window.red5proHandlePublisherEvent // defined in src/template/partial/status-field-publisher.hbs
   var streamTitle = document.getElementById('stream-title')
   var statisticsField = document.getElementById('statistics-field')
   var captureButton = document.getElementById('capture-button')
-  //  var audioButton = document.getElementById('audio-button');
 
-  var bandwidthAudioField = document.getElementById('audio-bitrate-field')
   var bandwidthVideoField = document.getElementById('video-bitrate-field')
   var keyFramerateField = document.getElementById('key-framerate-field')
   var cameraWidthField = document.getElementById('camera-width-field')
   var cameraHeightField = document.getElementById('camera-height-field')
   var framerateField = document.getElementById('framerate-field')
 
-  bandwidthAudioField.value = configuration.bandwidth.audio
   bandwidthVideoField.value = configuration.bandwidth.video
   keyFramerateField.value = configuration.keyFramerate || 3000
   cameraWidthField.value =
@@ -89,15 +85,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       ? configuration.mediaConstraints.video.frameRate.max
       : 24
 
-  captureButton.addEventListener('click', function () {
-    capture(setupPublisher)
+  captureButton.addEventListener('click', async () => {
+    const stream = await capture()
+    setupPublisher(stream)
   })
 
-  /*
-  audioButton.addEventListener('click', function() {
-    setupAudio();
-  })
-  */
   var bitrateField = document.getElementById('bitrate-field')
   var packetsField = document.getElementById('packets-field')
   var resolutionField = document.getElementById('resolution-field')
@@ -139,10 +131,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   function onPublisherEvent(event) {
     console.log('[Red5ProPublisher] ' + event.type + '.')
     updateStatusFromEvent(event)
-  }
-
-  function onPublisherAudioEvent(event) {
-    console.log('[Red5ProPublisher:AUDIO] ' + event.type + '.')
   }
 
   function onPublishFail(message) {
@@ -189,7 +177,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       : {}
   }
 
-  function capture(cb) {
+  async function capture() {
     captureButton.disabled = true
     var vw = parseInt(cameraWidthField.value)
     var vh = parseInt(cameraHeightField.value)
@@ -206,20 +194,22 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       'Using Capture Configuration:\r\n' + JSON.stringify(config, null, 2)
     )
     // Edge has getDisplayMedia on navigator and not media devices?
-    var p = undefined
-    if (navigator.getDisplayMedia) {
-      p = navigator.getDisplayMedia(config)
-    } else {
-      p = navigator.mediaDevices.getDisplayMedia(config)
-    }
-    p.then(cb).catch(function (error) {
+    try {
+      const stream = await navigator.mediaDevices.getDisplayMedia(config)
+      const audio = await navigator.mediaDevices.getUserMedia({
+        audio: true,
+        video: false,
+      })
+      stream.addTrack(audio.getAudioTracks()[0].clone())
+      return stream
+    } catch (error) {
       captureButton.disabled = false
       console.error(error)
       updateStatusFromEvent({
         type: 'ERROR',
         data: error.message,
       })
-    })
+    }
   }
 
   function unpublish(publisher) {
@@ -237,50 +227,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           reject(error)
         })
     })
-  }
-
-  function setupAudio() {
-    const { preferWhipWhep } = configuration
-    const { WHIPClient, RTCPublisher } = red5prosdk
-    var audioConfig = Object.assign(
-      {},
-      configuration,
-      getAuthenticationParams(),
-      {
-        mediaElementId: 'red5pro-audio',
-        protocol: getSocketLocationFromProtocol().protocol,
-        port: getSocketLocationFromProtocol().port,
-        streamName: configuration.stream1 + '_audio',
-        streamMode: configuration.recordBroadcast ? 'record' : 'live',
-        mediaConstraints: {
-          audio: true,
-          video: false,
-        },
-      },
-      {
-        bandwidth: {
-          audio: parseInt(bandwidthAudioField.value),
-        },
-      }
-    )
-    const publisher = preferWhipWhep ? new WHIPClient() : new RTCPublisher()
-    publisher
-      .init(audioConfig)
-      .then(function (publisherImpl) {
-        audioPublisher = publisherImpl
-        audioPublisher.on('*', onPublisherAudioEvent)
-        return audioPublisher.publish()
-      })
-      .then(function () {
-        console.debug('[Red5ProPublisher:AUDIO] :: established.')
-      })
-      .catch(function (error) {
-        var jsonError =
-          typeof error === 'string' ? error : JSON.stringify(error, null, 2)
-        console.error(
-          '[Red5ProPublisher:AUDIO] :: Error in publishing audio - ' + jsonError
-        )
-      })
   }
 
   function setupPublisher(mediaStream) {
@@ -313,7 +259,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       })
       .then(function () {
         onPublishSuccess(targetPublisher)
-        setupAudio()
       })
       .catch(function (error) {
         var jsonError =
@@ -333,17 +278,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       if (targetPublisher) {
         targetPublisher.off('*', onPublisherEvent)
       }
-      if (audioPublisher) {
-        audioPublisher.off('*', onPublisherAudioEvent)
-      }
       targetPublisher = undefined
-      audioPublisher = undefined
     }
     unpublish(targetPublisher)
       .then(function () {
-        if (audioPublisher) {
-          return unpublish(audioPublisher)
-        }
         return true
       })
       .then(clearRefs)

@@ -60,7 +60,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   const { WHEPClient, RTCSubscriber } = red5prosdk
 
   var targetSubscriber
-  var audioSubscriber
 
   var updateStatusFromEvent = window.red5proHandleSubscriberEvent // defined in src/template/partial/status-field-subscriber.hbs
   var instanceId = Math.floor(Math.random() * 0x10000).toString(16)
@@ -124,13 +123,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
     if (event.type === 'Subscribe.VideoDimensions.Change') {
       onResolutionUpdate(event.data.width, event.data.height)
-    }
-  }
-
-  function onSubscriberAudioEvent(event) {
-    if (event.type !== 'Subscribe.Time.Update') {
-      console.log('[Red5ProSubscriber:AUDIO] ' + event.type + '.')
-      updateStatusFromEvent(event)
     }
   }
 
@@ -201,7 +193,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     defaultConfiguration,
     getAuthenticationParams()
   )
-  config.mediaConstraints.audio = false
 
   var rtcConfig = Object.assign({}, config, {
     protocol: getSocketLocationFromProtocol().protocol,
@@ -222,7 +213,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     })
     .then(function () {
       onSubscribeSuccess(targetSubscriber)
-      setupAudio()
     })
     .catch(function (error) {
       var jsonError =
@@ -233,73 +223,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       onSubscribeFail(jsonError)
     })
 
-  function marshalMuteOperation(audioSub) {
-    if (targetSubscriber) {
-      var videoElement = document.getElementById('red5pro-subscriber')
-      var muteButtonList = document.getElementsByClassName(
-        'red5pro-media-muteunmute-button'
-      )
-      if (muteButtonList.length > 0) {
-        muteButtonList[0].addEventListener('click', function () {
-          if (videoElement.muted) {
-            audioSub.mute()
-          } else {
-            audioSub.unmute()
-          }
-        })
-      }
-    }
-  }
-
-  function setupAudio() {
-    var config = Object.assign({}, configuration, defaultConfiguration)
-    config.mediaConstraints.video = false
-    var audioConfig = Object.assign({}, config, {
-      protocol: getSocketLocationFromProtocol().protocol,
-      port: getSocketLocationFromProtocol().port,
-      subscriptionId: 'subscriber-' + instanceId + '-audio',
-      streamName: config.stream1 + '_audio',
-      mediaElementId: 'red5pro-audio',
-    })
-    const audioSub = preferWhipWhep ? new WHEPClient() : new RTCSubscriber()
-    audioSub
-      .init(audioConfig)
-      .then(function (subscriberImpl) {
-        audioSubscriber = subscriberImpl
-        audioSubscriber.on('*', onSubscriberAudioEvent)
-        return audioSubscriber.subscribe()
-      })
-      .then(function () {
-        console.log('[Red5ProSubscriber:AUDIO] :: Complete')
-        marshalMuteOperation(audioSubscriber)
-        checkForAudioMuteSafari(targetSubscriber, audioSubscriber)
-      })
-      .catch(function (error) {
-        var jsonError =
-          typeof error === 'string' ? error : JSON.stringify(error, null, 2)
-        console.error(
-          '[Red5ProSubscriber] :: Error in subscribing - ' + jsonError
-        )
-        onSubscribeFail(jsonError)
-      })
-  }
-
-  function checkForAudioMuteSafari(videoSubscriber, audioSubscriber) {
-    var videoElement = videoSubscriber.getPlayer()
-    var audioElement = audioSubscriber.getPlayer()
-    var timeout = setTimeout(function () {
-      clearTimeout(timeout)
-      if (videoElement.played.length === 0) {
-        checkForAudioMuteSafari(videoSubscriber, audioSubscriber)
-      } else {
-        if (videoElement.played.length !== audioElement.played.length) {
-          audioElement.muted = true
-          videoSubscriber.mute()
-        }
-      }
-    }, 1000)
-  }
-
   // Clean up.
   var shuttingDown = false
   function shutdown() {
@@ -309,17 +232,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       if (targetSubscriber) {
         targetSubscriber.off('*', onSubscriberEvent)
       }
-      if (audioSubscriber) {
-        audioSubscriber.off('*', onSubscriberAudioEvent)
-      }
       targetSubscriber = undefined
-      audioSubscriber = undefined
     }
     unsubscribe(targetSubscriber)
       .then(function () {
-        if (audioSubscriber) {
-          return unsubscribe(audioSubscriber)
-        }
         return true
       })
       .then(clearRefs)

@@ -57,7 +57,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   )
 
   var targetPublisher
-  var audioPublisher
 
   var updateStatusFromEvent = window.red5proHandlePublisherEvent // defined in src/template/partial/status-field-publisher.hbs
   var streamTitle = document.getElementById('stream-title')
@@ -67,16 +66,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var packetsField = document.getElementById('packets-field')
   var resolutionField = document.getElementById('resolution-field')
   var captureButton = document.getElementById('capture-button')
-  //  var audioButton = document.getElementById('audio-button');
 
-  var bandwidthAudioField = document.getElementById('audio-bitrate-field')
   var bandwidthVideoField = document.getElementById('video-bitrate-field')
   var keyFramerateField = document.getElementById('key-framerate-field')
   var cameraWidthField = document.getElementById('camera-width-field')
   var cameraHeightField = document.getElementById('camera-height-field')
   var framerateField = document.getElementById('framerate-field')
 
-  bandwidthAudioField.value = configuration.bandwidth.audio
   bandwidthVideoField.value = configuration.bandwidth.video
   keyFramerateField.value = configuration.keyFramerate || 3000
   cameraWidthField.value =
@@ -95,12 +91,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   captureButton.addEventListener('click', function () {
     startup()
   })
-
-  /*
-  audioButton.addEventListener('click', function() {
-    setupAudio();
-  })
-  */
 
   streamTitle.innerText = configuration.stream1
   var protocol = serverSettings.protocol
@@ -174,10 +164,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     updateStatusFromEvent(event)
   }
 
-  function onPublisherAudioEvent(event) {
-    console.log('[Red5ProPublisher:AUDIO] ' + event.type + '.')
-  }
-
   function onPublishFail(message) {
     console.error('[Red5ProPublisher] Publish Error :: ' + message)
   }
@@ -218,10 +204,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     return undefined
   }
 
-  function respondToOrigin(jsonResponse) {
-    capture(function (stream) {
-      setupPublisher(jsonResponse, stream)
-    })
+  async function respondToOrigin(jsonResponse) {
+    const stream = await capture()
+    setupPublisher(jsonResponse, stream)
   }
 
   function respondToOriginFailure(error) {
@@ -255,7 +240,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       : {}
   }
 
-  function capture(cb) {
+  async function capture() {
     captureButton.disabled = true
     var vw = parseInt(cameraWidthField.value)
     var vh = parseInt(cameraHeightField.value)
@@ -272,20 +257,22 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       'Using Capture Configuration:\r\n' + JSON.stringify(config, null, 2)
     )
     // Edge has getDisplayMedia on navigator and not media devices?
-    var p = undefined
-    if (navigator.getDisplayMedia) {
-      p = navigator.getDisplayMedia(config)
-    } else {
-      p = navigator.mediaDevices.getDisplayMedia(config)
-    }
-    p.then(cb).catch(function (error) {
+    try {
+      const stream = await navigator.mediaDevices.getDisplayMedia(config)
+      const audio = await navigator.mediaDevices.getUserMedia({
+        audio: true,
+        video: false,
+      })
+      stream.addTrack(audio.getAudioTracks()[0].clone())
+      return stream
+    } catch (error) {
       captureButton.disabled = false
       console.error(error)
       updateStatusFromEvent({
         type: 'ERROR',
         data: error.message,
       })
-    })
+    }
   }
 
   function unpublish(publisher) {
@@ -303,54 +290,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           reject(error)
         })
     })
-  }
-
-  function setupAudio(jsonResponse) {
-    var { app, proxy, preferWhipWhep } = configuration
-    var { WHIPClient, RTCPublisher } = red5prosdk
-    var { params } = jsonResponse
-    var host = jsonResponse.serverAddress
-    var scope = jsonResponse.scope
-    var name = jsonResponse.name
-    var { protocol, port } = getSocketLocationFromProtocol()
-
-    var connectionParams = params
-      ? { ...params, ...getAuthenticationParams().connectionParams }
-      : getAuthenticationParams().connectionParams
-    var audioConfig = Object.assign({}, configuration, {
-      protocol,
-      port,
-      streamName: `${name}_audio`,
-      mediaElementId: 'red5pro-audio',
-      app: preferWhipWhep ? app : proxy,
-      mediaConstraints: {
-        audio: true,
-        video: false,
-      },
-      connectionParams: preferWhipWhep
-        ? connectionParams
-        : {
-            ...connectionParams,
-            host: host,
-            app: scope,
-          },
-    })
-    var publisher = preferWhipWhep ? new WHIPClient() : new RTCPublisher()
-    publisher
-      .init(audioConfig)
-      .then(function (publisherImpl) {
-        audioPublisher = publisherImpl
-        audioPublisher.on('*', onPublisherAudioEvent)
-        return audioPublisher.publish()
-      })
-      .then(function () {})
-      .catch(function (error) {
-        var jsonError =
-          typeof error === 'string' ? error : JSON.stringify(error, null, 2)
-        console.error(
-          '[Red5ProPublisher:AUDIO] :: Error in publishing audio - ' + jsonError
-        )
-      })
   }
 
   function setupPublisher(jsonResponse, mediaStream) {
@@ -394,7 +333,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       })
       .then(function () {
         onPublishSuccess(targetPublisher)
-        setupAudio(jsonResponse)
       })
       .catch(function (error) {
         var jsonError =
@@ -441,17 +379,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       if (targetPublisher) {
         targetPublisher.off('*', onPublisherEvent)
       }
-      if (audioPublisher) {
-        audioPublisher.off('*', onPublisherAudioEvent)
-      }
       targetPublisher = undefined
-      audioPublisher = undefined
     }
     unpublish(targetPublisher)
       .then(function () {
-        if (audioPublisher) {
-          return unpublish(audioPublisher)
-        }
         return true
       })
       .then(clearRefs)
