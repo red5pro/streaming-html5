@@ -23,7 +23,7 @@ NONINFRINGEMENT.   IN  NO  EVENT  SHALL INFRARED5, INC. BE LIABLE FOR ANY CLAIM,
 WHETHER IN  AN  ACTION  OF  CONTRACT,  TORT  OR  OTHERWISE,  ARISING  FROM,  OUT  OF  OR  IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
-;(function (window, document, red5prosdk) {
+;(function (window, document, red5prosdk, streamManagerUtil) {
   'use strict'
 
   var serverSettings = (function () {
@@ -98,61 +98,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       },
       qos: 3,
     },
-  }
-
-  function postTranscode(transcode) {
-    var host = configuration.host
-    var app = configuration.app
-    var streamName = configuration.stream1
-    var port = serverSettings.httpport
-    var baseUrl = protocol + '://' + host + ':' + port
-    var apiVersion = configuration.streamManagerAPI || '4.0'
-    var url =
-      baseUrl +
-      '/streammanager/api/' +
-      apiVersion +
-      '/admin/event/meta/' +
-      app +
-      '/' +
-      streamName +
-      '?accessToken=' +
-      accessToken
-    return new Promise(function (resolve, reject) {
-      fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(transcode),
-      })
-        .then(function (res) {
-          if (
-            res.headers.get('content-type') &&
-            res.headers
-              .get('content-type')
-              .toLowerCase()
-              .indexOf('application/json') >= 0
-          ) {
-            return res.json()
-          } else {
-            throw new TypeError('Could not properly parse response.')
-          }
-        })
-        .then(function (json) {
-          resolve(json)
-          provisionLink.href = url
-          provisionLink.innerText = url
-        })
-        .catch(function (error) {
-          var jsonError =
-            typeof error === 'string' ? error : JSON.stringify(error, null, 2)
-          console.error(
-            '[PublisherStreamManagerTest] :: Error - Could not POST transcode request. ' +
-              jsonError
-          )
-          reject(error)
-        })
-    })
   }
 
   function requestOrigin(configuration) {
@@ -276,7 +221,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     const { host, app, stream1 } = configuration
     var streams = generateTranscoderPost(configuration.stream1, transcoderForms)
     transcoderPOST.meta.stream = streams
-    postTranscode(host, app, stream1, transcoderPOST)
+    streamManagerUtil
+      .postTranscode(host, app, stream1, transcoderPOST)
       .then(function (response) {
         if (response.errorMessage) {
           console.error(
@@ -304,4 +250,4 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         })
       })
   }
-})(this, document, window.red5prosdk)
+})(this, document, window.red5prosdk, window.streamManagerUtil)
