@@ -158,7 +158,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     if (status >= 200 && status < 300) {
       const json = await result.json()
       if (json.errorMessage) {
-        throw new Error(json.errorMessage)
+        // Will handle errors in tests...
+        return json
+        // throw new Error(json.errorMessage)
       }
       return json
     } else if (StatusMap.has(status)) {
