@@ -139,35 +139,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       : {}
   }
 
-  function getUserMediaConfiguration() {
-    return {
-      mediaConstraints: {
-        audio: configuration.useAudio
-          ? configuration.mediaConstraints.audio
-          : false,
-        video: configuration.useVideo
-          ? configuration.mediaConstraints.video
-          : false,
-      },
-    }
-  }
-
-  function getRTMPMediaConfiguration() {
-    return {
-      mediaConstraints: {
-        audio: configuration.useAudio
-          ? configuration.mediaConstraints.audio
-          : false,
-        video: configuration.useVideo
-          ? {
-              width: configuration.cameraWidth,
-              height: configuration.cameraHeight,
-            }
-          : false,
-      },
-    }
-  }
-
   function unpublish() {
     return new Promise(function (resolve, reject) {
       var publisher = targetPublisher
