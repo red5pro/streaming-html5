@@ -431,30 +431,24 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       ? { ...params, ...getAuthenticationParams().connectionParams }
       : getAuthenticationParams().connectionParams
 
-    var rtcConfig = Object.assign(
-      {},
-      configuration,
-      defaultConfiguration,
-      getUserMediaConfiguration(),
-      {
-        protocol,
-        port,
-        streamName: name,
-        app: preferWhipWhep ? app : proxy,
-        bandwidth: {
-          audio: parseInt(bandwidthAudioField.value),
-          video: 512,
-        },
-        mediaConstraints: getUserMediaConfiguration(),
-        connectionParams: preferWhipWhep
-          ? connectionParams
-          : {
-              ...connectionParams,
-              host: host,
-              app: scope,
-            },
-      }
-    )
+    var rtcConfig = Object.assign({}, configuration, defaultConfiguration, {
+      protocol,
+      port,
+      streamName: name,
+      app: preferWhipWhep ? app : proxy,
+      bandwidth: {
+        audio: parseInt(bandwidthAudioField.value),
+        video: 512,
+      },
+      mediaConstraints: getUserMediaConfiguration(),
+      connectionParams: preferWhipWhep
+        ? connectionParams
+        : {
+            ...connectionParams,
+            host: host,
+            app: scope,
+          },
+    })
     var publisher = preferWhipWhep ? new WHIPClient() : new RTCPublisher()
     return publisher.init(rtcConfig)
   }

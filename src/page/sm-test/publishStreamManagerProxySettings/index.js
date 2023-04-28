@@ -455,30 +455,25 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     var connectionParams = params
       ? { ...params, ...getAuthenticationParams().connectionParams }
       : getAuthenticationParams().connectionParams
-    var rtcConfig = Object.assign(
-      {},
-      configuration,
-      defaultConfiguration,
-      getUserMediaConfiguration(),
-      {
-        protocol,
-        port,
-        streamName: name,
-        app: preferWhipWhep ? app : proxy,
-        keyFramerate: parseInt(keyFramerateField.value),
-        bandwidth: {
-          audio: parseInt(bandwidthAudioField.value),
-          video: parseInt(bandwidthVideoField.value),
-        },
-        connectionParams: preferWhipWhep
-          ? connectionParams
-          : {
-              ...connectionParams,
-              host: host,
-              app: scope,
-            },
-      }
-    )
+    var rtcConfig = Object.assign({}, configuration, defaultConfiguration, {
+      protocol,
+      port,
+      streamName: name,
+      app: preferWhipWhep ? app : proxy,
+      keyFramerate: parseInt(keyFramerateField.value),
+      bandwidth: {
+        audio: parseInt(bandwidthAudioField.value),
+        video: parseInt(bandwidthVideoField.value),
+      },
+      mediaConstraints: getUserMediaConfiguration(),
+      connectionParams: preferWhipWhep
+        ? connectionParams
+        : {
+            ...connectionParams,
+            host: host,
+            app: scope,
+          },
+    })
     console.log('-----')
     console.log(JSON.stringify(rtcConfig, null, 2))
     console.log('-----')
