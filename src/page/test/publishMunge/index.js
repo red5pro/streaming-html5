@@ -172,7 +172,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       streamMode: configuration.recordBroadcast ? 'record' : 'live',
       mungeOffer: (offerSDP) => {
         return offerSDP
-          .replace('opus/48000/2', 'opus/48000/8')
+          .replace('opus/48000/2', 'opus/48000/8') // 'multiopus/48000/8' ?
           .replace(
             'useinbandfec=1',
             'channel_mapping=0,6,1,2,3,4,5,7;num_streams=8;coupled_streams=0;maxaveragebitrate=510000;minptime=10;useinbandfec=1'
