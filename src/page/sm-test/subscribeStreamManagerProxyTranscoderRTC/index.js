@@ -392,11 +392,17 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
   }
 
-  function startup(selectedStreamVariantName) {
-    // Kick off.
-    requestEdge(configuration, selectedStreamVariantName)
-      .then(respondToEdge)
-      .catch(respondToEdgeFailure)
+  const startup = async (selectedStreamVariantName) => {
+    try {
+      await unsubscribe()
+    } catch (e) {
+      console.warn(e)
+    } finally {
+      // Kick off.
+      requestEdge(configuration, selectedStreamVariantName)
+        .then(respondToEdge)
+        .catch(respondToEdgeFailure)
+    }
   }
 
   requestABRSettings(configuration.stream1).then(function (settings) {
