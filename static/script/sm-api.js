@@ -164,6 +164,14 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       }
       return json
     } else if (StatusMap.has(status)) {
+      try {
+        const json = await result.json()
+        if (json.errorMessage) {
+          return json
+        }
+      } catch (e) {
+        console.warn(e)
+      }
       throw new Error(StatusMap.get(status))
     } else {
       throw new Error(StatusMap.get(0))
