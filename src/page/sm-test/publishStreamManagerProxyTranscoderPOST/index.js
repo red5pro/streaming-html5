@@ -59,6 +59,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var transcoderManifest
   var selectedTranscoderToPublish
 
+  var clearStatusEvent = window.red5proClearPublisherEvent // defined in src/template/partial/status-field-publisher.hbs
   var updateStatusFromEvent = window.red5proHandlePublisherEvent // defined in src/template/partial/status-field-publisher.hbs
   var streamTitle = document.getElementById('stream-title')
   var statisticsField = document.getElementById('statistics-field')
@@ -393,6 +394,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   function startup() {
+    clearStatusEvent()
+    onBitrateUpdate(0, 0)
+    onResolutionUpdate(0, 0)
     // Kick off.
     requestOrigin(configuration)
       .then(respondToOrigin)
