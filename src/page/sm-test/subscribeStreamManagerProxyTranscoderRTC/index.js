@@ -67,7 +67,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
     window.red5proHandleSubscriberEvent(event) // defined in src/template/partial/status-field-subscriber.hbs
   }
-  var instanceId = Math.floor(Math.random() * 0x10000).toString(16)
   var streamTitle = document.getElementById('stream-title')
   var statisticsField = document.getElementById('statistics-field')
   var bitrateField = document.getElementById('bitrate-field')
@@ -264,6 +263,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     var scope = jsonResponse.scope
     var name = jsonResponse.name
     var { protocol, port } = getSocketLocationFromProtocol()
+    var instanceId = Math.floor(Math.random() * 0x10000).toString(16)
 
     var connectionParams = params
       ? { ...params, ...getAuthenticationParams().connectionParams }
