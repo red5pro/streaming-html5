@@ -212,7 +212,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         inputField = document.getElementById('param-name' + fieldCount)
         valueField = document.getElementById('param-value' + fieldCount)
         if (inputField.value && valueField.value) {
-          kvObject[inputField.value.trim()] = valueField.value.trim()
+          kvObject[inputField.value.trim()] = encodeURIComponent(
+            valueField.value.trim()
+          )
         }
         fieldCount = fieldCount + 1
       }

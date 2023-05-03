@@ -1,66 +1,77 @@
 /*
 Copyright © 2015 Infrared5, Inc. All rights reserved.
 
-The accompanying code comprising examples for use solely in conjunction with Red5 Pro (the "Example Code") 
-is  licensed  to  you  by  Infrared5  Inc.  in  consideration  of  your  agreement  to  the  following  
-license terms  and  conditions.  Access,  use,  modification,  or  redistribution  of  the  accompanying  
+The accompanying code comprising examples for use solely in conjunction with Red5 Pro (the "Example Code")
+is  licensed  to  you  by  Infrared5  Inc.  in  consideration  of  your  agreement  to  the  following
+license terms  and  conditions.  Access,  use,  modification,  or  redistribution  of  the  accompanying
 code  constitutes your acceptance of the following license terms and conditions.
 
-Permission is hereby granted, free of charge, to you to use the Example Code and associated documentation 
-files (collectively, the "Software") without restriction, including without limitation the rights to use, 
-copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit 
+Permission is hereby granted, free of charge, to you to use the Example Code and associated documentation
+files (collectively, the "Software") without restriction, including without limitation the rights to use,
+copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit
 persons to whom the Software is furnished to do so, subject to the following conditions:
 
-The Software shall be used solely in conjunction with Red5 Pro. Red5 Pro is licensed under a separate end 
-user  license  agreement  (the  "EULA"),  which  must  be  executed  with  Infrared5,  Inc.   
+The Software shall be used solely in conjunction with Red5 Pro. Red5 Pro is licensed under a separate end
+user  license  agreement  (the  "EULA"),  which  must  be  executed  with  Infrared5,  Inc.
 An  example  of  the EULA can be found on our website at: https://account.red5pro.com/assets/LICENSE.txt.
 
 The above copyright notice and this license shall be included in all copies or portions of the Software.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,  INCLUDING  BUT  
-NOT  LIMITED  TO  THE  WARRANTIES  OF  MERCHANTABILITY, FITNESS  FOR  A  PARTICULAR  PURPOSE  AND  
-NONINFRINGEMENT.   IN  NO  EVENT  SHALL INFRARED5, INC. BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, 
-WHETHER IN  AN  ACTION  OF  CONTRACT,  TORT  OR  OTHERWISE,  ARISING  FROM,  OUT  OF  OR  IN CONNECTION 
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,  INCLUDING  BUT
+NOT  LIMITED  TO  THE  WARRANTIES  OF  MERCHANTABILITY, FITNESS  FOR  A  PARTICULAR  PURPOSE  AND
+NONINFRINGEMENT.   IN  NO  EVENT  SHALL INFRARED5, INC. BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+WHETHER IN  AN  ACTION  OF  CONTRACT,  TORT  OR  OTHERWISE,  ARISING  FROM,  OUT  OF  OR  IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
-import { setDrm, videoTransformFunction, audioTransformFunction, Environments } from '../../lib/castlabs/rtc-drm-transform/rtc-drm-transform.min.js'
+import {
+  setDrm,
+  videoTransformFunction,
+  audioTransformFunction,
+  Environments,
+} from '../../lib/castlabs/rtc-drm-transform/rtc-drm-transform.min.js'
 
-var serverSettings = (function() {
-  var settings = sessionStorage.getItem('r5proServerSettings');
+var serverSettings = (function () {
+  var settings = sessionStorage.getItem('r5proServerSettings')
   try {
-    return JSON.parse(settings);
-  }
-  catch (e) {
-    console.error('Could not read server settings from sessionstorage: ' + e.message);
-  }
-  return {};
-})();
-
-var configuration = (function () {
-  var conf = sessionStorage.getItem('r5proTestBed');
-  try {
-    return JSON.parse(conf);
-  }
-  catch (e) {
-    console.error('Could not read testbed configuration from sessionstorage: ' + e.message);
+    return JSON.parse(settings)
+  } catch (e) {
+    console.error(
+      'Could not read server settings from sessionstorage: ' + e.message
+    )
   }
   return {}
-})();
-red5prosdk.setLogLevel(configuration.verboseLogging ? red5prosdk.LOG_LEVELS.TRACE : red5prosdk.LOG_LEVELS.WARN);
+})()
+
+var configuration = (function () {
+  var conf = sessionStorage.getItem('r5proTestBed')
+  try {
+    return JSON.parse(conf)
+  } catch (e) {
+    console.error(
+      'Could not read testbed configuration from sessionstorage: ' + e.message
+    )
+  }
+  return {}
+})()
+red5prosdk.setLogLevel(
+  configuration.verboseLogging
+    ? red5prosdk.LOG_LEVELS.TRACE
+    : red5prosdk.LOG_LEVELS.WARN
+)
 
 const EncryptTypes = {
   CBCS: 'cbcs',
-  CENC: 'cenc'
+  CENC: 'cenc',
 }
 
 const EntryptionTypeValues = {
   CLEARKEY: 'clearkey',
   WIDEVINE: 'widevine',
   FAIRPLAY: 'fairplay',
-  PLAYREADY: 'playready'
+  PLAYREADY: 'playready',
 }
 
-const getPortAndProtocol = host => {
+const getPortAndProtocol = (host) => {
   let ipReg = /^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/
   let localhostReg = /^localhost.*/
   let isIPOrLocalhost = ipReg.exec(host) || localhostReg.exec(host)
@@ -69,7 +80,7 @@ const getPortAndProtocol = host => {
   return { port, protocol }
 }
 
-const getValueFromId = id => {
+const getValueFromId = (id) => {
   try {
     const el = document.querySelector(`#${id}`)
     return el ? el.value : undefined
@@ -79,54 +90,63 @@ const getValueFromId = id => {
   return undefined
 }
 
-const getEncryptionTypeFromValue = value => {
+const getEncryptionTypeFromValue = (value) => {
   if (value.toLowerCase() === EntryptionTypeValues.CLEARKEY.toLowerCase()) {
     return EncryptTypes.CBCS
   }
   return EncryptTypes.CENC
 }
 
-const encryptKeyValue = value => new Uint8Array(atob(value).split("").map(c => c.charCodeAt(0)))
+const encryptKeyValue = (value) =>
+  new Uint8Array(
+    atob(value)
+      .split('')
+      .map((c) => c.charCodeAt(0))
+  )
 
 const getAuthenticationParams = () => {
   const auth = configuration.authentication
   return auth && auth.enabled
     ? {
-      connectionParams: {
-        username: auth.username,
-        password: auth.password,
-        token: auth.token
+        connectionParams: {
+          username: auth.username,
+          password: auth.password,
+          token: auth.token,
+        },
       }
-    }
     : {}
 }
 
 const getRegionIfDefined = () => {
   var region = configuration.streamManagerRegion
-  if (typeof region === 'string' && region.length > 0 && region !== 'undefined') {
+  if (
+    typeof region === 'string' &&
+    region.length > 0 &&
+    region !== 'undefined'
+  ) {
     return region
   }
   return undefined
 }
 
-const getEdgeConnection = async (config, settings) => {
-  const { host, app, stream1: streamName, streamManagerAPI: version } = config
-  const { protocol, httpport } = settings
-  const url = `${protocol}://${host}:${port}/streammanager/api/${version}/event/${app}/${streamName}?action=subscribe` 
-  let region = getRegionIfDefined()
-  if (region) {
-    url += '&region=' + region + '&strict=true'
-  }
-  try {
-    const response = await fetch(url)
-    const json = await response.json()
-    if (json.errorMessage) {
-      throw new Error(json.errorMessage)
+const requestEdge = async (configuration) => {
+  const { preferWhipWhep, host, app, stream1 } = configuration
+  var region = getRegionIfDefined()
+  if (!preferWhipWhep) {
+    return streamManagerUtil.getOrigin(host, app, stream1, region)
+  } else {
+    // WHIP/WHEP knows how to handle proxy requests.
+    return {
+      serverAddress: host,
+      scope: app,
+      name: stream1,
+      params: region
+        ? {
+            region,
+            strict: true,
+          }
+        : undefined,
     }
-    const { serverAddress, scope } = json
-    return { host: serverAddress, app: scope }
-  } catch (e) {
-    console.error(e)
   }
 }
 
@@ -141,101 +161,133 @@ const encryptedAddressField = document.querySelector('#encrypted-address-field')
 const decryptedAddressField = document.querySelector('#decrypted-address-field')
 const { port, protocol } = getPortAndProtocol(configuration.host)
 const baseConfig = {
-  ...configuration, 
-  ...getAuthenticationParams(),
+  ...configuration,
   protocol,
   port,
   streamName: configuration.stream1,
   mediaElementId: 'red5pro-subscriber',
   rtcConfiguration: {
-      iceServers: [{urls: 'stun:stun2.l.google.com:19302'}],
-      iceCandidatePoolSize: 2,
-      bundlePolicy: 'max-bundle',
-      encodedInsertableStreams: true,
-      // audio jitter buffer settings are part of an origin trial, not sure if they make any
-      // difference at all atm: https://bugs.chromium.org/p/chromium/issues/detail?id=904764
-      // https://source.chromium.org/chromium/chromium/src/+/main:third_party/blink/renderer/modules/peerconnection/rtc_configuration.idl;l=51
-      rtcAudioJitterBufferMaxPackets: 10,
-      rtcAudioJitterBufferFastAccelerate: true,
-  }
+    iceServers: [{ urls: 'stun:stun2.l.google.com:19302' }],
+    iceCandidatePoolSize: 2,
+    bundlePolicy: 'max-bundle',
+    encodedInsertableStreams: true,
+    // audio jitter buffer settings are part of an origin trial, not sure if they make any
+    // difference at all atm: https://bugs.chromium.org/p/chromium/issues/detail?id=904764
+    // https://source.chromium.org/chromium/chromium/src/+/main:third_party/blink/renderer/modules/peerconnection/rtc_configuration.idl;l=51
+    rtcAudioJitterBufferMaxPackets: 10,
+    rtcAudioJitterBufferFastAccelerate: true,
+  },
 }
 document.querySelector('#stream-title').innerText = baseConfig.streamName
 
 // newer, properly standardized RTCRtpScriptTransform API, only supported by Safari atm. The worker just pushes
 // arriving video frames back here to run through videoTransformFunction() just like Chrome
-const worker = new Worker('./worker.js', {name: 'RTCRtpScriptTransform worker', type: 'module'});
+const worker = new Worker('./worker.js', {
+  name: 'RTCRtpScriptTransform worker',
+  type: 'module',
+})
 worker.onmessage = (m) => {
-    if (m.data.streamType === 'video') {
-        videoTransformFunction(m.data.frame, null)
-    } else {
-        audioTransformFunction(m.data.frame, null)
-    }
+  if (m.data.streamType === 'video') {
+    videoTransformFunction(m.data.frame, null)
+  } else {
+    audioTransformFunction(m.data.frame, null)
+  }
 }
 
 const monitorBitrate = (pc, bitrateField, packetsField, resolutionField) => {
-  return trackBitrate(pc,
+  return trackBitrate(
+    pc,
     (b, p) => {
       bitrateField.innerText = b === 0 ? 'N/A' : Math.floor(b)
       packetsField.innerText = p
-    }, 
+    },
     (w, h) => {
       resolutionField.innerText = `${w}x${h}`
-    }, true)
+    },
+    true
+  )
 }
 
 const monitor = (sub, typePrefix) => {
-  document.querySelector(`#${typePrefix}-statistics-field`).classList.remove('hidden')
-  const ticket = monitorBitrate(sub.getPeerConnection(), 
+  document
+    .querySelector(`#${typePrefix}-statistics-field`)
+    .classList.remove('hidden')
+  const ticket = monitorBitrate(
+    sub.getPeerConnection(),
     document.querySelector(`#${typePrefix}-bitrate-field`),
     document.querySelector(`#${typePrefix}-packets-field`),
     document.querySelector(`#${typePrefix}-resolution-field`)
-  ) 
+  )
   monitorTickets.push(ticket)
 }
 
-const eventExclusions = ['Subscribe.Time.Update', 'Subscribe.Playback.Change', 'Subscribe.Volume.Change']
-const statusExclusions = [...eventExclusions,
-  'Subscribe.Metadata', 'WebRTC.DataChannel.Open',
-  'WebRTC.DataChannel.Available', 'MessageTransport.Change',
-  'Subscribe.VideoDimensions.Change', 'Subscribe.Autoplay.Muted']
-const onEncryptedSubscriberEvent = event => {
-    const { type } = event
-    if (eventExclusions.indexOf(type) > -1) return
-    console.log(`[Subscriber::Encrypted] ${type}`)
+const eventExclusions = [
+  'Subscribe.Time.Update',
+  'Subscribe.Playback.Change',
+  'Subscribe.Volume.Change',
+]
+const statusExclusions = [
+  ...eventExclusions,
+  'Subscribe.Metadata',
+  'WebRTC.DataChannel.Open',
+  'WebRTC.DataChannel.Available',
+  'MessageTransport.Change',
+  'Subscribe.VideoDimensions.Change',
+  'Subscribe.Autoplay.Muted',
+]
+const onEncryptedSubscriberEvent = (event) => {
+  const { type } = event
+  if (eventExclusions.indexOf(type) > -1) return
+  console.log(`[Subscriber::Encrypted] ${type}`)
 
-    if (statusExclusions.indexOf(type) > -1) return
-    encrypedStatusField.innerText = type
+  if (statusExclusions.indexOf(type) > -1) return
+  encrypedStatusField.innerText = type
 }
 
-const onDecryptedSubscriberEvent = event => {
-    const { type } = event
-    if (eventExclusions.indexOf(type) > -1) return
-    console.log(`[Subscriber::Decrypted] ${type}`)
+const onDecryptedSubscriberEvent = (event) => {
+  const { type } = event
+  if (eventExclusions.indexOf(type) > -1) return
+  console.log(`[Subscriber::Decrypted] ${type}`)
 
-    if (statusExclusions.indexOf(type) > -1) return
-    decryptedStatusField.innerText = type
+  if (statusExclusions.indexOf(type) > -1) return
+  decryptedStatusField.innerText = type
 }
 
 const encryptedPlayback = async () => {
+  const { app, proxy, preferWhipWhep } = configuration
+  const { WHEPClient, RTCSubscriber } = red5prosdk
   try {
-    const { proxy } = configuration
-    const { rtcConfiguration, connectionParams } = baseConfig
-    const edgeConnection = await getEdgeConnection(baseConfig, serverSettings)
-    const connParams = connectionParams ? {...connectionParams, ...edgeConnection} : edgeConnection
-    const config = {...baseConfig,
-      app: proxy,
+    const { proxy, app } = configuration
+    const { rtcConfiguration } = baseConfig
+    const edgeConnection = await requestEdge(baseConfig)
+    const { serverAddress, scope } = edgeConnection
+    let connectionParams = edgeConnection
+      ? { ...edgeConnection, ...getAuthenticationParams().connectionParams }
+      : getAuthenticationParams().connectionParams
+    var config = Object.assign({}, baseConfig, {
+      protocol,
+      port,
+      app: preferWhipWhep ? app : proxy,
       mediaElementId: 'red5pro-encrypted',
       rtcConfiguration: {
         ...rtcConfiguration,
-        encodedInsertableStreams: false
+        encodedInsertableStreams: false,
       },
-      connectionParams: connParams
-    }
-    const { host } = connParams
-    encryptedAddressField.innerText = `Edge Address: ${host}`
-    
-    encryptedSubscriber = await new red5prosdk.RTCSubscriber().init(config)
-    encryptedSubscriber.on('*', event => onEncryptedSubscriberEvent(event))
+      connectionParams: preferWhipWhep
+        ? connectionParams
+        : {
+            ...connectionParams,
+            host: serverAddress,
+            app: scope,
+          },
+    })
+    encryptedAddressField.innerText = `Edge Address: ${serverAddress}`
+
+    encryptedSubscriber = preferWhipWhep
+      ? new WHEPClient()
+      : new RTCSubscriber()
+    await encryptedSubscriber.init(config)
+    encryptedSubscriber.on('*', (event) => onEncryptedSubscriberEvent(event))
     await encryptedSubscriber.subscribe()
 
     // UI.
@@ -247,55 +299,65 @@ const encryptedPlayback = async () => {
 }
 
 const decryptPlayback = async () => {
+  const { app, proxy, preferWhipWhep } = configuration
+  const { WHEPClient, RTCSubscriber } = red5prosdk
   decryptButton.disabled = true
   try {
-      const transforms = {
-          video: videoTransformFunction,
-          audio: audioTransformFunction,
-          worker: worker
-      }
+    const transforms = {
+      video: videoTransformFunction,
+      audio: audioTransformFunction,
+      worker: worker,
+    }
 
-      const { proxy } = configuration
-      const { connectionParams } = baseConfig
-      const edgeConnection = await getEdgeConnection(baseConfig, serverSettings)
-      const connParams = connectionParams ? {...connectionParams, ...edgeConnection} : edgeConnection
-      const config = {
-        ...baseConfig,
-        app: proxy,
-        connectionParams: connParams
-      }
-      const { host } = connParams
-      decryptedAddressField.innerText = `Edge Address: ${host}`
+    const { proxy } = configuration
+    const edgeConnection = await requestEdge(baseConfig)
+    const { serverAddress, scope } = edgeConnection
+    let connectionParams = edgeConnection
+      ? { ...edgeConnection, ...getAuthenticationParams().connectionParams }
+      : getAuthenticationParams().connectionParams
+    var config = Object.assign({}, baseConfig, {
+      protocol,
+      port,
+      app: preferWhipWhep ? app : proxy,
+      connectionParams: preferWhipWhep
+        ? connectionParams
+        : {
+            ...connectionParams,
+            host: serverAddress,
+            app: scope,
+          },
+    })
+    decryptedAddressField.innerText = `Edge Address: ${serverAddress}`
 
-      subscriber = await new red5prosdk.RTCSubscriber().init(config, transforms)
-      subscriber.on('*', event => onDecryptedSubscriberEvent(event))
-      await subscriber.subscribe()
+    subscriber = await new red5prosdk.RTCSubscriber().init(config, transforms)
+    subscriber.on('*', (event) => onDecryptedSubscriberEvent(event))
+    await subscriber.subscribe()
 
-      const element = document.querySelector(`#${baseConfig.mediaElementId}`)
-      const encryption = getEncryptionTypeFromValue(getValueFromId('type-select'))
-      const keyIdOrIV = encryptKeyValue(getValueFromId('key-input'))
+    const element = document.querySelector(`#${baseConfig.mediaElementId}`)
+    const encryption = getEncryptionTypeFromValue(getValueFromId('type-select'))
+    const keyIdOrIV = encryptKeyValue(getValueFromId('key-input'))
 
-      const drmConfig = {
-        environment: Environments.Staging,
-        merchant: getValueFromId('merchant-input'),
-        userId: getValueFromId('user-input'),
-        sessionId: getValueFromId('session-input'),
-        assetId: null,
-        variantId: null,
-        audioEncrypted: false,
-        encryption,
-        keyId: encryption === EncryptTypes.CBCS ? null : keyIdOrIV,
-        iv: encryption !== EncryptTypes.CBCS ? null : keyIdOrIV
-      }
-      // castLabs.
-      setDrm(element, drmConfig)
+    const drmConfig = {
+      environment: Environments.Staging,
+      merchant: getValueFromId('merchant-input'),
+      userId: getValueFromId('user-input'),
+      sessionId: getValueFromId('session-input'),
+      assetId: null,
+      variantId: null,
+      audioEncrypted: false,
+      encryption,
+      keyId: encryption === EncryptTypes.CBCS ? null : keyIdOrIV,
+      iv: encryption !== EncryptTypes.CBCS ? null : keyIdOrIV,
+    }
+    // castLabs.
+    setDrm(element, drmConfig)
 
-      // UI.
-      monitor(subscriber, 'decrypted')
+    // UI.
+    monitor(subscriber, 'decrypted')
   } catch (e) {
-      console.error(e)
-      decryptButton.disabled = false
-      decryptedStatusField.innerText = typeof e === 'string' ? e : e.message
+    console.error(e)
+    decryptButton.disabled = false
+    decryptedStatusField.innerText = typeof e === 'string' ? e : e.message
   }
 }
 
@@ -303,7 +365,7 @@ const decryptPlayback = async () => {
 encryptedPlayback()
 decryptButton.onclick = () => decryptPlayback()
 
-  // Clean up.
+// Clean up.
 let shuttingDown = false
 const shutdown = async () => {
   if (shuttingDown) return
@@ -331,5 +393,5 @@ const shutdown = async () => {
     subscriber = undefined
   }
 }
-window.addEventListener('pagehide', () => shutdown());
-window.addEventListener('beforeunload', () => shutdown());
+window.addEventListener('pagehide', () => shutdown())
+window.addEventListener('beforeunload', () => shutdown())

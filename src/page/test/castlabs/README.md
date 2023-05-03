@@ -13,7 +13,12 @@ This example uses the 3rd Party library provided from `castlabs`: [rtc-drm-trans
 The transform utilities are imported from the `castLabs` library for use as such:
 
 ```js
-import { setDrm, videoTransformFunction, audioTransformFunction, Environments } from '../../lib/castlabs/rtc-drm-transform/rtc-drm-transform.min.js'
+import {
+  setDrm,
+  videoTransformFunction,
+  audioTransformFunction,
+  Environments,
+} from '../../lib/castlabs/rtc-drm-transform/rtc-drm-transform.min.js'
 ```
 
 And then provided to a Red5Pro `RTCSubscriber` during initialization:
@@ -22,7 +27,7 @@ And then provided to a Red5Pro `RTCSubscriber` during initialization:
 const transforms = {
   video: videoTransformFunction,
   audio: audioTransformFunction,
-  worker: worker
+  worker: worker,
 }
 subscriber = await new red5prosdk.RTCSubscriber().init(config, transforms)
 ```
@@ -41,12 +46,12 @@ This example displays the encrypted stream along with the ability to playback de
 
 In particular, you will need to know the following that is provided as User Input settings on the interface for this example:
 
-* `environment`: The environment on castLabs DRMtoday account that your encrypted stream resides.
-* `merchant`: The merchant account within DRMtoday where the stream resides.
-* `user`: The user account under the `merchant` account that has access to the stream.
-* `session`: The session related to the stream.
-* `encryption type`: The type of DRM encryption used on the stream (such as `WideVine`, `FairPlay`, etc.).
-* `key id / iv`: The key id or iv id value to be used in decryption. This should be provided to you by the `merchant`. _Currently this is a `base64` stream._
+- `environment`: The environment on castLabs DRMtoday account that your encrypted stream resides.
+- `merchant`: The merchant account within DRMtoday where the stream resides.
+- `user`: The user account under the `merchant` account that has access to the stream.
+- `session`: The session related to the stream.
+- `encryption type`: The type of DRM encryption used on the stream (such as `WideVine`, `FairPlay`, etc.).
+- `key id / iv`: The key id or iv id value to be used in decryption. This should be provided to you by the `merchant`. _Currently this is a `base64` stream._
 
 > It is not the intent of this document to describe the `DRMtoday` platform. Please refer to their documentation for more information.
 
@@ -56,9 +61,9 @@ After providing the transforms and/or web worker to the `RTCSubscriber` and star
 
 ```js
 const transforms = {
-    video: videoTransformFunction,
-    audio: audioTransformFunction,
-    worker: worker
+  video: videoTransformFunction,
+  audio: audioTransformFunction,
+  worker: worker,
 }
 
 subscriber = await new red5prosdk.RTCSubscriber().init(config, transforms)
@@ -76,8 +81,8 @@ const drmConfig = {
   variantId: null,
   audioEncrypted: false,
   encryption: `cbcs`,
-  keyId: encryption === EncryptTypes.CBCS ? null : keyIdOrIV,
-  iv: encryption !== EncryptTypes.CBCS ? null : keyIdOrIV
+  keyId,
+  iv,
 }
 // castLabs.
 setDrm(element, drmConfig)
