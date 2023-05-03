@@ -23,7 +23,7 @@ NONINFRINGEMENT.   IN  NO  EVENT  SHALL INFRARED5, INC. BE LIABLE FOR ANY CLAIM,
 WHETHER IN  AN  ACTION  OF  CONTRACT,  TORT  OR  OTHERWISE,  ARISING  FROM,  OUT  OF  OR  IN CONNECTION 
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
-(function(window, document, red5prosdk) {
+(function(window, document, red5prosdk, CustomControls) {
 
   const serverSettings = (() => {
     const settings = sessionStorage.getItem('r5proServerSettings')
@@ -37,9 +37,18 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   red5prosdk.setLogLevel(configuration.verboseLogging ? red5prosdk.LOG_LEVELS.TRACE : red5prosdk.LOG_LEVELS.WARN)
 
   let subscriber
+  let controls
+
   let instanceId = Math.floor(Math.random() * 0x10000).toString(16);
   let protocol = serverSettings.protocol
   let isSecure = protocol === 'https'
+
+  const subscribeButton = document.getElementById('subscribe-button')
+  const baseCheck = document.getElementById('base-check')
+  const fullCheck = document.getElementById('full-check')
+  const urlInput = document.getElementById('url-input')
+  const controlsCheck = document.getElementById('controls-check')
+  const customControls = document.querySelector('.custom-controls')
 
   const updateStatusFromEvent = window.red5proHandleSubscriberEvent // defined in src/template/partial/status-field-subscriber.hbs
   const streamTitle = document.getElementById('stream-title')
@@ -83,7 +92,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   // Base configuration to extend in providing specific tech failover configurations.
   let defaultConfiguration = (function(useVideo, useAudio) {
 const { protocol, port } = getSocketLocationFromProtocol()
-    let c = { protocol, port }    if (!useVideo) {
+    let c = { protocol, port }
+    if (!useVideo) {
       c.videoEncoding = red5prosdk.PlaybackVideoEncoder.NONE
     }
     if (!useAudio) {
@@ -105,6 +115,8 @@ const { protocol, port } = getSocketLocationFromProtocol()
         if (data.error) {
           console.log('[Red5ProSubscriber::Error', data.error)
         }
+      } else if (type === 'Subscribe.Play.Unpublish') {
+        showModal(generateUnpublishContent())
       }
     }
   }
@@ -197,6 +209,41 @@ const { protocol, port } = getSocketLocationFromProtocol()
       : {};
   }
 
+  const generateUnpublishContent = () => {
+    const content = document.createElement('div')
+    const line1 = document.createElement('p')
+    line1.innerHTML = `The Broadcast for <span style="color: #db1f26;">${configuration.stream1}</span> has ended.`
+    const line2 = document.createElement('p')
+    const text = document.createTextNode('You will continue to have the ability to scrub and playback the stream up until this point.')
+    line2.appendChild(text)
+    content.appendChild(line1)
+    content.appendChild(document.createElement('br'))
+    content.appendChild(line2)
+    return content
+  }
+
+  const showModal = content => {
+    var style = 'padding: 10px; line-height: 1.3em;'
+    content.style = style
+    const div = document.createElement('div')
+    div.classList.add('modal')
+    const container = document.createElement('div')
+    const button = document.createElement('a')
+    const close = document.createTextNode('close')
+    button.href = "#"
+    button.appendChild(close)
+    button.classList.add('modal-close')
+    container.appendChild(button)
+    container.appendChild(content)
+    div.appendChild(container)
+    document.body.appendChild(div)
+    button.addEventListener('click', event => {
+      event.preventDefault()
+      document.body.removeChild(div)
+      return false
+    })
+  }
+
   // Request to unsubscribe.
   const unsubscribe = async () => {
     if (subscriber) {
@@ -212,23 +259,27 @@ const { protocol, port } = getSocketLocationFromProtocol()
       subscriber = undefined
     }
   }
+  
+  const subscribe = async (serverAddress, scope, baseURL, fullURL, useCustomControls) => {
+    subscribeButton.disabled = true
+    urlInput.disabled = true
+    if (useCustomControls) {
+      customControls.classList.remove('hidden')
+    }
+    window.scrollTo(0, document.body.scrollHeight)
 
-  // Define tech specific configurations for each failover item.
-  const config = {...configuration,
-    ...defaultConfiguration,
-    ...getAuthenticationParams(),
-    ... {
-    streamName: configuration.stream1
-  }}
-  const rtcConfig = {...config, ...{
-    subscriptionId: 'subscriber-' + instanceId,
-    enableLiveSeek: true
-  }}
-
-  const subscribe = async (serverAddress, scope) => {
     try {
-      const connParams = rtcConfig.connectionParams || {}
-      rtcConfig = {...rtcConfig, ...{
+      const connParams = config.connectionParams || {}
+      const rtcConfig = {...config, ...{
+        subscriptionId: 'subscriber-' + instanceId,
+        liveSeek: {
+          enabled: true,
+          // Point to CDN which will store the HLS DVR files...
+          baseURL,
+          fullURL,
+          usePlaybackControlsUI: !useCustomControls,
+          options: {debug: true, backBufferLength: 0},
+        },
         app: configuration.proxy,
         connectionParams: {...connParams, ...{
           host: serverAddress,
@@ -237,6 +288,8 @@ const { protocol, port } = getSocketLocationFromProtocol()
       }}
       subscriber = await new red5prosdk.RTCSubscriber().init(rtcConfig)
       subscriber.on('*', onSubscriberEvent)
+      controls = new CustomControls(subscriber)
+    
       streamTitle.innerText = configuration.stream1
       await subscriber.subscribe()
       onSubscribeSuccess(subscriber)
@@ -244,6 +297,9 @@ const { protocol, port } = getSocketLocationFromProtocol()
       var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
       console.error('[Red5ProSubscriber] :: Error in subscribing - ' + jsonError)
       onSubscribeFail(jsonError)
+      subscribeButton.disabled = false
+      urlInput.disabled = false
+      window.scrollTo(0, 0)
     }
   }
 
@@ -262,21 +318,13 @@ const { protocol, port } = getSocketLocationFromProtocol()
   window.addEventListener('pagehide', shutdown)
   window.addEventListener('beforeunload', shutdown)
 
-  var retryCount = 0;
-  var retryLimit = 3;
-  const respondToEdge = (response) => {
-    const {
-      scope,
-      serverAddress
-    } = response
-    subscribe(serverAddress, scope)
-  }
-
-  const respondToEdgeFailure = (error) => {
+  let retryCount = 0;
+  let retryLimit = 3;
+  const respondToEdgeFailure = (error, config, baseURL, fullURL, useCustomControls) => {
     if (retryCount++ < retryLimit) {
       var retryTimer = setTimeout(function () {
         clearTimeout(retryTimer)
-        startup()
+        startup(config, baseURL, fullURL, useCustomControls)
       }, 1000)
     }
     else {
@@ -286,12 +334,49 @@ const { protocol, port } = getSocketLocationFromProtocol()
   }
 
   // Start
-  const startup = () => {
-    requestEdge(rtcConfig)
-      .then(respondToEdge)
-      .catch(respondToEdgeFailure)
+  const startup = (config, baseURL, fullURL, useCustomControls) => {
+    requestEdge(config)
+      .then((response) => {
+        const {
+          scope,
+          serverAddress
+        } = response
+        subscribe(serverAddress, scope, baseURL, fullURL, useCustomControls)
+      })
+      .catch(error => {
+        respondToEdgeFailure(error, config, baseURL, fullURL, useCustomControls)
+      })
   }
-  startup()
 
-})(this, document, window.red5prosdk)
+  baseCheck.onchange = () => {
+    if (baseCheck.checked) {
+      fullCheck.checked = false
+    }
+  }
+  fullCheck.onchange = () => {
+    if (fullCheck.checked) {
+      baseCheck.checked = false
+    }
+  }
+
+  // Start
+  // Define tech specific configurations for each failover item.
+  const config = {...configuration,
+    ...defaultConfiguration,
+    ...getAuthenticationParams(),
+    ... {
+    streamName: configuration.stream1
+  }}
+  
+  subscribeButton.addEventListener('click', () => {
+    const useCustomControls = controlsCheck.checked
+    const baseURL = baseCheck.checked ? urlInput.value : undefined
+    const fullURL = fullCheck.checked ? urlInput.value : undefined
+    if (!baseURL && !fullURL) {
+      return;
+    }
+    startup(config, baseURL, fullURL, useCustomControls)
+  })
+
+})(this, document, window.red5prosdk, window.CustomControls)
 
