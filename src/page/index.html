@@ -318,18 +318,6 @@
             }
           ]
         }
-        hideShowICEOptions();
-        seal(configuration);
-      });
-
-      iceUsername.addEventListener('blur', function () {
-        if (configuration.rtcConfiguration.iceServers.length <= 0) {
-          configuration.rtcConfiguration.iceServers = [
-            {
-              "urls": iceField.value
-            }
-          ]
-        }
         configuration.rtcConfiguration.iceServers[0].username = iceUsername.value;
         seal(configuration);
       });
