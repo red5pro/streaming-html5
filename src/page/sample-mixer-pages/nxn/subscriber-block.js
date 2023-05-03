@@ -1,26 +1,26 @@
 /*
 Copyright © 2015 Infrared5, Inc. All rights reserved.
 
-The accompanying code comprising examples for use solely in conjunction with Red5 Pro (the "Example Code") 
-is  licensed  to  you  by  Infrared5  Inc.  in  consideration  of  your  agreement  to  the  following  
-license terms  and  conditions.  Access,  use,  modification,  or  redistribution  of  the  accompanying  
+The accompanying code comprising examples for use solely in conjunction with Red5 Pro (the "Example Code")
+is  licensed  to  you  by  Infrared5  Inc.  in  consideration  of  your  agreement  to  the  following
+license terms  and  conditions.  Access,  use,  modification,  or  redistribution  of  the  accompanying
 code  constitutes your acceptance of the following license terms and conditions.
 
-Permission is hereby granted, free of charge, to you to use the Example Code and associated documentation 
-files (collectively, the "Software") without restriction, including without limitation the rights to use, 
-copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit 
+Permission is hereby granted, free of charge, to you to use the Example Code and associated documentation
+files (collectively, the "Software") without restriction, including without limitation the rights to use,
+copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit
 persons to whom the Software is furnished to do so, subject to the following conditions:
 
-The Software shall be used solely in conjunction with Red5 Pro. Red5 Pro is licensed under a separate end 
-user  license  agreement  (the  "EULA"),  which  must  be  executed  with  Infrared5,  Inc.   
+The Software shall be used solely in conjunction with Red5 Pro. Red5 Pro is licensed under a separate end
+user  license  agreement  (the  "EULA"),  which  must  be  executed  with  Infrared5,  Inc.
 An  example  of  the EULA can be found on our website at: https://account.red5pro.com/assets/LICENSE.txt.
 
 The above copyright notice and this license shall be included in all copies or portions of the Software.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,  INCLUDING  BUT  
-NOT  LIMITED  TO  THE  WARRANTIES  OF  MERCHANTABILITY, FITNESS  FOR  A  PARTICULAR  PURPOSE  AND  
-NONINFRINGEMENT.   IN  NO  EVENT  SHALL INFRARED5, INC. BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, 
-WHETHER IN  AN  ACTION  OF  CONTRACT,  TORT  OR  OTHERWISE,  ARISING  FROM,  OUT  OF  OR  IN CONNECTION 
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,  INCLUDING  BUT
+NOT  LIMITED  TO  THE  WARRANTIES  OF  MERCHANTABILITY, FITNESS  FOR  A  PARTICULAR  PURPOSE  AND
+NONINFRINGEMENT.   IN  NO  EVENT  SHALL INFRARED5, INC. BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+WHETHER IN  AN  ACTION  OF  CONTRACT,  TORT  OR  OTHERWISE,  ARISING  FROM,  OUT  OF  OR  IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 /**
@@ -31,18 +31,17 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  * [Note] :: The streamUtils.subscriber is an entry point to the subscriber map maintained in this script.
  */
-((window, document, red5prosdk, getIsAvailable) => {
-
+;((window, document, red5prosdk, getIsAvailable) => {
   // Hold a Set mapping stream name to SubscriberBlock.
   let subscriberMap = {}
   const elementIdRegex = /(subscriber-).*(-container)/
 
   /**
-    * Finds and returns SubscriberBlock associated with stream name.
-    *
-    * @param {String} name
-    */
-  const findByStreamName = name => {
+   * Finds and returns SubscriberBlock associated with stream name.
+   *
+   * @param {String} name
+   */
+  const findByStreamName = (name) => {
     if (subscriberMap.hasOwnProperty(name)) {
       return subscriberMap[name]
     }
@@ -54,7 +53,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
    *
    * @param {String} id
    */
-  const findByElementId = id => {
+  const findByElementId = (id) => {
     const name = getStreamNameFromSubscriberId(id)
     if (name) {
       return findByStreamName(name)
@@ -71,7 +70,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   const cancelSubscriberBlock = (name) => {
     // If wildcarded, remove all.
     if (name === '*') {
-      Object.keys(subscriberMap).forEach(key => {
+      Object.keys(subscriberMap).forEach((key) => {
         if (subscriberMap[key] instanceof SubscriberBlock) {
           subscriberMap[key].cancel()
           delete subscriberMap[key]
@@ -85,7 +84,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       }
     }
   }
-
 
   /**
    * Generic container HTML element for the subscriber block.
@@ -160,7 +158,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     return `http://127.0.0.1:5080/live/streams.jsp`
   }
 
-
   /**
    * Breaks string into room and stream name
    */
@@ -181,7 +178,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
    * The SubscriberBlock is a self-managed subscriber that consumes and plays back a target stream.
    */
   class SubscriberBlock {
-
     /**
      * @param {String} streamName
      *        The unique name of the stream to subscribe to.
@@ -195,7 +191,14 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
      * @param {Object} client
      *        Optional delegate that receieves method/event invocations for publisher muting.
      */
-    constructor(streamName, containerOrVideoElement, retryDelay, forceMute = true, debug = true, client = undefined) {
+    constructor(
+      streamName,
+      containerOrVideoElement,
+      retryDelay,
+      forceMute = true,
+      debug = true,
+      client = undefined
+    ) {
       this.retryDelay = retryDelay
       const { room, stream } = getRoomAndStreamFromStreamName(streamName)
       const uid = Math.floor(Math.random() * 0x10000).toString(16)
@@ -205,6 +208,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       this.subscriber = undefined
       this.baseConfiguration = undefined
       this.requiresStreamManager = false
+      this.streamManagerHost = undefined
+      this.preferWhipWhep = false
       this.retryConnectTimeout = 0
       this.forceMute = forceMute
       this.next = undefined
@@ -216,9 +221,17 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
       // If the provided parent container IS NOT an `audio` or `video` element, we will generate one within the container.
       if (!this.parentIsElement) {
-        this.card = generateNewSubscriberDOM(this.streamName, this.subscriptionId, this.parent)
-        this.subscriberNameField = this.card.querySelector('.subscriber-name-field')
-        this.notificationContainer = this.card.querySelector('.subscriber-notifications')
+        this.card = generateNewSubscriberDOM(
+          this.streamName,
+          this.subscriptionId,
+          this.parent
+        )
+        this.subscriberNameField = this.card.querySelector(
+          '.subscriber-name-field'
+        )
+        this.notificationContainer = this.card.querySelector(
+          '.subscriber-notifications'
+        )
         if (!debug) {
           this.subscriberNameField.classList.add('hidden')
           this.notificationContainer.classList.add('hidden')
@@ -262,7 +275,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
      */
     showAudioMuteNotification(flag, streamName) {
       if (!this.parentIsElement) {
-        let notification = this.notificationContainer.querySelector('.audio-notification')
+        let notification = this.notificationContainer.querySelector(
+          '.audio-notification'
+        )
         if (flag && !notification) {
           notification = document.createElement('p')
           notification.classList.add('audio-notification')
@@ -283,7 +298,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
      */
     showVideoMuteNotification(flag, streamName) {
       if (!this.parentIsElement) {
-        let notification = this.notificationContainer.querySelector('.video-notification')
+        let notification = this.notificationContainer.querySelector(
+          '.video-notification'
+        )
         if (flag && !notification) {
           notification = document.createElement('p')
           notification.classList.add('video-notification')
@@ -300,12 +317,16 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
 
     /**
-     * Invoked when subscriber session is determined sufficient enough to pass on setup to 
+     * Invoked when subscriber session is determined sufficient enough to pass on setup to
      * another SubscriberBlock in a linked list.
      */
     resolve() {
       if (this.next) {
-        this.next.start(this.baseConfiguration, this.streamManagerHost)
+        this.next.start(
+          this.baseConfiguration,
+          this.streamManagerHost,
+          this.preferWhipWhep
+        )
       }
       this.next = undefined
     }
@@ -319,17 +340,24 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         console.error(event)
       }
       if (this.next) {
-        this.next.start(this.baseConfiguration, this.streamManagerHost)
+        this.next.start(
+          this.baseConfiguration,
+          this.streamManagerHost,
+          this.preferWhipWhep
+        )
       }
       this.next = undefined
     }
 
-
     mergeAudioStreams() {
       var streams = []
-      Object.keys(window.connectedSubscribers).forEach(s => {
-        if (window.connectedSubscribers[s] && !window.connectedSubscribers[s].forceMute) {
-          const theStream = window.connectedSubscribers[s].subscriber.getMediaStream()
+      Object.keys(window.connectedSubscribers).forEach((s) => {
+        if (
+          window.connectedSubscribers[s] &&
+          !window.connectedSubscribers[s].forceMute
+        ) {
+          const theStream =
+            window.connectedSubscribers[s].subscriber.getMediaStream()
           console.log(theStream)
           if (theStream) {
             streams.push(theStream)
@@ -341,11 +369,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       this.combineStreams(streams)
     }
 
-
     combineStreams(streams) {
       if (streams === undefined) {
-        console.error("No Stream Available!")
-        return;
+        console.error('No Stream Available!')
+        return
       }
       try {
         if (window.audioContext) {
@@ -357,31 +384,31 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           return
         }
         // Initialize AudioContext object
-        window.audioContext = new AudioContext();
+        window.audioContext = new AudioContext()
         // Adding an AudioWorkletProcessor
         // from another script with addModule method
         // await audioContext.audioWorklet.addModule("/javascripts/vumeters_worklet.js");
         // Creating a MediaStreamSource object
         // and sending a MediaStream object granted by
         // the user
-        var gainNode = window.audioContext.createGain();
-        window.gainNode = gainNode;
-        gainNode.gain.value = 0.45;
-        var merger = window.audioContext.createChannelMerger(streams.length);
+        var gainNode = window.audioContext.createGain()
+        window.gainNode = gainNode
+        gainNode.gain.value = 0.45
+        var merger = window.audioContext.createChannelMerger(streams.length)
         for (var ii = 0; ii < streams.length; ii++) {
-          var stream = window.audioContext.createMediaStreamSource(streams[ii]);
-          stream.connect(merger);
+          var stream = window.audioContext.createMediaStreamSource(streams[ii])
+          stream.connect(merger)
         }
-        merger.connect(gainNode);
-        gainNode.connect(window.audioContext.destination);
+        merger.connect(gainNode)
+        gainNode.connect(window.audioContext.destination)
 
         console.log(window.audioContext.destination)
 
         console.log('setup audio context')
       } catch (e) {
-        console.log("We got an error connecting VU Meters!");
-        console.log(e);
-        return;
+        console.log('We got an error connecting VU Meters!')
+        console.log(e)
+        return
       }
     }
 
@@ -395,9 +422,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         this.displayInfo(`${this.streamName} - ${event.type}`)
       }
 
-      if (event.type === 'Connect.Failure' ||
+      if (
+        event.type === 'Connect.Failure' ||
         event.type === 'Subscribe.Fail' ||
-        event.type === 'Subscribe.InvalidName') {
+        event.type === 'Subscribe.InvalidName'
+      ) {
         this.reject(event)
         this.displayError(`${this.streamName} - ${event.type}`)
       } else if (event.type === 'Subscribe.Start') {
@@ -405,18 +434,21 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         window.connectedSubscribers[this.streamName] = this
         this.mergeAudioStreams()
         this.resolve()
-
       } else if (event.type === 'Subscribe.Play.Unpublish') {
         //        this.unpublished = true
         this.stop()
-        console.log(`Subscribe.Play.Unpublish, delete window.connectedSubscribers for ${this.streamName}`)
+        console.log(
+          `Subscribe.Play.Unpublish, delete window.connectedSubscribers for ${this.streamName}`
+        )
         delete window.connectedSubscribers[this.streamName]
         this.mergeAudioStreams()
-        this.start(this.baseConfiguration, this.streamManagerHost)
+        this.start(
+          this.baseConfiguration,
+          this.streamManagerHost,
+          this.preferWhipWhep
+        )
       } else if (event.type === 'Subscribe.Metadata') {
-        const {
-          streamingMode
-        } = event.data
+        const { streamingMode } = event.data
         if (streamingMode && streamingMode !== this.currentStreamMode) {
           if (streamingMode.match(/Video\/Audio/)) {
             this.showAudioMuteNotification(false, this.streamName)
@@ -468,7 +500,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         console.error(e)
       } finally {
         if (!this.parentIsElement) {
-          const el = this.parent.querySelector(`.${getSubscriberElementId(this.streamName)}-container`)
+          const el = this.parent.querySelector(
+            `.${getSubscriberElementId(this.streamName)}-container`
+          )
           if (el) {
             el.parentNode.removeChild(el)
           }
@@ -507,9 +541,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
      *        The configuration object for initialization.
      * @param {String} streamManagerHost
      *        Hostname of Stream Manager if used.
+     * @param {Boolean} preferWhipWhep
+     *        Flag to use WHIP/WHEP protocol.
      */
-    async start(config, streamManagerHost = null) {
+    async start(config, streamManagerHost = null, preferWhipWhep = false) {
       this.streamManagerHost = streamManagerHost
+      this.preferWhipWhep = preferWhipWhep
       this.cancelled = false
       this.unpublished = false
       this.baseConfiguration = JSON.parse(JSON.stringify(config))
@@ -519,10 +556,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       const uid = Math.floor(Math.random() * 0x10000).toString(16)
       const newid = [this.streamName, 'sub', uid].join('-')
       const rtcConfig = {
-        ...this.baseConfiguration, ...{
+        ...this.baseConfiguration,
+        ...{
           streamName: this.streamName,
-          subscriptionId: newid
-        }
+          subscriptionId: newid,
+        },
       }
 
       // If we have generated our own UI for the subscriber, assign the unique mediaElementId to config.
@@ -538,11 +576,21 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       this.displayInfo(`Requesting ${this.streamName}...`)
       try {
         let availableUrlLocal = getAvailableUrl()
-        const availableLocal = await getIsAvailable(availableUrlLocal, this.streamName, false)
+        const availableLocal = await getIsAvailable(
+          availableUrlLocal,
+          this.streamName,
+          false
+        )
         if (!availableLocal) {
-          console.log('Stream not available locally, searching on Stream Manager')
+          console.log(
+            'Stream not available locally, searching on Stream Manager'
+          )
           let availableUrlSM = getAvailableUrl(this.streamManagerHost)
-          const availableSM = await getIsAvailable(availableUrlSM, this.streamName, true)
+          const availableSM = await getIsAvailable(
+            availableUrlSM,
+            this.streamName,
+            true
+          )
           if (!availableSM) {
             throw new Error(`${this.streamName} Not Available`)
           }
@@ -550,21 +598,25 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         }
 
         if (this.requiresStreamManager) {
-          rtcConfig.app = 'streammanager'
           rtcConfig.protocol = 'wss'
           rtcConfig.port = '443'
           rtcConfig.host = this.streamManagerHost
 
-          const subscriberSM = await window.streamManagerUtil.getEdge(rtcConfig.host, this.baseConfiguration.app, this.streamName)
-          const {
-            serverAddress,
-            scope
-          } = subscriberSM
-          rtcConfig.app = 'streammanager'
-          rtcConfig.connectionParams = {
-            ...config.connectionParams, ...{
+          const subscriberSM = await window.streamManagerUtil.getEdge(
+            rtcConfig.host,
+            this.baseConfiguration.app,
+            this.streamName
+          )
+          const { serverAddress, scope } = subscriberSM
+          rtcConfig.app = preferWhipWhep
+            ? this.baseConfiguration.app
+            : 'streammanager'
+          rtcConfig.connectionParams = config.connectionParams
+          if (!preferWhipWhep) {
+            rtcConfig.connectionParams = {
+              ...config.connectionParams,
               host: serverAddress,
-              app: scope
+              app: scope,
             }
           }
         }
@@ -578,12 +630,15 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           console.log('force unmute for stream', this.streamName)
           this.forceUnmuteOnSubscriber()
         }
-
       } catch (e) {
         console.error(e)
         this.reject()
         this.displayError(typeof e === 'string' ? e : e.message)
-        this.retryConnection(config, this.streamManagerHost)
+        this.retryConnection(
+          config,
+          this.streamManagerHost,
+          this.preferWhipWhep
+        )
       }
     }
 
@@ -594,9 +649,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
      *        The configuration to use in initialization of subscriber.
      * @param {String} streamManagerHost
      *        Hostname of Stream Manager.
+     * @param {Boolean} preferWhipWhep
      */
-    async retryConnection(config, streamManagerHost = null) {
-
+    async retryConnection(
+      config,
+      streamManagerHost = null,
+      preferWhipWhep = false
+    ) {
       try {
         clearTimeout(this.retryConnectTimeout)
         if (this.closing || this.closed || this.cancelled) return
@@ -608,12 +667,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         this.retryConnectTimeout = setTimeout(() => {
           this.displayInfo(`Retrying Connection for ${this.streamName}...`)
           clearTimeout(this.retryConnectTimeout)
-          this.start(config, streamManagerHost)
+          this.start(config, streamManagerHost, preferWhipWhep)
         }, this.retryDelay)
       } catch (e) {
         console.error(e)
         this.displayError(typeof e === 'string' ? e : e.message)
-        this.retryConnection(config, streamManagerHost)
+        this.retryConnection(config, streamManagerHost, preferWhipWhep)
       }
     }
 
@@ -660,13 +719,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   window.SubscriberBlock = SubscriberBlock
   window.streamsUtil = {
-    ...window.streamsUtil, ...{
+    ...window.streamsUtil,
+    ...{
       subscribers: {
         stop: cancelSubscriberBlock,
         find: findByStreamName,
-        findByElementId: findByElementId
-      }
-    }
+        findByElementId: findByElementId,
+      },
+    },
   }
-
 })(window, document, window.red5prosdk, window.getIsStreamAvailable)

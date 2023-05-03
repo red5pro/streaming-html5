@@ -1,387 +1,372 @@
 /*
 Copyright © 2015 Infrared5, Inc. All rights reserved.
 
-The accompanying code comprising examples for use solely in conjunction with Red5 Pro (the "Example Code") 
-is  licensed  to  you  by  Infrared5  Inc.  in  consideration  of  your  agreement  to  the  following  
-license terms  and  conditions.  Access,  use,  modification,  or  redistribution  of  the  accompanying  
+The accompanying code comprising examples for use solely in conjunction with Red5 Pro (the "Example Code")
+is  licensed  to  you  by  Infrared5  Inc.  in  consideration  of  your  agreement  to  the  following
+license terms  and  conditions.  Access,  use,  modification,  or  redistribution  of  the  accompanying
 code  constitutes your acceptance of the following license terms and conditions.
 
-Permission is hereby granted, free of charge, to you to use the Example Code and associated documentation 
-files (collectively, the "Software") without restriction, including without limitation the rights to use, 
-copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit 
+Permission is hereby granted, free of charge, to you to use the Example Code and associated documentation
+files (collectively, the "Software") without restriction, including without limitation the rights to use,
+copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit
 persons to whom the Software is furnished to do so, subject to the following conditions:
 
-The Software shall be used solely in conjunction with Red5 Pro. Red5 Pro is licensed under a separate end 
-user  license  agreement  (the  "EULA"),  which  must  be  executed  with  Infrared5,  Inc.   
+The Software shall be used solely in conjunction with Red5 Pro. Red5 Pro is licensed under a separate end
+user  license  agreement  (the  "EULA"),  which  must  be  executed  with  Infrared5,  Inc.
 An  example  of  the EULA can be found on our website at: https://account.red5pro.com/assets/LICENSE.txt.
 
 The above copyright notice and this license shall be included in all copies or portions of the Software.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,  INCLUDING  BUT  
-NOT  LIMITED  TO  THE  WARRANTIES  OF  MERCHANTABILITY, FITNESS  FOR  A  PARTICULAR  PURPOSE  AND  
-NONINFRINGEMENT.   IN  NO  EVENT  SHALL INFRARED5, INC. BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, 
-WHETHER IN  AN  ACTION  OF  CONTRACT,  TORT  OR  OTHERWISE,  ARISING  FROM,  OUT  OF  OR  IN CONNECTION 
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,  INCLUDING  BUT
+NOT  LIMITED  TO  THE  WARRANTIES  OF  MERCHANTABILITY, FITNESS  FOR  A  PARTICULAR  PURPOSE  AND
+NONINFRINGEMENT.   IN  NO  EVENT  SHALL INFRARED5, INC. BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+WHETHER IN  AN  ACTION  OF  CONTRACT,  TORT  OR  OTHERWISE,  ARISING  FROM,  OUT  OF  OR  IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
-(function(window, document, red5prosdk) {
-  'use strict';
+;(function (window, document, red5prosdk, streamManagerUtil) {
+  'use strict'
 
-  var serverSettings = (function() {
-    var settings = sessionStorage.getItem('r5proServerSettings');
+  var serverSettings = (function () {
+    var settings = sessionStorage.getItem('r5proServerSettings')
     try {
-      return JSON.parse(settings);
-    }
-    catch (e) {
-      console.error('Could not read server settings from sessionstorage: ' + e.message);
-    }
-    return {};
-  })();
-
-  var configuration = (function () {
-    var conf = sessionStorage.getItem('r5proTestBed');
-    try {
-      return JSON.parse(conf);
-    }
-    catch (e) {
-      console.error('Could not read testbed configuration from sessionstorage: ' + e.message);
+      return JSON.parse(settings)
+    } catch (e) {
+      console.error(
+        'Could not read server settings from sessionstorage: ' + e.message
+      )
     }
     return {}
-  })();
-  red5prosdk.setLogLevel(configuration.verboseLogging ? red5prosdk.LOG_LEVELS.TRACE : red5prosdk.LOG_LEVELS.WARN);
+  })()
 
-  var targetPublisher;
+  var configuration = (function () {
+    var conf = sessionStorage.getItem('r5proTestBed')
+    try {
+      return JSON.parse(conf)
+    } catch (e) {
+      console.error(
+        'Could not read testbed configuration from sessionstorage: ' + e.message
+      )
+    }
+    return {}
+  })()
+  red5prosdk.setLogLevel(
+    configuration.verboseLogging
+      ? red5prosdk.LOG_LEVELS.TRACE
+      : red5prosdk.LOG_LEVELS.WARN
+  )
 
-  var updateStatusFromEvent = window.red5proHandlePublisherEvent; // defined in src/template/partial/status-field-publisher.hbs
-  var streamTitle = document.getElementById('stream-title');
-  var statisticsField = document.getElementById('statistics-field');
-  var addressField = document.getElementById('address-field');
-  var bitrateField = document.getElementById('bitrate-field');
-  var packetsField = document.getElementById('packets-field');
-  var resolutionField = document.getElementById('resolution-field');
+  var targetPublisher
 
-  var loginForm = document.getElementById('login-form');
-  var usernameField = document.getElementById('username-field');
-  var passwordField = document.getElementById('password-field');
-  var tokenField = document.getElementById('token-field');
-  var tokenCheckBox = document.getElementById('token-required-field');
-  var submitButton = document.getElementById('submit-button');
+  var updateStatusFromEvent = window.red5proHandlePublisherEvent // defined in src/template/partial/status-field-publisher.hbs
+  var streamTitle = document.getElementById('stream-title')
+  var statisticsField = document.getElementById('statistics-field')
+  var addressField = document.getElementById('address-field')
+  var bitrateField = document.getElementById('bitrate-field')
+  var packetsField = document.getElementById('packets-field')
+  var resolutionField = document.getElementById('resolution-field')
 
-  var protocol = serverSettings.protocol;
-  var isSecure = protocol == 'https';
-  function getSocketLocationFromProtocol () {
+  var loginForm = document.getElementById('login-form')
+  var usernameField = document.getElementById('username-field')
+  var passwordField = document.getElementById('password-field')
+  var tokenField = document.getElementById('token-field')
+  var tokenCheckBox = document.getElementById('token-required-field')
+  var submitButton = document.getElementById('submit-button')
+
+  var protocol = serverSettings.protocol
+  var isSecure = protocol == 'https'
+  function getSocketLocationFromProtocol() {
     return !isSecure
-      ? {protocol: 'ws', port: serverSettings.wsport}
-      : {protocol: 'wss', port: serverSettings.wssport};
+      ? { protocol: 'ws', port: serverSettings.wsport }
+      : { protocol: 'wss', port: serverSettings.wssport }
   }
 
-  streamTitle.innerText = configuration.stream1;
+  streamTitle.innerText = configuration.stream1
   var defaultConfiguration = {
     protocol: getSocketLocationFromProtocol().protocol,
     port: getSocketLocationFromProtocol().port,
-    streamMode: configuration.recordBroadcast ? 'record' : 'live'
-  };
-
-  function displayServerAddress (serverAddress, proxyAddress) 
-  {
-  proxyAddress = (typeof proxyAddress === 'undefined') ? 'N/A' : proxyAddress;
-    addressField.innerText = ' Proxy Address: ' + proxyAddress + ' | ' + ' Origin Address: ' + serverAddress;
+    streamMode: configuration.recordBroadcast ? 'record' : 'live',
   }
 
-  var bitrate = 0;
-  var packetsSent = 0;
-  var frameWidth = 0;
-  var frameHeight = 0;
-
-  function updateStatistics (b, p, w, h) {
-    statisticsField.classList.remove('hidden');
-    bitrateField.innerText = b === 0 ? 'N/A' : Math.floor(b);
-    packetsField.innerText = p;
-    resolutionField.innerText = (w || 0) + 'x' + (h || 0);
+  function displayServerAddress(serverAddress, proxyAddress) {
+    proxyAddress = typeof proxyAddress === 'undefined' ? 'N/A' : proxyAddress
+    addressField.innerText =
+      ' Proxy Address: ' +
+      proxyAddress +
+      ' | ' +
+      ' Origin Address: ' +
+      serverAddress
   }
 
-  function onBitrateUpdate (b, p) {
-    bitrate = b;
-    packetsSent = p;
-    updateStatistics(bitrate, packetsSent, frameWidth, frameHeight);
+  var bitrate = 0
+  var packetsSent = 0
+  var frameWidth = 0
+  var frameHeight = 0
+
+  function updateStatistics(b, p, w, h) {
+    statisticsField.classList.remove('hidden')
+    bitrateField.innerText = b === 0 ? 'N/A' : Math.floor(b)
+    packetsField.innerText = p
+    resolutionField.innerText = (w || 0) + 'x' + (h || 0)
   }
 
-  function onResolutionUpdate (w, h) {
-    frameWidth = w;
-    frameHeight = h;
-    updateStatistics(bitrate, packetsSent, frameWidth, frameHeight);
+  function onBitrateUpdate(b, p) {
+    bitrate = b
+    packetsSent = p
+    updateStatistics(bitrate, packetsSent, frameWidth, frameHeight)
   }
 
-  function onPublisherEvent (event) {
-    console.log('[Red5ProPublisher] ' + event.type + '.');
-    updateStatusFromEvent(event);
+  function onResolutionUpdate(w, h) {
+    frameWidth = w
+    frameHeight = h
+    updateStatistics(bitrate, packetsSent, frameWidth, frameHeight)
   }
-  function onPublishFail (message) {
-    console.error('[Red5ProPublisher] Publish Error :: ' + message);
+
+  function onPublisherEvent(event) {
+    console.log('[Red5ProPublisher] ' + event.type + '.')
+    updateStatusFromEvent(event)
   }
-  function onPublishSuccess (publisher) {
-    console.log('[Red5ProPublisher] Publish Complete.');
+  function onPublishFail(message) {
+    console.error('[Red5ProPublisher] Publish Error :: ' + message)
+  }
+  function onPublishSuccess(publisher) {
+    console.log('[Red5ProPublisher] Publish Complete.')
     try {
-      var pc = publisher.getPeerConnection();
-      var stream = publisher.getMediaStream();
-      window.trackBitrate(pc, onBitrateUpdate, onResolutionUpdate);
-      statisticsField.classList.remove('hidden');
+      var pc = publisher.getPeerConnection()
+      var stream = publisher.getMediaStream()
+      window.trackBitrate(pc, onBitrateUpdate, onResolutionUpdate)
+      statisticsField.classList.remove('hidden')
       stream.getVideoTracks().forEach(function (track) {
-        var settings = track.getSettings();
-        onResolutionUpdate(settings.width, settings.height);
-      });
-    }
-    catch (e) {
+        var settings = track.getSettings()
+        onResolutionUpdate(settings.width, settings.height)
+      })
+    } catch (e) {
       // no tracking for you!
     }
   }
-  function onUnpublishFail (message) {
-    console.error('[Red5ProPublisher] Unpublish Error :: ' + message);
+  function onUnpublishFail(message) {
+    console.error('[Red5ProPublisher] Unpublish Error :: ' + message)
   }
-  function onUnpublishSuccess () {
-    console.log('[Red5ProPublisher] Unpublish Complete.');
+  function onUnpublishSuccess() {
+    console.log('[Red5ProPublisher] Unpublish Complete.')
   }
 
-  function getRegionIfDefined () {
-    var region = configuration.streamManagerRegion;
-    if (typeof region === 'string' && region.length > 0 && region !== 'undefined') {
-      return region;
+  function getRegionIfDefined() {
+    var region = configuration.streamManagerRegion
+    if (
+      typeof region === 'string' &&
+      region.length > 0 &&
+      region !== 'undefined'
+    ) {
+      return region
     }
     return undefined
   }
 
-  function requestOrigin (configuration) {
-    var host = configuration.host;
-    var app = configuration.app;
-    var streamName = configuration.stream1;
-    var port = serverSettings.httpport;
-    var baseUrl = protocol + '://' + host + ':' + port;
-    var apiVersion = configuration.streamManagerAPI || '3.0';
-    var url = baseUrl + '/streammanager/api/' + apiVersion + '/event/' + app + '/' + streamName + '?action=broadcast';
-    var region = getRegionIfDefined();
-    if (region) {
-      url += '&region=' + region;
-    }
-      return new Promise(function (resolve, reject) {
-        fetch(url)
-          .then(function (res) {
-            if (res.headers.get("content-type") &&
-              res.headers.get("content-type").toLowerCase().indexOf("application/json") >= 0) {
-                return res.json();
-            }
-            else {
-              throw new TypeError('Could not properly parse response.');
-            }
-          })
-          .then(function (json) {
-            resolve(json);
-          })
-          .catch(function (error) {
-            var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
-            console.error('[PublisherStreamManagerTest] :: Error - Could not request Origin IP from Stream Manager. ' + jsonError)
-            reject(error)
-          });
-    });
-  }
-
-  function getUserMediaConfiguration () {
+  function getUserMediaConfiguration() {
     return {
       mediaConstraints: {
-        audio: configuration.useAudio ? configuration.mediaConstraints.audio : false,
-        video: configuration.useVideo ? configuration.mediaConstraints.video : false
-      }
-    };
+        audio: configuration.useAudio
+          ? configuration.mediaConstraints.audio
+          : false,
+        video: configuration.useVideo
+          ? configuration.mediaConstraints.video
+          : false,
+      },
+    }
   }
 
-  function getRTMPMediaConfiguration () {
+  function getAuthenticationParams() {
+    var authName = usernameField.value
+    var authPass = passwordField.value
+    var authToken = tokenField.value
+    var authParams = {}
+    if (authName && authName.length > 0) {
+      authParams.username = authName
+    }
+    if (authPass && authPass.length > 0) {
+      authParams.password = authPass
+    }
+    if (tokenCheckBox.checked && authToken && authToken.length > 0) {
+      authParams.token = authToken
+    }
     return {
-      mediaConstraints: {
-        audio: configuration.useAudio ? configuration.mediaConstraints.audio : false,
-        video: configuration.useVideo ? {
-                width: configuration.cameraWidth,
-                height: configuration.cameraHeight
-              } : false
+      connectionParams: authParams,
+    }
+  }
+
+  function determinePublisher(jsonResponse) {
+    var { app, proxy, preferWhipWhep } = configuration
+    var { WHIPClient, RTCPublisher } = red5prosdk
+    var { params } = jsonResponse
+    var host = jsonResponse.serverAddress
+    var scope = jsonResponse.scope
+    var name = jsonResponse.name
+    var { protocol, port } = getSocketLocationFromProtocol()
+
+    var connectionParams = params
+      ? { ...params, ...getAuthenticationParams().connectionParams }
+      : getAuthenticationParams().connectionParams
+    var rtcConfig = Object.assign(
+      {},
+      configuration,
+      defaultConfiguration,
+      getUserMediaConfiguration(),
+      {
+        protocol,
+        port,
+        streamName: name,
+        app: preferWhipWhep ? app : proxy,
+        connectionParams: preferWhipWhep
+          ? connectionParams
+          : {
+              ...connectionParams,
+              host: host,
+              app: scope,
+            },
       }
+    )
+    var publisher = preferWhipWhep ? new WHIPClient() : new RTCPublisher()
+    return publisher.init(rtcConfig)
+  }
+
+  function showAddress(publisher) {
+    var config = publisher.getOptions()
+    const { protocol, port, host, app, connectionParams } = config
+    console.log(`Host = ${host} | app = ${app}`)
+    if (connectionParams && connectionParams.host && connectionParams.app) {
+      displayServerAddress(config.connectionParams.host, host)
+      console.log('Using streammanager proxy for rtc.')
+      console.log(
+        'Proxy target = ' +
+          config.connectionParams.host +
+          ' | ' +
+          'Proxy app = ' +
+          config.connectionParams.app
+      )
+      console.log(
+        `Operation over ${
+          isSecure ? 'secure' : 'unsecure'
+        } connection | protocol: ${protocol} | port: ${port}`
+      )
+    } else {
+      displayServerAddress(host)
     }
   }
 
-  function determinePublisher (jsonResponse) {
-    var host = jsonResponse.serverAddress;
-    var app = jsonResponse.scope;
-    var name = jsonResponse.name;
-  
-  if (tokenCheckBox.checked == true)
-  {
-    console.log("Token required. Creating auth object");
-    configuration.connectionParams = {
-      host: host,
-      app: app,
-      username: usernameField.value,
-      password: passwordField.value,
-      token: tokenField.value
-    };
-  }
-  else
-  {
-    console.log("Token not required. Creating auth object");
-    configuration.connectionParams = {
-      host: host,
-      app: app,
-      username: usernameField.value,
-      password: passwordField.value
-    };
-  }
-  
-  
-    var config = Object.assign({},
-                    configuration,
-                    defaultConfiguration,
-                    getUserMediaConfiguration());
-    var rtcConfig = Object.assign({}, config, {
-                      protocol: getSocketLocationFromProtocol().protocol,
-                      port: getSocketLocationFromProtocol().port,
-                      streamName: name,
-                      app: configuration.proxy
-                   });
-    var rtmpConfig = Object.assign({}, config, {
-                      protocol: 'rtmp',
-                      port: serverSettings.rtmpport,
-                      streamName: name,
-                      backgroundColor: '#000000',
-                      swf: '../../lib/red5pro/red5pro-publisher.swf',
-                      swfobjectURL: '../../lib/swfobject/swfobject.js',
-                      productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
-                    }, getRTMPMediaConfiguration());
-    var publishOrder = config.publisherFailoverOrder
-                            .split(',')
-                            .map(function (item) {
-                              return item.trim()
-                        });
-
-    if(window.query('view')) {
-      publishOrder = [window.query('view')];
-    }
-
-    var publisher = new red5prosdk.Red5ProPublisher();
-    return publisher.setPublishOrder(publishOrder)
-            .init({
-                rtc: rtcConfig,
-                rtmp: rtmpConfig
-              });
-  }
-
-  function showAddress (publisher) {
-    var config = publisher.getOptions();
-    console.log("Host = " + config.host + " | " + "app = " + config.app);
-    if (publisher.getType().toLowerCase() === 'rtc') {
-      displayServerAddress(config.connectionParams.host, config.host);
-      console.log("Using streammanager proxy for rtc");
-      console.log("Proxy target = " + config.connectionParams.host + " | " + "Proxy app = " + config.connectionParams.app)
-      if(isSecure) {
-        console.log("Operating over secure connection | protocol: " + config.protocol + " | port: " +  config.port);
-      }
-      else {
-        console.log("Operating over unsecure connection | protocol: " + config.protocol + " | port: " +  config.port);
-      }
-    }
-    else {
-      displayServerAddress(config.host);
-    }
-  }
-
-  function unpublish () {
+  function unpublish() {
     return new Promise(function (resolve, reject) {
-      var publisher = targetPublisher;
-      publisher.unpublish()
+      var publisher = targetPublisher
+      publisher
+        .unpublish()
         .then(function () {
-          onUnpublishSuccess();
-          resolve();
+          onUnpublishSuccess()
+          resolve()
         })
         .catch(function (error) {
-          var jsonError = typeof error === 'string' ? error : JSON.stringify(error, 2, null);
-          onUnpublishFail('Unmount Error ' + jsonError);
-          reject(error);
-        });
-    });
+          var jsonError =
+            typeof error === 'string' ? error : JSON.stringify(error, 2, null)
+          onUnpublishFail('Unmount Error ' + jsonError)
+          reject(error)
+        })
+    })
   }
 
-  var retryCount = 0;
-  var retryLimit = 3;
-  function respondToOrigin (response) {
+  var retryCount = 0
+  var retryLimit = 3
+  function respondToOrigin(response) {
     determinePublisher(response)
       .then(function (publisherImpl) {
-        streamTitle.innerText = configuration.stream1;
-        targetPublisher = publisherImpl;
-        targetPublisher.on('*', onPublisherEvent);
-        showAddress(targetPublisher);
-        return targetPublisher.publish();
+        streamTitle.innerText = configuration.stream1
+        targetPublisher = publisherImpl
+        targetPublisher.on('*', onPublisherEvent)
+        showAddress(targetPublisher)
+        return targetPublisher.publish()
       })
       .then(function () {
-        onPublishSuccess(targetPublisher);
+        onPublishSuccess(targetPublisher)
       })
       .catch(function (error) {
-        var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
-        console.error('[Red5ProPublisher] :: Error in access of Origin IP: ' + jsonError);
+        var jsonError =
+          typeof error === 'string' ? error : JSON.stringify(error, null, 2)
+        console.error(
+          '[Red5ProPublisher] :: Error in access of Origin IP: ' + jsonError
+        )
         updateStatusFromEvent({
-          type: red5prosdk.PublisherEventTypes.CONNECT_FAILURE
-        });
-        onPublishFail(jsonError);
-      });
+          type: red5prosdk.PublisherEventTypes.CONNECT_FAILURE,
+        })
+        onPublishFail(jsonError)
+      })
   }
 
-  function respondToOriginFailure (error) {
+  function respondToOriginFailure(error) {
     if (retryCount++ < retryLimit) {
       var retryTimer = setTimeout(function () {
-        clearTimeout(retryTimer);
-        startup();
-      }, 1000);
-    }
-    else {
-      var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2);
+        clearTimeout(retryTimer)
+        startup()
+      }, 1000)
+    } else {
+      var jsonError =
+        typeof error === 'string' ? error : JSON.stringify(error, null, 2)
       updateStatusFromEvent({
-        type: red5prosdk.PublisherEventTypes.CONNECT_FAILURE
-      });
-      console.error('[Red5ProPublisher] :: Retry timeout in publishing - ' + jsonError);
+        type: red5prosdk.PublisherEventTypes.CONNECT_FAILURE,
+      })
+      console.error(
+        '[Red5ProPublisher] :: Retry timeout in publishing - ' + jsonError
+      )
     }
   }
 
-  function startup () {
-   loginForm.classList.add('hidden'); 
+  const requestOrigin = async (configuration) => {
+    const { preferWhipWhep, host, app, stream1 } = configuration
+    var region = getRegionIfDefined()
+    if (!preferWhipWhep) {
+      return streamManagerUtil.getOrigin(host, app, stream1, region)
+    } else {
+      // WHIP/WHEP knows how to handle proxy requests.
+      return {
+        serverAddress: host,
+        scope: app,
+        name: stream1,
+        params: region
+          ? {
+              region,
+            }
+          : undefined,
+      }
+    }
+  }
+
+  function startup() {
+    loginForm.classList.add('hidden')
     // Kick off.
     requestOrigin(configuration)
       .then(respondToOrigin)
-      .catch(respondToOriginFailure);
+      .catch(respondToOriginFailure)
   }
 
   submitButton.addEventListener('click', function () {
-  if (usernameField.value === "" || passwordField.value === "")
-    {
-        alert("Error: Wrong username or password supplied");
+    if (usernameField.value === '' || passwordField.value === '') {
+      alert('Error: Wrong username or password supplied')
+    } else if (tokenField.value === '' && tokenCheckBox.checked == true) {
+      alert('Error: Token field cannot be empty')
+    } else {
+      startup()
     }
-    else if (tokenField.value === "" && tokenCheckBox.checked == true)
-    {
-        alert("Error: Token field cannot be empty");
-    }
-  else
-  {
-    startup();
-  }
-  });
-  
-  var shuttingDown = false;
+  })
+
+  var shuttingDown = false
   function shutdown() {
-    if (shuttingDown) return;
-    shuttingDown = true;
-    function clearRefs () {
+    if (shuttingDown) return
+    shuttingDown = true
+    function clearRefs() {
       if (targetPublisher) {
-        targetPublisher.off('*', onPublisherEvent);
+        targetPublisher.off('*', onPublisherEvent)
       }
-      targetPublisher = undefined;
+      targetPublisher = undefined
     }
-    unpublish().then(clearRefs).catch(clearRefs);
-    window.untrackBitrate();
+    unpublish().then(clearRefs).catch(clearRefs)
+    window.untrackBitrate()
   }
-  window.addEventListener('pagehide', shutdown);
-  window.addEventListener('beforeunload', shutdown);
-
-})(this, document, window.red5prosdk);
-
+  window.addEventListener('pagehide', shutdown)
+  window.addEventListener('beforeunload', shutdown)
+})(this, document, window.red5prosdk, window.streamManagerUtil)

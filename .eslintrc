@@ -1,5 +1,5 @@
 {
-  "parser": "babel-eslint",
+  "parser": "@babel/eslint-parser",
   "env": {
     "browser": true,
     "es2021": true
@@ -7,16 +7,11 @@
   "rules": {
     "no-console": 0
   },
-  "globals": {
-  },
-  "parserOptions": {
-    "ecmaVersion": 2018
-  },
-  "parser": "@babel/eslint-parser",
+  "globals": {},
   "parserOptions": {
     "requireConfigFile": false,
-    "babelOptions": {
-      "presets": ["@babel/preset-react"]
-    }
-  }
+    "ecmaVersion": 2018
+  },
+  "extends": ["eslint:recommended", "prettier"],
+  "plugins": ["prettier"]
 }

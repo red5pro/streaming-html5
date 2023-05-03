@@ -78,6 +78,21 @@
         </select>
       </p>
       <h2 class="centered">WebRTC Specific</h2>
+      <div class="settings-field settings-collapsable">
+        <p>
+          <label class="settings-label">Use WHIP/WHEP Clients&ast;:</label>
+          <input type="checkbox" id="whipwhep-field" style="vertical-align: middle;" checked>
+        </p>
+        <br>
+        <p>
+          <label class="settings-label">Trickle ICE Candidates:</label>
+          <input type="checkbox" id="trickle-field" style="vertical-align: middle;" checked disabled>
+        </p>
+        <br>
+        <p class="settings-info">&ast;Enabling this will prefer the initial ICE negotiation to be done over HTTP/S.</p>
+        <p class="settings-info">More information about <a target="_blank" href="https://www.ietf.org/archive/id/draft-ietf-wish-whip-01.html">WHIP</a> and <a target="_blank" href="https://www.ietf.org/id/draft-murillo-whep-02.html">WHEP</a>.</a></p>
+      </div>
+      <br>
       <p class="settings-field settings-collapsable">
         <label class="settings-label">ICE server:</label>
         <input id="ice-field" name="ice-field" value="stun:stun2.l.google.com:19302">
@@ -227,6 +242,8 @@
       var rtcTransportPolicySelect = document.getElementById('rtc-transport-policy');
       var rtcpMuxPolicySelect = document.getElementById('rtc-mux-policy');
       var rtcSignalSocketField = document.getElementById('rtc-signal-socket-field');
+      var whipWhepField = document.getElementById('whipwhep-field');
+      var trickleField = document.getElementById('trickle-field');
       var loggingField = document.getElementById('logging-field');
       var recordField = document.getElementById('record-field');
       var videoField = document.getElementById('video-active-field');
@@ -290,7 +307,7 @@
 
       logLevelField.addEventListener('change', function () {
         configuration.sendLogLevel = logLevelField.value.toUpperCase();
-        seal(configuration);  
+        seal(configuration);
       });
 
       iceUsername.addEventListener('blur', function () {
@@ -352,8 +369,17 @@
       });
       rtcSignalSocketField.addEventListener('change', function () {
         configuration.signalingSocketOnly = rtcSignalSocketField.checked;
+        configuration.enableChannelSignaling = rtcSignalSocketField.checked;
         seal(configuration);
       });
+      whipWhepField.addEventListener('change', () => {
+        configuration.preferWhipWhep = whipWhepField.checked;
+        seal(configuration);
+      })
+      trickleField.addEventListener('change', () => {
+        configuration.trickleIce = trickleField.checked;
+        seal(configuration);
+      })
 
       authEnabledField.addEventListener('change', function () {
         configuration.authentication.enabled = authEnabledField.checked;
@@ -442,6 +468,8 @@
         iceCredential.value = config.rtcConfiguration.iceServers[0].credential || '';
         rtcCandidatePoolSize.value = config.rtcConfiguration.iceCandidatePoolSize || 0;
         rtcSignalSocketField.checked = config.signalingSocketOnly || true;
+        whipWhepField.checked = config.preferWhipWhep || false;
+        trickleField.checked = config.trickleIce || false;
         loggingField.checked = config.verboseLogging ? true : false;
         recordField.checked = config.recordBroadcast ? true : false;
         videoField.checked = config.useVideo ? true : false;

@@ -1,51 +1,52 @@
 /*
 Copyright © 2015 Infrared5, Inc. All rights reserved.
 
-The accompanying code comprising examples for use solely in conjunction with Red5 Pro (the "Example Code") 
-is  licensed  to  you  by  Infrared5  Inc.  in  consideration  of  your  agreement  to  the  following  
-license terms  and  conditions.  Access,  use,  modification,  or  redistribution  of  the  accompanying  
+The accompanying code comprising examples for use solely in conjunction with Red5 Pro (the "Example Code")
+is  licensed  to  you  by  Infrared5  Inc.  in  consideration  of  your  agreement  to  the  following
+license terms  and  conditions.  Access,  use,  modification,  or  redistribution  of  the  accompanying
 code  constitutes your acceptance of the following license terms and conditions.
 
-Permission is hereby granted, free of charge, to you to use the Example Code and associated documentation 
-files (collectively, the "Software") without restriction, including without limitation the rights to use, 
-copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit 
+Permission is hereby granted, free of charge, to you to use the Example Code and associated documentation
+files (collectively, the "Software") without restriction, including without limitation the rights to use,
+copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit
 persons to whom the Software is furnished to do so, subject to the following conditions:
 
-The Software shall be used solely in conjunction with Red5 Pro. Red5 Pro is licensed under a separate end 
-user  license  agreement  (the  "EULA"),  which  must  be  executed  with  Infrared5,  Inc.   
+The Software shall be used solely in conjunction with Red5 Pro. Red5 Pro is licensed under a separate end
+user  license  agreement  (the  "EULA"),  which  must  be  executed  with  Infrared5,  Inc.
 An  example  of  the EULA can be found on our website at: https://account.red5pro.com/assets/LICENSE.txt.
 
 The above copyright notice and this license shall be included in all copies or portions of the Software.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,  INCLUDING  BUT  
-NOT  LIMITED  TO  THE  WARRANTIES  OF  MERCHANTABILITY, FITNESS  FOR  A  PARTICULAR  PURPOSE  AND  
-NONINFRINGEMENT.   IN  NO  EVENT  SHALL INFRARED5, INC. BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, 
-WHETHER IN  AN  ACTION  OF  CONTRACT,  TORT  OR  OTHERWISE,  ARISING  FROM,  OUT  OF  OR  IN CONNECTION 
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,  INCLUDING  BUT
+NOT  LIMITED  TO  THE  WARRANTIES  OF  MERCHANTABILITY, FITNESS  FOR  A  PARTICULAR  PURPOSE  AND
+NONINFRINGEMENT.   IN  NO  EVENT  SHALL INFRARED5, INC. BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+WHETHER IN  AN  ACTION  OF  CONTRACT,  TORT  OR  OTHERWISE,  ARISING  FROM,  OUT  OF  OR  IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
-((window, red5prosdk, SubscriberBlock) => {
-
+;((window, red5prosdk, SubscriberBlock) => {
   var serverSettings = (function () {
-    var settings = sessionStorage.getItem('r5proServerSettings');
+    var settings = sessionStorage.getItem('r5proServerSettings')
     try {
-      return JSON.parse(settings);
-    }
-    catch (e) {
-      console.error('Could not read server settings from sessionstorage: ' + e.message);
-    }
-    return {};
-  })();
-
-  var configuration = (function () {
-    var conf = sessionStorage.getItem('r5proTestBed');
-    try {
-      return JSON.parse(conf);
-    }
-    catch (e) {
-      console.error('Could not read testbed configuration from sessionstorage: ' + e.message);
+      return JSON.parse(settings)
+    } catch (e) {
+      console.error(
+        'Could not read server settings from sessionstorage: ' + e.message
+      )
     }
     return {}
-  })();
+  })()
+
+  var configuration = (function () {
+    var conf = sessionStorage.getItem('r5proTestBed')
+    try {
+      return JSON.parse(conf)
+    } catch (e) {
+      console.error(
+        'Could not read testbed configuration from sessionstorage: ' + e.message
+      )
+    }
+    return {}
+  })()
 
   let rowCount = 1
   let colCount = 1
@@ -59,6 +60,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   const sm = window.query('sm') || 'true'
   const requiresStreamManager = !sm ? false : !(sm && sm === 'false')
+  const whipwhep = window.query('whipwhep') || 'true'
+  const preferWhipWhep = !whipwhep ? false : !(whipwhep && whipwhep === 'false')
   const ws = window.query('ws') || 'null'
   const webSocketEndpointForLayouts = `wss://${ws}?testbed=grid&type=cef&id=${cefId}&event-id=${eventId}`
   const SUBSCRIBE_CONCURRENCY = window.query('subscribe-concurrency') || 5
@@ -67,14 +70,15 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   const placeholderImage = '../../css/assets/Red5Pro_logo_white_red.svg'
   const CHECK_FOR_TASKS_INTERVAL = 1000
 
-  const red5ProHost = window.query('host') || 'localhost'//configuration.host
+  const red5ProHost = window.query('host') || 'localhost' //configuration.host
   const streamManagerHost = configuration.host
 
   // Round Trip Authentication
   const username = window.query('username') || 'default-username'
   const password = window.query('password') || 'default-password'
   const token = JSON.stringify({
-    token: window.query('token') || 'default-token', room: roomName
+    token: window.query('token') || 'default-token',
+    room: roomName,
   })
 
   const sectionContainer = document.querySelector('.main-container')
@@ -82,7 +86,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   let ipReg = /^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/
   let localhostReg = /^localhost.*/
-  let isIPOrLocalhost = ipReg.exec(red5ProHost) || localhostReg.exec(red5ProHost)
+  let isIPOrLocalhost =
+    ipReg.exec(red5ProHost) || localhostReg.exec(red5ProHost)
   let secureConnection = !isIPOrLocalhost
   let activeSubscribers = {}
   let activeSubscribersCount = 0
@@ -94,29 +99,35 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   function getUserMediaConfiguration() {
     return {
       mediaConstraints: {
-        audio: configuration.useAudio ? configuration.mediaConstraints.audio : false,
-        video: configuration.useVideo ? configuration.mediaConstraints.video : false
-      }
-    };
+        audio: configuration.useAudio
+          ? configuration.mediaConstraints.audio
+          : false,
+        video: configuration.useVideo
+          ? configuration.mediaConstraints.video
+          : false,
+      },
+    }
   }
 
-  var protocol = serverSettings.protocol;
+  var protocol = serverSettings.protocol
   function getSocketLocationFromProtocol() {
     return !secureConnection
       ? { protocol: 'ws', port: serverSettings.wsport }
-      : { protocol: 'wss', port: serverSettings.wssport };
+      : { protocol: 'wss', port: serverSettings.wssport }
   }
 
   const defaultConfiguration = {
     protocol: 'ws',
     port: '5080',
-    streamMode: configuration.recordBroadcast ? 'record' : 'live'
+    streamMode: configuration.recordBroadcast ? 'record' : 'live',
   }
 
-  var config = Object.assign({},
+  var config = Object.assign(
+    {},
     configuration,
     defaultConfiguration,
-    getUserMediaConfiguration())
+    getUserMediaConfiguration()
+  )
 
   var baseConfig = Object.assign({}, config, {
     host: red5ProHost,
@@ -129,10 +140,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       app: scope,
       username,
       password,
-      token
-    }
+      token,
+    },
   })
-
 
   const origConsoleLog = console.log
   let logArr = []
@@ -156,36 +166,44 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       const children = slot.children
       if (children && children.length === 0) {
         return slot
-      }
-      else if (children && children.length === 1 && children.item(0).className === 'slot-image') {
+      } else if (
+        children &&
+        children.length === 1 &&
+        children.item(0).className === 'slot-image'
+      ) {
         return slot
       }
     }
   }
 
   const onSubscriberEvent = (event, subscriber) => {
-    const {
-      type
-    } = event
+    const { type } = event
     if (type === 'Subscribe.Start') {
       subscriber.getElementContainer().classList.remove('hidden')
 
       const streamName = `/${appContext}/${subscriber.getStreamName()}`
-      const idx = currentStreamsToSubscribeToListForWorker.indexOf(`${streamName}`)
+      const idx = currentStreamsToSubscribeToListForWorker.indexOf(
+        `${streamName}`
+      )
       if (idx >= 0) {
         currentStreamsToSubscribeToListForWorker.splice(idx, 1)
-        console.log(`Subscribe start received, removed ${streamName} from worker pool`)
+        console.log(
+          `Subscribe start received, removed ${streamName} from worker pool`
+        )
+        console.log(currentStreamsToSubscribeToListForWorker)
+      } else {
+        console.log(
+          `Subscribe start received but stream ${streamName} not found in worker pool`
+        )
         console.log(currentStreamsToSubscribeToListForWorker)
       }
-      else {
-        console.log(`Subscribe start received but stream ${streamName} not found in worker pool`)
-        console.log(currentStreamsToSubscribeToListForWorker)
-      }
-    } else if (type === 'Subscribe.Fail' ||
+    } else if (
+      type === 'Subscribe.Fail' ||
       type === 'Subscribe.InvalidName' ||
       type === 'Subscribe.Stop' ||
       type === 'Subscribe.Play.Unpublish' ||
-      type === 'Subscribe.Connection.Closed') {
+      type === 'Subscribe.Connection.Closed'
+    ) {
       subscriber.getElementContainer().classList.add('hidden')
     }
   }
@@ -193,8 +211,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   let streamToSubscribeQueue = []
   let currentStreamsToSubscribeToListForWorker = []
   const queueSubscribeStarts = function (streamList) {
-    if (!streamList || streamList.length <= 0)
-      return
+    if (!streamList || streamList.length <= 0) return
 
     for (let stream of streamList) {
       if (!streamToSubscribeQueue.includes(stream)) {
@@ -205,17 +222,20 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   /*
-  * Worker that allows up to SUBSCRIBE_CONCURRENCY subscribe attempts at any time
-  */
+   * Worker that allows up to SUBSCRIBE_CONCURRENCY subscribe attempts at any time
+   */
   const startSubscribersWorker = function () {
     setInterval(() => {
-      if (currentStreamsToSubscribeToListForWorker.length >= SUBSCRIBE_CONCURRENCY) {
+      if (
+        currentStreamsToSubscribeToListForWorker.length >= SUBSCRIBE_CONCURRENCY
+      ) {
         console.log('Too many pending subscribers, waiting...')
         console.log(currentStreamsToSubscribeToListForWorker)
         return
       }
 
-      let available = SUBSCRIBE_CONCURRENCY - currentStreamsToSubscribeToListForWorker.length
+      let available =
+        SUBSCRIBE_CONCURRENCY - currentStreamsToSubscribeToListForWorker.length
       if (available > streamToSubscribeQueue.length) {
         available = streamToSubscribeQueue.length
       }
@@ -225,9 +245,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         return
       }
 
-      const candidatesList = streamToSubscribeQueue.slice(0, available);
-      streamToSubscribeQueue = streamToSubscribeQueue.slice(available);
-      currentStreamsToSubscribeToListForWorker = currentStreamsToSubscribeToListForWorker.concat(candidatesList)
+      const candidatesList = streamToSubscribeQueue.slice(0, available)
+      streamToSubscribeQueue = streamToSubscribeQueue.slice(available)
+      currentStreamsToSubscribeToListForWorker =
+        currentStreamsToSubscribeToListForWorker.concat(candidatesList)
 
       startSubscribers(candidatesList)
     }, CHECK_FOR_TASKS_INTERVAL)
@@ -240,11 +261,21 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
    *        A list of stream names.
    */
   const startSubscribers = (streamList) => {
-    console.log(`[mixer]:: Starting new subscribers from list: ${JSON.stringify(streamList)}`)
-    const subscribers = streamList.map(name => {
+    console.log(
+      `[mixer]:: Starting new subscribers from list: ${JSON.stringify(
+        streamList
+      )}`
+    )
+    const subscribers = streamList.map((name) => {
       let freeSlot = findNextAvailableSlot()
       console.log('setting mute to ', audioMuted[name], 'for', name)
-      let bl = new SubscriberBlock(name, freeSlot, SUBSCRIBE_RETRY_DELAY, audioMuted[name], utilizeSubscriberNotifications)
+      let bl = new SubscriberBlock(
+        name,
+        freeSlot,
+        SUBSCRIBE_RETRY_DELAY,
+        audioMuted[name],
+        utilizeSubscriberNotifications
+      )
       activeSubscribers[name] = bl
       activeSubscribersCount++
       return bl
@@ -256,7 +287,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         sub.next = subscribers[index + 1]
       }
       if (index === 0) {
-        sub.start(baseConfig, streamManagerHost)
+        sub.start(baseConfig, streamManagerHost, preferWhipWhep)
       }
     })
   }
@@ -281,16 +312,16 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       slotWidth = width / rows
       slotHeight = slotWidth
     }
-    slots.forEach(slot => {
+    slots.forEach((slot) => {
       slot.style.width = `${slotWidth}px`
       slot.style.height = `${slotHeight}px`
     })
     sectionContainer.style.width = `${slotWidth * colCount}px`
   }
 
-  const webSocket = new WebSocket(webSocketEndpointForLayouts);
+  const webSocket = new WebSocket(webSocketEndpointForLayouts)
   webSocket.onmessage = function (event) {
-    console.log(event);
+    console.log(event)
     const data = JSON.parse(event.data)
     processWSMessage(data)
   }
@@ -299,10 +330,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
    * WebSocket API
    */
   const processWSMessage = function (message) {
-    if (Object.prototype.hasOwnProperty.call(message, 'type') && message.type === 'compositionUpdate') {
+    if (
+      Object.prototype.hasOwnProperty.call(message, 'type') &&
+      message.type === 'compositionUpdate'
+    ) {
       processCompositionUpdate(message)
-    }
-    else {
+    } else {
       console.log('Unrecognize message received.', message)
     }
   }
@@ -312,27 +345,39 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
    * Processes the composition update messages sent by the Editor page and forwarded by the Node.js mixerServer.
    */
   const processCompositionUpdate = function (message) {
-    if (Object.prototype.hasOwnProperty.call(message, 'add') && message.add.length > 0) {
+    if (
+      Object.prototype.hasOwnProperty.call(message, 'add') &&
+      message.add.length > 0
+    ) {
       const streamsToAdd = getNewStreamsToAdd(message.add)
       resizeGridIfNeeded(streamsToAdd.length)
       queueSubscribeStarts(streamsToAdd)
     }
 
-    if (Object.prototype.hasOwnProperty.call(message, 'remove') && message.remove.length > 0) {
+    if (
+      Object.prototype.hasOwnProperty.call(message, 'remove') &&
+      message.remove.length > 0
+    ) {
       removeStreams(message.remove)
     }
 
-    if (Object.prototype.hasOwnProperty.call(message, 'mute') && message.mute.length > 0) {
+    if (
+      Object.prototype.hasOwnProperty.call(message, 'mute') &&
+      message.mute.length > 0
+    ) {
       let streamsToMute = message.mute
-      streamsToMute.forEach(s => {
+      streamsToMute.forEach((s) => {
         audioMuted[s] = true
         muteStream(s)
       })
     }
 
-    if (Object.prototype.hasOwnProperty.call(message, 'unmute') && message.unmute.length > 0) {
+    if (
+      Object.prototype.hasOwnProperty.call(message, 'unmute') &&
+      message.unmute.length > 0
+    ) {
       let streamsToUnmute = message.unmute
-      streamsToUnmute.forEach(s => {
+      streamsToUnmute.forEach((s) => {
         audioMuted[s] = false
         unmuteStream(s)
       })
@@ -355,13 +400,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
   }
   /**
-  * Returns the new streams to subscribe to so they are in the composition
-  */
+   * Returns the new streams to subscribe to so they are in the composition
+   */
   const getNewStreamsToAdd = function (activeStreams) {
     let streamsToAdd = []
     for (let stream of activeStreams) {
       if (!setStreamsToSubscribeTo.has(stream)) {
-        streamsToAdd.push(stream);
+        streamsToAdd.push(stream)
         setStreamsToSubscribeTo.add(stream)
       }
     }
@@ -382,10 +427,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
   }
 
-
   /**
-     * Mutes the specified stream in the composition.
-     */
+   * Mutes the specified stream in the composition.
+   */
   const muteStream = function (stream) {
     if (activeSubscribers[stream]) {
       activeSubscribers[stream].forceMuteOnSubscriber()
@@ -401,24 +445,28 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
   }
 
-
   const enlargeGrid = function (rows, cols) {
-    const templateRows = "1fr ".repeat(rows)
-    const templateCols = "1fr ".repeat(cols)
+    const templateRows = '1fr '.repeat(rows)
+    const templateCols = '1fr '.repeat(cols)
     sectionContainer.style['grid-template-rows'] = templateRows
     sectionContainer.style['grid-template-columns'] = templateCols
 
     const diffRows = rows - rowCount
     const diffCols = cols - colCount
     if (diffRows >= 0 && diffCols >= 0) {
-      for (let i = 0; i < diffRows * colCount + diffCols * rowCount + diffCols; i++) {
+      for (
+        let i = 0;
+        i < diffRows * colCount + diffCols * rowCount + diffCols;
+        i++
+      ) {
         const div = document.createElement('div')
         div.classList.add('box')
         sectionContainer.appendChild(div)
       }
-    }
-    else {
-      console.warn('Unsupported operation. Cannot remove columns and or rows from the grid')
+    } else {
+      console.warn(
+        'Unsupported operation. Cannot remove columns and or rows from the grid'
+      )
     }
 
     rowCount = rows
@@ -433,8 +481,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   /**
    * Sets placeholder images on the players to show the grid.
    */
-  const setSubscriberImages = images => {
-    const imgs = images.map(url => {
+  const setSubscriberImages = (images) => {
+    const imgs = images.map((url) => {
       const img = document.createElement('img')
       img.src = url
       img.classList.add('slot-image')
@@ -453,5 +501,4 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   setSubscriberImages(imgs)
   window.addEventListener('resize', resizeSlots, true)
   startSubscribersWorker()
-
 })(window, window.red5prosdk, window.SubscriberBlock)
