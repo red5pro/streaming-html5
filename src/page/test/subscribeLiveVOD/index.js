@@ -23,7 +23,7 @@ NONINFRINGEMENT.   IN  NO  EVENT  SHALL INFRARED5, INC. BE LIABLE FOR ANY CLAIM,
 WHETHER IN  AN  ACTION  OF  CONTRACT,  TORT  OR  OTHERWISE,  ARISING  FROM,  OUT  OF  OR  IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
-;(function (window, document, red5prosdk) {
+;(function (window, document, red5prosdk, CustomControls) {
   const serverSettings = (() => {
     const settings = sessionStorage.getItem('r5proServerSettings')
     try {
@@ -48,9 +48,18 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   )
 
   let subscriber
+  let controls
+
   let instanceId = Math.floor(Math.random() * 0x10000).toString(16)
   let protocol = serverSettings.protocol
   let isSecure = protocol === 'https'
+
+  const subscribeButton = document.getElementById('subscribe-button')
+  const baseCheck = document.getElementById('base-check')
+  const fullCheck = document.getElementById('full-check')
+  const urlInput = document.getElementById('url-input')
+  const controlsCheck = document.getElementById('controls-check')
+  const customControls = document.querySelector('.custom-controls')
 
   const updateStatusFromEvent = window.red5proHandleSubscriberEvent // defined in src/template/partial/status-field-subscriber.hbs
   const streamTitle = document.getElementById('stream-title')
@@ -108,7 +117,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   const onSubscriberEvent = (event) => {
     const { type, data } = event
     if (type !== 'Subscribe.Time.Update') {
-      console.log('[Red5ProSubscriber] ' + type + '.')
+      console.log('[Red5ProSubscriber] ' + type + '.', data)
       updateStatusFromEvent(event)
       if (type === 'Subscribe.VideoDimensions.Change') {
         onResolutionUpdate(data.width, data.height)
@@ -117,7 +126,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         if (data.error) {
           console.log('[Red5ProSubscriber::Error', data.error)
         }
+      } else if (type === 'Subscribe.Play.Unpublish') {
+        showModal(generateUnpublishContent())
       }
+    } else {
+      // console.log('TIME', data)
     }
   }
 
@@ -162,6 +175,43 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       : {}
   }
 
+  const generateUnpublishContent = () => {
+    const content = document.createElement('div')
+    const line1 = document.createElement('p')
+    line1.innerHTML = `The Broadcast for <span style="color: #db1f26;">${configuration.stream1}</span> has ended.`
+    const line2 = document.createElement('p')
+    const text = document.createTextNode(
+      'You will continue to have the ability to scrub and playback the stream up until this point.'
+    )
+    line2.appendChild(text)
+    content.appendChild(line1)
+    content.appendChild(document.createElement('br'))
+    content.appendChild(line2)
+    return content
+  }
+
+  const showModal = (content) => {
+    var style = 'padding: 10px; line-height: 1.3em;'
+    content.style = style
+    const div = document.createElement('div')
+    div.classList.add('modal')
+    const container = document.createElement('div')
+    const button = document.createElement('a')
+    const close = document.createTextNode('close')
+    button.href = '#'
+    button.appendChild(close)
+    button.classList.add('modal-close')
+    container.appendChild(button)
+    container.appendChild(content)
+    div.appendChild(container)
+    document.body.appendChild(div)
+    button.addEventListener('click', (event) => {
+      event.preventDefault()
+      document.body.removeChild(div)
+      return false
+    })
+  }
+
   // Request to unsubscribe.
   const unsubscribe = async () => {
     if (subscriber) {
@@ -189,21 +239,42 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       streamName: configuration.stream1,
     },
   }
-  const rtcConfig = {
-    ...config,
-    ...{
-      subscriptionId: 'subscriber-' + instanceId,
-      enableLiveSeek: true,
-    },
-  }
 
-  const subscribe = async () => {
+  const subscribe = async (
+    optionalBaseURL,
+    optionalFullURL,
+    useCustomControls
+  ) => {
     const { preferWhipWhep } = configuration
     const { WHEPClient, RTCSubscriber } = red5prosdk
+
+    subscribeButton.disabled = true
+    urlInput.disabled = true
+    if (useCustomControls) {
+      customControls.classList.remove('hidden')
+    }
+    window.scrollTo(0, document.body.scrollHeight)
+
     try {
+      const rtcConfig = {
+        ...config,
+        ...{
+          subscriptionId: 'subscriber-' + instanceId,
+          liveSeek: {
+            enabled: true,
+            baseURL: optionalBaseURL,
+            fullURL: optionalFullURL,
+            usePlaybackControlsUI: !useCustomControls,
+            options: { debug: true, backBufferLength: 0 },
+          },
+        },
+      }
+
       subscriber = preferWhipWhep ? new WHEPClient() : new RTCSubscriber()
       await subscriber.init(rtcConfig)
       subscriber.on('*', onSubscriberEvent)
+      controls = new CustomControls(subscriber)
+
       streamTitle.innerText = configuration.stream1
       await subscriber.subscribe()
       onSubscribeSuccess(subscriber)
@@ -214,6 +285,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         '[Red5ProSubscriber] :: Error in subscribing - ' + jsonError
       )
       onSubscribeFail(jsonError)
+      subscribeButton.disabled = false
+      urlInput.disabled = false
+      window.scrollTo(0, 0)
     }
   }
 
@@ -232,6 +306,22 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   window.addEventListener('pagehide', shutdown)
   window.addEventListener('beforeunload', shutdown)
 
+  baseCheck.onchange = () => {
+    if (baseCheck.checked) {
+      fullCheck.checked = false
+    }
+  }
+  fullCheck.onchange = () => {
+    if (fullCheck.checked) {
+      baseCheck.checked = false
+    }
+  }
+
   // Start
-  subscribe()
-})(this, document, window.red5prosdk)
+  subscribeButton.addEventListener('click', () => {
+    const useCustomControls = controlsCheck.checked
+    const baseURL = baseCheck.checked ? urlInput.value : undefined
+    const fullURL = fullCheck.checked ? urlInput.value : undefined
+    subscribe(baseURL, fullURL, useCustomControls)
+  })
+})(this, document, window.red5prosdk, window.CustomControls)
