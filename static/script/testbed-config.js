@@ -77,7 +77,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       cameraHeight: 480,
       embedWidth: '100%',
       embedHeight: 480,
-      buffer: 0.5,
+      buffer: 0,
       bandwidth: {
         audio: 56,
         video: 750,
