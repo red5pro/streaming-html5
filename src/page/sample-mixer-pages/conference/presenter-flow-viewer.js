@@ -1,53 +1,54 @@
 /*
 Copyright © 2015 Infrared5, Inc. All rights reserved.
 
-The accompanying code comprising examples for use solely in conjunction with Red5 Pro (the "Example Code") 
-is  licensed  to  you  by  Infrared5  Inc.  in  consideration  of  your  agreement  to  the  following  
-license terms  and  conditions.  Access,  use,  modification,  or  redistribution  of  the  accompanying  
+The accompanying code comprising examples for use solely in conjunction with Red5 Pro (the "Example Code")
+is  licensed  to  you  by  Infrared5  Inc.  in  consideration  of  your  agreement  to  the  following
+license terms  and  conditions.  Access,  use,  modification,  or  redistribution  of  the  accompanying
 code  constitutes your acceptance of the following license terms and conditions.
 
-Permission is hereby granted, free of charge, to you to use the Example Code and associated documentation 
-files (collectively, the "Software") without restriction, including without limitation the rights to use, 
-copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit 
+Permission is hereby granted, free of charge, to you to use the Example Code and associated documentation
+files (collectively, the "Software") without restriction, including without limitation the rights to use,
+copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit
 persons to whom the Software is furnished to do so, subject to the following conditions:
 
-The Software shall be used solely in conjunction with Red5 Pro. Red5 Pro is licensed under a separate end 
-user  license  agreement  (the  "EULA"),  which  must  be  executed  with  Infrared5,  Inc.   
+The Software shall be used solely in conjunction with Red5 Pro. Red5 Pro is licensed under a separate end
+user  license  agreement  (the  "EULA"),  which  must  be  executed  with  Infrared5,  Inc.
 An  example  of  the EULA can be found on our website at: https://account.red5pro.com/assets/LICENSE.txt.
 
 The above copyright notice and this license shall be included in all copies or portions of the Software.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,  INCLUDING  BUT  
-NOT  LIMITED  TO  THE  WARRANTIES  OF  MERCHANTABILITY, FITNESS  FOR  A  PARTICULAR  PURPOSE  AND  
-NONINFRINGEMENT.   IN  NO  EVENT  SHALL INFRARED5, INC. BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, 
-WHETHER IN  AN  ACTION  OF  CONTRACT,  TORT  OR  OTHERWISE,  ARISING  FROM,  OUT  OF  OR  IN CONNECTION 
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,  INCLUDING  BUT
+NOT  LIMITED  TO  THE  WARRANTIES  OF  MERCHANTABILITY, FITNESS  FOR  A  PARTICULAR  PURPOSE  AND
+NONINFRINGEMENT.   IN  NO  EVENT  SHALL INFRARED5, INC. BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+WHETHER IN  AN  ACTION  OF  CONTRACT,  TORT  OR  OTHERWISE,  ARISING  FROM,  OUT  OF  OR  IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
-((window, red5prosdk, SubscriberBlock) => {
-
+;((window, red5prosdk, SubscriberBlock) => {
   red5prosdk.setLogLevel('debug')
 
   var serverSettings = (function () {
-    var settings = sessionStorage.getItem('r5proServerSettings');
+    var settings = sessionStorage.getItem('r5proServerSettings')
     try {
-      return JSON.parse(settings);
-    }
-    catch (e) {
-      console.error('Could not read server settings from sessionstorage: ' + e.message);
-    }
-    return {};
-  })();
-
-  var configuration = (function () {
-    var conf = sessionStorage.getItem('r5proTestBed');
-    try {
-      return JSON.parse(conf);
-    }
-    catch (e) {
-      console.error('Could not read testbed configuration from sessionstorage: ' + e.message);
+      return JSON.parse(settings)
+    } catch (e) {
+      console.error(
+        'Could not read server settings from sessionstorage: ' + e.message
+      )
     }
     return {}
-  })();
+  })()
+
+  var configuration = (function () {
+    var conf = sessionStorage.getItem('r5proTestBed')
+    try {
+      return JSON.parse(conf)
+    } catch (e) {
+      console.error(
+        'Could not read testbed configuration from sessionstorage: ' + e.message
+      )
+    }
+    return {}
+  })()
 
   /*const getRoomName = (context) => {
     const splits = context.split('/')
@@ -66,6 +67,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   const role = window.query('role') || undefined
   const host = window.query('host') || undefined
+  const whipwhep = window.query('whipwhep') || 'true'
+  const preferWhipWhep = !whipwhep ? false : !(whipwhep && whipwhep === 'false')
   const isHost = role === 'moderator'
   const isMixer = role === 'mixer'
   const requiresStreamManager = true
@@ -80,42 +83,50 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   const username = window.query('username') || 'default-username'
   const password = window.query('password') || 'default-password'
   const token = JSON.stringify({
-    token: window.query('token') || 'default-token', room: getConferenceRoomContext()
+    token: window.query('token') || 'default-token',
+    room: getConferenceRoomContext(),
   })
 
   const presenterContainer = document.querySelector('.presenter-container')
   const sectionContainer = document.querySelector('.section-container')
 
-  var protocol = serverSettings.protocol;
+  var protocol = serverSettings.protocol
   var secureConnection = protocol === 'https'
   function getSocketLocationFromProtocol() {
     return !secureConnection
       ? { protocol: 'ws', port: serverSettings.wsport }
-      : { protocol: 'wss', port: serverSettings.wssport };
+      : { protocol: 'wss', port: serverSettings.wssport }
   }
 
-
-  const wsEndpoint = secureConnection ? `wss://${ws}?testbed=conference&room=${getConferenceRoomContext()}&host=${isHost}&mixer=${isMixer}&presenter=1` : `ws://${ws}?room=${getConferenceRoomContext()}&host=${isHost}&mixer=${isMixer}&presenter=1`
+  const wsEndpoint = secureConnection
+    ? `wss://${ws}?testbed=conference&room=${getConferenceRoomContext()}&host=${isHost}&mixer=${isMixer}&presenter=1`
+    : `ws://${ws}?room=${getConferenceRoomContext()}&host=${isHost}&mixer=${isMixer}&presenter=1`
 
   function getUserMediaConfiguration() {
     return {
       mediaConstraints: {
-        audio: configuration.useAudio ? configuration.mediaConstraints.audio : false,
-        video: configuration.useVideo ? configuration.mediaConstraints.video : false
-      }
-    };
+        audio: configuration.useAudio
+          ? configuration.mediaConstraints.audio
+          : false,
+        video: configuration.useVideo
+          ? configuration.mediaConstraints.video
+          : false,
+      },
+    }
   }
 
   var defaultConfiguration = {
     protocol: getSocketLocationFromProtocol().protocol,
     port: getSocketLocationFromProtocol().port,
-    streamMode: configuration.recordBroadcast ? 'record' : 'live'
+    streamMode: configuration.recordBroadcast ? 'record' : 'live',
   }
 
-  var config = Object.assign({},
+  var config = Object.assign(
+    {},
     configuration,
     defaultConfiguration,
-    getUserMediaConfiguration())
+    getUserMediaConfiguration()
+  )
 
   var baseConfig = Object.assign({}, config, {
     protocol: getSocketLocationFromProtocol().protocol,
@@ -127,8 +138,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       app: getConferenceRoomContext(),
       username,
       password,
-      token
-    }
+      token,
+    },
   })
 
   let provision = {
@@ -140,20 +151,21 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     parameters: {
       group: 'webrtc',
       audiotracks: 3,
-      videotracks: 1
+      videotracks: 1,
     },
     restrictions: [],
     primaries: [],
-    secondaries: []
+    secondaries: [],
   }
 
   // Update provision for conference.
   let confProvision = {
-    ...provision, ...{
+    ...provision,
+    ...{
       guid: getConferenceRoomContext(),
       context: getConferenceRoomContext(),
-      name: roomName
-    }
+      name: roomName,
+    },
   }
 
   let websocket
@@ -167,8 +179,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
    *        A list of stream names.
    */
   const startSubscribers = (streamList) => {
-    console.log(`[conference]:: Starting new subscribers from list: ${streamList.join(',')}`)
-    const subscribers = streamList.map(name => {
+    console.log(
+      `[conference]:: Starting new subscribers from list: ${streamList.join(
+        ','
+      )}`
+    )
+    const subscribers = streamList.map((name) => {
       const sub = new SubscriberBlock(name, sectionContainer)
       return sub
     })
@@ -181,7 +197,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         sub.next = subscribers[index + 1]
       }
       if (index === 0) {
-        sub.execute(baseConfig, requiresStreamManager)
+        sub.execute(baseConfig, requiresStreamManager, preferWhipWhep)
       }
     })
   }
@@ -194,9 +210,14 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   const startPresenter = (streamName, participantAppendix) => {
     const participantPresenter = `${streamName}${participantAppendix}`
     console.log(`[conference]: startPresenter(${streamName}).`)
-    console.log(`[conference]: previous presenter was ${currentPresenterStreamName}.`)
-    const isPresenting = window.streamsUtil.subscribers.find(currentPresenterStreamName) !== undefined
-    const isActive = window.streamsUtil.subscribers.find(participantPresenter) !== undefined
+    console.log(
+      `[conference]: previous presenter was ${currentPresenterStreamName}.`
+    )
+    const isPresenting =
+      window.streamsUtil.subscribers.find(currentPresenterStreamName) !==
+      undefined
+    const isActive =
+      window.streamsUtil.subscribers.find(participantPresenter) !== undefined
     console.log(currentPresenterStreamName, participantPresenter, isPresenting)
     if (currentPresenterStreamName === participantPresenter && isPresenting) {
       return
@@ -205,10 +226,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       if (isHost) {
         decorateSubscriberForModeration(sub)
       }
-      sub.execute(baseConfig, requiresStreamManager)
+      sub.execute(baseConfig, requiresStreamManager, preferWhipWhep)
 
       // presenter update received from websocket
-      if (currentPresenterStreamName && currentPresenterStreamName != participantPresenter) {
+      if (
+        currentPresenterStreamName &&
+        currentPresenterStreamName != participantPresenter
+      ) {
         swapPresenter(currentPresenterStreamName, participantPresenter)
       }
     } else {
@@ -226,15 +250,17 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
    */
   const swapPresenter = (presenterName, viewerName) => {
     const {
-      streamsUtil: {
-        subscribers
-      }
+      streamsUtil: { subscribers },
     } = window
     const presenterSub = subscribers.find(presenterName)
     const viewerSub = subscribers.find(viewerName)
-    const presenter = presenterSub ? presenterSub.getElementContainer() : undefined
+    const presenter = presenterSub
+      ? presenterSub.getElementContainer()
+      : undefined
     const viewer = viewerSub ? viewerSub.getElementContainer() : undefined
-    console.log(`[conference]: Swap Presenter from ${presenterName} to ${viewerName}.`)
+    console.log(
+      `[conference]: Swap Presenter from ${presenterName} to ${viewerName}.`
+    )
     console.log(presenter, viewer, presenterSub, viewerSub)
     if (presenter && viewer) {
       presenterContainer.removeChild(presenter)
@@ -262,7 +288,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
    *        List of stream names.
    */
   const stopSubscribers = (streamList, participantAppendix) => {
-    streamList.forEach(name => {
+    streamList.forEach((name) => {
       // The window.streamsUtil.subscribers Utility is created in subscriber-block.js
       window.streamsUtil.subscribers.stop(name)
       window.streamsUtil.subscribers.stop(`${name}${participantAppendix}`)
@@ -337,12 +363,16 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
    */
   const onModeratorSwapPresenterStream = (room, streamNameToPresent) => {
     if (currentPresenterStreamName === streamNameToPresent) return
-    console.log(`[conference]: Swapping presenter from ${currentPresenterStreamName} to ${streamNameToPresent}.`)
-    websocket.send(JSON.stringify({
-      type: 'presenter',
-      room: room,
-      streamName: streamNameToPresent
-    }))
+    console.log(
+      `[conference]: Swapping presenter from ${currentPresenterStreamName} to ${streamNameToPresent}.`
+    )
+    websocket.send(
+      JSON.stringify({
+        type: 'presenter',
+        room: room,
+        streamName: streamNameToPresent,
+      })
+    )
   }
 
   /**
@@ -352,11 +382,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
    * @param {String} name
    */
   const onModeratorRemoveConferenceStream = (room, name) => {
-    websocket.send(JSON.stringify({
-      type: 'demote',
-      room: room,
-      streamName: name
-    }))
+    websocket.send(
+      JSON.stringify({
+        type: 'demote',
+        room: room,
+        streamName: name,
+      })
+    )
   }
 
   /**
@@ -366,11 +398,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
    * @param {String} name
    */
   const onModeratorExcludeStream = (room, name) => {
-    websocket.send(JSON.stringify({
-      type: 'exclude',
-      room: room,
-      streamName: name
-    }))
+    websocket.send(
+      JSON.stringify({
+        type: 'exclude',
+        room: room,
+        streamName: name,
+      })
+    )
   }
 
   /**
@@ -384,28 +418,31 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
    */
   const parseStreamList = (list, presenterStreamName, participantAppendix) => {
     // Flatten the list if the array is of objects in structure {name: `stream1`}.
-    let flattened = list.map(item => {
+    let flattened = list.map((item) => {
       if (typeof item !== 'string') {
         return `${item.name}${participantAppendix}`
       }
       return `${item}${participantAppendix}`
     })
     // Only using `_r5participator` streams with RTCCConferenceParticipants
-    let nonPresenter = flattened.filter(item => item !== `${presenterStreamName}${participantAppendix}`)
+    let nonPresenter = flattened.filter(
+      (item) => item !== `${presenterStreamName}${participantAppendix}`
+    )
     // Find those that are new.
-    const newListings = nonPresenter.filter(item => {
+    const newListings = nonPresenter.filter((item) => {
       return streamListing.indexOf(item.replace(participantAppendix, '')) === -1
     })
     // Find those that are old, no longer active.
     let strippedListings = []
-    streamListing.forEach(name => {
+    streamListing.forEach((name) => {
       /*
       if (nonPresenter.indexOf(name) === -1 &&
         name !== presenterStreamName) {
         strippedListings.push(name)
       }
       */
-      if (list.indexOf(name) == -1) {// && name != presenterStreamName) {
+      if (list.indexOf(name) == -1) {
+        // && name != presenterStreamName) {
         strippedListings.push(name)
       }
     })
@@ -418,7 +455,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       startSubscribers(newListings)
     }
     streamListing = list
-    console.log(`[conference] :: Current participant stream listing: ${streamListing}.`)
+    console.log(
+      `[conference] :: Current participant stream listing: ${streamListing}.`
+    )
     console.log(`[conference] :: Remove ${strippedListings}`)
     console.log(`[conference] :: Add ${newListings}`)
     console.log(`[conference] :: Presenter ${presenterStreamName}`)
@@ -439,8 +478,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
     */
 
-
-    websocket.onmessage = event => {
+    websocket.onmessage = (event) => {
       console.log('[websocket]::onmessage')
       console.log(event)
       // Note: expecting list as array of stream name strings.
@@ -448,9 +486,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       if (typeof json === 'string') {
         json = JSON.parse(event.data)
       }
-      if (json.type === 'conference' && json.room === getConferenceRoomContext()) {
-        json.hasOwnProperty('streams') && parseStreamList(json.streams, json.presenter, '')// PARTICIPANT_APPENDIX)
-        json.hasOwnProperty('presenter') && startPresenter(json.presenter, '')// PARTICIPANT_APPENDIX)
+      if (
+        json.type === 'conference' &&
+        json.room === getConferenceRoomContext()
+      ) {
+        json.hasOwnProperty('streams') &&
+          parseStreamList(json.streams, json.presenter, '') // PARTICIPANT_APPENDIX)
+        json.hasOwnProperty('presenter') && startPresenter(json.presenter, '') // PARTICIPANT_APPENDIX)
       }
       if (json.type === 'error') {
         console.warn(json)
@@ -476,7 +518,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   const postProvision = async (provision) => {
     try {
-      await window.streamManagerUtil.postProvision(baseConfig.host, provision, SM_ACCESS_TOKEN)
+      await window.streamManagerUtil.postProvision(
+        baseConfig.host,
+        provision,
+        SM_ACCESS_TOKEN
+      )
     } catch (e) {
       throw e
     }
@@ -496,8 +542,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   const boxes = document.querySelectorAll('.box')
   const presenter = document.querySelector('.presenter-container')
   const viewers = document.querySelector('.section-container')
-  boxes.forEach(box => {
-    box.addEventListener('click', event => {
+  boxes.forEach((box) => {
+    box.addEventListener('click', (event) => {
       const target = event.currentTarget
       if (target === focused) return
       presenter.removeChild(focused)
@@ -513,5 +559,4 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   })
 
   start()
-
 })(window, window.red5prosdk, window.SubscriberBlock)
