@@ -74,6 +74,7 @@ _It is *highly* recommended to include [adapter.js](https://github.com/webrtcHac
 | maintainConnectionOnSubscribeErrors | [-] | `false` | Flag to maintain previously established `WebSocket` connection on any failure within the `subscribe` request flow. [Example](https://github.com/red5pro/streaming-html5/tree/master/src/page/test/subscribeRetryOnInvalidName) |
 | signalingSocketOnly | [-] | `true` | Flag to indicate whether the `WebSocket` should only be used for signaling while establishing a connection. Afterward, all data between client and server will be sent over an `RTCDataChannel`.
 | dataChannelConfiguration | [-] | `{name: "red5pro"}` | An object used in configuring a n `RTCDataChannel`. _Only used when `signalingSocketOnly` is defined as `true`_ |
+| buffer | [-] | `0` | Request to set a buffer - in seconds - for playback.
 | maintainStreamVariant | [-] | `false` | Flag to instruct the server - when utilizing transcoding - to not switch subscriber stream variants when network conditions change. By setting this to `true`, when you request to playback a stream that is transcoded, the server will not deliver a variant of higher or lower quality dependending on current network conditions. |
 | liveSeek | [-] | *None* | Configuration object to enable live seek capability. See [Live Seek](#live-seek) for more information.
 
@@ -419,7 +420,7 @@ const start = async () => {
 
   try {
 
-    const subscriber = 
+    const subscriber =
       await new Red5ProSubscriber()
                 .setPlaybackOrder(['rtc', 'hls'])
                 .init({
@@ -433,7 +434,7 @@ const start = async () => {
     await subscriber.subscribe()
 
   } catch (e) {
-    console.error(e)  
+    console.error(e)
   }
 
 }
@@ -594,11 +595,12 @@ The following events are specific to the `RTCSubscriber` implementation and acce
 | DATA_CHANNEL_CLOSE | 'WebRTC.DataChannel.Close' | When the underlying `RTCDataChannel` is closed when `signalingServerOnly` configuration is used. |
 | DATA_CHANNEL_ERROR | 'WebRTC.DataChannel.Error' | When an error has occurred within the underlying `RTCDataChannel` when `signalingServerOnly` configuration is used. |
 | DATA_CHANNEL_MESSAGE | 'WebRTC.DataChannel.Message' | When a message has been delivered over the underlying `RTCDataChannel` when `signalingServerOnly` configuration is used. |
-| LIVE_SEEK_ENABLED | 'WebRTC.LiveSeek.Enabled' | When `enableLiveSeek` is used to playback Live VOD and the HLS video has been loaded and available to seek. |
-| LIVE_SEEK_DISABLED | 'WebRTC.LiveSeek.Disabled' | When `enableLiveSeek` is used to playback Live VOD and HLS video has not been loaded nor available to seek. |
-| LIVE_SEEK_ERROR | 'WebRTC.LiveSeek.Error' | When `enableLiveSeek` is used to playback Live VOD and HLS video and an error in playback has occurred. Inspect the `error` attribute on the event for more details. |
-| LIVE_SEEK_LOADING | 'WebRTC.LiveSeek.FragmentLoading' | When `enableLiveSeek` is used to playback Live VOD and HLS video in currently loading a fragment during seeking. |
-| LIVE_SEEK_LOADED | 'WebRTC.LiveSeek.FragmentLoaded' | When `enableLiveSeek` is used to playback Live VOD and HLS video has completed loading a fragment during seeking. |
+| LIVE_SEEK_UNSUPPORTED | 'WebRTC.LiveSeek.Unsupported' | When `liveSeek` is specified but the browser does not support th integration of HLS.JS for Live VOD playback. |
+| LIVE_SEEK_ENABLED | 'WebRTC.LiveSeek.Enabled' | When `liveSeek` is used to playback Live VOD and the HLS video has been loaded and available to seek. |
+| LIVE_SEEK_DISABLED | 'WebRTC.LiveSeek.Disabled' | When `liveSeek` is used to playback Live VOD and HLS video has not been loaded nor available to seek. |
+| LIVE_SEEK_ERROR | 'WebRTC.LiveSeek.Error' | When `liveSeek` is used to playback Live VOD and HLS video and an error in playback has occurred. Inspect the `error` attribute on the event for more details. |
+| LIVE_SEEK_LOADING | 'WebRTC.LiveSeek.FragmentLoading' | When `liveSeek` is used to playback Live VOD and HLS video in currently loading a fragment during seeking. |
+| LIVE_SEEK_LOADED | 'WebRTC.LiveSeek.FragmentLoaded' | When `liveSeek` is used to playback Live VOD and HLS video has completed loading a fragment during seeking. |
 | LIVE_SEEK_CHANGE | 'WebRTC.LiveSeek.Change | When `liveSeek` is used, this event notifies on a change of state going from "live" to "vod" and vice versa.
 | ON_ADD_STREAM | 'WebRTC.Add.Stream' | When a `MediaStream` object has become available for playback. |
 | TRACK_ADDED | 'WebRTC.PeerConnection.OnTrack' | When a MediaTrack has become available on the underlying `RTCPeerConnection`. |
@@ -794,7 +796,7 @@ const handleDecodeVideo = (readable, writable, options) => {
   if (options) {
     readable.pipeThrough(transformStream, options).pipeTo(writable)
   } else {
-    readable.pipeThrough(transformStream).pipeTo(writable) 
+    readable.pipeThrough(transformStream).pipeTo(writable)
   }
 }
 
@@ -807,7 +809,7 @@ const handleDecodeAudio = (readable, writable, options) => {
   if (options) {
     readable.pipeThrough(transformStream, options).pipeTo(writable)
   } else {
-    readable.pipeThrough(transformStream).pipeTo(writable) 
+    readable.pipeThrough(transformStream).pipeTo(writable)
   }
 }
 
