@@ -109,6 +109,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
                   (now - lastResult.get(report.id).timestamp)
                 cb(bitrate, packets)
               }
+              if (report.frameWidth && report.frameHeight) {
+                const { frameWidth, frameHeight } = report
+                if (frameWidth > 0 || frameHeight > 0) {
+                  resolutionCb(report.frameWidth, report.frameHeight)
+                }
+              }
             }
           } else if (resolutionCb && report.type === 'track') {
             var fw = 0
