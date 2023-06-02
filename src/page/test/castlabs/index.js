@@ -245,7 +245,7 @@ const decryptPlayback = async () => {
       worker: worker,
     }
 
-    subscriber = new RTCSubscriber()
+    subscriber = preferWhipWhep ? new WHEPClient() : new RTCSubscriber()
     await subscriber.init(baseConfig, transforms)
     subscriber.on('*', (event) => onDecryptedSubscriberEvent(event))
     await subscriber.subscribe()
