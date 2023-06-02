@@ -1,51 +1,52 @@
 /*
 Copyright © 2015 Infrared5, Inc. All rights reserved.
 
-The accompanying code comprising examples for use solely in conjunction with Red5 Pro (the "Example Code") 
-is  licensed  to  you  by  Infrared5  Inc.  in  consideration  of  your  agreement  to  the  following  
-license terms  and  conditions.  Access,  use,  modification,  or  redistribution  of  the  accompanying  
+The accompanying code comprising examples for use solely in conjunction with Red5 Pro (the "Example Code")
+is  licensed  to  you  by  Infrared5  Inc.  in  consideration  of  your  agreement  to  the  following
+license terms  and  conditions.  Access,  use,  modification,  or  redistribution  of  the  accompanying
 code  constitutes your acceptance of the following license terms and conditions.
 
-Permission is hereby granted, free of charge, to you to use the Example Code and associated documentation 
-files (collectively, the "Software") without restriction, including without limitation the rights to use, 
-copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit 
+Permission is hereby granted, free of charge, to you to use the Example Code and associated documentation
+files (collectively, the "Software") without restriction, including without limitation the rights to use,
+copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit
 persons to whom the Software is furnished to do so, subject to the following conditions:
 
-The Software shall be used solely in conjunction with Red5 Pro. Red5 Pro is licensed under a separate end 
-user  license  agreement  (the  "EULA"),  which  must  be  executed  with  Infrared5,  Inc.   
+The Software shall be used solely in conjunction with Red5 Pro. Red5 Pro is licensed under a separate end
+user  license  agreement  (the  "EULA"),  which  must  be  executed  with  Infrared5,  Inc.
 An  example  of  the EULA can be found on our website at: https://account.red5pro.com/assets/LICENSE.txt.
 
 The above copyright notice and this license shall be included in all copies or portions of the Software.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,  INCLUDING  BUT  
-NOT  LIMITED  TO  THE  WARRANTIES  OF  MERCHANTABILITY, FITNESS  FOR  A  PARTICULAR  PURPOSE  AND  
-NONINFRINGEMENT.   IN  NO  EVENT  SHALL INFRARED5, INC. BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, 
-WHETHER IN  AN  ACTION  OF  CONTRACT,  TORT  OR  OTHERWISE,  ARISING  FROM,  OUT  OF  OR  IN CONNECTION 
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,  INCLUDING  BUT
+NOT  LIMITED  TO  THE  WARRANTIES  OF  MERCHANTABILITY, FITNESS  FOR  A  PARTICULAR  PURPOSE  AND
+NONINFRINGEMENT.   IN  NO  EVENT  SHALL INFRARED5, INC. BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+WHETHER IN  AN  ACTION  OF  CONTRACT,  TORT  OR  OTHERWISE,  ARISING  FROM,  OUT  OF  OR  IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
-(function (window, document, red5prosdk) {
-
+;(function (window, document, red5prosdk) {
   var serverSettings = (function () {
-    var settings = sessionStorage.getItem('r5proServerSettings');
+    var settings = sessionStorage.getItem('r5proServerSettings')
     try {
-      return JSON.parse(settings);
-    }
-    catch (e) {
-      console.error('Could not read server settings from sessionstorage: ' + e.message);
+      return JSON.parse(settings)
+    } catch (e) {
+      console.error(
+        'Could not read server settings from sessionstorage: ' + e.message
+      )
     }
     return {}
-  })();
+  })()
 
   var configuration = (function () {
-    var conf = sessionStorage.getItem('r5proTestBed');
+    var conf = sessionStorage.getItem('r5proTestBed')
     try {
-      return JSON.parse(conf);
-    }
-    catch (e) {
-      console.error('Could not read testbed configuration from sessionstorage: ' + e.message);
+      return JSON.parse(conf)
+    } catch (e) {
+      console.error(
+        'Could not read testbed configuration from sessionstorage: ' + e.message
+      )
     }
     return {}
-  })();
+  })()
 
   const getRoomName = (app) => {
     const splits = app.split('/')
@@ -59,6 +60,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   red5prosdk.setLogLevel('debug')
 
+  // const whipwhep = window.query('whipwhep') || 'true'
+  // const preferWhipWhep = !whipwhep ? false : !(whipwhep && whipwhep === 'false')
+  // [2023-06-02] NOTE: Conference Participants and Compositors currently do not support WHIP/WHEP.
+  const preferWhipWhep = false
+
   const websocketEndpoint = configuration.mixerBackendSocketField
   const appContext = configuration.app
   const roomName = getRoomName(appContext)
@@ -68,7 +74,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   const streamMode = configuration.streamMode
 
   // @see publisher-status.js
-  const updateStatusFromEvent = window.red5proHandlePublisherEvent;
+  const updateStatusFromEvent = window.red5proHandlePublisherEvent
 
   // Stats UI
   const statisticsField = document.querySelector('#statistics-field')
@@ -101,21 +107,21 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         ...rtcConfig.connectionParams,
         username,
         password,
-        token
+        token,
       }
 
       publisherConfig.connectionParams = {
         ...publisherConfig.connectionParams,
         username,
         password,
-        token
+        token,
       }
 
       participantConfig.connectionParams = {
         ...participantConfig.connectionParams,
         username,
         password,
-        token
+        token,
       }
     }
 
@@ -128,13 +134,21 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   })
 
   // Publisher UI
-  const publisherSettingsSetup = document.querySelector('#publisher-settings-setup')
-  const publisherSettingsActive = document.querySelector('#publisher-settings-active')
+  const publisherSettingsSetup = document.querySelector(
+    '#publisher-settings-setup'
+  )
+  const publisherSettingsActive = document.querySelector(
+    '#publisher-settings-active'
+  )
   const audioCheck = publisherSettingsActive.querySelector('#audio-checkbox')
   const videoCheck = publisherSettingsActive.querySelector('#video-checkbox')
-  const screenshareButton = publisherSettingsActive.querySelector('#screenshare-button')
+  const screenshareButton = publisherSettingsActive.querySelector(
+    '#screenshare-button'
+  )
 
-  const conferenceSubscriber = document.querySelector('#red5pro-subscriber-composition')
+  const conferenceSubscriber = document.querySelector(
+    '#red5pro-subscriber-composition'
+  )
 
   const screenshareId = 'screenshare-publisher'
   let screenshare
@@ -152,66 +166,74 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   function getUserMediaConfiguration() {
     return {
       mediaConstraints: {
-        audio: configuration.useAudio ? configuration.mediaConstraints.audio : false,
-        video: configuration.useVideo ? configuration.mediaConstraints.video : false
-      }
-    };
+        audio: configuration.useAudio
+          ? configuration.mediaConstraints.audio
+          : false,
+        video: configuration.useVideo
+          ? configuration.mediaConstraints.video
+          : false,
+      },
+    }
   }
 
-  var protocol = serverSettings.protocol;
-  var isSecure = protocol === 'https';
+  var protocol = serverSettings.protocol
+  var isSecure = protocol === 'https'
   function getSocketLocationFromProtocol() {
     return !isSecure
       ? { protocol: 'ws', port: serverSettings.wsport }
-      : { protocol: 'wss', port: serverSettings.wssport };
+      : { protocol: 'wss', port: serverSettings.wssport }
   }
 
   var defaultConfiguration = {
     protocol: getSocketLocationFromProtocol().protocol,
     port: getSocketLocationFromProtocol().port,
-    streamMode: configuration.recordBroadcast ? 'record' : 'live'
+    streamMode: configuration.recordBroadcast ? 'record' : 'live',
   }
 
-
-  var config = Object.assign({},
+  var config = Object.assign(
+    {},
     configuration,
     defaultConfiguration,
-    getUserMediaConfiguration())
+    getUserMediaConfiguration()
+  )
 
   var rtcConfig = Object.assign({}, config, {
     protocol: getSocketLocationFromProtocol().protocol,
     port: getSocketLocationFromProtocol().port,
     streamName: configuration.stream1,
-    app: configuration.proxy,
+    app: preferWhipWhep ? getWaitingRoomContext() : configuration.proxy,
     connectionParams: {
       host: configuration.host,
-      app: getWaitingRoomContext()
-    }
+      app: getWaitingRoomContext(),
+    },
   })
 
   const publisherConfig = {
     ...rtcConfig,
     mediaElementId: 'red5pro-publisher',
-    streamMode: streamMode
+    streamMode: streamMode,
   }
 
   const screenshareConfig = {
-    ...publisherConfig, ...{
+    ...publisherConfig,
+    ...{
       mediaElementId: screenshareId,
-      streamName: `${streamName}_screenshare`
-    }
+      streamName: `${streamName}_screenshare`,
+    },
   }
 
   let participantConfig = {
-    ...rtcConfig, ...{
+    ...rtcConfig,
+    ...{
       groupName: roomName,
       streamName: streamName,
       mediaElementId: 'red5pro-participant',
       cleanMediaOnUnpublish: true,
+      app: preferWhipWhep ? getConferenceRoomContext() : configuration.proxy,
       connectionParams: {
-        app: getConferenceRoomContext()
-      }
-    }
+        app: getConferenceRoomContext(),
+      },
+    },
   }
 
   let provision = {
@@ -223,24 +245,24 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     parameters: {
       group: 'webrtc',
       audiotracks: 3,
-      videotracks: 1
+      videotracks: 1,
     },
     restrictions: [],
     primaries: [],
-    secondaries: []
+    secondaries: [],
   }
 
   // Update provision for conference.
   let confProvision = {
-    ...provision, ...{
+    ...provision,
+    ...{
       guid: configuration.app,
       context: configuration.app,
-      name: roomName
-    }
+      name: roomName,
+    },
   }
 
   console.log(defaultConfiguration)
-
 
   const enableStartBroadcast = () => {
     setActiveLayout(false)
@@ -264,7 +286,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       // Else, check to see if it is the name of the screenshare stream we would use.
       // If it is, then we can stop the screenshare.
       // If it is not, then we cannot start a screenshare until it is done.
-      screenshareButton.disabled = screenshareName !== screenshareConfig.streamName
+      screenshareButton.disabled =
+        screenshareName !== screenshareConfig.streamName
     }
   }
 
@@ -315,14 +338,14 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   // Bitrate Display
-  let bitrate = 0;
-  let frameWidth = 0;
-  let frameHeight = 0;
+  let bitrate = 0
+  let frameWidth = 0
+  let frameHeight = 0
 
   const updateStatistics = (b, w, h) => {
-    statisticsField.classList.remove('hidden');
-    bitrateField.innerText = b === 0 ? 'N/A' : Math.floor(b);
-    resolutionField.innerText = (w || 0) + 'x' + (h || 0);
+    statisticsField.classList.remove('hidden')
+    bitrateField.innerText = b === 0 ? 'N/A' : Math.floor(b)
+    resolutionField.innerText = (w || 0) + 'x' + (h || 0)
   }
 
   const onBitrateUpdate = (b) => {
@@ -368,7 +391,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   })
 
   const hasGroupStream = (streams) => {
-    var i = streams ? streams.length : 0;
+    var i = streams ? streams.length : 0
     console.log(streams)
     while (--i > -1) {
       if (streams[i].stream === roomName) {
@@ -393,29 +416,28 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
    */
   const onPublisherEvent = (event) => {
     console.log(`[Publisher:Event]:: ${event.type}`)
-    if (event.type === 'Connect.Failure' ||
+    if (
+      event.type === 'Connect.Failure' ||
       event.type === 'Publish.Fail' ||
-      event.type === 'Publish.InvalidName') {
+      event.type === 'Publish.InvalidName'
+    ) {
       displayError(event.type)
       console.error(event.type)
     } else if (event.type === 'Publisher.VideoDimensions.Change') {
       const {
-        data: {
-          width,
-          height
-        }
+        data: { width, height },
       } = event
       onResolutionUpdate(width, height)
     } else if (event.type === 'Publish.Start') {
-      const {
-        app,
-        streamName
-      } = publisherConfig
+      const { app, streamName } = publisherConfig
       if (window.r5_postStreamToMockSocket) {
         window.r5_postStreamToMockSocket(app, streamName)
       }
     }
-    updateStatusFromEvent(event, document.getElementById('publisher-status-field'));
+    updateStatusFromEvent(
+      event,
+      document.getElementById('publisher-status-field')
+    )
   }
 
   const onParticipantEvent = (event) => {
@@ -423,25 +445,25 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     if (event.type === 'Conference.MediaStream') {
       console.log('Conference.MediaStream event')
       const {
-        data: {
-          stream
-        }
+        data: { stream },
       } = event
       // TODO: Add conference video.
       let media = conferenceSubscriber.srcObject
       if (media) {
-        media.getTracks().forEach(t => t.stop())
+        media.getTracks().forEach((t) => t.stop())
       }
       console.log('Set stream', stream)
       conferenceSubscriber.srcObject = stream
-    } else if (event.type === 'WebRTC.Socket.Message'
-      || event.type === 'WebRTC.DataChannel.Message') {
+    } else if (
+      event.type === 'WebRTC.Socket.Message' ||
+      event.type === 'WebRTC.DataChannel.Message'
+    ) {
       try {
-        var data = JSON.parse(event.data.message.data);
+        var data = JSON.parse(event.data.message.data)
         if (hasGroupStream(data.streams || data.data.streams)) {
-          showGroupStream();
+          showGroupStream()
         } else {
-          removeGroupStream();
+          removeGroupStream()
         }
       } catch (e) {
         console.warn(e)
@@ -473,15 +495,20 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
    *        Optional variant setting to use if in Transcode/ABR.
    */
   const startPublishing = async (stream, selectedVariant = undefined) => {
-
     try {
       errorInfo.classList.add('hidden')
       // If using Transcode/ABR, set config based on selected variant.
       if (selectedVariant) {
-        console.log(`Updating configuration for variant: ${JSON.stringify(selectedVariant, null, 2)}`)
+        console.log(
+          `Updating configuration for variant: ${JSON.stringify(
+            selectedVariant,
+            null,
+            2
+          )}`
+        )
         publisherConfig.bandwidth = {
           audio: 54,
-          video: selectedVariant.bandwidth / 1000
+          video: selectedVariant.bandwidth / 1000,
         }
         publisherConfig.streamName = selectedVariant.name
       }
@@ -496,11 +523,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       const mediaStream = publisher.getMediaStream()
       window.trackBitrate(pc, onBitrateUpdate, onResolutionUpdate)
 
-      mediaStream.getVideoTracks().forEach(track => {
+      mediaStream.getVideoTracks().forEach((track) => {
         const settings = track.getSettings()
         onResolutionUpdate(settings.width, settings.height)
       })
-
     } catch (e) {
       const message = e.hasOwnProperty('message') ? e.message : e
       displayError(message)
@@ -538,22 +564,42 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
    *        The previously generated MediaStream used in preview.
    */
   const setUpPublisher = async (stream) => {
-
+    const { WHIPClient, RTCPublisher } = red5prosdk
     try {
       const scope = getWaitingRoomContext() // publisherConfig.app
-      const publisherSM = await window.streamManagerUtil.getOrigin(publisherConfig.host, scope, publisherConfig.streamName, useABR)
-      const {
-        serverAddress
-      } = publisherSM
+      const publisherSM = await window.streamManagerUtil.getOrigin(
+        publisherConfig.host,
+        scope,
+        publisherConfig.streamName,
+        useABR
+      )
+      const { serverAddress } = publisherSM
       publisherConfig.connectionParams = {
-        ...publisherConfig.connectionParams, ...{
-          host: serverAddress
-        }
+        ...publisherConfig.connectionParams,
+        ...{
+          host: serverAddress,
+        },
       }
 
+      if (preferWhipWhep) {
+        const { connectionParams: token } = publisherConfig
+        if (token) {
+          publisherConfig.connectionParams.token = encodeURIComponent(token)
+        }
+        delete publisherConfig.connectionParams.host
+        delete publisherConfig.connectionParams.app
+        publisherConfig.connectionParams.app = scope
+        publisherConfig.connectionParams.transcode = useABR
+      }
 
-      const pub = new red5prosdk.RTCPublisher()
-      console.log(`Starting RTCPublisher with configuration: ${JSON.stringify(publisherConfig, null, 2)}`)
+      const pub = preferWhipWhep ? new WHIPClient() : new RTCPublisher()
+      console.log(
+        `Starting RTCPublisher with configuration: ${JSON.stringify(
+          publisherConfig,
+          null,
+          2
+        )}`
+      )
       if (stream) {
         publisher = await pub.initWithStream(publisherConfig, stream)
       } else {
@@ -563,12 +609,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       // enableStartScreenshare()
 
       return publisher
-
     } catch (e) {
       displayError(e.message)
       throw e
     }
-
   }
 
   const startParticipant = async (stream) => {
@@ -587,7 +631,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     try {
       if (participant) {
         let stream = participant.getMediaStream()
-        stream.getTracks().forEach(t => t.stop())
+        stream.getTracks().forEach((t) => t.stop())
         await participant.unpublish()
         participant.off('*', onParticipantEvent)
         participant = undefined
@@ -610,24 +654,36 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
       console.log('participantConfig', participantConfig)
       const scope = getConferenceRoomContext()
-      const participantSM = await window.streamManagerUtil.getOriginForConference(configuration.host, scope)
-      const {
-        serverAddress
-      } = participantSM
+      const participantSM =
+        await window.streamManagerUtil.getOriginForConference(
+          configuration.host,
+          scope
+        )
+      const { serverAddress } = participantSM
 
       participantConfig.connectionParams = {
-        ...participantConfig.connectionParams, ...{
-          host: serverAddress
-        }
+        ...participantConfig.connectionParams,
+        ...{
+          host: serverAddress,
+        },
       }
-
 
       console.log('participantConfig', participantConfig)
 
-      await window.streamManagerUtil.postProvision(participantConfig.host, confProvision, configuration.streamManagerAccessToken)
+      await window.streamManagerUtil.postProvision(
+        participantConfig.host,
+        confProvision,
+        configuration.streamManagerAccessToken
+      )
 
       const pub = new red5prosdk.RTCConferenceParticipant()
-      console.log(`Starting RTCConferenceParticipant publisher with configuration: ${JSON.stringify(participantConfig, null, 2)}`)
+      console.log(
+        `Starting RTCConferenceParticipant publisher with configuration: ${JSON.stringify(
+          participantConfig,
+          null,
+          2
+        )}`
+      )
       if (stream) {
         participant = await pub.initWithStream(participantConfig, stream)
       } else {
@@ -636,12 +692,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       participant.on('*', onParticipantEvent)
 
       return participant
-
     } catch (e) {
       displayError(e.message)
       throw e
     }
-
   }
 
   /**
@@ -690,36 +744,47 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
    * Sets up the Publisher Screenshare with configuration and optional Stream Manager integration.
    */
   const setUpScreenshare = async () => {
+    const { WHIPClient, RTCPublisher } = red5prosdk
     try {
-
       const scope = screenshareConfig.app
-      const screenshareSM = await window.streamManagerUtil.getOrigin(screenshareConfig.host, scope, screenshareConfig.streamName)
-      const {
-        serverAddress
-      } = screenshareSM
+      const screenshareSM = await window.streamManagerUtil.getOrigin(
+        screenshareConfig.host,
+        scope,
+        screenshareConfig.streamName
+      )
+      const { serverAddress } = screenshareSM
       screenshareConfig.connectionParams = {
-        ...screenshareConfig.connectionParams, ...{
+        ...screenshareConfig.connectionParams,
+        ...{
           host: serverAddress,
-          app: scope
-        }
+          app: scope,
+        },
       }
 
+      if (preferWhipWhep) {
+        const { connectionParams: token } = screenshareConfig
+        if (token) {
+          screenshareConfig.connectionParams.token = encodeURIComponent(token)
+        }
+        delete screenshareConfig.connectionParams.host
+        delete screenshareConfig.connectionParams.app
+        screenshareConfig.connectionParams.app = scope
+      }
 
       // TODO: Is this resolution and framerate too high?
       const mediaStream = await navigator.mediaDevices.getDisplayMedia({
         width: 1280,
         height: 720,
-        frameRate: 30
+        frameRate: 30,
       })
 
       // When user click `Stop Sharing` from browser
       mediaStream.getVideoTracks()[0].onended = stopScreenshare
 
-      const ss = new red5prosdk.RTCPublisher()
+      const ss = preferWhipWhep ? new WHIPClient() : new RTCPublisher()
       await ss.initWithStream(screenshareConfig, mediaStream)
       ss.on('*', onScreenshareEvent)
       return ss
-
     } catch (e) {
       displayError(e.message)
       throw e
@@ -751,12 +816,14 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     },
     onProvisionSubmit: async (provision) => {
       try {
-        const {
-          app,
+        const { app, host, streamName } = publisherConfig
+        await window.streamManagerUtil.postTranscode(
           host,
-          streamName
-        } = publisherConfig
-        await window.streamManagerUtil.postTranscode(host, app, streamName, provision, configuration.streamManagerAccessToken)
+          app,
+          streamName,
+          provision,
+          configuration.streamManagerAccessToken
+        )
       } catch (e) {
         throw e
       }
@@ -767,7 +834,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       } catch (e) {
         throw e
       }
-    }
+    },
   }
   enableStartBroadcast()
   new PublisherSettings(publisherSettingsSetup, streamName, client, useABR)
@@ -777,13 +844,14 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   let websocket
   let ipReg = /^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/
   let localhostReg = /^localhost.*/
-  const isIPOrLocalhost = ipReg.exec(websocketEndpoint) || localhostReg.exec(websocketEndpoint)
+  const isIPOrLocalhost =
+    ipReg.exec(websocketEndpoint) || localhostReg.exec(websocketEndpoint)
   let wsProtocol = isIPOrLocalhost ? 'ws' : 'wss'
   const socketUrl = `${wsProtocol}://${websocketEndpoint}?testbed=conference&room=${getConferenceRoomContext()}&host=true`
 
   const setUpStreamListSocket = (url) => {
     websocket = new WebSocket(url)
-    websocket.onmessage = event => {
+    websocket.onmessage = (event) => {
       console.log('[websocket]::onmessage')
       console.log(event)
       let json = event.data
@@ -794,7 +862,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       if (json.type === 'conference' && json.streams) {
         if (json.streams.indexOf(publisherConfig.streamName) > -1) {
           // TODO: And not currently setting up a participant...
-          if (!participant && (publisher && publisher.getMediaStream())) {
+          if (!participant && publisher && publisher.getMediaStream()) {
             let stream = publisher.getMediaStream().clone()
             startParticipant(stream)
           }
@@ -807,18 +875,18 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   setUpStreamListSocket(socketUrl)
 
   window.streamsUtil = {
-    ...window.streamsUtil, ...{
+    ...window.streamsUtil,
+    ...{
       publishers: {
-        stop: name => {
+        stop: (name) => {
           if (name === streamName) {
             shutdown()
           }
-        }
-      }
-    }
+        },
+      },
+    },
   }
 
-  window.addEventListener('pagehide', shutdown);
-  window.addEventListener('beforeunload', shutdown);
-
-})(this, document, window.red5prosdk);
+  window.addEventListener('pagehide', shutdown)
+  window.addEventListener('beforeunload', shutdown)
+})(this, document, window.red5prosdk)
