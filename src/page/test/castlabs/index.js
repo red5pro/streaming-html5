@@ -227,7 +227,7 @@ const encryptedPlayback = async () => {
     monitor(encryptedSubscriber, 'encrypted')
   } catch (e) {
     console.error(e)
-    encryptedStatusField.innerText = typeof e === 'string' ? e : e.message
+    encrypedStatusField.innerText = typeof e === 'string' ? e : e.message
   }
 }
 
@@ -258,10 +258,8 @@ const decryptPlayback = async () => {
     const drmConfig = {
       environment: Environments.Staging,
       merchant: getValueFromId('merchant-input'),
-
       encryption,
       audioEncrypted: false,
-
       keyId,
       iv,
     }
