@@ -14,6 +14,7 @@ The transform utilities are imported from the `castLabs` library for use as such
 
 ```js
 import {
+  getRtcDrmTransformVersion,
   setDrm,
   videoTransformFunction,
   audioTransformFunction,
@@ -48,10 +49,8 @@ In particular, you will need to know the following that is provided as User Inpu
 
 - `environment`: The environment on castLabs DRMtoday account that your encrypted stream resides.
 - `merchant`: The merchant account within DRMtoday where the stream resides.
-- `user`: The user account under the `merchant` account that has access to the stream.
-- `session`: The session related to the stream.
-- `encryption type`: The type of DRM encryption used on the stream (such as `WideVine`, `FairPlay`, etc.).
-- `key id / iv`: The key id or iv id value to be used in decryption. This should be provided to you by the `merchant`. _Currently this is a `base64` stream._
+- `encryption scheme`: The type of DRM encryption used on the stream (such as `WideVine`, `FairPlay`, etc.).
+- `key id / iv`: The key id and iv id values to be used in decryption. These should be provided to you by the `merchant`. _Currently this is a `base64` stream._
 
 > It is not the intent of this document to describe the `DRMtoday` platform. Please refer to their documentation for more information.
 
@@ -75,10 +74,6 @@ const keyIdOrIV = encryptKeyValue(getValueFromId('key-input'))
 const drmConfig = {
   environment: Environments.Staging,
   merchant: `red5`,
-  userId: `test`,
-  sessionId: `p0`,
-  assetId: null,
-  variantId: null,
   audioEncrypted: false,
   encryption: `cbcs`,
   keyId,
