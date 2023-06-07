@@ -67,7 +67,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   const role = window.query('role') || undefined
   const host = window.query('host') || undefined
-  const whipwhep = window.query('whipwhep') || 'true'
+  const whipwhep = window.query('whipwhep') || 'false'
   const preferWhipWhep = !whipwhep ? false : !(whipwhep && whipwhep === 'false')
   const isHost = role === 'moderator'
   const isMixer = role === 'mixer'
