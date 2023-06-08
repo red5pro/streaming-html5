@@ -59,7 +59,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   const scope = roomName === '' ? appContext : `${appContext}/${roomName}`
   const sm = window.query('sm') || 'true'
   const requiresStreamManager = !sm ? false : !(sm && sm === 'false')
-  const whipwhep = window.query('whipwhep') || 'true'
+  const whipwhep = window.query('whipwhep') || 'false'
   const preferWhipWhep = !whipwhep ? false : !(whipwhep && whipwhep === 'false')
   const ws = window.query('ws') || 'null'
   const webSocketEndpointForLayouts = `wss://${ws}?testbed=grid&type=cef&id=${cefId}&event-id=${eventId}`
