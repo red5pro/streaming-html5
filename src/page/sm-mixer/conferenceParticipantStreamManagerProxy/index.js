@@ -69,6 +69,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   const appContext = configuration.app
   const roomName = getRoomName(appContext)
   const useABR = false
+  let explicitSocketClose = false
 
   const streamName = configuration.stream1
   const streamMode = configuration.streamMode
@@ -615,6 +616,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
   }
 
+  let retry
+  let hasStopped = false
   const startParticipant = async (stream) => {
     try {
       if (!participant) {
@@ -622,7 +625,20 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       }
       await participant.publish()
     } catch (e) {
-      displayError(e.mssage)
+      displayError(e.message)
+      stopParticipating()
+      if (!hasStopped) {
+        console.log(
+          'May have attempted to start a participant too soon. Will try again in 2 seconds...'
+        )
+        retry = setTimeout(() => {
+          clearTimeout(retry)
+          if (!hasStopped) {
+            console.log('Retry starting participant...')
+            startParticipant(stream)
+          }
+        }, 2000)
+      }
       throw e
     }
   }
@@ -643,8 +659,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         return true
       }
     } catch (e) {
-      publisher = undefined
+      console.error(e)
       throw e
+    } finally {
+      participant = undefined
     }
   }
 
@@ -796,10 +814,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
    */
   const shutdown = () => {
     try {
+      hasStopped = true
+      explicitSocketClose = true
       stopScreenshare()
       stopPublishing()
       stopParticipating()
       websocket.close()
+      clearTimeout(retry)
     } catch (e) {
       console.error(e)
     }
@@ -851,6 +872,24 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   const setUpStreamListSocket = (url) => {
     websocket = new WebSocket(url)
+    websocket.onopen = () => {
+      console.log(`[websocket]::onopen. [${new Date()}`)
+    }
+    websocket.onclose = (event) => {
+      console.log(`[websocket]::onclose. [${new Date()}`)
+      console.log(
+        `[websocket]::onclose. Code: ${event.code}. Reason: ${event.reason}.`
+      )
+      console.log(event)
+      if (!explicitSocketClose && event.code === 1006) {
+        let timeout = setTimeout(() => {
+          clearTimeout(timeout)
+          if (!explicitSocketClose) {
+            setUpStreamListSocket(url)
+          }
+        }, 2000)
+      }
+    }
     websocket.onmessage = (event) => {
       console.log('[websocket]::onmessage')
       console.log(event)
@@ -863,10 +902,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         if (json.streams.indexOf(publisherConfig.streamName) > -1) {
           // TODO: And not currently setting up a participant...
           if (!participant && publisher && publisher.getMediaStream()) {
+            hasStopped = false
+            clearTimeout(retry)
             let stream = publisher.getMediaStream().clone()
             startParticipant(stream)
           }
         } else if (participant) {
+          hasStopped = true
           stopParticipating()
         }
       }
