@@ -1,6 +1,6 @@
 {
   "name": "red5pro-html-sdk-testbed",
-  "version": "10.9.2",
+  "version": "11.0.0",
   "description": "Testbed examples for Red5 Pro HTML SDK",
   "main": "src/js/index.js",
   "repository": {
@@ -24,12 +24,15 @@
     "@babel/eslint-parser": "^7.17.0",
     "babel-eslint": "^10.1.0",
     "eslint": "^8.9.0",
+    "eslint-plugin-prettier": "^4.2.1",
+    "eslint-config-prettier": "^8.8.0",
     "gulp": "^4.0.2",
     "gulp-bump": "^2.4.0",
     "gulp-compile-handlebars": "^0.6.1",
     "gulp-rename": "^1.4.0",
     "gulp-replace": "^1.0.0",
-    "mkdirp": "^1.0.4"
+    "mkdirp": "^1.0.4",
+    "prettier": "^2.8.7"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",

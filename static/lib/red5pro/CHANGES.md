@@ -1,5 +1,17 @@
 # Changes
 
+## 10.9.3-beta.0
+
+- SDK update and switch to live seek config. (Todd Anderson)
+- Adding support for live vod on unpublish to continue scrubbing. (Todd Anderson)
+- adding in some error management for hls vod. (Todd Anderson)
+- hls endpoint for SM support on live vod. (Todd Anderson)
+- better cleanup on stop of seekable media. (bustardcelly)
+- using Hls.js fallback for Safari and seek feature. (bustardcelly)
+- Allow playback on scrub when unpublish (bustardcelly)
+
+    > If the live stream becomes unpublished, but the video has been scrubbed to VOD time segment, then we want to allow for playback until the end of the live stream termination.
+
 ## 10.6.0
 
 - Adding doNotSwitch to subscriber offer. (Todd Anderson)

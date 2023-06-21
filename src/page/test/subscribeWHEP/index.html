@@ -1,0 +1,90 @@
+<!doctype html>
+{{> license}}
+<html>
+  <head>
+    {{> meta title='Subscriber WHEP'}}
+    {{> header-scripts}}
+    {{> header-stylesheets}}
+    <style>
+      .hidden {
+        display: none!important;
+      }
+      code {
+        padding: 0 0.5rem;
+        background-color: #fff;
+      }
+      .settings-area {
+        padding-top: 10px;
+        background-color: #eeee;
+      }
+      .settings-field {
+        display: flex;
+        align-items: center;
+      }
+      .control-container {
+        display: flex;
+        flex-direction: row;
+        background-color: #dbdbdb;
+        padding: 20px;  }
+      .control-container > button:nth-child(even) {
+        margin-left: 20px;
+      }
+      @media (max-width:510px) {
+        .control-container {
+          flex-direction: column;
+        }
+        .control-container > button:nth-child(even) {
+          margin-left: 0px;
+          margin-top: 20px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    {{> top-bar }}
+    {{> navigation isTestPage=true }}
+    <div id="app">
+      {{> settings-link}}
+      {{> test-info testTitle='Subscriber WHEP'}}
+      <div class="stream-section">
+        {{> status-field-subscriber}}
+        {{> statistics-field packets_field='Packets Received'}}
+        <div class="centered">
+          <video id="red5pro-subscriber"
+                  controls="controls" autoplay="autoplay" playsinline
+                  class="red5pro-subscriber red5pro-media red5pro-media-background"
+                  width="640" height="480">
+          </video>
+        </div>
+        <div class="settings-area">
+          <p style="text-align: center;">WHEP Session Settings</p>
+          <hr>
+          <p class="settings-field settings-collapsable">
+            <label class="settings-label">Signaling Channel:</label>
+            <input type="checkbox" id="channel-check" class="control settings-control" checked>
+          </p>
+          <p class="settings-field settings-collapsable">
+            <label class="settings-label">Trickle Ice Candidates&ast;:</label>
+            <input type="checkbox" id="trickle-check" class="control settings-control" checked disabled>
+          </p>
+          <p class="settings-field settings-collapsable hidden">
+            <label class="settings-label">Post Empty Offer:</label>
+            <input type="checkbox" id="post-check" class="control settings-control" disabled>
+          </p>
+          <p class="control-container">
+            <button id="subscribe-btn" class="ui-button">Subscribe</button>
+          </p>
+          <div class="test-notification">
+            <p>
+              <span>&ast; By enabling <strong>Trickle Ice Candidates</strong>, candidates will be sent in batches after the initial offer as opposed to candidates being sent along with the initial offer SDP if disabled.</span>
+              <span><em>This is currently a requirement for WHEP clients.</em></span>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+    {{> body-scripts}}
+    {{> mobile-subscriber-util}}
+    <script src="index.js"></script>
+  </body>
+</html>

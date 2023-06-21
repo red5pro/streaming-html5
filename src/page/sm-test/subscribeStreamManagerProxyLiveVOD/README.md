@@ -20,7 +20,7 @@ _Edits:_
 
 ```xml
 <property name="outputFormat" value="FMP4"/>
-<property name="forceVODRecord" value="true"/>
+<property name="dvrPlaylist" value="true"/>
 ```
 
 # Client Requirements
@@ -29,43 +29,90 @@ _Edits:_
 
 The SDK requires the dependency of [HLS.JS](https://github.com/video-dev/hls.js/) 3rd-party library in order to achieve live seek of a stream.
 
-It is added as a dependency in this example here: [https://github.com/red5pro/streaming-html5/blob/feature/greatdane06_honorlock_vod_HON-18/src/page/test/subscribeLiveVOD/index.html#L8](https://github.com/red5pro/streaming-html5/blob/feature/greatdane06_honorlock_vod_HON-18/src/page/test/subscribeLiveVOD/index.html#L8)
+As a page script dependency:
 
 ```html
 <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 ```
 
+As a module import (requires `hlsjsRef` configuration, see [liveSeek](#liveseek))
+
+```js
+import Hls from 'hls.js'
+```
+
 > Other 3rd-Party integrations are on the road map.
 
-## enableLiveSeek
+## liveSeek
 
-The initialization configuration property of `enableLiveSeek` is a `Boolean` value that turns on the capability to enable live seeking (when set to `true`).
+You can enable live seek capabilities for a live playback by providing a `liveSeek` configuration in the initialization configuration for `RTCSubscriber`.
+
+The schema for the `liveSeek` configuration is as follows:
+
+```js
+{
+  enabled: <boolean>,
+  baseURL: <string | undefinde>,
+  fullURL: <string | undefined>,
+  hlsjsRef: <hls.js reference | undefined>,
+  hlsElement: <HTMLVideoElement | undefined>,
+  options: <object | undefined>,
+  usePlaybackControlsUI: <boolean>
+}
+```
+
+* `enabled` : a boolean flag of whether live seek is enabled or disabled.
+* `baseURL` : (optional) the base URL to access the HLS files that are generated for live seek streams.
+* `fullURL` : (optional) the full URL to access the HLS files that are generated for live seek streams.
+* `hlsjsRef` : (optional) the [HLS.JS](https://github.com/video-dev/hls.js/) reference. If you load HLS.js in a script tag, the SDK will check the `window` global for `Hls`, otherwise provide a reference to the loaded HLS.js.
+* `hlsElement` : (optional) the target `video` element to attach the HLS Media to. If left undefined, the SDK will create and maintain the target element (recommended).
+* `options` : (optional) the configuration options for [HLS.JS](https://github.com/video-dev/hls.js/blob/master/docs/API.md#fine-tuning). Default is: `{debug: false, backBufferLength: 0}`.
+* `usePlaybackControlsUI` : (optional) flag to use the custom controls provided by the SDK. Default is `true`. **If setting this to `false`, you must provide your own UI controls and interface with the API to control playback.**
+
+> **NOTE**: When utilizing `Live Seek` over Stream Manager, you are required to provide either a `baseURL` or `fullURL`.
 
 ```js
 const rtcConfig = {...config, ...{
   subscriptionId: 'subscriber-' + instanceId,
-  enableLiveSeek: true
+  liveSeek: {
+    enabled: true
+  }
 }}
 ```
 
-[https://github.com/red5pro/streaming-html5/blob/feature/greatdane06_honorlock_vod_HON-18/src/page/test/subscribeLiveVOD/index.js#L165-L170](https://github.com/red5pro/streaming-html5/blob/feature/greatdane06_honorlock_vod_HON-18/src/page/test/subscribeLiveVOD/index.js#L165-L170)
+**baseURL**
 
-## Custom Controls
+The `baseURL` is the base endpoint URL from which the SDK will access the recorded HLS files. By default, the SDK will assume the base URL is the `host` of the initialization configuration, but when utilizing autoscale, the HLS files will not be accessible from the edge. As such, the server should be configured to upload the HLS files to a remote location - such as a CDN.
 
-Additionally, the `video` element used in playback of the live and VOD streams requires using the custom controls provided by the SDK.
+The storage of the HLS files should follow the convention of `<baseURL>/<app scope>`, where `app scope` is where the live broadcast stream is streaming to and the bucket name within the CDN; do not include the `app scope` in the `baseURL` property.
 
-To turn them on, you will need to define the `controls` property on the `video` element along with assigning the `red5pro-media` class to the element. The `red5pro-media` class declaration can be found i the **red5pro-media.css** CSS file shipped with the SDK.
+> For example, if your live broadcast is streaming to the `live` app scope under the name of `stream1`, and your CDN resides at `https://yourcdn/company`, then just provide `https://yourcdn/company` as the `baseURL` and the SDK will attempt to access the HLS files at `https://yourcdn/company/live/stream1.m3u8`.
 
-```html
-<video id="red5pro-subscriber"
-  controls="controls"
-  autoplay="autoplay"
-  playsinline
-  class="red5pro-media"
-</video>
-```
+**fullURL**
 
-> You can provide your own custom controls and/or class declarations easily following this [guideline](https://www.red5pro.com/docs/development/playbackcontrols/overview/).
+The `fullURL` could be provided that will be the full URL path to the HLS file used in live seek. If this is provided, it will use this _untouched_ and load the file directly.
+
+> For example, if you provide `https://yourcdn/company/live/stream1.m3u8` as the `fullURL`, that file will be requested.
+
+**hlsjsRef**
+
+The SDK requires the dependency of [HLS.JS](https://github.com/video-dev/hls.js/) 3rd-party library in order to achieve live seek of a stream.
+
+If you include it as a `script` tag source in your page, you do not have to set the `hlsjsRef` property, as the SDK will check the `window` global for the existance of `Hls`. In the chance that you did not include the UMD distribution of the library and instead are using it modularly, you need to provide a reference to the `Hls` import.
+
+**hlsElement**
+
+The optional target `video` element to load the HLS files into. If left `undefined` (the default), the SDK with generate and maintain the backing video element. By providing a target `hlsElement` you may need to maintain its own lifecycle.
+
+**options**
+
+Provide an optional `options` configuration that will be assigned untouched to the underlying [HLS.JS](https://github.com/video-dev/hls.js/blob/master/docs/API.md#fine-tuning) use.
+
+**usePlaybackControlsUI**
+
+Flag to use the default playback controls of the SDK to play, pause, live scrub, and additional actions. If setting this to `false`, you will need to create and manage your own controls to interact with the live and VOD content
+
+> You can also provide your own custom controls and/or class declarations easily following this [guideline](https://www.red5pro.com/docs/development/playbackcontrols/overview/).
 
 # Example
 

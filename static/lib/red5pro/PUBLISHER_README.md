@@ -364,4 +364,6 @@ The following events are specific to the `RTCPublisher` implementation and acces
 | DATA_CHANNEL_CLOSE | 'WebRTC.DataChannel.Close' | When the underlying `RTCDataChannel` is closed when `signalingSocketOnly` configuration is used. |
 | DATA_CHANNEL_ERROR | 'WebRTC.DataChannel.Error' | When an error has occurred within the underlying `RTCDataChannel` when `signalingSocketOnly` configuration is used. |
 | DATA_CHANNEL_MESSAGE | 'WebRTC.DataChannel.Message' | When a message has been delivered over the underlying `RTCDataChannel` when `signalingSocketOnly` configuration is used. |
+| UNSUPPORTED_FEATURE | 'WebRTC.Unsupported.Feature' | Notification that a feature attempting to use in WebRTC is not supported or available in the current browser that the SDK is being employed. e.g., [Insertable Streams](#insertable-streams). |
+| TRANSFORM_ERROR | 'WebRTC.Transform.Error' | An error has occurred while trying to apply transform to a media track. See [Insertable Streams](#insertable-streams)|
 
