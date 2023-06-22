@@ -15,6 +15,7 @@ This document describes how to use the Red5 Pro WebRTC SDK to subscribe to a bro
 
 * [Requirements](#requirements)
 * [Subscriber Types](#subscriber-types)
+  * [WHEP](#whep)
   * [WebRTC](#webrtc)
     * [Configuration Parameters](#webrtc-configuration-parameters)
     * [Example](#webrtc-example)
@@ -40,11 +41,45 @@ As such, you will need a distribution of the [Red5 Pro Server](https://www.red5p
 
 The following subscriber types / protocols are supported:
 
+* [WHEP](#whep)
 * [WebRTC](#webrtc) (using [WebSockets](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API), [WebRTC](https://developer.mozilla.org/en-US/docs/Web/Guide/API/WebRTC) and the HTML5 [video](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/video) Element or HTML5 [audio](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/audio) Element).
 
 * [HLS](#hls) (using the HTML5 Video/Audio Element)
 
 Additionally, the **Red5 Pro WebRTC SDK** allows for automatic detection and failover to determine the correct playback option to use based on desired order and browser support. To learn more, visit the [Auto Failover](#auto-failover-and-order) section.
+
+# WHEP
+
+As of release `11.0.0`, the Red5 Pro WebRTC SDK supports [WHEP](https://www.ietf.org/archive/id/draft-murillo-whep-00.html) to egress/subscribe to streams!
+
+Creating a `WHEPClient` for publishing is very similar to `RTCSubscriber` (as described later in [this document](#webrtc)), but allows for connection to go through HTTP/S instead of relying on a WebSocket.
+
+If you know the endpoint you are targeting and do not need any additional customization in the playback stream, establishing a WHEP subscriber is as simple as:
+
+```js
+const whepEndpoint =
+  'https://yourred5pro.com/live/whep/endpoint/stream1?resourceId=abc123'
+const subscriber = new WHEPClient(
+  whepEndpoint,
+  document.querySelector('#red5pro-subscriber')
+)
+subscriber.on('*', (event) => console.log(event))
+```
+
+However, if you want more control over the configuration of a playback stream, establish a `WHEPClient` similar to how you would have established an `RTCSubscriber` in previous releases to `11.0.0`:
+
+```js
+const config = {
+  host: 'yourred5pro.com',
+  streamName: 'stream1',
+  ...more,
+}
+const subscriber = await new WHEPClient().init(config)
+subscriber.on('*', (event) => console.log(event))
+await subscriber.subscribe()
+```
+
+> Read more from our [WHIP/WHEP documentation](WHIP_WHEP_README.md).
 
 ## WebRTC
 
