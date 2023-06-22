@@ -172,44 +172,23 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     });
   }
 
-  var config = Object.assign({},
+  // Setup.
+  var { preferWhipWhep } = configuration;
+  var { RTCPublisher, WHIPClient } = red5prosdk;
+  var rtcConfig = Object.assign({},
     configuration,
-    {
-      streamMode: configuration.recordBroadcast ? 'record' : 'live'
-    },
     getAuthenticationParams(),
-    getUserMediaConfiguration());
-
-  var rtcConfig = Object.assign({}, config, {
-                      protocol: getSocketLocationFromProtocol().protocol,
-                      port: getSocketLocationFromProtocol().port,
-                      streamName: config.stream1,
-                   });
-  var rtmpConfig = Object.assign({}, config, {
-                      protocol: 'rtmp',
-                      port: serverSettings.rtmpport,
-                      streamName: config.stream1,
-                      backgroundColor: '#000000',
-                      swf: '../../lib/red5pro/red5pro-publisher.swf',
-                      swfobjectURL: '../../lib/swfobject/swfobject.js',
-                      productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
-                    }, getRTMPMediaConfiguration());
-  var publishOrder = config.publisherFailoverOrder
-                            .split(',')
-                            .map(function (item) {
-                              return item.trim()
-                        });
-
-  if (window.query('view')) {
-    publishOrder = [window.query('view')];
-  }
-
-  var publisher = new red5prosdk.Red5ProPublisher()
-  publisher.setPublishOrder(publishOrder)
-    .init({
-      rtc: rtcConfig,
-      rtmp: rtmpConfig
-    })
+    getUserMediaConfiguration(),
+    {
+      protocol: getSocketLocationFromProtocol().protocol,
+      port: getSocketLocationFromProtocol().port,
+      streamName: configuration.stream1,
+      streamMode: configuration.recordBroadcast ? 'record' : 'live',
+    }
+  );
+  
+  var publisher = preferWhipWhep ? new WHIPClient() : new RTCPublisher()
+  publisher.init(rtcConfig)
     .then(function (publisherImpl) {
       streamTitle.innerText = configuration.stream1;
       targetPublisher = publisherImpl;

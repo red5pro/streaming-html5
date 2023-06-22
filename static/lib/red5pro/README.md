@@ -31,6 +31,12 @@
 
 # Quickstart
 
+> Important Node About `11.0.0` Release
+
+**Red5 Pro SDK now supports WHIP/WHEP**
+
+Read more from out [documentation on WHIP/WHEP integration](WHIP_WHEP_README.md)!
+
 > Important Note About `8.0.0` Release
 
 **Red5 Pro SDK has been published on NPM!**
@@ -48,7 +54,7 @@ While currently not open source, the SDK build has been published to NPM to allo
 ... or if you know the version:
 
 ```
-<script src="https://unpkg.com/red5pro-webrtc-sdk@8.0.0/red5pro-sdk.min.js"></script>
+<script src="https://unpkg.com/red5pro-webrtc-sdk@11.0.0/red5pro-sdk.min.js"></script>
 ```
 
 ## Using `npm` or `yarn` for you browser-based projects
@@ -65,10 +71,10 @@ yarn install --dev red5pro-webrtc-sdk
 
 All members exposed on the otherwise global `window.red5prosdk` if loading as a script on an HTML page are importable from the `red5pro-webrtc-sdk` module:
 
-_publisher-example.js_
+_index.js_
 
 ```
-import { RTCPublisher } from 'red5pro-webrtc-sdk'
+import { WHIPClient, WHEPClient } from 'red5pro-webrtc-sdk'
 ```
 
 To begin working with the *Red5 Pro HTML5 SDK* in your project:
@@ -98,8 +104,8 @@ To begin working with the *Red5 Pro HTML5 SDK* in your project:
       (function(red5prosdk) {
         'use strict';
 
-        var rtcPublisher = new red5prosdk.RTCPublisher();
-        var rtcSubscriber = new red5prosdk.RTCSubscriber();
+        var rtcPublisher = new red5prosdk.WHIPClient();
+        var rtcSubscriber = new red5prosdk.WHEPClient();
         var config = {
           protocol: 'ws',
           host: 'localhost',

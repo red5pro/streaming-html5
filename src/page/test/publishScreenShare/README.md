@@ -1,9 +1,10 @@
 # Publish Screen Share using Red5 Pro
+
 This is an example of utilizing the `getDisplayMedia` API for screen sharing capabilities available in **Chrome**, **Edge** and **Firefox**.
 
 > Browser Compatibility table for `getDisplayMedia`: [https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getDisplayMedia](https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getDisplayMedia)
 
-Additionally, it is currently not possible (as of the time of this writing, *November 30th, 2017*) to stream a screen capture along with audio. As such, this example actually creates two publisher connections on the Red5 Pro Server: one to stream the screen share, and another for audio.
+Additionally, it is currently not possible (as of the time of this writing, _November 30th, 2017_) to stream a screen capture along with audio. As such, this example actually creates two publisher connections on the Red5 Pro Server: one to stream the screen share, and another for audio.
 
 > You will need to use the [Subscribe Screen Share](../subscribeScreenShare) test in order to check this test is working.
 
@@ -19,54 +20,85 @@ Additionally, it is currently not possible (as of the time of this writing, *Nov
 Utilize the `getDisplayMedia` API along with the `initWithMedia` method of the Red5 Pro HTML SDK:
 
 ```js
-function capture (cb) {
-  var vw = parseInt(cameraWidthField.value);
-  var vh = parseInt(cameraHeightField.value);
-  var fr = parseInt(framerateField.value);
-    // Edge has getDisplayMedia on navigator and not media devices?
-    var p = undefined
-    if (navigator.getDisplayMedia) {
-      p = navigator.getDisplayMedia(config)
-    } else {
-      p = navigator.mediaDevices.getDisplayMedia(config)
-    }
-    p.then(cb).catch(function (error) {
-      captureButton.disabled = false;
-      console.error(error);
-      updateStatusFromEvent({
-        type: 'ERROR',
-        data: error.message
-      });
-    });
+async function capture() {
+  captureButton.disabled = true
+  var vw = parseInt(cameraWidthField.value)
+  var vh = parseInt(cameraHeightField.value)
+  var fr = parseInt(framerateField.value)
+  var config = {
+    audio: false,
+    video: {
+      width: vw, //{ maxWidth: vw },
+      height: vh, //{ maxHeight: vh },
+      frameRate: fr, //{ maxFrameRate: fr }
+    },
+  }
+  console.log(
+    'Using Capture Configuration:\r\n' + JSON.stringify(config, null, 2)
+  )
+  // Edge has getDisplayMedia on navigator and not media devices?
+  try {
+    const stream = await navigator.mediaDevices.getDisplayMedia(config)
+    const audio = await navigator.mediaDevices.getUserMedia({
+      audio: true,
+      video: false,
+    })
+    stream.addTrack(audio.getAudioTracks()[0].clone())
+    return stream
+  } catch (error) {
+    captureButton.disabled = false
+    console.error(error)
+    updateStatusFromEvent({
+      type: 'ERROR',
+      data: error.message,
+    })
+  }
 }
 ```
 
 The `capture` method in the example is invoked from a User click event on a button that assigns the callback to `setupPublisher`:
 
 ```js
-captureButton.addEventListener('click', function() {
-  capture(setupPublisher);
-});
+captureButton.addEventListener('click', function () {
+  capture(setupPublisher)
+})
 ```
 
 The `setupPublisher` method accepts the returned `MediaStream` from the `getDisplayMedia` and uses it to initialize the WebRTC-based publisher using the `initWithMedia` method:
 
 ```js
-function setupPublisher (mediaStream) {
-...
-    new red5prosdk.RTCPublisher()
-      .initWithStream(rtcConfig, mediaStream)
-      .then(function (publisherImpl) {
-        streamTitle.innerText = configuration.stream1;
-        targetPublisher = publisherImpl;
-        targetPublisher.on('*', onPublisherEvent);
-        return targetPublisher.publish();
-      })
-      .then(function () {
-        onPublishSuccess(targetPublisher);
-        setupAudio();
-      })
-...
+function setupPublisher(mediaStream) {
+  const { preferWhipWhep } = configuration
+  const { WHIPClient, RTCPublisher } = red5prosdk
+
+  var rtcConfig = Object.assign({}, configuration, getAuthenticationParams(), {
+    protocol: getSocketLocationFromProtocol().protocol,
+    port: getSocketLocationFromProtocol().port,
+    streamName: configuration.stream1,
+    bandwidth: {
+      video: parseInt(bandwidthVideoField.value),
+    },
+    keyFramerate: parseInt(keyFramerateField.value),
+    streamMode: configuration.recordBroadcast ? 'record' : 'live',
+  })
+  const publisher = preferWhipWhep ? new WHIPClient() : new RTCPublisher()
+  publisher
+    .initWithStream(rtcConfig, mediaStream)
+    .then(function (publisherImpl) {
+      streamTitle.innerText = configuration.stream1
+      targetPublisher = publisherImpl
+      targetPublisher.on('*', onPublisherEvent)
+      return targetPublisher.publish()
+    })
+    .then(function () {
+      onPublishSuccess(targetPublisher)
+    })
+    .catch(function (error) {
+      var jsonError =
+        typeof error === 'string' ? error : JSON.stringify(error, null, 2)
+      console.error('[Red5ProPublisher] :: Error in publishing - ' + jsonError)
+      onPublishFail(jsonError)
+    })
 }
 ```
 

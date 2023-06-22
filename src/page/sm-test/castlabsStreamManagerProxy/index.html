@@ -1,0 +1,135 @@
+<!doctype html>
+{{> license}}
+<html>
+  <head>
+    {{> meta title='castLabs DRM Encrypted Playback'}}
+    {{> header-scripts}}
+    {{> header-stylesheets}}
+    <style>
+      .section {
+        max-width: unset!important;
+      }
+      .container {
+        display: flex;
+        justify-content: center;
+        column-gap: 20px;
+        flex-wrap: wrap;
+        row-gap: 20px;
+      }
+
+      .info-title {
+        padding: 20px 10px;
+        box-sizing: border-box;
+        background-color: #eeee;
+      }
+      .paddedHR {
+        margin: 0!important;
+        margin-top: 10px;
+      }
+      .nsettings {
+        display: grid;
+        grid-template-columns: max-content max-content;
+        grid-gap: 10px;
+        background-color: #eeee;
+        padding: 20px;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .nsettings label {
+        text-align: right;
+      }
+
+      .nsettings input, .nsettings select {
+        font-size: 1em;
+        height: 1.8em;
+      }
+    </style>
+  </head>
+  <body>
+    {{> top-bar }}
+    {{> navigation isTestPage=true }}
+    <div id="app">
+      {{> settings-link}}
+      {{> test-info testTitle='castLabs DRM Encrypted Playback Stream Manager'}}
+      <div class="stream-section section">
+        <div class="centered container">
+          <div class="encrypted-playback">
+            <div class="centered status-field">
+              <p id="encrypted-status-field" class="status-field_status">On hold.</p>
+            </div>
+            <p id="encrypted-statistics-field" class="centered status-field statistics-field hidden">
+              <!-- only updated from WebRTC clients. -->
+              Bitrate: <span id="encrypted-bitrate-field" class="bitrate-field">N/A</span>.&nbsp;
+              Packets Received: <span id="encrypted-packets-field" class="packets-field">N/A</span>.
+              <br/>
+              <span>Resolution: <span id="encrypted-resolution-field" class="resolution-field">0x0</span>.
+            </p>
+            <div class="centered"><p id="encrypted-address-field" class="address-field">Edge Address: N/A</p></div>
+            <div class="settings-area">
+              <p class="centered info-title">Encrypted Playback</p>
+            </div>
+            <video id="red5pro-encrypted"
+                    controls="controls" autoplay="autoplay" playsinline
+                    class="red5pro-subscriber"
+                    width="320" height="240">
+            </video>
+          </div>
+          <div class="decrypted-playback">
+            <div class="centered status-field">
+              <p id="decrypted-status-field" class="status-field_status">On hold.</p>
+            </div>
+            <p id="decrypted-statistics-field" class="centered status-field statistics-field hidden">
+              <!-- only updated from WebRTC clients. -->
+              Bitrate: <span id="decrypted-bitrate-field" class="bitrate-field">N/A</span>.&nbsp;
+              Packets Received: <span id="decrypted-packets-field" class="packets-field">N/A</span>.
+              <br/>
+              <span>Resolution: <span id="decrypted-resolution-field" class="resolution-field">0x0</span>.
+            </p>
+            <div class="centered"><p id="decrypted-address-field" class="address-field">Edge Address: N/A</p></div>
+            <div class="centered info-title">
+              <p>Enter the following information to playback decrypted video:</p>
+            </div>
+            <hr class="paddedHR">
+            <div class="nsettings">
+              <label for="env-select">castLabs Environment:</label>
+              <select id="env-select" name="env-select">
+                <option value="Staging" selected>Staging</option>
+              </select>
+
+              <label for="merchant-input">Merchant:</label>
+              <input id="merchant-input" name="key-input" value="red5" placeholder="Merchant" />
+
+              <label for="scheme-select">Encryption Scheme:</label>
+              <select id="scheme-select" name="scheme-select">
+                <option value="cbcs" selected>CBCS</option>
+                <option value="cenc">CENC</option>
+              </select>
+
+              <label for="key-input" title="16 bytes in hex format">Key Id:</label>
+              <input id="key-input" name="key-input" value="00000000000000000000000000000001" placeholder="Key Id" style="width:18em" />
+              <label for="iv-input" title="16 bytes in hex format">IV:</label>
+              <input id="iv-input" name="iv-input" value="d5fbd6b82ed93e4ef98ae40931ee33b7" placeholder="IV" style="width:18em" />
+            </div>
+            <div style="background-color: black;">
+              <video id="red5pro-subscriber"
+                      controls
+                      autoplay
+                      playsinline
+                      class="red5pro-subscriber"
+                      width="320" height="240">
+              </video>
+            </div>
+            <div>
+              <button id="decrypt-button" class="ui-button">Decrypt</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    {{> body-scripts}}
+    {{> mobile-subscriber-util}}
+    {{> sm-scripts}}
+    <script type="module" src="index.js"></script>
+  </body>
+</html>

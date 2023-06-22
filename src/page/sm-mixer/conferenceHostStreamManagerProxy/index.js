@@ -1,57 +1,57 @@
 /*
 Copyright © 2015 Infrared5, Inc. All rights reserved.
 
-The accompanying code comprising examples for use solely in conjunction with Red5 Pro (the "Example Code") 
-is  licensed  to  you  by  Infrared5  Inc.  in  consideration  of  your  agreement  to  the  following  
-license terms  and  conditions.  Access,  use,  modification,  or  redistribution  of  the  accompanying  
+The accompanying code comprising examples for use solely in conjunction with Red5 Pro (the "Example Code")
+is  licensed  to  you  by  Infrared5  Inc.  in  consideration  of  your  agreement  to  the  following
+license terms  and  conditions.  Access,  use,  modification,  or  redistribution  of  the  accompanying
 code  constitutes your acceptance of the following license terms and conditions.
 
-Permission is hereby granted, free of charge, to you to use the Example Code and associated documentation 
-files (collectively, the "Software") without restriction, including without limitation the rights to use, 
-copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit 
+Permission is hereby granted, free of charge, to you to use the Example Code and associated documentation
+files (collectively, the "Software") without restriction, including without limitation the rights to use,
+copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit
 persons to whom the Software is furnished to do so, subject to the following conditions:
 
-The Software shall be used solely in conjunction with Red5 Pro. Red5 Pro is licensed under a separate end 
-user  license  agreement  (the  "EULA"),  which  must  be  executed  with  Infrared5,  Inc.   
+The Software shall be used solely in conjunction with Red5 Pro. Red5 Pro is licensed under a separate end
+user  license  agreement  (the  "EULA"),  which  must  be  executed  with  Infrared5,  Inc.
 An  example  of  the EULA can be found on our website at: https://account.red5pro.com/assets/LICENSE.txt.
 
 The above copyright notice and this license shall be included in all copies or portions of the Software.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,  INCLUDING  BUT  
-NOT  LIMITED  TO  THE  WARRANTIES  OF  MERCHANTABILITY, FITNESS  FOR  A  PARTICULAR  PURPOSE  AND  
-NONINFRINGEMENT.   IN  NO  EVENT  SHALL INFRARED5, INC. BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, 
-WHETHER IN  AN  ACTION  OF  CONTRACT,  TORT  OR  OTHERWISE,  ARISING  FROM,  OUT  OF  OR  IN CONNECTION 
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,  INCLUDING  BUT
+NOT  LIMITED  TO  THE  WARRANTIES  OF  MERCHANTABILITY, FITNESS  FOR  A  PARTICULAR  PURPOSE  AND
+NONINFRINGEMENT.   IN  NO  EVENT  SHALL INFRARED5, INC. BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+WHETHER IN  AN  ACTION  OF  CONTRACT,  TORT  OR  OTHERWISE,  ARISING  FROM,  OUT  OF  OR  IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 /**
  * Waiting Room Orchestrator in handling streams entering and exiting a room to be staged into a conference.
  */
-((window, red5prosdk, SubscriberBlock) => {
-
+;((window, red5prosdk, SubscriberBlock) => {
   red5prosdk.setLogLevel('debug')
 
-
   var serverSettings = (function () {
-    var settings = sessionStorage.getItem('r5proServerSettings');
+    var settings = sessionStorage.getItem('r5proServerSettings')
     try {
-      return JSON.parse(settings);
-    }
-    catch (e) {
-      console.error('Could not read server settings from sessionstorage: ' + e.message);
-    }
-    return {};
-  })();
-
-  var configuration = (function () {
-    var conf = sessionStorage.getItem('r5proTestBed');
-    try {
-      return JSON.parse(conf);
-    }
-    catch (e) {
-      console.error('Could not read testbed configuration from sessionstorage: ' + e.message);
+      return JSON.parse(settings)
+    } catch (e) {
+      console.error(
+        'Could not read server settings from sessionstorage: ' + e.message
+      )
     }
     return {}
-  })();
+  })()
+
+  var configuration = (function () {
+    var conf = sessionStorage.getItem('r5proTestBed')
+    try {
+      return JSON.parse(conf)
+    } catch (e) {
+      console.error(
+        'Could not read testbed configuration from sessionstorage: ' + e.message
+      )
+    }
+    return {}
+  })()
 
   const getRoomName = (context) => {
     const splits = context.split('/')
@@ -71,16 +71,20 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   const appContext = configuration.app
   const appName = getRoomName(appContext)
   const roomName = getRoomName(appContext)
-  let iFramesrc = `./presenter-flow-viewer.html?sm=true&host=${configuration.host}&app=${getAppName(appContext)}&room=${roomName}&role=moderator&ws=${configuration.mixerBackendSocketField}&smtoken=${configuration.streamManagerAccessToken}`
+  let iFramesrc = `./presenter-flow-viewer.html?sm=true&host=${
+    configuration.host
+  }&app=${getAppName(appContext)}&room=${roomName}&role=moderator&ws=${
+    configuration.mixerBackendSocketField
+  }&smtoken=${configuration.streamManagerAccessToken}`
   const mixingPageSelector = document.getElementById('mixingPage-select')
   const PARTICIPANT_APPENDIX = '_r5participator'
 
   const isAuthEnabled = configuration.mixerAuthenticationEnabled
   var authenticationForm = document.getElementById('login-form')
-  var usernameField = document.getElementById('username-field');
-  var passwordField = document.getElementById('password-field');
-  var tokenField = document.getElementById('token-field');
-  var submitButton = document.getElementById('submit-button');
+  var usernameField = document.getElementById('username-field')
+  var passwordField = document.getElementById('password-field')
+  var tokenField = document.getElementById('token-field')
+  var submitButton = document.getElementById('submit-button')
 
   // Round Trip Authentication
   let username
@@ -96,7 +100,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       ...rtcConfig.connectionParams,
       username,
       password,
-      token
+      token,
     }
 
     const loginForm = document.getElementById('login-form')
@@ -112,18 +116,18 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     setUpConferenceRoomWebSocket(conferenceRoomWSEndpoint)
   })
 
-  var protocol = serverSettings.protocol;
-  var isSecure = protocol === 'https';
+  var protocol = serverSettings.protocol
+  var isSecure = protocol === 'https'
   function getSocketLocationFromProtocol() {
     return !isSecure
       ? { protocol: 'ws', port: serverSettings.wsport }
-      : { protocol: 'wss', port: serverSettings.wssport };
+      : { protocol: 'wss', port: serverSettings.wssport }
   }
 
   var defaultConfiguration = {
     protocol: getSocketLocationFromProtocol().protocol,
     port: getSocketLocationFromProtocol().port,
-    streamMode: configuration.recordBroadcast ? 'record' : 'live'
+    streamMode: configuration.recordBroadcast ? 'record' : 'live',
   }
 
   const getConferenceRoomContext = () => {
@@ -133,15 +137,29 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     return `${appContext}_wr`
   }
 
-  const waitingRoomWSEndpoint = isSecure ? `wss://${configuration.mixerBackendSocketField}?testbed=conference&room=${getWaitingRoomContext()}&host=true` : `ws://${configuration.mixerBackendSocketField}?room=${getWaitingRoomContext()}&host=true`
-  const conferenceRoomWSEndpoint = isSecure ? `wss://${configuration.mixerBackendSocketField}?testbed=conference&room=${getConferenceRoomContext()}&host=true` : `ws://${configuration.mixerBackendSocketField}?room=${getConferenceRoomContext()}&host=true`
+  const waitingRoomWSEndpoint = isSecure
+    ? `wss://${
+        configuration.mixerBackendSocketField
+      }?testbed=conference&room=${getWaitingRoomContext()}&host=true`
+    : `ws://${
+        configuration.mixerBackendSocketField
+      }?room=${getWaitingRoomContext()}&host=true`
+  const conferenceRoomWSEndpoint = isSecure
+    ? `wss://${
+        configuration.mixerBackendSocketField
+      }?testbed=conference&room=${getConferenceRoomContext()}&host=true`
+    : `ws://${
+        configuration.mixerBackendSocketField
+      }?room=${getConferenceRoomContext()}&host=true`
 
   document.getElementById('scope').value = appContext
   document.getElementById('streamName').value = roomName
   document.getElementById('event').value = roomName
   const waitingRoomWall = document.querySelector('#waiting-room-wall')
-  const selectBox = document.getElementById("event-name-select");
-  const destroyCompositionButton = document.getElementById('destroy-composition-button')
+  const selectBox = document.getElementById('event-name-select')
+  const destroyCompositionButton = document.getElementById(
+    'destroy-composition-button'
+  )
   const eventStateText = document.getElementById('event-state')
   const eventRoomText = document.getElementById('event-room')
 
@@ -149,26 +167,37 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   let activeComposition = null
   let existingCompositions = []
 
-  const createCompositionForm = document.getElementById('create-composition-form');
+  const createCompositionForm = document.getElementById(
+    'create-composition-form'
+  )
   if (createCompositionForm.attachEvent) {
-    createCompositionForm.attachEvent("submit", processCreateCompositionForm);
+    createCompositionForm.attachEvent('submit', processCreateCompositionForm)
   } else {
-    createCompositionForm.addEventListener("submit", processCreateCompositionForm);
+    createCompositionForm.addEventListener(
+      'submit',
+      processCreateCompositionForm
+    )
   }
 
   function getUserMediaConfiguration() {
     return {
       mediaConstraints: {
-        audio: configuration.useAudio ? configuration.mediaConstraints.audio : false,
-        video: configuration.useVideo ? configuration.mediaConstraints.video : false
-      }
-    };
+        audio: configuration.useAudio
+          ? configuration.mediaConstraints.audio
+          : false,
+        video: configuration.useVideo
+          ? configuration.mediaConstraints.video
+          : false,
+      },
+    }
   }
 
-  var config = Object.assign({},
+  var config = Object.assign(
+    {},
     configuration,
     defaultConfiguration,
-    getUserMediaConfiguration())
+    getUserMediaConfiguration()
+  )
 
   var rtcConfig = Object.assign({}, config, {
     protocol: getSocketLocationFromProtocol().protocol,
@@ -177,8 +206,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     app: getWaitingRoomContext(),
     connectionParams: {
       host: configuration.host,
-      app: getWaitingRoomContext()
-    }
+      app: getWaitingRoomContext(),
+    },
   })
 
   const isValidString = (string) => {
@@ -187,9 +216,16 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   const getMixingPageFromSelector = (selection) => {
     if (selection === 'focused') {
-      return `https://${configuration.host}/webrtcexamples/sample-mixer-pages/conference/?role=mixer&app=${getAppName(appContext)}&room=${roomName}&ws=${configuration.mixerBackendSocketField}&token=${Date.now()}&sm=true&smtoken=${configuration.streamManagerAccessToken}`
-    }
-    else {
+      return `https://${
+        configuration.host
+      }/webrtcexamples/sample-mixer-pages/conference/?role=mixer&app=${getAppName(
+        appContext
+      )}&room=${roomName}&ws=${
+        configuration.mixerBackendSocketField
+      }&token=${Date.now()}&sm=true&smtoken=${
+        configuration.streamManagerAccessToken
+      }`
+    } else {
       return ``
     }
   }
@@ -207,9 +243,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
    * Manager to create the actual composition
    */
   function processCreateCompositionForm(e) {
-    if (e.preventDefault) e.preventDefault();
+    if (e.preventDefault) e.preventDefault()
 
-    const selectedValue = selectBox.options[selectBox.selectedIndex].value;
+    const selectedValue = selectBox.options[selectBox.selectedIndex].value
     if (selectedValue != '') {
       alert('Cannot create a new composition when one is already selected')
       return
@@ -226,25 +262,48 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     const transcodeComposition = false
     const mixerName = uuidv4()
     const doForward = true
-    const destinationMixerName = ""
-    let mixingPage = getMixingPageFromSelector(mixingPageSelector.options[mixingPageSelector.selectedIndex].value)
+    const destinationMixerName = ''
+    let mixingPage = getMixingPageFromSelector(
+      mixingPageSelector.options[mixingPageSelector.selectedIndex].value
+    )
 
     const selector = document.getElementById('mixer-region-select')
     let location = null
     try {
-      location = selector.options[selector.selectedIndex].value;
+      location = selector.options[selector.selectedIndex].value
     } catch (error) {
-      alert(`Mixer Region not found. Make sure your environment has available Mixer nodes`)
+      alert(
+        `Mixer Region not found. Make sure your environment has available Mixer nodes`
+      )
       return
     }
 
-    if (!eventName || !digest || !mixingPage || !path || !streamName || !width || !height || !framerate || !bitrate) {
-      alert(`At least one of eventName, digest, mixingPage, path, streamName, width, height, framerate or bitrate was not provided`)
+    if (
+      !eventName ||
+      !digest ||
+      !mixingPage ||
+      !path ||
+      !streamName ||
+      !width ||
+      !height ||
+      !framerate ||
+      !bitrate
+    ) {
+      alert(
+        `At least one of eventName, digest, mixingPage, path, streamName, width, height, framerate or bitrate was not provided`
+      )
       return
     }
 
-    if (!isValidString(eventName) || !isValidString(digest) || !isValidString(path) || !isValidString(streamName)) {
-      alert(`Event Name, Digest, Path and Stream Name must be alphanumeric and shorter than 256 characters`)
+    if (
+      !isValidString(eventName) ||
+      !isValidString(digest) ||
+      !isValidString(path) ||
+      !isValidString(streamName)
+    ) {
+      alert(
+        `Event Name, Digest, Path and Stream Name must be alphanumeric and shorter than 256 characters`
+      )
       return
     }
 
@@ -269,10 +328,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           framerate,
           bitrate,
           doForward,
-          destinationMixerName
-        }
+          destinationMixerName,
+        },
       ],
-      location: [location]
+      location: [location],
     }
 
     websocket.send(JSON.stringify(createCompositionMessage))
@@ -285,17 +344,17 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     //document.getElementById('create-composition-form').reset()
 
     // return false to prevent the default form behavior
-    return false;
+    return false
   }
 
   function isStringAValidUrl(string) {
     try {
-      new URL(string);
+      new URL(string)
     } catch (e) {
-      return false;
+      return false
     }
 
-    return true;
+    return true
   }
 
   /**
@@ -305,14 +364,20 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
    *        A list of stream names.
    */
   const startSubscribers = (streamList) => {
-    console.log(`[waitingroom]:: Starting new subscribers from list: ${streamList.join(',')}`)
-    const subscribers = streamList.map(name => new SubscriberBlock(name, waitingRoomWall))
+    console.log(
+      `[waitingroom]:: Starting new subscribers from list: ${streamList.join(
+        ','
+      )}`
+    )
+    const subscribers = streamList.map(
+      (name) => new SubscriberBlock(name, waitingRoomWall)
+    )
     if (isAuthEnabled) {
       rtcConfig.connectionParams = {
         ...rtcConfig.connectionParams,
         username,
         password,
-        token
+        token,
       }
     }
 
@@ -336,7 +401,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
    *        List of stream names.
    */
   const stopSubscribers = (streamList) => {
-    streamList.forEach(name => {
+    streamList.forEach((name) => {
       // The window.streamsUtil.subscribers Utility is created in subscriber-block.js
       window.streamsUtil.subscribers.stop(name)
     })
@@ -397,11 +462,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
    * @param {String} name
    */
   const onModeratorAddConferenceStream = (room, name) => {
-    websocket.send(JSON.stringify({
-      type: 'promote',
-      room: room,
-      streamName: name
-    }))
+    websocket.send(
+      JSON.stringify({
+        type: 'promote',
+        room: room,
+        streamName: name,
+      })
+    )
   }
 
   /**
@@ -411,11 +478,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
    * @param {String} name
    */
   const onModeratorExcludeStream = (room, name) => {
-    websocket.send(JSON.stringify({
-      type: 'exclude',
-      room: room,
-      streamName: name
-    }))
+    websocket.send(
+      JSON.stringify({
+        type: 'exclude',
+        room: room,
+        streamName: name,
+      })
+    )
   }
 
   /**
@@ -427,24 +496,24 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
    */
   const parseStreamList = (list, conferenceList, participantAppendix) => {
     // Flatten the list if the array is of objects in structure {name: `stream1`}.
-    let flattened = list.map(item => {
+    let flattened = list.map((item) => {
       if (typeof item !== 'string') {
         return item.name
       }
       return item
     })
-    let nonParticipantList = flattened.filter(item => {
-      return (item.indexOf(participantAppendix) === -1 && item !== roomName)
+    let nonParticipantList = flattened.filter((item) => {
+      return item.indexOf(participantAppendix) === -1 && item !== roomName
     })
     // Filter out only those streams that are not associated with target publisher on page.
-    const notInConference = nonParticipantList.filter(item => {
+    const notInConference = nonParticipantList.filter((item) => {
       return conferenceList.indexOf(item) === -1
     })
     // Find those that are new.
     let newListings = []
     // Find those that are old, no longer active.
     let strippedListings = []
-    nonParticipantList.forEach(name => {
+    nonParticipantList.forEach((name) => {
       if (notInConference.indexOf(name) === -1) {
         strippedListings.push(name)
       } else if (!window.streamsUtil.subscribers.find(name)) {
@@ -485,7 +554,25 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
    */
   const setUpWaitingRoomWebSocket = (url) => {
     websocket = new WebSocket(url)
-    websocket.onmessage = event => {
+    websocket.onopen = () => {
+      console.log(`[websocket]::onopen. [${new Date()}`)
+    }
+    websocket.onclose = (event) => {
+      console.log(`[websocket]::onclose. [${new Date()}`)
+      console.log(
+        `[websocket]::onclose. Code: ${event.code}. Reason: ${event.reason}.`
+      )
+      console.log(event)
+      if (!explicitSocketClose && event.code === 1006) {
+        let timeout = setTimeout(() => {
+          clearTimeout(timeout)
+          if (!explicitSocketClose) {
+            setUpWaitingRoomWebSocket(url)
+          }
+        }, 2000)
+      }
+    }
+    websocket.onmessage = (event) => {
       console.log('[websocket]::onmessage')
       console.log(event)
       // Note: expecting list as array of stream name strings.
@@ -509,7 +596,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       }
 
       if (json.type === 'active' && conferenceListing) {
-        json.hasOwnProperty('streams') && parseStreamList(json.streams, conferenceListing, PARTICIPANT_APPENDIX)
+        json.hasOwnProperty('streams') &&
+          parseStreamList(json.streams, conferenceListing, PARTICIPANT_APPENDIX)
       } else if (json.type === 'active' && !conferenceListing) {
         pendingListing = json.streams
       } else if (json.type === 'excluded') {
@@ -523,7 +611,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     selector.innerHTML = ''
     //const emptyOption = document.createElement('option')
     let i = 0
-    regions.forEach(region => {
+    regions.forEach((region) => {
       const option = document.createElement('option')
       option.value = region
       option.innerHTML = region
@@ -536,7 +624,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   let confWebsocket = undefined
   const setUpConferenceRoomWebSocket = (url) => {
     confWebsocket = new WebSocket(url)
-    confWebsocket.onmessage = event => {
+    confWebsocket.onmessage = (event) => {
       console.log('[conf-websocket::onmessage]')
       console.log(event)
 
@@ -553,21 +641,25 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
       if (json.type === 'conference') {
         conferenceListing = json.streams || []
-        parseStreamList(pendingListing || streamListing, conferenceListing, PARTICIPANT_APPENDIX)
+        parseStreamList(
+          pendingListing || streamListing,
+          conferenceListing,
+          PARTICIPANT_APPENDIX
+        )
         pendingListing = undefined
       }
     }
   }
 
   /*
-  * Destroys a composition and associated UI
-  */
+   * Destroys a composition and associated UI
+   */
   window.destroyComposition = () => {
-    const selectedValue = selectBox.options[selectBox.selectedIndex].value;
+    const selectedValue = selectBox.options[selectBox.selectedIndex].value
     if (selectedValue != '') {
       const payload = {
-        'type': 'destroyComposition',
-        'event': selectedValue
+        type: 'destroyComposition',
+        event: selectedValue,
       }
       websocket.send(JSON.stringify(payload))
       // clean up
@@ -582,10 +674,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   /*
-  * Updates the UI based on the composition selected from a drop down list
-  */
+   * Updates the UI based on the composition selected from a drop down list
+   */
   window.compositionSelected = () => {
-    const selectedValue = selectBox.options[selectBox.selectedIndex].value;
+    const selectedValue = selectBox.options[selectBox.selectedIndex].value
 
     if (selectedValue != '') {
       compositionEventName = selectedValue
@@ -595,8 +687,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       selectBox.appendChild(emptyOption)
       // get updated list
       requestActiveCompositions()
-    }
-    else {
+    } else {
       // clean up
       compositionEventName = null
       activeComposition = null
@@ -609,22 +700,22 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   /*
-  * Request active compositions from WebSocket server
-  */
+   * Request active compositions from WebSocket server
+   */
   const requestActiveCompositions = () => {
     const payload = {
-      'type': 'getActiveCompositions'
+      type: 'getActiveCompositions',
     }
 
     websocket.send(JSON.stringify(payload))
   }
 
   /*
-  * Request active streams from WebSocket server
-  */
+   * Request active streams from WebSocket server
+   */
   const requestActiveStreams = () => {
     const payload = {
-      'type': 'getActiveStreams'
+      type: 'getActiveStreams',
     }
 
     websocket.send(JSON.stringify(payload))
@@ -637,25 +728,27 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     console.log('parse composition')
     existingCompositions = []
     const emptyOption = document.createElement('option')
-    const filtered = json.list ? json.list.filter(comp => {
-      if (existingCompositions.length == 0) {
-        selectBox.innerHTML = ''
-        emptyOption.value = ''
-        selectBox.appendChild(emptyOption)
-      }
+    const filtered = json.list
+      ? json.list.filter((comp) => {
+          if (existingCompositions.length == 0) {
+            selectBox.innerHTML = ''
+            emptyOption.value = ''
+            selectBox.appendChild(emptyOption)
+          }
 
-      existingCompositions.push(comp.event)
-      const option = document.createElement('option')
-      option.value = comp.event
-      option.innerHTML = comp.event
+          existingCompositions.push(comp.event)
+          const option = document.createElement('option')
+          option.value = comp.event
+          option.innerHTML = comp.event
 
-      if (comp.event == compositionEventName) {
-        option.selected = true
-        destroyCompositionButton.disabled = false
-      }
-      selectBox.appendChild(option)
-      return comp.event === compositionEventName
-    }) : []
+          if (comp.event == compositionEventName) {
+            option.selected = true
+            destroyCompositionButton.disabled = false
+          }
+          selectBox.appendChild(option)
+          return comp.event === compositionEventName
+        })
+      : []
 
     if (filtered.length > 0) {
       const composition = filtered[0]
@@ -663,13 +756,14 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       let compositionContext = ''
       if (composition.mixers && composition.mixers.length > 0) {
         compositionContext = composition.mixers[0].path
-        compositionContext = compositionContext.substring(compositionContext.indexOf('/') + 1)
+        compositionContext = compositionContext.substring(
+          compositionContext.indexOf('/') + 1
+        )
         if (activeComposition == null) {
           activeComposition = composition
           eventRoomText.innerHTML = `Room: ${compositionContext}`
         }
       }
-
 
       const mixers = composition.mixers
       const mixerObj = []
@@ -679,13 +773,20 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         if (state === 'disconnected') {
           areAllConnected &= false
         }
-        mixerObj.push({ id: mixer.id, context: compositionContext, name: mixer.name })
+        mixerObj.push({
+          id: mixer.id,
+          context: compositionContext,
+          name: mixer.name,
+        })
       })
 
-      eventStateText.innerHTML = areAllConnected ? 'State: Composing' : 'State: Pending'
+      eventStateText.innerHTML = areAllConnected
+        ? 'State: Composing'
+        : 'State: Pending'
     }
   }
 
+  let explicitSocketClose = false
   /**
    * Shut down existing websocket connection.
    */
@@ -693,6 +794,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   const shutdownStreamListSocket = () => {
     if (websocket) {
       try {
+        explicitSocketClose = true
         websocket.onmessage = undefined
         websocket.close()
         websocket = undefined
@@ -702,16 +804,14 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
   }
 
-  // Main 
+  // Main
 
   if (isAuthEnabled) {
     authenticationForm.classList.remove('hidden')
-  }
-  else {
+  } else {
     console.log('connect to socket- auth not enabled')
     document.getElementById('conference-i-frame').src = iFramesrc
     setUpWaitingRoomWebSocket(waitingRoomWSEndpoint)
     setUpConferenceRoomWebSocket(conferenceRoomWSEndpoint)
   }
-
 })(window, window.red5prosdk, window.SubscriberBlock)
