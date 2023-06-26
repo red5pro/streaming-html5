@@ -1,0 +1,74 @@
+<!doctype html>
+{{> license}}
+<html>
+  <head>
+    {{> meta title='Conference Participant Test'}}
+    {{> header-scripts}}
+    {{> header-stylesheets}}
+    <style>
+      .settings-area {
+        background-color: #eeee;
+      }
+      .settings-field, .settings-field > input {
+        font-size: 1em;
+      }
+      .info-title {
+        padding: 20px 0;
+      }
+      .paddedHR {
+        margin: 0!important;
+      }
+      .conference {
+        display: flex;
+        flex-direction: row;
+      }
+      .unminimized {
+        width: 100%;
+        opacity: 1;
+        visibility: visible;
+        transition-duration: 500ms, 500ms, 0ms;
+        transition-property: opacity, width, visibility;
+        transition-delay: 500ms, 500ms, 0ms;
+      }
+      .minimized {
+        width: 0px;
+        opacity: 0;
+        visibility: hidden;
+        transition-duration: 1s, 1s, 0ms;
+        transition-property: opacity, width, visibility;
+        transition-delay: 0ms, 0ms, 1s;
+      }
+    </style>
+  </head>
+  <body>
+    {{> top-bar }}
+    {{> navigation isTestPage=true }}
+    <div id="app">
+      {{> settings-link}}
+      {{> test-info testTitle='Conference Participant Test'}}
+      <div class="stream-section">
+        <div id="group-form" class="settings-area">
+          <h3 class="centered info-title">Set Group to Join:</h3>
+          <hr class="paddedHR">
+          <p class="settings-field settings-collapsable">
+            <label for="group-field" class="settings-label">Group:</label>
+            <input id="group-field" name="group-field" value="red5pro">
+          </p>
+          <button id="submit-button" class="ui-button">Submit</button>
+        </div>
+        {{> status-field-publisher}}
+        {{> statistics-field packets_field='Packets Received'}}
+        <div class="centered conference">
+          <video id="red5pro-publisher" class="red5pro-publisher unminimized"
+                 controls autoplay playsinline muted>
+          </video>
+          <video id="red5pro-conference" class="red5pro-publisher hidden"
+            controls autoplay playsinline>
+          </video>
+        </div>
+      </div>
+    </div>
+    {{> body-scripts}}
+    <script src="index.js"></script>
+  </body>
+</html>

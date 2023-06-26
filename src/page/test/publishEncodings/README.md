@@ -11,21 +11,19 @@ This example demonstrates how to update the encoding parameters of an audio/vide
 - **[index.html](index.html)**
 - **[index.js](index.js)**
 
-> These examples use the WebRTC-based Publisher implementation from the Red5 Pro HTML SDK.
-
 # RTCRtspSender Parameters
 
-The underlying `RTCPeerConnection` of a Red5 Pro `RTCPublisher` from the HTML SDK contains [RTCRtspSender](https://developer.mozilla.org/en-US/docs/Web/API/RTCRtpSender) instances related to the audio and video tracks of the stream.
+The underlying `RTCPeerConnection` of a Red5 Pro `WHIPClient` and `RTCPublisher` from the HTML SDK contains [RTCRtspSender](https://developer.mozilla.org/en-US/docs/Web/API/RTCRtpSender) instances related to the audio and video tracks of the stream.
 
 While broadcasting a live stream, the encoding parameters of a `RTCRtspSender` can be modified and affect how the stream is encoded and delivered to subscribers.
 
 Among others, the most widely supported encoding parameters that are available to modify during a streaming session are:
 
-| Property | Description |
-| :-- | :-- |
-| active | Flag that stops (`false`) and (re)starts (`true`) the audio or video track |
-| maxBitrate | The maximum bitrate (in bps) to send out the audio or video track |
-| scaleResolutionDownBy | The factor at which to scale the outgoing resolution of the video track |
+| Property              | Description                                                                |
+| :-------------------- | :------------------------------------------------------------------------- |
+| active                | Flag that stops (`false`) and (re)starts (`true`) the audio or video track |
+| maxBitrate            | The maximum bitrate (in bps) to send out the audio or video track          |
+| scaleResolutionDownBy | The factor at which to scale the outgoing resolution of the video track    |
 
 > For more information see [https://developer.mozilla.org/en-US/docs/Web/API/RTCRtpSendParameters/encodings](https://developer.mozilla.org/en-US/docs/Web/API/RTCRtpSendParameters/encodings).
 
@@ -41,7 +39,7 @@ The `maxBitrate` setting has an `Unlimited` option. When selecting `Unlimited` t
 
 ## scaleResolutionDownBy
 
-The settings for scale resolution  are factors represented by fractions. For example, setting the scale to `1/4` means it will set the scale of the outgoing stream down by a factor of 4 from the original resolution. By setting it to the `Original` value, there will be no scaling down and broadcast out at the original resolution.
+The settings for scale resolution are factors represented by fractions. For example, setting the scale to `1/4` means it will set the scale of the outgoing stream down by a factor of 4 from the original resolution. By setting it to the `Original` value, there will be no scaling down and broadcast out at the original resolution.
 
 > By default we request the original resolution at `720p` in order to see the scaling more affectively. The word "request" should be noted here, as some browser and camera combinations may not respect or support `720p`, at which point the browser and HTML SDK will determine the next best option.
 
@@ -49,7 +47,7 @@ The settings for scale resolution  are factors represented by fractions. For exa
 
 The `active` flag is used based on the selection of `Set Active On Mute` checkbox. If selected, it will use the `active` encoding flag along with our Mute API.
 
-The HTML SDK has a Mute API for audio and video. This Mute API actually informs the server to not send stream data to subscribers. It does not stop the broadcast of data going to the server. 
+The HTML SDK has a Mute API for audio and video. This Mute API actually informs the server to not send stream data to subscribers. It does not stop the broadcast of data going to the server.
 
 By using the `active` flag, you will stop and (re)start sending stream data to the server when setting it to `false` and `true`, respectively.
 
@@ -60,32 +58,32 @@ By using the `active` flag, you will stop and (re)start sending stream data to t
 As an example of updating the encoding parameters of an `RTCRtspSender`, here is the logic to update the `maxBitrate` within this test:
 
 ```js
-function getTrackSender (connection, kind) {
-  var senders = connection.getSenders();
+function getTrackSender(connection, kind) {
+  var senders = connection.getSenders()
   var i = senders.length
   while (--i > -1) {
     if (senders[i].track.kind === kind) {
-      return senders[i];
+      return senders[i]
     }
   }
-  return undefined;
+  return undefined
 }
 
-function addPublisherControls (publisher) {
+function addPublisherControls(publisher) {
   bandwidthSelect.addEventListener('change', function () {
-    var value = bandwidthSelect.options[bandwidthSelect.selectedIndex].value;
-    var sender = getTrackSender(publisher.getPeerConnection(), 'video');
-    var params = sender.getParameters();
+    var value = bandwidthSelect.options[bandwidthSelect.selectedIndex].value
+    var sender = getTrackSender(publisher.getPeerConnection(), 'video')
+    var params = sender.getParameters()
     if (!params.encodings) {
-      params.encodings = [{}];
+      params.encodings = [{}]
     }
     if (value === 'unlimited') {
-      delete params.encodings[0].maxBitrate;
+      delete params.encodings[0].maxBitrate
     } else {
-      params.encodings[0].maxBitrate = parseInt(value, 10) * 1000;
+      params.encodings[0].maxBitrate = parseInt(value, 10) * 1000
     }
-    sender.setParameters(params);
-  });
+    sender.setParameters(params)
+  })
 }
 ```
 

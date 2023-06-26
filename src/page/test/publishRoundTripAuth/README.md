@@ -26,8 +26,8 @@ For example, if you have defined the authorization of a user `foo` with a passwo
 ```js
 connectionParms: {
   username: 'foo',
-  password: 'bar'
-  token: 'mytoken'
+  password: 'bar',
+  token: 'mytoken',
 }
 ```
 
@@ -35,18 +35,13 @@ connectionParms: {
 
 In the example, a login form is provided to allow the user to enter in their username, password and a token. Those field values are added to the respective properties in the `connectionParms` attribute of the configuration(s) upon submit of the form, and the request to broadcast started:
 
-```
+```js
 submitButton.addEventListener('click', function () {
   configuration.connectionParams = {
     username: usernameField.value,
-    password: passwordField.value
-    token: tokenField.value
-  };
-  start();
-});
+    password: passwordField.value,
+    token: tokenField.value,
+  }
+  start()
+})
 ```
-
-[index.js #157](index.js#L157)
-
-> The example works for both the WebRTC and Flash fallback broadcasters.
-
