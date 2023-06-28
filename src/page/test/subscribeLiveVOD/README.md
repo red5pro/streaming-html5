@@ -1,10 +1,11 @@
-# Subscribe Live VOD
+# Subscribe Live VOD / DVR
 
 This is an example of being able to seek to a specific time within a live stream. It uses Fragmented MP4 (a.k.a. FMP4) to save `ts` files on a server that are appended to a `m3u8` and loaded and played back within a `video` container utilizing the [HLS.JS](https://github.com/video-dev/hls.js/) library.
 
 **Please refer to the [Basic Subscriber Documentation](../subscribe/README.md) to learn more about the basic setup.**
 
 ## Example Code
+
 - **[index.html](index.html)**
 - **[index.js](index.js)**
 
@@ -61,21 +62,24 @@ The schema for the `liveSeek` configuration is as follows:
 }
 ```
 
-* `enabled` : a boolean flag of whether live seek is enabled or disabled.
-* `baseURL` : (optional) the base URL to access the HLS files that are generated for live seek streams.
-* `fullURL` : (optional) the full URL to access the HLS files that are generated for live seek streams.
-* `hlsjsRef` : (optional) the [HLS.JS](https://github.com/video-dev/hls.js/) reference. If you load HLS.js in a script tag, the SDK will check the `window` global for `Hls`, otherwise provide a reference to the loaded HLS.js.
-* `hlsElement` : (optional) the target `video` element to attach the HLS Media to. If left undefined, the SDK will create and maintain the target element (recommended).
-* `options` : (optional) the configuration options for [HLS.JS](https://github.com/video-dev/hls.js/blob/master/docs/API.md#fine-tuning). Default is: `{debug: false, backBufferLength: 0}`.
-* `usePlaybackControlsUI` : (optional) flag to use the custom controls provided by the SDK. Default is `true`. **If setting this to `false`, you must provide your own UI controls and interface with the API to control playback.**
+- `enabled` : a boolean flag of whether live seek is enabled or disabled.
+- `baseURL` : (optional) the base URL to access the HLS files that are generated for live seek streams.
+- `fullURL` : (optional) the full URL to access the HLS files that are generated for live seek streams.
+- `hlsjsRef` : (optional) the [HLS.JS](https://github.com/video-dev/hls.js/) reference. If you load HLS.js in a script tag, the SDK will check the `window` global for `Hls`, otherwise provide a reference to the loaded HLS.js.
+- `hlsElement` : (optional) the target `video` element to attach the HLS Media to. If left undefined, the SDK will create and maintain the target element (recommended).
+- `options` : (optional) the configuration options for [HLS.JS](https://github.com/video-dev/hls.js/blob/master/docs/API.md#fine-tuning). Default is: `{debug: false, backBufferLength: 0}`.
+- `usePlaybackControlsUI` : (optional) flag to use the custom controls provided by the SDK. Default is `true`. **If setting this to `false`, you must provide your own UI controls and interface with the API to control playback.**
 
 ```js
-const rtcConfig = {...config, ...{
-  subscriptionId: 'subscriber-' + instanceId,
-  liveSeek: {
-    enabled: true
-  }
-}}
+const rtcConfig = {
+  ...config,
+  ...{
+    subscriptionId: 'subscriber-' + instanceId,
+    liveSeek: {
+      enabled: true,
+    },
+  },
+}
 ```
 
 **baseURL**
@@ -123,11 +127,9 @@ Aside from the initialization configuration of `enableLiveSeek` described above,
 
 The following events are available when `enableLiveSeek` is set to `true`:
 
-| Access | Name | Meaning |
-| :--- | :---: | :--- |
-| LIVE_SEEK_ENABLED | 'WebRTC.LiveSeek.Enabled' | When `enableLiveSeek` is used to playback Live VOD and the HLS video has been loaded and available to seek. |
-| LIVE_SEEK_DISABLED | 'WebRTC.LiveSeek.Disabled' | When `enableLiveSeek` is used to playback Live VOD and HLS video has not been loaded nor available to seek. |
-| LIVE_SEEK_LOADING | 'WebRTC.LiveSeek.FragmentLoading' | When `enableLiveSeek` is used to playback Live VOD and HLS video in currently loading a fragment during seeking. |
-| LIVE_SEEK_LOADED | 'WebRTC.LiveSeek.FragmentLoaded' | When `enableLiveSeek` is used to playback Live VOD and HLS video has completed loading a fragment during seeking. |
-
-
+| Access             |               Name                | Meaning                                                                                                           |
+| :----------------- | :-------------------------------: | :---------------------------------------------------------------------------------------------------------------- |
+| LIVE_SEEK_ENABLED  |     'WebRTC.LiveSeek.Enabled'     | When `enableLiveSeek` is used to playback Live VOD and the HLS video has been loaded and available to seek.       |
+| LIVE_SEEK_DISABLED |    'WebRTC.LiveSeek.Disabled'     | When `enableLiveSeek` is used to playback Live VOD and HLS video has not been loaded nor available to seek.       |
+| LIVE_SEEK_LOADING  | 'WebRTC.LiveSeek.FragmentLoading' | When `enableLiveSeek` is used to playback Live VOD and HLS video in currently loading a fragment during seeking.  |
+| LIVE_SEEK_LOADED   | 'WebRTC.LiveSeek.FragmentLoaded'  | When `enableLiveSeek` is used to playback Live VOD and HLS video has completed loading a fragment during seeking. |
