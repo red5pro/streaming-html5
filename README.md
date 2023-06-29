@@ -7,7 +7,7 @@
   <a href="#subscribing">subscribing</a>
 </p>
 
-# Red5 Pro HTML5 Streaming Testbed
+# Red5 Pro HTML Streaming Testbed
 
 This repository contains a simple project with a number of examples that can be used for testing and reference for the Red5 Pro WebRTC SDK.
 
@@ -19,18 +19,32 @@ For more information visit [Red5Pro.com](http://red5pro.com).
 
 ### Browser Compability
 
-While the Red5 Pro HTML SDK aims to utilize WebRTC for its streaming solution (both publishing and subscribing), the SDK does support fallback support for non-supporting browsers in both contexts. The default failover order for both contexts, which can be redfined by developers, is:
+The Red5 Pro WebRTC SDK aims to utilize WebRTC for its streaming solution (both publishing and subscribing), but also provides HLS support for browsers that support it natively (e.g., Mobile and Desktop Safari).
+
+> More information about browser compability can be viewed at the [WebRTC Peer Connnection information on caniuse.com](http://caniuse.com/#feat=rtcpeerconnection).
 
 #### Publisher
 
-1. [WebRTC](https://webrtc.org/)
+The term **Publisher** in the context of Red5 Pro refers to a client that produces a broadcast stream. There are two types of instances from the SDK that can be utilized to start a **Publisher**:
+
+1. `WHIPClient` - The `WHIPClient` relies on the [WebRTC-HTTP ingestion](https://www.ietf.org/archive/id/draft-ietf-wish-whip-01.html) protocl to establish a connection through series of HTTP/S requests.
+2. `RTCPublisher` - The `RTCPublisher` relies on a `WebSocket` connection to establish a broadcast session.
+
+The `WHEPClient` connection sequence is very fast - ~1 second - whereas the `RTCPublisher`, due to its reliance on a `WebSocket` can take roughly 3 - 5 seconds for a connection to stream.
 
 #### Subscriber
 
-1. [WebRTC](https://webrtc.org/)
-2. [HLS](https://developer.apple.com/streaming/)
+The term **Subscriber** in the context of Red5 Pro refers to a client that consumes and plays back an already live broadcast stream. There are three types of instances from the SDK that can be utilized to start a **Subscriber**:
 
-More information about browser compability can be viewed at the [WebRTC Peer Connnection information on caniuse.com](http://caniuse.com/#feat=rtcpeerconnection).
+1. `WHEPClient` - The `WHEPClient` relies on the [WebRTC-HTTP egress](https://www.ietf.org/archive/id/draft-murillo-whep-00.html) protocol to establish a connection through series of HTTP/S requests.
+2. `RTCSubscriber` - The `RTCSubscriber` relies on a `WebSocket` connection to establish a broadcast session.
+3. `HLSSubscriber` - The `HLSSubscriber` relies on the native ability to playback `HLS` streams (e.g., Mobile and Desktop Safari).
+
+The `WHEPClient` connection sequence is very fast - ~1 second - whereas the `RTCPublisher`, due to its reliance on a `WebSocket` can take roughly 3 - 5 seconds for a connection to stream
+
+The `HLSSubscriber` does not go through a connection sequence and streams the HLS directly from the server, however it does have an up to 6 second latency due to the length of its live segments.
+
+> **NOTE**: The `WHIPClient` and `WHEPClient` were introduced in the `11.0.0` release of the Red5 Pro WebRTC SDK.
 
 ## Setup
 
@@ -50,6 +64,12 @@ To define the server instance's IP address, open the testbed webapp in a browser
 To define the **Host** with the server instance's IP, click the _Host_ field f the form and enter in the local or remote IP address - e.g., `10.0.0.5`, `76.199.199.199`.
 
 > Hint: You can also open the landing page of your server instance at port `5080` (i.e., `http://localhost:5080` if launched locally) and the page will display its IP in the upper-right corner.
+
+### WHIP/WHEP Settings Option
+
+You can select to prefer **WHIP/WHEP** from the _Settings_ page. By selecting this option, all tests will utilize the `WHEPClient` and `WHIPClient` for publishing and subscribing, respectively.
+
+If you decide to de-select the **WHIP/WHEP** option, all tests will revert to using the `RTCPublisher` and `RTCSubscriber` for publishing and subscibing, respectively. These instances require WebSocket support in the browser during their negotiation stage. Once the connection is made, the messaging transport system is switching to `RTCDataChannel` and the WebSocket is closed.
 
 ## Examples
 
