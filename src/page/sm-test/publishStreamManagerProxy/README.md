@@ -19,8 +19,6 @@ When using the `WHIPClient` instance, you do not need to be concerned about acce
 
 When using the `RTCPublisher` instance, you will need to first make a Stream Manager API request to request the Origin node instance information that you wish to proxy to. As this is an additional step - and that the connection times are longer than that of `WHIP/WHEP` - it is recommended to use the `WHIPClient`.
 
-When Using
-
 **Please refer to the [Basic Publisher Documentation](../../test/publish/README.md) to learn more about the basic setup.**
 
 > In order to properly run the Stream Manager examples, you will need to configure you server for cluster infrastructure as described in the following documentation: [https://www.red5pro.com/docs/server/autoscale/](https://www.red5pro.com/docs/server/autoscale/).
@@ -141,7 +139,7 @@ Another important to note is that for `rtc` publisher the target application is 
 
 ```js
 function determinePublisher(serverAddress) {
-    const { host, app, proxy, stream1 } = configuration
+  const { host, app, proxy, stream1 } = configuration
   var config = {...configuration,
     ...defaultConfiguration,
     ...getUserMediaConfiguration()

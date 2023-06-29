@@ -7,6 +7,7 @@ This example demonstrates two way communication using Red5 Pro. It also demonstr
 It is recommended to view this example as part of the `webrtcexamples` webapp shipped with the [Red5 Pro Server](https://account.red5pro.com/download).
 
 More information on CORS can be found at: [https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS).
+
 ## Publisher Stream Manager Proxy
 
 **Please refer to the [Publisher Stream Manager Proxy Documentation](../publishStreamManagerProxy/README.md) to learn more about the setup of a publisher through a stream manager.**
@@ -28,7 +29,7 @@ More information on CORS can be found at: [https://developer.mozilla.org/en-US/d
 
 # Setup
 
-Two way communication simply requires setting up a publish stream and a subscribe stream at the same time.  You can test the example with two browser pages.  On the second browser page, use the *Settings* page to swap the names of the stream.
+Two way communication simply requires setting up a publish stream and a subscribe stream at the same time. You can test the example with two browser pages. On the second browser page, use the _Settings_ page to swap the names of the stream.
 
 The subscriber portion will automatically connect when the second person begins streaming.
 
@@ -37,20 +38,21 @@ The subscriber portion will automatically connect when the second person begins 
 To get all the streams that a stream manager is handling on a cluster, use the `list` function of the stream manager api.
 
 ```js
-var baseUrl = isSecure ? protocol + '://' + host : protocol + '://' + host + portURI;
-var url = baseUrl + '/streammanager/api/2.0/event/list';
-fetch(url)
-  .then(function (res) {
-    if (res.headers.get('content-type') &&
-        res.headers.get('content-type').toLowerCase().indexOf('application/json') >= 0) {
-      return res.json();
-    }
-    else {
-      return res.text();
-    }
-  })
+var baseUrl = isSecure
+  ? protocol + '://' + host
+  : protocol + '://' + host + portURI
+var url = baseUrl + '/streammanager/api/2.0/event/list'
+fetch(url).then(function (res) {
+  if (
+    res.headers.get('content-type') &&
+    res.headers.get('content-type').toLowerCase().indexOf('application/json') >=
+      0
+  ) {
+    return res.json()
+  } else {
+    return res.text()
+  }
+})
 ```
-
-[index #202](index.js#L202)
 
 After that, it's handled the same way that the returned data from the `streams` servlet would have been. For more information on this and other parts of the Stream Manager API, see our dcumentation [here](https://www.red5pro.com/docs/autoscale/streammanagerapi-v2.html)

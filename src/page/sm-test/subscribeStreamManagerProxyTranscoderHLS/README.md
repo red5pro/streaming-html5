@@ -8,15 +8,19 @@ Subscription to an ABR-enabled stream differs for HLS from that of WebRTC and Fl
 
 Streammanager autoscaling works with dynamic nodes which are associated with dynamic IP addresses and cannot have a SSL attached to them. The proxy layer helps subscribers to connect and initiate a WebRTC `subscribe` session from a `secure` (ssl enabled) domain to a `unsecure` Red5pro origin having using an IP address.
 
-
-**Please refer to the [Basic Subscriber Documentation](../subscribe/README.md) to learn more about the basic setup.**
+**Please refer to the [Basic Subscriber Documentation](../subscribStreamManagerProxy/README.md) to learn more about the basic setup.**
 
 > In order to properly run the Stream Manager examples, you will need to configure you server for cluster infrastructure as described in the following documentation: [https://www.red5pro.com/docs/server/autoscale/](https://www.red5pro.com/docs/server/autoscale/).
 
-> You also need to ensure that the stream manager proxy layer is `enabled`. The configuration section can be found in stream manager's config file - `red5-web.properties`
+## Server Configuration
 
-```txt
+> Please read about [WHIP/WHEP Configuration for Standalone and Stream Manager support.](https://www.red5pro.com/docs/special/user-guide/whip-whep-configuration/)
+
+You also need to ensure that the stream manager proxy layer is `enabled`. The configuration section can be found in stream manager's config file - `red5-web.properties`
+
+```sh
 ## WEBSOCKET PROXY SECTION
+
 proxy.enabled=false
 ```
 
