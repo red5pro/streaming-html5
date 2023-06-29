@@ -4,8 +4,6 @@ This is an example of utilizing the `getDisplayMedia` API for screen sharing cap
 
 > Browser Compatibility table for `getDisplayMedia`: [https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getDisplayMedia](https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getDisplayMedia)
 
-Additionally, it is currently not possible (as of the time of this writing, _November 30th, 2017_) to stream a screen capture along with audio. As such, this example actually creates two publisher connections on the Red5 Pro Server: one to stream the screen share, and another for audio.
-
 > You will need to use the [Subscribe Screen Share](../subscribeScreenShare) test in order to check this test is working.
 
 **Please refer to the [Basic Publisher Documentation](../publish/README.md) to learn more about the basic setup.**
