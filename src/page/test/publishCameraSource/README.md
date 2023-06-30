@@ -1,4 +1,4 @@
-# Publishing with User-Selected Camera Source : WebRTC
+# Publishing with User-Selected Camera Source
 
 This example demonstrates a request for a `MediaStream` with a defined `video` source for the constraint.
 
@@ -9,27 +9,29 @@ This example demonstrates a request for a `MediaStream` with a defined `video` s
 - **[index.html](index.html)**
 - **[index.js](index.js)**
 
-> These examples use the WebRTC-based Publisher implementation from the Red5 Pro HTML SDK. However, there is failover support to allow for Flash-base publisher on unsupported browsers.
-
 # Camera Selection
 
 Allow the User to select from a list of cameras detected by their browser. To access the list of camera devices, use the `enumerateDevices` API:
 
 ```js
-function listDevices (devices) {
+function listDevices(devices) {
   var cameras = devices.filter(function (item) {
-    return item.kind === 'videoinput';
+    return item.kind === 'videoinput'
   })
   var options = cameras.map(function (camera, index) {
-    return '<option value="' + camera.deviceId + '">' + (camera.label || 'camera ' + index) + '</option>';
-  });
-  cameraSelect.innerHTML = options.join(' ');
+    return (
+      '<option value="' +
+      camera.deviceId +
+      '">' +
+      (camera.label || 'camera ' + index) +
+      '</option>'
+    )
+  })
+  cameraSelect.innerHTML = options.join(' ')
 }
 
-navigator.mediaDevices.enumerateDevices().then(listDevices).catch(onDeviceError);
+navigator.mediaDevices.enumerateDevices().then(listDevices).catch(onDeviceError)
 ```
-
-[index.js #189](index.js#L189)
 
 The camera devices are filtered out from the list returned on `enumerateDevices` based on the `kind` attribute being of `videoinput` value. The list is then provided a a `select` element with an event handler assigned.
 
@@ -47,31 +49,30 @@ The following `change` event handler is invoked upon User selection of a camera 
 var mediaConstraints = {
   audio: configuration.useAudio ? configuration.mediaConstraints.audio : false,
   video: configuration.useVideo ? configuration.mediaConstraints.video : false,
-};
+}
 
-function onCameraSelect () {
+function onCameraSelect() {
   if (!configuration.useVideo) {
-    return;
+    return
   }
-  var selection = cameraSelect.value;
+  var selection = cameraSelect.value
   if (mediaConstraints.video && typeof mediaConstraints.video !== 'boolean') {
     mediaConstraints.video.deviceId = { exact: selection }
     delete mediaConstraints.video.frameRate
-  }
-  else {
+  } else {
     mediaConstraints.video = {
-      deviceId: { exact: selection }
-    };
+      deviceId: { exact: selection },
+    }
   }
-  updateStatistics(0, 0, 0, 0);
-  statisticsField.classList.add('hidden');
+  updateStatistics(0, 0, 0, 0)
+  statisticsField.classList.add('hidden')
   unpublish()
     .then(restart)
     .catch(function (error) {
-      console.error('[Red5ProPublisher] :: Error in unpublishing - ' + error);
-      restart();
-     });
-  publishButton.disabled = false;
+      console.error('[Red5ProPublisher] :: Error in unpublishing - ' + error)
+      restart()
+    })
+  publishButton.disabled = false
 }
 ```
 
@@ -80,47 +81,54 @@ function onCameraSelect () {
 With the `mediaConstraints` object updated with the target camera, the initialization configuration is set to start a new publishing session using the `onGetUserMedia` override to ensure proper listing of devices and labels:
 
 ```js
-var config = Object.assign({},
-              configuration,
-              defaultConfiguration,
-              getAuthenticationParams(),
-              {
-                onGetUserMedia: function () {
-                  return new Promise(function (resolve, reject) {
-                    if (targetPublisher && targetPublisher.getMediaStream()) {
-                      targetPublisher.getMediaStream().getTracks().forEach(function(track) {
-                        track.stop();
-                      });
-                    }
-                    var stream;
-                    var constraints = mediaConstraints;
-                    navigator.mediaDevices.getUserMedia(constraints)
-                      .then(function (mediastream) {
-                        stream = mediastream;
-                        return navigator.mediaDevices.enumerateDevices()
-                      })
-                      .then(function (devices) {
-                        listDevices(devices);
-                        stream.getVideoTracks().forEach(function (track) {
-                          cameraSelect.value = track.getSettings().deviceId;
-                        });
-                        resolve(stream);
-                      })
-                      .catch(function (error) {
-                        reject(error);
-                      })
-                  });
-                }
-              });
+var config = Object.assign(
+  {},
+  configuration,
+  defaultConfiguration,
+  getAuthenticationParams(),
+  {
+    onGetUserMedia: function () {
+      return new Promise(function (resolve, reject) {
+        if (targetPublisher && targetPublisher.getMediaStream()) {
+          targetPublisher
+            .getMediaStream()
+            .getTracks()
+            .forEach(function (track) {
+              track.stop()
+            })
+        }
+        var stream
+        var constraints = mediaConstraints
+        navigator.mediaDevices
+          .getUserMedia(constraints)
+          .then(function (mediastream) {
+            stream = mediastream
+            return navigator.mediaDevices.enumerateDevices()
+          })
+          .then(function (devices) {
+            listDevices(devices)
+            stream.getVideoTracks().forEach(function (track) {
+              cameraSelect.value = track.getSettings().deviceId
+            })
+            resolve(stream)
+          })
+          .catch(function (error) {
+            reject(error)
+          })
+      })
+    },
+  }
+)
 
-var rtcConfig = Object.assign({}, config, {
-      protocol: getSocketLocationFromProtocol().protocol,
-      port: getSocketLocationFromProtocol().port,
-      streamName: config.stream1
-   });
-return new red5prosdk.RTCPublisher().init(rtcConfig);
+var rtcConfig = {
+  ...config,
+  ...{
+    protocol: getSocketLocationFromProtocol().protocol,
+    port: getSocketLocationFromProtocol().port,
+    streamName: config.stream1,
+  },
+}
+return new red5prosdk.WHIPClient().init(rtcConfig)
 ```
-
-[index.js #213](index.js#L213)
 
 > More information: [Media.getUserMedia from MDN](https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia)

@@ -7,6 +7,7 @@ This is an example of using the `RTCRtpSender.replaceTrack` to swap video source
 > More information [https://developer.mozilla.org/en-US/docs/Web/API/RTCRtpSender/replaceTrack](https://developer.mozilla.org/en-US/docs/Web/API/RTCRtpSender/replaceTrack).
 
 ## Example Code
+
 - **[index.html](index.html)**
 - **[index.js](index.js)**
 
@@ -31,50 +32,50 @@ The live swapping of a video stream source on the current connection is achieved
 Upon change of camera source and request to change, the `swapCamera` method is invoked from the example:
 
 ```js
-function swapCamera () {
-    var connection = targetPublisher.getPeerConnection();
-    var selection = cameraSelect.value;
-    if (selection === current_selection) {
-      return;
+function swapCamera() {
+  var connection = targetPublisher.getPeerConnection()
+  var selection = cameraSelect.value
+  if (selection === current_selection) {
+    return
+  }
+  current_selection = selection
+  if (mediaConstraints.video && typeof mediaConstraints.video !== 'boolean') {
+    mediaConstraints.video.deviceId = { exact: selection }
+    delete mediaConstraints.video.frameRate
+  } else {
+    mediaConstraints.video = {
+      deviceId: { exact: selection },
     }
-    current_selection = selection;
-    if (mediaConstraints.video && typeof mediaConstraints.video !== 'boolean') {
-      mediaConstraints.video.deviceId = { exact: selection }
-      delete mediaConstraints.video.frameRate
-    }
-    else {
-      mediaConstraints.video = {
-        deviceId: { exact: selection }
-      };
-    }
-    mediaConstraints.audio = configuration.useAudio ? configuration.mediaConstraints.audio : false;
-    // 1. Grab new MediaStream from updated constraints.
-    navigator.mediaDevices.getUserMedia(mediaConstraints)
-      .then(function (stream) {
-        var replacePromise;
-        // 2. Update the media tracks on senders through connection.
-        var senders = connection.getSenders();
-        var i = senders.length;
-        while ( --i > -1) {
-          // 3. Replace the currently sending streams based on track kind
-          senders[i].track.stop();
-          if (senders[i].track.kind === 'video') {
-            replacePromise = senders[i].replaceTrack(stream.getVideoTracks()[0]);
-          } else {
-            senders[i].replaceTrack(stream.getAudioTracks()[0]);
-          }
+  }
+  mediaConstraints.audio = configuration.useAudio
+    ? configuration.mediaConstraints.audio
+    : false
+  // 1. Grab new MediaStream from updated constraints.
+  navigator.mediaDevices
+    .getUserMedia(mediaConstraints)
+    .then(function (stream) {
+      var replacePromise
+      // 2. Update the media tracks on senders through connection.
+      var senders = connection.getSenders()
+      var i = senders.length
+      while (--i > -1) {
+        // 3. Replace the currently sending streams based on track kind
+        senders[i].track.stop()
+        if (senders[i].track.kind === 'video') {
+          replacePromise = senders[i].replaceTrack(stream.getVideoTracks()[0])
+        } else {
+          senders[i].replaceTrack(stream.getAudioTracks()[0])
         }
-        // 4. Update the video display with new stream.
-        document.getElementById('red5pro-publisher').srcObject = stream;
-        return replacePromise;
-      })
-      .catch (function (error) {
-        console.error('Could not replace track : ' + error.message);
-      });
+      }
+      // 4. Update the video display with new stream.
+      document.getElementById('red5pro-publisher').srcObject = stream
+      return replacePromise
+    })
+    .catch(function (error) {
+      console.error('Could not replace track : ' + error.message)
+    })
 }
 ```
-
-[index.js #190](index.js#L190)
 
 After accessing a new `MediaStream` instance using `getUserMedia`, the previously and currently established `RTCPeerConnection` of the Publisher is used to access the `RTCRtpSender` listing and their tracks.
 
@@ -88,4 +89,4 @@ After you have started a broadcast session, open a browser window and navigate t
 
 > Optionally, you can connect using the Mobile SDK testbed examples from [https://github.com/red5pro/streaming-ios](https://github.com/red5pro/streaming-ios) and [https://github.com/red5pro/streaming-android](https://github.com/red5pro/streaming-android).
 
-Once a subscriber is connect, go back to the Publisher page and swap the camera source to see the playback source update live.
+Once a subscriber is connected, go back to the Publisher page and swap the camera source to see the playback source update live.

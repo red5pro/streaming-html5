@@ -1,156 +1,212 @@
-# Subscribe Failover using Red5 Pro
+# Subscribing using Red5 Pro
 
-This is an example of utilizing the failover mechanism of the Red5 Pro HTML SDK to select a subscriber based on browser support.
-
-The default failover order is:
-
-1. WebRTC
-2. RTMP/Flash
-3. HLS
-
-When utilizing the auto-failover mechanism, the SDK - by default - will first test for WebRTC support and if missing will attempt to embed a subscriber SWF for the broadcast. If Flash is not supported in the browser, it will finally attempt to playback using HLS.
-
-You can define the desired failover order from using `setPlaybackOrder`.
-
-> For more detailed information on Configuring and Subscribing with the Red5 Pro SDK, please visit the [Red5 Pro Documentation](https://www.red5pro.com/docs/streaming/subscriber.html).
+This is an example of a basic Subscriber consuming a stream to a Red5 Pro Server for playback.
 
 ## Example Code
+
 - **[index.html](index.html)**
 - **[index.js](index.js)**
 
 # How to Subscribe
 
-Subscribing to a Red5 Pro stream requires a few components to function fully.
-
-> The examples in this repo also utilize various es2015 shims and polyfills to support ease in such things as `Object.assign` and `Promises`. You can find the list of these utilities used in [https://github.com/red5pro/streaming-html5/tree/master/static/lib/es6](feature/update_docs_RPRO-5153).
+Subscribing to a Red5 Pro stream requires a few components to function fully, as well as an already existing broadcast stream (see Publisher documentation)[../publish].
 
 ## Including the SDK
 
-You will need to include the Red5 Pro SDK library on the page. If you have not already done so, download the Red5 Pro HTML SDK from your account page: [https://account.red5pro.com/download](https://account.red5pro.com/download).
+You will need to include the Red5 Pro SDK library on the page. You have several options to include the SDK in your project:
+
+### As `script` in HTML page
+
+```
+<script src="https://unpkg.com/red5pro-webrtc-sdk@latest/red5pro-sdk.min.js"></script>
+```
+
+... or if you know the version:
+
+```
+<script src="https://unpkg.com/red5pro-webrtc-sdk@11.0.0/red5pro-sdk.min.js"></script>
+```
+
+### Using `npm` or `yarn` for you browser-based projects
+
+```
+npm install --save-dev red5pro-webrtc-sdk
+```
+
+```
+yarn install --dev red5pro-webrtc-sdk
+```
+
+### As a local resource with the distributed SDK
+
+If you have not already done so, download the Red5 Pro HTML SDK from your account page: [https://account.red5pro.com/download](https://account.red5pro.com/download).
 
 Once downloaded, unzip and move the library files - contained in the `lib` directory of the unzipped download - that makes sens for your project. _For the purposes of these examples, we have maked the entire `lib` directory into the top level of our project._
 
-Once the required SDK files are provided and loaded on the page, the root of the library is accessible from `window.red5prosdk`:
+## Usage
+
+All members exposed on the otherwise global `window.red5prosdk` if loading as a script on an HTML page are importable from the `red5pro-webrtc-sdk` module:
+
+_index.js_
+
+```js
+import { WHEPClient } from 'red5pro-webrtc-sdk'
+```
+
+To begin working with the _Red5 Pro HTML5 SDK_ in your project:
+
+### Quick Start (module)
+
+This example assumes that you will have a `video` DOM element on your page with the `id` attribute of `red5pro-subscriber`:
+
+```js
+import { WHEPClient } from 'red5pro-webrtc-sdk'
+
+var rtcSubscriber = new WHEPClient()
+var config = {
+  protocol: 'ws',
+  host: 'localhost',
+  port: 5080,
+  app: 'live',
+  streamName: 'mystream',
+  rtcConfiguration: {
+    iceServers: [{ urls: 'stun:stun2.l.google.com:19302' }],
+    iceCandidatePoolSize: 2,
+    bundlePolicy: 'max-bundle',
+  }, // See https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/RTCPeerConnection#RTCConfiguration_dictionary
+}
+
+const start = async () => {
+  try {
+    rtcSubscriber.on('*', (event) => {
+      const { type, data } = event
+      console.log(type, data)
+    })
+    await rtcSubscriber.init(config)
+    await rtcSubscriber.subscribe()
+  } catch (e) {
+    console.error(e)
+  }
+}
+start()
+```
+
+### Quick Start (browser)
 
 ```html
-<!doctype html>
+<!DOCTYPE html>
 <html>
   <head>
-    <title>Red5 Pro Subscriber</title>
-    <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
-    <meta content="width=device-width, initial-scale=1, user-scalable=no" name="viewport">
-    <!-- Recommended shim for WebRTC. -->
-    <script src="//webrtc.github.io/adapter/adapter-latest.js"></script>
-    <!-- Recommended shim for fullscreen support. -->
-    <script src="lib/screenfull/screenfull.min.js"></script>
-    <!-- CSS file included with Red5 Pro SDK to style playback controls of the target video element. -->
-    <link rel="stylesheet" href="lib/red5pro/red5pro-media.css">
+    <!-- *Recommended WebRTC Shim -->
+    <script src="https://webrtchacks.github.io/adapter/adapter-latest.js"></script>
   </head>
   <body>
-    <!-- Target video element to playback stream. -->
-    <video id="red5pro-subscriber"
-      autoplay controls playsinline
-      class="red5pro-media red5pro-media-background"
-      width="640" height="480"></video>
-    <!-- Red5 Pro SDK library. -->
-    <script src="lib/red5pro/red5pro.min.sdk"></script>
-    <!-- The client code... -->
+    <!-- video containers -->
+    <!-- subscriber -->
+    <div>
+      <video
+        id="red5pro-subscriber"
+        width="640"
+        height="480"
+        muted
+        autoplay
+      ></video>
+    </div>
+    <!-- Red5 Pro SDK -->
+    <script src="https://unpkg.com/red5pro-webrtc-sdk@latest/red5pro-sdk.min.js"></script>
+    <!-- Create Pub/Sub -->
     <script>
-      (function (window, red5pro) {
+      ;(function (red5prosdk) {
+        'use strict'
 
-        // Turn on debugging, to be shown in the Dev Console.
-        red5pro.setLogger(red5pro.LOG_LEVELS.DEBUG);
+        const { WHEPClient } = red5prosdk
 
-        // Continue with your code, more examples below.
+        var rtcSubscriber = new WHEPClient()
+        var config = {
+          protocol: 'ws',
+          host: 'localhost',
+          port: 5080,
+          app: 'live',
+          streamName: 'mystream',
+          rtcConfiguration: {
+            iceServers: [{ urls: 'stun:stun2.l.google.com:19302' }],
+            iceCandidatePoolSize: 2,
+            bundlePolicy: 'max-bundle',
+          }, // See https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/RTCPeerConnection#RTCConfiguration_dictionary
+        }
 
-      })(window, window.red5prosdk);
+        const start = async () => {
+          try {
+            rtcSubscriber.on('*', (event) => {
+              const { type, data } = event
+              console.log(type, data)
+            })
+            await rtcSubscriber.init(config)
+            await rtcSubscriber.subscribe()
+          } catch (e) {
+            console.error(e)
+          }
+        }
+        start()
+      })(window.red5prosdk)
     </script>
   </body>
 </html>
 ```
 
+# Requirements
+
+The **Red5 Pro WebRTC SDK** is intended to communicate with a [Red5 Pro Server](https://www.red5pro.com/), which allows for broadcasting and consuming live streams utilizing [WebRTC](https://developer.mozilla.org/en-US/docs/Web/Guide/API/WebRTC) and other protocols, including [HLS](https://en.wikipedia.org/wiki/HTTP_Live_Streaming).
+
+As such, you will need a distribution of the [Red5 Pro Server](https://www.red5pro.com/) running locally or accessible from the web, such as [Amazon Web Services](https://www.red5pro.com/docs/server/awsinstall/).
+
+> **[Click here to start using the Red5 Pro Server today!](https://account.red5pro.com/login)**
+
 ## Subscriber Selection & Initialization
 
-A Subscriber instance is required to attach a stream and request subscription. The SDK can determine browser support and instantiate the proper Subscriber implementation based on the desired failover order.
+A Subscriber instance is required to attach a stream and request playback. The SDK provides to ways to start a Subscriber:
 
-The available Playback Techs supported by the Red5 Pro SDK are:
+- `WHEPClient` - utilizes [WebRTC-HTTP egress](https://www.ietf.org/archive/id/draft-murillo-whep-00.html) to establish a connection through series of HTTP/S requests.
+- `RTCSubscriber` - utilizes `WebSocket` to establish a connection.
 
-* WebRTC
-* Flash/RTMP
-* HLS
+The [WebRTC-HTTP ingestion](https://www.ietf.org/archive/id/draft-ietf-wish-whip-01.html)(`WHIP`) and [WebRTC-HTTP egress](https://www.ietf.org/archive/id/draft-murillo-whep-00.html)(`WHEP`) protocols provide the ability to negotation and establish a connection using HTTP/S requests. This removes the requirement for a WebSocket, which historically has been used for the role of negotiation and connection.
 
-> *NOTE*: Aside from the recommendation to utilize the [adapter.js](https://github.com/webrtc/adapter) library to "shim" similar functionality across WebRTC-supported browesers, the Red5 Pro SDK itself does not provide any polyfills for support. As such, the SDK checks the inherent support of the browser in its failover process. For example, if your browser does not inherently support HLS (most browsers aside from Desktop and Mobile Safari), then you will need to use a 3rd Party library in order to provide such support.
+The use of a WebSocket is still available in `RTCPublisher` and `RTCSubscriber` and the ability to utilize WHIP/WHEP is provided from the `WHIPClient` and `WHEPClient` classes in the SDK. As is evident by their acronyms, the `WHIPClient` is used for publishing and the `WHEPClient` is used for subscribing.
 
-When requesting to playback a stream using failover, you will need to provide an initialization configuration for each desired tech. To do so, provide a `rtc`, a `rtmp` and a `hls` configuration property within the configuraiton object passed through `init()` invocation:
+_NOTE_: Aside from the recommendation to utilize the [adapter.js](https://github.com/webrtc/adapter) library to "shim" similar functionality across WebRTC-supported browesers, the Red5 Pro SDK itself does not provide any polyfills for support. As such, the SDK checks the inherent support of the browser in its failover process.
 
-```js
-var config = {
-  rtcport: 5080,
-  rtmpport: 1935,
-  hlsport: 5080
-};
-var rtcConfig = Object.assign({}, config, {
-  protocol: 'ws',
-  port: config.rtcport,
-  subscriptionId: 'subscriber-' + instanceId,
-  streamName: config.stream1
-})
-var rtmpConfig = Object.assign({}, config, {
-  protocol: 'rtmp',
-  port: config.rtmpport,
-  streamName: config.stream1,
-  swf: 'lib/red5pro/red5pro-subscriber.swf',
-  swfobjectURL: 'lib/swfobject/swfobject.js',
-  productInstallURL: 'lib/swfobject/playerProductInstall.swf'
-})
-var hlsConfig = Object.assign({}, config, {
-  protocol: 'http',
-  port: config.hlsport,
-  streamName: config.stream1,
-  mimeType: 'application/x-mpegURL'
-})
-
-var subscriber = new red5pro.Red5ProSubscriber();
-subscriber.setPlaybackOrder(subscribeOrder)
-  .init({
-    rtc: rtcConfig,
-    rtmp: rtmpConfig,
-    hls: hlsConfig
-  })
-  .then(function (selectedSubscriber) {
-    // We have successfully found a playback tech from the list...
-  });
-```
-
-[index.js #97](index.js#L97)
-
-The `init` method of the `Red5ProSubscriber` returns a `Promise`-like object that will be resolved with the instantiated Subscriber implementation based on the subscriber order and browser support.
-
-You can determine the selected implementation by invoking `selectedSubscriber.getType()`.
-
-> Read more about configurations and their attributes from the [Red5 Pro HTML SDK Documentation](https://red5pro.com/docs/client/webrtc/subscriber/overview/).
+> Read more about configurations and their attributes from the [Red5 Pro HTML SDK Documentation](https://red5pro.com/docs/client/webrtc/publisher/overview/).
 
 ### Subscribing
 
-The `init` method of the `Red5ProSubscriber` instance returns a `Promise`-object which, when resolved, relays the Subscriber instance determined from the failover. To start a subscribing session, call the `subscribe` method of the Subscriber resolved:
-
 ```js
-subscriber.setPlaybackOrder(subscribeOrder)
-  .init({
-    rtc: rtcConfig,
-    rtmp: rtmpConfig,
-    hls: hlsConfig
-  })
-  .then(function (selectedSubscriber) {
-    return selectedSubscriber.subscribe();
-  })
-  .then(function () {
-    console.log('Successfully started a subscription session!');
-  })
-  .catch(function () {
-    console.error('Could not start a subscription session: ' + error);
-  })
+const { WHEPClient, RTCSubscriber } = red5prosdk
+
+var rtcSubscriber = new WHEPClient() // Or, alternatively, use: new RTCSubscriber()
+var config = {
+  protocol: 'ws',
+  host: 'localhost',
+  port: 5080,
+  app: 'live',
+  streamName: 'mystream',
+  rtcConfiguration: {
+    iceServers: [{ urls: 'stun:stun2.l.google.com:19302' }],
+    iceCandidatePoolSize: 2,
+    bundlePolicy: 'max-bundle',
+  }, // See https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/RTCPeerConnection#RTCConfiguration_dictionary
+}
+
+const start = async () => {
+  try {
+    rtcSubscriber.on('*', (event) => {
+      const { type, data } = event
+      console.log(type, data)
+    })
+    await rtcSubscriber.init(config)
+    await rtcSubscriber.subscribe()
+  } catch (e) {
+    console.error(e)
+  }
+}
+start()
 ```
-
-[index.js #136](index.js#L136)
-

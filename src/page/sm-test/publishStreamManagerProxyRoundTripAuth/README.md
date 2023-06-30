@@ -2,14 +2,24 @@
 
 This is an example of authenticating a Broadcast for stream playback using RoundTrip authentication.
 
-**Please refer to the [Basic Publisher Documentation](../publisher/README.md) to learn more about the basic setup.**
+**Please refer to the [Basic Publisher Documentation](../publisherStreamManagerProxy/README.md) to learn more about the basic setup.**
 
 ## Example Code
 
 - **[index.html](index.html)**
 - **[index.js](index.js)**
 
-> This example requires you to enable the `SimpleAuthentication` Plugin with `RoundTripValidator` for the `live` webapp. More information: [Simple Authentication Plugin](https://www.red5pro.com/docs/server/authplugin).
+## Server Configuration
+
+> Please read about [WHIP/WHEP Configuration for Standalone and Stream Manager support.](https://www.red5pro.com/docs/special/user-guide/whip-whep-configuration/)
+
+You also need to ensure that the stream manager proxy layer is `enabled`. The configuration section can be found in stream manager's config file - `red5-web.properties`
+
+```sh
+## WEBSOCKET PROXY SECTION
+
+proxy.enabled=false
+```
 
 # Authenticating
 
@@ -35,7 +45,7 @@ connectionParms: {
 
 In the example, a login form is provided to allow the user to enter in their username, password and a token. Those field values are added to the respective properties in the `connectionParms` attribute of the configuration(s) upon submit of the form, and the request to broadcast started:
 
-```
+```js
 submitButton.addEventListener('click', function () {
   configuration.connectionParams = {
     username: usernameField.value,
@@ -46,7 +56,4 @@ submitButton.addEventListener('click', function () {
 });
 ```
 
-[index.js #157](index.js#L157)
-
 > The example works for both the WebRTC and Flash fallback broadcasters.
-

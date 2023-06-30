@@ -1,17 +1,9 @@
-# Publish Failover using Red5 Pro
+# Publish using Red5 Pro
 
-This is an example of utilizing the failover mechanism of the Red5 Pro HTML SDK to select a publisher based on browser support.
-
-The default failover order is:
-
-1. WebRTC
-2. RTMP/Flash
-
-When utilizing the auto-failover mechanism, the SDK - by default - will first test for WebRTC support and if missing will attempt to embed a publisher SWF for the broadcast.
-
-You can define the desired failover order from using `setPublishOrder`.
+This is an example of a basic Publisher broadcasting a stream to a Red5 Pro Server.
 
 ## Example Code
+
 - **[index.html](index.html)**
 - **[index.js](index.js)**
 
@@ -21,125 +13,203 @@ Publishing to a Red5 Pro stream requires a few components to function fully.
 
 ## Including the SDK
 
-You will need to include the Red5 Pro SDK library on the page. If you have not already done so, download the Red5 Pro HTML SDK from your account page: [https://account.red5pro.com/download](https://account.red5pro.com/download).
+You will need to include the Red5 Pro SDK library on the page. You have several options to include the SDK in your project:
+
+### As `script` in HTML page
+
+```
+<script src="https://unpkg.com/red5pro-webrtc-sdk@latest/red5pro-sdk.min.js"></script>
+```
+
+... or if you know the version:
+
+```
+<script src="https://unpkg.com/red5pro-webrtc-sdk@11.0.0/red5pro-sdk.min.js"></script>
+```
+
+### Using `npm` or `yarn` for you browser-based projects
+
+```
+npm install --save-dev red5pro-webrtc-sdk
+```
+
+```
+yarn install --dev red5pro-webrtc-sdk
+```
+
+### As a local resource with the distributed SDK
+
+If you have not already done so, download the Red5 Pro HTML SDK from your account page: [https://account.red5pro.com/download](https://account.red5pro.com/download).
 
 Once downloaded, unzip and move the library files - contained in the `lib` directory of the unzipped download - that makes sens for your project. _For the purposes of these examples, we have maked the entire `lib` directory into the top level of our project._
 
-Once the required SDK files are provided and loaded on the page, the root of the library is accessible from `window.red5prosdk`:
+## Usage
+
+All members exposed on the otherwise global `window.red5prosdk` if loading as a script on an HTML page are importable from the `red5pro-webrtc-sdk` module:
+
+_index.js_
+
+```js
+import { WHIPClient } from 'red5pro-webrtc-sdk'
+```
+
+To begin working with the _Red5 Pro HTML5 SDK_ in your project:
+
+### Quick Start (module)
+
+This example assumes that you will have a `video` DOM element on your page with the `id` attribute of `red5pro-publisher`:
+
+```js
+import { WHIPClient } from 'red5pro-webrtc-sdk'
+
+var rtcPublisher = new WHIPClient()
+var config = {
+  protocol: 'ws',
+  host: 'localhost',
+  port: 5080,
+  app: 'live',
+  streamName: 'mystream',
+  rtcConfiguration: {
+    iceServers: [{ urls: 'stun:stun2.l.google.com:19302' }],
+    iceCandidatePoolSize: 2,
+    bundlePolicy: 'max-bundle',
+  }, // See https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/RTCPeerConnection#RTCConfiguration_dictionary
+}
+
+const start = async () => {
+  try {
+    rtcPublisher.on('*', (event) => {
+      const { type, data } = event
+      console.log(type, data)
+    })
+    await rtcPublisher.init(config)
+    await rtcPublisher.publish()
+  } catch (e) {
+    console.error(e)
+  }
+}
+start()
+```
+
+### Quick Start (browser)
 
 ```html
-<!doctype html>
+<!DOCTYPE html>
 <html>
   <head>
-    <title>Red5 Pro Publisher</title>
-    <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
-    <meta content="width=device-width, initial-scale=1, user-scalable=no" name="viewport">
-    <!-- Recommended shim for WebRTC. -->
-    <script src="//webrtc.github.io/adapter/adapter-latest.js"></script>
+    <!-- *Recommended WebRTC Shim -->
+    <script src="https://webrtchacks.github.io/adapter/adapter-latest.js"></script>
   </head>
   <body>
-    <!-- Target video element to playback stream. -->
-    <video id="red5pro-publisher"
-      autoplay controls playsinline
-      width="640" height="480"></video>
-    <!-- Red5 Pro SDK library. -->
-    <script src="lib/red5pro/red5pro.min.sdk"></script>
-    <!-- The client code... -->
+    <!-- video containers -->
+    <!-- publisher -->
+    <div>
+      <video
+        id="red5pro-publisher"
+        width="640"
+        height="480"
+        muted
+        autoplay
+      ></video>
+    </div>
+    <!-- Red5 Pro SDK -->
+    <script src="https://unpkg.com/red5pro-webrtc-sdk@latest/red5pro-sdk.min.js"></script>
+    <!-- Create Pub/Sub -->
     <script>
-      (function (window, red5pro) {
+      ;(function (red5prosdk) {
+        'use strict'
 
-        // Turn on debugging, to be shown in the Dev Console.
-        red5pro.setLogger(red5pro.LOG_LEVELS.DEBUG);
+        const { WHIPClient } = red5prosdk
 
-        // Continue with your code, more examples below.
+        var rtcPublisher = new WHIPClient()
+        var config = {
+          protocol: 'ws',
+          host: 'localhost',
+          port: 5080,
+          app: 'live',
+          streamName: 'mystream',
+          rtcConfiguration: {
+            iceServers: [{ urls: 'stun:stun2.l.google.com:19302' }],
+            iceCandidatePoolSize: 2,
+            bundlePolicy: 'max-bundle',
+          }, // See https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/RTCPeerConnection#RTCConfiguration_dictionary
+        }
 
-      })(window, window.red5prosdk);
+        const start = async () => {
+          try {
+            rtcPublisher.on('*', (event) => {
+              const { type, data } = event
+              console.log(type, data)
+            })
+            await rtcPublisher.init(config)
+            await rtcPublisher.publish()
+          } catch (e) {
+            console.error(e)
+          }
+        }
+        start()
+      })(window.red5prosdk)
     </script>
   </body>
 </html>
 ```
 
+# Requirements
+
+The **Red5 Pro WebRTC SDK** is intended to communicate with a [Red5 Pro Server](https://www.red5pro.com/), which allows for broadcasting and consuming live streams utilizing [WebRTC](https://developer.mozilla.org/en-US/docs/Web/Guide/API/WebRTC) and other protocols, including [HLS](https://en.wikipedia.org/wiki/HTTP_Live_Streaming).
+
+As such, you will need a distribution of the [Red5 Pro Server](https://www.red5pro.com/) running locally or accessible from the web, such as [Amazon Web Services](https://www.red5pro.com/docs/server/awsinstall/).
+
+> **[Click here to start using the Red5 Pro Server today!](https://account.red5pro.com/login)**
+
 ## Publisher Selection & Initialization
 
-A Publisher instance is required to attach a stream and request publishing. The SDK can determine browser support and instantiate the proper Publisher implementation based on the desired failover order.
+A Publisher instance is required to attach a stream and request publishing. The SDK provides to ways to start a Publisher:
 
-The available Publisher Techs supported by the Red5 Pro SDK are:
+- `WHIPClient` - utilizes [WebRTC-HTTP ingestion](https://www.ietf.org/archive/id/draft-ietf-wish-whip-01.html) to establish a connection through series of HTTP/S requests.
+- `RTCPublisher` - utilizes `WebSocket` to establish a connection.
 
-* WebRTC
-* Flash/RTMP
+The [WebRTC-HTTP ingestion](https://www.ietf.org/archive/id/draft-ietf-wish-whip-01.html)(`WHIP`) and [WebRTC-HTTP egress](https://www.ietf.org/archive/id/draft-murillo-whep-00.html)(`WHEP`) protocols provide the ability to negotation and establish a connection using HTTP/S requests. This removes the requirement for a WebSocket, which historically has been used for the role of negotiation and connection.
 
-> *NOTE*: Aside from the recommendation to utilize the [adapter.js](https://github.com/webrtc/adapter) library to "shim" similar functionality across WebRTC-supported browesers, the Red5 Pro SDK itself does not provide any polyfills for support. As such, the SDK checks the inherent support of the browser in its failover process.
+The use of a WebSocket is still available in `RTCPublisher` and `RTCSubscriber` and the ability to utilize WHIP/WHEP is provided from the `WHIPClient` and `WHEPClient` classes in the SDK. As is evident by their acronyms, the `WHIPClient` is used for publishing and the `WHEPClient` is used for subscribing.
 
-When requesting to publish a stream using failover, you will need to provide an initialization configuration for each desired tech. To do so, provide a `rtc`, and a `rtmp` configuration property within the configuraiton object passed through `init()` invocation:
-
-```js
-var config = {
-  rtcport: 5080,
-  rtmpport: 1935
-};
-var rtcConfig = Object.assign({}, config, {
-  protocol: 'ws',
-  port: config.rtcport,
-  streamName: config.stream1
-})
-var rtmpConfig = Object.assign({}, config, {
-  protocol: 'rtmp',
-  port: config.rtmpport,
-  streamName: config.stream1,
-  mediaConstraints: {
-    video: {
-      width: config.cameraWidth,
-      height: config.cameraHeight
-     },
-     audio: true
-  },
-  swf: 'lib/red5pro/red5pro-subscriber.swf',
-  swfobjectURL: 'lib/swfobject/swfobject.js',
-  productInstallURL: 'lib/swfobject/playerProductInstall.swf'
-})
-
-
-var publisher = new red5pro.Red5ProPublisher();
-publisher.setPublishOrder(['rtc', 'rtmp'])
-  .init({
-    rtc: rtcConfig,
-    rtmp: rtmpConfig
-  })
-  .then(function (selectedPublisher) {
-    // We have successfully found a publisher tech from the list...
-  });
-```
-
-[index.js #95](index.js#L95)
-
-The `init` method of the `Red5ProPublisher` returns a `Promise`-like object that will be resolved with the instantiated Publisher implementation based on the publish order and browser support.
-
-You can determine the selected implementation by invoking `selectedPublisher.getType()`.
+_NOTE_: Aside from the recommendation to utilize the [adapter.js](https://github.com/webrtc/adapter) library to "shim" similar functionality across WebRTC-supported browesers, the Red5 Pro SDK itself does not provide any polyfills for support. As such, the SDK checks the inherent support of the browser in its failover process.
 
 > Read more about configurations and their attributes from the [Red5 Pro HTML SDK Documentation](https://red5pro.com/docs/client/webrtc/publisher/overview/).
 
 ### Publishing
 
-The `init` method of the `Red5ProPublisher` instance returns a `Promise`-like object which, when resolved, relays the Publisher instance determined from the failover. To start a publishing session, call the `publish` method of the Publisher resolved:
-
 ```js
-publisher.setPublishOrder(publishOrder)
-  .init({
-    rtc: rtcConfig,
-    rtmp: rtmpConfig
-  })
-  .then(function (selectedPublisher) {
-    return selectedPublisher.publish();
-  })
-  .then(function () {
-    console.log('Successfully started a broadcast session!');
-  })
-  .catch(function () {
-    console.error('Could not start a broadcast session: ' + error);
-  })
-```
+const { WHIPClient, RTCPublisher } = red5prosdk
 
-[index.js #130](index.js#L130)
+var rtcPublisher = new WHIPClient() // Or, alternatively, use: new RTCPublisher()
+var config = {
+  protocol: 'ws',
+  host: 'localhost',
+  port: 5080,
+  app: 'live',
+  streamName: 'mystream',
+  rtcConfiguration: {
+    iceServers: [{ urls: 'stun:stun2.l.google.com:19302' }],
+    iceCandidatePoolSize: 2,
+    bundlePolicy: 'max-bundle',
+  }, // See https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/RTCPeerConnection#RTCConfiguration_dictionary
+}
+
+const start = async () => {
+  try {
+    rtcPublisher.on('*', (event) => {
+      const { type, data } = event
+      console.log(type, data)
+    })
+    await rtcPublisher.init(config)
+    await rtcPublisher.publish()
+  } catch (e) {
+    console.error(e)
+  }
+}
+start()
+```
 
 ## View Your Stream
 

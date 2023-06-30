@@ -1,9 +1,11 @@
 # Subscribe Authentication using Red5 Pro
+
 This is an example of authenticating a Subscription for stream playback.
 
 **Please refer to the [Basic Subscriber Documentation](../subscribe/README.md) to learn more about the basic setup.**
 
 ## Example Code
+
 - **[index.html](index.html)**
 - **[index.js](index.js)**
 
@@ -15,7 +17,7 @@ With the username and password known from the Red5 Pro Server `webapps/live/WEB-
 
 For example, if you have defined the authorization of a user `foo` with a password `bar`, the configuration addition would look like the following:
 
-```
+```js
 connectionParms: {
   username: 'foo',
   password: 'bar'
@@ -23,19 +25,15 @@ connectionParms: {
 ```
 
 ## Example
+
 In the example, a login form is provided to allow the user to enter in their username and password. Those field values are added to the respective properties in the `connectionParms` attribute of the configuration(s) upon submit of the form, and the request to playback started:
 
-```
+```js
 submitButton.addEventListener('click', function () {
   configuration.connectionParams = {
     username: usernameField.value,
-    password: passwordField.value
-  };
-  start();
-});
+    password: passwordField.value,
+  }
+  start()
+})
 ```
-
-[index.js #158](index.js#L158)
-
-> The example works for both the WebRTC and Flash fallback subscribers.
-
