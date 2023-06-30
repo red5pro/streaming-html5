@@ -9,8 +9,6 @@ This example shows how to "mute" the audio and video of a publisher while stream
 - **[index.html](index.html)**
 - **[index.js](index.js)**
 
-> These examples use the WebRTC-based Publisher implementation from the Red5 Pro HTML SDK.
-
 # Important Note
 
 A server configuration related to WebRTC plugin is required in order for this example to work properly:
@@ -30,12 +28,12 @@ The reason it needs to be switched from the default of `true` to `false` is to p
 
 The WebRTC-based publisher exposes the following API to mute and unmute audio and video:
 
-| Method Name | Description |
-| :-- | :-- |
-| `muteAudio` | Turns off sending audio data during a live broadcast. |
-| `unmuteAudio` | Turns on sending audio data during a live broadcast. |
-| `muteVideo` | Turns off sending video data during a live broadcast. |
-| `unmuteVideo` | Turns on sending video data during a live broadcast. |
+| Method Name   | Description                                           |
+| :------------ | :---------------------------------------------------- |
+| `muteAudio`   | Turns off sending audio data during a live broadcast. |
+| `unmuteAudio` | Turns on sending audio data during a live broadcast.  |
+| `muteVideo`   | Turns off sending video data during a live broadcast. |
+| `unmuteVideo` | Turns on sending video data during a live broadcast.  |
 
 These methods are used to communicate to the server that the broadcaster is going to be shutting off their audio and/or video stream(s), respectively.
 
@@ -48,11 +46,11 @@ After notifying the server that packets will stop being sent, we utilize the `ac
 For example, the following will stop sending audio packets out on the target publisher:
 
 ```js
-var pc = publisher.getPeerConnection();
-var sender = pc.getSenders()[0]; // Assuming Audio is first in list.
-var params = sender.getParameters();
-params.encodings[0].active = wasMuted ? true : false;
-sender.setParameters(params);
+var pc = publisher.getPeerConnection()
+var sender = pc.getSenders()[0] // Assuming Audio is first in list.
+var params = sender.getParameters()
+params.encodings[0].active = wasMuted ? true : false
+sender.setParameters(params)
 ```
 
 > More information: [https://developer.mozilla.org/en-US/docs/Web/API/RTCRtpSendParameters/encodings](https://developer.mozilla.org/en-US/docs/Web/API/RTCRtpSendParameters/encodings)
@@ -61,7 +59,7 @@ sender.setParameters(params);
 
 Included on the page are buttons that allow you to mute and unmute both audio and video during a broadcast. Upon initialization and broadcast of a publisher, the button handlers are set to toggle these stream states:
 
-```
+```js
 function addMuteListener (publisher) {
     muteAudioButton2.addEventListener('click', function () {
       var wasMuted = muteAudioButton2.innerText === 'Unmute Audio (Client)';
@@ -96,6 +94,3 @@ function addMuteListener (publisher) {
   }
 }
 ```
-
-[index #149](index#L149)
-

@@ -7,10 +7,9 @@
   <a href="#subscribing">subscribing</a>
 </p>
 
-# Red5 Pro HTML5 Streaming Testbed
-This repository contains a simple project with a number of examples that can be used for testing and reference for the Red5 Pro HTML SDK.
+# Red5 Pro HTML Streaming Testbed
 
-> These examples are also shipped with the [Red5 Pro Server](https://account.red5pro.com/download) and can be found in the webapp `webrtcexamples`.
+This repository contains a simple project with a number of examples that can be used for testing and reference for the Red5 Pro WebRTC SDK.
 
 ## Requirements
 
@@ -19,35 +18,58 @@ You will need a functional, running Red5 Pro server web- (or locally-) accessibl
 For more information visit [Red5Pro.com](http://red5pro.com).
 
 ### Browser Compability
-While the Red5 Pro HTML SDK aims to utilize WebRTC for its streaming solution (both publishing and subscribing), the SDK does support fallback support for non-supporting browsers in both contexts. The default failover order for both contexts, which can be redfined by developers, is:
+
+The Red5 Pro WebRTC SDK aims to utilize WebRTC for its streaming solution (both publishing and subscribing), but also provides HLS support for browsers that support it natively (e.g., Mobile and Desktop Safari).
+
+> More information about browser compability can be viewed at the [WebRTC Peer Connnection information on caniuse.com](http://caniuse.com/#feat=rtcpeerconnection).
 
 #### Publisher
-1. [WebRTC](https://webrtc.org/)
-2. [Flash](http://www.adobe.com/software/flash/about/)
+
+The term **Publisher** in the context of Red5 Pro refers to a client that produces a broadcast stream. There are two types of instances from the SDK that can be utilized to start a **Publisher**:
+
+1. `WHIPClient` - The `WHIPClient` relies on the [WebRTC-HTTP ingestion](https://www.ietf.org/archive/id/draft-ietf-wish-whip-01.html) protocl to establish a connection through series of HTTP/S requests.
+2. `RTCPublisher` - The `RTCPublisher` relies on a `WebSocket` connection to establish a broadcast session.
+
+The `WHEPClient` connection sequence is very fast - ~1 second - whereas the `RTCPublisher`, due to its reliance on a `WebSocket` can take roughly 3 - 5 seconds for a connection to stream.
 
 #### Subscriber
-1. [WebRTC](https://webrtc.org/)
-2. [Flash](http://www.adobe.com/software/flash/about/)
-3. [HLS](https://developer.apple.com/streaming/)
 
-More information about browser compability can be viewed at the [WebRTC Peer Connnection information on caniuse.com](http://caniuse.com/#feat=rtcpeerconnection).
+The term **Subscriber** in the context of Red5 Pro refers to a client that consumes and plays back an already live broadcast stream. There are three types of instances from the SDK that can be utilized to start a **Subscriber**:
+
+1. `WHEPClient` - The `WHEPClient` relies on the [WebRTC-HTTP egress](https://www.ietf.org/archive/id/draft-murillo-whep-00.html) protocol to establish a connection through series of HTTP/S requests.
+2. `RTCSubscriber` - The `RTCSubscriber` relies on a `WebSocket` connection to establish a broadcast session.
+3. `HLSSubscriber` - The `HLSSubscriber` relies on the native ability to playback `HLS` streams (e.g., Mobile and Desktop Safari).
+
+The `WHEPClient` connection sequence is very fast - ~1 second - whereas the `RTCPublisher`, due to its reliance on a `WebSocket` can take roughly 3 - 5 seconds for a connection to stream
+
+The `HLSSubscriber` does not go through a connection sequence and streams the HLS directly from the server, however it does have an up to 6 second latency due to the length of its live segments.
+
+> **NOTE**: The `WHIPClient` and `WHEPClient` were introduced in the `11.0.0` release of the Red5 Pro WebRTC SDK.
 
 ## Setup
 
-You will need to modify the **Host** field from the _Settings_ page to point to your server instance's IP address.  If you do not, the examples will not function when you build. If you are running the server locally, then your machine and mobile device need to be on the same WiFi network.
+You will need to modify the **Host** field from the _Settings_ page to point to your server instance's IP address. If you do not, the examples will not function when you build. If you are running the server locally, then your machine and mobile device need to be on the same WiFi network.
 
 ### Note on TLS and CORS
+
 It is important to note that some of these examples - specifically those that involve publishing using WebRTC - require being run on TLS and, thusly, served over HTTPS. If running the examples on `localhost` you should not see an issues, but if your server is deployed remotely you will need to be sure that these examples are served over HTTPS and the proper Cross Origin Resource Sharing (CORS) settings are defined for the server.
 
-* [Read More about Red5 Pro and SSL](https://www.red5pro.com/docs/server/ssl/overview/).
-* [More information on CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS).
+- [Read More about Red5 Pro and SSL](https://www.red5pro.com/docs/server/ssl/overview/).
+- [More information on CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS).
 
 ### Instructions
+
 To define the server instance's IP address, open the testbed webapp in a browser and navigate to the _Settings_ page if not presented upon launch. To access the _Settings_ back, select the **Home** item from the examples list located at the top.
 
 To define the **Host** with the server instance's IP, click the _Host_ field f the form and enter in the local or remote IP address - e.g., `10.0.0.5`, `76.199.199.199`.
 
 > Hint: You can also open the landing page of your server instance at port `5080` (i.e., `http://localhost:5080` if launched locally) and the page will display its IP in the upper-right corner.
+
+### WHIP/WHEP Settings Option
+
+You can select to prefer **WHIP/WHEP** from the _Settings_ page. By selecting this option, all tests will utilize the `WHEPClient` and `WHIPClient` for publishing and subscribing, respectively.
+
+If you decide to de-select the **WHIP/WHEP** option, all tests will revert to using the `RTCPublisher` and `RTCSubscriber` for publishing and subscibing, respectively. These instances require WebSocket support in the browser during their negotiation stage. Once the connection is made, the messaging transport system is switching to `RTCDataChannel` and the WebSocket is closed.
 
 ## Examples
 
@@ -55,306 +77,303 @@ To define the **Host** with the server instance's IP, click the _Host_ field f t
 
 | **[Publisher](src/page/test/publish)**
 | :-----
-| *Basic publisher example using WebRTC with failover.<br>* i.e, if no WebRTC browser support, then Flash Player if detected.
+| _Basic publisher example using WebRTC, with option to utilize either [WebRTC-HTTP ingestion](https://www.ietf.org/archive/id/draft-ietf-wish-whip-01.html)(a.k.a., `WHIP`) or `WebSockets` to establish a broadcast connection._
 
 | **[1080p](src/page/test/publish1080)**
 | :-----
-| *A high quality publisher.*
+| _A high quality publisher._
 
 | **[Append](src/page/test/publishAppend)**
 | :-----
-| *Demonstrates recording a stream to the server with append option.*
+| _Demonstrates recording a stream to the server with append option._
 
 | **[Authentication](src/page/test/publishAuth)**
 | :-----
-| *Demonstrates authentication with the Simple-Auth-Plugin for publishing.*
+| _Demonstrates authentication with the Simple-Auth-Plugin for publishing._
 
 | **[Camera Source](src/page/test/publishCameraSource)**
 | :-----
-| *Demonstrates selecting the desired camera to publish with.*
+| _Demonstrates selecting the desired camera to publish with._
 
 | **[Camera Swap](src/page/test/publishCameraSwap)**
 | :-----
-| *Demonstrates a request for a `MediaStream` with a defined `video` source for the constraint based on the Rear and Front facing cameras of a mobile device and a browser that supports `facingMode` media contraints.*
+| _Demonstrates a request for a `MediaStream` with a defined `video` source for the constraint based on the Rear and Front facing cameras of a mobile device and a browser that supports `facingMode` media contraints._
 
 | **[Custom Settings](src/page/test/publishCustomSettingsWebRTC)**
 | :-----
-| *Allows you to customize the media broadcast settings for a WebRTC Publisher.*
-
+| _Allows you to customize the media broadcast settings for a WebRTC Publisher._
 
 | **[Custom Audio Settings](src/page/test/publishAudioCustomSettingsWebRTC)**
 | :-----
-| *Allows you to customize the audio settings for a WebRTC Publisher.*
+| _Allows you to customize the audio settings for a WebRTC Publisher._
 
 | **[MediaStream Swap](src/page/test/publishMediaStreamCamera)**
 | :-----
-| *Demonstrates using `replaceTrack` to swap in a different Camera source dynamically for WebRTC-based Publishers.*
+| _Demonstrates using `replaceTrack` to swap in a different Camera source dynamically for WebRTC-based Publishers._
 
 | **[Image Capture](src/page/test/publishImageCapture)**
 | :-----
-| *Demonstrates capturing an image of a live video being published.*
+| _Demonstrates capturing an image of a live video being published._
 
 | **[Mute](src/page/test/publishMute)**
 | :-----
-| *Muting and unmuting audio for a live video being published.*
+| _Muting and unmuting audio for a live video being published._
 
 | **[Record](src/page/test/publishRecord)**
 | :-----
-| *Demonstrates recording a stream to the server for VOD (Video-On-Demand) playback.*
+| _Demonstrates recording a stream to the server for VOD (Video-On-Demand) playback._
 
 | **[Append](src/page/test/publishAppend)**
 | :-----
-| *Demonstrates record-append function a stream to the server for VOD (Video-On-Demand) playback.*
+| _Demonstrates record-append function a stream to the server for VOD (Video-On-Demand) playback._
 
 | **[Remote Call](src/page/test/publishRemoteCall)**
 | :-----
-| *Demonstrates sending a remote message to all subscribed clients.*
+| _Demonstrates sending a remote message to all subscribed clients._
 
 | **[Round Trip Authentication](src/page/test/publishRoundTripAuth)**
 | :-----
-| *An example of utilizing round-trip authentication with Red5 Pro.*
+| _An example of utilizing round-trip authentication with Red5 Pro._
 
 | **[Screen Share](src/page/test/publishScreenShare)**
 | :-----
-| *An example of utilizing the screen sharing capabilities of* **Chrome** *and* **Firefox**.<br> For use with Subscribe Screen Share example.
+| _An example of utilizing the screen sharing capabilities of_ **Chrome** _and_ **Firefox**.<br> For use with Subscribe Screen Share example.
 
 | **[Shared Object](src/page/test/publishSharedObject)**
 | :-----
-| *Demonstrates using remote Shared Object to send and recieve information between connected clients.*
+| _Demonstrates using remote Shared Object to send and recieve information between connected clients._
 
 | **[Social Media Stream Push](src/page/test/publishSocialPusher)**
 | :-----
-| *An example of rebroadcasting a live stream to a social media platform.*
+| _An example of rebroadcasting a live stream to a social media platform._
 
 | **[VP8](src/page/test/publishVP8)**
 | :-----
-| *An example for requesting VP8 video codec on publish*
-
+| _An example for requesting VP8 video codec on publish_
 
 ### Publishing - Stream Manager Examples
 
 | **[Stream Manager](src/page/sm-test/publishStreamManager)**
 | :-----
-| *Demonstrates utilizing the Red5 Pro Stream Manager API to publish to an autoscaling cluster's origin.*
+| _Demonstrates utilizing the Red5 Pro Stream Manager API to publish to an autoscaling cluster's origin._
 
 | **[Stream Manager Proxy](src/page/sm-test/publishStreamManagerProxy)**
 | :-----
-| *Demonstrates utilizing the Red5 Pro Stream Manager as an SSL WebSocket Proxy to publish WebRTC to an autoscaling cluster's origin.*
+| _Demonstrates utilizing the Red5 Pro Stream Manager as an SSL WebSocket Proxy to publish WebRTC to an autoscaling cluster's origin._
 
 | **[Stream Manager Proxy Camera Select](src/page/sm-test/publishStreamManagerProxyCamera)**
 | :-----
-| *Demonstrates utilizing the Red5 Pro Stream Manager as an SSL WebSocket Proxy to publish WebRTC to an autoscaling cluster's origin with camera select.*
+| _Demonstrates utilizing the Red5 Pro Stream Manager as an SSL WebSocket Proxy to publish WebRTC to an autoscaling cluster's origin with camera select._
 
 | **[Stream Manager Proxy Settings](src/page/sm-test/publishStreamManagerProxySettings)**
 | :-----
-| *Demonstrates utilizing the Red5 Pro Stream Manager as an SSL WebSocket Proxy to publish WebRTC with custom video settings to an autoscaling cluster's origin.*
+| _Demonstrates utilizing the Red5 Pro Stream Manager as an SSL WebSocket Proxy to publish WebRTC with custom video settings to an autoscaling cluster's origin._
 
 | **[Stream Manager Proxy Settings with Audio](src/page/sm-test/publishStreamManagerProxyAudioSettings)**
 | :-----
-| *Demonstrates utilizing the Red5 Pro Stream Manager as an SSL WebSocket Proxy to publish WebRTC with custom audio settings to an autoscaling cluster's origin.*
+| _Demonstrates utilizing the Red5 Pro Stream Manager as an SSL WebSocket Proxy to publish WebRTC with custom audio settings to an autoscaling cluster's origin._
 
 | **[Stream Manager Proxy Round Trip Authenticaion](src/page/sm-test/publishStreamManagerProxyRoundTripAuth)**
 | :-----
-| *An example of utilizing round-trip authentication with Red5 Pro over Stream Manager Proxy.*
+| _An example of utilizing round-trip authentication with Red5 Pro over Stream Manager Proxy._
 
 | **[Stream Manager Proxy Screen Share](src/page/sm-test/publishStreamManagerProxyScreenShare)**
 | :-----
-| *An example of utilizing the screen sharing capabilities of* **Chrome** *and* **Firefox**. *For use with Stream Manager Proxy Subscribe Screen Share example.*
+| _An example of utilizing the screen sharing capabilities of_ **Chrome** _and_ **Firefox**. _For use with Stream Manager Proxy Subscribe Screen Share example._
 
 | **[Stream Manager Proxy Social Media Stream Push](src/page/sm-test/publishStreamManagerSocialPusher)**
 | :-----
-| *An example of rebroadcasting a live stream to a social media platform.*
+| _An example of rebroadcasting a live stream to a social media platform._
 
 | **[Stream Manager Transcode Provision Form](src/page/sm-test/publishStreamManagerProvisionForm)**
 | :-----
-| *Provides an easy form to POST a new Provision to the Stream Manager for ABR broadcasts. Once the provision is POSTed, use your favorite Media Encoder to broadcast the variants.*
+| _Provides an easy form to POST a new Provision to the Stream Manager for ABR broadcasts. Once the provision is POSTed, use your favorite Media Encoder to broadcast the variants._
 
 | **[Stream Manager Proxy Transcoder](src/page/sm-test/publishStreamManagerProxyTranscoderPOST)**
 | :-----
-| *Provides an easy form to POST a new Provision to the Stream Manager for ABR broadcasts and to start a single variant broadcast using the Transcoder.*
+| _Provides an easy form to POST a new Provision to the Stream Manager for ABR broadcasts and to start a single variant broadcast using the Transcoder._
 
 | **[Stream Manager Proxy Transcoder with Authentication](src/page/sm-test/publishStreamManagerProxyTranscoderPOSTauth)**
 | :-----
-| *Provides an easy form to POST a new Provision to the Stream Manager for ABR broadcasts and to start a single variant broadcast using the Transcoder, including authentication.*
+| _Provides an easy form to POST a new Provision to the Stream Manager for ABR broadcasts and to start a single variant broadcast using the Transcoder, including authentication._
 
 | **[Stream Manager Proxy Validation](src/page/sm-test/publishStreamManagerProxyValidation)**
 | :-----
-| *An example of utilizing validation parameters with Red5 Pro over Stream Manager Proxy.*
+| _An example of utilizing validation parameters with Red5 Pro over Stream Manager Proxy._
 
 ### Multi
 
 | **[Two-Way](src/page/test/twoWay)**
 | :-----
-| *Demonstrates simultaneously publishing while subscribing - allowing a conversation. Includes stream detection and auto-connection.*
+| _Demonstrates simultaneously publishing while subscribing - allowing a conversation. Includes stream detection and auto-connection._
 
 | **[Two-Way Stream Manager Proxy](src/page/sm-test/TwoWayStreamManagerProxy)**
 | :-----
-| *The Two-Way example through a Stream Manager - including use of a proxy. Includes stream detection and auto-connection.*
+| _The Two-Way example through a Stream Manager - including use of a proxy. Includes stream detection and auto-connection._
 
 | **[Conference](src/page/test/conference)**
 | :-----
-| *Demonstrates multi-party communication using Red5 Pro. It also demonstrates using Shared Objects as notifications to recognize the addition and removal of parties broadcasting.*
+| _Demonstrates multi-party communication using Red5 Pro. It also demonstrates using Shared Objects as notifications to recognize the addition and removal of parties broadcasting._
 
 | **[Conference - Stream Manager](src/page/sm-test/ConferenceStreamManagerProxy)**
 | :-----
-| *Demonstrates multi-party communication using Red5 Pro over Stream Manager. It also demonstrates using Shared Objects as notifications to recognize the addition and removal of parties broadcasting.*
+| _Demonstrates multi-party communication using Red5 Pro over Stream Manager. It also demonstrates using Shared Objects as notifications to recognize the addition and removal of parties broadcasting._
 
 | **[Shared Object (websockets only)](src/page/test/sharedObject)**
 | :-----
-| *Demonstrates the use of Shared Objects through a WebSocket proxy from the Red5 Pro HTML SDK.*
+| _Demonstrates the use of Shared Objects through a WebSocket proxy from the Red5 Pro HTML SDK._
 
 ### Subscribing
 
 | **[Subscriber](src/page/test/subscribe)**
 | :-----
-| *Basic subscriber example with failover.<br>* i.e, if no WebRTC browser support, then first Flash Player is detected, then HLS.
+| _Basic subscriber example with failover.<br>_ i.e, if no WebRTC browser support, then first Flash Player is detected, then HLS.
 
 | **[360](src/page/test/subscribe360)**
 | :-----
-| *Example for subscribing to a 360 camera stream*
+| _Example for subscribing to a 360 camera stream_
 
 | **[Audio Only](src/page/test/subscribeAudioOnly)**
 | :-----
-| *Demonstrates playback of audio-only stream.*
+| _Demonstrates playback of audio-only stream._
 
 | **[Authentication](src/page/test/SubscribeAuth)**
 | :-----
-| *Demonstrates authentication with the Simple-Auth-Plugin for subscribing.*
+| _Demonstrates authentication with the Simple-Auth-Plugin for subscribing._
 
 | **[Image Capture](src/page/test/subscribeImageCapture)**
 | :-----
-| *Demonstrates capturing an image of a live video being consumed.*
+| _Demonstrates capturing an image of a live video being consumed._
 
 | **[Cluster](src/page/test/subscribeCluster)**
 | :-----
-| *Demonstrates accessing an IP from the Red5 Pro Cluster API to subcribe to a live stream.*
+| _Demonstrates accessing an IP from the Red5 Pro Cluster API to subcribe to a live stream._
 
 | **[HLS](src/page/test/subscribeHLS)**
 | :-----
-| *This is an example of subscribing to a stream using HLS Only.* In the event that HLS is not supported natively by the browser, the [hls.js](https://video-dev.github.io/hls.js/) 3rd-party library is utilized.
+| _This is an example of subscribing to a stream using HLS Only._ In the event that HLS is not supported natively by the browser, the [hls.js](https://video-dev.github.io/hls.js/) 3rd-party library is utilized.
 
 | **[Image Capture](src/page/test/subscribeImageCapture)**
 | :-----
-| *This example demonstrates capturing a still of the playback by using the `drawImage` API of `CanvasRenderingContext2D`.*
+| _This example demonstrates capturing a still of the playback by using the `drawImage` API of `CanvasRenderingContext2D`._
 
 | **[Reconnect](src/page/test/subscribeReconnect)**
 | :-----
-| *Demonstrates the failover mechanism of the Red5 Pro HTML SDK to select a subscriber based on browser support and to auto-reconnect on close of broadcast or loss of connection.*
+| _Demonstrates the failover mechanism of the Red5 Pro HTML SDK to select a subscriber based on browser support and to auto-reconnect on close of broadcast or loss of connection._
 
 | **[Remote Call](src/page/test/subscribeRemoteCall)**
 | :-----
-| *Demonstrates receiving a remote message from broadcaster.*
+| _Demonstrates receiving a remote message from broadcaster._
 
 | **[Retry on Invalid Name](src/page/test/subscribeRetryOnInvalidName)**
 | :-----
-| *Demonstrates utilizing the `maintainConnectionOnSubscribeErrors` configuration property of a subscriber in order to maintain the WebSocket connection upon errors from the `subscribe` request after intializing..*
+| _Demonstrates utilizing the `maintainConnectionOnSubscribeErrors` configuration property of a subscriber in order to maintain the WebSocket connection upon errors from the `subscribe` request after intializing.._
 
 | **[Round Trip Authentication](src/page/test/subscribeRoundTripAuth)**
 | :-----
-| *An example of utilizing round-trip authentication with Red5 Pro over Stream Manager Proxy*
+| _An example of utilizing round-trip authentication with Red5 Pro over Stream Manager Proxy_
 
 | **[Screen Share](src/page/test/subscribeScreenShare)**
 | :-----
-| *An example of utilizing the screen sharing capabilities of* **Chrome** *and* **Firefox**. *For use with Publish Screen Share example.*
+| _An example of utilizing the screen sharing capabilities of_ **Chrome** _and_ **Firefox**. _For use with Publish Screen Share example._
 
 | **[Shared Object](src/page/test/subscribeSharedObject)**
 | :-----
-| *Demonstrates using remote Shared Object to send and recieve information between connected clients.*
+| _Demonstrates using remote Shared Object to send and recieve information between connected clients._
 
 | **[Standby](src/page/test/subscribeStandby)**
 | :-----
-| *An example of using the Standby API to request a "pause" in receiving video and audio data on the MediaStream while also maintaining a connection of the client to the server.*
+| _An example of using the Standby API to request a "pause" in receiving video and audio data on the MediaStream while also maintaining a connection of the client to the server._
 
 | **[Stream Switch](src/page/test/subscribeSwitch)**
 | :-----
-| *An example that demonstrates switching of the current subscriber's stream to another live stream through WebRTC.*
+| _An example that demonstrates switching of the current subscriber's stream to another live stream through WebRTC._
 
 | **[Two Streams](src/page/test/subscribeTwoStreams)**
 | :-----
-| *An example that subscribes to two streams, using the `Stream1 Name` and `Stream 2 Name` variables from the settings page.*
+| _An example that subscribes to two streams, using the `Stream1 Name` and `Stream 2 Name` variables from the settings page._
 
 | **[Video Mute](src/page/test/subscribeVideoMute)**
 | :-----
-| *Example to demonstrate subscribing to a broadcast which has its video stream "muted".*
+| _Example to demonstrate subscribing to a broadcast which has its video stream "muted"._
 
 | **[VP8](src/page/test/subscribevp8)**
 | :-----
-| *Demonstrates requesting VP8 Video Encoding for a playback stream.*
+| _Demonstrates requesting VP8 Video Encoding for a playback stream._
 
 ### Subscribing - Stream Manager Examples
 
 | **[Stream Manager](src/page/sm-test/subscribeStreamManager)**
 | :-----
-| *Demonstrates utilizing the Red5 Pro Stream Manager API, and acting as SSL WebSocket Proxy, to access an Edge server IP to subscribe to a live stream.*
+| _Demonstrates utilizing the Red5 Pro Stream Manager API, and acting as SSL WebSocket Proxy, to access an Edge server IP to subscribe to a live stream._
 
 | **[Stream Manager Proxy](src/page/sm-test/subscribeStreamManagerProxy)**
 | :-----
-| *Demonstrates utilizing the Red5 Pro Stream Manager API to access an Edge server IP to subscribe to a live stream.*
+| _Demonstrates utilizing the Red5 Pro Stream Manager API to access an Edge server IP to subscribe to a live stream._
 
 | **[Stream Manager Proxy Reconnect](src/page/sm-test/subscribeStreamManagerProxyReconnect)**
 | :-----
-| *Demonstrates the failover mechanism of the Red5 Pro HTML SDK to select a subscriber based on browser support and to auto-reconnect on close of broadcast or loss of connection.*
+| _Demonstrates the failover mechanism of the Red5 Pro HTML SDK to select a subscriber based on browser support and to auto-reconnect on close of broadcast or loss of connection._
 
 | **[Stream Manager Proxy Region](src/page/sm-test/subscribeStreamManagerProxyRegionRequest)**
 | :-----
-| *Demonstrates utilizing the Red5 Pro Stream Manager API to access an Edge server IP to subscribe to a live stream.*
+| _Demonstrates utilizing the Red5 Pro Stream Manager API to access an Edge server IP to subscribe to a live stream._
 
 | **[Stream Manager Proxy Round Trip Authentication](src/page/sm-test/subscribeStreamManagerProxyRoundTripAuth)**
 | :-----
-| *Demonstrates subscribing using round trip authentication, region specified.*
+| _Demonstrates subscribing using round trip authentication, region specified._
 
 | **[Stream Manager Proxy Transcoder (RTC)](src/page/sm-test/subscribeStreamManagerProxyTranscoderRTC)**
 | :-----
-| *Demonstrates utilizing the Red5 Pro Stream Manager API to access Provisions and an Edge server IP to subscribe to a live WebRTC-based stream with Adaptive Bitrate Control.*
+| _Demonstrates utilizing the Red5 Pro Stream Manager API to access Provisions and an Edge server IP to subscribe to a live WebRTC-based stream with Adaptive Bitrate Control._
 
 | **[Stream Manager Proxy Transcoder (RTMP)](src/page/sm-test/subscribeStreamManagerProxyTranscoderRTMP)**
 | :-----
-| *Demonstrates utilizing the Red5 Pro Stream Manager API to access Provisions and an Edge server IP to subscribe to a live Flash-based stream with Adaptive Bitrate Control.*
+| _Demonstrates utilizing the Red5 Pro Stream Manager API to access Provisions and an Edge server IP to subscribe to a live Flash-based stream with Adaptive Bitrate Control._
 
 | **[Stream Manager Proxy Transcoder (HLS)](src/page/sm-test/subscribeStreamManagerProxyTranscoderHLS)**
 | :-----
-| *Demonstrates utilizing the Red5 Pro Stream Manager API to access Provisions and an Edge server IP to subscribe to a live HLS-based stream with Adaptive Bitrate Control.*
+| _Demonstrates utilizing the Red5 Pro Stream Manager API to access Provisions and an Edge server IP to subscribe to a live HLS-based stream with Adaptive Bitrate Control._
 
 | **[Stream Manager Proxy Screen Share](src/page/sm-test/subscribeStreamManagerProxyScreenShare)**
 | :-----
-| *An example of utilizing the screen sharing capabilities of* **Chrome** *and* **Firefox**. *For use with Publish Screen Share example.*
-
+| _An example of utilizing the screen sharing capabilities of_ **Chrome** _and_ **Firefox**. _For use with Publish Screen Share example._
 
 ### Mixer - Stream Manager Examples
 
 | **[Stream Manager Proxy Conference Participant](src/page/sm-mixer/conferenceParticipantStreamManagerProxy)**
 | :-----
-| *Demonstrates utilizing the Red5 Pro Stream Manager API to join a video conference with a single return stream.*
+| _Demonstrates utilizing the Red5 Pro Stream Manager API to join a video conference with a single return stream._
 
 | **[Stream Manager Proxy Conference Host](src/page/sm-mixer/conferenceHostStreamManagerProxy)**
 | :-----
-| *Demonstrates utilizing the Red5 Pro Stream Manager API to host and manage a video conference with a single return stream.*
+| _Demonstrates utilizing the Red5 Pro Stream Manager API to host and manage a video conference with a single return stream._
 
 | **[Stream Manager Grid Composition Host](src/page/sm-mixer/gridMixerCompositionStreamManagerProxy)**
 | :-----
-| *Demonstrates utilizing the Red5 Pro Stream Manager API to create and manage a composition of several live streams into a single stream.*
+| _Demonstrates utilizing the Red5 Pro Stream Manager API to create and manage a composition of several live streams into a single stream._
 
 | **[Stream Manager 2x2 Grid Layout Example](src/page/sample-mixer-pages/2x2)**
 | :-----
-| *Demonstrates composing a set of live streams into a 2x2 grid that can be loaded into a Red5 Pro Mixer to create a composition with up to 4 streams.*
+| _Demonstrates composing a set of live streams into a 2x2 grid that can be loaded into a Red5 Pro Mixer to create a composition with up to 4 streams._
 
 | **[Stream Manager 3x3 Grid Layout Example](src/page/sample-mixer-pages/3x3)**
 | :-----
-| *Demonstrates composing a set of live streams into a 3x3 grid that can be loaded into a Red5 Pro Mixer to create a composition with up to 9 streams.*
+| _Demonstrates composing a set of live streams into a 3x3 grid that can be loaded into a Red5 Pro Mixer to create a composition with up to 9 streams._
 
 | **[Stream Manager NxN Grid Layout Example](src/page/sample-mixer-pages/nxn)**
 | :-----
-| *Demonstrates composing a set of live streams into a NxN grid that can automatically resize as new streams are added to it. The page can be loaded into a Red5 Pro Mixer to create a composition with many streams.*
+| _Demonstrates composing a set of live streams into a NxN grid that can automatically resize as new streams are added to it. The page can be loaded into a Red5 Pro Mixer to create a composition with many streams._
 
 | **[Stream Manager Conference Layout](src/page/sample-mixer-pages/conference)**
 | :-----
-| *Demonstrates composing a set of live streams into a focused layout for a video conference where the presenter is highlighted. The page can be loaded into a Red5 Pro Mixer to create a video conference with a single return stream.*
+| _Demonstrates composing a set of live streams into a focused layout for a video conference where the presenter is highlighted. The page can be loaded into a Red5 Pro Mixer to create a video conference with a single return stream._
 
 ## Notes
 
-1. For the Subscriber examples, you will need to have a live stream currently being published and named based on the *Stream 1 Name* field of the _Settings_. You can use another device to start streaming using this webapp, or you can also use a web browser to publish via Flash, [http://your_red5_pro_server_ip:5080/live](http://your_red5_pro_server_ip:5080/live).
+1. For the Subscriber examples, you will need to have a live stream currently being published and named based on the _Stream 1 Name_ field of the _Settings_. You can use another device to start streaming using this webapp, or you can also use a web browser to publish via Flash, [http://your_red5_pro_server_ip:5080/live](http://your_red5_pro_server_ip:5080/live).
 2. You can see a list of active streams by navigating to [http://your_red5_pro_server_ip:5080/live/subscribe.jsp](http://your_red5_pro_server_ip:5080/live/subscribe.jsp) (will need to refresh this page after you have started publishing).
-3. You can access the server IP of your Red5 Pro Server install - to be used in the *Host* field of the _Settings_ - by opening [http://your_red5_pro_server_ip:5080/](http://your_red5_pro_server_ip:5080/) and finding the IP printed in the upper-right of the page.
+3. You can access the server IP of your Red5 Pro Server install - to be used in the _Host_ field of the _Settings_ - by opening [http://your_red5_pro_server_ip:5080/](http://your_red5_pro_server_ip:5080/) and finding the IP printed in the upper-right of the page.
 4. Unless you are running the server locally, WebRTC publishing requires a valid SSL certificate.
 
 [![Analytics](https://ga-beacon.appspot.com/UA-59819838-3/red5pro/streaming-html?pixel)](https://github.com/igrigorik/ga-beacon)

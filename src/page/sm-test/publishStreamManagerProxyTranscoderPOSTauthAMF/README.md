@@ -8,18 +8,23 @@ To do so, the broadcast most locate the server address of the Transcoder using t
 
 ---
 
-The streammanager WebRTC proxy is a communication layer built inside streammanager web application which allows it to act as a proxy gateway for webrtc publishers / subscribers. The target use case of this communication layer is to facilitate a secure browser client to be able to connect to a "unsecure" remote websocket endpoint for consuming WebRTC services offered by Red5pro. 
+The streammanager WebRTC proxy is a communication layer built inside streammanager web application which allows it to act as a proxy gateway for webrtc publishers / subscribers. The target use case of this communication layer is to facilitate a secure browser client to be able to connect to a "unsecure" remote websocket endpoint for consuming WebRTC services offered by Red5pro.
 
 Streammanager autoscaling works with dynamic nodes which are associated with dynamic IP addresses and cannot have a SSL attached to them. The proxy layer helps publishers to connect and initiate a WebRTC publish session from a `secure` (ssl enabled) domain to a `unsecure` Red5pro origin having using an IP address.
 
-**Please refer to the [Basic Publisher Documentation](../publish/README.md) to learn more about the basic setup.**
+**Please refer to the [Basic Publisher Documentation](../publishStreamManagerProxy/README.md) to learn more about the basic setup.**
 
 > In order to properly run the Stream Manager examples, you will need to configure you server for cluster infrastructure as described in the following documentation: [https://www.red5pro.com/docs/server/autoscale/](https://www.red5pro.com/docs/server/autoscale/).
 
-> You also need to ensure that the stream manager proxy layer is `enabled`. The configuration section can be found in stream manager's config file - `red5-web.properties`
+## Server Configuration
 
-```
+> Please read about [WHIP/WHEP Configuration for Standalone and Stream Manager support.](https://www.red5pro.com/docs/special/user-guide/whip-whep-configuration/)
+
+You also need to ensure that the stream manager proxy layer is `enabled`. The configuration section can be found in stream manager's config file - `red5-web.properties`
+
+```sh
 ## WEBSOCKET PROXY SECTION
+
 proxy.enabled=false
 ```
 
@@ -166,22 +171,22 @@ The Broadcaster will then use the `serverAddress` from that response to publish 
 
 ## Sending AMF Metadata
 
-The `RTCPublisher` includes a `send` method that allows sending AMF metadata with the `onMetaData` method name. This metadata is received by all subscribers watching the stream. 
+The `RTCPublisher` includes a `send` method that allows sending AMF metadata with the `onMetaData` method name. This metadata is received by all subscribers watching the stream.
 
-```
+```js
 submitMetadataButton.addEventListener('click', function () {
-    if (!targetPublisher) {
-      console.warn('A stream must be published before metadata can be sent!');
-      return;
-    }
-    let data = metadataField.value;
-    if (data === '') {
-      return;
-    }
-    console.log(`sending metadata: ${data}`);
-    targetPublisher.send('onMetaData', { 'metadata': data });
-    metadataField.value = '';
-  });
-  ```
+  if (!targetPublisher) {
+    console.warn('A stream must be published before metadata can be sent!')
+    return
+  }
+  let data = metadataField.value
+  if (data === '') {
+    return
+  }
+  console.log(`sending metadata: ${data}`)
+  targetPublisher.send('onMetaData', { metadata: data })
+  metadataField.value = ''
+})
+```
 
 The metadata sent with this testbed can be received or seen using the [Stream Manager Subscribe AMF Metadata testbed](../../sm-test/subscribeStreamManagerProxyAMFMetadata/index.html).
