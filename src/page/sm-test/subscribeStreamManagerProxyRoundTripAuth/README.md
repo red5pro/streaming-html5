@@ -2,7 +2,7 @@
 
 This is an example of authenticating a Subscribe for stream playback using RoundTrip authentication.
 
-**Please refer to the [Basic Subscriber Documentation](../subscriber/README.md) to learn more about the basic setup.**
+**Please refer to the [Basic Subscriber Documentation](../subscriberStreamManagerProxy/README.md) to learn more about the basic setup.**
 
 ## Example Code
 
@@ -35,7 +35,7 @@ connectionParms: {
 
 In the example, a login form is provided to allow the user to enter in their username, password and a token. Those field values are added to the respective properties in the `connectionParms` attribute of the configuration(s) upon submit of the form, and the request to subscribe started:
 
-```
+```js
 submitButton.addEventListener('click', function () {
   configuration.connectionParams = {
     username: usernameField.value,
@@ -46,7 +46,4 @@ submitButton.addEventListener('click', function () {
 });
 ```
 
-[index.js #157](index.js#L157)
-
 > The example works for both the WebRTC and Flash fallback subscribers.
-

@@ -1,6 +1,10 @@
 # Changes
 
-## 10.9.3-beta.0
+## 11.0.0
+
+- Introducing WHIP/WHEP for ingest and egress of WebRTC streams, respectively. (Todd Anderson)
+
+## 10.9.3
 
 - SDK update and switch to live seek config. (Todd Anderson)
 - Adding support for live vod on unpublish to continue scrubbing. (Todd Anderson)

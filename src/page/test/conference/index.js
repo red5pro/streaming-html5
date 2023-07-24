@@ -60,6 +60,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var updateStatusFromEvent = window.red5proHandlePublisherEvent // defined in src/template/partial/status-field-publisher.hbs
 
   var targetPublisher
+  var mediaStream
+  var mediaStreamConstraints
   var hostSocket
   var roomName = window.query('room') || 'red5pro' // eslint-disable-line no-unused-vars
   var streamName =
@@ -121,7 +123,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   joinButton.addEventListener('click', function () {
     saveSettings()
-    doPublish(roomName, streamName)
+    doPublish(mediaStream, roomName, streamName)
     setPublishingUI(streamName)
   })
 
@@ -344,11 +346,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
   }
 
-  function determinePublisher() {
-    const { preferWhipWhep } = configuration
-    const { RTCPublisher, WHIPClient } = red5prosdk
-
-    var config = Object.assign(
+  const determinePublisher = async (mediaStream, room, name, bitrate = 256) => {
+    const { app, preferWhipWhep } = configuration
+    const { WHIPClient, RTCPublisher } = red5prosdk
+    let config = Object.assign(
       {},
       configuration,
       {
@@ -358,50 +359,34 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       getUserMediaConfiguration()
     )
 
-    var rtcConfig = Object.assign({}, config, {
+    let rtcConfig = Object.assign({}, config, {
       protocol: getSocketLocationFromProtocol().protocol,
       port: getSocketLocationFromProtocol().port,
       bandwidth: {
-        video: 256,
+        video: bitrate,
       },
-      mediaConstraints: {
-        audio: true,
-        video: {
-          width: {
-            exact: 320,
-          },
-          height: {
-            exact: 240,
-          },
-          frameRate: {
-            min: 15,
-          },
-        },
-      },
-      streamName: streamName,
+      app: `${app}/${room}`,
+      streamName: name,
     })
 
     var publisher = preferWhipWhep ? new WHIPClient() : new RTCPublisher()
-    return publisher.init(rtcConfig)
+    return await publisher.initWithStream(rtcConfig, mediaStream)
   }
 
-  function doPublish(roomName, streamName) {
-    targetPublisher.overlayOptions({ app: `${configuration.app}/${roomName}` })
-    targetPublisher
-      .publish(streamName)
-      .then(function () {
-        onPublishSuccess(targetPublisher)
-        updateInitialMediaOnPublisher()
-      })
-      .catch(function (error) {
-        var jsonError =
-          typeof error === 'string' ? error : JSON.stringify(error, null, 2)
-        console.error(
-          '[Red5ProPublisher] :: Error in publishing - ' + jsonError
-        )
-        console.error(error)
-        onPublishFail(jsonError)
-      })
+  const doPublish = async (stream, room, name) => {
+    try {
+      targetPublisher = await determinePublisher(stream, room, name, bitrate)
+      targetPublisher.on('*', onPublisherEvent)
+      await targetPublisher.publish()
+      onPublishSuccess(targetPublisher)
+      setPublishingUI(name)
+    } catch (error) {
+      var jsonError =
+        typeof error === 'string' ? error : JSON.stringify(error, null, 2)
+      console.error('[Red5ProPublisher] :: Error in publishing - ' + jsonError)
+      console.error(error)
+      onPublishFail(jsonError)
+    }
   }
 
   function unpublish() {
@@ -439,6 +424,61 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       console.error(error)
       onPublishFail(jsonError)
     })
+
+  const startPreview = async () => {
+    const element = document.querySelector('#red5pro-publisher')
+    const constraints = {
+      audio: true,
+      video: {
+        width: {
+          exact: 640,
+        },
+        height: {
+          exact: 480,
+        },
+        frameRate: {
+          min: 15,
+        },
+      },
+    }
+    try {
+      mediaStream = await navigator.mediaDevices.getUserMedia(constraints)
+      mediaStreamConstraints = constraints
+      element.srcObject = mediaStream
+      window.allowMediaStreamSwap(
+        element,
+        constraints,
+        mediaStream,
+        (activeStream, activeConstraints) => {
+          mediaStream = activeStream
+          mediaStreamConstraints = activeConstraints
+          console.log(mediaStream, mediaStreamConstraints)
+          // If we have a broadcast going, just swap tracks live.
+          if (targetPublisher && targetPublisher.getPeerConnection()) {
+            const connection = targetPublisher.getPeerConnection()
+            const senders = connection.getSenders()
+            const videoTrack = mediaStream.getVideoTracks()[0]
+            const audioTrack = mediaStream.getAudioTracks()[0]
+            if (videoTrack) {
+              const video = senders.find(
+                (s) => s.track.kind === videoTrack.kind
+              )
+              video.replaceTrack(videoTrack)
+            }
+            if (audioTrack) {
+              const audio = senders.find(
+                (s) => s.track.kind === audioTrack.kind
+              )
+              audio.replaceTrack(audioTrack)
+            }
+          }
+        }
+      )
+    } catch (e) {
+      console.error(e)
+    }
+  }
+  startPreview()
 
   var shuttingDown = false
   function shutdown() {
@@ -502,7 +542,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         },
         getAuthenticationParams(),
         {
-          app: `live/${roomName}`,
+          app: `${configuration.app}/${roomName}`,
         }
       )
       subscribers.forEach(

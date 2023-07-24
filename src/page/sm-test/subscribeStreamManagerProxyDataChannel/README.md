@@ -8,7 +8,7 @@ To access the underlying `RTCDataChannel` instance of an `RTCPublisher` and `RTC
 
 > This example requires the configuration attribute of `signalingSocketOnly` being set to the default value of `true`.
 
-**Please refer to the [Basic Publisher Documentation](../publishStreamManagerProxy/README.md) to learn more about the basic setup.**
+**Please refer to the [Basic Subscriber Documentation](../subscrribeStreamManagerProxy/README.md) to learn more about the basic setup.**
 
 ## Example Code
 
@@ -26,35 +26,34 @@ To access the underlying `RTCDataChannel` instance of an `RTCPublisher` and `RTC
 
 Two clients are required to run this example: one as a publisher, and the other as a subscriber.
 
-Connect the first client (publisher) with the *Publish - Data Channel Messaging* example. On the second lient (subscriber) use the *Subscribe - Data Channel Messaging* example.
+Connect the first client (publisher) with the _Publish - Data Channel Messaging_ example. On the second lient (subscriber) use the _Subscribe - Data Channel Messaging_ example.
 
 There are 3 types of messaging that can go through the `RTCDataChannel`:
 
-* RPC Message - using the [Send API](../../test/publishRemoteCall) with a defined JSON schema that the server knows how to properly handle.
-* Basic Message - sending any arbitrary String, mostly represented as JSON.
-* Raw Data - typically the most supported form of `ArrayBuffer`.
+- RPC Message - using the [Send API](../../test/publishRemoteCall) with a defined JSON schema that the server knows how to properly handle.
+- Basic Message - sending any arbitrary String, mostly represented as JSON.
+- Raw Data - typically the most supported form of `ArrayBuffer`.
 
 ## RPC Message
 
 Remote Procedural Call (RPC) Messages use the **Send API** of the `RTCPublisher` API:
 
 ```js
-send("incomingNotification", {
-  message: rpcInput.value === '' ? 'What lovely weather today.' : rpcInput.value,
-  timestamp: new Date().getTime()
-});
+send('incomingNotification', {
+  message:
+    rpcInput.value === '' ? 'What lovely weather today.' : rpcInput.value,
+  timestamp: new Date().getTime(),
+})
 ```
-
-[index.js #135](index.js#L135)
 
 ## Method signature
 
 The method signature for the `send` API is:
 
-| Param | Description |
-| --- | --- |
+| Param      | Description                                                                             |
+| ---------- | --------------------------------------------------------------------------------------- |
 | methodName | The name of the method associated with the data to be parsed on the subscriber clients. |
-| data | A javascript `Object` describing the message data to send to subscriber clients. |
+| data       | A javascript `Object` describing the message data to send to subscriber clients.        |
 
 If the subscribing client is browser-based, a `Subscriber.Send.Invoke` event is triggered on the subscriber.
 
@@ -62,18 +61,19 @@ The `methodName` you provide will be included as the `SubscriberEvent:methodName
 
 The structure of `data` can be any javascript `Object`. The data will be serialized and unpacked appropriately on the corresponding clients and given as the first argument when invoking the `methodName`.
 
-> You should *not* send the `data` object as a `String`.
+> You should _not_ send the `data` object as a `String`.
 
 ## Basic Message
 
 Basic JSON String messages can also be sent along the `RTCDataChannel`. This allows for custom messaging that is understood between peers based on you applications requirements:
 
 ```js
-const message = JSON.stringify({message: messageInput.value, timestamp: new Date()})
+const message = JSON.stringify({
+  message: messageInput.value,
+  timestamp: new Date(),
+})
 targetPublisher.getDataChannel().send(message)
 ```
-
-[index.js #143](index.js#L143)
 
 ## Raw Data
 
@@ -89,7 +89,7 @@ stream.addTrack(targetPublisher.getMediaStream().getAudioTracks()[0])
 
 const recorder = new MediaRecorder(stream)
 let chunks = []
-recorder.ondataavailable = e => {
+recorder.ondataavailable = (e) => {
   chunks.push(e.data)
 }
 
@@ -114,8 +114,6 @@ recorder.onstop = async () => {
 
 recorder.start(1000)
 setTimeout(() => {
-recorder.stop()
+  recorder.stop()
 }, 5000)
 ```
-
-[index.js #152](index.js#L152)

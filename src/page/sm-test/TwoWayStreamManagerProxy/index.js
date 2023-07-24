@@ -368,7 +368,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   function startSubscribing() {
     // Kick off.
-    requestOrigin(configuration.stream2, 'subscribe')
+    requestNode(configuration.stream2, 'edge')
       .then(function (serverAddress) {
         return determineSubscriber(serverAddress)
       })
@@ -451,11 +451,15 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     })
   }
 
-  const requestOrigin = async (configuration) => {
+  const requestNode = async (configuration, type = 'origin') => {
     const { preferWhipWhep, host, app, stream1 } = configuration
     var region = getRegionIfDefined()
     if (!preferWhipWhep) {
-      return streamManagerUtil.getOrigin(host, app, stream1, region)
+      if (type === 'origin') {
+        return streamManagerUtil.getOrigin(host, app, stream1, region)
+      } else {
+        return streamManagerUtil.getEdge(host, app, stream1, region)
+      }
     } else {
       // WHIP/WHEP knows how to handle proxy requests.
       return {
@@ -471,7 +475,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
   }
 
-  requestOrigin(configuration)
+  requestNode(configuration)
     .then(function (serverAddress) {
       return determinePublisher(serverAddress)
     })

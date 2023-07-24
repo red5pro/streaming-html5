@@ -49,7 +49,7 @@ In particular, you will need to know the following that is provided as User Inpu
 
 - `environment`: The environment on castLabs DRMtoday account that your encrypted stream resides.
 - `merchant`: The merchant account within DRMtoday where the stream resides.
-- `encryption type`: The type of DRM encryption used on the stream (such as `WideVine`, `FairPlay`, etc.).
+- `encryption scheme`: The type of DRM encryption used on the stream (such as `WideVine`, `FairPlay`, etc.).
 - `key id / iv`: The key id and iv id values to be used in decryption. These should be provided to you by the `merchant`. _Currently this is a `base64` stream._
 
 > It is not the intent of this document to describe the `DRMtoday` platform. Please refer to their documentation for more information.

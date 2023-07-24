@@ -9,42 +9,47 @@ This example demonstrates a request for a `MediaStream` with video contraints to
 - **[index.html](index.html)**
 - **[index.js](index.js)**
 
-> These examples use the WebRTC-based Publisher implementation from the Red5 Pro HTML SDK. However, there is failover support to allow for Flash-base publisher on unsupported browsers.
-
 # MediaStream
+
 Constraints for the audio and video components are defined when accessing a `MediaStream` from the browser.
 
 To define a stream with 1080p constraints for publishing, initialize the Publisher with a `mediaConstraint` with those video constraints:
 
 ```js
-var userMedia = {
+const userMedia = {
   video: {
     width: {
-      ideal: 1920
+      ideal: 1920,
     },
     height: {
-      ideal: 1080
+      ideal: 1080,
     },
     frameRate: {
-      ideal: 60
-    }
-  }
-};
+      ideal: 60,
+    },
+  },
+}
 
-var rtcConfig = Object.assign({}, config, {
-  mediaConstraints: userMedia
-});
+const rtcConfig = {
+  ...config,
+  ...{
+    mediaConstraints: userMedia,
+    bandwidth: {
+      video: 2500,
+    },
+  },
+}
 
-var publisher = new window.red5prosdk.RTCPublisher();
-publisher.init(rtcConfig)
-  .then(function (publisher) {
-    return publisher.publish();
+const publisher = new window.red5prosdk.RTCPublisher()
+publisher
+  .init(rtcConfig)
+  .then(() => {
+    return publisher.publish()
   })
-  .catch(function (error) {
-  });
+  .catch((error) => {
+    console.error(error)
+  })
 ```
-
-[index.js #49](index.js#L49)
 
 > More information: [Media.getUserMedia from MDN](https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia)
 

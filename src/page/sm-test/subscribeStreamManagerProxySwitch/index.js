@@ -337,7 +337,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     const { preferWhipWhep, host, app, stream1 } = configuration
     var region = getRegionIfDefined()
     if (!preferWhipWhep) {
-      return streamManagerUtil.getOrigin(host, app, stream1, region)
+      return streamManagerUtil.getEdge(host, app, stream1, region)
     } else {
       // WHIP/WHEP knows how to handle proxy requests.
       return {

@@ -26,7 +26,8 @@
       };
     }
 
-    if (configuration.authentication.enabled) {
+    var backLink = document.getElementById('back-link-container')
+    if (backLink && configuration.authentication.enabled) {
       var node = document.createElement('div');
       node.classList.add('hint-block', 'auth-alert');
       var note = document.createElement('span');
@@ -38,11 +39,11 @@
       link.classList.add('auth-link');
       node.appendChild(note);
       node.appendChild(link);
-      var testBody = document.getElementById('back-link-container').nextElementSibling;
+      var testBody = backLink.nextElementSibling;
       testBody.parentNode.insertBefore(node, testBody);
     }
 
-    if (configuration.preferWhipWhep) {
+    if (backLink && configuration.preferWhipWhep) {
       var node = document.createElement('div');
       node.classList.add('hint-block', 'auth-alert');
       var note = document.createElement('span');
@@ -54,7 +55,7 @@
       link.classList.add('auth-link');
       node.appendChild(note);
       node.appendChild(link);
-      var testBody = document.getElementById('back-link-container').nextElementSibling;
+      var testBody = backLink.nextElementSibling;
       testBody.parentNode.insertBefore(node, testBody);
     }
 

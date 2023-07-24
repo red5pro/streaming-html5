@@ -1,12 +1,22 @@
 # Red5 Pro WebRTC SDK Migration Guide
 
 This documentation serves as a guide in migrating client-side code where a breaking change to the API has been made in a distribution.
-* [8.0.0 to 9.1.0](#migrating-from-800-to-910)
-* [7.2.0 to 8.0.0](#migrating-from-720-to-800)
-* [5.4.0 to 5.5.0](#migrating-from-540-to-550)
-* [5.0.0 to 5.4.0](#migrating-from-500-to-540)
-* [4.0.0 to 5.0.0](#migrating-from-400-to-500)
-* [3.5.0 to 4.0.0](#migrating-from-350-to-400)
+
+- [10.x to 11.0.0](#migrating-from-10x-to-1100)
+- [8.0.0 to 9.1.0](#migrating-from-800-to-910)
+- [7.2.0 to 8.0.0](#migrating-from-720-to-800)
+- [5.4.0 to 5.5.0](#migrating-from-540-to-550)
+- [5.0.0 to 5.4.0](#migrating-from-500-to-540)
+- [4.0.0 to 5.0.0](#migrating-from-400-to-500)
+- [3.5.0 to 4.0.0](#migrating-from-350-to-400)
+
+# Migrating from `10.x` to `11.0.0`
+
+The SDK release of `11.0.0` provides the capability of utilizing the [WHIP](https://www.ietf.org/archive/id/draft-ietf-wish-whip-01.html) and [WHEP](https://www.ietf.org/archive/id/draft-murillo-whep-00.html) protocols newly introduced on the `11.0.0` release of the Red5 Pro Server!
+
+The [WebRTC-HTTP ingestion](https://www.ietf.org/archive/id/draft-ietf-wish-whip-01.html)(WHIP) and [WebRTC-HTTP egress](https://www.ietf.org/archive/id/draft-murillo-whep-00.html)(WHEP) protocols provide the ability to negotation and establish a connection using HTTP/S requests. This removes the requirement for a WebSocket, which historically has been used for the role of negotiation and connection.
+
+> Read more [in the WHIP/WHEP documentation](WHIP_WHEP_README.md)!
 
 # Migrating from `8.0.0` to `9.1.0`
 
@@ -22,11 +32,11 @@ sendLog( <String>level, <String>message )
 
 Valid `level` values are:
 
-* `TRACE`
-* `INFO`
-* `DEBUG`
-* `WARN`
-* `ERROR`
+- `TRACE`
+- `INFO`
+- `DEBUG`
+- `WARN`
+- `ERROR`
 
 Example (after already establishing an `RTCPublisher` session):
 
@@ -37,7 +47,7 @@ rtcPublisher.sendLog('INFO', 'hello world')
 or
 
 ```javascript
-rtcPublisher.sendLog('INFO', JSON.stringify({hello: 'world'}))
+rtcPublisher.sendLog('INFO', JSON.stringify({ hello: 'world' }))
 ```
 
 # Important Note About `8.0.0` Release
@@ -88,7 +98,7 @@ The benefit of closing the `WebSocket` and switching to a `RTCDataChannel` after
 
 The initialization configuration object for the `RTCPublisher` and `RTCSubscriber` have the following attribute that flags whether to use the `WebSocket` only as a signaling connection:
 
-* `signalingSocketOnly`
+- `signalingSocketOnly`
 
 If `true`, the `RTCPublisher` and `RTCSubscriber` will use a `WebSocket` to establish an `RTCPeerConnection` and once established, will switch over to using a `RTCDataChannel` to do any event handling and futher communication with the server. _It is set to `true`, by default._
 
@@ -98,26 +108,26 @@ By setting `signalingSocketOnly` to `true` the switch works seemlessly under the
 
 An additional initialization configuration is also available as it relates to the switch to `RTCDataChannel` after signalling is complete:
 
-* `dataChannelConfiguration`
+- `dataChannelConfiguration`
 
 By default, the `dataChannelConfiguration` has the following structure and declaration:
 
 ```js
 dataChannelConfiguration = {
-  name: 'red5pro'
+  name: 'red5pro',
 }
 ```
 
 The `name` value will be used in the underlying `RTCDataChannel` created from the `RTCPeerConnection`.
 
 > It should be noted that any `Red5ProSharedObject` instances created using an underlying connection through a `RTCPublisher` or `RTCSubscriber` will be switched over to using `RTCDataChannel` for communication.
- 
+
 ## Access
 
 Once the `RTCDataChannel` has been switched to from the `WebSocket`, you can access the instance from `RTCPublisher` and `RTCSubsciber` by calling the following:
 
 ```js
-+ getDataChannel()
+;+getDataChannel()
 ```
 
 The will return the actual underlying `RTCDataChannel` instance used in communication.
@@ -126,7 +136,7 @@ The will return the actual underlying `RTCDataChannel` instance used in communic
 
 The following events have been added to the `RTCPublisher` and `RTCSubscriber` that can be listened to:
 
-| `DATA_CHANNEL_AVAILABLE` | 'WebRTC.DataChannel.Available' |  the underlying `RTCDataChannel` is available when `signalingSocketOnly` configuration is used. |
+| `DATA_CHANNEL_AVAILABLE` | 'WebRTC.DataChannel.Available' | the underlying `RTCDataChannel` is available when `signalingSocketOnly` configuration is used. |
 | `DATA_CHANNEL_OPEN` | 'WebRTC.DataChannel.Open' | When the underlying `RTCDataChannel` is opened when `signalingSocketOnly` configuration is used.
 | `DATA_CHANNEL_CLOSE` | 'WebRTC.DataChannel.Close' | When the underlying `RTCDataChannel` is closed when `signalingSocketOnly` configuration is used. |
 | `DATA_CHANNEL_ERROR` | 'WebRTC.DataChannel.Error' | When an error has occurred within the underlying `RTCDataChannel` when `signalingSocketOnly` configuration is used. |
@@ -138,26 +148,26 @@ The following events have been added to the `RTCPublisher` and `RTCSubscriber` t
 
 The `5.5.0` release of the Red5 Pro HTML SDK including some modifications to `SharedObjects` to allow for "decoupling" the managament and communication API from the underlying connections for Publishers and Subscribers. In the `5.5.0` release, `SharedObjects` can now be used by themselves without requiring an already established connection to the server.
 
-* The `SharedObject` API has been decoupled from requiring previously established stream clients (Publisher and/or Subscriber).
-  * By decoupling the previous *requirement* to use a established stream client, `SharedObjects` can now be used with establishing a  `WebSocket` connection and providing that as the connection to communicate over `SharedObjects`.
-  * The Red5 Pro HTML SDK provides a `Red5ProSharedObjectSocket` class to serve as a proxy to an underlying `WebSocket` and convenience in communicating to and from the Red5 Pro Server when using `SharedObjects`.
-  * The `SharedObject` API can still be employed using a stream client connection as was possible in previous SDK versions.
+- The `SharedObject` API has been decoupled from requiring previously established stream clients (Publisher and/or Subscriber).
+  - By decoupling the previous _requirement_ to use a established stream client, `SharedObjects` can now be used with establishing a `WebSocket` connection and providing that as the connection to communicate over `SharedObjects`.
+  - The Red5 Pro HTML SDK provides a `Red5ProSharedObjectSocket` class to serve as a proxy to an underlying `WebSocket` and convenience in communicating to and from the Red5 Pro Server when using `SharedObjects`.
+  - The `SharedObject` API can still be employed using a stream client connection as was possible in previous SDK versions.
 
 Additionally, notification support for latest browser vendor restictions on the `autoplay` policy have been included.
 
-* Utilize the `muteOnAutoplayRestriction` initialization configuration property for Subscriber clients in order to attempt auto-muting of subscribers to allow - at least - video auto-playback when browsers enforce the muted autoplay policy.
-* Listen for events related to `autoplay` restictions in order to provide a better User Experience for your customers.
-* Please refer to the `Autoplay Restictions` section from the *Subscriber* documentation.
+- Utilize the `muteOnAutoplayRestriction` initialization configuration property for Subscriber clients in order to attempt auto-muting of subscribers to allow - at least - video auto-playback when browsers enforce the muted autoplay policy.
+- Listen for events related to `autoplay` restictions in order to provide a better User Experience for your customers.
+- Please refer to the `Autoplay Restictions` section from the _Subscriber_ documentation.
 
 # Migrating from `5.0.0` to `5.4.0`
 
 The `5.4.0` release of the Red5 Pro HTML SDK saw some minor changes related to WebRTC clients, and in particular how WebSoskcet and RTCPeerConnections are made:
 
-* The default ports used for WebSocket connection change from `8081` and `8083` (insecure and secure, respectively) to `5080` and `443` (insecure and secure, respectively.
-  * WebSocket communication with the Red5 Pro Server will now be made over the same port for HTTP/S.
-  * To support backward compatiibilty for webapps out in the wild, the HTML SDK will recognize previously defaulted values and silently change the values to new default values.
-* The `iceServers` configuration property has been deprecated in favor of the new `rtcConfiguration` configuration property.
-  * [Refer to section: RTCConfiguration](#rtcconfiguration)
+- The default ports used for WebSocket connection change from `8081` and `8083` (insecure and secure, respectively) to `5080` and `443` (insecure and secure, respectively.
+  - WebSocket communication with the Red5 Pro Server will now be made over the same port for HTTP/S.
+  - To support backward compatiibilty for webapps out in the wild, the HTML SDK will recognize previously defaulted values and silently change the values to new default values.
+- The `iceServers` configuration property has been deprecated in favor of the new `rtcConfiguration` configuration property.
+  - [Refer to section: RTCConfiguration](#rtcconfiguration)
 
 ## RTCConfiguration
 
@@ -182,14 +192,15 @@ const config = {
   port: 443,
   app: 'live',
   streamName: 'mystream',
-  iceServers: [{urls: 'stun:stun2.l.google.com:19302'}]
+  iceServers: [{ urls: 'stun:stun2.l.google.com:19302' }],
 }
 var publisher = new red5prosdk.RTCPublisher()
-publisher.init(config)
+publisher
+  .init(config)
   .then(() => {
     publisher.publish()
   })
-  .catch(error => {
+  .catch((error) => {
     // handle error.
   })
 ```
@@ -204,17 +215,18 @@ const config = {
   app: 'live',
   streamName: 'mystream',
   rtcConfiguration: {
-    iceServers: [{urls: 'stun:stun2.l.google.com:19302'}],
+    iceServers: [{ urls: 'stun:stun2.l.google.com:19302' }],
     iceCandidatePoolSize: 2,
-    bundlePolicy: 'max-bundle'
-  }
+    bundlePolicy: 'max-bundle',
+  },
 }
 var publisher = new red5prosdk.RTCPublisher()
-publisher.init(config)
+publisher
+  .init(config)
   .then(() => {
     publisher.publish()
   })
-  .catch(error => {
+  .catch((error) => {
     // handle error.
   })
 ```
@@ -225,52 +237,52 @@ publisher.init(config)
 
 The `5.0.0` release of the Red5 Pro HTML SDK mainly focused on internal bug fixes and compliancy changes to match updates to the Red5 Pro Server v5.0.0 release.
 
-To see updates that may cause possible issues in integration with your webapp(s), please refer to the *CHANGES* documentation distributed with the Red5 Pro HTML SDK available from your [Red5 Pro Account](https://account.red5pro.com/).
+To see updates that may cause possible issues in integration with your webapp(s), please refer to the _CHANGES_ documentation distributed with the Red5 Pro HTML SDK available from your [Red5 Pro Account](https://account.red5pro.com/).
 
 # Migrating from `3.5.0` to `4.0.0`
 
 The `4.0.0` release of the Red5 Pro HTML SDK saw some major changes in the following features:
 
-* Internalizing the `getUserMedia` request in order to simplify the intialization-to-broadcast sequence of **Publishers**.
-  * While the default process of accessing a stream through the `getUserMedia` API of the browser has been internalized to the SDK, we have also exposed a way to override this default to allow developers to specifically handle this process as per requirements.
-  * [Refer to section: Internalizing gUM Requests](#internalizing-gum-requests)
-* Removal of explicitly defining and assigning views for **Publishers** and **Subscribers**.
-  * The process of associating a view display to either a **Publisher** or a **Subscriber** has been internalized with access to DOM elements using a default `mediaElementId` configuration property.
-  * This change simplifies the creation and initialization process for both **Publishers** and **Subscribers**.
-  * While the default process of associating a view to a broadcast or subscriber session is based on a `mediaElementId` configuration property, developers are able to define which `video` or `audio` DOM element they prefer to use as the display by providing its `id` attribute value.
-  * [Refer to section: Removal of View Attachment](#removal-of-view-attachment)
-* Introduction of Red5 Pro HTML SDK Playback Controls.
-  * In response to numerous requests regarding playback controls across the several **Subscriber** platforms we support, we have exposed an API for playback control and provide default UI elements and styles.
-  * This allows for consistent cross-browser look-and-feel of playback controls across all playback formats: WebRTC, Flash, and HLS.
-  * The Red5 Pro HTML SDK Playback Controls UI is completely customizable in styling to meet the branding requirements for developers.
-  * By exposing a playback API, we allow developers to create their own custom controls - not relying on the Red5 Pro HTML SDK Playback Controls UI - to meet their own product requirements.
-  * [Refer to section: Red5 Pro HTML SDK Playback Controls](#red5-pro-html-sdk-playback-controls)
-* Change in **Subscriber** API from `play()` to `subscribe()` as request to start playback.
-  * This change is in keeping the Red5 PRo HTML SDK Playback Controls API in-line with consistent method names that properly describe their intent - e.g., `play`, `pause`, `resume`, etc.
-  * The method change to `subscribe` also keeps consistent method naming convention for **Publishers** and **Subscribers**, as the method name to request publishing for **Publishers** is `publish`.
-  * [Refer to section: Subscriber API Changes](#subscriber-api-changes)
-* Change in **Subscriber** API from `stop()` to `unsubscribe()` as request to cancel current playback.
-  * This change is in keeping the Red5 PRo HTML SDK Playback Controls API in-line with consistent method names that properly describe their intent - e.g., `play`, `pause`, `resume`, etc.
-  * The method change to `unsubscribe` also keeps consistent method naming convention for **Publishers** and **Subscribers**, as the method name to request cancel of publishing for **Publishers** is `unpublish`.
-  * [Refer to section: Subscriber API Changes](#subscriber-api-changes)
-* Removal of auto-play from **Subscriber** functionality.
-  * In previous versions of the Red5 Pro HTML SDK, all **Subscriber** types (WebRTC, Flash, and HLS) would begin playback automatically upon successful connection and subscription to a broadcast stream. This functionality has been removed.
-  * Instead, the node properties of the [HTMLMediaElement](https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement) (e.g., `<video>` and `<audio>`) should be used to dictate that `autoplay` is requested.
-  * The three [HTMLMediaElement](https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement) node properties that the Red5 Pro HTML SDK recognizes in establishing a subscription session are:
-    * `muted` - in order to mute the audio upon initial playback.
-    * `autoplay` - in order to automatically start playing the stream upon successful subscription.
-    * `controls` - as discusses in [Red5 Pro HTML SDK Playback Controls](#red5-pro-html-sdk-playback-controls).
-  * [Refer to section: Subscriber API Changes](#subscriber-api-changes)
-* Removal of [VideoJS](http://videojs.com/) support in Flash/RTMP and HLS clients.
-  * The integration with [VideoJS](http://videojs.com/) was originally intended to allow for easy failover to Flash if HLS was not supported. As the Red5 Pro HTML SDK started to support its own failover logic, the integration became unnecessary.
-  * [Refer to section: Removal of VideoJS](#removal-of-videojs)
+- Internalizing the `getUserMedia` request in order to simplify the intialization-to-broadcast sequence of **Publishers**.
+  - While the default process of accessing a stream through the `getUserMedia` API of the browser has been internalized to the SDK, we have also exposed a way to override this default to allow developers to specifically handle this process as per requirements.
+  - [Refer to section: Internalizing gUM Requests](#internalizing-gum-requests)
+- Removal of explicitly defining and assigning views for **Publishers** and **Subscribers**.
+  - The process of associating a view display to either a **Publisher** or a **Subscriber** has been internalized with access to DOM elements using a default `mediaElementId` configuration property.
+  - This change simplifies the creation and initialization process for both **Publishers** and **Subscribers**.
+  - While the default process of associating a view to a broadcast or subscriber session is based on a `mediaElementId` configuration property, developers are able to define which `video` or `audio` DOM element they prefer to use as the display by providing its `id` attribute value.
+  - [Refer to section: Removal of View Attachment](#removal-of-view-attachment)
+- Introduction of Red5 Pro HTML SDK Playback Controls.
+  - In response to numerous requests regarding playback controls across the several **Subscriber** platforms we support, we have exposed an API for playback control and provide default UI elements and styles.
+  - This allows for consistent cross-browser look-and-feel of playback controls across all playback formats: WebRTC, Flash, and HLS.
+  - The Red5 Pro HTML SDK Playback Controls UI is completely customizable in styling to meet the branding requirements for developers.
+  - By exposing a playback API, we allow developers to create their own custom controls - not relying on the Red5 Pro HTML SDK Playback Controls UI - to meet their own product requirements.
+  - [Refer to section: Red5 Pro HTML SDK Playback Controls](#red5-pro-html-sdk-playback-controls)
+- Change in **Subscriber** API from `play()` to `subscribe()` as request to start playback.
+  - This change is in keeping the Red5 PRo HTML SDK Playback Controls API in-line with consistent method names that properly describe their intent - e.g., `play`, `pause`, `resume`, etc.
+  - The method change to `subscribe` also keeps consistent method naming convention for **Publishers** and **Subscribers**, as the method name to request publishing for **Publishers** is `publish`.
+  - [Refer to section: Subscriber API Changes](#subscriber-api-changes)
+- Change in **Subscriber** API from `stop()` to `unsubscribe()` as request to cancel current playback.
+  - This change is in keeping the Red5 PRo HTML SDK Playback Controls API in-line with consistent method names that properly describe their intent - e.g., `play`, `pause`, `resume`, etc.
+  - The method change to `unsubscribe` also keeps consistent method naming convention for **Publishers** and **Subscribers**, as the method name to request cancel of publishing for **Publishers** is `unpublish`.
+  - [Refer to section: Subscriber API Changes](#subscriber-api-changes)
+- Removal of auto-play from **Subscriber** functionality.
+  - In previous versions of the Red5 Pro HTML SDK, all **Subscriber** types (WebRTC, Flash, and HLS) would begin playback automatically upon successful connection and subscription to a broadcast stream. This functionality has been removed.
+  - Instead, the node properties of the [HTMLMediaElement](https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement) (e.g., `<video>` and `<audio>`) should be used to dictate that `autoplay` is requested.
+  - The three [HTMLMediaElement](https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement) node properties that the Red5 Pro HTML SDK recognizes in establishing a subscription session are:
+    - `muted` - in order to mute the audio upon initial playback.
+    - `autoplay` - in order to automatically start playing the stream upon successful subscription.
+    - `controls` - as discusses in [Red5 Pro HTML SDK Playback Controls](#red5-pro-html-sdk-playback-controls).
+  - [Refer to section: Subscriber API Changes](#subscriber-api-changes)
+- Removal of [VideoJS](http://videojs.com/) support in Flash/RTMP and HLS clients.
+  - The integration with [VideoJS](http://videojs.com/) was originally intended to allow for easy failover to Flash if HLS was not supported. As the Red5 Pro HTML SDK started to support its own failover logic, the integration became unnecessary.
+  - [Refer to section: Removal of VideoJS](#removal-of-videojs)
 
 # Internalizing gUM Requests
 
 > This change affects the WebRTC-based Publisher instances.
 
-* [Defining mediaConstraints](#defining-mediaconstraints)
-* [Overriding Default Request](#overriding-default-request)
+- [Defining mediaConstraints](#defining-mediaconstraints)
+- [Overriding Default Request](#overriding-default-request)
 
 The `getUserMedia` (a.k.a. `gUM`) requests in pre-`4.0.0` versions of the SDK were externalized for WebRTC-based **Publishers**. This meant that developers had an intermediary step between initializing a **Publisher** and requesting to start publishing that involved requesting the `MediaStream` from the browser by invoking `getUserMedia`.
 
@@ -303,37 +315,36 @@ The following sections show the code required to start a broadcast session betwe
 The `getUserMedia` request was required as an intermediary step prior to broadcasting:
 
 ```js
-(function (red5prosdk) {
-  'use strict';
+;(function (red5prosdk) {
+  'use strict'
 
-  var configuration = {}; // not defined for clarity in this example.
+  var configuration = {} // not defined for clarity in this example.
 
-  var publisher = new red5prosdk.Red5ProPublisher();
-  var view = new red5prosdk.PublisherView();
-  view.attachPublisher(publisher);
+  var publisher = new red5prosdk.Red5ProPublisher()
+  var view = new red5prosdk.PublisherView()
+  view.attachPublisher(publisher)
 
-  publisher.init(configuration)
-    .then(function (selectedPublisher) {
-      // externalized request for MediaStream using gUM.
-      if (selectedPublisher.getType().toLowerCase() === 'rtc') {
-        navigator.mediaDevices.getUserMedia({
+  publisher.init(configuration).then(function (selectedPublisher) {
+    // externalized request for MediaStream using gUM.
+    if (selectedPublisher.getType().toLowerCase() === 'rtc') {
+      navigator.mediaDevices
+        .getUserMedia({
           audio: true,
           video: {
             width: 640,
-            height: 480
-          }
-        }).then(function (mediaStream) {
-          view.preview(mediaStream);
-          selectedPublisher.attachStream(mediaStream);
-          selectedPublisher.publish();
-        });
-      }
-      else {
-        selectedPublisher.publish();
-      }
-    })
-
-})(window.red5prosdk);
+            height: 480,
+          },
+        })
+        .then(function (mediaStream) {
+          view.preview(mediaStream)
+          selectedPublisher.attachStream(mediaStream)
+          selectedPublisher.publish()
+        })
+    } else {
+      selectedPublisher.publish()
+    }
+  })
+})(window.red5prosdk)
 ```
 
 ### MediaConstraints in 4.0.0 SDK
@@ -341,27 +352,25 @@ The `getUserMedia` request was required as an intermediary step prior to broadca
 The `getUserMedia` request is internalized and executed using the `mediaConstraints` property of the initialization configuration.
 
 ```js
-(function (red5prosdk) {
-  'use strict';
+;(function (red5prosdk) {
+  'use strict'
 
-  var configuration = {}; // not defined for clarity in this example.
+  var configuration = {} // not defined for clarity in this example.
 
-  var publisher = new red5prosdk.Red5ProPublisher();
+  var publisher = new red5prosdk.Red5ProPublisher()
   // Using the new init config attribute.
   configuration.mediaContraints = {
     audio: true,
     video: {
       width: 640,
-      height: 480
-    }
-  };
+      height: 480,
+    },
+  }
 
-  publisher.init(configuration)
-    .then(function (selectedPublisher) {
-      selectedPublisher.publish();
-    });
-
-})(window.red5prosdk);
+  publisher.init(configuration).then(function (selectedPublisher) {
+    selectedPublisher.publish()
+  })
+})(window.red5prosdk)
 ```
 
 ## Override Default Request
@@ -377,38 +386,36 @@ If the `onGetUserMedia` initialization configuration property is set, that metho
 The following example utilizes the `onGetUserMedia` override to request the `MediaStream` directly from the `MediaDevices` of `navigator`:
 
 ```js
-(function (red5prosdk) {
-  'use strict';
+;(function (red5prosdk) {
+  'use strict'
 
-  var configuration = {}; // not defined for clarity in this example.
+  var configuration = {} // not defined for clarity in this example.
 
-  var publisher = new red5prosdk.Red5ProPublisher();
+  var publisher = new red5prosdk.Red5ProPublisher()
   // Using the onGetUserMedia override.
-  configuration.onGetUserMedia = function() {
+  configuration.onGetUserMedia = function () {
     // navigator.mediaDevices.getUserMedia returns a Promise.
     return navigator.mediaDevices.getUserMedia({
       audio: true,
       video: {
         width: 640,
-        height: 480
-      }
-    });
-  };
+        height: 480,
+      },
+    })
+  }
 
-  publisher.init(configuration)
-    .then(function (selectedPublisher) {
-      selectedPublisher.publish();
-    });
-
-})(window.red5prosdk);
+  publisher.init(configuration).then(function (selectedPublisher) {
+    selectedPublisher.publish()
+  })
+})(window.red5prosdk)
 ```
 
 # Removal of View Attachment
 
 > This change affects all **Publisher** and **Subscriber** types.
 
-* [Defining mediaElementId](#defining-mediaelementid)
-* [Using the default mediaElementId](#using-the-default-mediaelementid)
+- [Defining mediaElementId](#defining-mediaelementid)
+- [Using the default mediaElementId](#using-the-default-mediaelementid)
 
 In the `3.5.0` version of the Red5 Pro HTML SDK, developers were required to define a `PublisherView` or a `PlaybackView` for **Publishers** and **Subscribers**, respectively, if the stream was to be shown in a target DOM element. This requirement has been removed.
 
@@ -416,9 +423,9 @@ In its replacement is a new initialization configuration property: `mediaElement
 
 A default value is used in the SDK, if one is not provided on the initialization configuration. The default `mediaElementId` for **Publishers** and **Subscribers** is:
 
-| Type | mediaElementId |
-| :--- | :--- |
-| Publisher | `red5pro-publisher` |
+| Type       | mediaElementId       |
+| :--------- | :------------------- |
+| Publisher  | `red5pro-publisher`  |
 | Subscriber | `red5pro-subscriber` |
 
 ## Defining mediaElementId
@@ -574,9 +581,9 @@ Several API changes have been made for **Subscribers** in the `4.0.0` version of
 
 You can find more information about these changes in the following sections:
 
-* [Start Subscription API Change](#start-subscription-api-change)
-* [Stop Subscription API Change](#stop-subscription-api-change)
-* [Autoplay Change](#autoplay-change)
+- [Start Subscription API Change](#start-subscription-api-change)
+- [Stop Subscription API Change](#stop-subscription-api-change)
+- [Autoplay Change](#autoplay-change)
 
 ## Start Subscription API Change
 
@@ -824,11 +831,11 @@ In the `4.0.0` version of the SDK, a separation of subscription and playback is 
 
 In the `3.5.0` version of the Red5 Pro HTML SDK, the option to utilize the [VideoJS](http://videojs.com/) as a HLS/Flash failover was provided.
 
-Additionally, if **VideoJS** was used, it provided custom playback controls.  With the release of version `4.0.0`, we have provided the ability to display and customize playback controls. _[Refer to section: Red5 Pro HTML SDK Playback Controls](#red5-pro-html-sdk-playback-controls)_.
+Additionally, if **VideoJS** was used, it provided custom playback controls. With the release of version `4.0.0`, we have provided the ability to display and customize playback controls. _[Refer to section: Red5 Pro HTML SDK Playback Controls](#red5-pro-html-sdk-playback-controls)_.
 
 For these reasons, the inclusion of [VideoJS](http://videojs.com/) as a dependency in HLS failover and playback controls has been removed.
 
-However, it does not mean that you are not permitted to use *VideoJS* for playback. It is entirely possible and detailed in the following example. Do note that if you use *VideoJS* for playback, you are not encorporating the Red5 Pro HTML SDK and will not benefit from all that brings - such as: stream message communication, Shared Objects, etc.
+However, it does not mean that you are not permitted to use _VideoJS_ for playback. It is entirely possible and detailed in the following example. Do note that if you use _VideoJS_ for playback, you are not encorporating the Red5 Pro HTML SDK and will not benefit from all that brings - such as: stream message communication, Shared Objects, etc.
 
 ## Using VideoJS for Playback
 
@@ -897,9 +904,9 @@ In this example, if you are broadcasting a stream called `mystream` on a Red5 Pr
 http://localhost:5080/live/mystream
 ```
 
-The file extension will change for each `source` based on the container mime type you want to display: either HLS (`m3u8`) or Flash (`flv`). The required *VideoJS* library dependencies are loaded and a new `VideoJS` object created to start request of stream and playback.
+The file extension will change for each `source` based on the container mime type you want to display: either HLS (`m3u8`) or Flash (`flv`). The required _VideoJS_ library dependencies are loaded and a new `VideoJS` object created to start request of stream and playback.
 
-This example demonstrates the use of [VideoJS](http://videojs.com/) for live and VOD stream playback from Red5 Pro Server. Please note that the Red5 Pro HTML SDK is not used at all in this example. As such, WebRTC playback is not supported and various other features provided by the SDK are not available; the purpose of this example was to demonstrate how to still use *VideoJS* for playback if that is your current requirement, as it has been removed from the Red5 Pro HTML SDK.
+This example demonstrates the use of [VideoJS](http://videojs.com/) for live and VOD stream playback from Red5 Pro Server. Please note that the Red5 Pro HTML SDK is not used at all in this example. As such, WebRTC playback is not supported and various other features provided by the SDK are not available; the purpose of this example was to demonstrate how to still use _VideoJS_ for playback if that is your current requirement, as it has been removed from the Red5 Pro HTML SDK.
 
 ## More Information
 

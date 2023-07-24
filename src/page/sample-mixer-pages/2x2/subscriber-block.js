@@ -495,6 +495,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
      * @param {Boolean} preferWhipWhep
      */
     async start(config, streamManagerHost = null, preferWhipWhep = false) {
+      const { WHEPClient, RTCSubscriber } = red5prosdk
       this.streamManagerHost = streamManagerHost
       this.preferWhipWhep = preferWhipWhep
       this.cancelled = false
@@ -520,7 +521,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         rtcConfig.mediaElementId = this.parent.id
       }
 
-      this.subscriber = new red5prosdk.RTCSubscriber()
+      this.subscriber = preferWhipWhep ? new WHEPClient() : new RTCSubscriber()
       this.subscriber.on('*', this.onSubscriberEvent)
 
       this.displayInfo(`Requesting ${this.streamName}...`)
@@ -567,6 +568,16 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
               ...config.connectionParams,
               host: serverAddress,
               app: scope,
+            }
+          } else {
+            if (rtcConfig.connectionParams.token) {
+              delete rtcConfig.connectionParams.host
+              delete rtcConfig.connectionParams.app
+              if (rtcConfig.connectionParams.token) {
+                rtcConfig.connectionParams.token = encodeURIComponent(
+                  rtcConfig.connectionParams.token
+                )
+              }
             }
           }
         }
