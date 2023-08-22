@@ -23,12 +23,21 @@ NONINFRINGEMENT.   IN  NO  EVENT  SHALL INFRARED5, INC. BE LIABLE FOR ANY CLAIM,
 WHETHER IN  AN  ACTION  OF  CONTRACT,  TORT  OR  OTHERWISE,  ARISING  FROM,  OUT  OF  OR  IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
+/*
 import {
   getRtcDrmTransformVersion,
   setDrm,
   videoTransformFunction,
   audioTransformFunction,
   Environments,
+} from '../../lib/castlabs/rtc-drm-transform/rtc-drm-transform.min.js'
+*/
+
+import {
+  rtcDrmGetVersion,
+  rtcDrmConfigure,
+  rtcDrmOnTrack,
+  rtcDrmEnvironments,
 } from '../../lib/castlabs/rtc-drm-transform/rtc-drm-transform.min.js'
 
 var serverSettings = (function () {
@@ -132,17 +141,17 @@ document.querySelector('#stream-title').innerText = baseConfig.streamName
 
 // newer, properly standardized RTCRtpScriptTransform API, only supported by Safari atm. The worker just pushes
 // arriving video frames back here to run through videoTransformFunction() just like Chrome
-const worker = new Worker('./worker.js', {
-  name: 'RTCRtpScriptTransform worker',
-  type: 'module',
-})
-worker.onmessage = (m) => {
-  if (m.data.streamType === 'video') {
-    videoTransformFunction(m.data.frame, null)
-  } else {
-    audioTransformFunction(m.data.frame, null)
-  }
-}
+// const worker = new Worker('./worker.js', {
+//   name: 'RTCRtpScriptTransform worker',
+//   type: 'module',
+// })
+// worker.onmessage = (m) => {
+//   if (m.data.streamType === 'video') {
+//     videoTransformFunction(m.data.frame, null)
+//   } else {
+//     audioTransformFunction(m.data.frame, null)
+//   }
+// }
 
 const monitorBitrate = (pc, bitrateField, packetsField, resolutionField) => {
   return trackBitrate(
@@ -235,36 +244,56 @@ const decryptPlayback = async () => {
   const { preferWhipWhep } = configuration
   const { WHEPClient, RTCSubscriber } = red5prosdk
 
-  console.info(`Using castLabs RTC DRM v${getRtcDrmTransformVersion()}`)
+  console.info(`Using castLabs RTC DRM v${rtcDrmGetVersion()}`)
 
   decryptButton.disabled = true
   try {
-    const transforms = {
-      video: videoTransformFunction,
-      audio: audioTransformFunction,
-      worker: worker,
-    }
+    // const transforms = {
+    //   video: videoTransformFunction,
+    //   audio: audioTransformFunction,
+    //   worker: worker,
+    // }
 
     subscriber = preferWhipWhep ? new WHEPClient() : new RTCSubscriber()
-    await subscriber.init(baseConfig, transforms)
-    subscriber.on('*', (event) => onDecryptedSubscriberEvent(event))
-    await subscriber.subscribe()
+    subscriber.on('*', (event) => {
+      if (event.type === 'WebRTC.PeerConnection.Available') {
+        const connection = event.data
+        if (connection) {
+          connection.addEventListener('track', (evt) => {
+            rtcDrmOnTrack(evt)
+          })
+        }
+      }
+      onDecryptedSubscriberEvent(event)
+    })
 
-    const element = document.querySelector(`#${baseConfig.mediaElementId}`)
-    const encryption = getValueFromId('scheme-select')
+    // const element = document.querySelector(`#${baseConfig.mediaElementId}`)
+    // const encryption = getValueFromId('scheme-select')
     const keyId = Uint8ArrayFromHex(getValueFromId('key-input'))
     const iv = Uint8ArrayFromHex(getValueFromId('iv-input'))
+    const merchant = getValueFromId('merchant-input')
 
-    const drmConfig = {
-      environment: Environments.Staging,
-      merchant: getValueFromId('merchant-input'),
-      encryption,
-      audioEncrypted: false,
-      keyId,
-      iv,
-    }
     // castLabs.
-    setDrm(element, drmConfig)
+    const drmConfig = {
+      environment: rtcDrmEnvironments.Staging,
+      merchant,
+      // encryption,
+      videoElement: document.getElementById('red5pro-subscriber-video'),
+      audioElement: document.getElementById('red5pro-subscriber-audio'),
+      // TODO: move encryption and codec from input to here.
+      video: { codec: 'H264', encryption: 'cbcs', keyId, iv },
+      audio: { codec: 'opus', encryption: 'clear' },
+    }
+    try {
+      rtcDrmConfigure(drmConfig)
+    } catch (err) {
+      alert(`DRM initialization error: ${err.message}`)
+    }
+
+    // castLabs.
+    // setDrm(element, drmConfig)
+    await subscriber.init(baseConfig) //, transforms)
+    await subscriber.subscribe()
 
     // UI.
     monitor(subscriber, 'decrypted')

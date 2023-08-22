@@ -23,12 +23,21 @@ NONINFRINGEMENT.   IN  NO  EVENT  SHALL INFRARED5, INC. BE LIABLE FOR ANY CLAIM,
 WHETHER IN  AN  ACTION  OF  CONTRACT,  TORT  OR  OTHERWISE,  ARISING  FROM,  OUT  OF  OR  IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
+/*
 import {
   getRtcDrmTransformVersion,
   setDrm,
   videoTransformFunction,
   audioTransformFunction,
   Environments,
+} from '../../lib/castlabs/rtc-drm-transform/rtc-drm-transform.min.js'
+*/
+
+import {
+  rtcDrmGetVersion,
+  rtcDrmConfigure,
+  rtcDrmOnTrack,
+  rtcDrmEnvironments,
 } from '../../lib/castlabs/rtc-drm-transform/rtc-drm-transform.min.js'
 
 var serverSettings = (function () {
@@ -138,7 +147,7 @@ const requestEdge = async (configuration, forWhipWhep) => {
   const { preferWhipWhep, host, app, stream1 } = configuration
   var region = getRegionIfDefined()
   if (!preferWhipWhep || !forWhipWhep) {
-    return streamManagerUtil.getOrigin(host, app, stream1, region)
+    return streamManagerUtil.getEdge(host, app, stream1, region)
   } else {
     // WHIP/WHEP knows how to handle proxy requests.
     return {
@@ -304,19 +313,23 @@ const encryptedPlayback = async () => {
 }
 
 const decryptPlayback = async () => {
-  const { RTCSubscriber } = red5prosdk
+  const { app, proxy, preferWhipWhep } = configuration
+  const { WHEPClient, RTCSubscriber } = red5prosdk
   decryptButton.disabled = true
 
-  console.info(`Using castLabs RTC DRM v${getRtcDrmTransformVersion()}`)
+  console.info(`Using castLabs RTC DRM v${rtcDrmGetVersion()}`)
   try {
+    /*
     const transforms = {
       video: videoTransformFunction,
       audio: audioTransformFunction,
       worker: worker,
     }
+    */
 
-    const { proxy } = configuration
-    const edgeConnection = await requestEdge(baseConfig, false)
+    const { proxy, app } = configuration
+    const { rtcConfiguration } = baseConfig
+    const edgeConnection = await requestEdge(baseConfig)
     const { serverAddress, scope } = edgeConnection
     let connectionParams = edgeConnection
       ? { ...edgeConnection, ...getAuthenticationParams().connectionParams }
@@ -324,34 +337,61 @@ const decryptPlayback = async () => {
     var config = Object.assign({}, baseConfig, {
       protocol,
       port,
-      app: proxy,
-      connectionParams: {
-        ...connectionParams,
-        host: serverAddress,
-        app: scope,
+      app: preferWhipWhep ? app : proxy,
+      mediaElementId: 'red5pro-encrypted',
+      rtcConfiguration: {
+        ...rtcConfiguration,
+        encodedInsertableStreams: false,
       },
+      connectionParams: preferWhipWhep
+        ? connectionParams
+        : {
+            ...connectionParams,
+            host: serverAddress,
+            app: scope,
+          },
     })
+    encryptedAddressField.innerText = `Edge Address: ${serverAddress}`
     decryptedAddressField.innerText = `Edge Address: ${serverAddress}`
 
-    subscriber = await new RTCSubscriber().init(config, transforms)
-    subscriber.on('*', (event) => onDecryptedSubscriberEvent(event))
-    await subscriber.subscribe()
+    subscriber = preferWhipWhep ? new WHEPClient() : new RTCSubscriber()
+    subscriber.on('*', (event) => {
+      if (event.type === 'WebRTC.PeerConnection.Available') {
+        const connection = event.data
+        if (connection) {
+          connection.addEventListener('track', (evt) => {
+            rtcDrmOnTrack(evt)
+          })
+        }
+      }
+      onDecryptedSubscriberEvent(event)
+    })
 
-    const element = document.querySelector(`#${baseConfig.mediaElementId}`)
-    const encryption = getValueFromId('scheme-select')
+    // const element = document.querySelector(`#${baseConfig.mediaElementId}`)
+    // const encryption = getValueFromId('scheme-select')
     const keyId = Uint8ArrayFromHex(getValueFromId('key-input'))
     const iv = Uint8ArrayFromHex(getValueFromId('iv-input'))
+    const merchant = getValueFromId('merchant-input')
 
-    const drmConfig = {
-      environment: Environments.Staging,
-      merchant: getValueFromId('merchant-input'),
-      audioEncrypted: false,
-      encryption,
-      keyId,
-      iv,
-    }
     // castLabs.
-    setDrm(element, drmConfig)
+    const drmConfig = {
+      environment: rtcDrmEnvironments.Staging,
+      merchant,
+      // encryption,
+      videoElement: document.getElementById('red5pro-subscriber-video'),
+      audioElement: document.getElementById('red5pro-subscriber-audio'),
+      // TODO: move encryption and codec from input to here.
+      video: { codec: 'H264', encryption: 'cbcs', keyId, iv },
+      audio: { codec: 'opus', encryption: 'clear' },
+    }
+    try {
+      rtcDrmConfigure(drmConfig)
+    } catch (err) {
+      alert(`DRM initialization error: ${err.message}`)
+    }
+
+    await subscriber.init(config)
+    await subscriber.subscribe()
 
     // UI.
     monitor(subscriber, 'decrypted')
