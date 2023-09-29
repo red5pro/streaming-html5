@@ -391,7 +391,6 @@
 
 <body>
     {{> top-bar }}
-    {{> navigation isTestPage=true }}
     <div id="app" style="height:70%">
         {{> settings-link}}
         <div class="ice-background">
@@ -501,7 +500,8 @@
             </div>
         </div>
     </div>
-    {{> body-scripts}}
+     {{> footer}}
+     {{> body-scripts}}
     <script src="https://cdnjs.cloudflare.com/ajax/libs/uuid/8.1.0/uuidv4.min.js"></script>
     <script src="../../script/red5pro-utils.js"></script>
     <script src="../../script/conference-subscriber-block.js"></script>

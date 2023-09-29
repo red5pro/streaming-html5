@@ -17,7 +17,6 @@
   </head>
   <body>
     {{> top-bar }}
-    {{> navigation isTestPage=true }}
     <div id="app">
       {{> settings-link}}
       {{> test-info testTitle='Publish Stream Manager Proxy Audio Settings Test (WebRTC)'}}
@@ -77,6 +76,7 @@
         </div>
       </div>
     </div>
+    {{> footer}}
     {{> body-scripts}}
     {{> sm-scripts}}
     <script src="index.js"></script>

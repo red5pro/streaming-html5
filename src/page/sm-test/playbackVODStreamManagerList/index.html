@@ -50,7 +50,7 @@
         cursor: default;
       }
       .file-listing > p.item-separator {
-        border-bottom: 1px solid #999; 
+        border-bottom: 1px solid #999;
       }
       .param-setting {
         padding-top: 10px;
@@ -61,7 +61,6 @@
   </head>
   <body>
     {{> top-bar }}
-    {{> navigation isTestPage=true }}
     <div id="app">
       {{> settings-link}}
       <div class="ice-background">
@@ -101,6 +100,7 @@
         <div id="video-container" class="centered"></div>
       </div>
     </div>
+    {{> footer}}
     {{> body-scripts}}
     <script src="index.js"></script>
   </body>

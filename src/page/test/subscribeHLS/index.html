@@ -9,7 +9,6 @@
   </head>
   <body>
     {{> top-bar }}
-    {{> navigation isTestPage=true }}
     <div id="app">
       {{> settings-link}}
       {{> test-info testTitle='HLS Subscriber Test'}}
@@ -26,6 +25,7 @@
     </div>
     {{> body-scripts}}
     {{> mobile-subscriber-util}}
+    {{> footer}}
     <script src="index.js"></script>
   </body>
 </html>
