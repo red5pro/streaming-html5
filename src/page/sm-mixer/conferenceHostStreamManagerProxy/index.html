@@ -90,13 +90,18 @@
         .section {
             display: flex;
             flex-direction: row;
+            column-gap: 10px;
             margin: 12px;
-            height: 100%;
             position: relative;
         }
 
         .subscribe-section {
             flex-grow: 2;
+        }
+
+        #create-composition-form {
+            flex-direction: column;
+            display: flex;
         }
 
         .status-details {
@@ -123,6 +128,7 @@
             .subscribe-section {
                 margin: 12px;
             }
+
         }
 
 
@@ -204,8 +210,9 @@
         }
 
         .view-container {
-            flex: 3;
-            height: 100%;
+            flex: 2;
+            background-color: #eee;
+            border: 1px solid #aaa;
         }
 
         .waiting-room-container {
@@ -336,19 +343,18 @@
         }
 
         .composition-editor-container {
+            flex: 1;
             height: 100%;
-            width: 15%;
             overflow-y: scroll;
             overflow-x: hidden;
         }
 
-        .tooltip {
+        .tooltip2 {
             position: relative;
             display: inline-block;
-            border-bottom: 1px dotted black;
         }
 
-        .tooltip .tooltiptext {
+        .tooltip2 .tooltiptext {
             visibility: hidden;
             width: 120px;
             background-color: #555;
@@ -369,7 +375,7 @@
             transition: opacity 0.3s;
         }
 
-        .tooltip .tooltiptext::after {
+        .tooltip2 .tooltiptext::after {
             content: "";
             position: absolute;
             top: 100%;
@@ -380,7 +386,7 @@
             border-color: #555 transparent transparent transparent;
         }
 
-        .tooltip:hover .tooltiptext {
+        .tooltip2:hover .tooltiptext {
             visibility: visible;
             opacity: 1;
         }
@@ -391,7 +397,7 @@
 
 <body>
     {{> top-bar }}
-    <div id="app" style="height:70%">
+    <div id="app">
         {{> settings-link}}
         <div class="ice-background">
             <div class="test-notification">
@@ -437,19 +443,19 @@
                 <br>
                 <h2>Create Composition</h2>
                 <form id="create-composition-form">
-                    <div class="tooltip">
+                    <div class="tooltip2">
                         <span class="tooltiptext">Unique event name</span>
-                        <label class="tooltip" for="event">Event Name:</label><br>
+                        <label class="tooltip2" for="event">Event Name:</label><br>
                         <input type="text" id="event" name="event" value="event1"><br>
                     </div>
-                    <div class="tooltip">
+                    <div class="tooltip2">
                         <span class="tooltiptext">Page to load into the Mixer</span>
                         <label for="mixingPage">Mixing Page:</label><br>
                         <select name="mixingPage" id="mixingPage-select">
                             <option name="focused" selected>focused</option>
                         </select><br>
                     </div>
-                    <div class="tooltip">
+                    <div class="tooltip2">
                         <span class="tooltiptext">App and Room scope for the composite stream</span>
                         <label for="scope">Scope:</label><br>
                         <input type="text" id="scope" name="scope" value="live"><br>
@@ -459,27 +465,27 @@
                         <label for="streamName">Stream Name:</label><br>
                         <input type="text" id="streamName" name="streamName" value=""><br>
                     </div>
-                    <div class="tooltip">
+                    <div class="tooltip2">
                         <span class="tooltiptext">Width of the composite stream</span>
                         <label for="width">Width:</label><br>
                         <input type="number" id="width" name="width" value="1280"><br>
                     </div>
-                    <div class="tooltip">
+                    <div class="tooltip2">
                         <span class="tooltiptext">Height of the composite stream</span>
                         <label for="height">Height:</label><br>
                         <input type="number" id="height" name="height" value="720"><br>
                     </div>
-                    <div class="tooltip">
+                    <div class="tooltip2">
                         <span class="tooltiptext">Framerate of the composite stream</span>
                         <label for="framerate">Framerate:</label><br>
                         <input type="number" id="framerate" name="framerate" value="30"><br>
                     </div>
-                    <div class="tooltip">
+                    <div class="tooltip2">
                         <span class="tooltiptext">Bitrate of the composite stream</span>
                         <label for="bitrate">Bitrate:</label><br>
                         <input type="number" id="bitrate" name="bitrate" value="1500"><br>
                     </div>
-                    <div class="tooltip">
+                    <div class="tooltip2">
                         <span class="tooltiptext">Region where the Mixer is deployed</span>
                         <label for="location">Mixer Region:</label><br>
                         <select name="mixer-region-name" id="mixer-region-select">

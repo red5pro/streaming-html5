@@ -104,6 +104,7 @@
 
         .centered {
             text-align: center;
+            width: unset;
         }
 
         .resolution-title-field {
@@ -214,7 +215,6 @@
 
         h1 {
             margin: 16px;
-            border-bottom: 1px solid black;
         }
 
         h2 {
@@ -274,7 +274,6 @@
         }
 
         body {
-            margin: 12px;
             display: flex;
             flex-direction: column;
             position: relative;
@@ -422,7 +421,7 @@
                             </p>
                         </div>
                         <p class="settings-field" style="justify-content: center;">
-                            <button id="broadcast-button">Start Broadcast</button>
+                            <button id="broadcast-button" class="ui-button">Start Broadcast</button>
                         </p>
                     </div>
                     <div id="publisher-settings-active" class="hidden">
