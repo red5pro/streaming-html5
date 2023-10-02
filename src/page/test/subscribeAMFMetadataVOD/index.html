@@ -40,7 +40,6 @@
 
 <body>
   {{> top-bar }}
-  {{> navigation isTestPage=true }}
   <div id="app">
     {{> settings-link}}
     <div class="ice-background">
@@ -92,6 +91,7 @@
       </div>
     </div>
   </div>
+  {{> footer}}
   {{> body-scripts}}
   <script src="index.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>

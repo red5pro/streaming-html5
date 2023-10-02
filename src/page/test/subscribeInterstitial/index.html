@@ -8,7 +8,6 @@
   </head>
   <body>
     {{> top-bar }}
-    {{> navigation isTestPage=true }}
     <div id="app">
       {{> settings-link}}
       {{> test-info testTitle='Interstitial Test'}}
@@ -21,13 +20,13 @@
                   class="red5pro-subscriber red5pro-media red5pro-media-background"
                   width="640" height="480">
           </video>
- 
+
 		<!-- XXX interstitial -->
         <div class="settings-area">
           <p class="settings-field settings-collapsable">
             <label class="settings-label" for="target">Target:</label>
             <input id="target" type="text" size="75" value="live/stream1"/>
-          </p>		
+          </p>
           <p class="settings-field settings-collapsable">
             <label class="settings-label" for="interstitial">Interstitial:</label>
             <input id="interstitial" type="text" size="75" value="live/stream2"/>
@@ -62,12 +61,13 @@
           </p>
           <p><button class="ui-button" id="send-button">Switch to interstitial</button></p>
           <p><button class="ui-button" id="resume-button">Resume</button></p>
-        </div>		
+        </div>
 		<!-- XXX /interstitial -->
 
        </div>
       </div>
     </div>
+    {{> footer}}
     {{> body-scripts}}
     {{> mobile-subscriber-util}}
     <script src="index.js"></script>

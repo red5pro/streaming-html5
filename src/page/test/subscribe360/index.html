@@ -47,7 +47,6 @@
   </head>
   <body>
     {{> top-bar }}
-    {{> navigation isTestPage=true }}
     <div id="app">
       {{> settings-link}}
       {{> test-info testTitle='Subscriber 360 Test'}}
@@ -61,6 +60,7 @@
           </video>
       </div>
     </div>
+    {{> footer}}
     {{> body-scripts}}
     {{> mobile-subscriber-util}}
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/103/three.min.js"></script>
