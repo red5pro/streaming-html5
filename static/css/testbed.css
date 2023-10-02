@@ -111,6 +111,10 @@ p {
   text-align: justify;
 }
 
+.red5pro-media-control-bar {
+  padding: 20px !important;
+}
+
 .ice-background {
   background-color: #eef7ff;
 }
@@ -196,7 +200,7 @@ p {
 .test-info_stream-title {
   text-align: center;
   margin-top: -10px;
-  margin-bottom: 20px;
+  margin-bottom: 20px !important;
 }
 
 .error-field {
@@ -221,7 +225,8 @@ p {
 }
 
 .settings-field {
-  margin: 1rem;
+  display: flex;
+  margin: 1rem !important;
 }
 
 .settings-info {
@@ -253,7 +258,7 @@ p {
 .swap-streams-link {
   color: #3580a2;
   cursor: pointer;
-  margin-left: 47%;
+  margin-left: 47% !important;
   padding-left: 1rem;
 }
 

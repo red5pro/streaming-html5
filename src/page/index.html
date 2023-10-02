@@ -77,17 +77,15 @@
         </select>
       </p>
       <h2 class="centered">WebRTC Specific</h2>
-      <div class="settings-field settings-collapsable">
-        <p>
+      <div>
+        <p class="settings-field settings-collapsable">
           <label class="settings-label">Use WHIP/WHEP Clients&ast;:</label>
           <input type="checkbox" id="whipwhep-field" style="vertical-align: middle;" checked>
         </p>
-        <br>
-        <p>
+        <p class="settings-field settings-collapsable">
           <label class="settings-label">Trickle ICE Candidates:</label>
           <input type="checkbox" id="trickle-field" style="vertical-align: middle;" checked disabled>
         </p>
-        <br>
         <p class="settings-info">&ast;Enabling this will prefer the initial ICE negotiation to be done over HTTP/S.</p>
         <p class="settings-info">More information about <a target="_blank" href="https://www.ietf.org/archive/id/draft-ietf-wish-whip-01.html">WHIP</a> and <a target="_blank" href="https://www.ietf.org/id/draft-murillo-whep-02.html">WHEP</a>.</a></p>
       </div>
@@ -178,6 +176,8 @@
         <label class="settings-label">Backend WebSocket For Compositions:</label>
         <input id="backend-composition-field" name="backend-composition-field" value="<mixer-mock-url>"
           placeholder="e.g., mydomain.com">
+      </p>
+      <p class="settings-field settings-collapsable">
         <label class="settings-label">Enable Round Trip Authentication:</label>
         <input type="checkbox" id="enable-mixer-authentication-field" name="enable-mixer-authentication-field"
           unchecked>
