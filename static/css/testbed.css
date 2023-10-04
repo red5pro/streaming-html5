@@ -47,7 +47,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   --color-black: rgb(12, 12, 12);
   --color-red5: rgb(208, 56, 50);
   --color-gray: #6c757d;
-  --color-lightgray: #f8f9fabb;
+  --color-lightgray: #d2d4d6bb;
   --color-offwhite: rgb(245, 245, 245, 0.87);
 
   --red5-body-font-family: 'Clash Grotesk', sans-serif;
@@ -389,6 +389,7 @@ p {
   line-height: 4rem;
   cursor: pointer;
   border-bottom: 1px #aaa solid;
+  display: flex;
 }
 
 #test-list > li > a {
@@ -397,6 +398,7 @@ p {
   display: block;
   color: #000;
   padding-left: 0.8rem;
+  width: 100%;
 }
 
 #test-list > li > a:focus {
@@ -404,7 +406,7 @@ p {
 }
 
 .top-level-listing {
-  background-color: #b2d7f3;
+  background-color: var(--color-lightgray);
 }
 
 @media (max-width: 510px) {
