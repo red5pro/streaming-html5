@@ -22,7 +22,9 @@
         display: flex;
         flex-direction: row;
         background-color: #dbdbdb;
-        padding: 20px;  }
+        padding: 20px;
+        justify-content: center;
+      }
       .control-container > button:nth-child(even) {
         margin-left: 20px;
       }
@@ -83,6 +85,7 @@
             <p> After starting a publisher stream, it is recommended to open a Subscriber test in a separate browser, window or tab in order to see how the stream being consumed is affected. </p>
             <p>Setting <code>Active on Mute</code> to <code>true</code> will use the Mute API along with the <code>active</code> encoding parameter for audio track. Such functionality requires a server-side setting.</p><br>
             <p>In the <code>conf/webrtc-plugin.properties</code> file, change the following:</p>
+            <br>
             <p><code>idle.check.enabled=false</code></p><br>
             <p>This property setting is required in order for the server to not consider subscribers not receiving any stream data as being idle</p>
           </div>

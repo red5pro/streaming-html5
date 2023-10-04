@@ -5,6 +5,14 @@
     {{> meta title='Publish Test'}}
     {{> header-scripts}}
     {{> header-stylesheets}}
+    <style>
+      .settings-area {
+        padding: 5px;
+        background-color: #eeee;
+        text-align: center;
+        padding-bottom: 20px;
+      }
+    </style>
   </head>
   <body>
     {{> top-bar }}
@@ -23,11 +31,11 @@
         <div class="settings-area">
           <p class="settings-field settings-collapsable">
             <label class="settings-label" for="stream-path">Password:</label>
-            <input id="passwd" name="passwd" type="text" size="75" value="changeme"></input>
+            <input id="passwd" name="passwd" type="text" size="75" style="width: 100%;" value="changeme"></input>
           </p>
           <p class="settings-field settings-collapsable">
             <label class="settings-label" for="stream-path">Destination URI:</label>
-            <input id="dest-URI" name="dest-URI" type="text" size="75" value="rtmp://localhost/live"></input>
+            <input id="dest-URI" name="dest-URI" type="text" size="75" style="width: 100%;" value="rtmp://localhost/live"></input>
           </p>
           <p class="settings-field settings-collapsable">
             <label class="settings-label" for="stream-path">Stream Key:</label>

@@ -6,6 +6,12 @@
   {{> meta title='Publish - AMF Metadata'}}
   {{> header-scripts}}
   {{> header-stylesheets}}
+  <style>
+    .amf-field {
+      padding: 20px;
+      background-color: var(--color-lightgray);
+    }
+  </style>
 </head>
 
 <body>
@@ -20,7 +26,7 @@
         <video id="red5pro-publisher" class="red5pro-publisher" controls autoplay playsinline muted>
         </video>
       </div>
-      <div class="centered">
+      <div class="centered amf-field">
         <p class="settings-field settings-collapsable">
           <label for="metadata-field" class="settings-label">AMF Metadata:</label>
           <input id="metadata-field" name="metadata-field">
