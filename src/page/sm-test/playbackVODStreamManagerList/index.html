@@ -52,11 +52,10 @@
       .file-listing > p.item-separator {
         border-bottom: 1px solid #999;
       }
-      .param-setting {
-        padding-top: 10px;
-        width: 100%;
-        display: flex;
+
+      .settings-field {
         justify-content: center;
+        width: 100%;
       }
     </style>
     <link href="//unpkg.com/video.js@7.0.0/dist/video-js.css" rel="stylesheet">
@@ -77,7 +76,7 @@
       <div class="centered" style="margin-bottom:10px;"><em>This example requires the use of cloud storage to access the VOD files.</em></div>
       <div class="stream-section">
         <div class="centered file-listing-section">
-          <p class="param-setting">
+          <p class="settings-field">
             <label for="param-name1" class="settings-label">Retrieve From Cloud Storage:</label>
             <input type="checkbox" id="use-cloudstorage-checkbox" name="use_cloud_storage" unchecked>
           </p>
