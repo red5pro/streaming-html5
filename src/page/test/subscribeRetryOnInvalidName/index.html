@@ -5,6 +5,13 @@
     {{> meta title='WebRTC Subscriber Retry On Connection'}}
     {{> header-scripts}}
     {{> header-stylesheets}}
+    <style>
+      .controls-container {
+        background-color: #eee;
+        padding: 20px;
+        text-align: center;
+      }
+    </style>
   </head>
   <body>
     {{> top-bar }}
@@ -21,7 +28,7 @@
                   width="640" height="480">
           </video>
         </div>
-        <div>
+        <div class="controls-container">
           <button id="retry-button" class="ui-button" disabled>Retry Subscription</button>
         </div>
       </div>

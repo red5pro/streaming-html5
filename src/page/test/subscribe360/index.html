@@ -25,10 +25,15 @@
         width: 100%;
         text-align: right;
         z-index: 101;
+        bottom: 60px;
       }
       #canvas {
         width: 100%;
         height: 100%;
+      }
+
+      .ui-button {
+        padding: 20px 0px!important;
       }
 
       .z-order-below {
@@ -52,7 +57,7 @@
       {{> test-info testTitle='Subscriber 360 Test'}}
       {{> status-field-subscriber}}
       {{> statistics-field packets_field='Packets Received'}}
-      <div class="centered fixed-height">
+      <div class="centered fixed-height" style="position: relative">
           <video id="red5pro-subscriber"
                   controls="controls" autoplay="autoplay" playsinline
                   class="red5pro-subscriber red5pro-media red5pro-media-background z-order-above"

@@ -136,7 +136,8 @@ p {
   display: block;
   height: 1px;
   border: 0;
-  border-top: 1px solid #dbdbdb;
+  border-top: 1px solid black;
+  width: 100%;
 }
 
 .test-notification {
