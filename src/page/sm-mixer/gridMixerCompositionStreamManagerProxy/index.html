@@ -158,7 +158,7 @@
         }
 */
         .media-list-container {
-            border: 1px solid black;
+            border: 1px solid #aaa;
             display: flex;
             flex-wrap: wrap;
             flex-direction: column;
@@ -314,6 +314,8 @@
             flex-grow: 1;
             overflow-y: scroll;
             overflow-x: hidden;
+            border: 1px solid #aaa;
+            padding: 10px;
         }
 
         .red5pro-media-container {
@@ -475,7 +477,7 @@
                         <option name=""></option>
                     </select>
                     <p id="event-state">State:</p>
-                    <button id="destroy-composition-button" disabled onclick="destroyComposition()">Destroy</button>
+                    <button id="destroy-composition-button" class="ui-button" disabled onclick="destroyComposition()">Destroy</button>
                     <div class="tooltip2">
                         <span class="tooltiptext">Check to have the page auto assign streams to mixers</span>
                         <p>Automatically Add Streams to Composition?</p>
@@ -540,7 +542,7 @@
                         <input type="text" id="destinationMixerName" name="destinationMixerName"><br>
                     </div>
                     <br>
-                    <button type="submit">Add Mixer</button>
+                    <button type="submit" class="ui-button">Add Mixer</button>
                 </form>
                 <br>
                 <p>Mixers For Composition:</p>
@@ -566,7 +568,7 @@
                         </select>
                     </div>
                     <br>
-                    <button type="submit">Create Composition</button>
+                    <button type="submit" class="ui-button">Create Composition</button>
                 </form>
             </div>
             <div class="media-list-container">

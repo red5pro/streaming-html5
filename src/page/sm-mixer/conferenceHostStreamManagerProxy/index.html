@@ -347,6 +347,8 @@
             height: 100%;
             overflow-y: scroll;
             overflow-x: hidden;
+            border: 1px solid #aaa;
+            padding: 10px;
         }
 
         .tooltip2 {
@@ -438,7 +440,7 @@
                     </select>
                     <p id="event-room">Room:</p>
                     <p id="event-state">State:</p>
-                    <button id="destroy-composition-button" disabled onclick="destroyComposition()">Destroy</button>
+                    <button id="destroy-composition-button" class="ui-button" disabled onclick="destroyComposition()">Destroy</button>
                 </div>
                 <br>
                 <h2>Create Composition</h2>
@@ -492,7 +494,7 @@
                         </select>
                     </div>
                     <br>
-                    <button type="submit">Create Composition</button>
+                    <button type="submit" class="ui-button">Create Composition</button>
                 </form>
                 <br>
             </div>
