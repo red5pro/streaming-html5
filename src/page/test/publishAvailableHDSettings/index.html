@@ -7,8 +7,9 @@
     {{> header-stylesheets}}
     <style>
       .settings-area {
-        padding-top: 20px;
+        padding: 20px 0;
         background-color: #eeee;
+        text-align: center;
       }
       .settings-field, .settings-field > input {
         font-size: 1em;
@@ -35,7 +36,6 @@
   </head>
   <body>
     {{> top-bar }}
-    {{> navigation isTestPage=true }}
     <div id="app">
       {{> settings-link}}
       {{> test-info testTitle='Publish Browser Resolutions Test (WebRTC)'}}
@@ -45,7 +45,7 @@
             <Label class="settings-label">Camera:</label>
             <select id="camera-select" class="control settings-control"></select>
           </p>
-          <div class="settings-field settings-collapsable">
+          <div class="settings-field settings-collapsable" style="flex-direction:column">
             <p class="centered status-field">Supported Constraints</p>
             <table class="table">
               <thead>
@@ -74,6 +74,7 @@
         </div>
       </div>
     </div>
+    {{> footer}}
     {{> body-scripts}}
     <script src="index.js"></script>
     <link rel="stylesheet" href="../../css/modal.css" />

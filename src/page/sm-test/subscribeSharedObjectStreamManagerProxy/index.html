@@ -8,13 +8,14 @@
     <style>
       .settings-area {
         padding: 5px;
-        background-color: #eeee;
+        background-color: #eee;
+        text-align: center;
       }
       .settings-field, .settings-field > input {
         font-size: 1em;
       }
       .so-container {
-        width: 50%; 
+        width: 50%;
         min-width: 320px;
         margin: 0 auto;
       }
@@ -44,7 +45,6 @@
   </head>
   <body>
     {{> top-bar }}
-    {{> navigation isTestPage=true }}
     <div id="app">
       {{> settings-link}}
       {{> test-info testTitle='Subscriber Shared Object - Stream Manager Proxy'}}
@@ -76,6 +76,7 @@
         </div>
       </div>
     </div>
+    {{> footer}}
     {{> body-scripts}}
     {{> mobile-subscriber-util}}
     <script src="index.js"></script>

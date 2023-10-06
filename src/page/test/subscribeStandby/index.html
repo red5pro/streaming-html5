@@ -5,10 +5,16 @@
     {{> meta title='WebRTC Subscriber Standby Test'}}
     {{> header-scripts}}
     {{> header-stylesheets}}
+    <style>
+      .controls-container {
+        background-color: #eee;
+        padding: 20px;
+        text-align: center;
+      }
+    </style>
   </head>
   <body>
     {{> top-bar }}
-    {{> navigation isTestPage=true }}
     <div id="app">
       {{> settings-link}}
       {{> test-info testTitle='Subscriber Standby Test (WebRTC)'}}
@@ -22,11 +28,12 @@
                   width="640" height="480">
           </video>
         </div>
-        <div>
+        <div class="controls-container">
           <button id="standby-button" class="ui-button" disabled>Enable Standby</button>
         </div>
       </div>
     </div>
+    {{> footer}}
     {{> body-scripts}}
     <script src="index.js"></script>
   </body>

@@ -44,11 +44,15 @@
         font-size: 1em;
         height: 1.8em;
       }
+
+      .controls-container {
+        padding: 10px;
+        background-color: #eee;
+      }
     </style>
   </head>
   <body>
     {{> top-bar }}
-    {{> navigation isTestPage=true }}
     <div id="app">
       {{> settings-link}}
       {{> test-info testTitle='castLabs DRM Encrypted Playback'}}
@@ -117,13 +121,14 @@
                       width="320" height="240">
               </video>
             </div>
-            <div>
+            <div class="controls-container">
               <button id="decrypt-button" class="ui-button">Decrypt</button>
             </div>
           </div>
         </div>
       </div>
     </div>
+  {{> footer}}
     {{> body-scripts}}
     {{> mobile-subscriber-util}}
     <script type="module" src="index.js"></script>

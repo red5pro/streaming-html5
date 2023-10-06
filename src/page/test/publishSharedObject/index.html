@@ -9,12 +9,14 @@
       .settings-area {
         padding: 5px;
         background-color: #eeee;
+        text-align: center;
+        padding-bottom: 20px;
       }
       .settings-field, .settings-field > input {
         font-size: 1em;
       }
       .so-container {
-        width: 50%; 
+        width: 50%;
         min-width: 320px;
         margin: 0 auto;
       }
@@ -44,7 +46,6 @@
   </head>
   <body>
     {{> top-bar }}
-    {{> navigation isTestPage=true }}
     <div id="app">
       {{> settings-link}}
       {{> test-info testTitle='Publish Shared Object'}}
@@ -74,6 +75,7 @@
         </div>
       </div>
     </div>
+    {{> footer}}
     {{> body-scripts}}
     <script src="index.js"></script>
   </body>

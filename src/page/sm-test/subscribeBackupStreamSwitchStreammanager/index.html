@@ -85,7 +85,6 @@
   </head>
   <body>
     {{> top-bar }}
-    {{> navigation isTestPage=true }}
     <div id="app">
       {{> settings-link}}
       {{> sm-proxy-notification}}
@@ -115,6 +114,7 @@
           <button id="toggle-overlap" class="ui-button hidden">Toggle Overlap</button>
          </div>
       </div>
+    {{> footer}}
        {{> body-scripts}}
        {{> mobile-subscriber-util}}
        {{> sm-scripts}}

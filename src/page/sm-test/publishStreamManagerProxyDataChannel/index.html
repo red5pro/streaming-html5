@@ -7,8 +7,10 @@
     {{> header-stylesheets}}
     <style>
       .settings-area {
-        padding: 5px;
+        padding: 20px;
         background-color: #eeee;
+        text-align: center;
+        border-bottom: 1px solid var(--color-gray);
       }
       .settings-field, .settings-field > input {
         font-size: 1em;
@@ -19,7 +21,6 @@
   </head>
   <body>
     {{> top-bar }}
-    {{> navigation isTestPage=true }}
     <div id="app">
       {{> settings-link}}
       {{> test-info testTitle='Publish SM DataChannel Messaging'}}
@@ -59,6 +60,7 @@
         </div>
       </div>
     </div>
+    {{> footer}}
     {{> body-scripts}}
     {{> sm-scripts}}
     <script src="index.js"></script>

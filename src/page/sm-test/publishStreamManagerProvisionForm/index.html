@@ -76,7 +76,6 @@
   </head>
   <body>
     {{> top-bar }}
-    {{> navigation isTestPage=true }}
     <div id="app">
       {{> settings-link}}
       <div class="ice-background">
@@ -99,7 +98,7 @@
               {{> transcoder-form id="transcoder-mid" category="Mid" width="640" height="360" bitrate="1000000"}}
               {{> transcoder-form id="transcoder-low" category="Low" width="320" height="180" bitrate="500000"}}
             </div>
-            <p>
+            <p style="margin-bottom: 1rem!important;">
             <button id="submit-button" class="ui-button">Submit</button>
             </p>
             <hr class="paddedHR">
@@ -124,6 +123,7 @@
           </div>
         </div>
       </div>
+    {{> footer}}
     {{> body-scripts}}
     {{> sm-scripts}}
     <script src="index.js"></script>

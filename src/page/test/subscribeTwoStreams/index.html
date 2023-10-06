@@ -42,7 +42,6 @@
   </head>
   <body>
     {{> top-bar }}
-    {{> navigation isTestPage=true }}
     <div id="app">
       {{> settings-link}}
       {{> test-title title='Subscriber Two Stream Test'}}
@@ -69,6 +68,7 @@
         </div>
       </div>
     </div>
+    {{> footer}}
     {{> body-scripts}}
     <script src="../../script/subscription-status.js"></script>
     <script src="index.js"></script>

@@ -6,11 +6,16 @@
   {{> meta title='Publish Stream Manager Proxy AMF Metadata Test'}}
   {{> header-scripts}}
   {{> header-stylesheets}}
+  <style>
+    .amf-field {
+      padding: 20px;
+      background-color: var(--color-lightgray);
+    }
+  </style>
 </head>
 
 <body>
   {{> top-bar }}
-  {{> navigation isTestPage=true }}
   <div id="app">
     {{> settings-link}}
     {{> sm-proxy-notification}}
@@ -25,7 +30,7 @@
         <video id="red5pro-publisher" class="red5pro-publisher" controls autoplay playsinline muted>
         </video>
       </div>
-      <div class="centered">
+      <div class="centered amf-field">
         <p class="settings-field settings-collapsable">
           <label for="metadata-field" class="settings-label">AMF Metadata:</label>
           <input id="metadata-field" name="metadata-field">
@@ -34,6 +39,7 @@
       </div>
     </div>
   </div>
+    {{> footer}}
   {{> body-scripts}}
   {{> sm-scripts}}
   <script src="index.js"></script>

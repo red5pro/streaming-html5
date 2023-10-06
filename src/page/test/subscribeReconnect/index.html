@@ -8,7 +8,6 @@
   </head>
   <body>
     {{> top-bar }}
-    {{> navigation isTestPage=true }}
     <div id="app">
       {{> settings-link}}
       {{> test-info testTitle='Subscriber Reconnect Test'}}
@@ -24,6 +23,7 @@
         </div>
       </div>
     </div>
+    {{> footer}}
     {{> body-scripts}}
     {{> mobile-subscriber-util}}
     <script src="index.js"></script>

@@ -22,7 +22,9 @@
         display: flex;
         flex-direction: row;
         background-color: #dbdbdb;
-        padding: 20px;  }
+        padding: 20px;
+        justify-content: center;
+      }
       .control-container > button:nth-child(even) {
         margin-left: 20px;
       }
@@ -39,7 +41,6 @@
   </head>
   <body>
     {{> top-bar }}
-    {{> navigation isTestPage=true }}
     <div id="app">
       {{> settings-link}}
       {{> test-info testTitle='Publish WHIP'}}
@@ -71,6 +72,7 @@
         </div>
       </div>
     </div>
+    {{> footer}}
     {{> body-scripts}}
     <script src="index.js"></script>
   </body>
