@@ -23,7 +23,7 @@ NONINFRINGEMENT.   IN  NO  EVENT  SHALL INFRARED5, INC. BE LIABLE FOR ANY CLAIM,
 WHETHER IN  AN  ACTION  OF  CONTRACT,  TORT  OR  OTHERWISE,  ARISING  FROM,  OUT  OF  OR  IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
-;(function (window, document, red5prosdk) {
+;(function (window, document, red5prosdk, ConferenceService) {
   'use strict'
 
   var isPublishing = false
@@ -53,25 +53,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   })()
 
   const CHARS = 'abcdefghijklmnopqrstuvwxyz0123456789'
-  const uuid = () => {
-    return '10000000-1000-4000-8000-100000000000'.replace(/[018]/g, (c) =>
-      (
-        c ^
-        (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (c / 4)))
-      ).toString(16)
-    )
-  }
-
-  const generateFingerprint = () => {
-    let value
-    try {
-      value = crypto.randomUUID()
-    } catch (e) {
-      value = uuid()
-    }
-    return value
-  }
-
   const generateJoinToken = (length = 16) => {
     let result = ''
     const charactersLength = CHARS.length
@@ -99,7 +80,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   let targetPublisher
   let mediaStream
   let mediaStreamConstraints
-  let hostSocket
+  let socketService
   const isSecure = protocol == 'https:'
 
   let tokenName = window.query('token') || generateJoinToken()
@@ -150,11 +131,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     packetsSent = p
     updateStatistics(bitrate, packetsSent, frameWidth, frameHeight)
     if (packetsSent > 100) {
-      establishSocketHost(
-        targetPublisher,
-        tokenField.value,
-        streamNameField.value
-      )
+      const { streamName, app } = targetPublisher.getOptions()
+      establishSocketHost(streamName, tokenField.value, `${app}/${streamName}`)
     }
   }
 
@@ -305,6 +283,14 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     console.log('[Red5ProPublisher] Unpublish Complete.')
   }
 
+  const onConferenceClose = () => {
+    console.log('[Red5ProPublisher] Conference closed.')
+  }
+
+  const onConferenceError = (error) => {
+    console.error('[Red5ProPublisher] Conference error.', error)
+  }
+
   const setPublishingUI = (streamName) => {
     publisherNameField.innerText = streamName
     tokenField.setAttribute('disabled', true)
@@ -319,33 +305,20 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     )
   }
 
-  function establishSocketHost(publisher, roomName, streamName) {
-    if (hostSocket) return
-    var wsProtocol = isSecure ? 'wss' : 'ws'
-    var url = `${wsProtocol}://${socketEndpoint}?room=${roomName}&streamName=${streamName}`
-    hostSocket = new WebSocket(url)
-    hostSocket.onmessage = function (message) {
-      var payload = JSON.parse(message.data)
-      if (roomName === payload.room) {
+  const establishSocketHost = (name, token, streamGuid) => {
+    if (socketService) return
+
+    socketService = new ConferenceService(socketEndpoint, {
+      onConferenceClose,
+      onConferenceError,
+      onConferenceParticipantsUpdate: (participants) => {
         processStreams(payload.streams, streamsList, roomName, streamName)
-      }
-    }
-  }
-
-  function getUserMediaConfiguration() {
-    return {
-      mediaConstraints: {
-        audio: configuration.useAudio
-          ? configuration.mediaConstraints.audio
-          : false,
-        video: configuration.useVideo
-          ? configuration.mediaConstraints.video
-          : false,
       },
-    }
+    })
+    socketService.join(name, token, streamGuid)
   }
 
-  const determinePublisher = async (mediaStream, room, name, bitrate = 256) => {
+  const determinePublisher = async (mediaStream, name, bitrate = 256) => {
     const { app, preferWhipWhep } = configuration
     const { WHIPClient, RTCPublisher } = red5prosdk
     let config = Object.assign(
@@ -354,8 +327,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       {
         streamMode: configuration.recordBroadcast ? 'record' : 'live',
       },
-      getAuthenticationParams(),
-      getUserMediaConfiguration()
+      getAuthenticationParams()
     )
 
     let rtcConfig = Object.assign({}, config, {
@@ -364,7 +336,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       bandwidth: {
         video: bitrate,
       },
-      app: `${app}/${room}`,
+      app: app,
       streamName: name,
     })
 
@@ -399,7 +371,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   const doPublish = async (stream, room, name) => {
     try {
-      targetPublisher = await determinePublisher(stream, room, name, bitrate)
+      targetPublisher = await determinePublisher(stream, name, bitrate)
       targetPublisher.on('*', onPublisherEvent)
       await targetPublisher.publish()
       onPublishSuccess(targetPublisher)
@@ -413,9 +385,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
   }
 
-  function unpublish() {
-    if (hostSocket !== undefined) {
-      hostSocket.close()
+  const unpublish = () => {
+    if (socketService !== undefined) {
+      socketService.close()
     }
     return new Promise(function (resolve, reject) {
       var publisher = targetPublisher
@@ -569,4 +541,4 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   audioCheck.addEventListener('change', updateMutedAudioOnPublisher)
   videoCheck.addEventListener('change', updateMutedVideoOnPublisher)
-})(this, document, window.red5prosdk)
+})(this, document, window.red5prosdk, window.ConferenceService)
