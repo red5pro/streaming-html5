@@ -78,6 +78,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     location: { host, protocol },
   } = window
   let targetPublisher
+  let publisherParticipant
   let mediaStream
   let mediaStreamConstraints
   let socketService
@@ -100,13 +101,16 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   const publisherNameField = document.getElementById('publisher-name-field')
   const streamNameField = document.getElementById('streamname-field')
   const publisherVideo = document.getElementById('red5pro-publisher')
-  const audioCheck = document.getElementById('audio-check')
-  const videoCheck = document.getElementById('video-check')
   const joinButton = document.getElementById('join-button')
   const statisticsField = document.getElementById('statistics-field')
   const bitrateField = document.getElementById('bitrate-field')
   const packetsField = document.getElementById('packets-field')
   const resolutionField = document.getElementById('resolution-field')
+  const subscribersEl = document.getElementById('subscribers')
+  const videoOnButton = document.getElementById('video-on-button')
+  const videoOffButton = document.getElementById('video-off-button')
+  const audioOnButton = document.getElementById('audio-on-button')
+  const audioOffButton = document.getElementById('audio-off-button')
 
   let bitrateTrackingTicket
   let bitrate = 0
@@ -114,10 +118,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   let frameWidth = 0
   let frameHeight = 0
 
+  let streamsList = []
+
   tokenField.value = tokenName
   streamNameField.value = streamName
-  audioCheck.checked = configuration.useAudio
-  videoCheck.checked = configuration.useVideo
 
   const updateStatistics = (b, p, w, h) => {
     statisticsField.classList.remove('hidden')
@@ -133,6 +137,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     if (packetsSent > 100) {
       const { streamName, app } = targetPublisher.getOptions()
       establishSocketHost(streamName, tokenField.value, `${app}/${streamName}`)
+      publisherMuteControls.classList.remove('hidden')
     }
   }
 
@@ -172,11 +177,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     return senders.find((s) => s.track.kind === track.kind)
   }
 
-  const updateMutedAudioOnPublisher = () => {
+  const updateMutedAudioOnPublisher = (doMute) => {
     if (targetPublisher && isPublishing) {
       const sender = findSender(mediaStream.getAudioTracks()[0])
       let params = sender.getParameters()
-      if (audioCheck.checked) {
+      if (doMute) {
         try {
           targetPublisher.unmuteAudio()
           params.encodings[0].active = true
@@ -198,11 +203,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
   }
 
-  const updateMutedVideoOnPublisher = () => {
+  const updateMutedVideoOnPublisher = (doMute) => {
     if (targetPublisher && isPublishing) {
       const sender = findSender(mediaStream.getVideoTracks()[0])
       let params = sender.getParameters()
-      if (videoCheck.checked) {
+      if (doMute) {
         try {
           targetPublisher.unmuteVideo()
           params.encodings[0].active = true
@@ -222,8 +227,26 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         }
       }
     }
-    !videoCheck.checked && showVideoPoster()
-    videoCheck.checked && hideVideoPoster()
+  }
+
+  const updateMuteState = (muteState) => {
+    const { audioMuted, videoMuted } = muteState
+    if (audioMuted) {
+      audioOnButton.classList.add('hidden')
+      audioOffButton.classList.remove('hidden')
+    } else {
+      audioOnButton.classList.remove('hidden')
+      audioOffButton.classList.add('hidden')
+    }
+    if (videoMuted) {
+      videoOnButton.classList.add('hidden')
+      videoOffButton.classList.remove('hidden')
+    } else {
+      videoOnButton.classList.remove('hidden')
+      videoOffButton.classList.add('hidden')
+    }
+    videoMuted && showVideoPoster()
+    !videoMuted && hideVideoPoster()
   }
 
   const showVideoPoster = () => {
@@ -283,6 +306,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     console.log('[Red5ProPublisher] Unpublish Complete.')
   }
 
+  const onConferenceSuccess = (participant) => {
+    publisherParticipant = participant
+  }
+
   const onConferenceClose = () => {
     console.log('[Red5ProPublisher] Conference closed.')
   }
@@ -296,7 +323,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     tokenField.setAttribute('disabled', true)
     publisherSession.classList.remove('hidden')
     publisherNameField.classList.remove('hidden')
-    publisherMuteControls.classList.remove('hidden')
     Array.prototype.forEach.call(
       document.getElementsByClassName('remove-on-broadcast'),
       function (el) {
@@ -309,10 +335,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     if (socketService) return
 
     socketService = new ConferenceService(socketEndpoint, {
+      onConferenceSuccess,
       onConferenceClose,
       onConferenceError,
       onConferenceParticipantsUpdate: (participants) => {
-        processStreams(payload.streams, streamsList, roomName, streamName)
+        processStreams(participants, streamsList, publisherParticipant)
       },
     })
     socketService.join(name, token, streamGuid)
@@ -459,45 +486,34 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       console.error(e)
     }
   }
-  startPreview()
 
-  var shuttingDown = false
-  function shutdown() {
-    if (shuttingDown) return
-    shuttingDown = true
-    function clearRefs() {
-      if (targetPublisher) {
-        targetPublisher.off('*', onPublisherEvent)
-      }
-      targetPublisher = undefined
-    }
-    unpublish().then(clearRefs).catch(clearRefs)
-    window.untrackBitrate(bitrateTrackingTicket)
-  }
-  window.addEventListener('beforeunload', shutdown)
-  window.addEventListener('pagehide', shutdown)
-
-  var streamsList = []
-  var subscribersEl = document.getElementById('subscribers')
-  function processStreams(list, previousList, roomName, exclusion) {
-    var nonPublishers = list.filter(function (name) {
-      return name !== exclusion
+  function processStreams(list, previousList, publisherParticipant) {
+    const currentParticipant = list.find(
+      (participant) =>
+        participant.participantId === publisherParticipant.participantId
+    )
+    const nonPublishers = list.filter((participant) => {
+      return participant.participantId !== currentParticipant.participantId
     })
-    var existing = nonPublishers.filter((name, index, self) => {
-      return index == self.indexOf(name) && previousList.indexOf(name) !== -1
+    const toAdd = nonPublishers.filter((participant) => {
+      return (
+        previousList.find(
+          (p) => p.participantId === participant.participantId
+        ) === undefined
+      )
     })
-    var toAdd = nonPublishers.filter(function (name, index, self) {
-      return index == self.indexOf(name) && previousList.indexOf(name) === -1
-    })
-    var toRemove = previousList.filter((name, index, self) => {
-      return index == self.indexOf(name) && list.indexOf(name) === -1
+    const toRemove = previousList.filter((participant) => {
+      return (
+        list.find((p) => p.participantId === participant.participantId) ===
+        undefined
+      )
     })
     window.ConferenceSubscriberUtil.removeAll(toRemove)
     streamsList = list
 
-    var subscribers = toAdd.map(function (name, index) {
+    const subscribers = toAdd.map((participant, index) => {
       return new window.ConferenceSubscriberItem(
-        name,
+        participant,
         subscribersEl,
         index,
         () => {}
@@ -521,7 +537,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         {
           protocol: getSocketLocationFromProtocol().protocol,
           port: getSocketLocationFromProtocol().port,
-          app: `${app}/${roomName}`,
+          app,
         },
         getAuthenticationParams()
       )
@@ -531,6 +547,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       // Below is to be used if using sequential subsciber logic explained above.
       //      subscribers[0].execute(baseSubscriberConfig);
     }
+    list.forEach((participant) =>
+      window.ConferenceSubscriberUtil.updateMuteState(participant)
+    )
+    updateMuteState(currentParticipant.muteState)
   }
 
   joinButton.addEventListener('click', () => {
@@ -539,6 +559,43 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     setPublishingUI(streamName)
   })
 
-  audioCheck.addEventListener('change', updateMutedAudioOnPublisher)
-  videoCheck.addEventListener('change', updateMutedVideoOnPublisher)
+  let shuttingDown = false
+  const shutdown = async () => {
+    if (shuttingDown) return
+    shuttingDown = true
+    function clearRefs() {
+      if (targetPublisher) {
+        targetPublisher.off('*', onPublisherEvent)
+      }
+      targetPublisher = undefined
+    }
+    try {
+      await unpublish()
+    } catch (e) {
+      console.error(e)
+    } finally {
+      clearRefs()
+    }
+    window.untrackBitrate(bitrateTrackingTicket)
+  }
+
+  window.addEventListener('beforeunload', shutdown)
+  window.addEventListener('pagehide', shutdown)
+
+  videoOnButton.addEventListener('click', () => {
+    updateMutedVideoOnPublisher(false)
+  })
+  videoOffButton.addEventListener('click', () => {
+    updateMutedVideoOnPublisher(true)
+  })
+  audioOnButton.addEventListener('click', () => {
+    updateMutedAudioOnPublisher(false)
+  })
+  audioOffButton.addEventListener('click', () => {
+    updateMutedAudioOnPublisher(true)
+  })
+  videoOnButton.classList.remove('hidden')
+  audioOnButton.classList.remove('hidden')
+
+  startPreview()
 })(this, document, window.red5prosdk, window.ConferenceService)

@@ -26,8 +26,25 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 /**
  * Handles generating and monitoring Subscribers for Conference example.
  */
+
 ;(function (window, document, red5prosdk) {
   'use strict'
+
+  /*
+  interface MuteState {
+    audioMuted: Boolean
+    videoMuted: Boolean
+  }
+  interface Participant {
+    participantId: Number
+    conferenceId: Number
+    streamGuid: String
+    displayName: String
+    fingerprint: String
+    role: String
+    muteState: MuteState
+  }
+  */
 
   var isMoz = false
   if (window.adapter) {
@@ -48,7 +65,18 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     '<span>Resolution: <span class="resolution-field">0x0</span>' +
     '</div>' +
     '<div class="video-holder">' +
+    '<p class="red5-icon">' +
+    '<svg version="1.0" height="20px" width="20px" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" xml:space="preserve">' +
+    '<style type="text/css">.st0{fill:#DB1F26;}</style>' +
+    '<polygon class="st0" points="12.3,10.9 12.3,6.6 16.8,6.6 16.8,3.8 2,3.8 2,11.6 6.4,11.6 6.4,15.9 2,15.9 2,18.7 16.8,18.7 16.8,10.9">' +
+    '</polygon>' +
+    '</svg>' +
+    '</p>' +
     '<video autoplay controls playsinline width="100%" height="100%" class="red5pro-subscriber red5pro-media red5pro-media-background"></video>' +
+    '<div id="subscriber-mute-controls" class="controls">' +
+    '<i class="video-off-button fa fa-video-camera fa-video-camera-slash icon hidden" aria-hidden="true"></i>' +
+    '<i class="audio-off-button fa fa-microphone-slash icon hidden" aria-hidden="true"></i>' +
+    '</div>' +
     '</div>' +
     '<div class="audio-holder centered hidden">' +
     '<audio autoplay playsinline class="red5pro-media"></audio>' +
@@ -115,7 +143,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     audioElement.id = audioId
     card.id = getSubscriberElementContainerId(streamName)
     card.style.position = 'relative'
-    card.style.margin = '4px'
     return card
   }
 
@@ -154,14 +181,16 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     decoy.unsubscribe()
   }
 
-  var SubscriberItem = function (
-    subStreamName,
-    parent,
-    index,
-    requestLayoutFn
-  ) {
-    this.subscriptionId = [subStreamName, 'sub'].join('-')
-    this.streamName = subStreamName
+  function getGuidFromStreamGuid(streamGuid) {
+    const parts = streamGuid.split('/')
+    return parts[parts.length - 1]
+  }
+
+  var SubscriberItem = function (participant, parent, index, requestLayoutFn) {
+    const guid = getGuidFromStreamGuid(participant.streamGuid)
+    this.participant = participant
+    this.subscriptionId = [guid, 'sub'].join('-')
+    this.streamName = participant.displayName
     this.subscriber = undefined
     this.preferWhipWhep = true
     this.baseConfiguration = undefined
@@ -190,7 +219,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
     this.resetTimout = 0
     this.disposed = false
-    ConferenceSubscriberItemMap[this.streamName] = this
+    ConferenceSubscriberItemMap[this.participant.participantId] = this
 
     addLoadingIcon(this.card)
     this.requestLayoutFn.call(null)
@@ -250,7 +279,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     if (event.type === 'Subscribe.Metadata') {
       if (event.data.streamingMode) {
         this.handleStreamingModeMetadata(event.data.streamingMode)
-        this.toggleVideoPoster(!event.data.streamingMode.match(/Video/))
       }
     } else if (event.type === 'Subscriber.Play.Unpublish') {
       this.dispose()
@@ -318,9 +346,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         if (el) {
           el.parentNode.removeChild(el)
         }
-        console.log('TEST', 'To disposeDD ' + this.streamName)
-        delete ConferenceSubscriberItemMap[this.streamName]
-        delete subscriberMap[this.streamName]
+        delete ConferenceSubscriberItemMap[this.participant.participantId]
+        delete subscriberMap[this.participant.participantId]
       }
       this.requestLayoutFn()
     }
@@ -388,7 +415,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       this.subscriber.on('*', (e) => this.respond(e))
 
       await this.subscriber.init(rtcConfig)
-      subscriberMap[this.streamName] = this.subscriber
+      subscriberMap[this.participant.participantId] = this.subscriber
       self.requestLayoutFn.call(null)
       await this.subscriber.subscribe()
       clearTimeout(this.resetTimeout)
@@ -420,16 +447,42 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     resField.innerText = `${width}x${height}`
   }
 
+  SubscriberItem.prototype.setMuteState = function (muteState) {
+    const { audioMuted, videoMuted } = muteState
+    const videoIcon = document.querySelector(
+      '#subscriber-mute-controls .video-off-button'
+    )
+    const audioIcon = document.querySelector(
+      '#subscriber-mute-controls .audio-off-button'
+    )
+    if (audioMuted) {
+      audioIcon.classList.remove('hidden')
+    } else {
+      audioIcon.classList.add('hidden')
+    }
+    if (videoMuted) {
+      videoIcon.classList.remove('hidden')
+    } else {
+      videoIcon.classList.add('hidden')
+    }
+    this.toggleVideoPoster(videoMuted)
+  }
+
   window.getConferenceSubscriberElementContainerId =
     getSubscriberElementContainerId
   window.getConferenceSubscriberElementId = getSubscriberElementId
   window.ConferenceSubscriberItem = SubscriberItem
   window.ConferenceSubscriberUtil = {
-    removeAll: (names) => {
-      while (names.length > 0) {
-        let name = names.shift()
-        //        console.log('TEST', 'TO shift: ' + name, ConferenceSubscriberItemMap)
-        let item = ConferenceSubscriberItemMap[name]
+    updateMuteState: (participant) => {
+      let item = ConferenceSubscriberItemMap[participant.participantId]
+      if (item) {
+        item.setMuteState(participant.muteState)
+      }
+    },
+    removeAll: (participants) => {
+      while (participants.length > 0) {
+        let participant = participants.shift()
+        let item = ConferenceSubscriberItemMap[participant.participantId]
         if (item) {
           item.dispose()
         }
