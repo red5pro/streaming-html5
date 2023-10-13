@@ -119,6 +119,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   let frameHeight = 0
 
   let streamsList = []
+  let initMuteState = { audioMuted: false, videoMuted: false }
 
   tokenField.value = tokenName
   streamNameField.value = streamName
@@ -134,11 +135,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     bitrate = b
     packetsSent = p
     updateStatistics(bitrate, packetsSent, frameWidth, frameHeight)
-    if (packetsSent > 100) {
-      const { streamName, app } = targetPublisher.getOptions()
-      establishSocketHost(streamName, tokenField.value, `${app}/${streamName}`)
-      publisherMuteControls.classList.remove('hidden')
-    }
   }
 
   const onResolutionUpdate = (w, h) => {
@@ -177,11 +173,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     return senders.find((s) => s.track.kind === track.kind)
   }
 
-  const updateMutedAudioOnPublisher = (doMute) => {
+  const updateMutedAudioOnPublisher = (returnFromMute) => {
     if (targetPublisher && isPublishing) {
       const sender = findSender(mediaStream.getAudioTracks()[0])
       let params = sender.getParameters()
-      if (doMute) {
+      if (returnFromMute) {
         try {
           targetPublisher.unmuteAudio()
           params.encodings[0].active = true
@@ -200,14 +196,18 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           targetPublisher.muteAudio()
         }
       }
+    } else {
+      initMuteState = { ...initMuteState, audioMuted: !returnFromMute }
+      updateMuteState(initMuteState)
     }
+    mediaStream.getAudioTracks()[0].enabled = returnFromMute
   }
 
-  const updateMutedVideoOnPublisher = (doMute) => {
+  const updateMutedVideoOnPublisher = (returnFromMute) => {
     if (targetPublisher && isPublishing) {
       const sender = findSender(mediaStream.getVideoTracks()[0])
       let params = sender.getParameters()
-      if (doMute) {
+      if (returnFromMute) {
         try {
           targetPublisher.unmuteVideo()
           params.encodings[0].active = true
@@ -226,7 +226,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           targetPublisher.muteVideo()
         }
       }
+    } else {
+      initMuteState = { ...initMuteState, videoMuted: !returnFromMute }
+      updateMuteState(initMuteState)
     }
+    mediaStream.getVideoTracks()[0].enabled = returnFromMute
   }
 
   const updateMuteState = (muteState) => {
@@ -262,6 +266,14 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     console.log('[Red5ProPublisher] ' + type + '.')
     if (type === 'WebSocket.Message.Unhandled') {
       console.log(event)
+    } else if (type === 'Publish.Start') {
+      const { streamName, app } = targetPublisher.getOptions()
+      establishSocketHost(streamName, tokenField.value, `${app}/${streamName}`)
+      publisherMuteControls.classList.remove('hidden')
+    } else if (type === 'MessageTransport.Change') {
+      // Once messaging is available, notify Conference API of mute state.
+      updateMutedVideoOnPublisher(!initMuteState.videoMuted)
+      updateMutedAudioOnPublisher(!initMuteState.audioMuted)
     }
     updateStatusFromEvent(event)
   }

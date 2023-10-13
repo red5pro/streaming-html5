@@ -27,14 +27,21 @@
         right: 0;
         z-index: 1;
       }
-      .controls {
+      .controls, .subscriber-controls {
         position: absolute;
-        bottom: 20px;
-        right: 20px;
         display: flex;
         column-gap: 10px;
         filter: drop-shadow(4px 4px 1px #000);
         z-index: 2;
+      }
+      .publisher-controls {
+        bottom: 20px;
+        right: 20px;
+      }
+      .subscriber-controls {
+        top: 20px;
+        right: 20px;
+        z-index: 3;
       }
       .icon {
         color: white;
@@ -58,6 +65,9 @@
         left: 0;
         top: 0;
         z-index: 2;
+      }
+      #join-button {
+        margin-top: 10px;
       }
     </style>
   </head>
@@ -94,7 +104,7 @@
                 autoplay muted playsinline
                 width="320" height="240">
             </video>
-            <div id="publisher-mute-controls" class="controls hidden">
+            <div id="publisher-mute-controls" class="controls publisher-controls">
               <i id="video-on-button" class="fa fa-video-camera icon clickable-icon hidden" aria-hidden="true"></i>
               <i id="video-off-button" class="fa fa-video-camera fa-video-camera-slash icon clickable-icon hidden" aria-hidden="true"></i>
               <i id="audio-on-button" class="fa fa-microphone icon clickable-icon hidden" aria-hidden="true"></i>
@@ -115,9 +125,9 @@
               <label class="device-label" for="microphone-select">Microphone:</label>
               <select class="control device-control settings-input" name="microphone-select" id="microphone-select"></select>
             </p>
-            <p id="publisher-mute-notice" class="publisher-mute-notice remove-on-broadcast">
+            <!-- <p id="publisher-mute-notice" class="publisher-mute-notice remove-on-broadcast">
               <span class="device-info">Video and Audio can be turned off after publish has started.</span>
-            </p>
+            </p> -->
             <!-- <p id="publisher-mute-controls" class="publisher-mute-controls hidden">
               <label for="video-check">Video: </label>
               <input type="checkbox" id="video-check" name="video-check" checked>

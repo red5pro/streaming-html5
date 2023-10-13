@@ -73,7 +73,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     '</svg>' +
     '</p>' +
     '<video autoplay controls playsinline width="100%" height="100%" class="red5pro-subscriber red5pro-media red5pro-media-background"></video>' +
-    '<div id="subscriber-mute-controls" class="controls">' +
+    '<div class="subscriber-controls">' +
     '<i class="video-off-button fa fa-video-camera fa-video-camera-slash icon hidden" aria-hidden="true"></i>' +
     '<i class="audio-off-button fa fa-microphone-slash icon hidden" aria-hidden="true"></i>' +
     '</div>' +
@@ -449,11 +449,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   SubscriberItem.prototype.setMuteState = function (muteState) {
     const { audioMuted, videoMuted } = muteState
-    const videoIcon = document.querySelector(
-      '#subscriber-mute-controls .video-off-button'
+    const videoIcon = this.card.querySelector(
+      '.subscriber-controls .video-off-button'
     )
-    const audioIcon = document.querySelector(
-      '#subscriber-mute-controls .audio-off-button'
+    const audioIcon = this.card.querySelector(
+      '.subscriber-controls .audio-off-button'
     )
     if (audioMuted) {
       audioIcon.classList.remove('hidden')

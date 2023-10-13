@@ -139,6 +139,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 }
 .publisher-section {
   max-width: 320px;
+  height: fit-content;
 }
 .margin-center {
   margin: 0 auto;
