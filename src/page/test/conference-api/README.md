@@ -6,11 +6,11 @@ The Conference Webapp and corresponding API was released in the 11.3.1 distribut
 
 ## Basic Publisher
 
-**Please refer to the [Basic Publisher Documentation](../publishStreamManagerProxy/README.md) to learn more about the basic setup of a publisher.**
+**Please refer to the [Basic Publisher Documentation](../publish/README.md) to learn more about the basic setup of a publisher.**
 
 ## Basic Subscriber
 
-**Please refer to the [Basic Subscriber Documentation](../subscribeStreamManagerProxy/README.md) to learn more about the basic setup of a subscriber.**
+**Please refer to the [Basic Subscriber Documentation](../subscribe/README.md) to learn more about the basic setup of a subscriber.**
 
 ## Example Code
 
