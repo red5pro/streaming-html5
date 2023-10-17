@@ -56,6 +56,9 @@ export const query = () => {
   let vodURL = searchParams.get('vod_url')
     ? decodeURIComponent(searchParams.get('vod_url'))
     : undefined
+  let pageURL = searchParams.get('page_url')
+    ? decodeURIComponent(searchParams.get('page_url'))
+    : undefined
   return {
     host,
     app,
@@ -65,6 +68,7 @@ export const query = () => {
     overlayToken,
     streamManager,
     vodURL,
+    pageURL,
     get: (key) => {
       return searchParams.get(key)
     },

@@ -25,7 +25,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 import { query, isHostAnIPAddress } from './url-util.js'
 
-const { host, app, name, fit, vod, overlayToken, vodURL } = query()
+const { host, app, name, fit, vod, overlayToken, vodURL, pageURL } = query()
 const container = document.querySelector('#app')
 
 const red5pro = window.red5prosdk
@@ -64,6 +64,8 @@ overlay.renderAppOutput(overlayToken, null, (success) => {
   if (success) {
     if (vod || vodURL) {
       loadVOD()
+    } else if (pageURL) {
+      loadPage(pageURL)
     } else {
       loadLive()
     }
@@ -153,6 +155,21 @@ const loadVOD = async () => {
   } else {
     showError('Your browser does not support HLS video playback.')
   }
+}
+
+const loadPage = (url) => {
+  const videoContainer = document.querySelector('#video-container')
+  const iframe = document.createElement('iframe')
+  iframe.classList.add('overlay')
+  iframe.style['z-index'] = 0
+  iframe.setAttribute('src', url)
+  iframe.setAttribute('width', '100%')
+  iframe.setAttribute('height', '100%')
+  iframe.setAttribute('frameborder', '0')
+  iframe.setAttribute('scrolling', 'no')
+  iframe.setAttribute('allowfullscreen', 'true')
+  container.insertBefore(iframe, videoContainer)
+  videoContainer.parentNode.removeChild(videoContainer)
 }
 
 const showError = (message) => {

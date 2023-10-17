@@ -26,7 +26,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 /* global Hls, SingularGraphics, red5prosdk */
 import { query, isHostAnIPAddress } from './url-util.js'
 
-const { host, app, name, fit, vod, overlayToken, vodURL } = query()
+const { host, app, name, fit, vod, overlayToken, vodURL, pageURL } = query()
 const container = document.querySelector('#app')
 
 const red5pro = window.red5prosdk
@@ -120,6 +120,21 @@ const loadVOD = async () => {
   }
 }
 
+const loadPage = (url) => {
+  const videoContainer = document.querySelector('#video-container')
+  const iframe = document.createElement('iframe')
+  iframe.classList.add('overlay')
+  iframe.style['z-index'] = 0
+  iframe.setAttribute('src', url)
+  iframe.setAttribute('width', '100%')
+  iframe.setAttribute('height', '100%')
+  iframe.setAttribute('frameborder', '0')
+  iframe.setAttribute('scrolling', 'no')
+  iframe.setAttribute('allowfullscreen', 'true')
+  container.insertBefore(iframe, videoContainer)
+  videoContainer.parentNode.removeChild(videoContainer)
+}
+
 const showError = (message) => {
   const container = document.querySelector('#error-container')
   const error = document.querySelector('#error-message')
@@ -135,16 +150,10 @@ const load = async () => {
     })
     const json = await response.json()
     const contentURL = json.outputUrl
-    const iframe = document.createElement('iframe')
-    iframe.onload = vod || vodURL ? loadVOD : loadLive
-    iframe.classList.add('overlay')
+    const iframe = document.querySelector('#SingularOverlay')
+    iframe.onload =
+      vod || vodURL ? loadVOD : pageURL ? () => loadPage(pageURL) : loadLive
     iframe.setAttribute('src', contentURL)
-    iframe.setAttribute('width', '100%')
-    iframe.setAttribute('height', '100%')
-    iframe.setAttribute('frameborder', '0')
-    iframe.setAttribute('scrolling', 'no')
-    iframe.setAttribute('allowfullscreen', 'true')
-    container.appendChild(iframe)
   } catch (e) {
     console.error(e)
     showError(e.message)
