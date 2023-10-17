@@ -29,7 +29,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   src: url("https://fonts.gstatic.com/s/lato/v16/S6u9w4BMUTPHh7USSwiPGQ3q5d0.woff2") format("woff");
 }
 */
-@import 'bootstrap.min.css';
 @import url(https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&display=swap);
 
 @font-face {
