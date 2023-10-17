@@ -35,34 +35,43 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * @returns {object} Object containing the query params.
  */
 export const query = () => {
-	const searchParams = new URLSearchParams(window.location.search)
-	const smOpt = searchParams.get('sm')
-	const proxyOpt = searchParams.get('proxy')
-	const vodOpt = searchParams.get('vod')
-	let host = searchParams.get('host') ? decodeURIComponent(searchParams.get('host')) : undefined
-	let app = searchParams.get('app') ? decodeURIComponent(searchParams.get('app')) : undefined
-	let name = searchParams.get('name') ? decodeURIComponent(searchParams.get('name')) : 'stream1'
-	let fit = searchParams.get('fit') || 'cover'
-	let overlayToken = searchParams.get('sl_token') ? decodeURIComponent(searchParams.get('sl_token')) : undefined
-	let streamManager = smOpt ? smOpt.toLowerCase() === 'true' : false
-	let vod = vodOpt ? vodOpt.toLowerCase() === 'true' : false
-	let vodURL = searchParams.get('vod_url') ? decodeURIComponent(searchParams.get('vod_url')) : undefined
-	return {
-		host,
-		app,
-		name,
-		fit,
-		vod,
-		overlayToken,
-		streamManager,
-		vodURL,
-		get: (key) => {
-			return searchParams.get(key)
-		},
-	}
+  const searchParams = new URLSearchParams(window.location.search)
+  const smOpt = searchParams.get('sm')
+  const vodOpt = searchParams.get('vod')
+  let host = searchParams.get('host')
+    ? decodeURIComponent(searchParams.get('host'))
+    : window.location.hostname
+  let app = searchParams.get('app')
+    ? decodeURIComponent(searchParams.get('app'))
+    : 'live'
+  let name = searchParams.get('name')
+    ? decodeURIComponent(searchParams.get('name'))
+    : 'stream1'
+  let fit = searchParams.get('fit') || 'cover'
+  let overlayToken = searchParams.get('sl_token')
+    ? decodeURIComponent(searchParams.get('sl_token'))
+    : undefined
+  let streamManager = smOpt ? smOpt.toLowerCase() === 'true' : false
+  let vod = vodOpt ? vodOpt.toLowerCase() === 'true' : false
+  let vodURL = searchParams.get('vod_url')
+    ? decodeURIComponent(searchParams.get('vod_url'))
+    : undefined
+  return {
+    host,
+    app,
+    name,
+    fit,
+    vod,
+    overlayToken,
+    streamManager,
+    vodURL,
+    get: (key) => {
+      return searchParams.get(key)
+    },
+  }
 }
 
 const ipRegex = /^([0-9]{1,3}\.){3}[0-9]{1,3}$/
 export const isHostAnIPAddress = (host) => {
-	return ipRegex.test(host)
+  return ipRegex.test(host)
 }

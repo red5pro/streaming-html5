@@ -51,7 +51,9 @@ const loadLive = async () => {
   try {
     document.querySelector('#red5pro-subscriber').style['object-fit'] = fit
     const isSecure = !isHostAnIPAddress(host)
-    const subscriber = new red5pro.WHEPClient()
+    // CEF Mixer does not support WHIP/WHEP at the moment...
+    // const subscriber = new red5pro.WHEPClient()
+    const subscriber = new red5pro.RTCSubscriber()
     subscriber.on('*', (event) => {
       const { type } = event
       if (type !== 'Subscribe.Time.Update') {

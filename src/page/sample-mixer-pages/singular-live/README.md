@@ -18,7 +18,7 @@ This will show you the associated URLs and Token(s) of the target `App`.
 
 # Usage
 
-The Red5 CEF Mixer is instructed to load a specified page at a URL and broadcast a live stream to a target Red5 Server. This is quickly and easily done using the `composition` html provided from the `mixer` webapp.
+The Red5 CEF Mixer is instructed to load a specified page at a URL and broadcast a live stream to a target Red5 Server. This is quickly and easily done using the `controller` html provided from the `mixer` webapp.
 
 In order to have a CEF Mixer load this example page to integrate with `Singular.live`, you will first need to deploy the files contained in this repository to a remote location which can be loaded over SSL.
 
@@ -32,16 +32,16 @@ The following query parameters are recognized by the page:
 
 ### Required
 
-* `sl_token` - The App Token from `Singular.live`. Please read the [Requirements](#requirements) section for accessing the token.
-* `host` - The Red5 Server endpoint that has the live stream you wish to consume and overlay the content from `Singular.live`.
-* `name` - The name of the stream on the `host` Red5 Server to consume.
+- `sl_token` - The App Token from `Singular.live`. Please read the [Requirements](#requirements) section for accessing the token.
+- `host` - The Red5 Server endpoint that has the live stream you wish to consume and overlay the content from `Singular.live`.
+- `name` - The name of the stream on the `host` Red5 Server to consume.
 
 ### Optional
 
-* `app` - The target webapp context that the stream resides in on the `host`. _Default is `live`._
-* `fit` - The `object-fit` style to apply to the playback stream. _Default is `cover`._
-* `vod` - A Flag to denote whether the stream to playback is VOD or not. _Default is `false`._
-* `vodURL` - The full URL to a VOD file to playback. _Default is `undefined`._
+- `app` - The target webapp context that the stream resides in on the `host`. _Default is `live`._
+- `fit` - The `object-fit` style to apply to the playback stream. _Default is `cover`._
+- `vod` - A Flag to denote whether the stream to playback is VOD or not. _Default is `false`._
+- `vodURL` - The full URL to a VOD file to playback. _Default is `undefined`._
 
 When specifying `vod=true`, the page will utilize [HLS.js](https://github.com/video-dev/hls.js/) to playback the HLS file in browsers that do not support native HLS.
 
