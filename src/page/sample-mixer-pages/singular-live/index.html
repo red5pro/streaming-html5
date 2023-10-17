@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Red5 & Singular.live</title>
+		<link rel="stylesheet" href="style/style.css" />
+    <script src="//cdn.jsdelivr.net/npm/hls.js@latest"></script>
+		<script src="https://unpkg.com/red5pro-webrtc-sdk@latest/red5pro-sdk.min.js"></script>
+    <script src="https://app.singular.live/libs/singulargraphics/1.0.0/singulargraphics.js"></script>
+	</head>
+	<body>
+		<div id="app">
+      <div id="video-container">
+        <video id="red5pro-subscriber" autoplay playsinline></video>
+      </div>
+
+      <iframe id="SingularOverlay"
+        class="overlay"
+        frameborder="0" scrolling="no"
+        src="https://app.singular.live/singularplayer/client">
+      </iframe>
+
+    </div>
+    <div id="error-container" class="hidden">
+      <div id="error-message"></div>
+    </div>
+		<script type="module" src="script/main.js"></script>
+		<!-- <script type="module" src="script/simple.js"></script> -->
+	</body>
+</html>
