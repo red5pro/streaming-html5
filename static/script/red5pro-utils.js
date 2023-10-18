@@ -68,7 +68,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           ) {
             bytes = report.bytesSent
             packets = report.packetsSent
-            if (report.mediaType === 'video' || report.id.match(vRegex)) {
+            if (
+              report.mediaType === 'video' ||
+              report.kind === 'video' ||
+              report.id.match(vRegex)
+            ) {
               if (lastResult && lastResult.get(report.id)) {
                 // calculate bitrate
                 bitrate =
@@ -89,7 +93,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             packets = report.packetsReceived
             if (
               ticket.audioOnly &&
-              (report.mediaType === 'audio' || report.id.match(aRegex))
+              (report.mediaType === 'audio' ||
+                report.kind === 'audio' ||
+                report.id.match(aRegex))
             ) {
               if (lastResult && lastResult.get(report.id)) {
                 // calculate bitrate
@@ -100,7 +106,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
               }
             } else if (
               !ticket.audioOnly &&
-              (report.mediaType === 'video' || report.id.match(vRegex))
+              (report.mediaType === 'video' ||
+                report.kind === 'video' ||
+                report.id.match(vRegex))
             ) {
               if (lastResult && lastResult.get(report.id)) {
                 // calculate bitrate
@@ -116,7 +124,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
                 }
               }
             }
-          } else if (resolutionCb && report.type === 'track') {
+          } else if (
+            resolutionCb &&
+            (report.type === 'track' || report.kind === 'video')
+          ) {
             var fw = 0
             var fh = 0
             if (
