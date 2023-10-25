@@ -196,11 +196,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     // Edge has getDisplayMedia on navigator and not media devices?
     try {
       const stream = await navigator.mediaDevices.getDisplayMedia(config)
-      const audio = await navigator.mediaDevices.getUserMedia({
-        audio: true,
-        video: false,
-      })
-      stream.addTrack(audio.getAudioTracks()[0].clone())
+      if (configuration.useAudio) {
+        const audio = await navigator.mediaDevices.getUserMedia({
+          audio: true,
+          video: false,
+        })
+        stream.addTrack(audio.getAudioTracks()[0].clone())
+      }
       return stream
     } catch (error) {
       captureButton.disabled = false
