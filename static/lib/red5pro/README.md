@@ -54,7 +54,7 @@ While currently not open source, the SDK build has been published to NPM to allo
 ... or if you know the version:
 
 ```
-<script src="https://unpkg.com/red5pro-webrtc-sdk@11.0.0/red5pro-sdk.min.js"></script>
+<script src="https://unpkg.com/red5pro-webrtc-sdk@11.2.0/red5pro-sdk.min.js"></script>
 ```
 
 ## Using `npm` or `yarn` for you browser-based projects
@@ -160,6 +160,9 @@ As such, you will need a distribution of the [Red5 Pro Server](https://www.red5p
 
 # Usage
 This section describes using the **Red5 Pro WebRTC SDK** browser install to create sessions for a [Publisher](#publisher) and a [Subscriber](#subscriber).
+
+## WHIP/WHEP
+Please refer to the [WHIP/WHEP Readme](WHIP_WHEP_README.md) for information about utilizing WHIP/WHEP clients for publishing and subscribing, respectively.
 
 ## Publisher
 Please refer to the [Publisher Readme](PUBLISHER_README.md) for information about setting up a broadcast session.
