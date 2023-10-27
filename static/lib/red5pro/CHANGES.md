@@ -1,5 +1,23 @@
 # Changes
 
+## 12.0.0-beta.1
+
+- Fix for safari VOD/HLS playback and playhead time. (Todd Anderson)
+- Fix for connectionParams tacked on WHIP/WHEP calls. (Todd Anderson)
+- Fix for Firefox issue with Bundle order (Todd Anderson)
+
+    > The issue was that the offer provided by the server has a BUNDLE order of 0 1
+    > 2. When the WHEP client set that as their remote SDP and generated an offer,
+    > the BUNDLE order changed to 2 1 0 in the answer SDP. This would cause
+    > subscription issues and non-existant candidates.
+
+    > Solution was the munge in the incoming offer BUNDLE line order to that of the
+    > answer.
+
+- Using host query param when Location provided to WHIP/WHEP clients. (Todd Anderson)
+- Fix for live seek fullURL switching. (Todd Anderson)
+- Endpoint header recognition in whip/whep and event bubble. (Todd Anderson)
+
 ## 11.0.0
 
 - Introducing WHIP/WHEP for ingest and egress of WebRTC streams, respectively. (Todd Anderson)

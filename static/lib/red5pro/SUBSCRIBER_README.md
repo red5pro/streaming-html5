@@ -111,11 +111,11 @@ _It is *highly* recommended to include [adapter.js](https://github.com/webrtcHac
 | dataChannelConfiguration | [-] | `{name: "red5pro"}` | An object used in configuring a n `RTCDataChannel`. _Only used when `signalingSocketOnly` is defined as `true`_ |
 | buffer | [-] | `0` | Request to set a buffer - in seconds - for playback.
 | maintainStreamVariant | [-] | `false` | Flag to instruct the server - when utilizing transcoding - to not switch subscriber stream variants when network conditions change. By setting this to `true`, when you request to playback a stream that is transcoded, the server will not deliver a variant of higher or lower quality dependending on current network conditions. |
-| liveSeek | [-] | *None* | Configuration object to enable live seek capability. See [Live Seek](#live-seek) for more information.
+| liveSeek | [-] | *None* | Configuration object to enable live seek capability. See [Live Seek](#live-seek) for more information. |
 
 #### Live Seek
 
-You can enable live seek capabilities for a live playback by providing a `liveSeek` configuration in the initialization configuration for `RTCSubscriber`.
+You can enable live seek capabilities for a live playback by providing a `liveSeek` configuration in the initialization configuration for `WHEPClient` and `RTCSubscriber`.
 
 The schema for the `liveSeek` configuration is as follows:
 
