@@ -32,6 +32,7 @@
                 <li><a href="sample-mixer-pages/7x7">7x7 Grid Layout</a></li>
                 <li><a href="sample-mixer-pages/nxn">Dynamic NxN Grid Layout</a></li>
                 <li><a href="sample-mixer-pages/conference">Conference Layout</a></li>
+                <li><a href="sample-mixer-pages/singular-live" data-ws="no" >Singular.live Overlay</a></li>
             </ul>
         </div>
         <script>
@@ -47,7 +48,7 @@
             })();
             const refs = document.getElementsByTagName('a')
             for (let ref of refs) {
-                if (ref.href.indexOf('sample-mixer-pages') >= 0) {
+                if (ref.href.indexOf('sample-mixer-pages') >= 0 && ref.dataset.ws !== 'no') {
                     ref.href = `${ref.href}?ws=${configuration.mixerBackendSocketField}`
                 }
             }
