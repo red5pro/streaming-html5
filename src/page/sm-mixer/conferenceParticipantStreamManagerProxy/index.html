@@ -104,6 +104,7 @@
 
         .centered {
             text-align: center;
+            width: unset;
         }
 
         .resolution-title-field {
@@ -200,8 +201,6 @@
         }
 
         .settings-field>select {
-            height: 1.5rem;
-            font-size: 1rem;
             padding-left: 0.8rem;
         }
 
@@ -214,7 +213,6 @@
 
         h1 {
             margin: 16px;
-            border-bottom: 1px solid black;
         }
 
         h2 {
@@ -274,7 +272,6 @@
         }
 
         body {
-            margin: 12px;
             display: flex;
             flex-direction: column;
             position: relative;
@@ -340,7 +337,6 @@
 
 <body>
     {{> top-bar }}
-    {{> navigation isTestPage=true }}
     <div id="app">
         {{> settings-link}}
         <div class="ice-background">
@@ -423,7 +419,7 @@
                             </p>
                         </div>
                         <p class="settings-field" style="justify-content: center;">
-                            <button id="broadcast-button">Start Broadcast</button>
+                            <button id="broadcast-button" class="ui-button">Start Broadcast</button>
                         </p>
                     </div>
                     <div id="publisher-settings-active" class="hidden">
@@ -444,6 +440,7 @@
             </div>
         </div>
     </div>
+  {{> footer}}
     {{> body-scripts}}
     <script src="../../script/red5pro-utils.js"></script>
     <script src="../../script/publisher-status.js"></script>

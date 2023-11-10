@@ -10,7 +10,6 @@
   </head>
   <body>
     {{> top-bar }}
-    {{> navigation isTestPage=true }}
     <div id="app">
       {{> settings-link}}
       {{> test-title title='Conference - Stream Manager Proxy'}}
@@ -74,6 +73,7 @@
         </p>
       </div>
     </div>
+  {{> footer}}
     {{> body-scripts}}
     <script src="conference-subscriber.js"></script>
     <script src="device-selector-util.js"></script>

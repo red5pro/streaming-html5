@@ -45,7 +45,6 @@
   </head>
   <body>
     {{> top-bar }}
-    {{> navigation isTestPage=true }}
     <div id="app">
       {{> settings-link}}
       {{> test-info testTitle='Conference Composite Test'}}
@@ -63,6 +62,7 @@
         <button id="broadcast-button" class="ui-button" disabled>Start Composite Broadcast</button>
       </div>
     </div>
+    {{> footer}}
     {{> body-scripts}}
     <script src="index.js"></script>
   </body>

@@ -52,7 +52,7 @@
         margin: 0!important;
       }
       .form-container {
-        padding: 20px 0 0 0;
+        padding: 20px 0 20px 0;
         text-align: center;
       }
       .transcoder-form-container {
@@ -60,6 +60,10 @@
         flex-direction: row;
         justify-content: space-evenly;
         padding: 20px 0;
+      }
+      .amf-field {
+        padding: 20px 0;
+        background-color: #eee;
       }
       @media (max-width:767px) {
         .transcoder-form-container {
@@ -78,7 +82,6 @@
   </head>
   <body>
     {{> top-bar }}
-    {{> navigation isTestPage=true }}
     <div id="app">
       {{> settings-link}}
       <div class="ice-background">
@@ -127,7 +130,7 @@
                  controls autoplay muted playsinline>
           </video>
         </div>
-        <div class="centered">
+        <div class="centered amf-field">
           <p class="settings-field settings-collapsable">
             <label for="metadata-field" class="settings-label">AMF Metadata:</label>
             <input id="metadata-field" name="metadata-field">
@@ -136,6 +139,7 @@
         </div>
       </div>
     </div>
+    {{> footer}}
     {{> body-scripts}}
     {{> sm-scripts}}
     <script src="index.js"></script>

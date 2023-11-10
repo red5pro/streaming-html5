@@ -5,6 +5,7 @@
 <head>
   {{> meta title='Red5 Pro HTML SDK Testbed'}}
   <link rel="stylesheet" href="css/reset.css">
+  <link rel="stylesheet" href="lib/bootstrap/css/bootstrap.min.css">
   <link rel="stylesheet" href="css/testbed.css">
   <script src="script/testbed-config.js"></script>
   <link rel='stylesheet'
@@ -23,10 +24,11 @@
 
 <body>
   {{> top-bar }}
-  {{> navigation isTestPage=false }}
   <div id="app">
     <div id="back-link-container" style="text-align: left;">
-      <p class="back-link"><a href="testbed-menu.html">&lt; Testbed Menu</a></p>
+      <p class="back-link">
+        <img src="images/red-arrow-right.svg">
+        <a href="testbed-menu.html">Testbed Menu</a></p>
       <p class="version-field">Testbed Version: {{ version }}</p>
     </div>
     <div class="ice-background hidden">
@@ -78,17 +80,15 @@
         </select>
       </p>
       <h2 class="centered">WebRTC Specific</h2>
-      <div class="settings-field settings-collapsable">
-        <p>
+      <div>
+        <p class="settings-field settings-collapsable settings-field-row">
           <label class="settings-label">Use WHIP/WHEP Clients&ast;:</label>
           <input type="checkbox" id="whipwhep-field" style="vertical-align: middle;" checked>
         </p>
-        <br>
-        <p>
+        <p class="settings-field settings-collapsable settings-field-row">
           <label class="settings-label">Trickle ICE Candidates:</label>
           <input type="checkbox" id="trickle-field" style="vertical-align: middle;" checked disabled>
         </p>
-        <br>
         <p class="settings-info">&ast;Enabling this will prefer the initial ICE negotiation to be done over HTTP/S.</p>
         <p class="settings-info">More information about <a target="_blank" href="https://www.ietf.org/archive/id/draft-ietf-wish-whip-01.html">WHIP</a> and <a target="_blank" href="https://www.ietf.org/id/draft-murillo-whep-02.html">WHEP</a>.</a></p>
       </div>
@@ -96,9 +96,13 @@
       <p class="settings-field settings-collapsable">
         <label class="settings-label">ICE server:</label>
         <input id="ice-field" name="ice-field" value="stun:stun2.l.google.com:19302">
+      </p>
+      <p class="settings-field settings-collapsable ice-option hidden">
         <label class="settings-label ice-option hidden">ICE username:</label>
         <input id="ice-username" class="ice-option-field hidden" name="ice-username" value=""
           placeholder="required for TURN">
+      </p>
+      <p class="settings-field settings-collapsable ice-option hidden">
         <label class="settings-label ice-option hidden">ICE credential:</label>
         <input id="ice-credential" class="ice-option-field hidden" name="ice-crential" value=""
           placeholder="required for TURN">
@@ -137,7 +141,7 @@
           <option value="require">require</option>
         </select>
       </p>
-      <p class="settings-field settings-collapsable">
+      <p class="settings-field settings-collapsable  settings-field-row">
         <label class="settings-label">Switch to Data Channel After Connection:</label>
         <input type="checkbox" id="rtc-signal-socket-field" style="vertical-align: middle;">
       </p>
@@ -157,7 +161,7 @@
       </p>
       <hr class="paddedHR" />
       <h2 class="centered">Authentication</h2>
-      <p class="settings-field">
+      <p class="settings-field settings-field-row">
         <label class="settings-label">Authentication Enabled:</label>
         <input type="checkbox" id="auth-enabled-field" name="auth-enabled-field" style="vertical-align: middle;">
       </p>
@@ -179,28 +183,30 @@
         <label class="settings-label">Backend WebSocket For Compositions:</label>
         <input id="backend-composition-field" name="backend-composition-field" value="<mixer-mock-url>"
           placeholder="e.g., mydomain.com">
+      </p>
+      <p class="settings-field settings-collapsable settings-field-row">
         <label class="settings-label">Enable Round Trip Authentication:</label>
         <input type="checkbox" id="enable-mixer-authentication-field" name="enable-mixer-authentication-field"
           unchecked>
       </p>
       <hr class="paddedHR" />
-      <p class="settings-field">
+      <p class="settings-field settings-collapsable settings-field-row">
         <label class="settings-label">Verbose R5 Logging:</label>
         <input type="checkbox" id="logging-field" name="logging-field" style="vertical-align: middle;">
       </p>
-      <p class="settings-field">
+      <p class="settings-field settings-collapsable settings-field-row">
         <label class="settings-label">Video Active:</label>
         <input type="checkbox" id="video-active-field" name="video-active-field" style="vertical-align: middle;">
       </p>
-      <p class="settings-field">
+      <p class="settings-field settings-collapsable settings-field-row">
         <label class="settings-label">Audio Active:</label>
         <input type="checkbox" id="audio-active-field" name="audio-active-field" style="vertical-align: middle;">
       </p>
-      <p class="settings-field">
+      <p class="settings-field settings-collapsable settings-field-row">
         <label class="settings-label">Record Broadcast:</label>
         <input type="checkbox" id="record-field" name="record-field" style="vertical-align: middle;">
       </p>
-      <p class="settings-field">
+      <p class="settings-field settings-collapsable settings-field-row">
         <label class="settings-label">Mute on Autoplay Restriction:</label>
         <input type="checkbox" id="mute-autoplay-field" name="mute-autoplay-field" style="vertical-align: middle;">
       </p>
@@ -498,6 +504,7 @@
 
     })(this, document, window.red5prosk);
   </script>
+  {{> footer}}
 </body>
 
 </html>
