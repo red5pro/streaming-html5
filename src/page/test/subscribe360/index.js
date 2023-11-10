@@ -203,6 +203,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     buttonParent.id = 'button-control-container'
     var button = document.createElement('button')
     var buttonLabel = document.createTextNode('toggle 360')
+    button.classList.add('ui-button')
     button.appendChild(buttonLabel)
     buttonParent.appendChild(button)
     videoParent.appendChild(buttonParent)

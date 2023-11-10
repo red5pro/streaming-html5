@@ -1,0 +1,163 @@
+<!doctype html>
+{{> license}}
+<html lang="eng">
+  <head>
+    {{> meta title='ConferenceStreamManagerProxy'}}
+    {{> header-scripts}}
+    {{> header-stylesheets}}
+    <link rel="stylesheet" href="../../css/conference.css">
+    <script src="../../script/subscription-status.js"></script>
+    <!-- Font Awesome by Dave Gandy - http://fontawesome.io, https://fontawesome.com/v4/license/ -->
+    <link rel="stylesheet" href="../../lib/font-awesome/css/font-awesome.min.css">
+    <style>
+      .red5-icon {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 0
+      }
+      .red5pro-publisher {
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        right: 0;
+        z-index: 1;
+      }
+      .controls, .subscriber-controls {
+        position: absolute;
+        display: flex;
+        column-gap: 10px;
+        filter: drop-shadow(4px 4px 1px #000);
+        z-index: 2;
+      }
+      .publisher-controls {
+        bottom: 20px;
+        right: 20px;
+      }
+      .subscriber-controls {
+        top: 20px;
+        right: 20px;
+        z-index: 3;
+      }
+      .icon {
+        color: white;
+        font-size: 24px;
+      }
+      .clickable-icon {
+        cursor: pointer;
+      }
+      .fa.fa-video-camera-slash:after {
+        position: absolute;
+        content: "/";
+        color: white;
+        font-weight: 700;
+        font-size: 2em;
+        left: 2px;
+        top: -12px;
+        filter: drop-shadow(-4px 4px 0px #000);
+      }
+      .red5pro-media-container {
+        position: absolute!important;
+        left: 0;
+        top: 0;
+        z-index: 2;
+      }
+      #join-button {
+        margin-top: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    {{> top-bar }}
+    <div id="app">
+      {{> settings-link}}
+      {{> test-title title='Conference - Stream Manager Proxy'}}
+      <div class="conference-section">
+        <div id="publisher-container" class="publisher-section publisher-container">
+          <div class="settings-area">
+            <p>
+              <label for="token-field" class="settings-label">Join Token:</label>
+              <input id="token-field" name="token-field" class="settings-input" style="max-width: unset;" placeholder="Join Token">
+            </p>
+          </div>
+          <div id="publisher-session" class="publisher-session hidden">
+          {{> status-field-publisher}}
+          {{> statistics-field packets_field='Packets Sent'}}
+          </div>
+          <div class="centered video-holder">
+            <p class="red5-icon">
+              <svg version="1.0" height="20px" width="20px" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" xml:space="preserve">
+                <style type="text/css">
+                  .st0{fill:#DB1F26;}
+                </style>
+                    <polygon class="st0"
+                      points="12.3,10.9 12.3,6.6 16.8,6.6 16.8,3.8 2,3.8 2,11.6 6.4,11.6 6.4,15.9 2,15.9 2,18.7 16.8,18.7
+            16.8,10.9">
+                    </polygon>
+              </svg>
+            </p>
+            <video id="red5pro-publisher" class="red5pro-publisher"
+                autoplay muted playsinline
+                width="320" height="240">
+            </video>
+            <div id="publisher-mute-controls" class="controls publisher-controls">
+              <i id="video-on-button" class="fa fa-video-camera icon clickable-icon hidden" aria-hidden="true"></i>
+              <i id="video-off-button" class="fa fa-video-camera fa-video-camera-slash icon clickable-icon hidden" aria-hidden="true"></i>
+              <i id="audio-on-button" class="fa fa-microphone icon clickable-icon hidden" aria-hidden="true"></i>
+              <i id="audio-off-button" class="fa fa-microphone-slash icon clickable-icon hidden" aria-hidden="true"></i>
+            </div>
+          </div>
+          <div id="publisher-settings" class="publisher-settings">
+            <p class="remove-on-broadcast">
+              <label class="device-label" for="streamname-field">Stream Name:</label>
+              <input id="streamname-field" name="streamname-field" class="settings-input">
+            </p>
+            <hr class="paddedHR" />
+            <p>
+              <label class="device-label" for="camera-select">Camera:</label>
+              <select class="control device-control settings-input" name="camera-select" id="camera-select"></select>
+            </p>
+            <p>
+              <label class="device-label" for="microphone-select">Microphone:</label>
+              <select class="control device-control settings-input" name="microphone-select" id="microphone-select"></select>
+            </p>
+            <!-- <p id="publisher-mute-notice" class="publisher-mute-notice remove-on-broadcast">
+              <span class="device-info">Video and Audio can be turned off after publish has started.</span>
+            </p> -->
+            <!-- <p id="publisher-mute-controls" class="publisher-mute-controls hidden">
+              <label for="video-check">Video: </label>
+              <input type="checkbox" id="video-check" name="video-check" checked>
+              <label for="audio-check">Audio: </label>
+              <input type="checkbox" id="audio-check" name="audio-check" checked>
+            </p> -->
+            <p id="publisher-name-field" class="publisher-name-field hidden"></p>
+            <div class="remove-on-broadcast">
+              <button id="join-button" class="ui-button">Join!</button>
+            </div>
+          </div>
+        </div>
+        <div id="subscribers" class="subscribers"></div>
+      </div>
+      <div class="centered status-field hidden">
+        <p>
+          <input type="text" id="input-field" />
+          <button id="send-button">send</button>
+        </p>
+        <hr>
+        <p>
+          <textarea id="so-field" disabled style="width: 50%; min-height: 240px; min-width: 320px"></textarea>
+        </p>
+      </div>
+    </div>
+  {{> footer}}
+    {{> body-scripts}}
+    <script src="conference-service.js"></script>
+    <script src="conference-subscriber.js"></script>
+    <script src="device-selector-util.js"></script>
+    <script src="index.js"></script>
+  </body>
+</html>

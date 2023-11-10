@@ -29,7 +29,6 @@
   </head>
   <body>
     {{> top-bar }}
-    {{> navigation isTestPage=true }}
     <div id="app">
       {{> settings-link}}
       {{> test-info testTitle='Publish Flashvars Test (Flash Only)'}}
@@ -40,7 +39,7 @@
               <label class="settings-label" for="framerate-field">Framerate (integer):</label>
               <input name="framerate-field" id="framerate-field" value="15"></input>
               <span class="more-info">More Info:&nbsp;&nbsp;<a href="http://help.adobe.com/en_US/FlashPlatform/reference/actionscript/3/flash/media/Camera.html#setMode()" target="_blank">Camera FPS</a></span>
-              
+
             </p>
             <hr class="paddedHR">
             <p class="settings-field settings-collapsable">
@@ -95,6 +94,7 @@
         </div>
       </div>
     </div>
+    {{> footer}}
     {{> body-scripts}}
     <script src="index.js"></script>
   </body>

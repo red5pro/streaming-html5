@@ -1,5 +1,5 @@
 <h3 align="center">
-  <img src="assets/red5pro_logo.png" alt="Red5 Pro Logo" />
+  <img src="assets/Red5_Truetime_black.png" alt="Red5 Pro Logo" />
 </h3>
 <p align="center">
   <a href="#requirements">requirements</a> &bull;
@@ -15,7 +15,7 @@ This repository contains a simple project with a number of examples that can be 
 
 You will need a functional, running Red5 Pro server web- (or locally-) accessible for the client browser (mobile & desktop) to connect to.
 
-For more information visit [Red5Pro.com](http://red5pro.com).
+For more information visit [https://www.red5.net/](https://www.red5.net/).
 
 ### Browser Compability
 

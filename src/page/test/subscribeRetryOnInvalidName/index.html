@@ -5,10 +5,16 @@
     {{> meta title='WebRTC Subscriber Retry On Connection'}}
     {{> header-scripts}}
     {{> header-stylesheets}}
+    <style>
+      .controls-container {
+        background-color: #eee;
+        padding: 20px;
+        text-align: center;
+      }
+    </style>
   </head>
   <body>
     {{> top-bar }}
-    {{> navigation isTestPage=true }}
     <div id="app">
       {{> settings-link}}
       {{> test-info testTitle='Subscriber Retry On Connection (WebRTC)'}}
@@ -22,11 +28,12 @@
                   width="640" height="480">
           </video>
         </div>
-        <div>
+        <div class="controls-container">
           <button id="retry-button" class="ui-button" disabled>Retry Subscription</button>
         </div>
       </div>
     </div>
+    {{> footer}}
     {{> body-scripts}}
     {{> mobile-subscriber-util}}
     <script src="index.js"></script>

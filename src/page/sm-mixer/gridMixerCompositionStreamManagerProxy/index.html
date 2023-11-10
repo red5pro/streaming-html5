@@ -141,8 +141,8 @@
             flex-direction: row;
             flex: 1;
             margin: 12px;
-            height: 100%;
             position: relative;
+            column-gap: 10px;
         }
 
         /*
@@ -158,8 +158,7 @@
         }
 */
         .media-list-container {
-            border: 1px solid black;
-            flex: 1;
+            border: 1px solid #aaa;
             display: flex;
             flex-wrap: wrap;
             flex-direction: column;
@@ -167,6 +166,7 @@
             max-width: 500px;
             padding: 20px;
             align-content: baseline;
+            min-width: 300px;
         }
 
         .mixer-container {
@@ -178,6 +178,7 @@
             color: #444;
             margin: 0px;
             flex-grow: 1;
+            border: 1px solid #aaa;
         }
 
         .box {
@@ -310,9 +311,11 @@
 
         .composition-editor-container {
             height: 100%;
-            width: 15%;
+            flex-grow: 1;
             overflow-y: scroll;
             overflow-x: hidden;
+            border: 1px solid #aaa;
+            padding: 10px;
         }
 
         .red5pro-media-container {
@@ -395,13 +398,12 @@
             background-color: #000;
         }
 
-        .tooltip {
+        .tooltip2 {
             position: relative;
             display: inline-block;
-            border-bottom: 1px dotted black;
         }
 
-        .tooltip .tooltiptext {
+        .tooltip2 .tooltiptext {
             visibility: hidden;
             width: 120px;
             background-color: #555;
@@ -422,7 +424,7 @@
             transition: opacity 0.3s;
         }
 
-        .tooltip .tooltiptext::after {
+        .tooltip2 .tooltiptext::after {
             content: "";
             position: absolute;
             top: 100%;
@@ -433,9 +435,14 @@
             border-color: #555 transparent transparent transparent;
         }
 
-        .tooltip:hover .tooltiptext {
+        .tooltip2:hover .tooltiptext {
             visibility: visible;
             opacity: 1;
+        }
+
+        #create-mixers-form, #create-composition-form {
+            display: flex;
+            flex-direction: column;
         }
     </style>
     <link href="//unpkg.com/video.js@7.0.0/dist/video-js.css" rel="stylesheet">
@@ -444,8 +451,7 @@
 
 <body>
     {{> top-bar }}
-    {{> navigation isTestPage=true }}
-    <div id="app" style="height:70%">
+    <div id="app">
         {{> settings-link}}
         <div class="ice-background">
             <div class="test-notification">
@@ -471,8 +477,8 @@
                         <option name=""></option>
                     </select>
                     <p id="event-state">State:</p>
-                    <button id="destroy-composition-button" disabled onclick="destroyComposition()">Destroy</button>
-                    <div class="tooltip">
+                    <button id="destroy-composition-button" class="ui-button" disabled onclick="destroyComposition()">Destroy</button>
+                    <div class="tooltip2">
                         <span class="tooltiptext">Check to have the page auto assign streams to mixers</span>
                         <p>Automatically Add Streams to Composition?</p>
                         <input id="add-stream-automatically" type="checkbox" unchecked />
@@ -484,12 +490,12 @@
                     <br>
                     <h4>Create Mixer Objects:</h4>
                     <br>
-                    <div class="tooltip">
+                    <div class="tooltip2">
                         <span class="tooltiptext">Unique name for the Mixer</span>
                         <label for="mixerName">Mixer Name:</label><br>
                         <input type="text" id="mixerName" name="mixerName" value="1"><br>
                     </div>
-                    <div class="tooltip">
+                    <div class="tooltip2">
                         <span class="tooltiptext">Page to load into the Mixer</span>
                         <label for="mixingPage">Mixing Page:</label><br>
                         <select name="mixingPage" id="mixingPage-select">
@@ -499,44 +505,44 @@
                             <option name="NxN">NxN</option>
                         </select><br>
                     </div>
-                    <div class="tooltip">
+                    <div class="tooltip2">
                         <span class="tooltiptext">App and room scope of the composite stream</span>
                         <label for="scope">Scope:</label><br>
                         <input type="text" id="scope" name="scope" value="live"><br>
                     </div>
-                    <div class="tooltip">
+                    <div class="tooltip2">
                         <span class="tooltiptext">Stream Name of the composite stream</span>
                         <label for="streamName">Stream Name:</label><br>
                         <input type="text" id="streamName" name="streamName" value=""><br>
                     </div>
-                    <div class="tooltip">
+                    <div class="tooltip2">
                         <span class="tooltiptext">Width of the composite stream</span>
                         <label for="width">Width:</label><br>
                         <input type="number" id="width" min="0" max="4096" name="width" value="1920"><br>
                     </div>
-                    <div class="tooltip">
+                    <div class="tooltip2">
                         <span class="tooltiptext">Height of the composite stream</span>
                         <label for="height">Height:</label><br>
                         <input type="number" id="height" min="0" max="2160" name="height" value="1080"><br>
                     </div>
-                    <div class="tooltip">
+                    <div class="tooltip2">
                         <span class="tooltiptext">Framerate of the composite stream</span>
                         <label for="framerate">Framerate:</label><br>
                         <input type="number" id="framerate" min="0" max="60" name="framerate" value="30"><br>
                     </div>
-                    <div class="tooltip">
+                    <div class="tooltip2">
                         <span class="tooltiptext">Bitrate of the composite stream</span>
                         <label for="bitrate">Bitrate:</label><br>
                         <input type="number" id="bitrate" min="0" name="bitrate" value="4500000"><br>
                     </div>
-                    <div class="tooltip">
+                    <div class="tooltip2">
                         <span class="tooltiptext">Mixer Name to publish to, or leave empty to publish to the Red5 Pro
                             Cluster</span>
                         <label for="destinationMixerName">Destination Mixer Name:</label><br>
                         <input type="text" id="destinationMixerName" name="destinationMixerName"><br>
                     </div>
                     <br>
-                    <button type="submit">Add Mixer</button>
+                    <button type="submit" class="ui-button">Add Mixer</button>
                 </form>
                 <br>
                 <p>Mixers For Composition:</p>
@@ -545,24 +551,24 @@
                 </div>
                 <br>
                 <form id="create-composition-form">
-                    <div class="tooltip">
+                    <div class="tooltip2">
                         <span class="tooltiptext">Unique event name</span>
                         <label for="event">Event Name:</label><br>
                         <input type="text" id="event" name="event" value="event1"><br>
                     </div>
-                    <div class="tooltip">
+                    <div class="tooltip2">
                         <span class="tooltiptext">Check to transcode the composite stream</span>
                         <label for="transcodeComposition">Transcode Composition:</label><br>
                         <input type="checkbox" id="transcodeComposition" name="transcodeComposition"><br>
                     </div>
-                    <div class="tooltip">
+                    <div class="tooltip2">
                         <span class="tooltiptext">Region where the Mixer is deployed</span>
                         <label for="location">Mixer Region:</label><br>
                         <select name="mixer-region-name" id="mixer-region-select">
                         </select>
                     </div>
                     <br>
-                    <button type="submit">Create Composition</button>
+                    <button type="submit" class="ui-button">Create Composition</button>
                 </form>
             </div>
             <div class="media-list-container">
@@ -580,6 +586,7 @@
 
 
     </div>
+  {{> footer}}
     {{> body-scripts}}
     <script src="../../script/red5pro-utils.js"></script>
     <script src="../../script/publisher-status.js"></script>

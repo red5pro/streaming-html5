@@ -19,11 +19,14 @@
         margin: 0!important;
         margin-top: 10px;
       }
+      #login-form {
+        text-align: center;
+        padding-bottom: 20px;
+      }
     </style>
   </head>
   <body>
     {{> top-bar }}
-    {{> navigation isTestPage=true }}
     <div id="app">
       {{> settings-link}}
       {{> test-info testTitle='Publish RoundTrip Auth Test'}}
@@ -46,6 +49,7 @@
         </div>
       </div>
     </div>
+    {{> footer}}
     {{> body-scripts}}
     <script src="index.js"></script>
   </body>

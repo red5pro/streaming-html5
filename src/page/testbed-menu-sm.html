@@ -5,6 +5,7 @@
 <head>
   {{> meta title='Red5 Pro HTML SDK Testbed'}}
   <link rel="stylesheet" href="css/reset.css">
+  <link rel="stylesheet" href="lib/bootstrap/css/bootstrap.min.css">
   <link rel="stylesheet" href="css/testbed.css">
   <script src="script/testbed-config.js"></script>
   <link rel='stylesheet'
@@ -14,17 +15,18 @@
 
 <body>
     {{> top-bar }}
-    {{> navigation isTestPage=false }}
     <div id="app">
       <div id="back-link-container" style="text-align: left;">
-        <p class="back-link"><a href="index.html">&lt; Settings</a></p>
+        <p class="back-link">
+          <img src="images/red-arrow-right.svg">
+          <a href="index.html">Settings</a>
         <p class="version-field">Testbed Version: {{ version }}</p>
       </div>
       <div id="settings-container">
         <h1 class="centered">Red5 Pro HTML Stream Manager Testbed</h1>
         <hr class="paddedHR" />
           <ul id="test-list">
-            <li class="top-level-listing"><a href="testbed-menu.html">Non-Stream Manager Tests</a></li>
+            <li class="top-level-listing"><a href="testbed-menu.html">Non-Stream Manager Tests&nbsp;&nbsp;<img src="images/black-arrow.svg"></a></li>
             <li><a href="sm-test/publishStreamManagerProxy">Publish - Stream Manager Proxy</a></li>
             <li><a href="sm-test/publishStreamManagerProxyAMFMetadata">Publish - Stream Manager Proxy AMF Metadata</a></li>
             <li><a href="sm-test/publishStreamManagerProxyCamera">Publish - Stream Manager Proxy w/ Camera Selection</a></li>
@@ -43,7 +45,7 @@
             <li><a href="sm-test/publishStreamManagerProxyValidation">Publish - Stream Manager Proxy Validation</a></li>
             <li></li>
             <!--<li><a href="sm-test/TwoWayStreamManagerProxy">Two Way - Stream Manager Proxy</a></li>-->
-            <li><a href="sm-test/ConferenceStreamManagerProxy">Conference - Stream Manager Proxy</a></li>
+            <li><a href="sm-test/ConferenceAPIStreamManagerProxy">Conference - Stream Manager Proxy</a></li>
             <li><a href="sm-test/sharedObjectStreamManagerProxy">Shared Object (WebSocket Only) - Stream Manager Proxy</a></li>
             <li><a href="sm-test/castlabsStreamManagerProxy">castLabs - DRM Encrypted Playback, Stream Manager Proxy</a></li>
             <li></li>
@@ -67,6 +69,7 @@
             <li><a href="sm-test/playbackVODStreamManagerList">Playback List - VOD Stream Manager</a></li>
           </ul>
     </div>
+  {{> footer}}
 </body>
 
 </html>

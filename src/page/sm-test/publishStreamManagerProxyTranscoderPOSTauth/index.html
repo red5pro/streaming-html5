@@ -52,7 +52,7 @@
         margin: 0!important;
       }
       .form-container {
-        padding: 20px 0 0 0;
+        padding: 20px 0 20px 0;
         text-align: center;
       }
       .transcoder-form-container {
@@ -78,7 +78,6 @@
   </head>
   <body>
     {{> top-bar }}
-    {{> navigation isTestPage=true }}
     <div id="app">
       {{> settings-link}}
       <div class="ice-background">
@@ -129,6 +128,7 @@
         </div>
       </div>
     </div>
+    {{> footer}}
     {{> body-scripts}}
     {{> sm-scripts}}
     <script src="index.js"></script>

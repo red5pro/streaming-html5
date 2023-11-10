@@ -17,11 +17,13 @@
     }
 
     .settings-area {
-      background-color: #eeee;
+      background-color: #eee;
+      padding-bottom: 20px;
     }
 
     .settings-field {
       padding-top: 1rem;
+      justify-content: center;
     }
 
     .settings-field,
@@ -39,7 +41,6 @@
 
 <body>
   {{> top-bar }}
-  {{> navigation isTestPage=true }}
   <div id="app">
     {{> settings-link}}
     {{> sm-proxy-notification}}
@@ -83,6 +84,7 @@
       </div>
     </div>
   </div>
+    {{> footer}}
   {{> body-scripts}}
   {{> sm-scripts}}
   <script src="index.js"></script>

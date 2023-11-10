@@ -10,6 +10,7 @@
         max-width: 300px;
         margin: 20px auto;
         border: 1px solid #aaa;
+        padding: unset;
       }
       .call-list-item-even {
         background-color: #fff;
@@ -21,7 +22,6 @@
   </head>
   <body>
     {{> top-bar }}
-    {{> navigation isTestPage=true }}
     <div id="app">
       {{> settings-link}}
       {{> test-info testTitle='Subscriber Server Call Test'}}
@@ -36,11 +36,12 @@
           </video>
         </div>
         <div class="centered" style="padding: 20px; background-color: #eee">
-          <p><button id="call-button" disabled>Get Live Streams</button></p>
+          <p><button id="call-button" class="ui-button" disabled>Get Live Streams</button></p>
           <ul id="call-list"></ul>
         </div>
       </div>
     </div>
+    {{> footer}}
     {{> body-scripts}}
     {{> mobile-subscriber-util}}
     <script src="index.js"></script>

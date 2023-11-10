@@ -7,7 +7,9 @@
     {{> header-stylesheets}}
     <style>
       .settings-area {
-        background-color: #eeee;
+        background-color: #eee;
+        text-align: center;
+        padding-bottom: 20px;
       }
       .settings-field, .settings-field > input {
         font-size: 1em;
@@ -23,7 +25,6 @@
   </head>
   <body>
     {{> top-bar }}
-    {{> navigation isTestPage=true }}
     <div id="app">
       {{> settings-link}}
       <div class="ice-background">
@@ -56,6 +57,7 @@
         </div>
       </div>
     </div>
+    {{> footer}}
     {{> body-scripts}}
     {{> sm-scripts}}
     <script src="index.js"></script>

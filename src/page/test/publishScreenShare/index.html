@@ -8,6 +8,8 @@
     <style>
       .settings-area {
         background-color: #eeee;
+        text-align: center;
+        padding-bottom: 20px;
       }
       .settings-field, .settings-field > input {
         font-size: 1em;
@@ -22,7 +24,6 @@
   </head>
   <body>
     {{> top-bar }}
-    {{> navigation isTestPage=true }}
     <div id="app">
       {{> settings-link}}
       {{> test-info testTitle='Publish Screen Share Test'}}
@@ -65,6 +66,7 @@
         </div>
       </div>
     </div>
+    {{> footer}}
     {{> body-scripts}}
     <script src="index.js"></script>
   </body>

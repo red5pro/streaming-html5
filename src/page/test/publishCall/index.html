@@ -10,6 +10,7 @@
         max-width: 300px;
         margin: 20px auto;
         border: 1px solid #aaa;
+        padding: unset;
       }
       .call-list-item-even {
         background-color: #fff;
@@ -20,14 +21,13 @@
         padding: 5px;
       }
       .list-container {
-        padding-top: 5px;
+        padding: 20px;
         background-color: #dbdbdb;
       }
     </style>
   </head>
   <body>
     {{> top-bar }}
-    {{> navigation isTestPage=true }}
     <div id="app">
       {{> settings-link}}
       {{> test-info testTitle='Publish Server Call Test'}}
@@ -40,12 +40,13 @@
           </video>
         </div>
         <div class="centered list-container">
-          <h2 class="test-title red-text">Current Live Streams</h2>
+          <h2 class="test-title">Current Live Streams</h2>
           <ul id="call-list"></ul>
           <p><button id="call-button" class="ui-button" disabled>Get Live Streams</button></p>
         </div>
       </div>
     </div>
+    {{> footer}}
     {{> body-scripts}}
     <script src="index.js"></script>
   </body>
