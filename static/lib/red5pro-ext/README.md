@@ -9,7 +9,7 @@
 
 # Stream Manager Extension for Red5 Pro HTML SDK
 
-> The **Stream Manager Extension** for Red5 Pro HTML SDK is an extension library that allows for ease in setting up a client-side autoscale solution. The extension library does most of the heavy lifting in communication with the [Stream Manager API](https://www.red5.net/docs/installation/) of the [Red5 Pro Server](https://www.red5pro.com/), providing a familiar API and setup flow similar to the [Red5 Pro HTML SDK](https://account.red5pro.com/download).
+> The **Stream Manager Extension** for Red5 Pro HTML SDK is an extension library that allows for ease in setting up a client-side autoscale solution. The extension library does most of the heavy lifting in communication with the [Stream Manager API](https://www.red5.net/docs/installation/) of the [Red5 Pro Server](https://www.red5pro.com/), providing a familiar API and setup flow similar to the [Red5 Pro HTML SDK](https://account.red5.net/download).
 
 - [Quickstart](#quickstart)
   - [Installation](#installation)
@@ -29,7 +29,7 @@ Before creating the following client-side example, you will first need to set up
 
 In a browser:
 
-1. [Download the latest Red5 Pro HTML SDK Release](https://account.red5pro.com/download)
+1. [Download the latest Red5 Pro HTML SDK Release](https://account.red5.net/download)
 2. [Download the latest Red5 Pro Stream Manager Extension Release](https://github.com/infrared5/red5pro-extension-stream-manager/releases)
 
 ```html
@@ -145,15 +145,15 @@ The **Stream Manager Extension** uses the provided configurations in the `autosc
 
 The **Red5 Pro HTML SDK** is intended to communicate with a [Red5 Pro Server](https://www.red5pro.com/), which allows for broadcasting and consuming live streams utilizing [WebRTC](https://developer.mozilla.org/en-US/docs/Web/Guide/API/WebRTC) and other protocols, including [RTMP](https://en.wikipedia.org/wiki/Real_Time_Messaging_Protocol) and [HLS](https://en.wikipedia.org/wiki/HTTP_Live_Streaming).
 
-As such, you will need a distribution of the [Red5 Pro Server](https://www.red5pro.com/) running locally or accessible from the web, such as [Amazon Web Services](https://www.red5pro.com/docs/server/awsinstall/).
+As such, you will need a distribution of the [Red5 Pro Server](https://www.red5pro.com/) running locally or accessible from the web, such as [Amazon Web Services](https://www.red5.net/docs/installation/installation/awsinstall).
 
 Additionally, to utilize the **Stream Manager Extension**, you will need to enable the [Red5 Pro Autoscaling Feature](https://www.red5.net/docs/installation/).
 
-> **[Click here to start using the Red5 Pro Server today!](https://account.red5pro.com/login)**
+> **[Click here to start using the Red5 Pro Server today!](https://account.red5.net/login)**
 
 # Usage
 
-The section describes the API and configuration schemas required in using the **Stream Manager Extension** for the [Red5 Pro HTML SDK](https://account.red5pro.com/download).
+The section describes the API and configuration schemas required in using the **Stream Manager Extension** for the [Red5 Pro HTML SDK](https://account.red5.net/download).
 
 > For clarity and toe minimize verbosity, the following examples demonstrate esatblishing a client-side autoscale solution using Publishers, however, the same can be applied to Subscribers.
 

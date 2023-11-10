@@ -39,7 +39,7 @@ yarn install --dev red5pro-webrtc-sdk
 
 ### As a local resource with the distributed SDK
 
-If you have not already done so, download the Red5 Pro HTML SDK from your account page: [https://account.red5pro.com/download](https://account.red5pro.com/download).
+If you have not already done so, download the Red5 Pro HTML SDK from your account page: [https://account.red5.net/download](https://account.red5.net/download).
 
 Once downloaded, unzip and move the library files - contained in the `lib` directory of the unzipped download - that makes sens for your project. _For the purposes of these examples, we have maked the entire `lib` directory into the top level of our project._
 
@@ -156,11 +156,11 @@ start()
 
 # Requirements
 
-The **Red5 Pro WebRTC SDK** is intended to communicate with a [Red5 Pro Server](https://www.red5pro.com/), which allows for broadcasting and consuming live streams utilizing [WebRTC](https://developer.mozilla.org/en-US/docs/Web/Guide/API/WebRTC) and other protocols, including [HLS](https://en.wikipedia.org/wiki/HTTP_Live_Streaming).
+The **Red5 Pro WebRTC SDK** is intended to communicate with a [Red5 Pro Server](https://www.red5.net/), which allows for broadcasting and consuming live streams utilizing [WebRTC](https://developer.mozilla.org/en-US/docs/Web/Guide/API/WebRTC) and other protocols, including [HLS](https://en.wikipedia.org/wiki/HTTP_Live_Streaming).
 
-As such, you will need a distribution of the [Red5 Pro Server](https://www.red5pro.com/) running locally or accessible from the web, such as [Amazon Web Services](https://www.red5pro.com/docs/server/awsinstall/).
+As such, you will need a distribution of the [Red5 Pro Server](https://www.red5.net) running locally or accessible from the web, such as [Amazon Web Services](https://www.red5.net/docs/installation/installation/awsinstall).
 
-> **[Click here to start using the Red5 Pro Server today!](https://account.red5pro.com/login)**
+> **[Click here to start using the Red5 Pro Server today!](https://account.red5.net/login)**
 
 ## Publisher Selection & Initialization
 
@@ -175,7 +175,7 @@ The use of a WebSocket is still available in `RTCPublisher` and `RTCSubscriber` 
 
 _NOTE_: Aside from the recommendation to utilize the [adapter.js](https://github.com/webrtc/adapter) library to "shim" similar functionality across WebRTC-supported browesers, the Red5 Pro SDK itself does not provide any polyfills for support. As such, the SDK checks the inherent support of the browser in its failover process.
 
-> Read more about configurations and their attributes from the [Red5 Pro HTML SDK Documentation](https://red5pro.com/docs/client/webrtc/publisher/overview/).
+> Read more about configurations and their attributes from the [Red5 Pro HTML SDK Documentation](https://www.red5.net/docs/development/publisher/webrtc/).
 
 ### Publishing
 
