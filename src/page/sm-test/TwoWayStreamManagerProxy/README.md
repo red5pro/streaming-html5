@@ -55,4 +55,4 @@ fetch(url).then(function (res) {
 })
 ```
 
-After that, it's handled the same way that the returned data from the `streams` servlet would have been. For more information on this and other parts of the Stream Manager API, see our dcumentation [here](https://www.red5pro.com/docs/autoscale/streammanagerapi-v2.html)
+After that, it's handled the same way that the returned data from the `streams` servlet would have been. For more information on this and other parts of the Stream Manager API, see our dcumentation [here](https://www.red5.net/docs/installation/streammanagerapi-v2.html)
