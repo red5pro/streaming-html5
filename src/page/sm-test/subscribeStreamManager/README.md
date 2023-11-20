@@ -6,9 +6,10 @@ With the Stream Manager, our configuration IP will be used similarly for publish
 
 **Please refer to the [Basic Subscriber Documentation](../subscribe/README.md) to learn more about the basic setup.**
 
-> In order to properly run the Stream Manager examples, you will need to configure you server for cluster infrastructure as described in the following documentation: [https://www.red5pro.com/docs/server/autoscale/](https://www.red5pro.com/docs/server/autoscale/).
+> In order to properly run the Stream Manager examples, you will need to configure you server for cluster infrastructure as described in the following documentation: [https://www.red5.net/docs/installation/](https://www.red5.net/docs/installation/).
 
 ## Example Code
+
 - **[index.html](index.html)**
 - **[index.js](index.js)**
 
@@ -17,35 +18,53 @@ With the Stream Manager, our configuration IP will be used similarly for publish
 In order to subscribe, you first need to connect to the origin server's Stream Manager. The Stream Manager will know which edges are active and provide the one that you need to subscribe from.
 
 ```js
-function requestEdge (configuration) {
-    var host = configuration.host;
-    var app = configuration.app;
-    var port = serverSettings.httpport;
-    var portURI = (port.length > 0 ? ':' + port : '');
-    var baseUrl = isSecure ? protocol + '://' + host : protocol + '://' + host + portURI;
-    var streamName = configuration.stream1;
-    var apiVersion = configuration.streamManagerAPI || '4.0';
-    var url = baseUrl + '/streammanager/api/' + apiVersion + '/event/' + app + '/' + streamName + '?action=subscribe';
-    return new Promise(function (resolve, reject) {
-      fetch(url)
-        .then(function (res) {
-          if (res.headers.get("content-type") &&
-            res.headers.get("content-type").toLowerCase().indexOf("application/json") >= 0) {
-              return res.json();
-          }
-          else {
-            throw new TypeError('Could not properly parse response.');
-          }
-        })
-        .then(function (json) {
-          resolve(json.serverAddress);
-        })
-        .catch(function (error) {
-          var jsonError = typeof error === 'string' ? error : JSON.stringify(error, null, 2)
-          console.error('[SubscribeStreamManagerTest] :: Error - Could not request Edge IP from Stream Manager. ' + jsonError)
-          reject(error)
-        });
-  });
+function requestEdge(configuration) {
+  var host = configuration.host
+  var app = configuration.app
+  var port = serverSettings.httpport
+  var portURI = port.length > 0 ? ':' + port : ''
+  var baseUrl = isSecure
+    ? protocol + '://' + host
+    : protocol + '://' + host + portURI
+  var streamName = configuration.stream1
+  var apiVersion = configuration.streamManagerAPI || '4.0'
+  var url =
+    baseUrl +
+    '/streammanager/api/' +
+    apiVersion +
+    '/event/' +
+    app +
+    '/' +
+    streamName +
+    '?action=subscribe'
+  return new Promise(function (resolve, reject) {
+    fetch(url)
+      .then(function (res) {
+        if (
+          res.headers.get('content-type') &&
+          res.headers
+            .get('content-type')
+            .toLowerCase()
+            .indexOf('application/json') >= 0
+        ) {
+          return res.json()
+        } else {
+          throw new TypeError('Could not properly parse response.')
+        }
+      })
+      .then(function (json) {
+        resolve(json.serverAddress)
+      })
+      .catch(function (error) {
+        var jsonError =
+          typeof error === 'string' ? error : JSON.stringify(error, null, 2)
+        console.error(
+          '[SubscribeStreamManagerTest] :: Error - Could not request Edge IP from Stream Manager. ' +
+            jsonError
+        )
+        reject(error)
+      })
+  })
 }
 ```
 

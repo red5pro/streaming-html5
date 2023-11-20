@@ -6,7 +6,7 @@ Streammanager autoscaling works with dynamic nodes which are associated with dyn
 
 **Please refer to the [Basic Publisher Documentation](../publish/README.md) to learn more about the basic setup.**
 
-> In order to properly run the Stream Manager examples, you will need an autoscale environment. See [cloud-specific setup details here](https://www.red5pro.com/docs/installation/).
+> In order to properly run the Stream Manager examples, you will need an autoscale environment. See [cloud-specific setup details here](https://www.red5.net/installation/).
 
 > You also need to ensure that the stream manager proxy layer is `enabled`. The configuration section can be found in the stream manager's config file - `red5-web.properties`
 

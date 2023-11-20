@@ -1,2 +1,9 @@
 *.hbs
 *.html
+**/*.min.js
+**/*.min.css
+src/page/test/castlabs/dummyframe.js
+src/page/test/castlabs/worker.js
+src/page/sm-test/castlabsStreamManagerProxy/dummyframe.js
+src/page/sm-test/castlabsStreamManagerProxyv/worker.js
+

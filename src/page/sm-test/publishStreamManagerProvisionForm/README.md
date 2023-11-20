@@ -12,7 +12,7 @@ Streammanager autoscaling works with dynamic nodes which are associated with dyn
 
 ## Server Configuration
 
-> Please read about [WHIP/WHEP Configuration for Standalone and Stream Manager support.](https://www.red5pro.com/docs/special/user-guide/whip-whep-configuration/)
+> Please read about [WHIP/WHEP Configuration for Standalone and Stream Manager support.](https://www.red5.net/docs/special/user-guide/whip-whep-configuration/#gatsby-focus-wrapper)
 
 You also need to ensure that the stream manager proxy layer is `enabled`. The configuration section can be found in stream manager's config file - `red5-web.properties`
 

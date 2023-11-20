@@ -9,7 +9,7 @@ This is an example of authenticating a Broadcast for stream playback.
 - **[index.html](index.html)**
 - **[index.js](index.js)**
 
-> This example requires you to enable the `SimpleAuthentication` Plugin for the `live` webapp. More information: [Simple Authentication Plugin](https://www.red5pro.com/docs/server/authplugin).
+> This example requires you to enable the `SimpleAuthentication` Plugin for the `live` webapp. More information: [Simple Authentication Plugin](https://www.red5.net/docs/special/authplugin/overview
 
 # Authenticating
 

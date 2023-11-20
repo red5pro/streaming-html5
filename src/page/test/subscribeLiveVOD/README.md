@@ -117,7 +117,7 @@ To turn them on, you will need to define the `controls` property on the `video` 
 </video>
 ```
 
-> You can provide your own custom controls and/or class declarations easily following this [guideline](https://www.red5pro.com/docs/development/playbackcontrols/overview/).
+> You can provide your own custom controls and/or class declarations easily following this [guideline](https://www.red5.net/docs/development/playbackcontrols/playback-controls).
 
 # Example
 

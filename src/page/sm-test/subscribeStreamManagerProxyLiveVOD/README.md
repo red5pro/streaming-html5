@@ -116,7 +116,7 @@ Provide an optional `options` configuration that will be assigned untouched to t
 
 Flag to use the default playback controls of the SDK to play, pause, live scrub, and additional actions. If setting this to `false`, you will need to create and manage your own controls to interact with the live and VOD content
 
-> You can also provide your own custom controls and/or class declarations easily following this [guideline](https://www.red5pro.com/docs/development/playbackcontrols/overview/).
+> You can also provide your own custom controls and/or class declarations easily following this [guideline](https://www.red5.net/docs/development/playbackcontrols/playback-controls).
 
 # Example
 

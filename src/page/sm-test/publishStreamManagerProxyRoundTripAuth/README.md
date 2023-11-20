@@ -11,7 +11,7 @@ This is an example of authenticating a Broadcast for stream playback using Round
 
 ## Server Configuration
 
-> Please read about [WHIP/WHEP Configuration for Standalone and Stream Manager support.](https://www.red5pro.com/docs/special/user-guide/whip-whep-configuration/)
+> Please read about [WHIP/WHEP Configuration for Standalone and Stream Manager support.](https://www.red5.net/docs/special/user-guide/whip-whep-configuration/)
 
 You also need to ensure that the stream manager proxy layer is `enabled`. The configuration section can be found in stream manager's config file - `red5-web.properties`
 
@@ -29,7 +29,7 @@ The client then connects to the Red5 Pro media server using the `username`, `pas
 
 The application server returns a json to the media server indicating whether the `broadcast` should be allowed or not for the given `username`, `password` & `stream name`. The media server then accepts or rejects the client request accordingly.
 
-Passing of the `token` param is optional and depends on the `SimpleAuthentication` Plugin's `RoundTripValidator` configuration.More information: [Simple Authentication Plugin](https://www.red5pro.com/docs/server/authplugin#roundtripvalidator).
+Passing of the `token` param is optional and depends on the `SimpleAuthentication` Plugin's `RoundTripValidator` configuration.More information: [Simple Authentication Plugin](https://www.red5.net/docs/special/authplugin/overview
 
 For example, if you have defined the authorization of a user `foo` with a password `bar` along with a `token` value of `mytoken`, the configuration addition would look like the following:
 

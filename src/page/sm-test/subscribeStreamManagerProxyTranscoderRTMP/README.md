@@ -10,10 +10,9 @@ Subscription to an ABR-enabled stream differs for Flash/RTMP from that of WebRTC
 
 Streammanager autoscaling works with dynamic nodes which are associated with dynamic IP addresses and cannot have a SSL attached to them. The proxy layer helps subscribers to connect and initiate a WebRTC `subscribe` session from a `secure` (ssl enabled) domain to a `unsecure` Red5pro origin having using an IP address.
 
-
 **Please refer to the [Basic Subscriber Documentation](../subscribe/README.md) to learn more about the basic setup.**
 
-> In order to properly run the Stream Manager examples, you will need to configure you server for cluster infrastructure as described in the following documentation: [https://www.red5pro.com/docs/server/autoscale/](https://www.red5pro.com/docs/server/autoscale/).
+> In order to properly run the Stream Manager examples, you will need to configure you server for cluster infrastructure as described in the following documentation: [https://www.red5.net/docs/installation/](https://www.red5.net/docs/installation/).
 
 > You also need to ensure that the stream manager proxy layer is `enabled`. The configuration section can be found in stream manager's config file - `red5-web.properties`
 
@@ -107,11 +106,11 @@ https://yourcompany.com/streammanager/api/3.0/event/live/mystream_1?action=subsc
 Use the information from the JSON response to configure the initial connection configuration of the Flahs-based subscriber:
 
 ```js
-function determineSubscriber (jsonResponse) {
-  var host = jsonResponse.serverAddress;
-  var name = jsonResponse.name;
-  var app = jsonResponse.scope;
-  var config = Object.assign({}, configuration, defaultConfiguration);
+function determineSubscriber(jsonResponse) {
+  var host = jsonResponse.serverAddress
+  var name = jsonResponse.name
+  var app = jsonResponse.scope
+  var config = Object.assign({}, configuration, defaultConfiguration)
   var rtmpConfig = Object.assign({}, config, {
     host: host,
     app: app,
@@ -124,10 +123,10 @@ function determineSubscriber (jsonResponse) {
     backgroundColor: '#000000',
     swf: '../../lib/red5pro/red5pro-subscriber.swf',
     swfobjectURL: '../../lib/swfobject/swfobject.js',
-    productInstallURL: '../../lib/swfobject/playerProductInstall.swf'
+    productInstallURL: '../../lib/swfobject/playerProductInstall.swf',
   })
-  var subscriber = new red5prosdk.RTMPSubscriber();
-  return subscriber.init(rtmpConfig);
+  var subscriber = new red5prosdk.RTMPSubscriber()
+  return subscriber.init(rtmpConfig)
 }
 ```
 
@@ -138,15 +137,14 @@ function determineSubscriber (jsonResponse) {
 Once the client is embedded successfully on the page, the ABR Provision and the current target level is provided to the Flash subscriber client using the `setABRVariants` call:
 
 ```js
-function onSubscriberEvent (event) {
-  console.log('[Red5ProSubsriber] ' + event.type + '.');
-  updateStatusFromEvent(event);
+function onSubscriberEvent(event) {
+  console.log('[Red5ProSubsriber] ' + event.type + '.')
+  updateStatusFromEvent(event)
   if (event.type === 'FlashPlayer.Embed.Success') {
-    targetSubscriber.setABRVariants(abrSettings, abrLevel);
-  }
-  else if (event.type === 'RTMP.AdaptiveBitrate.Level') {
-    abrLevel = event.data.level;
-    streamInfoField.innerText = "Stream Level: " + event.data.stream.name;
+    targetSubscriber.setABRVariants(abrSettings, abrLevel)
+  } else if (event.type === 'RTMP.AdaptiveBitrate.Level') {
+    abrLevel = event.data.level
+    streamInfoField.innerText = 'Stream Level: ' + event.data.stream.name
   }
 }
 ```
@@ -163,9 +161,9 @@ The `InsufficientBandwidth` event is sent from the server and notified on any su
 
 The follow API has been provided to the Flash-based Subscriber to allow for Adaptive Bitrate (ABR) logic:
 
-* [setABRVariants](#setabrvariants)
-* [setABRLevel](#setabrlevel)
-* [setABRVariantUpgradeSettings](#setabrvariantupgradesettings)
+- [setABRVariants](#setabrvariants)
+- [setABRLevel](#setabrlevel)
+- [setABRVariantUpgradeSettings](#setabrvariantupgradesettings)
 
 ## setABRVariants
 
@@ -175,8 +173,8 @@ Request to use the provide ABR Variants when performing Adaptive Bitrate Control
 
 ### arguments
 
-* **abrVariants**:Object - Provisioning Variants object. _described above_.
-* **level**:int - The target level to begin playback.
+- **abrVariants**:Object - Provisioning Variants object. _described above_.
+- **level**:int - The target level to begin playback.
 
 ## setABRLevel
 
@@ -184,8 +182,8 @@ Request to set ABR level explicitly. The SDK attempts to properly choose the cor
 
 ### arguments
 
-* **level**:Object - The level to set the ABR based on the variants provided in `setABRVariants`.
-* **firm**:Boolean - Flag to set level firmly, disabling the automatic switching of the Adaptive Bitrate Controller.
+- **level**:Object - The level to set the ABR based on the variants provided in `setABRVariants`.
+- **firm**:Boolean - Flag to set level firmly, disabling the automatic switching of the Adaptive Bitrate Controller.
 
 ## setABRVariantUpgradeSettings
 
@@ -193,7 +191,7 @@ Provides the upgrade settings to use by the Adaptive Bitrate Control in upgradin
 
 ### arguments
 
-* **abrVariantUpgrades**:Object - A configuration object that defines the associated retry limits based on levels of the Provision Variants.
+- **abrVariantUpgrades**:Object - A configuration object that defines the associated retry limits based on levels of the Provision Variants.
 
 ### example
 
