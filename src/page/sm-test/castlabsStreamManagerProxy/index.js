@@ -247,6 +247,11 @@ const onEncryptedSubscriberEvent = (event) => {
 
   if (statusExclusions.indexOf(type) > -1) return
   encrypedStatusField.innerText = type
+
+  if (type === 'WebRTC.Endpoint.Changed') {
+    const { data: endpoint } = event
+    encryptedAddressField.innerText = `Edge Address: ${endpoint}`
+  }
 }
 
 const onDecryptedSubscriberEvent = (event) => {
@@ -256,6 +261,11 @@ const onDecryptedSubscriberEvent = (event) => {
 
   if (statusExclusions.indexOf(type) > -1) return
   decryptedStatusField.innerText = type
+
+  if (type === 'WebRTC.Endpoint.Changed') {
+    const { data: endpoint } = event
+    decryptedAddressField.innerText = `Edge Address: ${endpoint}`
+  }
 }
 
 const encryptedPlayback = async () => {
