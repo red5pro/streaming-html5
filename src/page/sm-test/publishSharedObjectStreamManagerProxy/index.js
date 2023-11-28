@@ -247,8 +247,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   function determinePublisher(jsonResponse) {
-    var { app, proxy, preferWhipWhep } = configuration
-    var { WHIPClient, RTCPublisher } = red5prosdk
+    var { app, proxy } = configuration
+    var { RTCPublisher } = red5prosdk
     var { params } = jsonResponse
     var host = jsonResponse.serverAddress
     var scope = jsonResponse.scope
@@ -267,17 +267,15 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         protocol,
         port,
         streamName: name,
-        app: preferWhipWhep ? app : proxy,
-        connectionParams: preferWhipWhep
-          ? connectionParams
-          : {
-              ...connectionParams,
-              host: host,
-              app: scope,
-            },
+        app: proxy,
+        connectionParams: {
+          ...connectionParams,
+          host: host,
+          app: scope,
+        },
       }
     )
-    var publisher = preferWhipWhep ? new WHIPClient() : new RTCPublisher()
+    var publisher = new RTCPublisher()
     return publisher.init(rtcConfig)
   }
 
@@ -359,23 +357,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   const requestOrigin = async (configuration) => {
-    const { preferWhipWhep, host, app, stream1 } = configuration
+    const { host, app, stream1 } = configuration
     var region = getRegionIfDefined()
-    if (!preferWhipWhep) {
-      return streamManagerUtil.getOrigin(host, app, stream1, region)
-    } else {
-      // WHIP/WHEP knows how to handle proxy requests.
-      return {
-        serverAddress: host,
-        scope: app,
-        name: stream1,
-        params: region
-          ? {
-              region,
-            }
-          : undefined,
-      }
-    }
+    return streamManagerUtil.getOrigin(host, app, stream1, region)
   }
 
   function startup() {
