@@ -249,6 +249,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       } else if (event.type === 'Subscribe.Send.Invoke') {
         // Standard RPC call.
         showModal(createRPCMessageContent(event.data))
+      } else if (event.type === 'WebRTC.Endpoint.Changed') {
+        const { host } = configuration
+        const { data: endpoint } = event
+        displayServerAddress(endpoint, host)
       }
     }
   }
@@ -372,19 +376,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     console.log(`Host = ${host} | app = ${app}`)
     if (connectionParams && connectionParams.host && connectionParams.app) {
       displayServerAddress(config.connectionParams.host, host)
-      console.log('Using streammanager proxy for rtc.')
-      console.log(
-        'Proxy target = ' +
-          config.connectionParams.host +
-          ' | ' +
-          'Proxy app = ' +
-          config.connectionParams.app
-      )
-      console.log(
-        `Operation over ${
-          isSecure ? 'secure' : 'unsecure'
-        } connection | protocol: ${protocol} | port: ${port}`
-      )
     } else {
       displayServerAddress(host)
     }
