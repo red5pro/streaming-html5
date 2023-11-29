@@ -249,7 +249,8 @@ const onEncryptedSubscriberEvent = (event) => {
   encrypedStatusField.innerText = type
 
   if (type === 'WebRTC.Endpoint.Changed') {
-    const { data: endpoint } = event
+    const { data } = event
+    const { endpoint } = data
     encryptedAddressField.innerText = `Edge Address: ${endpoint}`
   }
 }
@@ -263,7 +264,8 @@ const onDecryptedSubscriberEvent = (event) => {
   decryptedStatusField.innerText = type
 
   if (type === 'WebRTC.Endpoint.Changed') {
-    const { data: endpoint } = event
+    const { data } = event
+    const { endpoint } = data
     decryptedAddressField.innerText = `Edge Address: ${endpoint}`
   }
 }

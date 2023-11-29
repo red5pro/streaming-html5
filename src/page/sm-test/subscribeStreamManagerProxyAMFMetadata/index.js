@@ -165,7 +165,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
     if (event.type === 'WebRTC.Endpoint.Changed') {
       const { host } = configuration
-      const { data: endpoint } = event
+      const { data } = event
+      const { endpoint } = data
       displayServerAddress(endpoint, host)
     }
   }
