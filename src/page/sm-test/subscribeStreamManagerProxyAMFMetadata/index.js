@@ -163,6 +163,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     if (event.type === 'Subscribe.VideoDimensions.Change') {
       onResolutionUpdate(event.data.width, event.data.height)
     }
+    if (event.type === 'WebRTC.Endpoint.Changed') {
+      const { host } = configuration
+      const { data } = event
+      const { endpoint } = data
+      displayServerAddress(endpoint, host)
+    }
   }
   function processAMFData(event) {
     const data = event.data
@@ -331,7 +337,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     const { preferWhipWhep, host, app, stream1 } = configuration
     var region = getRegionIfDefined()
     if (!preferWhipWhep) {
-      return streamManagerUtil.getOrigin(host, app, stream1, region)
+      return streamManagerUtil.getEdge(host, app, stream1, region)
     } else {
       // WHIP/WHEP knows how to handle proxy requests.
       return {

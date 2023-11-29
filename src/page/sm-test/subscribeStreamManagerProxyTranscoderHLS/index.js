@@ -113,6 +113,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   function onSubscriberEvent(event) {
     console.log('[Red5ProSubsriber] ' + event.type + '.')
     updateStatusFromEvent(event)
+    if (event.type === 'WebRTC.Endpoint.Changed') {
+      const { host } = configuration
+      const { data } = event
+      const { endpoint } = data
+      displayServerAddress(endpoint, host)
+    }
   }
   function onSubscribeFail(message) {
     console.error('[Red5ProSubsriber] Subscribe Error :: ' + message)
@@ -259,29 +265,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     console.log('Host = ' + config.host + ' | ' + 'app = ' + config.app)
     if (subscriber.getType().toLowerCase() === 'rtc') {
       displayServerAddress(config.connectionParams.host, config.host)
-      console.log('Using streammanager proxy for rtc')
-      console.log(
-        'Proxy target = ' +
-          config.connectionParams.host +
-          ' | ' +
-          'Proxy app = ' +
-          config.connectionParams.app
-      )
-      if (isSecure) {
-        console.log(
-          'Operating over secure connection | protocol: ' +
-            config.protocol +
-            ' | port: ' +
-            config.port
-        )
-      } else {
-        console.log(
-          'Operating over unsecure connection | protocol: ' +
-            config.protocol +
-            ' | port: ' +
-            config.port
-        )
-      }
     } else {
       displayServerAddress(config.host)
     }

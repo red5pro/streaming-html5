@@ -23,7 +23,7 @@ NONINFRINGEMENT.   IN  NO  EVENT  SHALL INFRARED5, INC. BE LIABLE FOR ANY CLAIM,
 WHETHER IN  AN  ACTION  OF  CONTRACT,  TORT  OR  OTHERWISE,  ARISING  FROM,  OUT  OF  OR  IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
-;(function (window, document, red5prosdk) {
+;(function (window, document, red5prosdk, streamManagerUtil) {
   'use strict'
 
   var SharedObject = red5prosdk.Red5ProSharedObject
@@ -69,9 +69,20 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     sendMessageOnSharedObject(document.getElementById('input-field').value)
   })
   var colorPicker = document.getElementById('color-picker')
+  var addressField = document.getElementById('address-field')
   var bitrateField = document.getElementById('bitrate-field')
   var packetsField = document.getElementById('packets-field')
   var resolutionField = document.getElementById('resolution-field')
+
+  function displayServerAddress(serverAddress, proxyAddress) {
+    proxyAddress = typeof proxyAddress === 'undefined' ? 'N/A' : proxyAddress
+    addressField.innerText =
+      ' Proxy Address: ' +
+      proxyAddress +
+      ' | ' +
+      ' Origin Address: ' +
+      serverAddress
+  }
 
   var bitrate = 0
   var packetsSent = 0
@@ -105,9 +116,22 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       : { protocol: 'wss', port: serverSettings.wssport }
   }
 
+  var defaultConfiguration = {
+    protocol: getSocketLocationFromProtocol().protocol,
+    port: getSocketLocationFromProtocol().port,
+    streamMode: configuration.recordBroadcast ? 'record' : 'live',
+  }
+
   function onPublisherEvent(event) {
-    console.log('[Red5ProPublisher] ' + event.type + '.')
+    const { type } = event
+    console.log('[Red5ProPublisher] ' + type + '.')
     updateStatusFromEvent(event)
+    if (type === 'WebRTC.Endpoint.Changed') {
+      const { host } = configuration
+      const { data } = event
+      const { endpoint } = data
+      displayServerAddress(endpoint, host)
+    }
   }
   function onPublishFail(message) {
     console.error('[Red5ProPublisher] Publish Error :: ' + message)
@@ -135,6 +159,17 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   function onUnpublishSuccess() {
     console.log('[Red5ProPublisher] Unpublish Complete.')
   }
+  function getRegionIfDefined() {
+    var region = configuration.streamManagerRegion
+    if (
+      typeof region === 'string' &&
+      region.length > 0 &&
+      region !== 'undefined'
+    ) {
+      return region
+    }
+    return undefined
+  }
 
   function getAuthenticationParams() {
     var auth = configuration.authentication
@@ -159,36 +194,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           ? configuration.mediaConstraints.video
           : false,
       },
-    }
-  }
-
-  function getRTMPMediaConfiguration() {
-    return {
-      mediaConstraints: {
-        audio: configuration.useAudio
-          ? configuration.mediaConstraints.audio
-          : false,
-        video: configuration.useVideo
-          ? {
-              width: configuration.cameraWidth,
-              height: configuration.cameraHeight,
-            }
-          : false,
-      },
-    }
-  }
-
-  colorPicker.addEventListener('input', handleColorChangeRequest)
-
-  function handleColorChangeRequest(event) {
-    if (so) {
-      so.setProperty('color', event.target.value)
-      /*
-      so.send('messageTransmit', {
-        user: configuration.stream1,
-        message: 'Color changed to: ' + event.target.value.toString()
-      });
-      */
     }
   }
 
@@ -242,65 +247,47 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   function determinePublisher(jsonResponse) {
+    var { app, proxy } = configuration
+    var { RTCPublisher } = red5prosdk
+    var { params } = jsonResponse
     var host = jsonResponse.serverAddress
-    var app = jsonResponse.scope
-    var config = Object.assign(
+    var scope = jsonResponse.scope
+    var name = jsonResponse.name
+    var { protocol, port } = getSocketLocationFromProtocol()
+
+    var connectionParams = params
+      ? { ...params, ...getAuthenticationParams().connectionParams }
+      : getAuthenticationParams().connectionParams
+    var rtcConfig = Object.assign(
       {},
       configuration,
+      defaultConfiguration,
+      getUserMediaConfiguration(),
       {
-        streamMode: configuration.recordBroadcast ? 'record' : 'live',
-      },
-      getAuthenticationParams(),
-      getUserMediaConfiguration()
+        protocol,
+        port,
+        streamName: name,
+        app: proxy,
+        connectionParams: {
+          ...connectionParams,
+          host: host,
+          app: scope,
+        },
+      }
     )
+    var publisher = new RTCPublisher()
+    return publisher.init(rtcConfig)
+  }
 
-    var rtcConfig = Object.assign({}, config, {
-      protocol: getSocketLocationFromProtocol().protocol,
-      port: getSocketLocationFromProtocol().port,
-      streamName: config.stream1,
-      app: configuration.proxy,
-      connectionParams: {
-        host: host,
-        app: app,
-      },
-    })
-    // Merge in possible authentication params.
-    rtcConfig.connectionParams = Object.assign(
-      {},
-      getAuthenticationParams().connectionParams,
-      rtcConfig.connectionParams
-    )
-
-    var rtmpConfig = Object.assign(
-      {},
-      config,
-      {
-        protocol: 'rtmp',
-        port: serverSettings.rtmpport,
-        streamName: config.stream1,
-        backgroundColor: '#000000',
-        swf: '../../lib/red5pro/red5pro-publisher.swf',
-        swfobjectURL: '../../lib/swfobject/swfobject.js',
-        productInstallURL: '../../lib/swfobject/playerProductInstall.swf',
-      },
-      getRTMPMediaConfiguration()
-    )
-
-    var publishOrder = config.publisherFailoverOrder
-      .split(',')
-      .map(function (item) {
-        return item.trim()
-      })
-
-    if (window.query('view')) {
-      publishOrder = [window.query('view')]
+  function showAddress(publisher) {
+    var config = publisher.getOptions()
+    const { host, app, connectionParams } = config
+    console.log(`Host = ${host} | app = ${app}`)
+    if (connectionParams && connectionParams.host && connectionParams.app) {
+      displayServerAddress(config.connectionParams.host, host)
+    } else {
+      displayServerAddress(host)
     }
-
-    var publisher = new red5prosdk.Red5ProPublisher()
-    return publisher.setPublishOrder(publishOrder).init({
-      rtc: rtcConfig,
-      rtmp: rtmpConfig,
-    })
   }
 
   function unpublish() {
@@ -324,85 +311,64 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     })
   }
 
-  function requestOrigin(configuration) {
-    var host = configuration.host
-    var app = configuration.app
-    var streamName = configuration.stream1
-    var port = serverSettings.httpport
-    var baseUrl = protocol + '://' + host + ':' + port
-    var apiVersion = configuration.streamManagerAPI || '3.1'
-    var url =
-      baseUrl +
-      '/streammanager/api/' +
-      apiVersion +
-      '/event/' +
-      app +
-      '/' +
-      streamName +
-      '?action=broadcast'
-    return new Promise(function (resolve, reject) {
-      fetch(url)
-        .then(function (res) {
-          if (res.status == 200) {
-            if (
-              res.headers.get('content-type') &&
-              res.headers
-                .get('content-type')
-                .toLowerCase()
-                .indexOf('application/json') >= 0
-            ) {
-              return res.json()
-            } else {
-              throw new TypeError('Could not properly parse response.')
-            }
-          } else {
-            var msg = ''
-            if (res.status == 400) {
-              msg = 'An invalid request was detected'
-            } else if (res.status == 404) {
-              msg = 'Data for the request could not be located/provided.'
-            } else if (res.status == 500) {
-              msg = 'Improper server state error was detected.'
-            } else {
-              msg = 'Unknown error'
-            }
-            throw new TypeError(msg)
-          }
+  var retryCount = 0
+  var retryLimit = 3
+  function respondToOrigin(response) {
+    determinePublisher(response)
+      .then(function (publisherImpl) {
+        streamTitle.innerText = configuration.stream1
+        targetPublisher = publisherImpl
+        targetPublisher.on('*', onPublisherEvent)
+        showAddress(targetPublisher)
+        return targetPublisher.publish()
+      })
+      .then(function () {
+        onPublishSuccess(targetPublisher)
+      })
+      .catch(function (error) {
+        var jsonError =
+          typeof error === 'string' ? error : JSON.stringify(error, null, 2)
+        console.error(
+          '[Red5ProPublisher] :: Error in access of Origin IP: ' + jsonError
+        )
+        updateStatusFromEvent({
+          type: red5prosdk.PublisherEventTypes.CONNECT_FAILURE,
         })
-        .then(function (json) {
-          resolve(json)
-        })
-        .catch(function (error) {
-          var jsonError =
-            typeof error === 'string' ? error : JSON.stringify(error, null, 2)
-          console.error(
-            '[PublisherStreamManagerTest] :: Error - Could not request Origin IP from Stream Manager. ' +
-              jsonError
-          )
-          reject(error)
-        })
-    })
+        onPublishFail(jsonError)
+      })
   }
 
-  // Kick off.
-  requestOrigin(configuration)
-    .then(determinePublisher)
-    .then(function (publisherImpl) {
-      streamTitle.innerText = configuration.stream1
-      targetPublisher = publisherImpl
-      targetPublisher.on('*', onPublisherEvent)
-      return targetPublisher.publish()
-    })
-    .then(function () {
-      onPublishSuccess(targetPublisher)
-    })
-    .catch(function (error) {
+  function respondToOriginFailure(error) {
+    if (retryCount++ < retryLimit) {
+      var retryTimer = setTimeout(function () {
+        clearTimeout(retryTimer)
+        startup()
+      }, 1000)
+    } else {
       var jsonError =
         typeof error === 'string' ? error : JSON.stringify(error, null, 2)
-      console.error('[Red5ProPublisher] :: Error in publishing - ' + jsonError)
-      console.error(error)
-      onPublishFail(jsonError)
-    })
+      updateStatusFromEvent({
+        type: red5prosdk.PublisherEventTypes.CONNECT_FAILURE,
+      })
+      console.error(
+        '[Red5ProPublisher] :: Retry timeout in publishing - ' + jsonError
+      )
+    }
+  }
+
+  const requestOrigin = async (configuration) => {
+    const { host, app, stream1 } = configuration
+    var region = getRegionIfDefined()
+    return streamManagerUtil.getOrigin(host, app, stream1, region)
+  }
+
+  function startup() {
+    // Kick off.
+    requestOrigin(configuration)
+      .then(respondToOrigin)
+      .catch(respondToOriginFailure)
+  }
+  startup()
 
   var shuttingDown = false
   function shutdown() {
@@ -419,4 +385,4 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
   window.addEventListener('pagehide', shutdown)
   window.addEventListener('beforeunload', shutdown)
-})(this, document, window.red5prosdk)
+})(this, document, window.red5prosdk, window.streamManagerUtil)

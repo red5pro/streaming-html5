@@ -211,11 +211,16 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     port: getSocketLocationFromProtocol().port,
     streamMode: configuration.recordBroadcast ? 'record' : 'live',
   }
-
   function onPublisherEvent(event) {
-    console.log('[Red5ProPublisher] ' + event.type + '.')
+    const { type } = event
+    console.log('[Red5ProPublisher] ' + type + '.')
     updateStatusFromEvent(event)
-    if (event.type === 'WebRTC.DataChannel.Available') {
+    if (type === 'WebRTC.Endpoint.Changed') {
+      const { host } = configuration
+      const { data } = event
+      const { endpoint } = data
+      displayServerAddress(endpoint, host)
+    } else if (event.type === 'WebRTC.DataChannel.Available') {
       sendRPCButton.disabled = false
       sendMessageButton.disabled = false
       sendDataButton.disabled = false
@@ -336,19 +341,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     console.log(`Host = ${host} | app = ${app}`)
     if (connectionParams && connectionParams.host && connectionParams.app) {
       displayServerAddress(config.connectionParams.host, host)
-      console.log('Using streammanager proxy for rtc.')
-      console.log(
-        'Proxy target = ' +
-          config.connectionParams.host +
-          ' | ' +
-          'Proxy app = ' +
-          config.connectionParams.app
-      )
-      console.log(
-        `Operation over ${
-          isSecure ? 'secure' : 'unsecure'
-        } connection | protocol: ${protocol} | port: ${port}`
-      )
     } else {
       displayServerAddress(host)
     }

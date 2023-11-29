@@ -155,10 +155,16 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   // Local lifecycle notifications.
   function onSubscriberEvent(event) {
-    console.log('[Red5ProSubsriber] ' + event.type + '.')
+    const { type } = event
+    console.log('[Red5ProSubsriber] ' + type + '.')
     updateStatusFromEvent(event)
-    if (event.type === 'Subscribe.VideoDimensions.Change') {
+    if (type === 'Subscribe.VideoDimensions.Change') {
       onResolutionUpdate(event.data.width, event.data.height)
+    } else if (type === 'WebRTC.Endpoint.Changed') {
+      const { host } = configuration
+      const { data } = event
+      const { endpoint } = data
+      displayServerAddress(endpoint, host)
     }
   }
   function onSubscribeFail(message) {
