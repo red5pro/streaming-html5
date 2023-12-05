@@ -52,6 +52,9 @@
         {{> status-field-publisher}}
         {{> statistics-field packets_field='Packets Sent'}}
         <div class="centered">
+          <p id="address-field" class="address-field">Origin Address: N/A</p>
+        </div>
+        <div class="centered">
           <video id="red5pro-publisher" class="red5pro-publisher"
                  controls autoplay playsinline muted>
           </video>
@@ -77,5 +80,6 @@
     {{> footer}}
     {{> body-scripts}}
     <script src="index.js"></script>
+    {{> sm-scripts}}
   </body>
 </html>

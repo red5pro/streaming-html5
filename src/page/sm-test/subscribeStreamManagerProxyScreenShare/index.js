@@ -13,7 +13,7 @@ persons to whom the Software is furnished to do so, subject to the following con
 
 The Software shall be used solely in conjunction with Red5 Pro. Red5 Pro is licensed under a separate end
 user  license  agreement  (the  "EULA"),  which  must  be  executed  with  Infrared5,  Inc.
-An  example  of  the EULA can be found on our website at: https://account.red5pro.com/assets/LICENSE.txt.
+An  example  of  the EULA can be found on our website at: https://account.red5.net/assets/LICENSE.txt.
 
 The above copyright notice and this license shall be included in all copies or portions of the Software.
 
@@ -163,19 +163,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     console.log(`Host = ${host} | app = ${app}`)
     if (connectionParams && connectionParams.host && connectionParams.app) {
       displayServerAddress(config.connectionParams.host, host)
-      console.log('Using streammanager proxy for rtc.')
-      console.log(
-        'Proxy target = ' +
-          config.connectionParams.host +
-          ' | ' +
-          'Proxy app = ' +
-          config.connectionParams.app
-      )
-      console.log(
-        `Operation over ${
-          isSecure ? 'secure' : 'unsecure'
-        } connection | protocol: ${protocol} | port: ${port}`
-      )
     } else {
       displayServerAddress(host)
     }
@@ -188,6 +175,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       updateStatusFromEvent(event)
       if (event.type === 'Subscribe.VideoDimensions.Change') {
         onResolutionUpdate(event.data.width, event.data.height)
+      } else if (event.type === 'WebRTC.Endpoint.Changed') {
+        const { host } = configuration
+        const { data } = event
+        const { endpoint } = data
+        displayServerAddress(endpoint, host)
       }
     }
   }

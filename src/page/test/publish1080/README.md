@@ -55,4 +55,4 @@ publisher
 
 ## Additional Information
 
-To read more about Stream Quality and recommended settings, please visit [The Balancing Act of Stream Quality](https://blog.red5pro.com/stream-settings-for-live-broadcasts-balancing-latency-and-video-quality/) on the [Red5 Pro Blog](https://blog.red5pro.com).
+To read more about Stream Quality and recommended settings, please visit [The Balancing Act of Stream Quality](https://red5pro.zendesk.com/hc/en-us/articles/235679488-Suggested-Resolution-and-Bitrate-Settings).

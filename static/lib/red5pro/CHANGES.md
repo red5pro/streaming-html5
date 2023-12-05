@@ -1,6 +1,6 @@
 # Changes
 
-## 12.0.0-beta.1
+## 12.0.0
 
 - Fix for safari VOD/HLS playback and playhead time. (Todd Anderson)
 - Fix for connectionParams tacked on WHIP/WHEP calls. (Todd Anderson)

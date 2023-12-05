@@ -2,7 +2,7 @@
 
 This example demonstrates multi-party communication using Red5 Pro. It should be used in conjunction with a conference WebSocket host such as [this example](https://github.com/red5pro/red5pro-conference-host).
 
-It is recommended to view this example as part of the `webrtcexamples` webapp shipped with the [Red5 Pro Server](https://account.red5pro.com/download).
+It is recommended to view this example as part of the `webrtcexamples` webapp shipped with the [Red5 Pro Server](https://account.red5.net/download).
 
 ## Basic Publisher
 
@@ -16,7 +16,7 @@ It is recommended to view this example as part of the `webrtcexamples` webapp sh
 
 - **[index.html](index.html)**
 - **[index.js](index.js)**
-- **[conference-subscriber.js](conference-subscriber.js)
+- \*\*[conference-subscriber.js](conference-subscriber.js)
 
 > These examples use the WebRTC-based Publisher and Subscriber implementations only. Additional work will need to be done in order to support all fallback (Flash, HLS, etc.) options.
 
@@ -39,17 +39,16 @@ https://myred5pro.domain/webrtcexamples/test/conference/?socket=mysocketlocation
 Once a publish session has begun, a connection to the `WebSocket Conference Host` is established and messages with regards to active stream listing are handled:
 
 ```js
-function establishSocketHost (publisher, roomName, streamName) {
-    if (hostSocket) return
-    var wsProtocol = socketEndpoint.match(/localhost/) ? 'ws' : 'wss'
-    var url = `${wsProtocol}://${socketEndpoint}?room=${roomName}&streamName=${streamName}`
-    hostSocket = new WebSocket(url)
-    hostSocket.onmessage = function (message) {
-      var payload = JSON.parse(message.data)
-      if (roomName === payload.room) {
-        processStreams(payload.streams, streamsList, roomName, streamName);
-      }
+function establishSocketHost(publisher, roomName, streamName) {
+  if (hostSocket) return
+  var wsProtocol = socketEndpoint.match(/localhost/) ? 'ws' : 'wss'
+  var url = `${wsProtocol}://${socketEndpoint}?room=${roomName}&streamName=${streamName}`
+  hostSocket = new WebSocket(url)
+  hostSocket.onmessage = function (message) {
+    var payload = JSON.parse(message.data)
+    if (roomName === payload.room) {
+      processStreams(payload.streams, streamsList, roomName, streamName)
     }
+  }
 }
 ```
-

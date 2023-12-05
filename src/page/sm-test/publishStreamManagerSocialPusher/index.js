@@ -13,7 +13,7 @@ persons to whom the Software is furnished to do so, subject to the following con
 
 The Software shall be used solely in conjunction with Red5 Pro. Red5 Pro is licensed under a separate end
 user  license  agreement  (the  "EULA"),  which  must  be  executed  with  Infrared5,  Inc.
-An  example  of  the EULA can be found on our website at: https://account.red5pro.com/assets/LICENSE.txt.
+An  example  of  the EULA can be found on our website at: https://account.red5.net/assets/LICENSE.txt.
 
 The above copyright notice and this license shall be included in all copies or portions of the Software.
 
@@ -213,8 +213,15 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   function onPublisherEvent(event) {
-    console.log('[Red5ProPublisher] ' + event.type + '.')
+    const { type } = event
+    console.log('[Red5ProPublisher] ' + type + '.')
     updateStatusFromEvent(event)
+    if (type === 'WebRTC.Endpoint.Changed') {
+      const { host } = configuration
+      const { data } = event
+      const { endpoint } = data
+      displayServerAddress(endpoint, host)
+    }
   }
   function onPublishFail(message) {
     console.error('[Red5ProPublisher] Publish Error :: ' + message)
@@ -307,19 +314,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     console.log(`Host = ${host} | app = ${app}`)
     if (connectionParams && connectionParams.host && connectionParams.app) {
       displayServerAddress(config.connectionParams.host, host)
-      console.log('Using streammanager proxy for rtc.')
-      console.log(
-        'Proxy target = ' +
-          config.connectionParams.host +
-          ' | ' +
-          'Proxy app = ' +
-          config.connectionParams.app
-      )
-      console.log(
-        `Operation over ${
-          isSecure ? 'secure' : 'unsecure'
-        } connection | protocol: ${protocol} | port: ${port}`
-      )
     } else {
       displayServerAddress(host)
     }

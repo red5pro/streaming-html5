@@ -9,7 +9,7 @@ This is an example of authenticating a Broadcast for stream playback using Round
 - **[index.html](index.html)**
 - **[index.js](index.js)**
 
-> This example requires you to enable the `SimpleAuthentication` Plugin with `RoundTripValidator` for the `live` webapp. More information: [Simple Authentication Plugin](https://www.red5pro.com/docs/server/authplugin).
+> This example requires you to enable the `SimpleAuthentication` Plugin with `RoundTripValidator` for the `live` webapp. More information: [Simple Authentication Plugin](https://www.red5.net/docs/special/authplugin/overview
 
 # Authenticating
 
@@ -19,7 +19,7 @@ The client then connects to the Red5 Pro media server using the `username`, `pas
 
 The application server returns a json to the media server indicating whether the `broadcast` should be allowed or not for the given `username`, `password` & `stream name`. The media server then accepts or rejects the client request accordingly.
 
-Passing of the `token` param is optional and depends on the `SimpleAuthentication` Plugin's `RoundTripValidator` configuration.More information: [Simple Authentication Plugin](https://www.red5pro.com/docs/server/authplugin#roundtripvalidator).
+Passing of the `token` param is optional and depends on the `SimpleAuthentication` Plugin's `RoundTripValidator` configuration.More information: [Simple Authentication Plugin](https://www.red5.net/docs/special/authplugin/overview
 
 For example, if you have defined the authorization of a user `foo` with a password `bar` along with a `token` value of `mytoken`, the configuration addition would look like the following:
 
