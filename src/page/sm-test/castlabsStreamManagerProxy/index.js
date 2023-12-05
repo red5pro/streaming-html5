@@ -13,7 +13,7 @@ persons to whom the Software is furnished to do so, subject to the following con
 
 The Software shall be used solely in conjunction with Red5 Pro. Red5 Pro is licensed under a separate end
 user  license  agreement  (the  "EULA"),  which  must  be  executed  with  Infrared5,  Inc.
-An  example  of  the EULA can be found on our website at: https://account.red5pro.com/assets/LICENSE.txt.
+An  example  of  the EULA can be found on our website at: https://account.red5.net/assets/LICENSE.txt.
 
 The above copyright notice and this license shall be included in all copies or portions of the Software.
 
@@ -247,6 +247,12 @@ const onEncryptedSubscriberEvent = (event) => {
 
   if (statusExclusions.indexOf(type) > -1) return
   encrypedStatusField.innerText = type
+
+  if (type === 'WebRTC.Endpoint.Changed') {
+    const { data } = event
+    const { endpoint } = data
+    encryptedAddressField.innerText = `Edge Address: ${endpoint}`
+  }
 }
 
 const onDecryptedSubscriberEvent = (event) => {
@@ -256,6 +262,12 @@ const onDecryptedSubscriberEvent = (event) => {
 
   if (statusExclusions.indexOf(type) > -1) return
   decryptedStatusField.innerText = type
+
+  if (type === 'WebRTC.Endpoint.Changed') {
+    const { data } = event
+    const { endpoint } = data
+    decryptedAddressField.innerText = `Edge Address: ${endpoint}`
+  }
 }
 
 const encryptedPlayback = async () => {

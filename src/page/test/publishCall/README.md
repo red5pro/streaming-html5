@@ -11,7 +11,7 @@ This example demonstrates using the `callServer` API to invoke a method on the A
 
 > These examples use the WebRTC-based Publisher implementation from the Red5 Pro HTML SDK.
 
-_To learn more about the Application Adapter and creating a custom webapp, please refer to [Creating Your First Red5 Pro Server Application](https://www.red5pro.com/docs/server/red5prolive.html)._
+_To learn more about the Application Adapter and creating a custom webapp, please refer to [Creating Your First Red5 Pro Server Application](https://www.red5.net/docs/development/serverside-guides/red5prolive/#red5pro-live-application)._
 
 # Running the Example
 
