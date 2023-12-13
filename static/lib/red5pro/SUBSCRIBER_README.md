@@ -35,7 +35,7 @@ The **Red5 Pro WebRTC SDK** is intended to communicate with a [Red5 Pro Server](
 
 As such, you will need a distribution of the [Red5 Pro Server](https://www.red5pro.com/) running locally or accessible from the web, such as [Amazon Web Services](https://www.red5pro.com/docs/server/awsinstall/).
 
-> **[Click here to start using the Red5 Pro Server today!](https://account.red5pro.com/login)**
+> **[Click here to start using the Red5 Pro Server today!](https://account.red5.net/login)**
 
 # Subscriber Types
 
