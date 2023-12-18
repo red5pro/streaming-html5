@@ -1,5 +1,5 @@
 <h3 align="center">
-  <img src="assets/Red5_Truetime_black.png" alt="Red5 Pro Logo" />
+  <img src="assets/Red5_Truetime_black.png" alt="Red5 Pro Logo" height="65" />
 </h3>
 <p align="center">
   <a href="#requirements">requirements</a> &bull;
