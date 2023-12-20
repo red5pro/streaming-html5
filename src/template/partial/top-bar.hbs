@@ -15,9 +15,11 @@
 }
 
 .Header {
-    padding: 24px 0px;
+    padding: 24px 0px 0px 0px;
     background-color: #0c0c0c;
     display: flex;
+    flex-direction: column;
+    row-gap: 20px;
     justify-content: space-between;
     align-items: center;
     left: 0;
@@ -69,6 +71,51 @@
 .primary-navigation a:hover {
     text-decoration: underline;
     text-decoration-style: dotted;
+}
+
+.menu-items {
+  display: flex;
+  flex-direction: row;
+  justify-content: right;
+  column-gap: 24px;
+  color: white;
+  font-family: 'IBM Plex Mono';
+  text-transform: uppercase;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.menu-resources {
+  cursor: pointer;
+}
+
+.menu-developers > a {
+  color: white;
+  text-decoration: none;
+}
+
+.menu-developers > a:hover {
+  text-decoration: underline;
+  text-decoration-style: dotted;
+}
+
+.nav-container {
+  overflow: hidden;
+  background-color: #1b1b1b;
+  max-height: 0px;
+  padding: 0px 20px;
+  transition: max-height 0.5s ease;
+  transition: padding 0.5s ease;
+  display: flex;
+  justify-content: end;
+  width: 100vw;
+}
+
+.nav-container-open {
+  max-height: 64px;
+  padding: 20px 20px;
+  transition: max-height 0.5s ease;
+  transition: padding 0.5s ease;
 }
 
 </style>
@@ -146,23 +193,44 @@ https://www.red5.net">
   		</a>
      </div>
      <div class="HeaderLinks text-end">
-	    <nav id="site-navigation" class="primary-navigation" aria-label="Primary menu">
-		    <div class="primary-menu-container">
-          <ul id="primary-menu-list" class="HeaderMenuAside"><li id="menu-item-468" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-468"><a href="https://www.red5.net/pricing-anually/">Pricing</a></li>
-            <li id="menu-item-12330" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-12330">
-              <a href="https://www.red5.net/developer-zone/">DOCS</a></li>
-            <li id="menu-item-581" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-581">
-              <a href="https://account.red5.net">Login</a></li>
-            <li id="menu-item-12204" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-12204">
-              <a href="https://account.red5.net/register">SIGN UP</a></li>
-            <li id="menu-item-90" class="book_a_demo menu-item menu-item-type-custom menu-item-object-custom menu-item-90">
-              <a href="https://calendly.com/red5-pro/15-minute-chat" target="_blank">TALK TO US</a></li>
-          </ul>
+        <div class="primary-menu-container menu-items">
+          <p class="menu-resources">
+            <span>Resources</span>
+            <span><img src="images/arrow_down.svg" /></span>
+          </p>
+          <p class="menu-developers">
+            <a href="https://red5.net/docs">Developers</a>
+          </p>
         </div>
-      </nav><!-- #site-navigation -->
+      </div>
     </div>
 	</div>
-
+  <div class="nav-container">
+    <nav id="site-navigation" class="primary-navigation" aria-label="Primary menu">
+      <div class="primary-menu-container">
+        <ul id="primary-menu-list" class="HeaderMenuAside"><li id="menu-item-468" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-468"><a href="https://www.red5.net/pricing-anually/">Pricing</a></li>
+          <li id="menu-item-12330" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-12330">
+            <a href="https://www.red5.net/developer-zone/">DOCS</a></li>
+          <li id="menu-item-581" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-581">
+            <a href="https://account.red5.net">Login</a></li>
+          <li id="menu-item-12204" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-12204">
+            <a href="https://account.red5.net/register">SIGN UP</a></li>
+          <li id="menu-item-90" class="book_a_demo menu-item menu-item-type-custom menu-item-object-custom menu-item-90">
+            <a href="https://calendly.com/red5-pro/15-minute-chat" target="_blank">TALK TO US</a></li>
+        </ul>
+      </div>
+    </nav>
+  </div>
+  <script>
+    (() => {
+      const resources = document.querySelector('.menu-resources');
+      resources.addEventListener('click', () => {
+        const menu = document.querySelector('.nav-container')
+        // menu.classList.toggle('hidden')
+        menu.classList.toggle('nav-container-open')
+      });
+    })()
+  </script>
 </div>
 
 </header>
