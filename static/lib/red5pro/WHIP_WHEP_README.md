@@ -62,6 +62,7 @@ There are two additional configuration properties that pertain to WHIP clients o
 
 - `trickleIce`: flag to send candidates after establishing a connection and generation. Default: _true_. By default, the SDK will send ICE candidates in a patch after POST of an Offer. By turning this to _false_, it will send an all candidates along in the POST of the Offer.
 - `enableChannelSignaling`: flag to also open a data channel for messaging. Default: _true_. You can turn this to _false_ to not open an additional data channel, though **be warned that this will also turn off any essential messaging that comes from the server.**
+- `disableProxy`: flag to use the `Session-Host` header value returned in the initial `OPTIONS` request during negotiation. Default: _true_. If set to `true`, this will use the same `Session-Host` for all negotiation. May be useful in a multiple Stream Manager and region scenario.
 
 # WHEPClient
 
@@ -121,3 +122,4 @@ There are two additional configuration properties that pertain to WHEP clients o
 
 - `trickleIce`: flag to send candidates after establishing a connection and generation. Default: _true_. By default, the SDK will send ICE candidates in a patch after POST of an Offer. By turning this to _false_, it will send an all candidates along in the POST of the Offer.
 - `enableChannelSignaling`: flag to also open a data channel for messaging. Default: _true_. You can turn this to _false_ to not open an additional data channel, though **be warned that this will also turn off any essential messaging that comes from the server.**
+- `disableProxy`: flag to use the `Session-Host` header value returned in the initial `OPTIONS` request during negotiation. Default: _true_. If set to `true`, this will use the same `Session-Host` for all negotiation. May be useful in a multiple Stream Manager and region scenario.
