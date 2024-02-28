@@ -304,9 +304,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     var region = getRegionIfDefined()
     if (!preferWhipWhep) {
 		
-		const jwt = streaManagerUtil.authenticate(host, configuration.streamManagerUser, configuration.streamManagerPassword);
-		
-      return streamManagerUtil.getOrigin(host, app, stream1, region)
+		const jwt = await streamManagerUtil.authenticate(host, configuration.streamManagerUser, configuration.streamManagerPassword);
+		console.log("Got JWT: " + jwt);
+	
+// XXX nate: this is passing region in as transcode, that can't be right
+//      return streamManagerUtil.getOrigin(host, app, stream1, region)
+      return streamManagerUtil.getOrigin(host, configuration.streamManagerNodeGroup, app, stream1, jwt)
     } else {
       // WHIP/WHEP knows how to handle proxy requests.
       return {

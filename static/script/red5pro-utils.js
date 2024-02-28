@@ -313,41 +313,44 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 	 * Given Basic Auth params, request JWT
 	 * curl -v -H "Content-Type: application/json" -X PUT https://admin:xyz123@as-test1.red5pro.net/as/v1/auth/login
 	 */
-	const authenticate = async (smHost, snUser, smPassword) => {
-		const token = "Basic " + btoa(smUser + ":" + smPassword);
-		const result = await fetch(url, {
-				method: 'PUT',
-				withCredentials: true,
-				credentials: 'include',
-				headers: {
-					'Authorization': token,
-					'Content-Type': 'application/json'
-				}
-			})
+	const authenticate = async (smHost, smUser, smPassword) => {
+		console.log("Request Authentication");
 
-		var json = await result.json()
-		if (json.errorMessage) {
-			throw new Error(json.errorMessage)
+		try {
+			const url = `https://${smHost}/as/v1/auth/login`
+			const token = "Basic " + btoa(smUser + ":" + smPassword);
+			const response = await fetch(url, {
+					method: 'PUT',
+					withCredentials: true,
+					credentials: 'include',
+					headers: {
+						'Authorization': token,
+						'Content-Type': 'application/json'
+					}
+				})
+
+			console.log("Authenticate response: " + response.status);
+			
+			var json = await response.json()
+			if (json.errorMessage) {
+				throw new Error(json.errorMessage)
+			}
+			
+			return json.token;
+		} catch (e) {
+			console.log("authenticate() fail: " + e)
+			throw e
 		}
-		
-        return json.token;
 	}
 
 
   /**
    * Request to get Origin data to broadcast on stream manager proxy.
    */
-  const getOrigin = async (host, context, streamName, transcode = false) => {
+  const getOrigin = async (host, nodeGroupName, context, streamName, jwt, transcode = false) => {
     try {
-		
-		// XXX add to configuration XXX
-		var jwt = 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsInJvbGVzIjoiUk9MRV9BRE1JTiIsImV4cCI6MTcwOTA3NjUyM30.TZS9Y9uTLsKvBjkgO1_j22eSEbJzJUiyFJV4iSKCEgg'; 
 		var token = "Bearer " + jwt;
-		var nodeGroupName = 'allinone-oci-1'; 
-		// XXX add to configuration XXX
-		
-		
-		let url = `https://${host}/as/v1/streams/stream/${nodeGroupName}/publish/${context}/${streamName}?action=broadcast`
+		let url = `https://${host}/as/v1/streams/stream/${nodeGroupName}/publish/${context}/${streamName}`
       if (transcode) {
         url += '&transcode=true'
       }
@@ -375,6 +378,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 	  
       return json
     } catch (e) {
+			console.log("getOrigin() fail: " + e)
       throw e
     }
   }
@@ -474,6 +478,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     getOrigin: getOrigin,
     getOriginForConference: getOriginForConference,
     getEdge: getEdge,
+	authenticate: authenticate,
     postTranscode: postTranscode,
     postProvision: postProvision,
   }
