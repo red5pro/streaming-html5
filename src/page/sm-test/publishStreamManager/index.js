@@ -143,19 +143,21 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     var streamName = configuration.stream1
     var port = serverSettings.httpport
     var baseUrl = protocol + '://' + host + ':' + port
-    var apiVersion = configuration.streamManagerAPI || '4.0'
-    var url =
-      baseUrl +
-      '/streammanager/api/' +
-      apiVersion +
-      '/event/' +
-      app +
-      '/' +
-      streamName +
-      '?action=broadcast'
+    var apiVersion = 'v1'; // XXX fix configuration XXX     configuration.streamManagerAPI || 'v1'
+	var jwt = 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsInJvbGVzIjoiUk9MRV9BRE1JTiIsImV4cCI6MTcwOTA3NjUyM30.TZS9Y9uTLsKvBjkgO1_j22eSEbJzJUiyFJV4iSKCEgg'; // XXX add to configuration XXX
+	var nodeGroupName = 'allinone-oci-1'; // XXX add to configuration XXX
+    var url = baseUrl + '/as/' + apiVersion + '/streams/' nodeGroupName + "/publish/" + app + '/' + streamName
     return new Promise(function (resolve, reject) {
-      fetch(url)
-        .then(function (res) {
+		var token = "Bearer " + jwt;
+      fetch(url, {
+		  method: 'GET',
+		  withCredentials: true,
+		  credentials: 'include',
+		  headers: {
+			  'Authorization': token,
+			  'Content-Type': 'application/json'
+		  }
+	  }).then(function (res) {
           if (
             res.headers.get('content-type') &&
             res.headers

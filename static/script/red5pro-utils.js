@@ -308,20 +308,71 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
   }
 
+
+	/**
+	 * Given Basic Auth params, request JWT
+	 * curl -v -H "Content-Type: application/json" -X PUT https://admin:xyz123@as-test1.red5pro.net/as/v1/auth/login
+	 */
+	const authenticate = async (smHost, snUser, smPassword) => {
+		const token = "Basic " + btoa(smUser + ":" + smPassword);
+		const result = await fetch(url, {
+				method: 'PUT',
+				withCredentials: true,
+				credentials: 'include',
+				headers: {
+					'Authorization': token,
+					'Content-Type': 'application/json'
+				}
+			})
+
+		var json = await result.json()
+		if (json.errorMessage) {
+			throw new Error(json.errorMessage)
+		}
+		
+        return json.token;
+	}
+
+
   /**
    * Request to get Origin data to broadcast on stream manager proxy.
    */
   const getOrigin = async (host, context, streamName, transcode = false) => {
     try {
-      let url = `https://${host}/streammanager/api/4.0/event/${context}/${streamName}?action=broadcast`
+		
+		// XXX add to configuration XXX
+		var jwt = 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsInJvbGVzIjoiUk9MRV9BRE1JTiIsImV4cCI6MTcwOTA3NjUyM30.TZS9Y9uTLsKvBjkgO1_j22eSEbJzJUiyFJV4iSKCEgg'; 
+		var token = "Bearer " + jwt;
+		var nodeGroupName = 'allinone-oci-1'; 
+		// XXX add to configuration XXX
+		
+		
+		let url = `https://${host}/as/v1/streams/stream/${nodeGroupName}/publish/${context}/${streamName}?action=broadcast`
       if (transcode) {
         url += '&transcode=true'
       }
-      const result = await fetch(url)
-      const json = await result.json()
+      const result = await fetch(url, {
+		  method: 'GET',
+		  withCredentials: true,
+		  credentials: 'include',
+		  headers: {
+			  'Authorization': token,
+			  'Content-Type': 'application/json'
+	  }})
+      var json = await result.json()
       if (json.errorMessage) {
         throw new Error(json.errorMessage)
       }
+	  
+	  // XXX we get an array in response
+	  json=json[0];
+//	  var g = json.streamGuid;
+	  
+	  var firstSlash = json.streamGuid.indexOf("/");
+	  json.scope = json.streamGuid.substring(0, firstSlash);
+	  json.streamName = json.streamGuid.substring(firstSlash + 1);
+	  
+	  
       return json
     } catch (e) {
       throw e

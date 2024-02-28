@@ -303,6 +303,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     const { preferWhipWhep, host, app, stream1 } = configuration
     var region = getRegionIfDefined()
     if (!preferWhipWhep) {
+		
+		const jwt = streaManagerUtil.authenticate(host, configuration.streamManagerUser, configuration.streamManagerPassword);
+		
       return streamManagerUtil.getOrigin(host, app, stream1, region)
     } else {
       // WHIP/WHEP knows how to handle proxy requests.

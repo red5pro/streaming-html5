@@ -152,16 +152,24 @@
       <hr class="paddedHR" />
       <h2 class="centered">Stream Manager Specific</h2>
       <p class="settings-field settings-collapsable">
-        <label class="settings-label">Stream Manager Access Token:</label>
-        <input id="sm-access-field" name="sm-access-field" placeholder="e.g., abc123">
+        <label class="settings-label">Stream Manager Admin User:</label>
+        <input id="sm-user-field" name="sm-user-field" placeholder="e.g., admin">
+      </p>
+      <p class="settings-field settings-collapsable">
+        <label class="settings-label">Stream Manager Admin Password:</label>
+        <input id="sm-password-field" name="sm-password-field" placeholder="e.g., abc123">
       </p>
       <p class="settings-field settings-collapsable">
         <label class="settings-label">Stream Manager API Level:</label>
-        <input id="sm-api-field" name="sm-api-field" placeholder="e.g., 4.0">
+        <input id="sm-api-field" name="sm-api-field" placeholder="e.g., v1">
       </p>
       <p class="settings-field settings-collapsable">
         <label class="settings-label">Region:</label>
         <input id="sm-region-field" name="sm-region-field" value="sm-region">
+      </p>
+      <p class="settings-field settings-collapsable">
+        <label class="settings-label">Node Group Name:</label>
+        <input id="sm-nodegroup-field" name="sm-nodegroup-field" placeholder="nodegroup-name">
       </p>
       <hr class="paddedHR" />
       <h2 class="centered">Authentication</h2>
@@ -261,8 +269,10 @@
       var audioField = document.getElementById('audio-active-field');
       var muteAutoplayField = document.getElementById('mute-autoplay-field');
       var streamSwapButton = document.getElementById('stream-swap-btn');
+      var smUserField = document.getElementById('sm-user-field');
+      var smPasswordField = document.getElementById('sm-password-field');
       var smRegionField = document.getElementById('sm-region-field');
-      var smAccessField = document.getElementById('sm-access-field');
+      var smNodeGroupField = document.getElementById('sm-nodegroup-field');
       var mixerBackendSocketField = document.getElementById('backend-composition-field');
       var mixerAuthenticationEnabledField = document.getElementById('enable-mixer-authentication-field');
       var smAPIField = document.getElementById('sm-api-field');
@@ -427,8 +437,28 @@
         seal(configuration);
       });
 
-      smAccessField.addEventListener('blur', function () {
-        configuration.streamManagerAccessToken = smAccessField.value;
+      smUserField.addEventListener('blur', function () {
+        configuration.streamManagerUser = smUserField.value;
+        seal(configuration);
+      });
+
+      smPasswordField.addEventListener('blur', function () {
+        configuration.streamManagerPassword = smPasswordField.value;
+        seal(configuration);
+      });
+
+      smRegionField.addEventListener('blur', function () {
+        configuration.streamManagerRegion = smRegionField.value;
+        seal(configuration);
+      });
+
+      smNodeGroupField.addEventListener('blur', function () {
+        configuration.streamManagerNodeGroup = smNodeGroupField.value;
+        seal(configuration);
+      });
+
+      smAPIField.addEventListener('blur', function () {
+        configuration.streamManagerAPI = smAPIField.value;
         seal(configuration);
       });
 
@@ -439,16 +469,6 @@
 
       mixerAuthenticationEnabledField.addEventListener('change', function () {
         configuration.mixerAuthenticationEnabled = mixerAuthenticationEnabledField.checked;
-        seal(configuration);
-      });
-
-      smRegionField.addEventListener('blur', function () {
-        configuration.streamManagerRegion = smRegionField.value;
-        seal(configuration);
-      });
-
-      smAPIField.addEventListener('blur', function () {
-        configuration.streamManagerAPI = smAPIField.value;
         seal(configuration);
       });
 
@@ -479,9 +499,11 @@
         videoField.checked = config.useVideo ? true : false;
         audioField.checked = config.useAudio ? true : false;
         muteAutoplayField.checked = config.muteOnAutoplayRestriction ? true : false;
-        smRegionField.value = config.streamManagerRegion ? config.streamManagerRegion : '';
-        smAccessField.value = config.streamManagerAccessToken;
+        smUserField.value = config.streamManagerUser;
+        smPasswordField.value = config.streamManagerPassword;
         smAPIField.value = config.streamManagerAPI;
+        smRegionField.value = config.streamManagerRegion ? config.streamManagerRegion : '';
+        smNodeGroupField.value = config.streamManagerNodeGroup ? config.streamManagerNodeGroup : '';
         authEnabledField.checked = config.authentication.enabled ? true : false;
         authUsernameField.value = config.authentication.username;
         authPasswordField.value = config.authentication.password;
