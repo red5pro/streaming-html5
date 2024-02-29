@@ -322,14 +322,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
   }
 
-  const requestEdge = async (configuration) => {
-    const { preferWhipWhep, host, app, stream1 } = configuration
+  function startup() {
+	const { preferWhipWhep, host, app, stream1 } = configuration
     var region = getRegionIfDefined()
-    if (!preferWhipWhep) {
-      return streamManagerUtil.getEdge(host, app, stream1, region)
-    } else {
-      // WHIP/WHEP knows how to handle proxy requests.
-      return {
+	const junk = {
         serverAddress: host,
         scope: app,
         name: stream1,
@@ -340,12 +336,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             }
           : undefined,
       }
-    }
-  }
-
-  function startup() {
+	  
     // Kick off.
-    requestEdge(configuration).then(respondToEdge).catch(respondToEdgeFailure)
+    respondToEdge(junk).catch(respondToEdgeFailure)
   }
   startup()
 
