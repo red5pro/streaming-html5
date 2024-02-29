@@ -168,8 +168,8 @@
         <input id="sm-region-field" name="sm-region-field" value="sm-region">
       </p>
       <p class="settings-field settings-collapsable">
-        <label class="settings-label">Node Group Name:</label>
-        <input id="sm-nodegroup-field" name="sm-nodegroup-field" placeholder="nodegroup-name">
+        <label class="settings-label">Node Group:</label>
+        <input id="sm-nodegroup-field" name="sm-nodegroup-field" placeholder="node group">
       </p>
       <hr class="paddedHR" />
       <h2 class="centered">Authentication</h2>
@@ -472,6 +472,21 @@
         seal(configuration);
       });
 
+      smRegionField.addEventListener('blur', function () {
+        configuration.streamManagerRegion = smRegionField.value;
+        seal(configuration);
+      });
+
+      smNodeGroupField.addEventListener('blur', function () {
+        configuration.streamManagerNodeGroup = smNodeGroupField.value;
+        seal(configuration);
+      });
+
+      smAPIField.addEventListener('blur', function () {
+        configuration.streamManagerAPI = smAPIField.value;
+        seal(configuration);
+      });
+
       streamSwapButton.addEventListener('click', function () {
         var stream1Value = stream1Field.value;
         var stream2Value = stream2Field.value;
@@ -499,8 +514,9 @@
         videoField.checked = config.useVideo ? true : false;
         audioField.checked = config.useAudio ? true : false;
         muteAutoplayField.checked = config.muteOnAutoplayRestriction ? true : false;
-        smUserField.value = config.streamManagerUser;
-        smPasswordField.value = config.streamManagerPassword;
+        smRegionField.value = config.streamManagerRegion ? config.streamManagerRegion : '';
+        smNodeGroupField.value = config.streamManagerNodeGroup ? config.streamManagerNodeGroup : '';
+        smAccessField.value = config.streamManagerAccessToken;
         smAPIField.value = config.streamManagerAPI;
         smRegionField.value = config.streamManagerRegion ? config.streamManagerRegion : '';
         smNodeGroupField.value = config.streamManagerNodeGroup ? config.streamManagerNodeGroup : '';

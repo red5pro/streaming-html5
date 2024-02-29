@@ -136,9 +136,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       iceTransport: 'udp',
       verboseLogging: true,
       recordBroadcast: false,
-      streamManagerAPI: '4.0',
+      streamManagerAPI: 'v1',
       streamManagerAccessToken: 'xyz123',
       streamManagerRegion: undefined,
+      streamManagerNodeGroup: undefined,
       muteOnAutoplayRestriction: true,
       authentication: {
         enabled: false,
