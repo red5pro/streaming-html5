@@ -308,79 +308,67 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
   }
 
+  /**
+   * Given Basic Auth params, request JWT
+   * curl -v -H "Content-Type: application/json" -X PUT https://admin:xyz123@as-test1.red5pro.net/as/v1/auth/login
+   */
+  const authenticate = async (smHost, smUser, smPassword) => {
+    console.log('Request Authentication')
 
-	/**
-	 * Given Basic Auth params, request JWT
-	 * curl -v -H "Content-Type: application/json" -X PUT https://admin:xyz123@as-test1.red5pro.net/as/v1/auth/login
-	 */
-	const authenticate = async (smHost, smUser, smPassword) => {
-		console.log("Request Authentication");
+    try {
+      const url = `https://${smHost}/as/v1/auth/login`
+      const token = 'Basic ' + btoa(smUser + ':' + smPassword)
+      const response = await fetch(url, {
+        method: 'PUT',
+        withCredentials: true,
+        credentials: 'include',
+        headers: {
+          Authorization: token,
+          'Content-Type': 'application/json',
+        },
+      })
 
-		try {
-			const url = `https://${smHost}/as/v1/auth/login`
-			const token = "Basic " + btoa(smUser + ":" + smPassword);
-			const response = await fetch(url, {
-					method: 'PUT',
-					withCredentials: true,
-					credentials: 'include',
-					headers: {
-						'Authorization': token,
-						'Content-Type': 'application/json'
-					}
-				})
+      console.log('Authenticate response: ' + response.status)
 
-			console.log("Authenticate response: " + response.status);
-			
-			var json = await response.json()
-			if (json.errorMessage) {
-				throw new Error(json.errorMessage)
-			}
-			
-			return json.token;
-		} catch (e) {
-			console.log("authenticate() fail: " + e)
-			throw e
-		}
-	}
+      var json = await response.json()
+      if (json.errorMessage) {
+        throw new Error(json.errorMessage)
+      }
 
+      return json.token
+    } catch (e) {
+      console.log('authenticate() fail: ' + e)
+      throw e
+    }
+  }
 
   /**
    * Request to get Origin data to broadcast on stream manager proxy.
    */
-  const getOrigin = async (host, nodeGroupName, context, streamName, jwt, transcode = false) => {
-    try {
-		var token = "Bearer " + jwt;
-		let url = `https://${host}/as/v1/streams/stream/${nodeGroupName}/publish/${context}/${streamName}`
-      if (transcode) {
-        url += '&transcode=true'
-      }
-      const result = await fetch(url, {
-		  method: 'GET',
-		  withCredentials: true,
-		  credentials: 'include',
-		  headers: {
-			  'Authorization': token,
-			  'Content-Type': 'application/json'
-	  }})
-      var json = await result.json()
-      if (json.errorMessage) {
-        throw new Error(json.errorMessage)
-      }
-	  
-	  // XXX we get an array in response
-	  json=json[0];
-//	  var g = json.streamGuid;
-	  
-	  var firstSlash = json.streamGuid.indexOf("/");
-	  json.scope = json.streamGuid.substring(0, firstSlash);
-	  json.streamName = json.streamGuid.substring(firstSlash + 1);
-	  
-	  
-      return json
-    } catch (e) {
-			console.log("getOrigin() fail: " + e)
-      throw e
+  const getOrigin = async (
+    host,
+    context,
+    streamName,
+    version,
+    nodeGroup,
+    transcode = false
+  ) => {
+    let url = `https://${host}/as/${version}/streams/stream/${nodeGroup}/publish/${context}/${streamName}`
+    if (transcode) {
+      url += '&transcode=true'
     }
+    const result = await fetch(url)
+    const json = await result.json()
+    if (json.errorMessage) {
+      throw new Error(json.errorMessage)
+    }
+    const origin = Array.isArray(json) && json.length > 0 ? json[0] : json
+    const { streamGuid } = origin
+    const paths = streamGuid.split('/')
+    const name = paths.pop()
+    origin.scope = paths.join('/')
+    origin.name = name
+    return origin
   }
 
   /**
@@ -478,7 +466,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     getOrigin: getOrigin,
     getOriginForConference: getOriginForConference,
     getEdge: getEdge,
-	authenticate: authenticate,
+    authenticate: authenticate,
     postTranscode: postTranscode,
     postProvision: postProvision,
   }

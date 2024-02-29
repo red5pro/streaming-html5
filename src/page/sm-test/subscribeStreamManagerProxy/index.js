@@ -23,11 +23,11 @@ NONINFRINGEMENT.   IN  NO  EVENT  SHALL INFRARED5, INC. BE LIABLE FOR ANY CLAIM,
 WHETHER IN  AN  ACTION  OF  CONTRACT,  TORT  OR  OTHERWISE,  ARISING  FROM,  OUT  OF  OR  IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
-;(function (window, document, red5prosdk, streamManagerUtil) {
+;(function (window, document, red5prosdk) {
   'use strict'
 
-  var serverSettings = (function () {
-    var settings = sessionStorage.getItem('r5proServerSettings')
+  const serverSettings = (function () {
+    const settings = sessionStorage.getItem('r5proServerSettings')
     try {
       return JSON.parse(settings)
     } catch (e) {
@@ -38,8 +38,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     return {}
   })()
 
-  var configuration = (function () {
-    var conf = sessionStorage.getItem('r5proTestBed')
+  const configuration = (function () {
+    const conf = sessionStorage.getItem('r5proTestBed')
     try {
       return JSON.parse(conf)
     } catch (e) {
@@ -57,8 +57,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   var targetSubscriber
 
-  var updateStatusFromEvent = function (event) {
-    var subTypes = red5prosdk.SubscriberEventTypes
+  const updateStatusFromEvent = (event) => {
+    const subTypes = red5prosdk.SubscriberEventTypes
     switch (event.type) {
       case subTypes.CONNECT_FAILURE:
       case subTypes.SUBSCRIBE_FAIL:
@@ -67,49 +67,51 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
     window.red5proHandleSubscriberEvent(event) // defined in src/template/partial/status-field-subscriber.hbs
   }
-  var proxyLocal = window.query('local')
-  var instanceId = Math.floor(Math.random() * 0x10000).toString(16)
-  var streamTitle = document.getElementById('stream-title')
-  var statisticsField = document.getElementById('statistics-field')
-  var bitrateField = document.getElementById('bitrate-field')
-  var packetsField = document.getElementById('packets-field')
-  var resolutionField = document.getElementById('resolution-field')
-  var addressField = document.getElementById('address-field')
-  var protocol = proxyLocal ? 'https' : serverSettings.protocol
-  var isSecure = protocol === 'https'
 
-  var bitrate = 0
-  var packetsReceived = 0
-  var frameWidth = 0
-  var frameHeight = 0
+  const proxyLocal = window.query('local')
+  const instanceId = Math.floor(Math.random() * 0x10000).toString(16)
+  const streamTitle = document.getElementById('stream-title')
+  const statisticsField = document.getElementById('statistics-field')
+  const bitrateField = document.getElementById('bitrate-field')
+  const packetsField = document.getElementById('packets-field')
+  const resolutionField = document.getElementById('resolution-field')
+  const addressField = document.getElementById('address-field')
+  const protocol = proxyLocal ? 'https' : serverSettings.protocol
+  const isSecure =
+    protocol === 'https' || window.location.hostname === 'localhost'
 
-  function updateStatistics(b, p, w, h) {
+  let bitrate = 0
+  let packetsReceived = 0
+  let frameWidth = 0
+  let frameHeight = 0
+
+  const updateStatistics = (b, p, w, h) => {
     statisticsField.classList.remove('hidden')
     bitrateField.innerText = b === 0 ? 'N/A' : Math.floor(b)
     packetsField.innerText = p
     resolutionField.innerText = (w || 0) + 'x' + (h || 0)
   }
 
-  function onBitrateUpdate(b, p) {
+  const onBitrateUpdate = (b, p) => {
     bitrate = b
     packetsReceived = p
     updateStatistics(bitrate, packetsReceived, frameWidth, frameHeight)
   }
 
-  function onResolutionUpdate(w, h) {
+  const onResolutionUpdate = (w, h) => {
     frameWidth = w
     frameHeight = h
     updateStatistics(bitrate, packetsReceived, frameWidth, frameHeight)
   }
 
-  function getSocketLocationFromProtocol() {
+  const getSocketLocationFromProtocol = () => {
     return !isSecure
       ? { protocol: 'ws', port: serverSettings.wsport }
       : { protocol: 'wss', port: serverSettings.wssport }
   }
 
-  var defaultConfiguration = (function (useVideo, useAudio) {
-    var c = {
+  const defaultConfiguration = ((useVideo, useAudio) => {
+    let c = {
       protocol: getSocketLocationFromProtocol().protocol,
       port: getSocketLocationFromProtocol().port,
     }
@@ -122,39 +124,46 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     return c
   })(configuration.useVideo, configuration.useAudio)
 
-  function shutdownVideoElement() {
-    var videoElement = document.getElementById('red5pro-subscriber')
+  const shutdownVideoElement = () => {
+    const videoElement = document.getElementById('red5pro-subscriber')
     if (videoElement) {
       videoElement.pause()
       videoElement.src = ''
     }
   }
 
-  function getAuthenticationParams() {
-    var auth = configuration.authentication
-    return auth && auth.enabled
+  const getAuthenticationParams = () => {
+    const { authentication } = configuration
+    const { enabled, username, password, token } = authentication
+    return enabled
       ? {
           connectionParams: {
-            username: auth.username,
-            password: auth.password,
-            token: auth.token,
+            username,
+            password,
+            token,
           },
         }
       : {}
   }
 
-  function displayServerAddress(serverAddress, proxyAddress) {
+  const showAddress = (subscriber) => {
+    const config = subscriber.getOptions()
+    const { host, app, connectionParams } = config
+    console.log(`Host = ${host} | app = ${app}`)
+    if (connectionParams && connectionParams.host && connectionParams.app) {
+      displayServerAddress(config.connectionParams.host, host)
+    } else {
+      displayServerAddress(host)
+    }
+  }
+
+  const displayServerAddress = (serverAddress, proxyAddress) => {
     proxyAddress = typeof proxyAddress === 'undefined' ? 'N/A' : proxyAddress
-    addressField.innerText =
-      ' Proxy Address: ' +
-      proxyAddress +
-      ' | ' +
-      ' Edge Address: ' +
-      serverAddress
+    addressField.innerText = `Proxy Address: ${proxyAddress} | Edge Address: ${serverAddress}`
   }
 
   // Local lifecycle notifications.
-  function onSubscriberEvent(event) {
+  const onSubscriberEvent = (event) => {
     const { type } = event
     console.log('[Red5ProSubsriber] ' + type + '.')
     updateStatusFromEvent(event)
@@ -167,10 +176,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       displayServerAddress(endpoint, host)
     }
   }
-  function onSubscribeFail(message) {
+  const onSubscribeFail = (message) => {
     console.error('[Red5ProSubsriber] Subscribe Error :: ' + message)
   }
-  function onSubscribeSuccess(subscriber) {
+  const onSubscribeSuccess = (subscriber) => {
     console.log('[Red5ProSubsriber] Subscribe Complete.')
     if (window.exposeSubscriberGlobally) {
       window.exposeSubscriberGlobally(subscriber)
@@ -188,15 +197,15 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       }
     }
   }
-  function onUnsubscribeFail(message) {
+  const onUnsubscribeFail = (message) => {
     console.error('[Red5ProSubsriber] Unsubscribe Error :: ' + message)
   }
-  function onUnsubscribeSuccess() {
+  const onUnsubscribeSuccess = () => {
     console.log('[Red5ProSubsriber] Unsubscribe Complete.')
   }
 
-  function getRegionIfDefined() {
-    var region = configuration.streamManagerRegion
+  const getRegionIfDefined = () => {
+    const region = configuration.streamManagerRegion
     if (
       typeof region === 'string' &&
       region.length > 0 &&
@@ -207,155 +216,112 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     return undefined
   }
 
-  function determineSubscriber(jsonResponse) {
-    var { app, proxy, preferWhipWhep } = configuration
-    var { WHEPClient, RTCSubscriber } = red5prosdk
-    var { params } = jsonResponse
-    var host = jsonResponse.serverAddress
-    var scope = jsonResponse.scope
-    var name = jsonResponse.name
-    var { protocol, port } = getSocketLocationFromProtocol()
+  const getConfiguration = () => {
+    const {
+      host,
+      app,
+      stream1,
+      proxy,
+      preferWhipWhep,
+      streamManagerNodeGroup: nodeGroup,
+    } = configuration
+    const { protocol, port } = getSocketLocationFromProtocol()
+
+    const region = getRegionIfDefined()
+    const params = region
+      ? {
+          region,
+          strict: true,
+        }
+      : undefined
+    const appContext = preferWhipWhep
+      ? `as/v1/proxy/${app}`
+      : `as/v1/proxy/${proxy}`
 
     var connectionParams = params
       ? { ...params, ...getAuthenticationParams().connectionParams }
       : getAuthenticationParams().connectionParams
-    var rtcConfig = Object.assign({}, configuration, defaultConfiguration, {
+
+    var rtcConfig = {
+      ...configuration,
+      ...defaultConfiguration,
       protocol,
       port,
-      streamName: name,
-      app: preferWhipWhep ? app : proxy,
+      host,
+      streamName: stream1,
+      app: appContext,
       subscriptionId: 'subscriber-' + instanceId,
       connectionParams: preferWhipWhep
         ? connectionParams
         : {
             ...connectionParams,
-            host: host,
-            app: scope,
+            nodeGroup,
+            host,
+            app,
           },
-    })
-    var subscriber = preferWhipWhep ? new WHEPClient() : new RTCSubscriber()
-    return subscriber.init(rtcConfig)
+    }
+    return rtcConfig
   }
 
-  function showServerAddress(publisher) {
-    var config = publisher.getOptions()
-    const { protocol, port, host, app, connectionParams } = config
-    console.log(`Host = ${host} | app = ${app}`)
-    if (connectionParams && connectionParams.host && connectionParams.app) {
-      displayServerAddress(config.connectionParams.host, host)
-      console.log('Using streammanager proxy for rtc.')
-      console.log(
-        'Proxy target = ' +
-          config.connectionParams.host +
-          ' | ' +
-          'Proxy app = ' +
-          config.connectionParams.app
+  const startSubscriber = async () => {
+    try {
+      const { RTCSubscriber, WHEPClient } = red5prosdk
+      const { preferWhipWhep, stream1 } = configuration
+      const config = getConfiguration()
+      const subscriber = preferWhipWhep ? new WHEPClient() : new RTCSubscriber()
+      subscriber.on('*', onSubscriberEvent)
+      await subscriber.init(config)
+      await subscriber.subscribe()
+      showAddress(subscriber)
+      onSubscribeSuccess(subscriber)
+      streamTitle.innerText = stream1
+      targetSubscriber = subscriber
+    } catch (error) {
+      var jsonError =
+        typeof error === 'string' ? error : JSON.stringify(error, null, 2)
+      console.error(
+        '[Red5ProSubscriber] :: Error in access of Edge IP: ' + jsonError
       )
-      console.log(
-        `Operation over ${
-          isSecure ? 'secure' : 'unsecure'
-        } connection | protocol: ${protocol} | port: ${port}`
-      )
-    } else {
-      displayServerAddress(host)
+      updateStatusFromEvent({
+        type: red5prosdk.SubscriberEventTypes.CONNECT_FAILURE,
+      })
+      onSubscribeFail(jsonError)
     }
   }
 
   // Request to unsubscribe.
-  function unsubscribe() {
-    return new Promise(function (resolve, reject) {
+  const unsubscribe = async () => {
+    try {
       var subscriber = targetSubscriber
-      subscriber
-        .unsubscribe()
-        .then(function () {
-          targetSubscriber.off('*', onSubscriberEvent)
-          targetSubscriber = undefined
-          onUnsubscribeSuccess()
-          resolve()
-        })
-        .catch(function (error) {
-          var jsonError =
-            typeof error === 'string' ? error : JSON.stringify(error, null, 2)
-          onUnsubscribeFail(jsonError)
-          reject(error)
-        })
-    })
-  }
-
-  var retryCount = 0
-  var retryLimit = 3
-  function respondToEdge(response) {
-    determineSubscriber(response)
-      .then(function (subscriberImpl) {
-        streamTitle.innerText = configuration.stream1
-        targetSubscriber = subscriberImpl
-        // Subscribe to events.
-        targetSubscriber.on('*', onSubscriberEvent)
-        showServerAddress(targetSubscriber)
-        return targetSubscriber.subscribe()
-      })
-      .then(function (sub) {
-        onSubscribeSuccess(sub)
-      })
-      .catch(function (error) {
-        var jsonError =
-          typeof error === 'string' ? error : JSON.stringify(error, null, 2)
-        console.error(
-          '[Red5ProSubscriber] :: Error in subscribing - ' + jsonError
-        )
-        onSubscribeFail(jsonError)
-      })
-  }
-
-  function respondToEdgeFailure(error) {
-    if (retryCount++ < retryLimit) {
-      var retryTimer = setTimeout(function () {
-        clearTimeout(retryTimer)
-        startup()
-      }, 1000)
-    } else {
+      await subscriber.unsubscribe()
+      onUnsubscribeSuccess()
+    } catch (error) {
       var jsonError =
-        typeof error === 'string' ? error : JSON.stringify(error, null, 2)
-      console.error(
-        '[Red5ProSubscriber] :: Retry timeout in subscribing - ' + jsonError
-      )
+        typeof error === 'string' ? error : JSON.stringify(error, 2, null)
+      onUnsubscribeFail('Unmount Error ' + jsonError)
+      throw error
     }
   }
 
-  function startup() {
-	const { preferWhipWhep, host, app, stream1 } = configuration
-    var region = getRegionIfDefined()
-	const junk = {
-        serverAddress: host,
-        scope: app,
-        name: stream1,
-        params: region
-          ? {
-              region,
-              strict: true,
-            }
-          : undefined,
-      }
-	  
-    // Kick off.
-    respondToEdge(junk).catch(respondToEdgeFailure)
-  }
-  startup()
-
-  // Clean up.
-  var shuttingDown = false
-  function shutdown() {
+  // Clean up
+  let shuttingDown = false
+  const shutdown = async () => {
     if (shuttingDown) return
     shuttingDown = true
-    function clearRefs() {
+    try {
+      await unsubscribe()
+    } catch (e) {
+      console.error(e)
+    } finally {
       if (targetSubscriber) {
         targetSubscriber.off('*', onSubscriberEvent)
       }
       targetSubscriber = undefined
     }
-    unsubscribe().then(clearRefs).catch(clearRefs)
     window.untrackBitrate()
   }
   window.addEventListener('pagehide', shutdown)
   window.addEventListener('beforeunload', shutdown)
-})(this, document, window.red5prosdk, window.streamManagerUtil)
+
+  startSubscriber()
+})(this, document, window.red5prosdk)

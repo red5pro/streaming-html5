@@ -23,11 +23,11 @@ NONINFRINGEMENT.   IN  NO  EVENT  SHALL INFRARED5, INC. BE LIABLE FOR ANY CLAIM,
 WHETHER IN  AN  ACTION  OF  CONTRACT,  TORT  OR  OTHERWISE,  ARISING  FROM,  OUT  OF  OR  IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
-;(function (window, document, red5prosdk, streamManagerUtil) {
+;(function (window, document, red5prosdk) {
   'use strict'
 
-  var serverSettings = (function () {
-    var settings = sessionStorage.getItem('r5proServerSettings')
+  const serverSettings = (function () {
+    const settings = sessionStorage.getItem('r5proServerSettings')
     try {
       return JSON.parse(settings)
     } catch (e) {
@@ -38,8 +38,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     return {}
   })()
 
-  var configuration = (function () {
-    var conf = sessionStorage.getItem('r5proTestBed')
+  const configuration = (function () {
+    const conf = sessionStorage.getItem('r5proTestBed')
     try {
       return JSON.parse(conf)
     } catch (e) {
@@ -55,26 +55,26 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       : red5prosdk.LOG_LEVELS.WARN
   )
 
-  var targetPublisher
+  let targetPublisher
 
-  var updateStatusFromEvent = window.red5proHandlePublisherEvent // defined in src/template/partial/status-field-publisher.hbs
-  var streamTitle = document.getElementById('stream-title')
-  var statisticsField = document.getElementById('statistics-field')
-  var addressField = document.getElementById('address-field')
-  var bitrateField = document.getElementById('bitrate-field')
-  var packetsField = document.getElementById('packets-field')
-  var resolutionField = document.getElementById('resolution-field')
+  const updateStatusFromEvent = window.red5proHandlePublisherEvent // defined in src/template/partial/status-field-publisher.hbs
+  const streamTitle = document.getElementById('stream-title')
+  const statisticsField = document.getElementById('statistics-field')
+  const addressField = document.getElementById('address-field')
+  const bitrateField = document.getElementById('bitrate-field')
+  const packetsField = document.getElementById('packets-field')
+  const resolutionField = document.getElementById('resolution-field')
 
-  var protocol = serverSettings.protocol
-  var isSecure = protocol == 'https'
+  const protocol = serverSettings.protocol
+  const isSecure =
+    protocol == 'https' || window.location.hostname === 'localhost'
   function getSocketLocationFromProtocol() {
     return !isSecure
       ? { protocol: 'ws', port: serverSettings.wsport }
       : { protocol: 'wss', port: serverSettings.wssport }
   }
 
-  streamTitle.innerText = configuration.stream1
-  var defaultConfiguration = {
+  const defaultConfiguration = {
     protocol: getSocketLocationFromProtocol().protocol,
     port: getSocketLocationFromProtocol().port,
     streamMode: configuration.recordBroadcast ? 'record' : 'live',
@@ -82,54 +82,61 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   streamTitle.innerText = configuration.stream1
 
-  function getAuthenticationParams() {
-    var auth = configuration.authentication
-    return auth && auth.enabled
+  const getAuthenticationParams = () => {
+    const { authentication } = configuration
+    const { enabled, username, password, token } = authentication
+    return enabled
       ? {
           connectionParams: {
-            username: auth.username,
-            password: auth.password,
-            token: auth.token,
+            username,
+            password,
+            token,
           },
         }
       : {}
   }
 
-  function displayServerAddress(serverAddress, proxyAddress) {
-    proxyAddress = typeof proxyAddress === 'undefined' ? 'N/A' : proxyAddress
-    addressField.innerText =
-      ' Proxy Address: ' +
-      proxyAddress +
-      ' | ' +
-      ' Origin Address: ' +
-      serverAddress
+  const showAddress = (publisher) => {
+    const config = publisher.getOptions()
+    const { host, app, connectionParams } = config
+    console.log(`Host = ${host} | app = ${app}`)
+    if (connectionParams && connectionParams.host && connectionParams.app) {
+      displayServerAddress(config.connectionParams.host, host)
+    } else {
+      displayServerAddress(host)
+    }
   }
 
-  var bitrate = 0
-  var packetsSent = 0
-  var frameWidth = 0
-  var frameHeight = 0
+  const displayServerAddress = (serverAddress, proxyAddress) => {
+    proxyAddress = typeof proxyAddress === 'undefined' ? 'N/A' : proxyAddress
+    addressField.innerText = `Proxy Address: ${proxyAddress} | Origin Address: ${serverAddress}`
+  }
 
-  function updateStatistics(b, p, w, h) {
+  let bitrate = 0
+  let packetsSent = 0
+  let frameWidth = 0
+  let frameHeight = 0
+
+  const updateStatistics = (b, p, w, h) => {
     statisticsField.classList.remove('hidden')
     bitrateField.innerText = b === 0 ? 'N/A' : Math.floor(b)
     packetsField.innerText = p
     resolutionField.innerText = (w || 0) + 'x' + (h || 0)
   }
 
-  function onBitrateUpdate(b, p) {
+  const onBitrateUpdate = (b, p) => {
     bitrate = b
     packetsSent = p
     updateStatistics(bitrate, packetsSent, frameWidth, frameHeight)
   }
 
-  function onResolutionUpdate(w, h) {
+  const onResolutionUpdate = (w, h) => {
     frameWidth = w
     frameHeight = h
     updateStatistics(bitrate, packetsSent, frameWidth, frameHeight)
   }
 
-  function onPublisherEvent(event) {
+  const onPublisherEvent = (event) => {
     const { type } = event
     console.log('[Red5ProPublisher] ' + type + '.')
     updateStatusFromEvent(event)
@@ -140,33 +147,34 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       displayServerAddress(endpoint, host)
     }
   }
-  function onPublishFail(message) {
+  const onPublishFail = (message) => {
     console.error('[Red5ProPublisher] Publish Error :: ' + message)
   }
-  function onPublishSuccess(publisher) {
+  const onPublishSuccess = (publisher) => {
     console.log('[Red5ProPublisher] Publish Complete.')
     try {
-      var pc = publisher.getPeerConnection()
-      var stream = publisher.getMediaStream()
+      const pc = publisher.getPeerConnection()
+      const stream = publisher.getMediaStream()
       window.trackBitrate(pc, onBitrateUpdate, onResolutionUpdate)
       statisticsField.classList.remove('hidden')
       stream.getVideoTracks().forEach(function (track) {
-        var settings = track.getSettings()
-        onResolutionUpdate(settings.width, settings.height)
+        const settings = track.getSettings()
+        const { width, height } = settings
+        onResolutionUpdate(width, height)
       })
     } catch (e) {
       // no tracking for you!
     }
   }
-  function onUnpublishFail(message) {
+  const onUnpublishFail = (message) => {
     console.error('[Red5ProPublisher] Unpublish Error :: ' + message)
   }
-  function onUnpublishSuccess() {
+  const onUnpublishSuccess = () => {
     console.log('[Red5ProPublisher] Unpublish Complete.')
   }
 
-  function getRegionIfDefined() {
-    var region = configuration.streamManagerRegion
+  const getRegionIfDefined = () => {
+    const region = configuration.streamManagerRegion
     if (
       typeof region === 'string' &&
       region.length > 0 &&
@@ -177,175 +185,122 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     return undefined
   }
 
-  function getUserMediaConfiguration() {
+  const getUserMediaConfiguration = () => {
+    const { useAudio, useVideo, mediaConstraints } = configuration
+    const { audio, video } = mediaConstraints
     return {
       mediaConstraints: {
-        audio: configuration.useAudio
-          ? configuration.mediaConstraints.audio
-          : false,
-        video: configuration.useVideo
-          ? configuration.mediaConstraints.video
-          : false,
+        audio: useAudio ? audio : false,
+        video: useVideo ? video : false,
       },
     }
   }
 
-  function determinePublisher(jsonResponse) {
-    var { app, proxy, preferWhipWhep } = configuration
-    var { WHIPClient, RTCPublisher } = red5prosdk
-    var { params } = jsonResponse
-    var host = jsonResponse.serverAddress
-    var scope = jsonResponse.scope
-    var name = jsonResponse.name
-    var { protocol, port } = getSocketLocationFromProtocol()
+  const getConfiguration = () => {
+    const {
+      host,
+      app,
+      stream1,
+      proxy,
+      preferWhipWhep,
+      streamManagerNodeGroup: nodeGroup,
+    } = configuration
+    const { protocol, port } = getSocketLocationFromProtocol()
 
-    var connectionParams = params
+    const region = getRegionIfDefined()
+    const params = region
+      ? {
+          region,
+          strict: true,
+        }
+      : undefined
+
+    const appContext = preferWhipWhep
+      ? `as/v1/proxy/${app}`
+      : `as/v1/proxy/${proxy}`
+
+    const connectionParams = params
       ? { ...params, ...getAuthenticationParams().connectionParams }
       : getAuthenticationParams().connectionParams
-    var rtcConfig = Object.assign(
-      {},
-      configuration,
-      defaultConfiguration,
-      getUserMediaConfiguration(),
-      {
-        protocol,
-        port,
-        streamName: name,
-        app: preferWhipWhep ? app : proxy,
-        connectionParams: preferWhipWhep
-          ? connectionParams
-          : {
-              ...connectionParams,
-              host: host,
-              app: scope,
-            },
-      }
-    )
-    var publisher = preferWhipWhep ? new WHIPClient() : new RTCPublisher()
-    return publisher.init(rtcConfig)
-  }
 
-  function showAddress(publisher) {
-    var config = publisher.getOptions()
-    const { host, app, connectionParams } = config
-    console.log(`Host = ${host} | app = ${app}`)
-    if (connectionParams && connectionParams.host && connectionParams.app) {
-      displayServerAddress(config.connectionParams.host, host)
-    } else {
-      displayServerAddress(host)
+    const rtcConfig = {
+      ...configuration,
+      ...defaultConfiguration,
+      ...getUserMediaConfiguration(),
+      protocol,
+      port,
+      host,
+      streamName: stream1,
+      app: appContext,
+      connectionParams: preferWhipWhep
+        ? connectionParams
+        : {
+            ...connectionParams,
+            host: host,
+            app: app,
+            nodeGroup,
+          },
     }
+    return rtcConfig
   }
 
-  function unpublish() {
-    return new Promise(function (resolve, reject) {
-      var publisher = targetPublisher
-      publisher
-        .unpublish()
-        .then(function () {
-          onUnpublishSuccess()
-          resolve()
-        })
-        .catch(function (error) {
-          var jsonError =
-            typeof error === 'string' ? error : JSON.stringify(error, 2, null)
-          onUnpublishFail('Unmount Error ' + jsonError)
-          reject(error)
-        })
-    })
-  }
-
-  var retryCount = 0
-  var retryLimit = 3
-  function respondToOrigin(response) {
-    determinePublisher(response)
-      .then(function (publisherImpl) {
-        streamTitle.innerText = configuration.stream1
-        targetPublisher = publisherImpl
-        targetPublisher.on('*', onPublisherEvent)
-        showAddress(targetPublisher)
-        return targetPublisher.publish()
-      })
-      .then(function () {
-        onPublishSuccess(targetPublisher)
-      })
-      .catch(function (error) {
-        var jsonError =
-          typeof error === 'string' ? error : JSON.stringify(error, null, 2)
-        console.error(
-          '[Red5ProPublisher] :: Error in access of Origin IP: ' + jsonError
-        )
-        updateStatusFromEvent({
-          type: red5prosdk.PublisherEventTypes.CONNECT_FAILURE,
-        })
-        onPublishFail(jsonError)
-      })
-  }
-
-  function respondToOriginFailure(error) {
-    if (retryCount++ < retryLimit) {
-      var retryTimer = setTimeout(function () {
-        clearTimeout(retryTimer)
-        startup()
-      }, 1000)
-    } else {
+  const startPublish = async () => {
+    try {
+      const { RTCPublisher, WHIPClient } = red5prosdk
+      const { preferWhipWhep, stream1 } = configuration
+      const config = getConfiguration()
+      const publisher = preferWhipWhep ? new WHIPClient() : new RTCPublisher()
+      publisher.on('*', onPublisherEvent)
+      await publisher.init(config)
+      await publisher.publish()
+      showAddress(publisher)
+      onPublishSuccess(publisher)
+      streamTitle.innerText = stream1
+      targetPublisher = publisher
+    } catch (error) {
       var jsonError =
         typeof error === 'string' ? error : JSON.stringify(error, null, 2)
+      console.error(
+        '[Red5ProPublisher] :: Error in access of Origin IP: ' + jsonError
+      )
       updateStatusFromEvent({
         type: red5prosdk.PublisherEventTypes.CONNECT_FAILURE,
       })
-      console.error(
-        '[Red5ProPublisher] :: Retry timeout in publishing - ' + jsonError
-      )
+      onPublishFail(jsonError)
     }
   }
 
-  const requestOrigin = async (configuration) => {
-    const { preferWhipWhep, host, app, stream1 } = configuration
-    var region = getRegionIfDefined()
-    if (!preferWhipWhep) {
-		
-		const jwt = await streamManagerUtil.authenticate(host, configuration.streamManagerUser, configuration.streamManagerPassword);
-		console.log("Got JWT: " + jwt);
-	
-// XXX nate: this is passing region in as transcode, that can't be right
-//      return streamManagerUtil.getOrigin(host, app, stream1, region)
-      return streamManagerUtil.getOrigin(host, configuration.streamManagerNodeGroup, app, stream1, jwt)
-    } else {
-      // WHIP/WHEP knows how to handle proxy requests.
-      return {
-        serverAddress: host,
-        scope: app,
-        name: stream1,
-        params: region
-          ? {
-              region,
-            }
-          : undefined,
-      }
+  const unpublish = async () => {
+    try {
+      const publisher = targetPublisher
+      await publisher.unpublish()
+      onUnpublishSuccess()
+    } catch (error) {
+      var jsonError =
+        typeof error === 'string' ? error : JSON.stringify(error, 2, null)
+      onUnpublishFail('Unmount Error ' + jsonError)
+      throw error
     }
   }
 
-  function startup() {
-    // Kick off.
-    requestOrigin(configuration)
-      .then(respondToOrigin)
-      .catch(respondToOriginFailure)
-  }
-  startup()
-
-  var shuttingDown = false
-  function shutdown() {
+  let shuttingDown = false
+  const shutdown = async () => {
     if (shuttingDown) return
     shuttingDown = true
-    function clearRefs() {
+    try {
+      await unpublish()
+    } catch (e) {
+      console.error(e)
+    } finally {
       if (targetPublisher) {
         targetPublisher.off('*', onPublisherEvent)
       }
       targetPublisher = undefined
     }
-    unpublish().then(clearRefs).catch(clearRefs)
     window.untrackBitrate()
   }
   window.addEventListener('pagehide', shutdown)
   window.addEventListener('beforeunload', shutdown)
-})(this, document, window.red5prosdk, window.streamManagerUtil)
+
+  startPublish()
+})(this, document, window.red5prosdk)
