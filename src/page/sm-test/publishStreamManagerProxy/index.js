@@ -196,17 +196,27 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
   }
 
-  const getConfiguration = (origin) => {
+  const getConfiguration = () => {
     const {
+      host,
+      app,
+      stream1,
       proxy,
       preferWhipWhep,
       streamManagerNodeGroup: nodeGroup,
     } = configuration
     const { protocol, port } = getSocketLocationFromProtocol()
-    const { serverAddress, scope, name, params } = origin
-    const host = serverAddress
+
+    const region = getRegionIfDefined()
+    const params = region
+      ? {
+          region,
+          strict: true,
+        }
+      : undefined
+
     const appContext = preferWhipWhep
-      ? `as/v1/proxy/${scope}`
+      ? `as/v1/proxy/${app}`
       : `as/v1/proxy/${proxy}`
 
     const connectionParams = params
@@ -219,62 +229,26 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       ...getUserMediaConfiguration(),
       protocol,
       port,
-      streamName: name,
+      host,
+      streamName: stream1,
       app: appContext,
       connectionParams: preferWhipWhep
         ? connectionParams
         : {
             ...connectionParams,
             host: host,
-            app: scope,
+            app: app,
             nodeGroup,
           },
     }
     return rtcConfig
   }
 
-  let retryCount = 0
-  const retryLimit = 3
-  const respondToOriginFailure = (error) => {
-    if (retryCount++ < retryLimit) {
-      let retryTimer = setTimeout(() => {
-        clearTimeout(retryTimer)
-        startup()
-      }, 1000)
-    } else {
-      var jsonError =
-        typeof error === 'string' ? error : JSON.stringify(error, null, 2)
-      updateStatusFromEvent({
-        type: red5prosdk.PublisherEventTypes.CONNECT_FAILURE,
-      })
-      console.error(
-        '[Red5ProPublisher] :: Retry timeout in publishing - ' + jsonError
-      )
-    }
-  }
-
-  const requestOrigin = async (configuration) => {
-    const { host, app, stream1 } = configuration
-    const region = getRegionIfDefined()
-    const proxyConfig = {
-      serverAddress: host,
-      scope: app,
-      name: stream1,
-      params: region
-        ? {
-            region,
-            strict: true,
-          }
-        : undefined,
-    }
-    return proxyConfig
-  }
-
-  const startPublish = async (origin) => {
+  const startPublish = async () => {
     try {
       const { RTCPublisher, WHIPClient } = red5prosdk
       const { preferWhipWhep, stream1 } = configuration
-      const config = getConfiguration(origin)
+      const config = getConfiguration()
       const publisher = preferWhipWhep ? new WHIPClient() : new RTCPublisher()
       publisher.on('*', onPublisherEvent)
       await publisher.init(config)
@@ -309,15 +283,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
   }
 
-  const startup = async () => {
-    try {
-      const response = await requestOrigin(configuration)
-      startPublish(response)
-    } catch (error) {
-      respondToOriginFailure(error)
-    }
-  }
-
   let shuttingDown = false
   const shutdown = async () => {
     if (shuttingDown) return
@@ -337,5 +302,5 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   window.addEventListener('pagehide', shutdown)
   window.addEventListener('beforeunload', shutdown)
 
-  startup()
+  startPublish()
 })(this, document, window.red5prosdk, window.streamManagerUtil)
