@@ -76,7 +76,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var resolutionField = document.getElementById('resolution-field')
   var addressField = document.getElementById('address-field')
   var protocol = proxyLocal ? 'https' : serverSettings.protocol
-  var isSecure = protocol === 'https'
+  var isSecure =
+    protocol === 'https' || window.location.hostname === 'localhost'
 
   var bitrate = 0
   var packetsReceived = 0
@@ -208,12 +209,20 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   function determineSubscriber(jsonResponse) {
-    var { app, proxy, preferWhipWhep } = configuration
+    var {
+      app,
+      proxy,
+      preferWhipWhep,
+      streamManagerNodeGroup: nodeGroup,
+    } = configuration
     var { WHEPClient, RTCSubscriber } = red5prosdk
     var { params } = jsonResponse
-    var host = jsonResponse.serverAddress
-    var scope = jsonResponse.scope
-    var name = jsonResponse.name
+    var { serverAddress, scope, name } = jsonResponse
+    var host = serverAddress
+    const appContext = preferWhipWhep
+      ? `as/v1/proxy/${app}`
+      : `as/v1/proxy/${proxy}`
+
     var { protocol, port } = getSocketLocationFromProtocol()
 
     var connectionParams = params
@@ -223,12 +232,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       protocol,
       port,
       streamName: name,
-      app: preferWhipWhep ? app : proxy,
+      app: appContext,
       subscriptionId: 'subscriber-' + instanceId,
       connectionParams: preferWhipWhep
         ? connectionParams
         : {
             ...connectionParams,
+            nodeGroup,
             host: host,
             app: scope,
           },
@@ -323,22 +333,22 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   function startup() {
-	const { preferWhipWhep, host, app, stream1 } = configuration
+    const { preferWhipWhep, host, app, stream1 } = configuration
     var region = getRegionIfDefined()
-	const junk = {
-        serverAddress: host,
-        scope: app,
-        name: stream1,
-        params: region
-          ? {
-              region,
-              strict: true,
-            }
-          : undefined,
-      }
-	  
+    const proxyConfig = {
+      serverAddress: host,
+      scope: app,
+      name: stream1,
+      params: region
+        ? {
+            region,
+            strict: true,
+          }
+        : undefined,
+    }
+
     // Kick off.
-    respondToEdge(junk).catch(respondToEdgeFailure)
+    respondToEdge(proxyConfig).catch(respondToEdgeFailure)
   }
   startup()
 
