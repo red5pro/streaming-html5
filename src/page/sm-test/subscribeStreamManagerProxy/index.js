@@ -333,8 +333,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   function startup() {
-    const { preferWhipWhep, host, app, stream1 } = configuration
-    var region = getRegionIfDefined()
+    const { host, app, stream1 } = configuration
+    const region = getRegionIfDefined()
     const proxyConfig = {
       serverAddress: host,
       scope: app,

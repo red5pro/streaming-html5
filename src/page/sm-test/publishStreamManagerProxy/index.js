@@ -254,37 +254,20 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   const requestOrigin = async (configuration) => {
-    const {
-      streamManagerAPI,
-      streamManagerNodeGroup,
-      preferWhipWhep,
-      host,
-      app,
-      stream1,
-    } = configuration
-    var region = getRegionIfDefined()
-    if (!preferWhipWhep) {
-      return streamManagerUtil.getOrigin(
-        host,
-        app,
-        stream1,
-        streamManagerAPI,
-        streamManagerNodeGroup
-      )
-    } else {
-      // WHIP/WHEP knows how to handle proxy requests.
-      return {
-        serverAddress: host,
-        scope: app,
-        name: stream1,
-        streamGuid: `${app}/${stream1}`,
-        params: region
-          ? {
-              region,
-            }
-          : undefined,
-      }
+    const { host, app, stream1 } = configuration
+    const region = getRegionIfDefined()
+    const proxyConfig = {
+      serverAddress: host,
+      scope: app,
+      name: stream1,
+      params: region
+        ? {
+            region,
+            strict: true,
+          }
+        : undefined,
     }
+    return proxyConfig
   }
 
   const startPublish = async (origin) => {
