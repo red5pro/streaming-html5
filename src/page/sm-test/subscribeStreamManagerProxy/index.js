@@ -222,6 +222,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       app,
       stream1,
       proxy,
+      streamManagerAPI,
       preferWhipWhep,
       streamManagerNodeGroup: nodeGroup,
     } = configuration
@@ -235,8 +236,16 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         }
       : undefined
     const appContext = preferWhipWhep
-      ? `as/v1/proxy/${app}`
-      : `as/v1/proxy/${proxy}`
+      ? `as/${streamManagerAPI}/proxy/${app}`
+      : `as/${streamManagerAPI}/proxy/ws/subscribe/${app}/${stream1}`
+
+    // wss://as-test1.red5pro.net/as/v1/proxy/ws/publish/live/stream1?etc
+    // https://as-test1.red5pro.net/as/v1/proxy/whip/live/stream1?signal=true&nodeGroup=allinone-oci-1&transcode=false
+
+    const httpProtocol = protocol === 'wss' ? 'https' : 'http'
+    const endpoint = !preferWhipWhep
+      ? `${protocol}://${host}:${port}/as/${streamManagerAPI}/proxy/ws/subscribe/${app}/${stream1}`
+      : `${httpProtocol}://${host}:${port}/as/${streamManagerAPI}/proxy/whep/${app}/${stream1}`
 
     var connectionParams = params
       ? { ...params, ...getAuthenticationParams().connectionParams }
@@ -245,6 +254,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     var rtcConfig = {
       ...configuration,
       ...defaultConfiguration,
+      endpoint,
       protocol,
       port,
       host,

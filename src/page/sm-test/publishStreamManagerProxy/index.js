@@ -202,6 +202,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       app,
       stream1,
       proxy,
+      streamManagerAPI,
       preferWhipWhep,
       streamManagerNodeGroup: nodeGroup,
     } = configuration
@@ -216,8 +217,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       : undefined
 
     const appContext = preferWhipWhep
-      ? `as/v1/proxy/${app}`
-      : `as/v1/proxy/${proxy}`
+      ? `as/${streamManagerAPI}/proxy/${app}`
+      : `as/${streamManagerAPI}/proxy/ws/publish/${app}/${stream1}`
+
+    const httpProtocol = protocol === 'wss' ? 'https' : 'http'
+    const endpoint = !preferWhipWhep
+      ? `${protocol}://${host}:${port}/as/${streamManagerAPI}/proxy/ws/publish/${app}/${stream1}`
+      : `${httpProtocol}://${host}:${port}/as/${streamManagerAPI}/proxy/whip/${app}/${stream1}`
 
     const connectionParams = params
       ? { ...params, ...getAuthenticationParams().connectionParams }
@@ -227,6 +233,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       ...configuration,
       ...defaultConfiguration,
       ...getUserMediaConfiguration(),
+      endpoint,
       protocol,
       port,
       host,
