@@ -262,7 +262,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       app: appContext,
       subscriptionId: 'subscriber-' + instanceId,
       connectionParams: preferWhipWhep
-        ? connectionParams
+        ? {
+            ...connectionParams,
+            nodeGroup,
+          }
         : {
             ...connectionParams,
             nodeGroup,
