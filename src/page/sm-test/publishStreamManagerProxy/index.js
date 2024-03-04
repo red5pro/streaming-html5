@@ -240,7 +240,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       streamName: stream1,
       app: appContext,
       connectionParams: preferWhipWhep
-        ? connectionParams
+        ? {
+            ...connectionParams,
+            nodeGroup,
+          }
         : {
             ...connectionParams,
             host: host,
