@@ -146,18 +146,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       : {}
   }
 
-  const showAddress = (subscriber) => {
-    const config = subscriber.getOptions()
-    const { host, app, connectionParams } = config
-    console.log(`Host = ${host} | app = ${app}`)
-    if (connectionParams && connectionParams.host && connectionParams.app) {
-      displayServerAddress(config.connectionParams.host, host)
-    } else {
-      displayServerAddress(host)
-    }
-  }
-
   const displayServerAddress = (serverAddress, proxyAddress) => {
+    addressField.classList.remove('hidden')
     proxyAddress = typeof proxyAddress === 'undefined' ? 'N/A' : proxyAddress
     addressField.innerText = `Proxy Address: ${proxyAddress} | Edge Address: ${serverAddress}`
   }
@@ -285,7 +275,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       subscriber.on('*', onSubscriberEvent)
       await subscriber.init(config)
       await subscriber.subscribe()
-      showAddress(subscriber)
       onSubscribeSuccess(subscriber)
       streamTitle.innerText = stream1
       targetSubscriber = subscriber

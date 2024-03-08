@@ -96,18 +96,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       : {}
   }
 
-  const showAddress = (publisher) => {
-    const config = publisher.getOptions()
-    const { host, app, connectionParams } = config
-    console.log(`Host = ${host} | app = ${app}`)
-    if (connectionParams && connectionParams.host && connectionParams.app) {
-      displayServerAddress(config.connectionParams.host, host)
-    } else {
-      displayServerAddress(host)
-    }
-  }
-
   const displayServerAddress = (serverAddress, proxyAddress) => {
+    addressField.classList.remove('hidden')
     proxyAddress = typeof proxyAddress === 'undefined' ? 'N/A' : proxyAddress
     addressField.innerText = `Proxy Address: ${proxyAddress} | Origin Address: ${serverAddress}`
   }
@@ -263,7 +253,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       publisher.on('*', onPublisherEvent)
       await publisher.init(config)
       await publisher.publish()
-      showAddress(publisher)
       onPublishSuccess(publisher)
       streamTitle.innerText = stream1
       targetPublisher = publisher
