@@ -461,7 +461,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     const rtcConfig = {
       ...configuration,
       ...defaultConfiguration,
-      ...getUserMediaConfiguration(),
+      mediaConstraints: getUserMediaConfiguration(),
       bandwidth: {
         audio: parseInt(bandwidthAudioField.value),
         video: 512,
@@ -513,13 +513,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   const startPublish = async () => {
     try {
-      const pubElement = document.getElementById('red5pro-publisher')
       const { RTCPublisher, WHIPClient } = red5prosdk
       const { preferWhipWhep, stream1 } = configuration
       const config = getConfiguration()
       const publisher = preferWhipWhep ? new WHIPClient() : new RTCPublisher()
       publisher.on('*', onPublisherEvent)
-      await publisher.initWithStream(config, pubElement.srcObject)
+      await publisher.init(config)
       await publisher.publish()
       onPublishSuccess(publisher)
       streamTitle.innerText = stream1
