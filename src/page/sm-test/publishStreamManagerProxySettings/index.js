@@ -236,10 +236,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
   setPublishableState(true)
 
-  function disablePublishButton() {
-    publishButton.disabled = true
-  }
-
   function restorePublishButton() {
     var t = setTimeout(function () {
       clearTimeout(t)
@@ -548,9 +544,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   publishButton.addEventListener('click', startStopPublish)
 
   let shuttingDown = false
-  const shutdown = async () => {
+  const shutdown = async (trackShutdown) => {
     if (shuttingDown) return
-    shuttingDown = true
+    shuttingDown = typeof trackShutdown === 'boolean' ? trackShutdown : true
     try {
       await unpublish()
     } catch (e) {

@@ -213,10 +213,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     return undefined
   }
 
-  function onCameraSelect(selection) {
-    if (!configuration.useVideo) {
-      return
-    }
+  function establishCameraSelection(selection) {
     var pubElement = document.getElementById('red5pro-publisher')
     if (mediaConstraints.video && typeof mediaConstraints.video !== 'boolean') {
       mediaConstraints.video.deviceId = { exact: selection }
@@ -237,6 +234,69 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         )
       })
     publishButton.disabled = false
+  }
+
+  async function swapCameraSelection(selection) {
+    const connection = targetPublisher.getPeerConnection()
+    if (mediaConstraints.video && typeof mediaConstraints.video !== 'boolean') {
+      mediaConstraints.video.deviceId = { exact: selection }
+      delete mediaConstraints.video.frameRate
+    } else {
+      mediaConstraints.video = {
+        deviceId: { exact: selection },
+      }
+    }
+    mediaConstraints.audio = configuration.useAudio
+      ? configuration.mediaConstraints.audio
+      : false
+    // In the below flag, we originally equated it to being an older Chrome version,
+    //  however, it turns out it was not necessarily just the browser but could also be the Android OS...
+    //  As a result, we stop all tracks for all browsers now before requesting `getUserMedia` again.
+    let requiresTrackStopBeforeGUM = true // Add any other criteria here.
+    const senders = connection.getSenders()
+    if (requiresTrackStopBeforeGUM) {
+      // Note: In some older mobile browsers, it is required to stop all current tracks before requesting
+      // media through `getUserMedia` again.
+      // This has the unfortunate side affect of the video going "black" until new media is accessed.
+      senders.forEach(function (sender) {
+        sender.track.stop()
+      })
+    }
+    // 1. Grab new MediaStream from updated constraints.
+    const stream = await navigator.mediaDevices.getUserMedia(mediaConstraints)
+    // 2. Update the media tracks on senders through connection.
+    let i = senders.length
+    while (--i > -1) {
+      // 3. Replace the currently sending streams based on track kind
+      if (!requiresTrackStopBeforeGUM) {
+        senders[i].track.stop()
+      }
+      if (senders[i].track.kind === 'video') {
+        senders[i].replaceTrack(stream.getVideoTracks()[0])
+      } else {
+        senders[i].replaceTrack(stream.getAudioTracks()[0])
+      }
+    }
+    // 4. Update the video display with new stream.
+    document.getElementById('red5pro-publisher').srcObject = stream
+  }
+
+  function onCameraSelect(selection) {
+    if (!configuration.useVideo) {
+      return
+    }
+
+    if (targetPublisher && targetPublisher.getPeerConnection()) {
+      // Already established broadcast. Swap camera live.
+      try {
+        swapCameraSelection(selection)
+      } catch (e) {
+        console.error(`Could not replace camera: ${e.message}`)
+      }
+    } else {
+      // Else we just need to replace selection prior to broadcast.
+      establishCameraSelection(selection)
+    }
   }
 
   const getConfiguration = () => {

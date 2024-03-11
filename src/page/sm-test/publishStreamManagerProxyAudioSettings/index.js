@@ -558,9 +558,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     .catch(onDeviceError)
 
   let shuttingDown = false
-  const shutdown = async () => {
+  const shutdown = async (trackShutdown) => {
     if (shuttingDown) return
-    shuttingDown = true
+    shuttingDown = typeof trackShutdown === 'boolean' ? trackShutdown : true
     try {
       await unpublish()
     } catch (e) {
