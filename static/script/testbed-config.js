@@ -139,7 +139,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       streamManagerAPI: 'v1',
       streamManagerAccessToken: 'xyz123',
       streamManagerRegion: undefined,
-      streamManagerNodeGroup: undefined,
+      streamManagerNodeGroup: 'default',
       muteOnAutoplayRestriction: true,
       authentication: {
         enabled: false,

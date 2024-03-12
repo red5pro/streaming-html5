@@ -248,36 +248,32 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
    * Returns the stream listing on the server.
    */
   const getCompleteStreamList = async (url) => {
-    try {
-      let payload
-      let streamList
-      const response = await fetch(url)
-      if (
-        response.headers.get('content-type') &&
-        response.headers
-          .get('content-type')
-          .toLowerCase()
-          .indexOf('application/json') >= 0
-      ) {
-        payload = await response.json()
-      } else {
-        payload = await response.text()
-      }
-      streamList = payload
-      if (typeof payload === 'string') {
-        try {
-          streamList = JSON.parse(payload)
-        } catch (e) {
-          console.error(`Stream list error from: ${payload}`)
-          throw new TypeError(
-            'Could not properly parse stream list response: ' + e.message
-          )
-        }
-      }
-      return streamList
-    } catch (e) {
-      throw e
+    let payload
+    let streamList
+    const response = await fetch(url)
+    if (
+      response.headers.get('content-type') &&
+      response.headers
+        .get('content-type')
+        .toLowerCase()
+        .indexOf('application/json') >= 0
+    ) {
+      payload = await response.json()
+    } else {
+      payload = await response.text()
     }
+    streamList = payload
+    if (typeof payload === 'string') {
+      try {
+        streamList = JSON.parse(payload)
+      } catch (e) {
+        console.error(`Stream list error from: ${payload}`)
+        throw new TypeError(
+          'Could not properly parse stream list response: ' + e.message
+        )
+      }
+    }
+    return streamList
   }
 
   /**
@@ -297,15 +293,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
    * Requests stream list from stream manager and filters on scope/app.
    */
   const getStreamList = async (url, scope) => {
-    try {
-      const list = await getCompleteStreamList(url)
-      const filtered = list.filter((item) => {
-        return item.scope === scope && item.type === 'edge'
-      })
-      return filtered
-    } catch (e) {
-      throw e
-    }
+    const list = await getCompleteStreamList(url)
+    const filtered = list.filter((item) => {
+      return item.scope === scope && item.type === 'edge'
+    })
+    return filtered
   }
 
   /**
@@ -372,28 +364,24 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   /**
+   * Request to get Edge on stream managaer to consume stream from stream manager proxy.
+   */
+  const getEdge = async (host, context, streamName, version, nodeGroup) => {
+    let url = `https://${host}/as/${version}/streams/stream/${nodeGroup}/subscribe/${context}/${streamName}`
+    const result = await fetch(url)
+    const json = await result.json()
+    if (json.errorMessage) {
+      throw new Error(json.errorMessage)
+    }
+    return json
+  }
+
+  /**
    * Request to get Origin data to broadcast for conference stream manager proxy.
    */
   const getOriginForConference = async (host, context) => {
     try {
       let url = `https://${host}/streammanager/api/4.0/event/${context}/join`
-      const result = await fetch(url)
-      const json = await result.json()
-      if (json.errorMessage) {
-        throw new Error(json.errorMessage)
-      }
-      return json
-    } catch (e) {
-      throw e
-    }
-  }
-
-  /**
-   * Request to get Edge on stream managaer to consume stream from stream manager proxy.
-   */
-  const getEdge = async (host, context, streamName) => {
-    try {
-      const url = `https://${host}/streammanager/api/4.0/event/${context}/${streamName}?action=subscribe`
       const result = await fetch(url)
       const json = await result.json()
       if (json.errorMessage) {
@@ -415,49 +403,64 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     provision,
     smPass = '123xyz'
   ) => {
-    try {
-      const url = `https://${host}/streammanager/api/4.0/admin/event/meta/${context}/${streamName}?accessToken=${smPass}`
-      const result = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(provision),
-      })
-      const json = await result.json()
-      if (json && json.errorMessage) {
-        throw new Error(json.errorMessage)
-      }
-      return json
-    } catch (e) {
-      throw e
+    const url = `https://${host}/streammanager/api/4.0/admin/event/meta/${context}/${streamName}?accessToken=${smPass}`
+    const result = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(provision),
+    })
+    const json = await result.json()
+    if (json && json.errorMessage) {
+      throw new Error(json.errorMessage)
     }
+    return json
   }
 
   const postProvision = async (host, provision, smPass = '123xyz') => {
     const { context, name } = provision
-    try {
-      const url = `https://${host}/streammanager/api/4.0/admin/event/meta/${context}/${name}?accessToken=${smPass}`
-      const result = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(provision),
-      })
-      const json = await result.json()
-      if (json && json.errorMessage) {
-        if (json.errorMessage.indexOf('Provision already exists') < 0) {
-          throw new Error(json.errorMessage)
-        } else {
-          console.log('Provision already exists')
-        }
+    const url = `https://${host}/streammanager/api/4.0/admin/event/meta/${context}/${name}?accessToken=${smPass}`
+    const result = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(provision),
+    })
+    const json = await result.json()
+    if (json && json.errorMessage) {
+      if (json.errorMessage.indexOf('Provision already exists') < 0) {
+        throw new Error(json.errorMessage)
+      } else {
+        console.log('Provision already exists')
       }
-
-      return json
-    } catch (e) {
-      throw e
     }
+
+    return json
+  }
+
+  const forward = async (host, version, forwardURI) => {
+    let url = `https://${host}/as/${version}/proxy/forward/?target=${encodeURIComponent(
+      forwardURI
+    )}`
+    const result = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+    const json = await result.json()
+    if (json && json.errorMessage) {
+      throw new Error(json.errorMessage)
+    }
+    return json
+  }
+
+  const getForwardRequestURL = (host, version, forwardURI) => {
+    return `https://${host}/as/${version}/proxy/forward/?target=${encodeURIComponent(
+      forwardURI
+    )}`
   }
 
   window.streamManagerUtil = {
@@ -469,6 +472,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     authenticate: authenticate,
     postTranscode: postTranscode,
     postProvision: postProvision,
+    forward,
+    getForwardRequestURL,
   }
 
   window.getStreamList = getCompleteStreamList

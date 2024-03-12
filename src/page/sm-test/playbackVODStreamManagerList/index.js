@@ -23,7 +23,7 @@ NONINFRINGEMENT.   IN  NO  EVENT  SHALL INFRARED5, INC. BE LIABLE FOR ANY CLAIM,
 WHETHER IN  AN  ACTION  OF  CONTRACT,  TORT  OR  OTHERWISE,  ARISING  FROM,  OUT  OF  OR  IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
-;(function (window, document, red5prosdk) {
+;(function (window, document, red5prosdk, streamManagerUtil) {
   'use strict'
 
   var serverSettings = (function () {
@@ -55,8 +55,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       : red5prosdk.LOG_LEVELS.WARN
   )
 
-  var targetSubscriber
-
   var videoContainer = document.getElementById('video-container')
   var errorNotification = document.getElementById('error-notification')
   var mediaListing = document.getElementById('media-file-listing')
@@ -68,43 +66,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   var subscriberNode =
     '<video id="red5pro-subscriber" controls autoplay playsinline class="red5pro-subscriber red5pro-media red5pro-media-background" width="640" height="480"></video>'
-
-  var protocol = serverSettings.protocol
-  var isSecure = protocol === 'https'
-  function getSocketLocationFromProtocol() {
-    return !isSecure
-      ? { protocol: 'ws', port: serverSettings.wsport }
-      : { protocol: 'wss', port: serverSettings.wssport }
-  }
-
-  var defaultConfiguration = (function (useVideo, useAudio) {
-    var c = {
-      protocol: getSocketLocationFromProtocol().protocol,
-      port: getSocketLocationFromProtocol().port,
-    }
-    if (!useVideo) {
-      c.videoEncoding = red5prosdk.PlaybackVideoEncoder.NONE
-    }
-    if (!useAudio) {
-      c.audioEncoding = red5prosdk.PlaybackAudioEncoder.NONE
-    }
-    return c
-  })(configuration.useVideo, configuration.useAudio)
-
-  // Local lifecycle notifications.
-  function onSubscriberEvent(event) {
-    if (event.type === 'Subscribe.Time.Update') return
-    console.log('[Red5ProSubscriber] ' + event.type + '.')
-  }
-  function onSubscribeSuccess() {
-    console.log('[Red5ProSubsriber] Subscribe Complete.')
-  }
-  function onUnsubscribeFail(message) {
-    console.error('[Red5ProSubsriber] Unsubscribe Error :: ' + message)
-  }
-  function onUnsubscribeSuccess() {
-    console.log('[Red5ProSubsriber] Unsubscribe Complete.')
-  }
 
   function isMP4File(url) {
     return url.indexOf('.mp4') !== -1
@@ -163,101 +124,85 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     return kv.join('&')
   }
 
-  function requestVOD(configuration, vodType /* mediafiles | playlists */) {
-    var host = configuration.host
-    var app = configuration.app
-    var port = serverSettings.httpport
-    var baseUrl = protocol + '://' + host + ':' + port
-    var apiVersion = configuration.streamManagerAPI || '4.0'
-    var url =
-      baseUrl +
-      '/streammanager/api/' +
-      apiVersion +
-      '/media/' +
-      app +
-      '/' +
-      vodType +
-      '?useCloud=' +
-      useCloudStorageCheckbox.checked
-    if (configuration.authentication.enabled) {
-      url += `&${getAuthQueryParams()}`
+  function isHlsSupported() {
+    var video = document.createElement('video')
+    return video.canPlayType('application/vnd.apple.mpegurl') !== ''
+  }
+
+  async function requestVOD(
+    configuration,
+    vodType /* mediafiles | playlists */,
+    useCloudStorage = false
+  ) {
+    try {
+      const {
+        host,
+        app,
+        streamManagerAPI: version,
+        streamManagerNodeGroup: nodeGroup,
+      } = configuration
+      const origin = await streamManagerUtil.getOrigin(
+        host,
+        app,
+        `vod-test`,
+        version,
+        nodeGroup
+      )
+      const { serverAddress } = origin
+      const url = `http://${serverAddress}:${serverSettings.hlsport}/${app}/${vodType}?useCloud=${useCloudStorage}`
+      const payload = await streamManagerUtil.forward(host, version, url)
+      if (payload[vodType] === undefined) {
+        throw new Error(`No ${vodType} found.`)
+      }
+      const files = payload[vodType]
+      files.map((item) => {
+        item.host = serverAddress
+        item.app = app
+      })
+      return files
+    } catch (error) {
+      console.error(
+        '[SubscribeStreamManagerTest] :: Error - Could not request Playlists from Stream Manager. ' +
+          error.message
+      )
+      showErrorNotification(error.message)
+      throw error
     }
-    return new Promise(function (resolve, reject) {
-      fetch(url)
-        .then(function (res) {
-          if (
-            res.headers.get('content-type') &&
-            res.headers
-              .get('content-type')
-              .toLowerCase()
-              .indexOf('application/json') >= 0
-          ) {
-            return res.json()
-          } else {
-            throw new TypeError(
-              '[RequestVOD] :: Could not properly parse response.'
-            )
-          }
-        })
-        .then(function (json) {
-          if (json.errorMessage) {
-            throw new Error(json.errorMessage)
-          } else {
-            if (json[vodType]) {
-              resolve(json[vodType])
-            } else {
-              throw new Error('[RequestVOD] :: File not found')
-            }
-          }
-        })
-        .catch(function (error) {
-          console.error(
-            '[SubscribeStreamManagerTest] :: Error - Could not request Playlists from Stream Manager. ' +
-              error.message
-          )
-          showErrorNotification(error.message)
-          reject(error)
-        })
-    })
   }
 
   var mediafiles = []
   var playlists = []
 
   function handlePlaylistSelect(event) {
+    unsubscribe()
     hideErrorNotification()
     var el = event.target
     var index = parseInt(el.dataset.index, 10)
     if (!isNaN(index) && playlists.length > index) {
-      var next = function () {
-        respondToPlaylist(playlists[index])
-      }
-      unsubscribe().then(next).catch(next)
+      respondToPlaylist(playlists[index])
     }
   }
 
   function handleMediafileSelect(event) {
+    unsubscribe()
     hideErrorNotification()
     var el = event.target
     var index = parseInt(el.dataset.index, 10)
     if (!isNaN(index) && mediafiles.length > index) {
-      var next = function () {
-        var f = mediafiles[index]
-        var url = f.url
-        var location = url.split('/')
-        mediafiles[index] = Object.assign({}, f, {
-          serverAddress: location[2],
-          scope: [location[3], location[4]].join('/'),
-          name: location[5],
-        })
-        var mediafile = mediafiles[index]
-        if (isMP4File(mediafile.url)) {
-          useMP4Fallback(mediafile.url)
-        } else {
-          copyFLVLocationToClipboard(mediafile)
-        }
+      var f = mediafiles[index]
+      var url = f.url
+      var location = url.split('/')
+      mediafiles[index] = Object.assign({}, f, {
+        serverAddress: location[2],
+        scope: [location[3], location[4]].join('/'),
+        name: location[5],
+      })
+      var mediafile = mediafiles[index]
+      if (isMP4File(mediafile.url)) {
+        useMP4Fallback(mediafile.url)
+      } else {
+        copyFLVLocationToClipboard(mediafile)
       }
-      unsubscribe().then(next).catch(next)
     }
   }
 
@@ -321,103 +266,18 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
   }
 
-  // Request to unsubscribe.
-  function unsubscribe() {
-    var cleanup = function () {
-      try {
-        document.getElementById('red5pro-subscriber').pause()
-      } catch (e) {
-        console.log('WARN: tried to stop playback. ' + e.message)
-      } finally {
-        while (videoContainer.firstChild) {
-          videoContainer.removeChild(videoContainer.firstChild)
-        }
-        videoContainer.innerHTML = subscriberNode
+  async function respondToPlaylist(response) {
+    try {
+      const { url } = response
+      if (isHlsSupported()) {
+        const source = `<source src="${url}" type="application/x-mpegURL">`
+        document.getElementById('red5pro-subscriber').appendChild(source)
+      } else {
+        useVideoJSFallback(url)
       }
+    } catch (error) {
+      console.error(`Could not playback: ${error.message}`)
     }
-    return new Promise(function (resolve, reject) {
-      var subscriber = targetSubscriber
-      if (!subscriber) {
-        cleanup()
-        resolve()
-        return
-      }
-      subscriber
-        .unsubscribe()
-        .then(function () {
-          targetSubscriber.off('*', onSubscriberEvent)
-          targetSubscriber = undefined
-          cleanup()
-          onUnsubscribeSuccess()
-          resolve()
-        })
-        .catch(function (error) {
-          cleanup()
-          var jsonError =
-            typeof error === 'string' ? error : JSON.stringify(error, null, 2)
-          onUnsubscribeFail(jsonError)
-          reject(error)
-        })
-    })
-  }
-
-  function respondToPlaylist(response) {
-    var pathReg = /([^/]+)/g
-    var url = response.url
-    var name = response.name
-    var location = url.match(pathReg)
-    var protocol = window.location.protocol.substring(
-      0,
-      window.location.protocol.length - 1
-    )
-    var host = window.location.hostname
-    var port = window.location.port.length > 0 ? window.location.port : 443
-    if (location.length > 1) {
-      protocol = location[0].substring(0, location[0].length - 1)
-      host =
-        location[1].split(':').length > 1
-          ? location[1].split(':')[0]
-          : location[1]
-      port = location[1].split(':').length > 1 ? location[1].split(':')[1] : ''
-    }
-    var app = configuration.app
-    if (location.length > 4) {
-      var paths = [location[2]]
-      var pathIndex = 3
-      for (pathIndex; pathIndex < location.length - 1; pathIndex++) {
-        paths.push(location[pathIndex])
-      }
-      app = paths.join('/')
-    }
-    var config = Object.assign({}, configuration, defaultConfiguration)
-    var hlsConfig = Object.assign({}, config, {
-      host: host,
-      app: app,
-      protocol: protocol,
-      port: port,
-      streamName: name.split('.m3u8')[0],
-      mimeType: 'application/x-mpegURL',
-    })
-    new red5prosdk.HLSSubscriber()
-      .init(hlsConfig)
-      .then(function (subscriberImpl) {
-        targetSubscriber = subscriberImpl
-        // Subscribe to events.
-        targetSubscriber.on('*', onSubscriberEvent)
-        return targetSubscriber.subscribe()
-      })
-      .then(function () {
-        onSubscribeSuccess()
-      })
-      .catch(function (error) {
-        var jsonError =
-          typeof error === 'string' ? error : JSON.stringify(error, null, 2)
-        console.error(
-          '[Red5ProSubscriber] :: Error in HLS playback. ' + jsonError
-        )
-        useVideoJSFallback(response.url)
-        //        showErrorNotification('[Red5ProSubscriber] :: Error in HLS playback. ' + jsonError);
-      })
   }
 
   function copyFLVLocationToClipboard(response) {
@@ -426,7 +286,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       navigator.clipboard
         .writeText(response.url)
         .then(function () {
-          console.log(response.url + ' add to clipboard!')
+          alert(response.url + ' add to clipboard!')
         })
         .catch(function (e) {
           console.error(e)
@@ -436,8 +296,21 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
   }
 
+  function unsubscribe() {
+    try {
+      document.getElementById('red5pro-subscriber').pause()
+    } catch (e) {
+      console.log('WARN: tried to stop playback. ' + e.message)
+    } finally {
+      while (videoContainer.firstChild) {
+        videoContainer.removeChild(videoContainer.firstChild)
+      }
+      videoContainer.innerHTML = subscriberNode
+    }
+  }
+
   function getPlaylists() {
-    requestVOD(configuration, 'playlists')
+    requestVOD(configuration, 'playlists', false)
       .then(function (listing) {
         displayPlaylists(listing)
       })
@@ -448,7 +321,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   function getMediaFiles() {
-    requestVOD(configuration, 'mediafiles')
+    requestVOD(configuration, 'mediafiles', false)
       .then(function (listing) {
         displayMediaFiles(listing)
         getPlaylists()
@@ -466,16 +339,4 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   // start.
   getMediaFiles()
-  // getPlaylists();
-
-  // Clean up.
-  window.addEventListener('beforeunload', function () {
-    function clearRefs() {
-      if (targetSubscriber) {
-        targetSubscriber.off('*', onSubscriberEvent)
-      }
-      targetSubscriber = undefined
-    }
-    unsubscribe().then(clearRefs).catch(clearRefs)
-  })
-})(this, document, window.red5prosdk)
+})(this, document, window.red5prosdk, window.streamManagerUtil)
