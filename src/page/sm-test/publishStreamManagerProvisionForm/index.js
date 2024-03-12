@@ -55,11 +55,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       : red5prosdk.LOG_LEVELS.WARN
   )
 
-  var transcoderManifest
-
   var updateStatusFromEvent = window.red5proHandlePublisherEvent // defined in src/template/partial/status-field-publisher.hbs
   var streamTitle = document.getElementById('stream-title')
-  var provisionLink = document.getElementById('provision-link')
   var streamListing = document.getElementById('stream-listing')
   var submitButton = document.getElementById('submit-button')
   var transcoderTypes = ['high', 'mid', 'low']
@@ -77,120 +74,54 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   submitButton.addEventListener('click', submitTranscode)
   streamTitle.innerText = configuration.stream1
 
-  var protocol = serverSettings.protocol
-  var accessToken = configuration.streamManagerAccessToken
   var auth = configuration.authentication
   var authName = auth.enabled ? auth.username : ''
   var authPass = auth.enabled ? auth.password : ''
   var authToken =
     auth.enabled && !window.isEmpty(auth.token) ? auth.token : undefined
+  const { app, stream1 } = configuration
   var transcoderPOST = {
-    meta: {
-      authentication: {
-        username: authName,
-        password: authPass,
-        token: authToken,
-      },
-      stream: [],
-      georules: {
-        regions: ['US', 'UK'],
-        restricted: false,
-      },
-      qos: 3,
-    },
+    uuid: `${app}/${stream1}`,
+    messageType: 'ProvisionCommand',
+    credentials: auth.enabled
+      ? {
+          username: authName,
+          password: authPass,
+          token: authToken,
+        }
+      : undefined,
+    streams: [],
   }
 
-  function requestOrigin(configuration) {
-    var host = configuration.host
-    var app = configuration.app
-    var streamName = configuration.stream1
-    var port = serverSettings.httpport
-    var baseUrl = protocol + '://' + host + ':' + port
-    var apiVersion = configuration.streamManagerAPI || '4.0'
-    var url =
-      baseUrl +
-      '/streammanager/api/' +
-      apiVersion +
-      '/event/' +
-      app +
-      '/' +
-      streamName +
-      '?action=broadcast'
-    return new Promise(function (resolve, reject) {
-      fetch(url)
-        .then(function (res) {
-          if (
-            res.headers.get('content-type') &&
-            res.headers
-              .get('content-type')
-              .toLowerCase()
-              .indexOf('application/json') >= 0
-          ) {
-            return res.json()
-          } else {
-            throw new TypeError('Could not properly parse response.')
-          }
-        })
-        .then(function (json) {
-          resolve(json)
-        })
-        .catch(function (error) {
-          var jsonError =
-            typeof error === 'string' ? error : JSON.stringify(error, null, 2)
-          console.error(
-            '[PublisherStreamManagerTest] :: Error - Could not request Origin IP from Stream Manager. ' +
-              jsonError
-          )
-          reject(error)
-        })
-    })
-  }
-
-  var retryCount = 0
-  var retryLimit = 3
-  function respondToOrigin(response) {
-    var i = 0
-    var length = transcoderManifest.length
-    for (i; i < length; i++) {
+  const startup = async () => {
+    const {
+      host,
+      app,
+      stream1,
+      streamManagerAPI: version,
+      streamManagerNodeGroup: nodeGroup,
+    } = configuration
+    const originResponse = await streamManagerUtil.getOrigin(
+      host,
+      app,
+      stream1,
+      version,
+      nodeGroup,
+      true
+    )
+    const { serverAddress } = originResponse
+    const { streams } = transcoderPOST
+    const length = streams.length
+    for (let i; i < length; i++) {
       var p = document.createElement('p')
       p.style.margin = '10px 0'
-      p.textContent =
-        'rtmp://' +
-        response.serverAddress +
-        ':1935/' +
-        configuration.app +
-        '/' +
-        transcoderManifest[i].name
+      p.textContent = `rtmp://${serverAddress}:1935/${streams[i].streamGuid}`
       streamListing.appendChild(p)
     }
+    qualityContainer.classList.remove('hidden')
   }
 
-  function respondToOriginFailure(error) {
-    if (retryCount++ < retryLimit) {
-      var retryTimer = setTimeout(function () {
-        clearTimeout(retryTimer)
-        startup()
-      }, 1000)
-    } else {
-      var jsonError =
-        typeof error === 'string' ? error : JSON.stringify(error, null, 2)
-      updateStatusFromEvent({
-        type: red5prosdk.PublisherEventTypes.CONNECT_FAILURE,
-      })
-      console.error(
-        '[Red5ProPublisher] :: Retry timeout in publishing - ' + jsonError
-      )
-    }
-  }
-
-  function startup() {
-    // Kick off.
-    requestOrigin(configuration)
-      .then(respondToOrigin)
-      .catch(respondToOriginFailure)
-  }
-
-  function generateTranscoderPost(streamName, forms) {
+  function generateTranscoderPost(uuid, forms) {
     var i = forms.length
     var formItem
     var bitrateField
@@ -199,17 +130,18 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     var setting
     var streams = []
     while (--i > -1) {
+      const level = i + 1
       formItem = forms[i]
       bitrateField = formItem.getElementsByClassName('bitrate-field')[0]
       widthField = formItem.getElementsByClassName('width-field')[0]
       heightField = formItem.getElementsByClassName('height-field')[0]
       setting = {
-        name: [streamName, i + 1].join('_'),
-        level: i + 1,
-        properties: {
+        streamGuid: `${uuid}_${level}`,
+        abrLevel: level,
+        videoParams: {
           videoWidth: parseInt(widthField.value, 10),
           videoHeight: parseInt(heightField.value, 10),
-          videoBR: parseInt(bitrateField.value, 10),
+          videoBitRate: parseInt(bitrateField.value, 10),
         },
       }
       streams.push(setting)
@@ -217,37 +149,29 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     return streams
   }
 
-  function submitTranscode() {
-    const { host, app, stream1 } = configuration
-    var streams = generateTranscoderPost(configuration.stream1, transcoderForms)
-    transcoderPOST.meta.stream = streams
-    streamManagerUtil
-      .postTranscode(host, app, stream1, transcoderPOST)
-      .then(function (response) {
-        if (response.errorMessage) {
-          console.error(
-            '[Red5ProPublisher] :: Error in POST of transcode configuration: ' +
-              response.errorMessage
-          )
-          updateStatusFromEvent({
-            type: red5prosdk.PublisherEventTypes.CONNECT_FAILURE,
-          })
-        } else {
-          transcoderManifest = streams
-          qualityContainer.classList.remove('hidden')
-          startup()
-        }
+  async function submitTranscode() {
+    try {
+      const { host, streamManagerNodeGroup: nodeGroup } = configuration
+      const { uuid } = transcoderPOST
+      const streams = generateTranscoderPost(uuid, transcoderForms)
+      transcoderPOST.streams = streams
+      const response = await streamManagerUtil.postProvision(host, nodeGroup, [
+        transcoderPOST,
+      ])
+      if (response.errorMessage) {
+        throw new Error(response.errorMessage)
+      }
+      startup()
+    } catch (error) {
+      var jsonError =
+        typeof error === 'string' ? error : JSON.stringify(error, null, 2)
+      console.error(
+        '[Red5ProPublisher] :: Error in POST of transcode configuration: ' +
+          jsonError
+      )
+      updateStatusFromEvent({
+        type: red5prosdk.PublisherEventTypes.CONNECT_FAILURE,
       })
-      .catch(function (error) {
-        var jsonError =
-          typeof error === 'string' ? error : JSON.stringify(error, null, 2)
-        console.error(
-          '[Red5ProPublisher] :: Error in POST of transcode configuration: ' +
-            jsonError
-        )
-        updateStatusFromEvent({
-          type: red5prosdk.PublisherEventTypes.CONNECT_FAILURE,
-        })
-      })
+    }
   }
 })(this, document, window.red5prosdk, window.streamManagerUtil)

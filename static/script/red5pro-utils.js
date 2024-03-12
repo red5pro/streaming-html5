@@ -396,13 +396,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   /**
    * Request to post a transcode provision detailing variants.
    */
-  const postTranscode = async (
-    host,
-    context,
-    streamName,
-    provision,
-    smPass = '123xyz'
-  ) => {
+  const postTranscode = async (host, context, streamName, provision) => {
     const url = `https://${host}/streammanager/api/4.0/admin/event/meta/${context}/${streamName}?accessToken=${smPass}`
     const result = await fetch(url, {
       method: 'POST',
@@ -418,26 +412,29 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     return json
   }
 
-  const postProvision = async (host, provision, smPass = '123xyz') => {
-    const { context, name } = provision
-    const url = `https://${host}/streammanager/api/4.0/admin/event/meta/${context}/${name}?accessToken=${smPass}`
+  const postProvision = async (host, nodeGroup, provision) => {
+    const url = `https://${host}/streams/1.0/provision/${nodeGroup}`
+    const body = JSON.stringify(provision)
     const result = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(provision),
+      body,
     })
-    const json = await result.json()
-    if (json && json.errorMessage) {
-      if (json.errorMessage.indexOf('Provision already exists') < 0) {
-        throw new Error(json.errorMessage)
-      } else {
-        console.log('Provision already exists')
+    if (result.status >= 200 || result.status < 300) {
+      const json = await result.json()
+      if (json && json.errorMessage) {
+        if (json.errorMessage.indexOf('Provision already exists') < 0) {
+          throw new Error(json.errorMessage)
+        } else {
+          console.log('Provision already exists')
+        }
       }
+      return json
+    } else {
+      throw new Error(`Provision request failed: ${result.status}`)
     }
-
-    return json
   }
 
   const forward = async (host, version, forwardURI) => {
