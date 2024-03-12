@@ -23,7 +23,7 @@ NONINFRINGEMENT.   IN  NO  EVENT  SHALL INFRARED5, INC. BE LIABLE FOR ANY CLAIM,
 WHETHER IN  AN  ACTION  OF  CONTRACT,  TORT  OR  OTHERWISE,  ARISING  FROM,  OUT  OF  OR  IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
-;(function (window, document, red5prosdk, streamManagerUtil) {
+;(function (window, document, red5prosdk) {
   'use strict'
 
   var serverSettings = (function () {
@@ -236,14 +236,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       : {}
   }
 
-  function displayServerAddress(serverAddress, proxyAddress) {
+  const displayServerAddress = (serverAddress, proxyAddress) => {
+    addressField.classList.remove('hidden')
     proxyAddress = typeof proxyAddress === 'undefined' ? 'N/A' : proxyAddress
-    addressField.innerText =
-      ' Proxy Address: ' +
-      proxyAddress +
-      ' | ' +
-      ' Edge Address: ' +
-      serverAddress
+    addressField.innerText = `Proxy Address: ${proxyAddress} | Edge Address: ${serverAddress}`
   }
 
   // Local lifecycle notifications.
@@ -299,149 +295,120 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     return undefined
   }
 
-  function determineSubscriber(jsonResponse) {
-    var { app, proxy, preferWhipWhep } = configuration
-    var { WHEPClient, RTCSubscriber } = red5prosdk
-    var { params } = jsonResponse
-    var host = jsonResponse.serverAddress
-    var scope = jsonResponse.scope
-    var name = jsonResponse.name
-    var { protocol, port } = getSocketLocationFromProtocol()
+  const getConfiguration = () => {
+    const {
+      host,
+      app,
+      stream1,
+      streamManagerAPI,
+      preferWhipWhep,
+      streamManagerNodeGroup: nodeGroup,
+    } = configuration
+    const { protocol, port } = getSocketLocationFromProtocol()
+
+    const region = getRegionIfDefined()
+    const params = region
+      ? {
+          region,
+          strict: true,
+        }
+      : undefined
+    const appContext = preferWhipWhep
+      ? `as/${streamManagerAPI}/proxy/${app}`
+      : `as/${streamManagerAPI}/proxy/ws/subscribe/${app}/${stream1}`
+
+    const httpProtocol = protocol === 'wss' ? 'https' : 'http'
+    const endpoint = !preferWhipWhep
+      ? `${protocol}://${host}:${port}/as/${streamManagerAPI}/proxy/ws/subscribe/${app}/${stream1}`
+      : `${httpProtocol}://${host}:${port}/as/${streamManagerAPI}/proxy/whep/${app}/${stream1}`
 
     var connectionParams = params
       ? { ...params, ...getAuthenticationParams().connectionParams }
       : getAuthenticationParams().connectionParams
-    var rtcConfig = Object.assign({}, configuration, defaultConfiguration, {
+
+    var rtcConfig = {
+      ...configuration,
+      ...defaultConfiguration,
+      endpoint,
       protocol,
       port,
-      streamName: name,
-      app: preferWhipWhep ? app : proxy,
+      host,
+      streamName: stream1,
+      app: appContext,
       subscriptionId: 'subscriber-' + instanceId,
       connectionParams: preferWhipWhep
-        ? connectionParams
+        ? {
+            ...connectionParams,
+            nodeGroup,
+          }
         : {
             ...connectionParams,
-            host: host,
-            app: scope,
+            nodeGroup,
+            host,
+            app,
           },
-    })
-    var subscriber = preferWhipWhep ? new WHEPClient() : new RTCSubscriber()
-    return subscriber.init(rtcConfig)
+    }
+    return rtcConfig
   }
 
-  function showServerAddress(publisher) {
-    var config = publisher.getOptions()
-    const { protocol, port, host, app, connectionParams } = config
-    console.log(`Host = ${host} | app = ${app}`)
-    if (connectionParams && connectionParams.host && connectionParams.app) {
-      displayServerAddress(config.connectionParams.host, host)
-    } else {
-      displayServerAddress(host)
+  const startSubscriber = async () => {
+    try {
+      const { RTCSubscriber, WHEPClient } = red5prosdk
+      const { preferWhipWhep, stream1 } = configuration
+      const config = getConfiguration()
+      const subscriber = preferWhipWhep ? new WHEPClient() : new RTCSubscriber()
+      subscriber.on('*', onSubscriberEvent)
+      await subscriber.init(config)
+      await subscriber.subscribe()
+      onSubscribeSuccess(subscriber)
+      streamTitle.innerText = stream1
+      targetSubscriber = subscriber
+    } catch (error) {
+      var jsonError =
+        typeof error === 'string' ? error : JSON.stringify(error, null, 2)
+      console.error(
+        '[Red5ProSubscriber] :: Error in access of Edge IP: ' + jsonError
+      )
+      updateStatusFromEvent({
+        type: red5prosdk.SubscriberEventTypes.CONNECT_FAILURE,
+      })
+      onSubscribeFail(jsonError)
     }
   }
 
   // Request to unsubscribe.
-  function unsubscribe() {
-    return new Promise(function (resolve, reject) {
+  const unsubscribe = async () => {
+    try {
       var subscriber = targetSubscriber
-      subscriber
-        .unsubscribe()
-        .then(function () {
-          targetSubscriber.off('*', onSubscriberEvent)
-          targetSubscriber = undefined
-          onUnsubscribeSuccess()
-          resolve()
-        })
-        .catch(function (error) {
-          var jsonError =
-            typeof error === 'string' ? error : JSON.stringify(error, null, 2)
-          onUnsubscribeFail(jsonError)
-          reject(error)
-        })
-    })
-  }
-
-  var retryCount = 0
-  var retryLimit = 3
-  function respondToEdge(response) {
-    determineSubscriber(response)
-      .then(function (subscriberImpl) {
-        streamTitle.innerText = configuration.stream1
-        targetSubscriber = subscriberImpl
-        // Subscribe to events.
-        targetSubscriber.on('*', onSubscriberEvent)
-        showServerAddress(targetSubscriber)
-        return targetSubscriber.subscribe()
-      })
-      .then(function (sub) {
-        onSubscribeSuccess(sub)
-      })
-      .catch(function (error) {
-        var jsonError =
-          typeof error === 'string' ? error : JSON.stringify(error, null, 2)
-        console.error(
-          '[Red5ProSubscriber] :: Error in subscribing - ' + jsonError
-        )
-        onSubscribeFail(jsonError)
-      })
-  }
-
-  function respondToEdgeFailure(error) {
-    if (retryCount++ < retryLimit) {
-      var retryTimer = setTimeout(function () {
-        clearTimeout(retryTimer)
-        startup()
-      }, 1000)
-    } else {
+      await subscriber.unsubscribe()
+      onUnsubscribeSuccess()
+    } catch (error) {
       var jsonError =
-        typeof error === 'string' ? error : JSON.stringify(error, null, 2)
-      console.error(
-        '[Red5ProSubscriber] :: Retry timeout in subscribing - ' + jsonError
-      )
+        typeof error === 'string' ? error : JSON.stringify(error, 2, null)
+      onUnsubscribeFail('Unmount Error ' + jsonError)
+      throw error
     }
   }
 
-  const requestEdge = async (configuration) => {
-    const { preferWhipWhep, host, app, stream1 } = configuration
-    var region = getRegionIfDefined()
-    if (!preferWhipWhep) {
-      return streamManagerUtil.getEdge(host, app, stream1, region)
-    } else {
-      // WHIP/WHEP knows how to handle proxy requests.
-      return {
-        serverAddress: host,
-        scope: app,
-        name: stream1,
-        params: region
-          ? {
-              region,
-              strict: true,
-            }
-          : undefined,
-      }
-    }
-  }
-
-  function startup() {
-    // Kick off.
-    requestEdge(configuration).then(respondToEdge).catch(respondToEdgeFailure)
-  }
-  startup()
-
-  // Clean up.
-  var shuttingDown = false
-  function shutdown() {
+  // Clean up
+  let shuttingDown = false
+  const shutdown = async () => {
     if (shuttingDown) return
     shuttingDown = true
-    function clearRefs() {
+    try {
+      await unsubscribe()
+    } catch (e) {
+      console.error(e)
+    } finally {
       if (targetSubscriber) {
         targetSubscriber.off('*', onSubscriberEvent)
       }
       targetSubscriber = undefined
     }
-    unsubscribe().then(clearRefs).catch(clearRefs)
     window.untrackBitrate()
   }
   window.addEventListener('pagehide', shutdown)
   window.addEventListener('beforeunload', shutdown)
-})(this, document, window.red5prosdk, window.streamManagerUtil)
+
+  startSubscriber()
+})(this, document, window.red5prosdk)

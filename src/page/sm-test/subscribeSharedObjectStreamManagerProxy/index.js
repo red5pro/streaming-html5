@@ -231,189 +231,121 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     })
   }
 
-  // Request to unsubscribe.
-  function unsubscribe() {
-    if (so !== undefined) {
-      so.close()
+  const getRegionIfDefined = () => {
+    const region = configuration.streamManagerRegion
+    if (
+      typeof region === 'string' &&
+      region.length > 0 &&
+      region !== 'undefined'
+    ) {
+      return region
     }
-    return new Promise(function (resolve, reject) {
-      targetSubscriber
-        .unsubscribe()
-        .then(function () {
-          targetSubscriber.off('*', onSubscriberEvent)
-          targetSubscriber = undefined
-          onUnsubscribeSuccess()
-          resolve()
-        })
-        .catch(function (error) {
-          var jsonError =
-            typeof error === 'string' ? error : JSON.stringify(error, null, 2)
-          onUnsubscribeFail(jsonError)
-          reject(error)
-        })
-    })
+    return undefined
   }
 
-  function requestEdge(configuration) {
-    var host = configuration.host
-    var app = configuration.app
-    var streamName = configuration.stream1
-    var port = serverSettings.httpport
-    var baseUrl = protocol + '://' + host + ':' + port
-    var apiVersion = configuration.streamManagerAPI || '3.1'
-    var url =
-      baseUrl +
-      '/streammanager/api/' +
-      apiVersion +
-      '/event/' +
-      app +
-      '/' +
-      streamName +
-      '?action=subscribe'
-    return new Promise(function (resolve, reject) {
-      fetch(url)
-        .then(function (res) {
-          if (res.status == 200) {
-            if (
-              res.headers.get('content-type') &&
-              res.headers
-                .get('content-type')
-                .toLowerCase()
-                .indexOf('application/json') >= 0
-            ) {
-              return res.json()
-            } else {
-              throw new TypeError('Could not properly parse response.')
-            }
-          } else {
-            var msg = ''
-            if (res.status == 400) {
-              msg = 'An invalid request was detected'
-            } else if (res.status == 404) {
-              msg = 'Data for the request could not be located/provided.'
-            } else if (res.status == 500) {
-              msg = 'Improper server state error was detected.'
-            } else {
-              msg = 'Unknown error'
-            }
-            throw new TypeError(msg)
-          }
-        })
-        .then(function (json) {
-          resolve(json)
-        })
-        .catch(function (error) {
-          var jsonError =
-            typeof error === 'string' ? error : JSON.stringify(error, null, 2)
-          console.error(
-            '[PublisherStreamManagerTest] :: Error - Could not request Origin IP from Stream Manager. ' +
-              jsonError
-          )
-          reject(error)
-        })
-    })
-  }
+  const getConfiguration = () => {
+    const {
+      host,
+      app,
+      stream1,
+      streamManagerAPI,
+      streamManagerNodeGroup: nodeGroup,
+    } = configuration
+    const { protocol, port } = getSocketLocationFromProtocol()
 
-  function determineSubscriber(jsonResponse) {
-    var host = jsonResponse.serverAddress
-    var app = jsonResponse.scope
-    var config = Object.assign(
-      {},
-      configuration,
-      defaultConfiguration,
-      getAuthenticationParams()
-    )
+    const region = getRegionIfDefined()
+    const params = region
+      ? {
+          region,
+          strict: true,
+        }
+      : undefined
 
-    var rtcConfig = Object.assign({}, config, {
-      protocol: getSocketLocationFromProtocol().protocol,
-      port: getSocketLocationFromProtocol().port,
+    const appContext = `as/${streamManagerAPI}/proxy/ws/subscribe/${app}/${stream1}`
+    const endpoint = `${protocol}://${host}:${port}/as/${streamManagerAPI}/proxy/ws/subscribe/${app}/${stream1}`
+
+    var connectionParams = params
+      ? { ...params, ...getAuthenticationParams().connectionParams }
+      : getAuthenticationParams().connectionParams
+
+    var rtcConfig = {
+      ...configuration,
+      ...defaultConfiguration,
+      endpoint,
+      protocol,
+      port,
+      host,
+      streamName: stream1,
+      app: appContext,
       subscriptionId: 'subscriber-' + instanceId,
-      streamName: config.stream1,
-      app: configuration.proxy,
       connectionParams: {
-        host: host,
-        app: app,
+        ...connectionParams,
+        nodeGroup,
+        host,
+        app,
       },
-    })
-    // Merge in possible authentication params.
-    rtcConfig.connectionParams = Object.assign(
-      {},
-      getAuthenticationParams().connectionParams,
-      rtcConfig.connectionParams
-    )
-
-    var rtmpConfig = Object.assign({}, config, {
-      protocol: 'rtmp',
-      port: serverSettings.rtmpport,
-      streamName: config.stream1,
-      backgroundColor: '#000000',
-      width: config.cameraWidth,
-      height: config.cameraHeight,
-      swf: '../../lib/red5pro/red5pro-subscriber.swf',
-      swfobjectURL: '../../lib/swfobject/swfobject.js',
-      productInstallURL: '../../lib/swfobject/playerProductInstall.swf',
-    })
-
-    var hlsConfig = Object.assign({}, config, {
-      protocol: protocol,
-      port: isSecure ? serverSettings.hlssport : serverSettings.hlsport,
-      streamName: config.stream1,
-      mimeType: 'application/x-mpegURL',
-    })
-
-    var subscribeOrder = config.subscriberFailoverOrder
-      .split(',')
-      .map(function (item) {
-        return item.trim()
-      })
-
-    if (window.query('view')) {
-      subscribeOrder = [window.query('view')]
     }
-
-    var subscriber = new red5prosdk.Red5ProSubscriber()
-    return subscriber.setPlaybackOrder(subscribeOrder).init({
-      rtc: rtcConfig,
-      rtmp: rtmpConfig,
-      hls: hlsConfig,
-    })
+    return rtcConfig
   }
 
-  requestEdge(configuration)
-    .then(determineSubscriber)
-    .then(function (subscriberImpl) {
-      streamTitle.innerText = configuration.stream1
-      targetSubscriber = subscriberImpl
-      // Subscribe to events.
-      targetSubscriber.on('*', onSubscriberEvent)
-      return targetSubscriber.subscribe()
-    })
-    .then(function () {
-      onSubscribeSuccess(targetSubscriber)
-    })
-    .catch(function (error) {
+  const startSubscriber = async () => {
+    try {
+      const { RTCSubscriber } = red5prosdk
+      const { stream1 } = configuration
+      const config = getConfiguration()
+      const subscriber = new RTCSubscriber()
+      subscriber.on('*', onSubscriberEvent)
+      await subscriber.init(config)
+      await subscriber.subscribe()
+      onSubscribeSuccess(subscriber)
+      streamTitle.innerText = stream1
+      targetSubscriber = subscriber
+    } catch (error) {
       var jsonError =
         typeof error === 'string' ? error : JSON.stringify(error, null, 2)
       console.error(
-        '[Red5ProSubscriber] :: Error in subscribing - ' + jsonError
+        '[Red5ProSubscriber] :: Error in access of Edge IP: ' + jsonError
       )
+      updateStatusFromEvent({
+        type: red5prosdk.SubscriberEventTypes.CONNECT_FAILURE,
+      })
       onSubscribeFail(jsonError)
-    })
+    }
+  }
 
-  // Clean up.
-  var shuttingDown = false
-  function shutdown() {
+  // Request to unsubscribe.
+  const unsubscribe = async () => {
+    try {
+      var subscriber = targetSubscriber
+      await subscriber.unsubscribe()
+      onUnsubscribeSuccess()
+    } catch (error) {
+      var jsonError =
+        typeof error === 'string' ? error : JSON.stringify(error, 2, null)
+      onUnsubscribeFail('Unmount Error ' + jsonError)
+      throw error
+    }
+  }
+
+  // Clean up
+  let shuttingDown = false
+  const shutdown = async () => {
     if (shuttingDown) return
     shuttingDown = true
-    function clearRefs() {
+    try {
+      await unsubscribe()
+    } catch (e) {
+      console.error(e)
+    } finally {
       if (targetSubscriber) {
         targetSubscriber.off('*', onSubscriberEvent)
       }
       targetSubscriber = undefined
     }
-    unsubscribe().then(clearRefs).catch(clearRefs)
     window.untrackBitrate()
   }
   window.addEventListener('pagehide', shutdown)
   window.addEventListener('beforeunload', shutdown)
+
+  startSubscriber()
 })(this, document, window.red5prosdk)

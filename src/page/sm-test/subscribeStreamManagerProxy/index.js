@@ -211,7 +211,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       host,
       app,
       stream1,
-      proxy,
       streamManagerAPI,
       preferWhipWhep,
       streamManagerNodeGroup: nodeGroup,
@@ -228,9 +227,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     const appContext = preferWhipWhep
       ? `as/${streamManagerAPI}/proxy/${app}`
       : `as/${streamManagerAPI}/proxy/ws/subscribe/${app}/${stream1}`
-
-    // wss://as-test1.red5pro.net/as/v1/proxy/ws/publish/live/stream1?etc
-    // https://as-test1.red5pro.net/as/v1/proxy/whip/live/stream1?signal=true&nodeGroup=allinone-oci-1&transcode=false
 
     const httpProtocol = protocol === 'wss' ? 'https' : 'http'
     const endpoint = !preferWhipWhep
