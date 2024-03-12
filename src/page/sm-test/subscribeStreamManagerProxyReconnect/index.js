@@ -196,6 +196,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
   function onSubscribeFail(message) {
     console.error('[Red5ProSubsriber] Subscribe Error :: ' + message)
+    setConnected(false)
   }
   function onSubscribeSuccess(subscriber) {
     console.log('[Red5ProSubsriber] Subscribe Complete.')

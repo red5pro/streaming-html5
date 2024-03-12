@@ -240,7 +240,11 @@ const onDecryptedSubscriberEvent = (event) => {
   }
 }
 
-const getConfiguration = (mediaElementId, insertableStream) => {
+const getConfiguration = (
+  forceSocketClient,
+  mediaElementId,
+  insertableStream
+) => {
   const {
     host,
     app,
@@ -257,14 +261,15 @@ const getConfiguration = (mediaElementId, insertableStream) => {
         strict: true,
       }
     : undefined
-  const appContext = preferWhipWhep
+  const preferSocket = forceSocketClient || !preferWhipWhep
+  const appContext = !preferSocket
     ? `as/${streamManagerAPI}/proxy/${app}`
     : `as/${streamManagerAPI}/proxy/ws/subscribe/${app}/${stream1}`
 
   const httpProtocol = protocol === 'wss' ? 'https' : 'http'
-  const endpoint = !preferWhipWhep
-    ? `${protocol}://${host}:${port}/as/${streamManagerAPI}/proxy/ws/subscribe/${app}/${stream1}`
-    : `${httpProtocol}://${host}:${port}/as/${streamManagerAPI}/proxy/whep/${app}/${stream1}`
+  const endpoint = !preferSocket
+    ? `${httpProtocol}://${host}:${port}/as/${streamManagerAPI}/proxy/whep/${app}/${stream1}`
+    : `${protocol}://${host}:${port}/as/${streamManagerAPI}/proxy/ws/subscribe/${app}/${stream1}`
 
   var connectionParams = params
     ? { ...params, ...getAuthenticationParams().connectionParams }
@@ -280,7 +285,7 @@ const getConfiguration = (mediaElementId, insertableStream) => {
     app: appContext,
     mediaElementId,
     rtcConfiguration: {
-      ...rtcConfiguration,
+      ...baseConfig.rtcConfiguration,
       encodedInsertableStreams: insertableStream,
     },
     connectionParams: preferWhipWhep
@@ -302,7 +307,7 @@ const encryptedPlayback = async () => {
   const { preferWhipWhep } = configuration
   const { WHEPClient, RTCSubscriber } = red5prosdk
   try {
-    const config = getConfiguration('red5pro-encrypted', false)
+    const config = getConfiguration(false, 'red5pro-encrypted', false)
     encryptedSubscriber = preferWhipWhep
       ? new WHEPClient()
       : new RTCSubscriber()
@@ -330,7 +335,7 @@ const decryptPlayback = async () => {
       worker: worker,
     }
 
-    const config = getConfiguration('red5pro-subscriber', true)
+    const config = getConfiguration(true, 'red5pro-subscriber', true)
     subscriber = await new RTCSubscriber().init(config, transforms)
     subscriber.on('*', (event) => onDecryptedSubscriberEvent(event))
     await subscriber.subscribe()
