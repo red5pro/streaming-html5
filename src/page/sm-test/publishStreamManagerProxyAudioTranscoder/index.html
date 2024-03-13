@@ -43,7 +43,6 @@
         font-size: 1em;
       }
       .settings-field > input {
-        width: 40%;
         padding-left: 10px;
       }
       .info-title {
@@ -161,7 +160,7 @@
         </div>
         {{> status-field-publisher}}
         {{> statistics-field packets_field='Packets Sent'}}
-        <div class="centered"><p id="address-field" class="address-field">Transcoder Address: N/A</p></div>
+        <div class="centered"><p id="address-field" class="address-field hidden">Transcoder Address: N/A</p></div>
         <div class="centered">
           <video id="red5pro-publisher" class="red5pro-publisher"
                  controls autoplay muted playsinline>
@@ -171,7 +170,7 @@
     </div>
     {{> footer}}
     {{> body-scripts}}
-    {{> sm-scripts}}
     <script src="index.js"></script>
+    <link rel="stylesheet" href="../../css/modal.css" />
   </body>
 </html>

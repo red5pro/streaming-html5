@@ -86,16 +86,18 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   function setQualitySubmitState(isPublishing) {
     if (isPublishing) {
+      qualityContainer.classList.add('hidden')
       qualitySubmit.removeEventListener('click', setQualityAndPublish, false)
       qualitySubmit.innerText = 'Stop Publishing'
       qualitySubmit.addEventListener('click', unpublish, false)
     } else {
+      qualityContainer.classList.remove('hidden')
       qualitySubmit.removeEventListener('click', unpublish, false)
       qualitySubmit.innerText = 'Start Publishing'
       qualitySubmit.addEventListener('click', setQualityAndPublish, false)
     }
   }
-  setQualitySubmitState(false)
+  qualitySubmit.addEventListener('click', setQualityAndPublish, false)
 
   var protocol = serverSettings.protocol
   var isSecure = protocol == 'https'
@@ -243,13 +245,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       },
     }
   }
-  const getConfiguration = async (provision) => {
+
+  const getConfiguration = (provision) => {
     const {
       host,
       app,
       streamManagerAPI,
       preferWhipWhep,
-      streamManagerAPI: version,
       streamManagerNodeGroup: nodeGroup,
     } = configuration
     const { protocol, port } = getSocketLocationFromProtocol()
@@ -270,22 +272,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
     const httpProtocol = protocol === 'wss' ? 'https' : 'http'
     const endpoint = !preferWhipWhep
-      ? `${protocol}://${host}:${port}/as/${streamManagerAPI}/proxy/ws/publish/${streamGuid}`
-      : `${httpProtocol}://${host}:${port}/as/${streamManagerAPI}/proxy/whip/${streamGuid}`
+      ? `${protocol}://${host}:${port}/as/${streamManagerAPI}/proxy/ws/publish/${streamGuid}?transcode=true`
+      : `${httpProtocol}://${host}:${port}/as/${streamManagerAPI}/proxy/whip/${streamGuid}?transcode=true`
 
     const connectionParams = params
       ? { ...params, ...getAuthenticationParams().connectionParams }
       : getAuthenticationParams().connectionParams
 
-    const transcoder = await streamManagerUtil.getOrigin(
-      host,
-      app,
-      stream1,
-      version,
-      nodeGroup,
-      true
-    )
-    const { serverAddress } = transcoder
     const rtcConfig = {
       ...configuration,
       ...defaultConfiguration,
@@ -302,12 +295,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       connectionParams: preferWhipWhep
         ? {
             ...connectionParams,
-            host: serverAddress,
             nodeGroup,
           }
         : {
             ...connectionParams,
-            host: serverAddress,
             app: app,
             nodeGroup,
           },
@@ -319,8 +310,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     try {
       const { RTCPublisher, WHIPClient } = red5prosdk
       const { preferWhipWhep, stream1 } = configuration
-      const config = await getConfiguration(provision)
-
+      const config = getConfiguration(provision)
       const publisher = preferWhipWhep ? new WHIPClient() : new RTCPublisher()
       publisher.on('*', onPublisherEvent)
       await publisher.init(config)
