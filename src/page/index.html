@@ -514,6 +514,8 @@
         videoField.checked = config.useVideo ? true : false;
         audioField.checked = config.useAudio ? true : false;
         muteAutoplayField.checked = config.muteOnAutoplayRestriction ? true : false;
+        smUserField = config.streamManagerUser ? config.streamManagerUser : '';
+        smPasswordField = config.streamManagerPassword ? config.streamManagerPassword : '';
         smRegionField.value = config.streamManagerRegion ? config.streamManagerRegion : '';
         smNodeGroupField.value = config.streamManagerNodeGroup ? config.streamManagerNodeGroup : '';
         smAPIField.value = config.streamManagerAPI;

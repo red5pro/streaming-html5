@@ -137,6 +137,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       verboseLogging: true,
       recordBroadcast: false,
       streamManagerAPI: 'v1',
+      streamManagerUser: undefined,
+      streamManagerPassword: undefined,
       streamManagerAccessToken: 'xyz123',
       streamManagerRegion: undefined,
       streamManagerNodeGroup: 'default',

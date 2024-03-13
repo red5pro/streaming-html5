@@ -81,7 +81,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     auth.enabled && !window.isEmpty(auth.token) ? auth.token : undefined
   const { app, stream1 } = configuration
   var transcoderPOST = {
-    uuid: `${app}/${stream1}`,
+    streamGuid: `${app}/${stream1}`,
     messageType: 'ProvisionCommand',
     credentials: auth.enabled
       ? {
@@ -93,6 +93,29 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     streams: [],
   }
 
+  const getOrigin = async (
+    host,
+    app,
+    stream1,
+    version,
+    nodeGroup,
+    transcoder = true
+  ) => {
+    try {
+      const result = await streamManagerUtil.getOrigin(
+        host,
+        app,
+        stream1,
+        version,
+        nodeGroup,
+        transcoder
+      )
+      return result
+    } catch (error) {
+      return undefined
+    }
+  }
+
   const startup = async () => {
     const {
       host,
@@ -101,27 +124,38 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       streamManagerAPI: version,
       streamManagerNodeGroup: nodeGroup,
     } = configuration
-    const originResponse = await streamManagerUtil.getOrigin(
-      host,
-      app,
-      stream1,
-      version,
-      nodeGroup,
-      true
-    )
-    const { serverAddress } = originResponse
-    const { streams } = transcoderPOST
-    const length = streams.length
-    for (let i; i < length; i++) {
-      var p = document.createElement('p')
-      p.style.margin = '10px 0'
-      p.textContent = `rtmp://${serverAddress}:1935/${streams[i].streamGuid}`
-      streamListing.appendChild(p)
+    const { streamGuid, streams } = transcoderPOST
+
+    let originResponse
+    originResponse = await getOrigin(host, app, stream1, version, nodeGroup)
+    if (!originResponse) {
+      originResponse = await getOrigin(
+        host,
+        app,
+        stream1,
+        version,
+        nodeGroup,
+        false
+      )
     }
-    qualityContainer.classList.remove('hidden')
+
+    if (originResponse) {
+      const { serverAddress } = originResponse
+      const length = streams.length
+      for (let i = 0; i < length; i++) {
+        var p = document.createElement('p')
+        p.style.margin = '10px 0'
+        p.textContent = `rtmp://${serverAddress}:1935/${streams[i].streamGuid}`
+        streamListing.appendChild(p)
+      }
+      qualityContainer.classList.remove('hidden')
+    }
+    // Provision Details.
+    const url = `https://${host}/as/${version}/streams/provision/${nodeGroup}/${streamGuid}`
+    document.getElementById('provision-link').href = url
   }
 
-  function generateTranscoderPost(uuid, forms) {
+  function generateTranscoderPost(guid, forms) {
     var i = forms.length
     var formItem
     var bitrateField
@@ -136,7 +170,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       widthField = formItem.getElementsByClassName('width-field')[0]
       heightField = formItem.getElementsByClassName('height-field')[0]
       setting = {
-        streamGuid: `${uuid}_${level}`,
+        streamGuid: `${guid}_${level}`,
         abrLevel: level,
         videoParams: {
           videoWidth: parseInt(widthField.value, 10),
@@ -151,27 +185,45 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   async function submitTranscode() {
     try {
-      const { host, streamManagerNodeGroup: nodeGroup } = configuration
-      const { uuid } = transcoderPOST
-      const streams = generateTranscoderPost(uuid, transcoderForms)
+      const {
+        host,
+        streamManagerUser,
+        streamManagerPassword,
+        streamManagerAPI: version,
+        streamManagerNodeGroup: nodeGroup,
+      } = configuration
+      const { streamGuid } = transcoderPOST
+      const streams = generateTranscoderPost(streamGuid, transcoderForms)
       transcoderPOST.streams = streams
-      const response = await streamManagerUtil.postProvision(host, nodeGroup, [
-        transcoderPOST,
-      ])
+      const token = await streamManagerUtil.authenticate(
+        host,
+        streamManagerUser,
+        streamManagerPassword
+      )
+      const response = await streamManagerUtil.postProvision(
+        host,
+        version,
+        nodeGroup,
+        token,
+        [transcoderPOST]
+      )
       if (response.errorMessage) {
         throw new Error(response.errorMessage)
       }
-      startup()
+      let t = setTimeout(() => {
+        clearTimeout(t)
+        startup()
+      }, 2000)
     } catch (error) {
-      var jsonError =
-        typeof error === 'string' ? error : JSON.stringify(error, null, 2)
+      const { message } = error
       console.error(
         '[Red5ProPublisher] :: Error in POST of transcode configuration: ' +
-          jsonError
+          message
       )
       updateStatusFromEvent({
         type: red5prosdk.PublisherEventTypes.CONNECT_FAILURE,
       })
+      alert('Error in POST of transcode configuration: ' + message)
     }
   }
 })(this, document, window.red5prosdk, window.streamManagerUtil)

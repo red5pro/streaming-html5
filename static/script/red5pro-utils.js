@@ -347,7 +347,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   ) => {
     let url = `https://${host}/as/${version}/streams/stream/${nodeGroup}/publish/${context}/${streamName}`
     if (transcode) {
-      url += '&transcode=true'
+      url += '?transcode=true'
     }
     const result = await fetch(url)
     const json = await result.json()
@@ -412,26 +412,34 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     return json
   }
 
-  const postProvision = async (host, nodeGroup, provision) => {
-    const url = `https://${host}/streams/1.0/provision/${nodeGroup}`
+  const postProvision = async (host, version, nodeGroup, token, provision) => {
+    const url = `https://${host}/as/${version}/streams/provision/${nodeGroup}`
     const body = JSON.stringify(provision)
     const result = await fetch(url, {
       method: 'POST',
+      withCredentials: true,
+      credentials: 'include',
       headers: {
+        Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json',
       },
       body,
     })
-    if (result.status >= 200 || result.status < 300) {
-      const json = await result.json()
-      if (json && json.errorMessage) {
-        if (json.errorMessage.indexOf('Provision already exists') < 0) {
-          throw new Error(json.errorMessage)
-        } else {
-          console.log('Provision already exists')
+    if (result.status >= 200 && result.status < 300) {
+      try {
+        const json = await result.json()
+        if (json && json.errorMessage) {
+          if (json.errorMessage.indexOf('Provision already exists') < 0) {
+            throw new Error(json.errorMessage)
+          } else {
+            console.log('Provision already exists')
+          }
+          return json
         }
+      } catch (e) {
+        console.error('Provision response JSON parse failed: ' + e.message)
       }
-      return json
+      return {}
     } else {
       throw new Error(`Provision request failed: ${result.status}`)
     }
