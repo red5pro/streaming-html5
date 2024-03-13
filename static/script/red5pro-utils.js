@@ -439,7 +439,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       } catch (e) {
         console.error('Provision response JSON parse failed: ' + e.message)
       }
-      return {}
+      return { success: true }
+    } else if (result.status === 409) {
+      return { errorMessage: 'Provision already exists' }
     } else {
       throw new Error(`Provision request failed: ${result.status}`)
     }

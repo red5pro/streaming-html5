@@ -56,7 +56,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   )
 
   var targetPublisher
-  var transcoderManifest
   var selectedTranscoderToPublish
 
   var clearStatusEvent = window.red5proClearPublisherEvent // defined in src/template/partial/status-field-publisher.hbs
@@ -121,20 +120,18 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var authPass = auth.enabled ? auth.password : ''
   var authToken =
     auth.enabled && !window.isEmpty(auth.token) ? auth.token : undefined
+  const { app, stream1 } = configuration
   var transcoderPOST = {
-    meta: {
-      authentication: {
-        username: authName,
-        password: authPass,
-        token: authToken,
-      },
-      stream: [],
-      georules: {
-        regions: ['US', 'UK'],
-        restricted: false,
-      },
-      qos: 3,
-    },
+    streamGuid: `${app}/${stream1}`,
+    messageType: 'ProvisionCommand',
+    credentials: auth.enabled
+      ? {
+          username: authName,
+          password: authPass,
+          token: authToken,
+        }
+      : undefined,
+    streams: [],
   }
 
   function getAuthenticationParams() {
@@ -150,14 +147,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       : {}
   }
 
-  function displayServerAddress(serverAddress, proxyAddress) {
+  const displayServerAddress = (serverAddress, proxyAddress) => {
+    addressField.classList.remove('hidden')
     proxyAddress = typeof proxyAddress === 'undefined' ? 'N/A' : proxyAddress
-    addressField.innerText =
-      ' Proxy Address: ' +
-      proxyAddress +
-      ' | ' +
-      ' Transcoder Address: ' +
-      serverAddress
+    addressField.innerText = `Proxy Address: ${proxyAddress} | Transcoder Address: ${serverAddress}`
   }
 
   var bitrate = 0
@@ -185,7 +178,14 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   function onPublisherEvent(event) {
-    console.log('[Red5ProPublisher] ' + event.type + '.')
+    const { type } = event
+    console.log('[Red5ProPublisher] ' + type + '.')
+    if (type === 'WebRTC.Endpoint.Changed') {
+      const { host } = configuration
+      const { data } = event
+      const { endpoint } = data
+      displayServerAddress(endpoint, host)
+    }
     updateStatusFromEvent(event)
   }
   function onPublishFail(message) {
@@ -228,7 +228,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     return undefined
   }
 
-  function getUserMediaConfiguration(config) {
+  function getUserMediaConfiguration(params) {
     return {
       mediaConstraints: {
         audio: configuration.useAudio
@@ -236,174 +236,148 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           : false,
         video: configuration.useVideo
           ? {
-              width: { exact: config.properties.videoWidth },
-              height: { exact: config.properties.videoHeight },
+              width: { exact: params.videoWidth },
+              height: { exact: params.videoHeight },
             }
           : false,
       },
     }
   }
+  const getConfiguration = async (provision) => {
+    const {
+      host,
+      app,
+      streamManagerAPI,
+      preferWhipWhep,
+      streamManagerAPI: version,
+      streamManagerNodeGroup: nodeGroup,
+    } = configuration
+    const { protocol, port } = getSocketLocationFromProtocol()
+    const { videoParams, streamGuid } = provision
+    const streamName = streamGuid.split('/').pop()
 
-  function determinePublisher(jsonResponse, transcoderConfig) {
-    var { app, proxy, preferWhipWhep } = configuration
-    var { WHIPClient, RTCPublisher } = red5prosdk
-    var { params } = jsonResponse
-    var host = jsonResponse.serverAddress
-    var scope = jsonResponse.scope
-    var name = transcoderConfig.name
-    var { protocol, port } = getSocketLocationFromProtocol()
+    const region = getRegionIfDefined()
+    const params = region
+      ? {
+          region,
+          strict: true,
+        }
+      : undefined
 
-    var connectionParams = params
+    const appContext = preferWhipWhep
+      ? `as/${streamManagerAPI}/proxy/whip/${app}`
+      : `as/${streamManagerAPI}/proxy/ws/publish/${app}`
+
+    const httpProtocol = protocol === 'wss' ? 'https' : 'http'
+    const endpoint = !preferWhipWhep
+      ? `${protocol}://${host}:${port}/as/${streamManagerAPI}/proxy/ws/publish/${streamGuid}`
+      : `${httpProtocol}://${host}:${port}/as/${streamManagerAPI}/proxy/whip/${streamGuid}`
+
+    const connectionParams = params
       ? { ...params, ...getAuthenticationParams().connectionParams }
       : getAuthenticationParams().connectionParams
-    var rtcConfig = Object.assign(
-      {},
-      configuration,
-      defaultConfiguration,
-      getUserMediaConfiguration(transcoderConfig),
-      {
-        protocol,
-        port,
-        streamName: name,
-        app: preferWhipWhep ? app : proxy,
-        bandwidth: {
-          video: transcoderConfig.properties.videoBR / 1000,
-        },
-        connectionParams: preferWhipWhep
-          ? connectionParams
-          : {
-              ...connectionParams,
-              host: host,
-              app: scope,
-            },
-      }
+
+    const transcoder = await streamManagerUtil.getOrigin(
+      host,
+      app,
+      stream1,
+      version,
+      nodeGroup,
+      true
     )
-    var publisher = preferWhipWhep ? new WHIPClient() : new RTCPublisher()
-    return publisher.init(rtcConfig)
-  }
-
-  function showAddress(publisher) {
-    var config = publisher.getOptions()
-    const { protocol, port, host, app, connectionParams } = config
-    console.log(`Host = ${host} | app = ${app}`)
-    if (connectionParams && connectionParams.host && connectionParams.app) {
-      displayServerAddress(config.connectionParams.host, host)
-      console.log('Using streammanager proxy for rtc.')
-      console.log(
-        'Proxy target = ' +
-          config.connectionParams.host +
-          ' | ' +
-          'Proxy app = ' +
-          config.connectionParams.app
-      )
-      console.log(
-        `Operation over ${
-          isSecure ? 'secure' : 'unsecure'
-        } connection | protocol: ${protocol} | port: ${port}`
-      )
-    } else {
-      displayServerAddress(host)
+    const { serverAddress } = transcoder
+    const rtcConfig = {
+      ...configuration,
+      ...defaultConfiguration,
+      ...getUserMediaConfiguration(videoParams),
+      endpoint,
+      protocol,
+      port,
+      host,
+      streamName,
+      app: appContext,
+      bandwidth: {
+        video: videoParams.videoBitRate / 1000,
+      },
+      connectionParams: preferWhipWhep
+        ? {
+            ...connectionParams,
+            host: serverAddress,
+            nodeGroup,
+          }
+        : {
+            ...connectionParams,
+            host: serverAddress,
+            app: app,
+            nodeGroup,
+          },
     }
+    return rtcConfig
   }
 
-  function unpublish() {
-    return new Promise(function (resolve, reject) {
-      var publisher = targetPublisher
-      publisher
-        .unpublish()
-        .then(function () {
-          onUnpublishSuccess()
-          resolve()
-        })
-        .catch(function (error) {
-          var jsonError =
-            typeof error === 'string' ? error : JSON.stringify(error, 2, null)
-          onUnpublishFail('Unmount Error ' + jsonError)
-          reject(error)
-        })
-    })
-  }
+  const startPublish = async (provision) => {
+    try {
+      const { RTCPublisher, WHIPClient } = red5prosdk
+      const { preferWhipWhep, stream1 } = configuration
+      const config = await getConfiguration(provision)
 
-  var retryCount = 0
-  var retryLimit = 3
-  function respondToOrigin(response) {
-    determinePublisher(response, selectedTranscoderToPublish)
-      .then(function (publisherImpl) {
-        streamTitle.innerText = configuration.stream1
-        targetPublisher = publisherImpl
-        targetPublisher.on('*', onPublisherEvent)
-        showAddress(targetPublisher)
-        return targetPublisher.publish()
-      })
-      .then(function () {
-        onPublishSuccess(targetPublisher)
-      })
-      .catch(function (error) {
-        var jsonError =
-          typeof error === 'string' ? error : JSON.stringify(error, null, 2)
-        console.error(
-          '[Red5ProPublisher] :: Error in access of Transcoder IP: ' + jsonError
-        )
-        updateStatusFromEvent({
-          type: red5prosdk.PublisherEventTypes.CONNECT_FAILURE,
-        })
-        onPublishFail(jsonError)
-      })
-  }
-
-  function respondToOriginFailure(error) {
-    if (retryCount++ < retryLimit) {
-      var retryTimer = setTimeout(function () {
-        clearTimeout(retryTimer)
-        startup()
-      }, 1000)
-    } else {
+      const publisher = preferWhipWhep ? new WHIPClient() : new RTCPublisher()
+      publisher.on('*', onPublisherEvent)
+      await publisher.init(config)
+      await publisher.publish()
+      onPublishSuccess(publisher)
+      streamTitle.innerText = stream1
+      targetPublisher = publisher
+    } catch (error) {
       var jsonError =
         typeof error === 'string' ? error : JSON.stringify(error, null, 2)
+      console.error(
+        '[Red5ProPublisher] :: Error in access of Origin IP: ' + jsonError
+      )
       updateStatusFromEvent({
         type: red5prosdk.PublisherEventTypes.CONNECT_FAILURE,
       })
-      console.error(
-        '[Red5ProPublisher] :: Retry timeout in publishing - ' + jsonError
-      )
+      onPublishFail(jsonError)
     }
   }
 
-  const requestOrigin = async (configuration) => {
-    const { preferWhipWhep, host, app, stream1 } = configuration
-    var region = getRegionIfDefined()
-    if (!preferWhipWhep) {
-      return streamManagerUtil.getOrigin(
-        host,
-        app,
-        stream1,
-        region,
-        NaN,
-        false,
-        true
-      )
+  async function unpublish() {
+    try {
+      const publisher = targetPublisher
+      await publisher.unpublish()
+      onUnpublishSuccess()
+    } catch (error) {
+      var jsonError =
+        typeof error === 'string' ? error : JSON.stringify(error, 2, null)
+      onUnpublishFail('Unmount Error ' + jsonError)
+      throw error
+    }
+  }
+
+  function setQualityAndPublish() {
+    var selectedQuality = parseInt(qualitySelect.value, 10)
+    var streamSelection = transcoderPOST.streams.find(
+      (s) => s.abrLevel === selectedQuality
+    )
+    if (streamSelection) {
+      selectedTranscoderToPublish = streamSelection
+      start(selectedTranscoderToPublish)
     } else {
-      // WHIP/WHEP knows how to handle proxy requests.
-      return {
-        serverAddress: host,
-        scope: app,
-        name: stream1,
-        params: region ? { region, transcode: true } : { transcode: true },
-      }
+      console.error(`Could not find selected quality level: ${selectedQuality}`)
     }
   }
 
-  function startup() {
-    clearStatusEvent()
-    onBitrateUpdate(0, 0)
-    onResolutionUpdate(0, 0)
-    // Kick off.
-    requestOrigin(configuration)
-      .then(respondToOrigin)
-      .catch(respondToOriginFailure)
+  function start(provision) {
+    let t = setTimeout(() => {
+      clearTimeout(t)
+      clearStatusEvent()
+      onBitrateUpdate(0, 0)
+      onResolutionUpdate(0, 0)
+      startPublish(provision)
+    }, 1000)
   }
 
-  function generateTranscoderPost(streamName, forms) {
+  function generateTranscoderPost(guid, forms) {
     var i = forms.length
     var formItem
     var bitrateField
@@ -412,17 +386,18 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     var setting
     var streams = []
     while (--i > -1) {
+      const level = i + 1
       formItem = forms[i]
       bitrateField = formItem.getElementsByClassName('bitrate-field')[0]
       widthField = formItem.getElementsByClassName('width-field')[0]
       heightField = formItem.getElementsByClassName('height-field')[0]
       setting = {
-        name: [streamName, i + 1].join('_'),
-        level: i + 1,
-        properties: {
+        streamGuid: `${guid}_${level}`,
+        abrLevel: level,
+        videoParams: {
           videoWidth: parseInt(widthField.value, 10),
           videoHeight: parseInt(heightField.value, 10),
-          videoBR: parseInt(bitrateField.value, 10),
+          videoBitRate: parseInt(bitrateField.value, 10),
         },
       }
       streams.push(setting)
@@ -430,76 +405,65 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     return streams
   }
 
-  function submitTranscode() {
-    const { host, app, stream1 } = configuration
-    var streams = generateTranscoderPost(configuration.stream1, transcoderForms)
-    transcoderPOST.meta.stream = streams
-    streamManagerUtil
-      .postTranscode(host, app, stream1, transcoderPOST)
-      .then(function (response) {
-        if (response.errorMessage) {
-          console.error(
-            '[Red5ProPublisher] :: Error in POST of transcode configuration: ' +
-              response.errorMessage
-          )
-          if (/Provision already exists/.exec(response.errorMessage)) {
-            transcoderManifest = streams
-            qualityContainer.classList.remove('hidden')
-          } else {
-            updateStatusFromEvent({
-              type: red5prosdk.PublisherEventTypes.CONNECT_FAILURE,
-            })
-            onPublishFail(response.errorMessage)
-          }
-        } else {
-          transcoderManifest = streams
-          qualityContainer.classList.remove('hidden')
+  async function submitTranscode() {
+    try {
+      const {
+        host,
+        streamManagerUser,
+        streamManagerPassword,
+        streamManagerAPI: version,
+        streamManagerNodeGroup: nodeGroup,
+      } = configuration
+      const { streamGuid } = transcoderPOST
+      const streams = generateTranscoderPost(streamGuid, transcoderForms)
+      transcoderPOST.streams = streams
+      const token = await streamManagerUtil.authenticate(
+        host,
+        streamManagerUser,
+        streamManagerPassword
+      )
+      const response = await streamManagerUtil.postProvision(
+        host,
+        version,
+        nodeGroup,
+        token,
+        [transcoderPOST]
+      )
+      if (response.errorMessage) {
+        if (!/Provision already exists/.exec(response.errorMessage)) {
+          throw new Error(response.errorMessage)
         }
-      })
-      .catch(function (error) {
-        var jsonError =
-          typeof error === 'string' ? error : JSON.stringify(error, null, 2)
-        console.error(
-          '[Red5ProPublisher] :: Error in POST of transcode configuration: ' +
-            jsonError
-        )
-        updateStatusFromEvent({
-          type: red5prosdk.PublisherEventTypes.CONNECT_FAILURE,
-        })
-        onPublishFail(jsonError)
-      })
-  }
-
-  function setQualityAndPublish() {
-    var selectedQuality = qualitySelect.value
-    var targetName = [configuration.stream1, selectedQuality].join('_')
-    var i = transcoderManifest.length,
-      config
-    while (--i > -1) {
-      config = transcoderManifest[i]
-      if (config.name === targetName) {
-        break
       }
-      config = null
-    }
-
-    if (config) {
-      selectedTranscoderToPublish = config
-      startup()
+      // Show controls to begin publish session.
+      qualityContainer.classList.remove('hidden')
+    } catch (error) {
+      const { message } = error
+      console.error(
+        '[Red5ProPublisher] :: Error in POST of transcode configuration: ' +
+          message
+      )
+      updateStatusFromEvent({
+        type: red5prosdk.PublisherEventTypes.CONNECT_FAILURE,
+      })
+      qualityContainer.classList.add('hidden')
+      alert('Error in POST of transcode configuration: ' + message)
     }
   }
 
-  var shuttingDown = false
-  function shutdown() {
+  let shuttingDown = false
+  const shutdown = async () => {
     if (shuttingDown) return
     shuttingDown = true
-    function clearRefs() {
+    try {
+      await unpublish()
+    } catch (e) {
+      console.error(e)
+    } finally {
       if (targetPublisher) {
         targetPublisher.off('*', onPublisherEvent)
       }
       targetPublisher = undefined
     }
-    unpublish().then(clearRefs).catch(clearRefs)
     window.untrackBitrate()
   }
   window.addEventListener('pagehide', shutdown)
