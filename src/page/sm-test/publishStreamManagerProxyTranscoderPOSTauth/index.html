@@ -11,8 +11,9 @@
         background-color: #dbdbdb;
         color: #3b3b3b;
         max-width: 1024px;
-        margin: 20px auto 0 auto;
+        padding: 20px 0 20px 0;
         line-height: 1.5em;
+        border-bottom: 1px solid;
       }
       .quality-subheader {
         padding: 20px;
@@ -42,7 +43,6 @@
         font-size: 1em;
       }
       .settings-field > input {
-        width: 40%;
         padding-left: 10px;
       }
       .info-title {
@@ -108,14 +108,6 @@
       </div>
       <div class="stream-section">
         <div id="quality-container" class="hidden quality-container">
-          <p class="quality-subheader">
-            Choose which quality to publish on:
-            <select id="quality-select" class="quality-select">
-              <option value="1" selected>High_1</option>
-              <option value="2">Mid_2</option>
-              <option value="3">Low_3</option>
-            </select>
-          </p>
           <button id="quality-submit" class="ui-button">Start Publishing</button>
         </div>
         {{> status-field-publisher}}

@@ -56,7 +56,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   )
 
   var targetPublisher
-  var selectedTranscoderToPublish
 
   var clearStatusEvent = window.red5proClearPublisherEvent // defined in src/template/partial/status-field-publisher.hbs
   var updateStatusFromEvent = window.red5proHandlePublisherEvent // defined in src/template/partial/status-field-publisher.hbs
@@ -77,8 +76,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
     return list
   })(transcoderTypes)
+
+  var settingsSection = document.querySelector('.settings-section')
   var qualityContainer = document.getElementById('quality-container')
-  var qualitySelect = document.getElementById('quality-select')
   var qualitySubmit = document.getElementById('quality-submit')
 
   var cameraSelect = document.getElementById('camera-select')
@@ -94,21 +94,14 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   submitButton.addEventListener('click', submitTranscode)
   streamTitle.innerText = configuration.stream1
 
-  function setQualitySubmitState(isPublishing) {
+  function setPublishState(isPublishing) {
     if (isPublishing) {
       qualityContainer.classList.add('hidden')
-      qualitySubmit.removeEventListener('click', setQualityAndPublish, false)
-      qualitySubmit.innerText = 'Stop Publishing'
-      qualitySubmit.addEventListener('click', unpublish, false)
     } else {
       qualityContainer.classList.remove('hidden')
-      qualitySubmit.removeEventListener('click', unpublish, false)
-      qualitySubmit.innerText = 'Start Publishing'
-      qualitySubmit.addEventListener('click', setQualityAndPublish, false)
     }
   }
   qualitySubmit.addEventListener('click', setQualityAndPublish, false)
-  qualitySelect.addEventListener('change', selectProvision, false)
 
   var protocol = serverSettings.protocol
   var isSecure = protocol == 'https'
@@ -287,7 +280,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
   function onPublishSuccess(publisher) {
     console.log('[Red5ProPublisher] Publish Complete.')
-    setQualitySubmitState(true)
+    setPublishState(true)
     try {
       var pc = publisher.getPeerConnection()
       var stream = publisher.getMediaStream()
@@ -303,11 +296,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
   function onUnpublishFail(message) {
     console.error('[Red5ProPublisher] Unpublish Error :: ' + message)
-    setQualitySubmitState(false)
+    setPublishState(false)
   }
   function onUnpublishSuccess() {
     console.log('[Red5ProPublisher] Unpublish Complete.')
-    setQualitySubmitState(false)
+    setPublishState(false)
   }
   function onDeviceError(error) {
     console.error('Could not access devices: ' + error)
@@ -359,6 +352,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
     return config
   }
+
   const getConfiguration = (provision) => {
     const {
       host,
@@ -368,7 +362,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       streamManagerNodeGroup: nodeGroup,
     } = configuration
     const { protocol, port } = getSocketLocationFromProtocol()
-    const { videoParams, streamGuid } = provision
+
+    const { streamGuid } = transcoderPOST
+    const { videoParams } = provision
     const streamName = streamGuid.split('/').pop()
 
     const region = getRegionIfDefined()
@@ -422,6 +418,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   const startPublish = async (provision) => {
     try {
+      setPublishState(true)
       const { RTCPublisher, WHIPClient } = red5prosdk
       const { preferWhipWhep, stream1 } = configuration
       const config = getConfiguration(provision)
@@ -458,6 +455,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
   }
 
+  function getHighestVariant() {
+    return transcoderPOST.streams.find((s) => s.abrLevel === 1)
+  }
+
   function start(provision) {
     let t = setTimeout(() => {
       clearTimeout(t)
@@ -468,31 +469,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }, 1000)
   }
 
-  function selectProvision() {
-    var selectedQuality = parseInt(qualitySelect.value, 10)
-    var streamSelection = transcoderPOST.streams.find(
-      (s) => s.abrLevel === selectedQuality
-    )
-    if (streamSelection) {
-      selectedTranscoderToPublish = streamSelection
-      restart(selectedTranscoderToPublish)
-    } else {
-      console.error(`Could not find selected quality level: ${selectedQuality}`)
-    }
-    return streamSelection
-  }
-
   function setQualityAndPublish() {
-    var selectedQuality = parseInt(qualitySelect.value, 10)
-    var streamSelection = transcoderPOST.streams.find(
-      (s) => s.abrLevel === selectedQuality
-    )
-    if (streamSelection) {
-      selectedTranscoderToPublish = streamSelection
-      start(selectedTranscoderToPublish)
-    } else {
-      console.error(`Could not find selected quality level: ${selectedQuality}`)
-    }
+    start(getHighestVariant())
   }
 
   function generateTranscoderPost(guid, forms) {
@@ -553,9 +531,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         }
       }
       // Show controls.
+      settingsSection.classList.add('hidden')
       qualityContainer.classList.remove('hidden')
-      const provision = selectProvision()
-      enableSettings(provision)
+      enableSettings(getHighestVariant())
     } catch (error) {
       const { message } = error
       console.error(
@@ -657,7 +635,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   function restart(provision) {
-    establishInitialStream(provision || selectedTranscoderToPublish)
+    establishInitialStream(provision || getHighestVariant())
   }
 
   async function enableSettings(provision) {
