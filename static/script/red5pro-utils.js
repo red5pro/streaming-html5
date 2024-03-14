@@ -447,12 +447,18 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
   }
 
-  const forward = async (host, version, forwardURI) => {
+  const getForwardRequestURL = (host, version, forwardURI) => {
+    return `https://${host}/as/${version}/proxy/forward/?target=${encodeURIComponent(
+      forwardURI
+    )}`
+  }
+
+  const forward = async (host, version, forwardURI, method = 'GET') => {
     let url = `https://${host}/as/${version}/proxy/forward/?target=${encodeURIComponent(
       forwardURI
     )}`
     const result = await fetch(url, {
-      method: 'GET',
+      method,
       headers: {
         'Content-Type': 'application/json',
       },
@@ -464,10 +470,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     return json
   }
 
-  const getForwardRequestURL = (host, version, forwardURI) => {
-    return `https://${host}/as/${version}/proxy/forward/?target=${encodeURIComponent(
-      forwardURI
-    )}`
+  const forwardPost = async (host, version, forwardURI) => {
+    return forward(host, version, forwardURI, 'POST')
   }
 
   window.streamManagerUtil = {
@@ -480,6 +484,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     postTranscode: postTranscode,
     postProvision: postProvision,
     forward,
+    forwardPost,
     getForwardRequestURL,
   }
 

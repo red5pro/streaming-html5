@@ -23,7 +23,7 @@ NONINFRINGEMENT.   IN  NO  EVENT  SHALL INFRARED5, INC. BE LIABLE FOR ANY CLAIM,
 WHETHER IN  AN  ACTION  OF  CONTRACT,  TORT  OR  OTHERWISE,  ARISING  FROM,  OUT  OF  OR  IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
-;(function (window, document, red5prosdk) {
+;(function (window, document, red5prosdk, streamManagerUtil) {
   'use strict'
 
   var serverSettings = (function () {
@@ -95,41 +95,33 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var duration = document.getElementById('duration')
   var sendButton = document.getElementById('send-button')
   var resumeButton = document.getElementById('resume-button')
-  var accessToken = configuration.streamManagerAccessToken
 
-  function postInterstitialRest(json) {
-    const xhr = new XMLHttpRequest()
-    xhr.addEventListener('readystatechange', function () {
-      if (this.readyState === this.DONE) {
-        if (this.status >= 200 && this.status < 300) {
-          console.log('SUCCESS status.')
-        } else {
-          console.log(
-            'ERROR status: ' + this.status + ' : ' + this.responseText
-          )
-          alert('Error ' + this.status + ' : ' + this.responseText)
-        }
-      }
-    })
-
-    var host = configuration.host
-    var port = serverSettings.httpport
-    var baseUrl = protocol + '://' + host + ':' + port
-    var apiVersion = configuration.streamManagerAPI || '4.0'
-    var uri =
-      baseUrl +
-      '/streammanager/api/' +
-      apiVersion +
-      '/admin/interstitial?accessToken=' +
-      accessToken
-
-    xhr.open('POST', uri)
-    xhr.setRequestHeader('accept', 'application/json')
-    xhr.setRequestHeader('content-type', 'application/json')
-    xhr.send(json)
-
-    console.log('POST to uri: ' + uri)
-    console.log('send data: ' + json)
+  async function postInterstitialRest(json) {
+    const {
+      host,
+      app,
+      stream1,
+      streamManagerAPI: version,
+      streamManagerNodeGroup: nodeGroup,
+    } = configuration
+    const origin = await streamManagerUtil.getOrigin(
+      host,
+      app,
+      stream1,
+      version,
+      nodeGroup
+    )
+    const { serverAddress } = origin
+    const url = `http://${serverAddress}:${serverSettings.httpport}/${app}/interstitial`
+    const payload = await streamManagerUtil.forwardPost(
+      host,
+      version,
+      url,
+      json
+    )
+    console.log('POST to uri: ' + url)
+    console.log('Send data: ' + json)
+    console.log('Payload: ' + JSON.stringify(payload, null, 2))
   }
 
   sendButton.addEventListener('click', async function () {
@@ -315,7 +307,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       : undefined
     const appContext = preferWhipWhep
       ? `as/${streamManagerAPI}/proxy/${app}`
-      : `as/${streamManagerAPI}/proxy/ws/subscribe/${app}/${stream1}`
+      : `as/${streamManagerAPI}/proxy/ws/subscribe/${app}`
 
     const httpProtocol = protocol === 'wss' ? 'https' : 'http'
     const endpoint = !preferWhipWhep
@@ -411,4 +403,4 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   window.addEventListener('beforeunload', shutdown)
 
   startSubscriber()
-})(this, document, window.red5prosdk)
+})(this, document, window.red5prosdk, window.streamManagerUtil)
