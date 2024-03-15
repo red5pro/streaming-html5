@@ -23,7 +23,7 @@ NONINFRINGEMENT.   IN  NO  EVENT  SHALL INFRARED5, INC. BE LIABLE FOR ANY CLAIM,
 WHETHER IN  AN  ACTION  OF  CONTRACT,  TORT  OR  OTHERWISE,  ARISING  FROM,  OUT  OF  OR  IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
-;(function (window, document, red5prosdk) {
+;(function (window, document, red5prosdk, streamManagerUtil) {
   'use strict'
 
   var serverSettings = (function () {
@@ -111,76 +111,74 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var destUri = document.getElementById('dest-URI')
   var streamKey = document.getElementById('stream-key')
   var isForwarding = false
-  var accessToken = configuration.streamManagerAccessToken
 
   let attempts = 0
   let attemptLimit = 10
+
   async function pushItSocial() {
     console.log('Begin pushItSocial()')
     sendButton.disabled = true
+
+    const {
+      host,
+      app,
+      stream1,
+      streamManagerAPI: version,
+      streamManagerNodeGroup: nodeGroup,
+    } = configuration
     const data = JSON.stringify({
       provisions: [
         {
           guid: 'any',
           level: 1,
-          context: configuration.app,
-          name: configuration.stream1,
+          context: app,
+          name: stream1,
           parameters: {
             destURI: destUri.value + '/' + streamKey.value,
           },
         },
       ],
     })
-
-    const xhr = new XMLHttpRequest()
-    xhr.addEventListener('readystatechange', function () {
-      if (this.readyState === this.DONE) {
-        console.log(this.responseText)
-
-        if (this.status >= 200 && this.status < 300) {
-          isForwarding = !isForwarding
-          sendButton.disabled = false
-          sendButton.innerHTML = isForwarding
-            ? 'Stop Forwarding'
-            : 'Begin Forwarding'
-          console.log('isForwarding: ' + isForwarding)
-        } else if (this.status == 504) {
-          // The server response 504 when the stream forwarding attempt fails due to timeout.
-          // Other failures should not be retried.
-          if (++attempts < attemptLimit) {
-            console.log('Social media connection timed out. Retrying...')
-            var t = setTimeout(() => {
-              clearTimeout(t)
-              pushItSocial()
-            }, 10000) // 10000: 10s; The server may take up to 7 seconds (plus client-to-server roundtrip latency) to respond.
-          }
-        } else {
-          sendButton.disabled = false
-          console.log('error status: ' + this.status)
-        }
+    const origin = await streamManagerUtil.getOrigin(
+      host,
+      app,
+      stream1,
+      version,
+      nodeGroup
+    )
+    const { serverAddress } = origin
+    const url = `http://${serverAddress}:${
+      serverSettings.httpport
+    }/socialpusher/api?action=provision.${isForwarding ? 'delete' : 'create'}`
+    const result = await streamManagerUtil.forwardPostWithResult(
+      host,
+      version,
+      url,
+      data
+    )
+    if (result.status >= 200 && result.status < 300) {
+      isForwarding = !isForwarding
+      sendButton.disabled = false
+      sendButton.innerHTML = isForwarding
+        ? 'Stop Forwarding'
+        : 'Begin Forwarding'
+      console.log('isForwarding: ' + isForwarding)
+    } else if (result.status == 504) {
+      // The server response 504 when the stream forwarding attempt fails due to timeout.
+      // Other failures should not be retried.
+      if (++attempts < attemptLimit) {
+        console.log('Social media connection timed out. Retrying...')
+        var t = setTimeout(() => {
+          clearTimeout(t)
+          pushItSocial()
+        }, 10000) // 10000: 10s; The server may take up to 7 seconds (plus client-to-server roundtrip latency) to respond.
       }
-    })
-
-    var host = configuration.host
-
-    var port = serverSettings.httpport
-    var baseUrl = protocol + '://' + host + ':' + port
-    var apiVersion = configuration.streamManagerAPI || '4.0'
-    var uri =
-      baseUrl +
-      '/streammanager/api/' +
-      apiVersion +
-      '/socialpusher?accessToken=' +
-      accessToken +
-      '&action=provision.'
-    uri += isForwarding ? 'delete' : 'create'
-
-    xhr.open('POST', uri)
-    xhr.setRequestHeader('content-type', 'application/json')
-    xhr.send(data)
-
-    console.log('POST to uri: ' + uri)
-    console.log('send data: ' + data)
+    } else {
+      sendButton.disabled = false
+      console.log('error status: ' + this.status)
+    }
+    console.log('POST to uri: ' + url)
+    console.log('Send data: ' + data)
   }
 
   sendButton.addEventListener('click', () => {
@@ -385,4 +383,4 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   window.addEventListener('beforeunload', shutdown)
 
   startPublish()
-})(this, document, window.red5prosdk)
+})(this, document, window.red5prosdk, window.streamManagerUtil)

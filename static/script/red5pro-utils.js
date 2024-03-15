@@ -503,6 +503,18 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     return forward(host, version, forwardURI, 'POST')
   }
 
+  const forwardPostWithResult = async (host, version, forwardURI) => {
+    let url = `https://${host}/as/${version}/proxy/forward/?target=${encodeURIComponent(
+      forwardURI
+    )}`
+    return await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+  }
+
   window.streamManagerUtil = {
     getIsStreamAvailable: getIsAvailable,
     getStreamList: getStreamList,
@@ -515,6 +527,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     getProvision,
     forward,
     forwardPost,
+    forwardPostWithResult,
     getForwardRequestURL,
   }
 
