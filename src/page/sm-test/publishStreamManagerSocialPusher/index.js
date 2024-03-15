@@ -147,9 +147,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       nodeGroup
     )
     const { serverAddress } = origin
-    const url = `http://${serverAddress}:${
-      serverSettings.httpport
-    }/socialpusher/api?action=provision.${isForwarding ? 'delete' : 'create'}`
+    const url = `http://${serverAddress}:5080/socialpusher/api?action=provision.${
+      isForwarding ? 'delete' : 'create'
+    }`
     const result = await streamManagerUtil.forwardPostWithResult(
       host,
       version,

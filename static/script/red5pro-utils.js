@@ -499,11 +499,25 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     return json
   }
 
-  const forwardPost = async (host, version, forwardURI) => {
-    return forward(host, version, forwardURI, 'POST')
+  const forwardPost = async (host, version, forwardURI, data) => {
+    let url = `https://${host}/as/${version}/proxy/forward/?target=${encodeURIComponent(
+      forwardURI
+    )}`
+    const result = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: typeof data === 'string' ? data : JSON.stringify(data),
+    })
+    const json = await result.json()
+    if (json && json.errorMessage) {
+      throw new Error(json.errorMessage)
+    }
+    return json
   }
 
-  const forwardPostWithResult = async (host, version, forwardURI) => {
+  const forwardPostWithResult = async (host, version, forwardURI, data) => {
     let url = `https://${host}/as/${version}/proxy/forward/?target=${encodeURIComponent(
       forwardURI
     )}`
@@ -512,6 +526,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       headers: {
         'Content-Type': 'application/json',
       },
+      body: typeof data === 'string' ? data : JSON.stringify(data),
     })
   }
 
