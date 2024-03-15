@@ -279,7 +279,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       var jsonError =
         typeof error === 'string' ? error : JSON.stringify(error, 2, null)
       onUnsubscribeFail('Unmount Error ' + jsonError)
-      throw error
     }
   }
 
@@ -297,8 +296,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     try {
       const { streams } = settings
       // Try to find the middle one
-      let index = Math.floor(streams / 2) < -1 ? 0 : Math.floor(streams / 2)
-      startup(streams[index].guid)
+      let index =
+        Math.floor(streams.length / 2) < -1 ? 0 : Math.floor(streams.length / 2)
+      startup(streams[index].streamGuid)
     } catch (e) {
       console.error(
         'Count not properly acces ABR stream based on settings: ' +
@@ -325,4 +325,4 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
   window.addEventListener('pagehide', shutdown)
   window.addEventListener('beforeunload', shutdown)
-})(this, document, window.red5prosdk, streamManagerUtil)
+})(this, document, window.red5prosdk, window.streamManagerUtil)
