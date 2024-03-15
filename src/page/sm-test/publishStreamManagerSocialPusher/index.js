@@ -110,10 +110,33 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var sendButton = document.getElementById('send-button')
   var destUri = document.getElementById('dest-URI')
   var streamKey = document.getElementById('stream-key')
+  var passwd = document.getElementById('passwd')
   var isForwarding = false
 
   let attempts = 0
   let attemptLimit = 10
+
+  // from https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/digest
+  async function digestMessage(message) {
+    const msgUint8 = new TextEncoder().encode(message) // encode as (utf-8) Uint8Array
+    const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8) // hash the message
+    const hashArray = Array.from(new Uint8Array(hashBuffer)) // convert buffer to byte array
+    const hashHex = hashArray
+      .map((b) => {
+        var result = b.toString(16).padStart(2, '0')
+        //console.log("b: " + b + " result: " + result);
+        return result
+      })
+      .join('') // convert bytes to hex string
+    return hashHex
+  }
+
+  function createSignature(timestamp) {
+    var action = isForwarding ? 'provision.delete' : 'provision.create'
+    var message = action + timestamp + passwd.value
+
+    return digestMessage(message)
+  }
 
   async function pushItSocial() {
     console.log('Begin pushItSocial()')
@@ -147,9 +170,14 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       nodeGroup
     )
     const { serverAddress } = origin
-    const url = `http://${serverAddress}:5080/socialpusher/api?action=provision.${
+    let url = `http://${serverAddress}:5080/socialpusher/api?action=provision.${
       isForwarding ? 'delete' : 'create'
     }`
+    var timestamp = Date.now()
+    url += '&timestamp=' + timestamp
+    var signature = await createSignature(timestamp)
+    url += '&signature=' + encodeURI(signature)
+
     const result = await streamManagerUtil.forwardPostWithResult(
       host,
       version,
