@@ -256,8 +256,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     } = configuration
     const { protocol, port } = getSocketLocationFromProtocol()
 
-    const { streamGuid } = transcoderPOST
-    const { videoParams } = provision
+    const { streamGuid: rootGuid } = transcoderPOST
+    const { streamGuid, videoParams } = provision
     const streamName = streamGuid.split('/').pop()
 
     const region = getRegionIfDefined()
@@ -274,8 +274,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
     const httpProtocol = protocol === 'wss' ? 'https' : 'http'
     const endpoint = !preferWhipWhep
-      ? `${protocol}://${host}:${port}/as/${streamManagerAPI}/proxy/ws/publish/${streamGuid}?transcode=true`
-      : `${httpProtocol}://${host}:${port}/as/${streamManagerAPI}/proxy/whip/${streamGuid}?transcode=true`
+      ? `${protocol}://${host}:${port}/as/${streamManagerAPI}/proxy/ws/publish/${streamGuid}`
+      : `${httpProtocol}://${host}:${port}/as/${streamManagerAPI}/proxy/whip/${streamGuid}`
 
     const connectionParams = params
       ? { ...params, ...getAuthenticationParams().connectionParams }
@@ -298,11 +298,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         ? {
             ...connectionParams,
             nodeGroup,
+            transcode: true,
           }
         : {
             ...connectionParams,
             app: app,
             nodeGroup,
+            transcode: true,
           },
     }
     return rtcConfig

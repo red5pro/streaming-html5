@@ -226,7 +226,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       : undefined
     const appContext = preferWhipWhep
       ? `as/${streamManagerAPI}/proxy/${app}`
-      : `as/${streamManagerAPI}/proxy/ws/subscribe/${app}/${stream1}`
+      : `as/${streamManagerAPI}/proxy/ws/subscribe/${app}`
 
     const httpProtocol = protocol === 'wss' ? 'https' : 'http'
     const endpoint = !preferWhipWhep

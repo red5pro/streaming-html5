@@ -67,6 +67,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
     window.red5proHandleSubscriberEvent(event) // defined in src/template/partial/status-field-subscriber.hbs
   }
+
+  const instanceId = Math.floor(Math.random() * 0x10000).toString(16)
   var streamTitle = document.getElementById('stream-title')
   var statisticsField = document.getElementById('statistics-field')
   var bitrateField = document.getElementById('bitrate-field')
@@ -149,14 +151,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     return params
   }
 
-  function displayServerAddress(serverAddress, proxyAddress) {
+  const displayServerAddress = (serverAddress, proxyAddress) => {
+    addressField.classList.remove('hidden')
     proxyAddress = typeof proxyAddress === 'undefined' ? 'N/A' : proxyAddress
-    addressField.innerText =
-      ' Proxy Address: ' +
-      proxyAddress +
-      ' | ' +
-      ' Edge Address: ' +
-      serverAddress
+    addressField.innerText = `Proxy Address: ${proxyAddress} | Edge Address: ${serverAddress}`
   }
 
   // Local lifecycle notifications.
@@ -214,210 +212,154 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     return undefined
   }
 
-  function requestABRSettings(streamName) {
-    var host = configuration.host
-    var app = configuration.app
-    var port = serverSettings.httpport
-    var baseUrl = protocol + '://' + host + ':' + port
-    var apiVersion = configuration.streamManagerAPI || '4.0'
-    var url =
-      baseUrl +
-      '/streammanager/api/' +
-      apiVersion +
-      '/admin/event/meta/' +
-      app +
-      '/' +
-      streamName +
-      '?action=subscribe&accessToken=' +
-      configuration.streamManagerAccessToken
-    return new Promise(function (resolve, reject) {
-      fetch(url)
-        .then(function (res) {
-          if (
-            res.headers.get('content-type') &&
-            res.headers
-              .get('content-type')
-              .toLowerCase()
-              .indexOf('application/json') >= 0
-          ) {
-            return res.json()
-          } else {
-            throw new TypeError('Could not properly parse response.')
-          }
-        })
-        .then(function (json) {
-          resolve(json.data)
-        })
-        .catch(function (error) {
-          var jsonError =
-            typeof error === 'string' ? error : JSON.stringify(error, null, 2)
-          console.error(
-            '[SubscriberStreamManagerTest] :: Error - Could not GET transcode request. ' +
-              jsonError
-          )
-          reject(error)
-        })
-    })
+  const requestABRSettings = async (streamName) => {
+    const {
+      host,
+      app,
+      streamManagerAPI: version,
+      streamManagerUser: username,
+      streamManagerPassword: password,
+      streamManagerNodeGroup: nodeGroup,
+    } = configuration
+    const token = await streamManagerUtil.authenticate(host, username, password)
+    const streamGuid = `${app}/${streamName}`
+    const provision = await streamManagerUtil.getProvision(
+      host,
+      version,
+      nodeGroup,
+      streamGuid,
+      token
+    )
+    return provision
   }
 
-  function determineSubscriber(jsonResponse) {
-    var { app, proxy, preferWhipWhep } = configuration
-    var { WHEPClient, RTCSubscriber } = red5prosdk
-    var { params } = jsonResponse
-    var host = jsonResponse.serverAddress
-    var scope = jsonResponse.scope
-    var name = jsonResponse.name
-    var { protocol, port } = getSocketLocationFromProtocol()
-    var instanceId = Math.floor(Math.random() * 0x10000).toString(16)
+  const getConfiguration = (streamGuid) => {
+    const {
+      host,
+      app,
+      streamManagerAPI,
+      preferWhipWhep,
+      streamManagerNodeGroup: nodeGroup,
+    } = configuration
+    const { protocol, port } = getSocketLocationFromProtocol()
+    const streamName = streamGuid.split('/').pop()
+
+    const region = getRegionIfDefined()
+    const params = region
+      ? {
+          region,
+          strict: true,
+        }
+      : undefined
+    const appContext = preferWhipWhep
+      ? `as/${streamManagerAPI}/proxy/${app}`
+      : `as/${streamManagerAPI}/proxy/ws/subscribe/${app}`
+
+    const httpProtocol = protocol === 'wss' ? 'https' : 'http'
+    const endpoint = !preferWhipWhep
+      ? `${protocol}://${host}:${port}/as/${streamManagerAPI}/proxy/ws/subscribe/${streamGuid}`
+      : `${httpProtocol}://${host}:${port}/as/${streamManagerAPI}/proxy/whep/${streamGuid}`
 
     var connectionParams = params
       ? { ...params, ...getAuthenticationParams().connectionParams }
       : getAuthenticationParams().connectionParams
-    var rtcConfig = Object.assign({}, configuration, defaultConfiguration, {
+
+    var rtcConfig = {
+      ...configuration,
+      ...defaultConfiguration,
+      endpoint,
       protocol,
       port,
-      streamName: name,
-      app: preferWhipWhep ? app : proxy,
+      host,
+      streamName,
+      app: appContext,
       subscriptionId: 'subscriber-' + instanceId,
       connectionParams: preferWhipWhep
-        ? connectionParams
+        ? {
+            ...connectionParams,
+            nodeGroup,
+          }
         : {
             ...connectionParams,
-            host: host,
-            app: scope,
+            nodeGroup,
+            host,
+            app,
           },
-    })
-    var subscriber = preferWhipWhep ? new WHEPClient() : new RTCSubscriber()
-    return subscriber.init(rtcConfig)
+    }
+    return rtcConfig
   }
 
-  function showServerAddress(publisher) {
-    var config = publisher.getOptions()
-    const { protocol, port, host, app, connectionParams } = config
-    console.log(`Host = ${host} | app = ${app}`)
-    if (connectionParams && connectionParams.host && connectionParams.app) {
-      displayServerAddress(config.connectionParams.host, host)
-    } else {
-      displayServerAddress(host)
+  const startSubscriber = async (streamGuid) => {
+    try {
+      const { RTCSubscriber, WHEPClient } = red5prosdk
+      const { preferWhipWhep, stream1 } = configuration
+      const config = getConfiguration(streamGuid)
+      const subscriber = preferWhipWhep ? new WHEPClient() : new RTCSubscriber()
+      subscriber.on('*', onSubscriberEvent)
+      await subscriber.init(config)
+      await subscriber.subscribe()
+      onSubscribeSuccess(subscriber)
+      streamTitle.innerText = stream1
+      targetSubscriber = subscriber
+    } catch (error) {
+      var jsonError =
+        typeof error === 'string' ? error : JSON.stringify(error, null, 2)
+      console.error(
+        '[Red5ProSubscriber] :: Error in access of Edge IP: ' + jsonError
+      )
+      updateStatusFromEvent({
+        type: red5prosdk.SubscriberEventTypes.CONNECT_FAILURE,
+      })
+      onSubscribeFail(jsonError)
     }
   }
 
   // Request to unsubscribe.
-  function unsubscribe() {
-    return new Promise(function (resolve, reject) {
+  const unsubscribe = async () => {
+    try {
       var subscriber = targetSubscriber
-      subscriber
-        .unsubscribe()
-        .then(function () {
-          targetSubscriber.off('*', onSubscriberEvent)
-          targetSubscriber = undefined
-          onUnsubscribeSuccess()
-          resolve()
-        })
-        .catch(function (error) {
-          var jsonError =
-            typeof error === 'string' ? error : JSON.stringify(error, null, 2)
-          onUnsubscribeFail(jsonError)
-          reject(error)
-        })
-    })
-  }
-
-  var retryCount = 0
-  var retryLimit = 3
-  function respondToEdge(response) {
-    determineSubscriber(response)
-      .then(function (subscriberImpl) {
-        streamTitle.innerText = configuration.stream1
-        targetSubscriber = subscriberImpl
-        // Subscribe to events.
-        targetSubscriber.on('*', onSubscriberEvent)
-        showServerAddress(targetSubscriber)
-        return targetSubscriber.subscribe()
-      })
-      .then(function () {
-        onSubscribeSuccess(targetSubscriber)
-      })
-      .catch(function (error) {
-        var jsonError =
-          typeof error === 'string' ? error : JSON.stringify(error, null, 2)
-        console.error(
-          '[Red5ProSubscriber] :: Error in subscribing - ' + jsonError
-        )
-        onSubscribeFail(jsonError)
-      })
-  }
-
-  function respondToEdgeFailure(error) {
-    if (retryCount++ < retryLimit) {
-      var retryTimer = setTimeout(function () {
-        clearTimeout(retryTimer)
-        startup(streamSelect.value)
-      }, 1000)
-    } else {
+      await subscriber.unsubscribe()
+      onUnsubscribeSuccess()
+    } catch (error) {
       var jsonError =
-        typeof error === 'string' ? error : JSON.stringify(error, null, 2)
-      console.error(
-        '[Red5ProSubscriber] :: Retry timeout in subscribing - ' + jsonError
-      )
+        typeof error === 'string' ? error : JSON.stringify(error, 2, null)
+      onUnsubscribeFail('Unmount Error ' + jsonError)
+      throw error
     }
   }
 
-  const requestEdge = async (configuration, streamName) => {
-    const { preferWhipWhep, host, app } = configuration
-    var region = getRegionIfDefined()
-    if (!preferWhipWhep) {
-      return streamManagerUtil.getEdge(host, app, streamName, region)
-    } else {
-      // WHIP/WHEP knows how to handle proxy requests.
-      return {
-        serverAddress: host,
-        scope: app,
-        name: streamName,
-        params: region
-          ? {
-              region,
-              strict: true,
-            }
-          : undefined,
-      }
-    }
-  }
-
-  const startup = async (selectedStreamVariantName) => {
+  const startup = async (streamGuid) => {
     try {
       await unsubscribe()
     } catch (e) {
       console.warn(e)
     } finally {
-      // Kick off.
-      requestEdge(configuration, selectedStreamVariantName)
-        .then(respondToEdge)
-        .catch(respondToEdgeFailure)
+      startSubscriber(streamGuid)
     }
   }
 
-  requestABRSettings(configuration.stream1).then(function (settings) {
+  requestABRSettings(configuration.stream1).then((settings) => {
     try {
-      var streams = settings.meta.stream
-      var i,
-        length = streams.length
-      for (i = 0; i < length; i++) {
-        var o = document.createElement('option')
-        o.textContent = streams[i].name
-        streamSelect.appendChild(o)
-      }
+      const { streams } = settings
+      const elements = streams.map((stream) => {
+        const { streamGuid } = stream
+        const o = document.createElement('option')
+        o.textContent = streamGuid
+        o.value = streamGuid
+        return o
+      })
+      elements.forEach((element) => streamSelect.appendChild(element))
       streamSelectContainer.classList.remove('hidden')
     } catch (e) {
       console.error(
-        'Count not properly acces ABR stream based on settings: ' +
+        'Count not properly access ABR stream based on settings: ' +
           JSON.stringify(settings, null, 0)
       )
     }
   })
 
   function setQualityAndSubscribe() {
-    if (streamSelect.value !== 'Select...') {
+    if (streamSelect.value !== '-1') {
       startup(streamSelect.value)
     }
   }
@@ -444,18 +386,20 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
   setQualitySubmitState(false)
 
-  // Clean up.
-  var shuttingDown = false
-  function shutdown() {
+  let shuttingDown = false
+  const shutdown = async () => {
     if (shuttingDown) return
     shuttingDown = true
-    function clearRefs() {
+    try {
+      await unsubscribe()
+    } catch (e) {
+      console.error(e)
+    } finally {
       if (targetSubscriber) {
         targetSubscriber.off('*', onSubscriberEvent)
       }
       targetSubscriber = undefined
     }
-    unsubscribe().then(clearRefs).catch(clearRefs)
     window.untrackBitrate()
   }
   window.addEventListener('pagehide', shutdown)

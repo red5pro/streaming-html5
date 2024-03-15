@@ -373,7 +373,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     if (json.errorMessage) {
       throw new Error(json.errorMessage)
     }
-    return json
+    const edge = Array.isArray(json) && json.length > 0 ? json[0] : json
+    return edge
   }
 
   /**
@@ -447,6 +448,34 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
   }
 
+  const getProvision = async (host, version, nodeGroup, streamGuid, token) => {
+    const url = `https://${host}/as/${version}/streams/provision/${nodeGroup}/${streamGuid}`
+    const result = await fetch(url, {
+      method: 'GET',
+      withCredentials: true,
+      credentials: 'include',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    })
+    if (result.status >= 200 && result.status < 300) {
+      try {
+        const json = await result.json()
+        if (json && json.errorMessage) {
+          throw new Error(json.errorMessage)
+        } else {
+          return json
+        }
+      } catch (e) {
+        console.error('Provision response JSON parse failed: ' + e.message)
+      }
+      return { success: true }
+    } else {
+      throw new Error(`Provision request failed: ${result.status}`)
+    }
+  }
+
   const getForwardRequestURL = (host, version, forwardURI) => {
     return `https://${host}/as/${version}/proxy/forward/?target=${encodeURIComponent(
       forwardURI
@@ -483,6 +512,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     authenticate: authenticate,
     postTranscode: postTranscode,
     postProvision: postProvision,
+    getProvision,
     forward,
     forwardPost,
     getForwardRequestURL,
