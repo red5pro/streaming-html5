@@ -176,7 +176,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     var timestamp = Date.now()
     url += '&timestamp=' + timestamp
     var signature = await createSignature(timestamp)
-    url += '&signature=' + encodeURI(signature)
+    url += '&signature=' + signature
 
     const result = await streamManagerUtil.forwardPostWithResult(
       host,
