@@ -338,9 +338,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
   }
 
-  requestABRSettings(configuration.stream1).then((settings) => {
+  requestABRSettings(configuration.stream1).then((provision) => {
     try {
-      const { streams } = settings
+      const { streams } = provision
       const elements = streams.map((stream) => {
         const { streamGuid } = stream
         const o = document.createElement('option')
@@ -353,7 +353,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     } catch (e) {
       console.error(
         'Count not properly access ABR stream based on settings: ' +
-          JSON.stringify(settings, null, 0)
+          JSON.stringify(provision, null, 0)
       )
     }
   })
