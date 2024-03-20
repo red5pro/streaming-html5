@@ -134,7 +134,7 @@ A successful response will return with a code between `200` and `299`, inclusive
 
 # Broadcasting to the Transcoder
 
-Once a provision is submitted, you will use the `endpoint` property of the init configuration for a `WHEPClient` (or `RTCPublisher`) to point to the Stream Manager proxy in order to deliver the high-level variant stream to the Transcoder node.
+Once a provision is submitted, you will use the `endpoint` property of the init configuration for a `WHIPClient` (or `RTCPublisher`) to point to the Stream Manager proxy in order to deliver the high-level variant stream to the Transcoder node.
 
 ```javascript
 const { streamGuid, videoParams } = variant

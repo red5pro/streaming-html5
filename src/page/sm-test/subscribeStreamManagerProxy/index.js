@@ -224,9 +224,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           strict: true,
         }
       : undefined
-    const appContext = preferWhipWhep
-      ? `as/${streamManagerAPI}/proxy/${app}`
-      : `as/${streamManagerAPI}/proxy/ws/subscribe/${app}`
 
     const httpProtocol = protocol === 'wss' ? 'https' : 'http'
     const endpoint = !preferWhipWhep
@@ -241,23 +238,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       ...configuration,
       ...defaultConfiguration,
       endpoint,
-      protocol,
-      port,
-      host,
       streamName: stream1,
-      app: appContext,
       subscriptionId: 'subscriber-' + instanceId,
-      connectionParams: preferWhipWhep
-        ? {
-            ...connectionParams,
-            nodeGroup,
-          }
-        : {
-            ...connectionParams,
-            nodeGroup,
-            host,
-            app,
-          },
+      connectionParams: {
+        ...connectionParams,
+        nodeGroup,
+      },
     }
     return rtcConfig
   }

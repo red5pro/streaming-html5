@@ -424,7 +424,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       host,
       app,
       stream1,
-      proxy,
       streamManagerAPI,
       preferWhipWhep,
       streamManagerNodeGroup: nodeGroup,
@@ -438,10 +437,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           strict: true,
         }
       : undefined
-
-    const appContext = preferWhipWhep
-      ? `as/${streamManagerAPI}/proxy/${app}`
-      : `as/${streamManagerAPI}/proxy/ws/publish/${app}/${stream1}`
 
     const httpProtocol = protocol === 'wss' ? 'https' : 'http'
     const endpoint = !preferWhipWhep
@@ -462,22 +457,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         video: parseInt(bandwidthVideoField.value),
       },
       endpoint,
-      protocol,
-      port,
-      host,
       streamName: stream1,
-      app: appContext,
-      connectionParams: preferWhipWhep
-        ? {
-            ...connectionParams,
-            nodeGroup,
-          }
-        : {
-            ...connectionParams,
-            host: host,
-            app: app,
-            nodeGroup,
-          },
+      connectionParams: {
+        ...connectionParams,
+        nodeGroup,
+      },
     }
     return rtcConfig
   }
