@@ -353,18 +353,16 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     return config
   }
 
-  const getConfiguration = (provision) => {
+  const getConfiguration = (variant) => {
     const {
       host,
-      app,
       streamManagerAPI,
       preferWhipWhep,
       streamManagerNodeGroup: nodeGroup,
     } = configuration
     const { protocol, port } = getSocketLocationFromProtocol()
 
-    const { streamGuid: rootGuid } = transcoderPOST
-    const { streamGuid, videoParams } = provision
+    const { streamGuid, videoParams } = variant
     const streamName = streamGuid.split('/').pop()
 
     const region = getRegionIfDefined()
@@ -374,10 +372,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           strict: true,
         }
       : undefined
-
-    const appContext = preferWhipWhep
-      ? `as/${streamManagerAPI}/proxy/whip/${app}`
-      : `as/${streamManagerAPI}/proxy/ws/publish/${app}`
 
     const httpProtocol = protocol === 'wss' ? 'https' : 'http'
     const endpoint = !preferWhipWhep
@@ -393,37 +387,26 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       ...defaultConfiguration,
       ...getUserMediaConfiguration(videoParams),
       endpoint,
-      protocol,
-      port,
-      host,
       streamName,
-      app: appContext,
       bandwidth: {
         audio: parseInt(bandwidthAudioField.value, 10),
         video: videoParams.videoBitRate / 1000,
       },
-      connectionParams: preferWhipWhep
-        ? {
-            ...connectionParams,
-            nodeGroup,
-            transcode: true,
-          }
-        : {
-            ...connectionParams,
-            app: app,
-            nodeGroup,
-            transcode: true,
-          },
+      connectionParams: {
+        ...connectionParams,
+        nodeGroup,
+        transcode: true,
+      },
     }
     return rtcConfig
   }
 
-  const startPublish = async (provision) => {
+  const startPublish = async (variant) => {
     try {
       setPublishState(true)
       const { RTCPublisher, WHIPClient } = red5prosdk
       const { preferWhipWhep, stream1 } = configuration
-      const config = getConfiguration(provision)
+      const config = getConfiguration(variant)
       const publisher = preferWhipWhep ? new WHIPClient() : new RTCPublisher()
       publisher.on('*', onPublisherEvent)
       await publisher.init(config)
@@ -461,13 +444,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     return transcoderPOST.streams.find((s) => s.abrLevel === 1)
   }
 
-  function start(provision) {
+  function start(variant) {
     let t = setTimeout(() => {
       clearTimeout(t)
       clearStatusEvent()
       onBitrateUpdate(0, 0)
       onResolutionUpdate(0, 0)
-      startPublish(provision)
+      startPublish(variant)
     }, 1000)
   }
 

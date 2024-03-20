@@ -377,42 +377,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     return edge
   }
 
-  /**
-   * Request to get Origin data to broadcast for conference stream manager proxy.
-   */
-  const getOriginForConference = async (host, context) => {
-    try {
-      let url = `https://${host}/streammanager/api/4.0/event/${context}/join`
-      const result = await fetch(url)
-      const json = await result.json()
-      if (json.errorMessage) {
-        throw new Error(json.errorMessage)
-      }
-      return json
-    } catch (e) {
-      throw e
-    }
-  }
-
-  /**
-   * Request to post a transcode provision detailing variants.
-   */
-  const postTranscode = async (host, context, streamName, provision) => {
-    const url = `https://${host}/streammanager/api/4.0/admin/event/meta/${context}/${streamName}?accessToken=${smPass}`
-    const result = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(provision),
-    })
-    const json = await result.json()
-    if (json && json.errorMessage) {
-      throw new Error(json.errorMessage)
-    }
-    return json
-  }
-
   const postProvision = async (host, version, nodeGroup, token, provision) => {
     const url = `https://${host}/as/${version}/streams/provision/${nodeGroup}`
     const body = JSON.stringify(provision)
@@ -534,10 +498,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     getIsStreamAvailable: getIsAvailable,
     getStreamList: getStreamList,
     getOrigin: getOrigin,
-    getOriginForConference: getOriginForConference,
     getEdge: getEdge,
     authenticate: authenticate,
-    postTranscode: postTranscode,
     postProvision: postProvision,
     getProvision,
     forward,
