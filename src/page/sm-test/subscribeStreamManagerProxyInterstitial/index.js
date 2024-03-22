@@ -112,7 +112,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       nodeGroup
     )
     const { serverAddress } = origin
-    const url = `http://${serverAddress}:${serverSettings.httpport}/${app}/interstitial`
+    const originPort = 5080
+    const url = `http://${serverAddress}:${originPort}/${app}/interstitial`
     const payload = await streamManagerUtil.forwardPost(
       host,
       version,
