@@ -362,6 +362,25 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     origin.name = name
     return origin
   }
+  
+  /**
+   * Find the Origin IP address for a given stream
+   */
+	const getOriginForStream = async (host, version, nodeGroup, streamGuid) => {
+		let url = `https://${host}/as/${version}/streams/stream/${nodeGroup}/stream/${streamGuid}`
+		console.log("getOriginForStream URL: " + url)
+		const result = await fetch(url)
+		if (!result.ok) {
+			const text = await result.text()
+			throw new Error(text)
+		}
+		const json = await result.json()
+		const serverAddress = json.serverAddress
+		console.log("getOriginForStream() SUCCESS! result: " + serverAddress)
+		return serverAddress;
+	}
+
+
 
   /**
    * Request to get Edge on stream managaer to consume stream from stream manager proxy.
@@ -498,6 +517,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     getIsStreamAvailable: getIsAvailable,
     getStreamList: getStreamList,
     getOrigin: getOrigin,
+    getOriginForStream: getOriginForStream,
     getEdge: getEdge,
     authenticate: authenticate,
     postProvision: postProvision,

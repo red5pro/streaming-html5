@@ -104,22 +104,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       streamManagerAPI: version,
       streamManagerNodeGroup: nodeGroup,
     } = configuration
-    const origin = await streamManagerUtil.getOrigin(
-      host,
-      app,
-      stream1,
-      version,
-      nodeGroup
-    )
-    const { serverAddress } = origin
+    // find the origin for the target stream -- that is where we must call the Interstitial servlet.
+    const origin = await streamManagerUtil.getOriginForStream(host, version, nodeGroup, target.value)
     const originPort = 5080
-    const url = `http://${serverAddress}:${originPort}/${app}/interstitial`
-    const payload = await streamManagerUtil.forwardPost(
-      host,
-      version,
-      url,
-      json
-    )
+    const url = `http://${origin}:${originPort}/${app}/interstitial`
+    const payload = await streamManagerUtil.forwardPost(host, version, url, json)
     console.log('POST to uri: ' + url)
     console.log('Send data: ' + json)
     console.log('Payload: ' + JSON.stringify(payload, null, 2))

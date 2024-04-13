@@ -162,15 +162,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         },
       ],
     })
-    const origin = await streamManagerUtil.getOrigin(
-      host,
-      app,
-      stream1,
-      version,
-      nodeGroup
-    )
-    const { serverAddress } = origin
-    let url = `http://${serverAddress}:5080/socialpusher/api?action=provision.${
+    const origin = await streamManagerUtil.getOriginForStream(host, version, nodeGroup, app + "/" + stream1)
+    let url = `http://${origin}:5080/socialpusher/api?action=provision.${
       isForwarding ? 'delete' : 'create'
     }`
     var timestamp = Date.now()
