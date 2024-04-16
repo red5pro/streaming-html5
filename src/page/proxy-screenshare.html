@@ -557,12 +557,27 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. -->
         var smPort = isSecure ? '' : '5080'
         var wsProtocol = isSecure ? 'wss' : 'ws'
         var wsPort = isSecure ? 443 : 5080
+        var frameRate = getParameterByName('fr') || 24
+        var bandwidthAudio = getParameterByName('bwA') || 56
+        var bandwidthVideo = getParameterByName('bwV') || 750
         var audioParam = getParameterByName('audio')
         var audioFlag = audioParam
-          ? audioParam === 'false'
+          ? audioParam === '0' || audioParam === 'false'
             ? false
             : true
           : true
+        var videoParam = getParameterByName('video')
+        var videoFlag = videoParam
+          ? videoParam === '0' || videoParam === 'false'
+            ? false
+            : true
+          : true
+        var cameraWidth = getParameterByName('cameraWidth')
+          ? parseInt(getParameterByName('cameraWidth'), 10)
+          : 640
+        var cameraHeight = getParameterByName('cameraHeight')
+          ? parseInt(getParameterByName('cameraHeight'), 10)
+          : 480
         var cameraWidth = getParameterByName('cameraWidth')
           ? parseInt(getParameterByName('cameraWidth'), 10)
           : 640
@@ -592,6 +607,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. -->
           streamName,
           signalingSocketOnly: switchToDC,
           enableChannelSignaling: switchToDC,
+          bandwidth: {
+            video: parseInt(bandwidthVideo, 10),
+            audio: parseInt(bandwidthAudio, 10),
+          },
           mediaConstraints: {
             audio: false,
             video: {
@@ -601,6 +620,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. -->
               height: {
                 exact: cameraHeight,
               },
+              frameRate: { exact: parseInt(frameRate, 10) },
             },
           },
           socketSwitchDelay: !isNaN(switchDelay) || 1000,
@@ -646,6 +666,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. -->
               video: {
                 width: cameraWidth,
                 height: cameraHeight,
+                frameRate: parseInt(frameRate, 10),
               },
             })
             publisher = preferWhipWhep ? new WHIPClient() : new RTCPublisher()
