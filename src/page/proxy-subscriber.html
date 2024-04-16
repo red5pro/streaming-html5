@@ -554,7 +554,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. -->
           ? parseInt(getParameterByName('delay'), 10)
           : NaN
 
-        const httpProtocol = protocol === 'wss' ? 'https' : 'http'
+        const httpProtocol = (protocol === 'wss' || protocol === 'https') ? 'https' : 'http'
         const endpoint = !preferWhipWhep
           ? `${protocol}://${host}:${port}/as/${streamManagerAPI}/proxy/ws/subscribe/${app}/${streamName}`
           : `${httpProtocol}://${host}:${port}/as/${streamManagerAPI}/proxy/whep/${app}/${streamName}`
