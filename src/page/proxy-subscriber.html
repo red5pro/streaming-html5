@@ -39,6 +39,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. -->
       type="text/css"
     />
     <style>
+      body {
+        background-color: #0c0c0c;
+      }
       #prompt {
         text-align: center;
         padding: 10px;
@@ -58,6 +61,35 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. -->
       }
       .red5pro-media-control-bar {
         min-height: 40px;
+      }
+
+      .stats-container {
+        display: flex;
+        flex-direction: row;
+        column-gap: 16px;
+        justify-content: space-between;
+        padding: 10px;
+        width: 100%;
+        color: white;
+        box-sizing: border-box;
+      }
+      .audio-stats, .video-stats {
+        flex: 1;
+        flex-basis: 0;
+        padding: 10px 20px 20px 20px;
+        border: 1px solid white;
+        box-sizing: border-box;
+      }
+      .stats__label {
+        background-color: #fff;
+        color: black;
+        width: 100%;
+        text-align: center;
+        padding: 16px;
+        box-sizing: border-box;
+      }
+      .table-entry {
+        min-width: 160px;
       }
     </style>
     <style type="text/css">
@@ -352,6 +384,49 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. -->
       ></video>
     </div>
     <div id="prompt" class="in-progress">Connecting...</div>
+    <div class="stats-container">
+      <div class="video-stats">
+        <p class="stats__label">No Video</p>
+        <table>
+          <tr>
+            <td class="table-entry">Bitrate:</td>
+            <td id="video-bitrate">-</td>
+          </tr>
+          <tr>
+            <td class="table-entry">Packets Lost:</td>
+            <td id="video-packets-lost">-</td>
+          </tr>
+          <tr>
+            <td class="table-entry">Resolution:</td>
+            <td id="video-resolution">-</td>
+          </tr>
+          <tr>
+            <td class="table-entry">Frame Rate:</td>
+            <td id="video-framerate">-</td>
+          </tr>
+          <tr>
+            <td class="table-entry">Freeze Count:</td>
+            <td id="video-freeze-count">-</td>
+          </tr>
+          <tr>
+            <td class="table-entry">Frames Dropped:</td>
+            <td id="video-frames-dropped">-</td>
+          </tr>
+        </table>
+      </div>
+      <div class="audio-stats">
+        <p class="stats__label">No Audio</p>
+        <table>
+          <tr>
+            <td class="table-entry">Bitrate:</td>
+            <td id="audio-bitrate">-</td>
+          </tr>
+          <tr>
+            <td class="table-entry">Packets Lost:</td>
+            <td id="audio-packets-lost">-</td>
+          </tr>
+        </table>
+    </div>
     <script>
       ;(function () {
         console.log('------- USAGE --------')
@@ -470,58 +545,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. -->
           red5prosdk.setLogLevel('error')
         }
 
-        // Request Edge server from Stream Manager.
-        function requestEdge(protocol, port, host, app, streamName, isSecure) {
-          if (preferWhipWhep) {
-            return Promise.resolve(host)
-          }
-          var portURI = port.length > 0 ? ':' + port : ''
-          var baseUrl = isSecure
-            ? protocol + '://' + host
-            : protocol + '://' + host + portURI
-          var url =
-            baseUrl +
-            '/streammanager/api/4.0/event/' +
-            app +
-            '/' +
-            streamName +
-            '?action=subscribe'
-          return new Promise(function (resolve, reject) {
-            fetch(url)
-              .then(function (res) {
-                if (
-                  res.headers.get('content-type') &&
-                  res.headers
-                    .get('content-type')
-                    .toLowerCase()
-                    .indexOf('application/json') >= 0
-                ) {
-                  return res.json()
-                } else {
-                  throw new TypeError('Could not properly parse response.')
-                }
-              })
-              .then(function (json) {
-                if (json.errorMessage) {
-                  throw new Error(json.errorMessage)
-                } else {
-                  resolve(json.serverAddress)
-                }
-              })
-              .catch(function (error) {
-                var jsonError =
-                  typeof error === 'string'
-                    ? error
-                    : JSON.stringify(error, null, 2)
-                console.error(
-                  '[SubscriberStreamManagerProxyTest] :: Error - Could not request Edge IP from Stream Manager. ' +
-                    jsonError
-                )
-                reject(error)
-              })
-          })
-        }
-
         // Configuration parameters.
         var protocol =
           getParameterByName('protocol') || window.location.protocol
@@ -570,6 +593,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. -->
           },
         }
 
+        let interval
+
         var subscriber
         var failover
         var inFailedState = false
@@ -584,6 +609,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. -->
             console.log('[index.js] : Subscriber Event - ' + event.type + '.')
             if (event.type !== 'Subscribe.Metadata') {
               displayPrompt(event.type)
+            }
+            if (event.type === ' Subscribe.Start') {
+              setupStatsInterval(subscriber.getPeerConnection())
             }
           }
         }
@@ -608,6 +636,132 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. -->
           }
         }
 
+        const isInboundReport = (report) => {
+          return report.type === 'inboundrtp' ||
+                      report.type === 'inbound-rtp' ||
+                      (report.type === 'ssrc' && report.bytesReceived)
+        }
+
+        const isAudioReport = (report) => {
+          return report.mediaType === 'audio' ||
+            report.kind === 'audio' ||
+            report.id.match(aRegex)
+        }
+
+        const isVideoReport = (report) => {
+          return report.mediaType === 'video' ||
+            report.kind === 'video' ||
+            report.id.match(vRegex)
+        }
+
+        const setupStatsInterval = (connection) => {
+          const vRegex = /VideoStream/
+          const aRegex = /AudioStream/
+
+          let lastResult
+          interval = setInterval(() => {
+            subscriber.getStats((stats) => {
+              connection.getStats(null).then((res) => {
+                res.forEach((report) => {
+                  let bytes
+                  let packets
+                  let now = report.timestamp
+                  if (isInboundReport(report)) {
+
+                    bytes = report.bytesReceived
+                    if (isAudioReport(report)) {
+                      if (lastResult && lastResult.get(report.id)) {
+                        // calculate bitrate
+                        bitrate =
+                          (8 * (bytes - lastResult.get(report.id).bytesReceived)) /
+                          (now - lastResult.get(report.id).timestamp)
+                        setAudioBitate(bitrate)
+                      }
+                      if (report.packetsLost) {
+                        setAudioPacketsLost(report.packetsLost)
+                      }
+                    } else if (isVideoReport(report)) {
+                      if (lastResult && lastResult.get(report.id)) {
+                        // calculate bitrate
+                        bitrate =
+                          (8 * (bytes - lastResult.get(report.id).bytesReceived)) /
+                          (now - lastResult.get(report.id).timestamp)
+                        setVideoBitrate(bitrate)
+                      }
+                      if (report.frameWidth && report.frameHeight) {
+                        const { frameWidth, frameHeight } = report
+                        setVideoResolution(frameWidth, frameHeight)
+                      }
+                      if (report.framesPerSecond) {
+                        setVideoFrameRate(report.framesPerSecond)
+                      }
+                      if (report.framesDropped) {
+                        setVideoFramesDropped(report.framesDropped)
+                      }
+                      if (report.freezeCount) {
+                        setVideoFreezeCount(report.freezeCount)
+                      }
+                      if (report.packetsLost) {
+                        setVideoPacketsLost(report.packetsLost)
+                      }
+                    }
+                  }
+                })
+              }).catch(err => {
+                console.error(err)
+              })
+            })
+          }, 1000)
+        }
+
+        const setAudioBitate = (bitrate) => {
+          console.log('Audio Bitrate: ' + bitrate)
+          document.querySelector('.audio-stats .stats__label').textContent = 'Audio'
+          document.getElementById('audio-bitrate').textContent = bitrate
+        }
+
+        const setAudioPacketsLost = (packetsLost) => {
+          console.log('Audio Packets Lost: ' + packetsLost)
+          document.querySelector('.audio-stats .stats__label').textContent = 'Audio'
+          document.getElementById('audio-packets-lost').textContent = packetsLost
+        }
+
+        const setVideoBitrate = (bitrate) => {
+          console.log('Video Bitrate: ' + bitrate)
+          document.querySelector('.video-stats .stats__label').textContent = 'Video'
+          document.getElementById('video-bitrate').textContent = bitrate
+        }
+
+        const setVideoResolution = (width, height) => {
+          console.log('Resolution: ' + width + 'x' + height)
+          document.querySelector('.video-stats .stats__label').textContent = 'Video'
+          document.getElementById('video-resolution').textContent = width + 'x' + height
+        }
+
+        const setVideoFrameRate = (frameRate) => {
+          console.log('Frame Rate: ' + frameRate)
+          document.querySelector('.video-stats .stats__label').textContent = 'Video'
+          document.getElementById('video-framerate').textContent = frameRate
+        }
+
+        const setVideoFramesDropped = (framesDropped) => {
+          console.log('Frames Dropped: ' + framesDropped)
+          document.querySelector('.video-stats .stats__label').textContent = 'Video'
+          document.getElementById('video-frames-dropped').textContent = framesDropped
+        }
+
+        const setVideoFreezeCount = (freezeCount) => {
+          console.log('Freeze Count: ' + freezeCount)
+          document.querySelector('.video-stats .stats__label').textContent = 'Video'
+          document.getElementById('video-freeze-count').textContent = freezeCount
+        }
+
+        const setVideoPacketsLost = (packetsLost) => {
+          console.log('Video Packets Lost: ' + packetsLost)
+          document.querySelector('.video-stats .stats__label').textContent = 'Video'
+          document.getElementById('video-packets-lost').textContent = packetsLost
+        }
+
         const start = async () => {
           try {
             const { WHEPClient, RTCSubscriber } = red5prosdk
@@ -626,6 +780,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. -->
         }
 
         const shutdown = async () => {
+          clearInterval(interval)
           if (subscriber) {
             try {
               await subscriber.unsubscribe()
