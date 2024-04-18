@@ -39,9 +39,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. -->
       type="text/css"
     />
     <style>
+      body {
+        background-color: #0c0c0c;
+      }
       #prompt {
         text-align: center;
         padding: 10px;
+        color: white;
       }
 
       .in-progress {
@@ -59,6 +63,34 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. -->
       #wrapper {
         width: 100%;
         height: 480px;
+      }
+      .stats-container {
+        display: flex;
+        flex-direction: row;
+        column-gap: 16px;
+        justify-content: space-between;
+        padding: 10px;
+        width: 100%;
+        color: white;
+        box-sizing: border-box;
+      }
+      .audio-stats, .video-stats {
+        flex: 1;
+        flex-basis: 0;
+        padding: 10px 20px 20px 20px;
+        border: 1px solid white;
+        box-sizing: border-box;
+      }
+      .stats__label {
+        background-color: #fff;
+        color: black;
+        width: 100%;
+        text-align: center;
+        padding: 16px;
+        box-sizing: border-box;
+      }
+      .table-entry {
+        min-width: 160px;
       }
     </style>
     <style type="text/css">
@@ -354,6 +386,33 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. -->
       ></video>
     </div>
     <div id="prompt" class="in-progress">Connecting...</div>
+    <div class="stats-container">
+      <div class="video-stats">
+        <p class="stats__label">No Video</p>
+        <table>
+          <tr>
+            <td class="table-entry">Bitrate:</td>
+            <td id="video-bitrate">-</td>
+          </tr>
+          <tr>
+            <td class="table-entry">Resolution:</td>
+            <td id="video-resolution">-</td>
+          </tr>
+          <tr>
+            <td class="table-entry">Frame Rate:</td>
+            <td id="video-framerate">-</td>
+          </tr>
+        </table>
+      </div>
+      <div class="audio-stats">
+        <p class="stats__label">No Audio</p>
+        <table>
+          <tr>
+            <td class="table-entry">Bitrate:</td>
+            <td id="audio-bitrate">-</td>
+          </tr>
+        </table>
+    </div>
     <script>
       ;(function () {
         console.log('------- USAGE --------')
@@ -570,11 +629,15 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. -->
         var publisher
         var failover
         var inFailedState = false
+        let interval
 
         // Handle events from publisher.
         function onPublisherEvent(event) {
           console.log('[index.js] : Publisher Event - ' + event.type + '.')
           displayPrompt(event.type)
+          if (event.type === 'Publish.Start.') {
+            setupStatsInterval(publisher.getPeerConnection())
+          }
         }
 
         // Update UI prompt display based on message.
@@ -597,6 +660,95 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. -->
           }
         }
 
+        const isOutboundReport = (report) => {
+          return report.type === 'outboundrtp' ||
+                      report.type === 'outbound-rtp' ||
+                      (report.type === 'ssrc' && report.bytesSent)
+        }
+
+        const isAudioReport = (report) => {
+          return report.mediaType === 'audio' ||
+            report.kind === 'audio' ||
+            report.id.match(aRegex)
+        }
+
+        const isVideoReport = (report) => {
+          return report.mediaType === 'video' ||
+            report.kind === 'video' ||
+            report.id.match(vRegex)
+        }
+
+        const setupStatsInterval = (connection) => {
+          const vRegex = /VideoStream/
+          const aRegex = /AudioStream/
+
+          let lastResult
+          interval = setInterval(() => {
+            subscriber.getStats((stats) => {
+              connection.getStats(null).then((res) => {
+                res.forEach((report) => {
+                  let bytes
+                  let packets
+                  let now = report.timestamp
+                  if (isOutboundReport(report)) {
+
+                    bytes = report.bytesReceived
+                    if (isAudioReport(report)) {
+                      if (lastResult && lastResult.get(report.id)) {
+                        // calculate bitrate
+                        bitrate =
+                          (8 * (bytes - lastResult.get(report.id).bytesReceived)) /
+                          (now - lastResult.get(report.id).timestamp)
+                        setAudioBitate(bitrate)
+                      }
+                    } else if (isVideoReport(report)) {
+                      if (lastResult && lastResult.get(report.id)) {
+                        // calculate bitrate
+                        bitrate =
+                          (8 * (bytes - lastResult.get(report.id).bytesReceived)) /
+                          (now - lastResult.get(report.id).timestamp)
+                        setVideoBitrate(bitrate)
+                      }
+                      if (report.frameWidth && report.frameHeight) {
+                        const { frameWidth, frameHeight } = report
+                        setVideoResolution(frameWidth, frameHeight)
+                      }
+                      if (report.framesPerSecond) {
+                        setVideoFrameRate(report.framesPerSecond)
+                      }
+                    }
+                  }
+                })
+              }).catch(err => {
+                console.error(err)
+              })
+            })
+          }, 1000)
+
+        const setAudioBitate = (bitrate) => {
+          console.log('Audio Bitrate: ' + bitrate)
+          document.querySelector('.audio-stats .stats__label').textContent = 'Audio'
+          document.getElementById('audio-bitrate').textContent = bitrate
+        }
+
+        const setVideoBitrate = (bitrate) => {
+          console.log('Video Bitrate: ' + bitrate)
+          document.querySelector('.video-stats .stats__label').textContent = 'Video'
+          document.getElementById('video-bitrate').textContent = bitrate
+        }
+
+        const setVideoResolution = (width, height) => {
+          console.log('Resolution: ' + width + 'x' + height)
+          document.querySelector('.video-stats .stats__label').textContent = 'Video'
+          document.getElementById('video-resolution').textContent = width + 'x' + height
+        }
+
+        const setVideoFrameRate = (frameRate) => {
+          console.log('Frame Rate: ' + frameRate)
+          document.querySelector('.video-stats .stats__label').textContent = 'Video'
+          document.getElementById('video-framerate').textContent = frameRate
+        }
+
         const start = async () => {
           try {
             console.log('[rtc] : ' + JSON.stringify(rtcConfig, null, 2))
@@ -615,6 +767,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. -->
         }
 
         const shutdown = async () => {
+          clearInterval(interval)
           if (publisher) {
             try {
               await publisher.unpublish()
