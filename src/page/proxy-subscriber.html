@@ -610,7 +610,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. -->
             if (event.type !== 'Subscribe.Metadata') {
               displayPrompt(event.type)
             }
-            if (event.type === ' Subscribe.Start') {
+            if (event.type === 'Subscribe.Start') {
               setupStatsInterval(subscriber.getPeerConnection())
             }
           }
