@@ -131,10 +131,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   async function requestVOD(
     configuration,
-    vodType /* mediafiles | playlists */,
-    useCloudStorage = false
+    vodType /* mediafiles | playlists */
   ) {
     try {
+	  const useCloudStorage = true
       const {
         host,
         app,
@@ -310,7 +310,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   function getPlaylists() {
-    requestVOD(configuration, 'playlists', false)
+    requestVOD(configuration, 'playlists')
       .then(function (listing) {
         displayPlaylists(listing)
       })
@@ -321,7 +321,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   function getMediaFiles() {
-    requestVOD(configuration, 'mediafiles', false)
+    requestVOD(configuration, 'mediafiles')
       .then(function (listing) {
         displayMediaFiles(listing)
         getPlaylists()
