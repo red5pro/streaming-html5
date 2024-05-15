@@ -470,7 +470,7 @@
         iceUsername.value = config.rtcConfiguration.iceServers[0].username || '';
         iceCredential.value = config.rtcConfiguration.iceServers[0].credential || '';
         rtcCandidatePoolSize.value = config.rtcConfiguration.iceCandidatePoolSize || 0;
-        rtcSignalSocketField.checked = config.signalingSocketOnly || true;
+        rtcSignalSocketField.checked = config.signalingSocketOnly;
         whipWhepField.checked = config.preferWhipWhep || false;
         sessionHostField.checked = config.disableProxy || false;
         trickleField.checked = config.trickleIce || false;
