@@ -42,7 +42,9 @@
     "build": "NODE_ENV=develop gulp build",
     "predist": "npm run clean:dist && npm run prebuild",
     "dist": "gulp bump-version && NODE_ENV=production gulp build",
-    "dist:webapp": "NODE_ENV=production gulp build:webapp"
+    "dist:webapp": "NODE_ENV=production gulp build:webapp",
+    "dist:sm2": "NODE_ENV=production gulp build:webapp ",
+    "postdist:sm2": "pwd && ./scripts/clean-dist-sm2.sh"
   },
   "dependencies": {
     "@babel/core": "^7.17.4"
