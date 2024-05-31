@@ -23,7 +23,7 @@ NONINFRINGEMENT.   IN  NO  EVENT  SHALL INFRARED5, INC. BE LIABLE FOR ANY CLAIM,
 WHETHER IN  AN  ACTION  OF  CONTRACT,  TORT  OR  OTHERWISE,  ARISING  FROM,  OUT  OF  OR  IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
-;(function (window, document, red5prosdk) {
+;(function (window, document, red5prosdk, streamManagerUtil) {
   'use strict'
 
   var SharedObject = red5prosdk.Red5ProSharedObject
@@ -123,8 +123,16 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   function onSubscriberEvent(event) {
     console.log('[Red5ProSubscriber] ' + event.type + '.')
     updateStatusFromEvent(event)
+    const { signalingSocketOnly } = configuration
+
     if (event.type === 'Subscribe.VideoDimensions.Change') {
       onResolutionUpdate(event.data.width, event.data.height)
+    } else if (!signalingSocketOnly && event.type === 'Subscribe.Start') {
+      // If we are WebSocket client and don't want to switch to DataChannel ->
+      establishSharedObject(targetSubscriber)
+    } else if (event.type === 'MessageTransport.Change') {
+      // Else, our transport layer will be DataChannel.
+      establishSharedObject(targetSubscriber)
     }
   }
   function onSubscribeFail(message) {
@@ -132,7 +140,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
   function onSubscribeSuccess(subscriber) {
     console.log('[Red5ProSubsriber] Subscribe Complete.')
-    establishSharedObject(subscriber)
     if (window.exposeSubscriberGlobally) {
       window.exposeSubscriberGlobally(subscriber)
     }
@@ -154,6 +161,18 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
   function onUnsubscribeSuccess() {
     console.log('[Red5ProSubsriber] Unsubscribe Complete.')
+  }
+
+  function getRegionIfDefined() {
+    var region = configuration.streamManagerRegion
+    if (
+      typeof region === 'string' &&
+      region.length > 0 &&
+      region !== 'undefined'
+    ) {
+      return region
+    }
+    return undefined
   }
 
   function getAuthenticationParams() {
@@ -254,129 +273,55 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     })
   }
 
-  function requestEdge(configuration) {
-    var host = configuration.host
-    var app = configuration.app
-    var streamName = configuration.stream1
-    var port = serverSettings.httpport
-    var baseUrl = protocol + '://' + host + ':' + port
-    var apiVersion = configuration.streamManagerAPI || '3.1'
-    var url =
-      baseUrl +
-      '/streammanager/api/' +
-      apiVersion +
-      '/event/' +
-      app +
-      '/' +
-      streamName +
-      '?action=subscribe'
-    return new Promise(function (resolve, reject) {
-      fetch(url)
-        .then(function (res) {
-          if (res.status == 200) {
-            if (
-              res.headers.get('content-type') &&
-              res.headers
-                .get('content-type')
-                .toLowerCase()
-                .indexOf('application/json') >= 0
-            ) {
-              return res.json()
-            } else {
-              throw new TypeError('Could not properly parse response.')
+  const requestEdge = async (configuration) => {
+    const { preferWhipWhep, host, app, stream1 } = configuration
+    var region = getRegionIfDefined()
+    if (!preferWhipWhep) {
+      return streamManagerUtil.getEdge(host, app, stream1, region)
+    } else {
+      // WHIP/WHEP knows how to handle proxy requests.
+      return {
+        serverAddress: host,
+        scope: app,
+        name: stream1,
+        params: region
+          ? {
+              region,
+              strict: true,
             }
-          } else {
-            var msg = ''
-            if (res.status == 400) {
-              msg = 'An invalid request was detected'
-            } else if (res.status == 404) {
-              msg = 'Data for the request could not be located/provided.'
-            } else if (res.status == 500) {
-              msg = 'Improper server state error was detected.'
-            } else {
-              msg = 'Unknown error'
-            }
-            throw new TypeError(msg)
-          }
-        })
-        .then(function (json) {
-          resolve(json)
-        })
-        .catch(function (error) {
-          var jsonError =
-            typeof error === 'string' ? error : JSON.stringify(error, null, 2)
-          console.error(
-            '[PublisherStreamManagerTest] :: Error - Could not request Origin IP from Stream Manager. ' +
-              jsonError
-          )
-          reject(error)
-        })
-    })
+          : undefined,
+      }
+    }
   }
 
   function determineSubscriber(jsonResponse) {
+    var { app, proxy, preferWhipWhep } = configuration
+    var { WHEPClient, RTCSubscriber } = red5prosdk
+    var { params } = jsonResponse
     var host = jsonResponse.serverAddress
-    var app = jsonResponse.scope
-    var config = Object.assign(
-      {},
-      configuration,
-      defaultConfiguration,
-      getAuthenticationParams()
-    )
+    var scope = jsonResponse.scope
+    var name = jsonResponse.name
+    var { protocol, port } = getSocketLocationFromProtocol()
 
-    var rtcConfig = Object.assign({}, config, {
-      protocol: getSocketLocationFromProtocol().protocol,
-      port: getSocketLocationFromProtocol().port,
+    var connectionParams = params
+      ? { ...params, ...getAuthenticationParams().connectionParams }
+      : getAuthenticationParams().connectionParams
+    var rtcConfig = Object.assign({}, configuration, defaultConfiguration, {
+      protocol,
+      port,
+      streamName: name,
+      app: preferWhipWhep ? app : proxy,
       subscriptionId: 'subscriber-' + instanceId,
-      streamName: config.stream1,
-      app: configuration.proxy,
-      connectionParams: {
-        host: host,
-        app: app,
-      },
+      connectionParams: preferWhipWhep
+        ? connectionParams
+        : {
+            ...connectionParams,
+            host: host,
+            app: scope,
+          },
     })
-    // Merge in possible authentication params.
-    rtcConfig.connectionParams = Object.assign(
-      {},
-      getAuthenticationParams().connectionParams,
-      rtcConfig.connectionParams
-    )
-
-    var rtmpConfig = Object.assign({}, config, {
-      protocol: 'rtmp',
-      port: serverSettings.rtmpport,
-      streamName: config.stream1,
-      backgroundColor: '#000000',
-      width: config.cameraWidth,
-      height: config.cameraHeight,
-      swf: '../../lib/red5pro/red5pro-subscriber.swf',
-      swfobjectURL: '../../lib/swfobject/swfobject.js',
-      productInstallURL: '../../lib/swfobject/playerProductInstall.swf',
-    })
-
-    var hlsConfig = Object.assign({}, config, {
-      protocol: protocol,
-      port: isSecure ? serverSettings.hlssport : serverSettings.hlsport,
-      streamName: config.stream1,
-      mimeType: 'application/x-mpegURL',
-    })
-
-    var subscribeOrder = config.subscriberFailoverOrder
-      .split(',')
-      .map(function (item) {
-        return item.trim()
-      })
-
-    if (window.query('view')) {
-      subscribeOrder = [window.query('view')]
-    }
-
-    var subscriber = new red5prosdk.Red5ProSubscriber()
-    return subscriber.setPlaybackOrder(subscribeOrder).init({
-      rtc: rtcConfig,
-      rtmp: rtmpConfig,
-      hls: hlsConfig,
-    })
+    var subscriber = preferWhipWhep ? new WHEPClient() : new RTCSubscriber()
+    return subscriber.init(rtcConfig)
   }
 
   requestEdge(configuration)
@@ -416,4 +361,4 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
   window.addEventListener('pagehide', shutdown)
   window.addEventListener('beforeunload', shutdown)
-})(this, document, window.red5prosdk)
+})(this, document, window.red5prosdk, window.streamManagerUtil)
