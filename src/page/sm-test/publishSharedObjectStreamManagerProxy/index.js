@@ -124,6 +124,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   function onPublisherEvent(event) {
     const { type } = event
+    const { signalingSocketOnly } = configuration
     console.log('[Red5ProPublisher] ' + type + '.')
     updateStatusFromEvent(event)
     if (type === 'WebRTC.Endpoint.Changed') {
@@ -132,14 +133,20 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       const { endpoint } = data
       displayServerAddress(endpoint, host)
     }
+
+    // If we are WebSocket client and don't want to switch to DataChannel ->
+    if (!signalingSocketOnly && event.type === 'Publish.Start') {
+      establishSharedObject(targetPublisher)
+    } else if (event.type === 'MessageTransport.Change') {
+      // Else, our transport layer will be DataChannel.
+      establishSharedObject(targetPublisher)
+    }
   }
   function onPublishFail(message) {
     console.error('[Red5ProPublisher] Publish Error :: ' + message)
   }
   function onPublishSuccess(publisher) {
     console.log('[Red5ProPublisher] Publish Complete.')
-
-    establishSharedObject(publisher)
     try {
       var pc = publisher.getPeerConnection()
       var stream = publisher.getMediaStream()
@@ -197,6 +204,19 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
   }
 
+  colorPicker.addEventListener('input', handleColorChangeRequest)
+  function handleColorChangeRequest(event) {
+    if (so) {
+      so.setProperty('color', event.target.value)
+      /*
+      so.send('messageTransmit', {
+        user: configuration.stream1,
+        message: 'Color changed to: ' + event.target.value.toString()
+      });
+      */
+    }
+  }
+
   function appendMessage(message) {
     soField.value = [message, soField.value].join('\n')
   }
@@ -247,8 +267,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   function determinePublisher(jsonResponse) {
-    var { app, proxy } = configuration
-    var { RTCPublisher } = red5prosdk
+    var { app, proxy, preferWhipWhep } = configuration
+    var { WHIPClient, RTCPublisher } = red5prosdk
     var { params } = jsonResponse
     var host = jsonResponse.serverAddress
     var scope = jsonResponse.scope
@@ -267,15 +287,17 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         protocol,
         port,
         streamName: name,
-        app: proxy,
-        connectionParams: {
-          ...connectionParams,
-          host: host,
-          app: scope,
-        },
+        app: preferWhipWhep ? app : proxy,
+        connectionParams: preferWhipWhep
+          ? connectionParams
+          : {
+              ...connectionParams,
+              host: host,
+              app: scope,
+            },
       }
     )
-    var publisher = new RTCPublisher()
+    var publisher = preferWhipWhep ? new WHIPClient() : new RTCPublisher()
     return publisher.init(rtcConfig)
   }
 
@@ -357,9 +379,23 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   const requestOrigin = async (configuration) => {
-    const { host, app, stream1 } = configuration
+    const { preferWhipWhep, host, app, stream1 } = configuration
     var region = getRegionIfDefined()
-    return streamManagerUtil.getOrigin(host, app, stream1, region)
+    if (!preferWhipWhep) {
+      return streamManagerUtil.getOrigin(host, app, stream1, region)
+    } else {
+      // WHIP/WHEP knows how to handle proxy requests.
+      return {
+        serverAddress: host,
+        scope: app,
+        name: stream1,
+        params: region
+          ? {
+              region,
+            }
+          : undefined,
+      }
+    }
   }
 
   function startup() {

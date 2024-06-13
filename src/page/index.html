@@ -86,6 +86,10 @@
           <input type="checkbox" id="whipwhep-field" style="vertical-align: middle;" checked>
         </p>
         <p class="settings-field settings-collapsable settings-field-row">
+          <label class="settings-label">Force Session-Host:</label>
+          <input type="checkbox" id="session-host-field" style="vertical-align: middle;" checked>
+        </p>
+        <p class="settings-field settings-collapsable settings-field-row">
           <label class="settings-label">Trickle ICE Candidates:</label>
           <input type="checkbox" id="trickle-field" style="vertical-align: middle;" checked disabled>
         </p>
@@ -249,6 +253,7 @@
       var rtcpMuxPolicySelect = document.getElementById('rtc-mux-policy');
       var rtcSignalSocketField = document.getElementById('rtc-signal-socket-field');
       var whipWhepField = document.getElementById('whipwhep-field');
+      var sessionHostField = document.getElementById('session-host-field');
       var trickleField = document.getElementById('trickle-field');
       var loggingField = document.getElementById('logging-field');
       var recordField = document.getElementById('record-field');
@@ -370,6 +375,10 @@
         configuration.preferWhipWhep = whipWhepField.checked;
         seal(configuration);
       })
+      sessionHostField.addEventListener('change', () => {
+        configuration.disableProxy = sessionHostField.checked;
+        seal(configuration);
+      })
       trickleField.addEventListener('change', () => {
         configuration.trickleIce = trickleField.checked;
         seal(configuration);
@@ -461,8 +470,9 @@
         iceUsername.value = config.rtcConfiguration.iceServers[0].username || '';
         iceCredential.value = config.rtcConfiguration.iceServers[0].credential || '';
         rtcCandidatePoolSize.value = config.rtcConfiguration.iceCandidatePoolSize || 0;
-        rtcSignalSocketField.checked = config.signalingSocketOnly || true;
+        rtcSignalSocketField.checked = config.signalingSocketOnly;
         whipWhepField.checked = config.preferWhipWhep || false;
+        sessionHostField.checked = config.disableProxy || false;
         trickleField.checked = config.trickleIce || false;
         loggingField.checked = config.verboseLogging ? true : false;
         recordField.checked = config.recordBroadcast ? true : false;

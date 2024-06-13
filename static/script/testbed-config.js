@@ -84,6 +84,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       },
       signalingSocketOnly: true,
       enableChannelSignaling: true, // WHIP/WHEP specific
+      disableProxy: true, // WHIP/WHEP specific
       trickleIce: true, // Flag to use trickle ice to send candidates
       keyFramerate: 3000,
       useAudio: true,
