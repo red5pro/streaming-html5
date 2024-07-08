@@ -375,7 +375,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			throw new Error(text)
 		}
 		const json = await result.json()
-		const serverAddress = json.serverAddress
+		const serverAddress = json[0].serverAddress
 		console.log("getOriginForStream() SUCCESS! result: " + serverAddress)
 		return serverAddress;
 	}
