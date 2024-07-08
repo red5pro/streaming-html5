@@ -494,6 +494,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       },
       body: typeof data === 'string' ? data : JSON.stringify(data),
     })
+    
+    // note: the response may be empty string, or other non json response.
     const json = await result.json()
     if (json && json.errorMessage) {
       throw new Error(json.errorMessage)
