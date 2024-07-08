@@ -367,7 +367,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
    * Find the Origin IP address for a given stream
    */
 	const getOriginForStream = async (host, version, nodeGroup, streamGuid) => {
-		let url = `https://${host}/as/${version}/streams/stream/${nodeGroup}/stream/${streamGuid}`
+		let url = `https://${host}/as/${version}/streams/stream/${nodeGroup}/stream/${streamGuid}?aggregate=true`
 		console.log("getOriginForStream URL: " + url)
 		const result = await fetch(url)
 		if (!result.ok) {
