@@ -367,6 +367,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
    * Find the Origin IP address for a given stream
    */
 	const getOriginForStream = async (host, version, nodeGroup, streamGuid) => {
+		// aggregate=true -- will return only one server, the publishing origin
 		let url = `https://${host}/as/${version}/streams/stream/${nodeGroup}/stream/${streamGuid}?aggregate=true`
 		console.log("getOriginForStream URL: " + url)
 		const result = await fetch(url)
@@ -375,7 +376,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			throw new Error(text)
 		}
 		const json = await result.json()
-		const serverAddress = json[0].serverAddress
+		const serverAddress = json[0].serverAddress; // it's always an array of one item (or an error)
 		console.log("getOriginForStream() SUCCESS! result: " + serverAddress)
 		return serverAddress;
 	}
