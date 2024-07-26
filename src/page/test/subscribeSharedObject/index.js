@@ -123,8 +123,16 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   function onSubscriberEvent(event) {
     console.log('[Red5ProSubscriber] ' + event.type + '.')
     updateStatusFromEvent(event)
+    const { signalingSocketOnly } = configuration
+
     if (event.type === 'Subscribe.VideoDimensions.Change') {
       onResolutionUpdate(event.data.width, event.data.height)
+    } else if (!signalingSocketOnly && event.type === 'Subscribe.Start') {
+      // If we are WebSocket client and don't want to switch to DataChannel ->
+      establishSharedObject(targetSubscriber)
+    } else if (event.type === 'MessageTransport.Change') {
+      // Else, our transport layer will be DataChannel.
+      establishSharedObject(targetSubscriber)
     }
   }
   function onSubscribeFail(message) {
@@ -132,7 +140,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
   function onSubscribeSuccess(subscriber) {
     console.log('[Red5ProSubsriber] Subscribe Complete.')
-    establishSharedObject(targetSubscriber)
     if (window.exposeSubscriberGlobally) {
       window.exposeSubscriberGlobally(subscriber)
     }
@@ -204,6 +211,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       console.log('[Red5ProSubscriber] SharedObject Connect.')
       appendMessage('Connected.')
       colorPicker.removeAttribute('disabled')
+      sendButton.disabled = false
     })
     so.on(red5prosdk.SharedObjectEventTypes.CONNECT_FAILURE, function () {
       // eslint-disable-line no-unused-vars
@@ -268,7 +276,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   )
 
   // Shared Object is RTCPublisher and RTCSubscriber Only. No WHIP/WHEP client support.
-  var subscriber = new red5prosdk.RTCSubscriber()
+  var { preferWhipWhep } = configuration
+  const { WHEPClient, RTCSubscriber } = red5prosdk
+  var subscriber = preferWhipWhep ? new WHEPClient() : new RTCSubscriber()
   subscriber
     .init(rtcConfig)
     .then(function (subscriberImpl) {

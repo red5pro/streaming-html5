@@ -108,13 +108,21 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   function onPublisherEvent(event) {
     console.log('[Red5ProPublisher] ' + event.type + '.')
     updateStatusFromEvent(event)
+
+    const { signalingSocketOnly } = configuration
+    // If we are WebSocket client and don't want to switch to DataChannel ->
+    if (!signalingSocketOnly && event.type === 'Publish.Start') {
+      establishSharedObject(targetPublisher)
+    } else if (event.type === 'MessageTransport.Change') {
+      // Else, our transport layer will be DataChannel.
+      establishSharedObject(targetPublisher)
+    }
   }
   function onPublishFail(message) {
     console.error('[Red5ProPublisher] Publish Error :: ' + message)
   }
   function onPublishSuccess(publisher) {
     console.log('[Red5ProPublisher] Publish Complete.')
-    establishSharedObject(targetPublisher)
 
     try {
       var pc = publisher.getPeerConnection()
@@ -198,6 +206,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       console.log('[Red5ProPublisher] SharedObject Connect.')
       appendMessage('Connected.')
       colorPicker.removeAttribute('disabled')
+      sendButton.disabled = false
     })
     so.on(red5prosdk.SharedObjectEventTypes.CONNECT_FAILURE, function () {
       // eslint-disable-line no-unused-vars
@@ -240,8 +249,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         streamMode: configuration.recordBroadcast ? 'record' : 'live',
       }
     )
-
-    var publisher = new red5prosdk.RTCPublisher()
+    var { preferWhipWhep } = configuration
+    const { WHIPClient, RTCPublisher } = red5prosdk
+    var publisher = preferWhipWhep ? new WHIPClient() : new RTCPublisher()
     return publisher.init(rtcConfig)
   }
 

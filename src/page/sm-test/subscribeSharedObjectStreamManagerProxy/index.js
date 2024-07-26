@@ -23,7 +23,7 @@ NONINFRINGEMENT.   IN  NO  EVENT  SHALL INFRARED5, INC. BE LIABLE FOR ANY CLAIM,
 WHETHER IN  AN  ACTION  OF  CONTRACT,  TORT  OR  OTHERWISE,  ARISING  FROM,  OUT  OF  OR  IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
-;(function (window, document, red5prosdk) {
+;(function (window, document, red5prosdk, streamManagerUtil) {
   'use strict'
 
   var SharedObject = red5prosdk.Red5ProSharedObject
@@ -123,8 +123,16 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   function onSubscriberEvent(event) {
     console.log('[Red5ProSubscriber] ' + event.type + '.')
     updateStatusFromEvent(event)
+    const { signalingSocketOnly } = configuration
+
     if (event.type === 'Subscribe.VideoDimensions.Change') {
       onResolutionUpdate(event.data.width, event.data.height)
+    } else if (!signalingSocketOnly && event.type === 'Subscribe.Start') {
+      // If we are WebSocket client and don't want to switch to DataChannel ->
+      establishSharedObject(targetSubscriber)
+    } else if (event.type === 'MessageTransport.Change') {
+      // Else, our transport layer will be DataChannel.
+      establishSharedObject(targetSubscriber)
     }
   }
   function onSubscribeFail(message) {
@@ -132,7 +140,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
   function onSubscribeSuccess(subscriber) {
     console.log('[Red5ProSubsriber] Subscribe Complete.')
-    establishSharedObject(subscriber)
     if (window.exposeSubscriberGlobally) {
       window.exposeSubscriberGlobally(subscriber)
     }
@@ -154,6 +161,18 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
   function onUnsubscribeSuccess() {
     console.log('[Red5ProSubsriber] Unsubscribe Complete.')
+  }
+
+  function getRegionIfDefined() {
+    var region = configuration.streamManagerRegion
+    if (
+      typeof region === 'string' &&
+      region.length > 0 &&
+      region !== 'undefined'
+    ) {
+      return region
+    }
+    return undefined
   }
 
   function getAuthenticationParams() {
