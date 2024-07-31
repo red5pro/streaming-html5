@@ -120,6 +120,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   function onPublisherEvent(event) {
     const { type } = event
+    const { signalingSocketOnly } = configuration
     console.log('[Red5ProPublisher] ' + type + '.')
     updateStatusFromEvent(event)
     if (type === 'WebRTC.Endpoint.Changed') {
@@ -128,14 +129,20 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       const { endpoint } = data
       displayServerAddress(endpoint, host)
     }
+
+    // If we are WebSocket client and don't want to switch to DataChannel ->
+    if (!signalingSocketOnly && event.type === 'Publish.Start') {
+      establishSharedObject(targetPublisher)
+    } else if (event.type === 'MessageTransport.Change') {
+      // Else, our transport layer will be DataChannel.
+      establishSharedObject(targetPublisher)
+    }
   }
   function onPublishFail(message) {
     console.error('[Red5ProPublisher] Publish Error :: ' + message)
   }
   function onPublishSuccess(publisher) {
     console.log('[Red5ProPublisher] Publish Complete.')
-
-    establishSharedObject(publisher)
     try {
       var pc = publisher.getPeerConnection()
       var stream = publisher.getMediaStream()
