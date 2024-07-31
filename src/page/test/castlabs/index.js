@@ -23,6 +23,7 @@ NONINFRINGEMENT.   IN  NO  EVENT  SHALL INFRARED5, INC. BE LIABLE FOR ANY CLAIM,
 WHETHER IN  AN  ACTION  OF  CONTRACT,  TORT  OR  OTHERWISE,  ARISING  FROM,  OUT  OF  OR  IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
+/* global red5prosdk */
 import {
   rtcDrmGetVersion,
   rtcDrmEnvironments,
@@ -41,6 +42,7 @@ var configuration = (function () {
   }
   return {}
 })()
+
 red5prosdk.setLogLevel(
   configuration.verboseLogging
     ? red5prosdk.LOG_LEVELS.TRACE
