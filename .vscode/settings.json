@@ -14,9 +14,7 @@
   "editor.tabSize": 2,
   "eslint.alwaysShowStatus": true,
   "eslint.enable": true,
-  "eslint.validate": [
-    "javascript",
-  ],
+  "eslint.validate": ["javascript"],
   "files.insertFinalNewline": true,
   "files.trimTrailingWhitespace": true,
   "autoimport.useSemiColon": false,

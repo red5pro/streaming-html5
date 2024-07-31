@@ -23,6 +23,7 @@ NONINFRINGEMENT.   IN  NO  EVENT  SHALL INFRARED5, INC. BE LIABLE FOR ANY CLAIM,
 WHETHER IN  AN  ACTION  OF  CONTRACT,  TORT  OR  OTHERWISE,  ARISING  FROM,  OUT  OF  OR  IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
+/* global red5prosdk */
 import {
   getRtcDrmTransformVersion,
   setDrm,
@@ -30,18 +31,6 @@ import {
   audioTransformFunction,
   Environments,
 } from '../../lib/castlabs/rtc-drm-transform/rtc-drm-transform.min.js'
-
-var serverSettings = (function () {
-  var settings = sessionStorage.getItem('r5proServerSettings')
-  try {
-    return JSON.parse(settings)
-  } catch (e) {
-    console.error(
-      'Could not read server settings from sessionstorage: ' + e.message
-    )
-  }
-  return {}
-})()
 
 var configuration = (function () {
   var conf = sessionStorage.getItem('r5proTestBed')
@@ -132,27 +121,6 @@ const getRegionIfDefined = () => {
     return region
   }
   return undefined
-}
-
-const requestEdge = async (configuration, forWhipWhep) => {
-  const { preferWhipWhep, host, app, stream1 } = configuration
-  var region = getRegionIfDefined()
-  if (!preferWhipWhep || !forWhipWhep) {
-    return streamManagerUtil.getOrigin(host, app, stream1, region)
-  } else {
-    // WHIP/WHEP knows how to handle proxy requests.
-    return {
-      serverAddress: host,
-      scope: app,
-      name: stream1,
-      params: region
-        ? {
-            region,
-            strict: true,
-          }
-        : undefined,
-    }
-  }
 }
 
 let subscriber
@@ -251,6 +219,7 @@ const onEncryptedSubscriberEvent = (event) => {
   if (type === 'WebRTC.Endpoint.Changed') {
     const { data } = event
     const { endpoint } = data
+    encryptedAddressField.classList.remove('hidden')
     encryptedAddressField.innerText = `Edge Address: ${endpoint}`
   }
 }
@@ -266,40 +235,79 @@ const onDecryptedSubscriberEvent = (event) => {
   if (type === 'WebRTC.Endpoint.Changed') {
     const { data } = event
     const { endpoint } = data
+    decryptedAddressField.classList.remove('hidden')
     decryptedAddressField.innerText = `Edge Address: ${endpoint}`
   }
 }
 
+const getConfiguration = (
+  forceSocketClient,
+  mediaElementId,
+  insertableStream
+) => {
+  const {
+    host,
+    app,
+    stream1,
+    streamManagerAPI,
+    preferWhipWhep,
+    streamManagerNodeGroup: nodeGroup,
+  } = baseConfig
+
+  const region = getRegionIfDefined()
+  const params = region
+    ? {
+        region,
+        strict: true,
+      }
+    : undefined
+  const preferSocket = forceSocketClient || !preferWhipWhep
+  const appContext = !preferSocket
+    ? `as/${streamManagerAPI}/proxy/${app}`
+    : `as/${streamManagerAPI}/proxy/ws/subscribe/${app}/${stream1}`
+
+  const httpProtocol = protocol === 'wss' ? 'https' : 'http'
+  const endpoint = !preferSocket
+    ? `${httpProtocol}://${host}:${port}/as/${streamManagerAPI}/proxy/whep/${app}/${stream1}`
+    : `${protocol}://${host}:${port}/as/${streamManagerAPI}/proxy/ws/subscribe/${app}/${stream1}`
+
+  var connectionParams = params
+    ? { ...params, ...getAuthenticationParams().connectionParams }
+    : getAuthenticationParams().connectionParams
+
+  var rtcConfig = {
+    ...baseConfig,
+    endpoint,
+    protocol,
+    port,
+    host,
+    streamName: stream1,
+    app: appContext,
+    mediaElementId,
+    rtcConfiguration: {
+      ...baseConfig.rtcConfiguration,
+      encodedInsertableStreams: insertableStream,
+    },
+    connectionParams: preferWhipWhep
+      ? {
+          ...connectionParams,
+          nodeGroup,
+        }
+      : {
+          ...connectionParams,
+          nodeGroup,
+          host,
+          app,
+        },
+  }
+  return rtcConfig
+}
+
 const encryptedPlayback = async () => {
-  const { app, proxy, preferWhipWhep } = configuration
+  const { preferWhipWhep } = configuration
   const { WHEPClient, RTCSubscriber } = red5prosdk
   try {
-    const { proxy, app } = configuration
-    const { rtcConfiguration } = baseConfig
-    const edgeConnection = await requestEdge(baseConfig)
-    const { serverAddress, scope } = edgeConnection
-    let connectionParams = edgeConnection
-      ? { ...edgeConnection, ...getAuthenticationParams().connectionParams }
-      : getAuthenticationParams().connectionParams
-    var config = Object.assign({}, baseConfig, {
-      protocol,
-      port,
-      app: preferWhipWhep ? app : proxy,
-      mediaElementId: 'red5pro-encrypted',
-      rtcConfiguration: {
-        ...rtcConfiguration,
-        encodedInsertableStreams: false,
-      },
-      connectionParams: preferWhipWhep
-        ? connectionParams
-        : {
-            ...connectionParams,
-            host: serverAddress,
-            app: scope,
-          },
-    })
-    encryptedAddressField.innerText = `Edge Address: ${serverAddress}`
-
+    const config = getConfiguration(false, 'red5pro-encrypted', false)
     encryptedSubscriber = preferWhipWhep
       ? new WHEPClient()
       : new RTCSubscriber()
@@ -327,24 +335,7 @@ const decryptPlayback = async () => {
       worker: worker,
     }
 
-    const { proxy } = configuration
-    const edgeConnection = await requestEdge(baseConfig, false)
-    const { serverAddress, scope } = edgeConnection
-    let connectionParams = edgeConnection
-      ? { ...edgeConnection, ...getAuthenticationParams().connectionParams }
-      : getAuthenticationParams().connectionParams
-    var config = Object.assign({}, baseConfig, {
-      protocol,
-      port,
-      app: proxy,
-      connectionParams: {
-        ...connectionParams,
-        host: serverAddress,
-        app: scope,
-      },
-    })
-    decryptedAddressField.innerText = `Edge Address: ${serverAddress}`
-
+    const config = getConfiguration(true, 'red5pro-subscriber', true)
     subscriber = await new RTCSubscriber().init(config, transforms)
     subscriber.on('*', (event) => onDecryptedSubscriberEvent(event))
     await subscriber.subscribe()

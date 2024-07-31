@@ -17,6 +17,7 @@
       }
       .quality-link {
         text-decoration: underline;
+        cursor: pointer;
       }
       .quality-subheader {
         padding: 20px;
@@ -107,7 +108,7 @@
         </div>
         <div id="quality-container" class="hidden quality-container">
           <p class="quality-subheader">Transcoder Manifest submitted successfully!<p>
-          <p>
+          <p class="hidden">
             <span>Now you can visit</span>&nbsp;
             <span><a id="provision-link" target="_blank" class="quality-link">URL HERE</a></span>
             <span>to view your Provision.</span>
@@ -125,7 +126,6 @@
       </div>
     {{> footer}}
     {{> body-scripts}}
-    {{> sm-scripts}}
     <script src="index.js"></script>
   </body>
 </html>
