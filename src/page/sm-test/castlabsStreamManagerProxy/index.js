@@ -304,7 +304,7 @@ const encryptedPlayback = async () => {
   const { preferWhipWhep } = configuration
   const { WHEPClient, RTCSubscriber } = red5prosdk
   try {
-    const config = getConfiguration(false, 'red5pro-encrypted', false)
+    const config = getConfiguration(!preferWhipWhep, 'red5pro-encrypted', false)
     encryptedSubscriber = preferWhipWhep
       ? new WHEPClient()
       : new RTCSubscriber()
@@ -354,7 +354,7 @@ const decryptPlayback = async () => {
     })
     rtcDrmConfigure(drmConfig)
 
-    const config = getConfiguration(true, 'red5pro-subscriber', true)
+    const config = getConfiguration(!preferWhipWhep, 'red5pro-subscriber', true)
     subscriber = preferWhipWhep ? new WHEPClient() : new RTCSubscriber()
     await subscriber.init(config)
     subscriber.on('WebRTC.PeerConnection.Available', () => {
