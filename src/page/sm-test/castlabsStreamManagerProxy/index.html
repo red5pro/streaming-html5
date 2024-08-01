@@ -101,19 +101,25 @@
                 <option value="Staging" selected>Staging</option>
               </select>
 
-              <label for="merchant-input">Merchant:</label>
-              <input id="merchant-input" name="key-input" value="red5" placeholder="Merchant" />
-
-              <label for="scheme-select">Encryption Scheme:</label>
+              <label for="scheme-select">Encrypt Mode:</label>
               <select id="scheme-select" name="scheme-select">
-                <option value="cbcs" selected>CBCS</option>
-                <option value="cenc">CENC</option>
+                <option value="ctr">AES-CTR</option>
+                <option value="cbc" selected>AES-CBC</option>
               </select>
 
-              <label for="key-input" title="16 bytes in hex format">Key Id:</label>
-              <input id="key-input" name="key-input" value="00000000000000000000000000000001" placeholder="Key Id" style="width:18em" />
-              <label for="iv-input" title="16 bytes in hex format">IV:</label>
-              <input id="iv-input" name="iv-input" value="d5fbd6b82ed93e4ef98ae40931ee33b7" placeholder="IV" style="width:18em" />
+              <label for="decrypt-select">Decrypt Mode:</label>
+              <select id="decrypt-select" name="decrypt-select">
+                <option value="1">ClearKey</option>
+                <option value="2" selected>Production DRM</option>
+              </select>
+
+              <label for="merchant-input" class="prod-drm-field">DRMtoday Merchant:</label>
+              <input id="merchant-input" class="prod-drm-field" name="merchant-input" value="red5" placeholder="Merchant" style="width:18em" />
+              <label for="key-id-input" class="prod-drm-field">DRMtoday Key Id:</label>
+              <input id="key-id-input" class="prod-drm-field" name="key-id-input" value="00000000000000000000000000000001" placeholder="Key Id" style="width:18em" />
+              <label for="iv-input" class="prod-drm-field" title="16 bytes in hex format">IV:</label>
+              <input id="iv-input" class="prod-drm-field" name="iv-input" value="d5fbd6b82ed93e4ef98ae40931ee33b7" placeholder="IV" style="width:18em" />
+
             </div>
             <div style="background-color: black;">
               <video id="red5pro-subscriber"
