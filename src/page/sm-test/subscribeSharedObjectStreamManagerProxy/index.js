@@ -163,18 +163,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     console.log('[Red5ProSubsriber] Unsubscribe Complete.')
   }
 
-  function getRegionIfDefined() {
-    var region = configuration.streamManagerRegion
-    if (
-      typeof region === 'string' &&
-      region.length > 0 &&
-      region !== 'undefined'
-    ) {
-      return region
-    }
-    return undefined
-  }
-
   function getAuthenticationParams() {
     var auth = configuration.authentication
     return auth && auth.enabled
