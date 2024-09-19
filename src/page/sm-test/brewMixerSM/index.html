@@ -1,0 +1,1823 @@
+<!doctype html>
+<html>
+<head>
+<title>BrewMixer Demo</title>
+
+<!-- Recommended shim for cross-browser WebRTC support. -->
+<script src="https://webrtchacks.github.io/adapter/adapter-latest.js"></script>
+<script src="/live/lib/red5pro/red5pro-sdk.min.js"></script>
+
+<!-- Default Red5 Pro Playback Control styles. -->
+<link href="/live/lib/red5pro/red5pro-media.css" rel="stylesheet">
+
+<style>
+.hidden {
+	visibility: hidden;
+}
+
+.border {
+	border: 1px solid white;
+	border-radius: 0.2rem;
+}
+
+.padded {
+	padding: 10px;
+}
+
+.centerContents {
+	justify-content: center;
+	text-align: center;
+}
+
+.container {
+	display: flex;
+}
+
+.panSlider {
+	width: 45px;
+	height: 10px;
+}
+
+.offscreen {
+	position: absolute;
+	left: -1024px;
+	top: -1024px;
+}
+
+.inlineBlock {
+	display: inline-block
+}
+
+.canvas {
+	position: absolute;
+	top: 0;
+	left: 0;
+	z-index: 10; //
+	background-color: rgba(255, 0, 0, 0.5);
+}
+
+label, button, fieldset, input, legend, select, textarea {
+	-webkit-appearance: none;
+	-moz-appearance: none;
+	appearance: none;
+	background-color: transparent;
+	font-size: 16px;
+	font-weight: 700;
+	border: 10;
+	padding: 10;
+	margin-bottom: 10px;
+	box-sizing: border-box;
+	display: block;
+}
+
+label {
+	font-size: 12px;
+}
+
+input:focus, textarea:focus {
+	color: #ffffff;
+}
+
+input, select, textarea {
+	border: 1px solid #a6a6a6;
+	color: #a6a6a6;
+	border-radius: 0.2rem;
+	margin: 10;
+	background-color: #000000;
+}
+
+.mybutton {
+	background: #80ff44;
+	color: #000000;
+	padding: 8px 18px;
+	border-radius: 999px;
+	border: 10;
+}
+
+.mybutton:active {
+	color: #ff6666;
+}
+
+@font-face {
+	font-display: swap;
+	font-family: GeneralSans-Variable;
+	font-style: normal;
+	font-weight: 200 700;
+	src: url(media/GeneralSans-Variable.65a7e76e15a342e2ed8f.woff2)
+		format("woff2"),
+		url(media/GeneralSans-Variable.bc2b124702cdb8b3b38b.woff)
+		format("woff"),
+		url(media/GeneralSans-Variable.d7facbbe2ed9ae4aae49.ttf)
+		format("truetype")
+}
+
+@font-face {
+	font-display: swap;
+	font-family: GeneralSans-VariableItalic;
+	font-style: italic;
+	font-weight: 200 700;
+	src: url(media/GeneralSans-VariableItalic.8d45d5d416206c70daeb.woff2)
+		format("woff2"),
+		url(media/GeneralSans-VariableItalic.e4ae865b18351f51feb9.woff)
+		format("woff"),
+		url(media/GeneralSans-VariableItalic.37a2c9e4ec944dec5059.ttf)
+		format("truetype")
+}
+
+@font-face {
+	font-display: swap;
+	font-family: GeneralSans-Extralight;
+	font-style: normal;
+	font-weight: 200;
+	src: url(media/GeneralSans-Extralight.d6a4332df60f058537bf.woff2)
+		format("woff2"),
+		url(media/GeneralSans-Extralight.efc4ce019c1e039a0ca4.woff)
+		format("woff"),
+		url(media/GeneralSans-Extralight.e9e1615018c62dee6364.ttf)
+		format("truetype")
+}
+
+@font-face {
+	font-display: swap;
+	font-family: GeneralSans-ExtralightItalic;
+	font-style: italic;
+	font-weight: 200;
+	src: url(media/GeneralSans-ExtralightItalic.3d55e7e4573d13e89567.woff2)
+		format("woff2"),
+		url(media/GeneralSans-ExtralightItalic.637cc7b537db1b5556d0.woff)
+		format("woff"),
+		url(media/GeneralSans-ExtralightItalic.f2b0d5013d4b60046410.ttf)
+		format("truetype")
+}
+
+@font-face {
+	font-display: swap;
+	font-family: GeneralSans-Light;
+	font-style: normal;
+	font-weight: 300;
+	src: url(media/GeneralSans-Light.59797635a5ce50599b80.woff2)
+		format("woff2"),
+		url(media/GeneralSans-Light.705af1342b8d9e53554c.woff) format("woff"),
+		url(media/GeneralSans-Light.69935ec696c32e0cb38b.ttf)
+		format("truetype")
+}
+
+@font-face {
+	font-display: swap;
+	font-family: GeneralSans-LightItalic;
+	font-style: italic;
+	font-weight: 300;
+	src: url(media/GeneralSans-LightItalic.c8c13d9aa739ec1adb02.woff2)
+		format("woff2"),
+		url(media/GeneralSans-LightItalic.b3f37670fedaabb03a25.woff)
+		format("woff"),
+		url(media/GeneralSans-LightItalic.01f39fefaea383e46bde.ttf)
+		format("truetype")
+}
+
+@font-face {
+	font-display: swap;
+	font-family: GeneralSans-Regular;
+	font-style: normal;
+	font-weight: 400;
+	src: url(media/GeneralSans-Regular.33c07568e483102927ef.woff2)
+		format("woff2"),
+		url(media/GeneralSans-Regular.c8cfd56b3d5c42904672.woff)
+		format("woff"),
+		url(media/GeneralSans-Regular.6d91885b9c7fa66bdd05.ttf)
+		format("truetype")
+}
+
+@font-face {
+	font-display: swap;
+	font-family: GeneralSans-Italic;
+	font-style: italic;
+	font-weight: 400;
+	src: url(media/GeneralSans-Italic.8c6daf7c32037313da66.woff2)
+		format("woff2"),
+		url(media/GeneralSans-Italic.38fe83c7db536c3d94dd.woff) format("woff"),
+		url(media/GeneralSans-Italic.61b5c6351467c3e67236.ttf)
+		format("truetype")
+}
+
+@font-face {
+	font-display: swap;
+	font-family: GeneralSans-Medium;
+	font-style: normal;
+	font-weight: 500;
+	src: url(media/GeneralSans-Medium.1096c81555467a69cc16.woff2)
+		format("woff2"),
+		url(media/GeneralSans-Medium.9ff9c3429a09b987bdec.woff) format("woff"),
+		url(media/GeneralSans-Medium.c729d67488834af78b6a.ttf)
+		format("truetype")
+}
+
+@font-face {
+	font-display: swap;
+	font-family: GeneralSans-MediumItalic;
+	font-style: italic;
+	font-weight: 500;
+	src: url(media/GeneralSans-MediumItalic.8a74287fe8e26ab8bb5f.woff2)
+		format("woff2"),
+		url(media/GeneralSans-MediumItalic.be50bba710738fc9f7a6.woff)
+		format("woff"),
+		url(media/GeneralSans-MediumItalic.8eb302fc9872cba25291.ttf)
+		format("truetype")
+}
+
+@font-face {
+	font-display: swap;
+	font-family: GeneralSans-Semibold;
+	font-style: normal;
+	font-weight: 600;
+	src: url(media/GeneralSans-Semibold.23103addec2ccc9cbc17.woff2)
+		format("woff2"),
+		url(media/GeneralSans-Semibold.f7917c077957122793f6.woff)
+		format("woff"),
+		url(media/GeneralSans-Semibold.f6a5bacab0316e8117bb.ttf)
+		format("truetype")
+}
+
+@font-face {
+	font-display: swap;
+	font-family: GeneralSans-SemiboldItalic;
+	font-style: italic;
+	font-weight: 600;
+	src: url(media/GeneralSans-SemiboldItalic.b5447559b0839b0bc9bd.woff2)
+		format("woff2"),
+		url(media/GeneralSans-SemiboldItalic.36eb24d73e66df8e25a4.woff)
+		format("woff"),
+		url(media/GeneralSans-SemiboldItalic.e325608e1fa36dcac179.ttf)
+		format("truetype")
+}
+
+@font-face {
+	font-display: swap;
+	font-family: GeneralSans-Bold;
+	font-style: normal;
+	font-weight: 700;
+	src: url(media/GeneralSans-Bold.64b1bf9966a3bbb94f5c.woff2)
+		format("woff2"), url(media/GeneralSans-Bold.4d82f8e0a57d7f8de158.woff)
+		format("woff"), url(media/GeneralSans-Bold.148ea237c2c383c0be34.ttf)
+		format("truetype")
+}
+
+@font-face {
+	font-display: swap;
+	font-family: GeneralSans-BoldItalic;
+	font-style: italic;
+	font-weight: 700;
+	src: url(media/GeneralSans-BoldItalic.4a1bf4017464541f1af0.woff2)
+		format("woff2"),
+		url(media/GeneralSans-BoldItalic.62949caf7e58a37dcc10.woff)
+		format("woff"),
+		url(media/GeneralSans-BoldItalic.89074cc2992a9e354b7f.ttf)
+		format("truetype")
+}
+
+body {
+	background-color: #000000;
+	color: #FFFFFF;
+	font-family: "GeneralSans", sans-serif;
+}
+</style>
+
+
+
+<!-- https://stackoverflow.com/questions/17541614/use-images-instead-of-radio-buttons -->
+<style>
+/* HIDE RADIO */
+[type=radio] {
+	position: absolute;
+	opacity: 0;
+	width: 0;
+	height: 0;
+}
+
+/* IMAGE STYLES */
+[type=radio]+img {
+	cursor: pointer;
+}
+
+/* CHECKED STYLES */
+[type=radio]:checked+img {
+	outline: 2px solid #f00;
+}
+</style>
+
+</head>
+<body>
+	<!-------------------- Header -------------------------------->
+	<div>
+		<div>
+			<center>
+				<img src="media/Red5_Truetime.png" width="200" height="67"
+					style="vertical-align: top" /> <font size="18">TrueTime&trade;
+					Multiview for Production</font>
+			</center>
+		</div>
+	</div>
+
+	<!-------------------- Video Player -------------------------->
+	<div id="playerContainer" class="hidden centerContents">
+
+		<video id="red5pro-subscriber" autoplay>
+		</video>
+		<!-- Exposes `red5prosdk` on the window global. -->
+		<canvas class="canvas" id="videoOverlay"></canvas>
+	</div>
+
+	<!-------------------- NodeGraph Controls -------------------------->
+	<div id="startComp">
+		<div>
+			<h3>Start New Mixer</h3>
+		</div>
+		<div class="container">
+			<div class="border padded">
+				<form>
+					<label> event ID: <input type="text" id="eventIdField"
+						name="eventIdField" size="30" value="event1">
+					</label> <label> mixer output stream GUID: <input type="text"
+						id="mixerGuidField" name="mixerGuidField" size="30"
+						value="brewmixer/mix1">
+					</label> <label> width: <input type="text" id="outputWidth"
+						size="4" value="1920"> height: <input type="text"
+						id="outputHeight" size="4" value="1080">
+					</label> <label> bitrate: <input type="text" id="bitrate" size="10"
+						value="7000000">
+					</label> <label> max bitrate: <input type="text" id="maxbitrate"
+						size="10" value="10000000">
+					</label> <label> qpMin: <input type="text" id="qpmin" size="4"
+						value="28"> qpMax: <input type="text" id="qpmax" size="4"
+						value="48">
+					</label> <label> framerate: <input type="text" id="framerate"
+						size="3" value="30">
+					</label> <label> audiorate: <input type="text" id="audiorate"
+						size="5" value="48000">
+					</label> <input type="button" class="mybutton" onclick="newMixer()"
+						value="New Mixer">
+				</form>
+			</div>
+		</div>
+	</div>
+
+	<div id="videoControls" class="container hidden">
+		<table border="0" width="100%">
+			<tr>
+				<td width="33%" valign="top">
+					<div id="layout">
+						<div>
+							<b>Layout</b>
+						</div>
+						<div>
+							<table>
+								<tr>
+									<td><label> <input type="radio" name="layout"
+											value="2" checked> <img src="2x2.png" alt="2x2">
+									</label></td>
+
+									<td><label> <input type="radio" name="layout"
+											value="3"> <img src="3x3.png" alt="3x3">
+									</label></td>
+
+									<td><label> <input type="radio" name="layout"
+											value="4" size="3"> <img src="4x4.png" alt="4x4">
+									</label></td>
+
+									<td><label> <input type="radio" name="layout"
+											value="6" size="3"> <img src="6x4.png" alt="6x4">
+									</label></td>
+							</table>
+						</div>
+					</div>
+				</td>
+				<!-- td width="33%" valign="top">
+					<div id="swapper">
+						<div><b>Swap</b></div>
+						<table>
+						<tr>
+							<td valign="bottom"><input type="number" id="swapFrom" value="1" size="4" maxlength="2"></td>
+							<td><label>
+								with
+								<input type="number" id="swapTo" value="18" size="4" maxlength="2" min="0" max="19">
+							</label></td>
+						</tr>
+						<tr><td align="right" colspan="2">
+						<input type="button" class="mybutton" id="swapGo" value="Go" onClick="swap()">
+						</td></tr>
+						</table>
+					</div>
+				</td -->
+				<td width="50%" valign="top">
+					<div>
+						<b>Audio</b>
+					</div> <input type="button" class="mybutton" id="toggleMute"
+					value="Toggle Mute" onClick="toggleMute()">
+				</td>
+				<td>
+					<button type="button" class="mybutton" onclick="stopMixer()">Stop
+						Mixer</button>
+				</td>
+			</tr>
+		</table>
+	</div>
+
+
+	<div id="activeTreeBox" class="hidden offscreen">
+		<div>
+			<h2>Active RenderTree N</h2>
+			<textarea id="activeNodeGraph" rows="80" cols="45">
+			</textarea>
+		</div>
+		<div>
+			<input type="button" class="mybutton" id="submitUserTree"
+				value="Submit" onClick="submitUserTree()">
+		</div>
+	</div>
+
+
+
+	<div class="hidden offscreen">
+		<textarea id="defaultNodeGraph" rows="80" cols="45">
+[
+  {
+    "rootVideoNode": {
+      "nodes": [
+        {
+          "red": 0,
+          "green": 0,
+          "blue": 0,
+          "alpha": 1,
+          "node": "SolidColorNode"
+        },
+        {
+          "node": "VideoSourceNode",
+          "streamGuid": "live/stream1",
+          "sourceX": 0,
+          "sourceY": 0,
+          "sourceWidth": 1920,
+          "sourceHeight": 1080,
+          "destX": 0,
+          "destY": 0,
+          "destWidth": 960,
+          "destHeight": 540
+        },
+        {
+          "node": "VideoSourceNode",
+          "streamGuid": "live/stream2",
+          "sourceX": 0,
+          "sourceY": 0,
+          "sourceWidth": 1920,
+          "sourceHeight": 1080,
+          "destX": 960,
+          "destY": 0,
+          "destWidth": 960,
+          "destHeight": 540
+        },
+        {
+          "node": "VideoSourceNode",
+          "streamGuid": "live/stream3",
+          "sourceX": 0,
+          "sourceY": 0,
+          "sourceWidth": 1920,
+          "sourceHeight": 1080,
+          "destX": 0,
+          "destY": 540,
+          "destWidth": 960,
+          "destHeight": 540
+        },
+        {
+          "node": "VideoSourceNode",
+          "streamGuid": "live/stream4",
+          "sourceX": 0,
+          "sourceY": 0,
+          "sourceWidth": 1920,
+          "sourceHeight": 1080,
+          "destX": 960,
+          "destY": 540,
+          "destWidth": 960,
+          "destHeight": 540
+        }
+      ],
+      "node": "CompositorNode"
+    },
+    "rootAudioNode": {
+      "nodes": [
+        {
+          "streamGuid": "live/stream1",
+          "pan": 0,
+          "gain": -6,
+          "node": "AudioSourceNode"
+        },
+        {
+          "streamGuid": "live/stream2",
+          "pan": 0,
+          "gain": -100,
+          "node": "AudioSourceNode"
+        },
+        {
+          "streamGuid": "live/stream3",
+          "pan": 0,
+          "gain": -100,
+          "node": "AudioSourceNode"
+        },
+        {
+          "streamGuid": "live/stream4",
+          "pan": 0,
+          "gain": -100,
+          "node": "AudioSourceNode"
+        }
+      ],
+      "node": "SumNode"
+    }
+  }
+]
+		</textarea>
+	</div>
+
+
+
+	<script>
+		var globalNodeGraph = null;
+		var canvas = document.getElementById('videoOverlay');
+
+		
+		
+		const urlParams = new URLSearchParams(window.location.search);
+		var host = location.hostname; 
+		var eventId = "event1";
+		var streamGuid = urlParams.get('mixer');
+		var streamPath = "";
+		var streamName = "";
+		var gridWidth = 2;
+		var guids = []; // mapping (list) of grid position (index = j * width + i) to stream name
+		
+
+		
+		
+		
+		const OverlayStates = {
+				NOT_RUNNING: 0,
+				IDLE: 1,
+				ZOOMING: 2,
+				ZOOMED_IN: 3,
+				SELECTED: 4,
+				RESIZING: 5,
+				MOVING: 6
+			}
+	
+		const Direction = {
+				EAST: 0,
+				NORTHEAST: 1,
+				NORTH: 2,
+				NORTHWEST: 3,
+				WEST: 4,
+				SOUTHWEST: 5,
+				SOUTH: 6,
+				SOUTHEAST: 7
+		}
+		
+		// value is 8, because you can drag all diractions, plus drag handle.
+		const MOVE_HANDLE = 8;
+			
+		var curState = OverlayStates.NOT_RUNNING;
+		
+		var selectedNode = null;
+		
+		var zoomNode = null;
+		var zoomInitial = null;
+		var zoomT = 0.0;
+		var zoomIncr = 0.15;
+		
+		var audioSet = new Set();
+		audioSet.add("live/stream1"); // to match the default nodegraph
+		
+		var isMouseDown = false;
+		var dragTarget = null;
+		var dragX, dragY;
+		
+		
+		// "stream1" through "stream16"
+		// const STREAM_REGEX = /^stream((1[0-6]?)|([1-9]))\b/
+		// "stream1" through "stream12"
+		const STREAM_REGEX = /^stream((1[0-2]?)|([1-9]))\b/
+		
+		var swapped = new Map();
+		var swapAvail = [];
+		
+	
+		// ============= DRAWING FUNCTIONS ===============
+		
+
+		function drawMoveHandle(ctx, drawParams) {
+			// =================================
+			// circular drag handle
+			ctx.beginPath();
+			ctx.ellipse(drawParams.centerX, drawParams.centerY, 64, 64, 0, 0, 360);
+			ctx.stroke();
+		}
+		
+		function drawEastResize(ctx, drawParams) {
+				// =================================
+				// right
+				ctx.fillRect(drawParams.x + drawParams.width - 8, drawParams.y + drawParams.quarterHeight + 4, 4, drawParams.halfHeight - 8);
+				
+				// arrow
+				ctx.beginPath();
+				ctx.moveTo(drawParams.x + drawParams.width - 12, drawParams.y + drawParams.halfHeight);
+				ctx.lineTo(drawParams.x + drawParams.width - 12 - 48, drawParams.y + drawParams.halfHeight + 32);
+				ctx.lineTo(drawParams.x + drawParams.width - 12 - 48, drawParams.y + drawParams.halfHeight - 32);
+				ctx.fill();
+		}
+		
+		function drawNortheastResize(ctx, drawParams) {
+				// =================================
+				// upper right corner
+				ctx.fillRect(drawParams.x + drawParams.halfWidth + drawParams.quarterWidth + 4, drawParams.y + 4, drawParams.quarterWidth - 8, 4);
+				ctx.fillRect(drawParams.x + drawParams.width - 8, drawParams.y + 4, 4, drawParams.quarterHeight - 8);
+				
+				// arrow
+				ctx.beginPath();
+				ctx.moveTo(drawParams.x + drawParams.width - 12, drawParams.y + 12);
+				ctx.lineTo(drawParams.x + drawParams.width - 12 - 11, drawParams.y + 12 + 56);
+				ctx.lineTo(drawParams.x + drawParams.width - 12 - 56, drawParams.y + 12 + 11);
+				ctx.fill();
+		}
+		
+		function drawNorthResize(ctx, drawParams) {
+				// =================================
+				// top
+				ctx.fillRect(drawParams.x + drawParams.quarterWidth + 4, drawParams.y + 4, drawParams.halfWidth - 8, 4);
+				
+				// arrow
+				ctx.beginPath();
+				ctx.moveTo(drawParams.centerX, drawParams.y + 12);
+				ctx.lineTo(drawParams.centerX - 32, drawParams.y + 12 + 48);
+				ctx.lineTo(drawParams.centerX + 32, drawParams.y + 12 + 48);
+				ctx.fill();
+		}
+		
+		function drawNorthwestResize(ctx, drawParams) {
+				// =================================
+				// upper left corner
+				ctx.fillRect(drawParams.x + 4, drawParams.y + 4, 4, drawParams.quarterHeight - 8);
+				ctx.fillRect(drawParams.x + 4, drawParams.y + 4, drawParams.quarterWidth - 8, 4);
+				
+				// arrow
+				ctx.beginPath();
+				ctx.moveTo(drawParams.x + 12, drawParams.y + 12);
+				ctx.lineTo(drawParams.x + 12 + 11, drawParams.y + 12 + 56);
+				ctx.lineTo(drawParams.x + 12 + 56, drawParams.y + 12 + 11);
+				ctx.fill();
+		}
+		
+		function drawWestResize(ctx, drawParams) {
+				// =================================
+				// left
+				ctx.fillRect(drawParams.x + 4, drawParams.y + drawParams.quarterHeight + 4, 4, drawParams.halfHeight - 8);
+				
+				// arrow
+				ctx.beginPath();
+				ctx.moveTo(drawParams.x + 12, drawParams.y + drawParams.halfHeight);
+				ctx.lineTo(drawParams.x + 12 + 48, drawParams.y + drawParams.halfHeight + 32);
+				ctx.lineTo(drawParams.x + 12 + 48, drawParams.y + drawParams.halfHeight - 32);
+				ctx.fill();
+		}
+		
+		function drawSouthwestResize(ctx, drawParams) {
+				// =================================
+				// lower left corner
+				ctx.fillRect(drawParams.x + 4, drawParams.y + drawParams.height - 8, drawParams.quarterWidth - 8, 4);
+				ctx.fillRect(drawParams.x + 4, drawParams.y + drawParams.halfHeight + drawParams.quarterHeight + 4, 4, drawParams.quarterHeight - 8);
+				
+				// arrow
+				ctx.beginPath();
+				ctx.moveTo(drawParams.x + 12, drawParams.y + drawParams.height - 12);
+				ctx.lineTo(drawParams.x + 12 + 11, drawParams.y + drawParams.height - 12 - 56);
+				ctx.lineTo(drawParams.x + 12 + 56, drawParams.y + drawParams.height - 12 - 11);
+				ctx.fill();
+		}
+		
+		function drawSouthResize(ctx, drawParams) {
+				// =================================
+				// bottom
+				ctx.fillRect(drawParams.x + drawParams.quarterWidth + 4, drawParams.y + drawParams.height - 8, drawParams.halfWidth - 8, 4);
+				
+				// arrow
+				ctx.beginPath();
+				ctx.moveTo(drawParams.centerX, drawParams.y + drawParams.height - 12);
+				ctx.lineTo(drawParams.centerX - 32, drawParams.y + drawParams.height - 12 - 48);
+				ctx.lineTo(drawParams.centerX + 32, drawParams.y + drawParams.height - 12 - 48);
+				ctx.fill();
+		}
+		
+		function drawSoutheastResize(ctx, drawParams) {
+				// =================================
+				// lower right corner
+				ctx.fillRect(drawParams.x + drawParams.halfWidth + drawParams.quarterWidth + 4, drawParams.y + drawParams.height - 8, drawParams.quarterWidth - 8, 4);
+				ctx.fillRect(drawParams.x + drawParams.width - 8, drawParams.y + drawParams.halfHeight + drawParams.quarterHeight + 4, 4, drawParams.quarterHeight - 8);
+				
+				// arrow
+				ctx.beginPath();
+				ctx.moveTo(drawParams.x + drawParams.width - 12, drawParams.y + drawParams.height - 12);
+				ctx.lineTo(drawParams.x + drawParams.width - 12 - 11, drawParams.y + drawParams.height - 12 - 56);
+				ctx.lineTo(drawParams.x + drawParams.width - 12 - 56, drawParams.y + drawParams.height - 12 - 11);
+				ctx.fill();
+		}
+		
+		function drawMicrophone(ctx, drawParams) {
+				// =================================
+				// microphone 				
+				ctx.beginPath();
+				ctx.arc(drawParams.centerX + drawParams.quarterWidth, drawParams.centerY, 16, 2 * Math.PI, Math.PI);
+				ctx.arc(drawParams.centerX + drawParams.quarterWidth, drawParams.centerY - 32, 16, Math.PI, 0);
+				ctx.fill();
+				
+				ctx.beginPath();
+				ctx.arc(drawParams.centerX + drawParams.quarterWidth, drawParams.centerY, 26, 2 * Math.PI, Math.PI);
+				ctx.moveTo(drawParams.centerX + drawParams.quarterWidth, drawParams.centerY + 26);
+				ctx.lineTo(drawParams.centerX + drawParams.quarterWidth, drawParams.centerY + 26 + 16);
+				ctx.moveTo(drawParams.centerX + drawParams.quarterWidth - 20, drawParams.centerY + 26 + 16);
+				ctx.lineTo(drawParams.centerX + drawParams.quarterWidth + 20, drawParams.centerY + 26 + 16)
+				ctx.stroke();
+		}
+		
+		function drawSwapIcon(ctx, drawParams) {
+			// =================================
+			// swap icon
+			ctx.fillRect(drawParams.centerX - drawParams.quarterWidth - 15, drawParams.centerY - 15 - 3, 45, 3);
+			ctx.beginPath();
+			ctx.moveTo(drawParams.centerX - drawParams.quarterWidth - 15, drawParams.centerY - 15);
+			ctx.lineTo(drawParams.centerX - drawParams.quarterWidth - 15, drawParams.centerY - 15 - 12);
+			ctx.lineTo(drawParams.centerX - drawParams.quarterWidth - 30, drawParams.centerY - 15)
+			ctx.fill();
+			
+			ctx.fillRect(drawParams.centerX - drawParams.quarterWidth - 30, drawParams.centerY + 15, 45, 3);
+			ctx.beginPath();
+			ctx.moveTo(drawParams.centerX - drawParams.quarterWidth + 15, drawParams.centerY + 15);
+			ctx.lineTo(drawParams.centerX - drawParams.quarterWidth + 15, drawParams.centerY + 15 + 12);
+			ctx.lineTo(drawParams.centerX - drawParams.quarterWidth + 30, drawParams.centerY + 15)
+			ctx.fill();
+		}
+		
+		function lerp(a, b, t) {
+			return a * (1.0 - t) + b * t;
+		}
+		
+		// ============= DRAWING FUNCTIONS ===============
+
+		
+		function setState(newState) {
+			var prevState = curState;
+			curState = newState;
+			
+			if (curState == OverlayStates.NOT_RUNNING) {
+				// hide overlay completely.
+				// disable controls
+				// disable highlight
+				// disable zoom flag
+			} else if (curState == OverlayStates.IDLE) {
+				// make sure all control states are hidden/idle
+			} else if (curState == OverlayStates.ZOOMING) {
+				// no-op?
+			} else if (curState == OverlayStates.ZOOMED_IN) {
+				// also no-op?
+			} else if (curState == OverlayStates.SELECTED) {
+				// show overlay controls (disable highlight)
+			} else if (curState == OverlayStates.RESIZING) {
+				// highlight the active resize control
+			} else if (curState == OverlayStates.MOVING) {
+				// highlight the drag handle
+			}
+
+			//console.log("set state: " + newState);
+			drawCanvas();
+		}
+		
+		function calculateDrawParams() {
+			var x = selectedNode.destX;
+			var y = selectedNode.destY;
+			var width = selectedNode.destWidth;
+			var height = selectedNode.destHeight;
+			var centerX = lerp(x, x + width, 0.5);
+			var centerY = lerp(y, y + height, 0.5);
+			
+			var halfWidth = width / 2;
+			var halfHeight = height / 2;
+			var quarterWidth = width / 4;
+			var quarterHeight = height / 4;
+
+			var drawParams = { x, y, width, height, centerX, centerY, halfWidth, halfHeight, quarterWidth, quarterHeight };
+
+			return drawParams;
+		}
+		
+		function drawCanvas() {
+			const ctx = canvas.getContext("2d");
+			ctx.fillStyle = "rgba(0,0,0,0)";
+			ctx.clearRect(0,0, canvas.width, canvas.height);
+			//console.log("clear canvas.")
+			
+			if (curState == OverlayStates.NOT_RUNNING) {
+				// no-op; hide overlay completely.
+			} else if (curState == OverlayStates.IDLE) {
+				// no-op; hide overlay completely.
+			} else if (curState == OverlayStates.ZOOMING) {
+				// no-op? overlay hidden
+			} else if (curState == OverlayStates.ZOOMED_IN) {
+				// also no-op? overlay hidden
+			} else if (curState == OverlayStates.SELECTED) {
+				// show overlay controls (disable highlight)
+				
+				ctx.setTransform(1, 0, 0, 1, 0, 0);
+				ctx.lineWidth = 4;
+				ctx.strokeStyle = "rgba(255,255,255,255)";
+				ctx.fillStyle = "rgba(255,255,255,255)";
+				
+				const drawParams = calculateDrawParams();
+				drawMoveHandle(ctx, drawParams);
+//				drawEastResize(ctx, drawParams);
+				drawNortheastResize(ctx, drawParams);
+//				drawNorthResize(ctx, drawParams);
+				drawNorthwestResize(ctx, drawParams);
+//				drawWestResize(ctx, drawParams);
+				drawSouthwestResize(ctx, drawParams);
+//				drawSouthResize(ctx, drawParams);
+				drawSoutheastResize(ctx, drawParams);
+				
+				
+				// if mic active
+				if (audioSet.has(selectedNode.streamGuid)) {
+					ctx.strokeStyle = "rgba(68,160,255,255)";
+					ctx.fillStyle = "rgba(68,160,255,255)";
+				}
+				drawMicrophone(ctx, drawParams);
+				
+				// if swap active
+				if (swapped.has(selectedNode.streamGuid)) {
+					ctx.strokeStyle = "rgba(68,160,255,255)";
+					ctx.fillStyle = "rgba(68,160,255,255)";
+				} else {
+					// else, active mic might have changed the color to blue; if so, here we change it back to white
+					ctx.strokeStyle = "rgba(255,255,255,255)";
+					ctx.fillStyle = "rgba(255,255,255,255)";
+				} 
+				
+				// swap streams only when not showing 4x4 grid
+				// (in a 4x4 grid all 16 streams are shown, but the demo only has 16 streams total)
+				if (gridWidth < 4) {
+					drawSwapIcon(ctx, drawParams);
+				}
+				
+				
+				//console.log("drawCanvas SELECTED");
+				//console.log(`canvas size: ${canvas.width}, ${canvas.height}`);
+			} else if (curState == OverlayStates.RESIZING || curState == OverlayStates.MOVING) {
+				// highlight the active resize control
+				
+				// first draw in white
+				ctx.setTransform(1, 0, 0, 1, 0, 0);
+				ctx.lineWidth = 4;
+				ctx.strokeStyle = "rgba(255,255,255,255)";
+				ctx.fillStyle = "rgba(255,255,255,255)";
+
+				const drawParams = calculateDrawParams();
+
+				drawMoveHandle(ctx, drawParams);
+//				drawEastResize(ctx, drawParams);
+				drawNortheastResize(ctx, drawParams);
+//				drawNorthResize(ctx, drawParams);
+				drawNorthwestResize(ctx, drawParams);
+//				drawWestResize(ctx, drawParams);
+				drawSouthwestResize(ctx, drawParams);
+//				drawSouthResize(ctx, drawParams);
+				drawSoutheastResize(ctx, drawParams);
+				
+				
+				// XXX mic TBD
+				drawMicrophone(ctx, drawParams);
+
+				if (gridWidth < 4) {
+					drawSwapIcon(ctx, drawParams);
+				}
+
+				ctx.strokeStyle = "rgba(68,160,255,255)";
+				ctx.fillStyle = "rgba(68,160,255,255)";
+				
+				if (dragTarget == Direction.EAST) {
+					drawEastResize(ctx, drawParams);
+				} else if (dragTarget == Direction.NORTHEAST) {
+					drawNortheastResize(ctx, drawParams);
+				} else if (dragTarget == Direction.NORTH) {
+					drawNorthResize(ctx, drawParams);
+				} else if (dragTarget == Direction.NORTHWEST) {
+					drawNorthwestResize(ctx, drawParams);
+				} else if (dragTarget == Direction.WEST) {
+					drawWestResize(ctx, drawParams);
+				} else if (dragTarget == Direction.SOUTHWEST) {
+					drawSouthwestResize(ctx, drawParams);
+				} else if (dragTarget == Direction.SOUTH) {
+					drawSouthResize(ctx, drawParams);
+				} else if (dragTarget == Direction.SOUTHEAST) {
+					drawSoutheastResize(ctx, drawParams);
+				} else if (dragTarget == MOVE_HANDLE) {
+					drawMoveHandle(ctx, drawParams);					
+				}
+			} else if (curState == OverlayStates.MOVING) {
+				// highlight the drag handle
+			}
+		}
+		
+		
+		function hitBox(x, y, rectX, rectY, width, height) {
+			return (x >= rectX && x < (rectX + width) && y >= rectY && y < (rectY + height));
+		}
+		
+		function hitCircle(x, y, circX, circY, radius) {
+			const dx = circX - x;
+			const dy = circY - y;
+			return dx * dx + dy * dy <= radius * radius;
+		}
+		
+		function nodeAt(x, y) {
+			var result = null;
+	        const videoNodes = globalNodeGraph.rootVideoNode.nodes;
+	        for (i = videoNodes.length - 1; i >= 0; i--) {
+	        	const node = videoNodes[i];
+	        	if (hitBox(x, y, node.destX, node.destY, node.destWidth, node.destHeight)) {
+	        		result = node;
+	        		break;
+	        	}
+	        }
+			return result;
+		}
+		
+		function getVideoNodeByName(streamGuid) {
+			var result = null;
+	        const videoNodes = globalNodeGraph.rootVideoNode.nodes;
+	        for (i = videoNodes.length - 1; i >= 0; i--) {
+				if (videoNodes[i].streamGuid === streamGuid) {
+					result = videoNodes[i];
+					break;
+				}
+	        }
+	        return result;
+		}
+		
+		function getAudioNodeByName(streamGuid) {
+			var result = null;
+	        const audioNodes = globalNodeGraph.rootAudioNode.nodes;
+	        for (i = audioNodes.length - 1; i >= 0; i--) {
+				if (audioNodes[i].streamGuid === streamGuid) {
+					result = audioNodes[i];
+					break;
+				}
+	        }
+	        return result;
+			
+		}
+		
+		function setGain(streamGuid, gain) {
+	        const audioNodes = globalNodeGraph.rootAudioNode.nodes;
+			for (const node of audioNodes) {
+				if (node.streamGuid === streamGuid) {
+					node.gain = gain;
+					
+					updateServerNodeGraph();
+					break;
+				}
+			}
+		}
+		
+		
+		function logSwapAvail() {
+			console.log("--swapAvail--");
+			for (const s of swapAvail) {
+				console.log("  " + s);
+			}
+			console.log("-------------");
+		}
+		
+		function clickCanvas(event) {
+			console.log(`click at ${event.clientX}, ${event.clientY}, cur state ${curState} -- detail: ${event.detail}`);
+			if (event.detail == 1) { // if single-click
+				if (curState == OverlayStates.IDLE || curState == OverlayStates.SELECTED) {			
+					const x = event.clientX - canvas.getBoundingClientRect().left;
+					const y = event.clientY - canvas.getBoundingClientRect().top;
+			        
+			        var node = nodeAt(x, y);
+			        if (node != null && curState == OverlayStates.IDLE) {
+	        			selectedNode = node;
+	    				videoNodeToTop(selectedNode);
+	    				updateServerNodeGraph();
+	        			setState(OverlayStates.SELECTED);		        	
+			        } else if (curState == OverlayStates.SELECTED) {
+	        			var handled = false;
+	    				if (node == selectedNode) {
+	        				handled = true;
+		    				const drawParams = calculateDrawParams();
+		    				
+		        			// - microphone
+		        			if (hitBox(x, y, drawParams.centerX + drawParams.quarterWidth - 28, drawParams.centerY - 45, 56, 90)) {
+		        				if (audioSet.has(selectedNode.streamGuid)) {
+		        					audioSet.delete(selectedNode.streamGuid);
+		        					setGain(selectedNode.streamGuid, -100);
+		        				} else {
+		        					audioSet.add(selectedNode.streamGuid);
+		        					setGain(selectedNode.streamGuid, -6);
+		        				}
+		        				drawCanvas();
+		        			}
+		        			// - swap
+		        			else if (hitBox(x, y, drawParams.centerX - drawParams.quarterWidth - 30, drawParams.centerY - 30, 60, 60)) {
+		        				console.log("swap " + selectedNode.streamGuid);
+		        				
+		        				if (swapped.has(selectedNode.streamGuid)) {
+		        					const swap = selectedNode.streamGuid;
+		        					const prev = swapped.get(selectedNode.streamGuid);
+		        					swapped.delete(swap);
+		        					selectedNode.streamGuid = prev;
+		        					console.log("swapping back to " + prev)
+		        					
+		        					audioNode = getAudioNodeByName(swap);
+		        					audioNode.streamGuid = prev;
+		        					
+		        					updateServerNodeGraph();
+			        				drawCanvas();
+		        				} else {
+		        					// update swap avail
+		        					fetchSwapStreams().then(streamList => {
+		        						swapAvail = []
+		        						for (const stream of streamList) {
+		        							if (!swapped.has(stream)) {
+				        						swapAvail.push(stream);
+		        							}
+		        						}
+
+		        						logSwapAvail();
+				        				if (swapAvail.length > 0 && gridWidth < 4) {
+				        					const swap = swapAvail.pop();
+				        					const prev = selectedNode.streamGuid; 
+				        					swapped.set(swap, prev);
+				        					selectedNode.streamGuid = swap;
+				        					
+				        					audioNode = getAudioNodeByName(prev);
+				        					audioNode.streamGuid = swap;
+
+				        					updateServerNodeGraph();
+				        				} else {
+				        					if (swapAvail.length == 0) {
+				        						console.log("don't swap: no swap stream available.")
+				        					} else if (gridWidth >= 4) {
+				        						console.log("don't swap: large layout")
+				        					}
+				        				}
+				        				drawCanvas();
+									});
+		        				}		        				
+		        			}
+	    				}
+	
+			        	if (!handled) {
+		        			// if no hit, click outside selected: deselect
+		        			setState(OverlayStates.IDLE);
+	    				}
+			        }
+				}
+			} else {
+				console.log("ignore click, state: " + curState);
+			}
+		}
+		
+		function updateZoom() {
+			var w0 = zoomInitial.destWidth;
+			var h0 = zoomInitial.destHeight;
+			var x0 = zoomInitial.destX;;
+			var y0 = zoomInitial.destY;;
+				
+			var x1 = 0.0;
+			var y1 = 0.0;
+			var w1 = canvas.width;
+			var h1 = canvas.height;
+		
+			var x = lerp(x0, x1, zoomT);
+			var y = lerp(y0, y1, zoomT);
+			var w = lerp(w0, w1, zoomT);
+			var h = lerp(h0, h1, zoomT);
+			
+			zoomNode.destX = x;
+			zoomNode.destY = y;
+			zoomNode.destWidth = w;
+			zoomNode.destHeight = h;
+			
+			updateServerNodeGraph();
+		}
+		
+		function doZoom() {
+			console.log("doZoom() -- zoomT: " + zoomT);
+			zoomT += zoomIncr;
+			
+			if (zoomT > 0 && zoomT < 1) {				
+				// update node params
+				updateZoom();
+
+				// repeat
+				setTimeout(doZoom, 30);
+			} 
+			
+			// if, after that, we're out of bounds, then we're done
+			if (zoomT < 0 || zoomT > 1)  {
+				// update node params with end values
+				zoomT = Math.max(Math.min(zoomT, 1.0), 0.0);
+				updateZoom();
+
+				// next state
+				if (zoomIncr > 0) {
+					setState(OverlayStates.ZOOMED_IN);
+				} else {
+					setState(OverlayStates.IDLE);
+				}
+				
+				console.log("done zooming");
+			}
+		}
+		
+		
+		// move this video node to the end of the list, on top of all others.
+		function videoNodeToTop(node) {
+	        const videoNodes = globalNodeGraph.rootVideoNode.nodes;
+	        var nodeIndex = -1;
+	        for (i = videoNodes.length - 1; i >= 0; i--) {
+	        	if (videoNodes[i] == node) {
+	        		nodeIndex = i;
+	        		break;
+	        	}
+	        }
+	        
+	        if (nodeIndex >= 0) {
+	        	// move the node from nodeIndex to (videoNodes.length - 1) [the end of the array]
+	        	videoNodes.splice(videoNodes.length - 1, 0, videoNodes.splice(nodeIndex, 1)[0]);
+	        }
+	        else { // else : not found
+	        	console.log("node not found");
+	        }
+		}
+		
+		function doubleClickCanvas(event) {
+			console.log(`doubleClickCanvas at ${event.clientX}, ${event.clientY}, cur state ${curState}`);
+    		if (curState == OverlayStates.IDLE || curState == OverlayStates.SELECTED) {
+				const x = event.clientX - canvas.getBoundingClientRect().left;
+				const y = event.clientY - canvas.getBoundingClientRect().top;
+
+				var node = nodeAt(x, y);
+		        if (node) {
+    				// start zooming in
+    				zoomNode = node;
+    				videoNodeToTop(node);
+    				zoomInitial = structuredClone(node);
+    				zoomT = 0.0;
+    				zoomIncr = 0.14;
+    				setState(OverlayStates.ZOOMING);
+    				updateServerNodeGraph();
+    				setTimeout(doZoom, 30);
+    				
+		        }
+		        // else, they clicked empty space: no-op
+    		} else if (curState == OverlayStates.ZOOMED_IN) {
+    			// start zooming out
+				zoomT = 1.0;
+				zoomIncr = -0.14;
+				setState(OverlayStates.ZOOMING);
+				setTimeout(doZoom, 30);
+    		}
+			
+		}
+		
+		function onMouseDown(event) {
+			isMouseDown = false; // true only when dragging 
+
+			if (curState == OverlayStates.SELECTED) {
+				const x = event.clientX - canvas.getBoundingClientRect().left;
+				const y = event.clientY - canvas.getBoundingClientRect().top;
+//				console.log(`onMouseDown at ${event.clientX}, ${event.clientY}, cur state ${curState}`);
+				
+				// if in state SELECTED, check if we clicked a drag handle inside the selected video
+				const drawParams = calculateDrawParams();
+				var dragging = false;
+				if (hitCircle(x, y, drawParams.centerX, drawParams.centerY, 70)) {
+					dragTarget = MOVE_HANDLE;
+					isMouseDown = true;
+					
+					setState(OverlayStates.MOVING);
+				} else if (hitBox(x,y, drawParams.x, drawParams.y, 70, 70)) {
+					dragTarget = Direction.NORTHWEST;
+					dragging = true;
+				} else if (hitBox(x,y, drawParams.x + drawParams.width - 70, drawParams.y, 70, 70)) {
+					dragTarget = Direction.NORTHEAST;
+					dragging = true;
+				} else if (hitBox(x, y, drawParams.x + drawParams.width - 70, drawParams.y + drawParams.height - 70, 70, 70)) {
+					dragTarget = Direction.SOUTHEAST;
+					dragging = true;
+				} else if (hitBox(x, y, drawParams.x, drawParams.y + drawParams.height - 70, 70, 70)) {
+					dragTarget = Direction.SOUTHWEST;
+					dragging = true;
+				}
+				
+				if (dragging) {
+					dragX = x - drawParams.x;
+					dragY = y - drawParams.y;
+					
+    				zoomInitial = structuredClone(selectedNode);
+					isMouseDown = true;
+					setState(OverlayStates.RESIZING);
+				}
+			}
+		}
+		
+		function onMouseUp(event) {
+//			console.log(`onMouseUp at ${event.clientX}, ${event.clientY}, cur state ${curState}`);
+			isMouseDown = false;
+			if (curState == OverlayStates.RESIZING || curState == OverlayStates.MOVING) {
+				setState(OverlayStates.SELECTED);
+			}
+		}
+		
+		function onMouseLeave(event) {
+//			console.log(`onMouseLeave at ${event.clientX}, ${event.clientY}, cur state ${curState}`);
+			
+		}
+		
+		function onMouseOut(event) {
+//			console.log(`onMouseOut at ${event.clientX}, ${event.clientY}, cur state ${curState}`);
+			
+		}
+		
+		function onMouseMove(event) {
+			if (isMouseDown) {
+//				console.log(`onMouseMove a ${event.clientX}, ${event.clientY}, cur state ${curState}`);
+				
+				if (curState == OverlayStates.MOVING && dragTarget == MOVE_HANDLE) {
+					const x = event.clientX - canvas.getBoundingClientRect().left;
+					const y = event.clientY - canvas.getBoundingClientRect().top;
+					const drawParams = calculateDrawParams();
+					
+					selectedNode.destX = x - drawParams.halfWidth;
+					selectedNode.destY = y - drawParams.halfHeight;
+					
+					drawCanvas();
+
+					updateServerNodeGraph();
+				} else if (curState == OverlayStates.RESIZING) {
+					const x = event.clientX - canvas.getBoundingClientRect().left;
+					const y = event.clientY - canvas.getBoundingClientRect().top;
+					const drawParams = calculateDrawParams();
+					
+					if (dragTarget == Direction.NORTHWEST) {
+						var dx = x - drawParams.x - dragX;
+						var dy = y - drawParams.y - dragX;
+						
+						selectedNode.destX = x - dragX;
+						selectedNode.destY = y - dragY;
+						
+						
+						var w = (zoomInitial.destX - selectedNode.destX) + zoomInitial.destWidth; 
+						var h = (zoomInitial.destY - selectedNode.destY) + zoomInitial.destHeight; 
+						
+						selectedNode.destWidth = w;
+						selectedNode.destHeight = h;
+						drawCanvas();
+						
+						updateServerNodeGraph();
+					} else if (dragTarget == Direction.NORTHEAST) {
+						var w = x - drawParams.x;
+						var dy = y - drawParams.y - dragX;
+						
+						selectedNode.destY = y - dragY;
+						var h = (zoomInitial.destY - selectedNode.destY) + zoomInitial.destHeight; 
+						
+						selectedNode.destWidth = w;
+						selectedNode.destHeight = h;
+						drawCanvas();
+						
+						updateServerNodeGraph();
+					} else if (dragTarget == Direction.SOUTHWEST) {
+						var dx = x - drawParams.x - dragX;
+						selectedNode.destX = x - dragX;
+
+						var w = (zoomInitial.destX - selectedNode.destX) + zoomInitial.destWidth; 
+						var h = y - drawParams.y;
+						
+						selectedNode.destWidth = w;
+						selectedNode.destHeight = h;
+						drawCanvas();
+						
+						updateServerNodeGraph();
+					} else if (dragTarget == Direction.SOUTHEAST) {
+						var w = x - drawParams.x;
+						var h = y - drawParams.y;
+						
+						selectedNode.destWidth = w;
+						selectedNode.destHeight = h;
+						drawCanvas();
+						
+						updateServerNodeGraph();
+						
+					}
+				} else {
+//					console.log(`mouse moving but some other state, cur state ${curState}`);
+				}
+			} else {
+//				console.log(`mouse moving but not mouse down, cur state ${curState}`);
+			}	
+		}
+		
+		function initCanvasEvents() {			 
+			 canvas.addEventListener('click', clickCanvas);
+			 canvas.addEventListener('dblclick', doubleClickCanvas);
+			 
+			 canvas.addEventListener('mousedown', onMouseDown);
+			 canvas.addEventListener('mouseup', onMouseUp);
+			 canvas.addEventListener('mouseleave', onMouseLeave);
+			 canvas.addEventListener('mouseout', onMouseOut);
+			 canvas.addEventListener('mousemove', onMouseMove);
+		}		
+
+		
+		
+		function initStreamGuid() {
+			if (!streamGuid) {
+				streamGuid = "live/mix1";
+			}
+
+			var lastI = (!streamGuid) ? 0 : streamGuid.lastIndexOf("/")
+			streamPath = (!streamGuid) ? "" : streamGuid.substring(0, lastI);
+			streamName = (!streamGuid) ? "" : streamGuid.substring(lastI + 1);
+			
+			mixerGuidField.value = streamGuid;
+		}
+		initStreamGuid(); // and invoke it right away
+
+		if (!host) {
+			host = "localhost";
+		}
+		
+		
+        // add an event listener for the change event
+        const radioButtons = document.querySelectorAll('input[name="layout"]');
+        for(const radioButton of radioButtons){
+            radioButton.addEventListener('change', radioClick);
+        }
+        
+        function radioClick(e) {
+        	if (this.checked) {
+        		reGrid(this.value);
+        		setState(OverlayStates.IDLE);
+        		swapped.clear();
+        		swapAvail = [];
+    			fetchSwapStreams().then(streamList => {swapAvail.concat(streamList);});
+	       	}
+        }
+        
+	
+		// https://stackoverflow.com/questions/14603205/how-to-convert-hex-string-into-a-bytes-array-and-a-bytes-array-in-the-hex-strin
+		function hexToBytes(hex) {
+			for (var bytes = [], c = 0; c < hex.length; c += 2)
+			bytes.push(parseInt(hex.substr(c, 2), 16));
+			return bytes;
+		}
+		
+		function bytesToHex(bytes) {
+			for (var hex = [], i = 0; i < bytes.length; i++) {
+				var current = bytes[i] < 0 ? bytes[i] + 256 : bytes[i];
+				hex.push((current >>> 4).toString(16));
+				hex.push((current & 0xF).toString(16));
+			}
+			return hex.join("");
+		}
+
+		// send the globalNodeGraph to the server
+		function innerUpdateServerNodeGraph() {
+			var xhttp = new XMLHttpRequest();
+			xhttp.onreadystatechange = function() {
+			  if (this.readyState == 4) {
+				  if (this.status == 200) {
+//				console.log("innerUpdateServerNodeGraph response: " + this.responseText);
+				  } else {
+			        	try {
+			        		const responseObj = JSON.parse(xhttp.response);
+			        		console.log("Errror:\n", JSON.stringify(responseObj, null, 4)); // pretty
+			        	} catch (e) {
+				            console.log("Error:\n", xhttp.response);
+			        	}
+				  }
+			  }
+			};
+			const url = "/brewmixer/1.0/" + eventId;
+			console.log("PUT " + url);
+			xhttp.open("PUT", url, false); // false: one at a time, synchronous, wait for response
+			xhttp.setRequestHeader("Content-type", "application/json");
+
+			var jsonRequest = JSON.stringify({
+				"rootNodes": [globalNodeGraph]
+			}); // the request contains an array of one nodegraph
+			console.log("update request: " + jsonRequest);
+			xhttp.send(jsonRequest);		
+			activeNodeGraph.value = JSON.stringify(globalNodeGraph, null, 2);
+		}
+		
+		// update the globalNodeGraph from UI, and THEN send it to the server
+		function updateServerNodeGraph() {
+			innerUpdateServerNodeGraph();
+		}
+		
+		
+		// lay the videos out in a grid of sideLength x sideLength cells
+		// we assume all input videos are streaming, and named stream1 through streamn
+		// and that each input is 1280x720.
+		// and that the mixer is also 1280x720
+		function reGrid(sideLength) {
+			gridWidth = sideLength;
+			gridHeight = (sideLength <= 4) ? sideLength : 4 // special case for 6x4 grid;
+			
+			var cellWidth;
+			var cellHeight;
+			var xOffset;
+			if (sideLength <= 4) {
+				cellSourceWidth = canvas.width;
+				cellSourceHeight = canvas.height;
+				cellWidth = canvas.width / gridWidth;
+				cellHeight= canvas.height / gridHeight;
+				xOffset = 0;
+			} else {
+				// this is a special case where we know the source videos are SQUARE
+				cellSourceWidth = 720;
+				cellSourceHeight = 720;
+				cellHeight= canvas.height / gridHeight;
+				cellWidth = cellHeight;
+				
+				xOffset = 0.5 * (canvas.width - cellWidth * gridWidth)
+			}
+			
+			globalNodeGraph.rootVideoNode.nodes.length = 1; // clear the array, but keep the first node (the SolidColorNode)
+			globalNodeGraph.rootAudioNode.nodes.length = 0; // clear the source audio nodes (this keeps the SumNode at rootAudioNode.node)
+			for (j = 0; j < gridHeight; j++) {
+				for (i = 0; i < gridWidth; i++) {
+					index = j * sideLength + i + 1; // +1: the first node is SolidColorNode so the video nodes begin at index 1.
+
+					var sName = guids[j * gridWidth + i];
+					
+					var cell = {};
+					cell.node = "VideoSourceNode";
+					cell.streamGuid = sName;
+					cell.sourceX = 0;
+					cell.sourceY = 0;
+					cell.sourceWidth = cellSourceWidth;
+					cell.sourceHeight = cellSourceHeight;
+					cell.destX = xOffset + cellWidth * i;
+					cell.destY = cellHeight * j;
+					cell.destWidth = cellWidth;
+					cell.destHeight = cellHeight;
+					
+					
+					globalNodeGraph.rootVideoNode.nodes.push(cell);
+					
+					var acell = {};
+					acell.streamGuid = sName;
+					acell.pan = 0;
+					
+					
+					if (audioSet.has(cell.streamGuid)) {
+						acell.gain = -6.0;
+					} else {
+						acell.gain = -100;
+					}
+					
+					acell.node = "AudioSourceNode";
+					globalNodeGraph.rootAudioNode.nodes.push(acell);
+					
+//					console.log(`${globalNodeGraph.rootVideoNode.nodes[index].streamGuid} at (${i},${j}): (${cellWidth * i}, ${cellHeight * j}) with gain ${acell.gain}`);
+				}
+			}
+			updateServerNodeGraph();
+		}
+		
+
+		function stopMixer() {
+			if (window.confirm("Really stop mixer and end stream?")) {
+				console.log("Really stop mixer and end stream.");
+				var xhttp = new XMLHttpRequest();
+				xhttp.onreadystatechange = function() {
+					if (this.readyState == 4) {
+						if (this.status == 200) {
+							console.log("stopMixer response: OK");
+						} else {
+				        	try {
+				        		const responseObj = JSON.parse(xhttp.response);
+				        		console.log("Errror:\n", JSON.stringify(responseObj, null, 4)); // pretty
+				        	} catch (e) {
+					            console.log("Error:\n", this.status, e, xhttp.response);
+				        	}
+						}
+					}
+				};
+				const url = "/brewmixer/1.0/" + eventId;
+				console.log("DELETE " + url);
+				xhttp.open("DELETE", url, true);
+				xhttp.setRequestHeader("Content-type", "application/json");
+				xhttp.send();
+			}
+		}
+		
+		async function newMixer() {
+			// parse mixer stream GUID and set global path/name vars
+			streamGuid = mixerGuidField.value;
+			initStreamGuid();
+			
+			// start the mixer
+			var xhttp = new XMLHttpRequest();
+			xhttp.onreadystatechange = async function() {
+				if (this.readyState == 4) {
+					if (this.status == 201) {
+						console.log("newMixer response: " + this.responseText);
+						
+						// create the default nodegraph
+						globalNodeGraph = JSON.parse(defaultNodeGraph.value)[0];
+						innerUpdateServerNodeGraph();
+						
+						// sleep before subscribe
+						await new Promise(r => setTimeout(r, 1000));
+						
+						// init / start subscription
+						init();
+					} else if (xhttp.status >= 300) {
+			        	try {
+			        		const responseObj = JSON.parse(xhttp.response);
+			        		console.log("Errror:\n", JSON.stringify(responseObj, null, 4)); // pretty
+			        	} catch (e) {
+				            console.log("Error:\n", xhttp.response);
+			        	}
+					}
+		        }
+
+			};
+			
+			eventId = document.getElementById("eventIdField").value
+			outputWidth = document.getElementById("outputWidth").value
+			outputHeight = document.getElementById("outputHeight").value
+			bitrate = document.getElementById("bitrate").value
+			qpmin = document.getElementById("qpmin").value
+			qpmax = document.getElementById("qpmax").value
+			maxbitrate = document.getElementById("maxbitrate").value
+			framerate = document.getElementById("framerate").value
+			audiorate = document.getElementById("audiorate").value
+			
+			const url = "/brewmixer/1.0/" + eventId;
+			console.log("POST " + url);
+			xhttp.open("POST", url, true);
+			xhttp.setRequestHeader("Content-type", "application/json");
+
+			xhttp.send(JSON.stringify(
+				{
+					"eventId": eventId,
+					"streamGuid": streamPath + "/" + streamName,
+					"width": outputWidth,
+					"height": outputHeight,
+					"frameRate": framerate,
+					"bitRate": bitrate,
+					"maxBitRate": maxbitrate,
+					"qpMin": qpmin,
+					"qpMax": qpmax,
+					"audioSampleRate": audiorate,
+					"audioChannels": 2,
+					"subMixes": 1
+				}				
+			));
+
+			/*
+			xhttp.send("action=start&doForward=true&sessionId=" + streamName //
+					+ "&mixerDigest=" + "anything" // this is not used in standalone context (only when clustered)
+					+ "&originIP=" + "127.0.0.1" //
+					+ "&event=" + streamName //
+					+ "&path=" + streamPath //
+					+ "&streamName=" + streamName //
+					+ "&width=" + outputWidth //
+					+ "&height=" + outputHeight //
+					+ "&bitrate=" + bitrate //
+					+ "&qpmin=" + qpmin //
+					+ "&qpmax=" + qpmax //
+					+ "&maxbitrate=" + maxbitrate //
+					+ "&framerate=" + framerate //
+					+ "&audioSampleRate=" + audiorate //
+					+ "&audioChannels=" + 2 // always stereo
+					+ "&submixes=" + 1); // only one output mixer
+					*/
+		}
+		
+		
+		
+		// Local subscriber lifecycle notifications.
+		function onSubscriberEvent(event, name) {
+//			console.log("subscriber event: " + event.type)
+		    if (event.type !== 'Subscribe.Time.Update') {
+//		        console.log('[Red5ProSubscriber] ' + event.type + '.');
+		        if (event.type === 'Subscribe.VideoDimensions.Change') {
+		        	sizeCanvas(event.data.width, event.data.height);
+		        	setState(OverlayStates.IDLE);
+		        } else if (event.type === 'Subscribe.Stop' || event.type === 'Subscribe.Fail' || event.type === 'Subscribe.Connection.Closed') {
+		        	setState(OverlayStates.NOT_RUNNING);
+		        }
+		    }
+		}
+		
+		function startSubscription() {
+			// Create a new instance of the WebRTC subcriber.
+			var subscriber = new red5prosdk.RTCSubscriber();
+	
+			const wsProtocol = (location.protocol === 'https:') ? "wss" : "ws";
+			const wsPort = (location.port) ? location.port : ((location.protocol === 'https:') ? 443 : 5080);
+
+			// Initialize
+			subscriber.init({
+				protocol: wsProtocol,
+				port: wsPort,
+				host: host,
+				app: streamPath,
+				streamName: streamName,
+				rtcConfiguration: {
+				iceServers: [{urls: 'stun:stun2.l.google.com:19302'}],
+				iceCandidatePoolSize: 2,
+				bundlePolicy: 'max-bundle'
+				}, // See https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/RTCPeerConnection#RTCConfiguration_dictionary
+				mediaElementId: 'red5pro-subscriber',
+				subscriptionId: streamName + Math.floor(Math.random() * 0x10000).toString(16),
+				videoEncoding: 'NONE',
+				audioEncoding: 'NONE'
+			})
+			.then(function(subscriber) {
+				// `subcriber` is the WebRTC Subscriber instance.
+		        subscriber.on('*', function(event){
+		          onSubscriberEvent(event);
+		        });
+				return subscriber.subscribe();
+			})
+			.then(function(subscriber) {
+				// subscription is complete.
+				// playback should begin immediately due to
+				//   declaration of `autoplay` on the `video` element.
+			})
+			.catch(function(error) {
+				// A fault occurred while trying to initialize and playback the stream.
+				console.error(error)
+			});
+		}
+
+		function toggleMute() {
+			const vid = document.getElementById("red5pro-subscriber");
+			vid.muted = !vid.muted;			
+		}
+		
+ 		async function fetchNodeGraph() {
+			const port = (location.port) ? ":" + location.port : "";
+			const url = location.protocol + "//" + host + port + "/brewmixer/1.0/" + eventId;
+			console.log("GET " + url);
+			const response = await fetch(url).catch((error) => { console.log("hey i caught this error: " + error) });
+			
+			var result = null;
+			if (response.ok) {
+				result = await response.json(); 
+				// console.log("NODEGRAPH RESPONSE: " + JSON.stringify(result, null, 4));
+			} else {
+				console.log("NODEGRAPH RESPONSE ERROR " + response.status);				
+			}
+			
+			if (result) {
+				activeNodeGraph.value = JSON.stringify(result[0], null, 2);
+			}
+			
+			return result;
+		}
+ 		
+ 		async function fetchSwapStreams() {
+			const port = (location.port) ? ":" + location.port : "";
+			var accessToken = new URLSearchParams(window.location.search).get("accessToken");
+			if (!accessToken) {
+				accessToken = "abc123";
+			}
+			const url = location.protocol + "//" + host + port + "/api/v1/applications/live/streams?accessToken=" + accessToken;
+			console.log("GET " + url);
+ 			const response = await fetch(url).catch((error) => { console.log("hey i caught this error: " + error) });
+ 			const json = await response.json();
+			
+			var result = []
+			for (const stream of json.data) {
+				// exclude the streams matching the regex, and the mixer's own output stream
+				// (if you include the mixer output stream as a swap stream, you'll get a hall of mirrors)
+				if (!STREAM_REGEX.test(stream) && stream !== streamName /* mixer stream name -- comment out for hall of mirrors */) {
+					result.push("live/" + stream);
+				}
+			}
+			
+			return result;
+ 		}
+
+		function sizeCanvas(width, height) {
+			canvas.style.width =  width + "px";
+			canvas.width = width
+			canvas.style.height = height + "px";
+			canvas.height = height
+
+			const vid = document.getElementById("red5pro-subscriber");
+			const vidStyleData = vid.getBoundingClientRect();
+			const xOffset = vidStyleData.left + window.pageXOffset;
+			const yOffset = vidStyleData.top + window.pageYOffset;
+			canvas.style.left = xOffset + "px";
+			canvas.style.top = yOffset + "px";
+			
+			console.log(`resize canvas to ${width}x${height} at (${vidStyleData.left}, ${vidStyleData.top}) -- page offset: ${window.pageXOffset} ${window.pageYOffset}`);
+			
+			drawCanvas();
+		}
+ 		
+		function resizeOverlayCanvas() { 
+			const vid = document.getElementById("red5pro-subscriber");
+			const vidStyleData = vid.getBoundingClientRect();
+			console.log('resizeOverlayCanvas()');
+			sizeCanvas(vidStyleData.width, vidStyleData.height);	
+		}
+		
+		
+		function submitUserTree() {
+			// get contents of text box
+			globalNodeGraph = JSON.parse(activeNodeGraph.value);
+			updateServerNodeGraph();
+		}
+		
+		function init() {
+			for (i = 0; i < 25; i++) {
+				guids[i] = "live/stream"+ (i + 1);
+			}
+
+			//resizeOverlayCanvas();
+			window.addEventListener("resize", resizeOverlayCanvas);
+			
+			
+			const resizeObserver = new ResizeObserver((entries) => {
+					    for (const entry of entries) {
+					        if (entry.borderBoxSize?.length > 0) {
+					            sizeCanvas(
+					                entry.borderBoxSize[0].inlineSize,
+					                entry.borderBoxSize[0].blockSize,
+					            );
+					        } else {
+					            sizeCanvas(
+					                entry.contentRect.width,
+					                entry.contentRect.height,
+					            );
+					        }
+					    }
+					});
+			
+			resizeObserver.observe(document.getElementById("red5pro-subscriber"));
+			
+			
+			
+			initCanvasEvents();
+			
+			// first, use the query params and try to get the nodegraph for the specified stream (if any).
+			// if it exists, start subscription, show controls etc
+			// [if it doesn't exist, only show the Start New Mixer controls (default behavior for simplicity)]
+			fetchNodeGraph().then(nodeGraph => {
+				if (nodeGraph) {
+					// show controls
+					startComp.classList.toggle("hidden", force=true);
+					startComp.classList.toggle("offscreen", force=true);
+					// stopComp.classList.toggle("hidden", force=false);
+					playerContainer.classList.toggle("hidden", force=false);
+					videoControls.classList.toggle("hidden", force=false);			
+					
+					activeTreeBox.classList.toggle("hidden", force=false);					
+					activeTreeBox.classList.toggle("offscreen", force=false);
+					
+					
+					// assign the global ref
+					globalNodeGraph = nodeGraph[0];
+					
+					// start subscription;
+					startSubscription();
+				}
+			});
+			
+			fetchSwapStreams().then(streamList => {swapAvail.concat(streamList);});
+			
+			
+			// if they stop the mixer, hide the other controls and revert to only New Mixer controls.
+			// rely on the subscriber client to stop on its own.
+		}
+		
+		
+		window.onload = init;
+	</script>
+
+</body>
+</html>
+
