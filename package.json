@@ -38,8 +38,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "clean:build": "rm -rf build",
     "clean:dist": "rm -rf dist",
-    "prebuild": "./scripts/inject-license.sh",
-    "build": "NODE_ENV=develop gulp build",
+    "build": "gulp build",
     "predist": "npm run clean:dist && npm run prebuild",
     "dist": "gulp bump-version && NODE_ENV=production gulp build",
     "dist:webapp": "NODE_ENV=production gulp build:webapp"

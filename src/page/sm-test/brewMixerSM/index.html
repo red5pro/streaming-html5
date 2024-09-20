@@ -1,15 +1,56 @@
 <!doctype html>
+{{> license}}
 <html>
-<head>
-<title>BrewMixer Demo</title>
+  <head>
+    {{> meta title='BrewMixer Demo SM'}}
+    {{> header-scripts}}
+    {{> header-stylesheets}}
+    <style>
+      .section {
+        max-width: unset!important;
+      }
+      .container {
+        display: flex;
+        justify-content: center;
+        column-gap: 20px;
+        flex-wrap: wrap;
+        row-gap: 20px;
+      }
 
-<!-- Recommended shim for cross-browser WebRTC support. -->
-<script src="https://webrtchacks.github.io/adapter/adapter-latest.js"></script>
-<script src="/live/lib/red5pro/red5pro-sdk.min.js"></script>
+      .info-title {
+        padding: 20px 10px;
+        box-sizing: border-box;
+        background-color: #eeee;
+      }
+      .paddedHR {
+        margin: 0!important;
+        margin-top: 10px;
+      }
+      .nsettings {
+        display: grid;
+        grid-template-columns: max-content max-content;
+        grid-gap: 10px;
+        background-color: #eeee;
+        padding: 20px;
+        justify-content: center;
+        align-items: center;
+      }
 
-<!-- Default Red5 Pro Playback Control styles. -->
-<link href="/live/lib/red5pro/red5pro-media.css" rel="stylesheet">
+      .nsettings label {
+        text-align: right;
+      }
 
+      .nsettings input, .nsettings select {
+        font-size: 1em;
+        height: 1.8em;
+      }
+
+      .controls-container {
+        background-color: #eee;
+        padding: 20px;
+      }
+    </style>
+    
 <style>
 .hidden {
 	visibility: hidden;
@@ -52,7 +93,7 @@
 	position: absolute;
 	top: 0;
 	left: 0;
-	z-index: 10; //
+	z-index: 10; 
 	background-color: rgba(255, 0, 0, 0.5);
 }
 
@@ -97,7 +138,9 @@ input, select, textarea {
 .mybutton:active {
 	color: #ff6666;
 }
+</style>
 
+<!-- 
 @font-face {
 	font-display: swap;
 	font-family: GeneralSans-Variable;
@@ -274,7 +317,9 @@ input, select, textarea {
 		url(media/GeneralSans-BoldItalic.89074cc2992a9e354b7f.ttf)
 		format("truetype")
 }
+-->
 
+<style>
 body {
 	background-color: #000000;
 	color: #FFFFFF;
@@ -304,14 +349,20 @@ body {
 	outline: 2px solid #f00;
 }
 </style>
+    
+  </head>
+  <body>
+    {{> top-bar }}
+    <div id="app">
+      {{> settings-link}}
+      {{> test-info testTitle='BrewMixer Demo Stream Manager'}}
 
-</head>
-<body>
+
 	<!-------------------- Header -------------------------------->
 	<div>
 		<div>
 			<center>
-				<img src="media/Red5_Truetime.png" width="200" height="67"
+				<img src="../../images/Red5_Truetime.png" width="200" height="67"
 					style="vertical-align: top" /> <font size="18">TrueTime&trade;
 					Multiview for Production</font>
 			</center>
@@ -373,19 +424,19 @@ body {
 							<table>
 								<tr>
 									<td><label> <input type="radio" name="layout"
-											value="2" checked> <img src="2x2.png" alt="2x2">
+											value="2" checked> <img src="../../images/2x2.png" alt="2x2">
 									</label></td>
 
 									<td><label> <input type="radio" name="layout"
-											value="3"> <img src="3x3.png" alt="3x3">
+											value="3"> <img src="../../images/3x3.png" alt="3x3">
 									</label></td>
 
 									<td><label> <input type="radio" name="layout"
-											value="4" size="3"> <img src="4x4.png" alt="4x4">
+											value="4" size="3"> <img src="../../images/4x4.png" alt="4x4">
 									</label></td>
 
 									<td><label> <input type="radio" name="layout"
-											value="6" size="3"> <img src="6x4.png" alt="6x4">
+											value="6" size="3"> <img src="../../images/6x4.png" alt="6x4">
 									</label></td>
 							</table>
 						</div>
@@ -536,11 +587,12 @@ body {
 	</div>
 
 
+	<script src="brewmixer.js"></script>
 
 	<script>
 		var globalNodeGraph = null;
 		var canvas = document.getElementById('videoOverlay');
-
+		var jwt = null;
 		
 		
 		const urlParams = new URLSearchParams(window.location.search);
@@ -552,9 +604,11 @@ body {
 		var gridWidth = 2;
 		var guids = []; // mapping (list) of grid position (index = j * width + i) to stream name
 		
-
 		
-		
+		// XXX not sure how to get these from config yet, but they should come from settings
+		var streamManagerUser = "admin";
+		var streamManagerPassword = "xyz123";
+		var nodeGroupName = "nate1";
 		
 		const OverlayStates = {
 				NOT_RUNNING: 0,
@@ -983,7 +1037,7 @@ body {
 				if (node.streamGuid === streamGuid) {
 					node.gain = gain;
 					
-					updateServerNodeGraph();
+					brewmixer.updateRenderTrees(jwt, nodeGroupName, eventId, [globalNodeGraph]);
 					break;
 				}
 			}
@@ -1009,7 +1063,7 @@ body {
 			        if (node != null && curState == OverlayStates.IDLE) {
 	        			selectedNode = node;
 	    				videoNodeToTop(selectedNode);
-	    				updateServerNodeGraph();
+	    				brewmixer.updateRenderTrees(jwt, nodeGroupName, eventId, [globalNodeGraph]);
 	        			setState(OverlayStates.SELECTED);		        	
 			        } else if (curState == OverlayStates.SELECTED) {
 	        			var handled = false;
@@ -1042,7 +1096,7 @@ body {
 		        					audioNode = getAudioNodeByName(swap);
 		        					audioNode.streamGuid = prev;
 		        					
-		        					updateServerNodeGraph();
+		        					brewmixer.updateRenderTrees(jwt, nodeGroupName, eventId, [globalNodeGraph]);
 			        				drawCanvas();
 		        				} else {
 		        					// update swap avail
@@ -1064,7 +1118,7 @@ body {
 				        					audioNode = getAudioNodeByName(prev);
 				        					audioNode.streamGuid = swap;
 
-				        					updateServerNodeGraph();
+				        					brewmixer.updateRenderTrees(jwt, nodeGroupName, eventId, [globalNodeGraph]);
 				        				} else {
 				        					if (swapAvail.length == 0) {
 				        						console.log("don't swap: no swap stream available.")
@@ -1110,7 +1164,7 @@ body {
 			zoomNode.destWidth = w;
 			zoomNode.destHeight = h;
 			
-			updateServerNodeGraph();
+			brewmixer.updateRenderTrees(jwt, nodeGroupName, eventId, [globalNodeGraph]);
 		}
 		
 		function doZoom() {
@@ -1178,7 +1232,7 @@ body {
     				zoomT = 0.0;
     				zoomIncr = 0.14;
     				setState(OverlayStates.ZOOMING);
-    				updateServerNodeGraph();
+    				brewmixer.updateRenderTrees(jwt, nodeGroupName, eventId, [globalNodeGraph]);
     				setTimeout(doZoom, 30);
     				
 		        }
@@ -1266,7 +1320,7 @@ body {
 					
 					drawCanvas();
 
-					updateServerNodeGraph();
+					brewmixer.updateRenderTrees(jwt, nodeGroupName, eventId, [globalNodeGraph]);
 				} else if (curState == OverlayStates.RESIZING) {
 					const x = event.clientX - canvas.getBoundingClientRect().left;
 					const y = event.clientY - canvas.getBoundingClientRect().top;
@@ -1287,7 +1341,7 @@ body {
 						selectedNode.destHeight = h;
 						drawCanvas();
 						
-						updateServerNodeGraph();
+						brewmixer.updateRenderTrees(jwt, nodeGroupName, eventId, [globalNodeGraph]);
 					} else if (dragTarget == Direction.NORTHEAST) {
 						var w = x - drawParams.x;
 						var dy = y - drawParams.y - dragX;
@@ -1299,7 +1353,7 @@ body {
 						selectedNode.destHeight = h;
 						drawCanvas();
 						
-						updateServerNodeGraph();
+						brewmixer.updateRenderTrees(jwt, nodeGroupName, eventId, [globalNodeGraph]);
 					} else if (dragTarget == Direction.SOUTHWEST) {
 						var dx = x - drawParams.x - dragX;
 						selectedNode.destX = x - dragX;
@@ -1311,7 +1365,7 @@ body {
 						selectedNode.destHeight = h;
 						drawCanvas();
 						
-						updateServerNodeGraph();
+						brewmixer.updateRenderTrees(jwt, nodeGroupName, eventId, [globalNodeGraph]);
 					} else if (dragTarget == Direction.SOUTHEAST) {
 						var w = x - drawParams.x;
 						var h = y - drawParams.y;
@@ -1320,8 +1374,7 @@ body {
 						selectedNode.destHeight = h;
 						drawCanvas();
 						
-						updateServerNodeGraph();
-						
+						brewmixer.updateRenderTrees(jwt, nodeGroupName, eventId, [globalNodeGraph]);
 					}
 				} else {
 //					console.log(`mouse moving but some other state, cur state ${curState}`);
@@ -1395,41 +1448,6 @@ body {
 			return hex.join("");
 		}
 
-		// send the globalNodeGraph to the server
-		function innerUpdateServerNodeGraph() {
-			var xhttp = new XMLHttpRequest();
-			xhttp.onreadystatechange = function() {
-			  if (this.readyState == 4) {
-				  if (this.status == 200) {
-//				console.log("innerUpdateServerNodeGraph response: " + this.responseText);
-				  } else {
-			        	try {
-			        		const responseObj = JSON.parse(xhttp.response);
-			        		console.log("Errror:\n", JSON.stringify(responseObj, null, 4)); // pretty
-			        	} catch (e) {
-				            console.log("Error:\n", xhttp.response);
-			        	}
-				  }
-			  }
-			};
-			const url = "/brewmixer/1.0/" + eventId;
-			console.log("PUT " + url);
-			xhttp.open("PUT", url, false); // false: one at a time, synchronous, wait for response
-			xhttp.setRequestHeader("Content-type", "application/json");
-
-			var jsonRequest = JSON.stringify({
-				"rootNodes": [globalNodeGraph]
-			}); // the request contains an array of one nodegraph
-			console.log("update request: " + jsonRequest);
-			xhttp.send(jsonRequest);		
-			activeNodeGraph.value = JSON.stringify(globalNodeGraph, null, 2);
-		}
-		
-		// update the globalNodeGraph from UI, and THEN send it to the server
-		function updateServerNodeGraph() {
-			innerUpdateServerNodeGraph();
-		}
-		
 		
 		// lay the videos out in a grid of sideLength x sideLength cells
 		// we assume all input videos are streaming, and named stream1 through streamn
@@ -1498,33 +1516,18 @@ body {
 //					console.log(`${globalNodeGraph.rootVideoNode.nodes[index].streamGuid} at (${i},${j}): (${cellWidth * i}, ${cellHeight * j}) with gain ${acell.gain}`);
 				}
 			}
-			updateServerNodeGraph();
+			
+			brewmixer.updateRenderTrees(jwt, nodeGroupName, eventId)
 		}
 		
 
-		function stopMixer() {
+		async function stopMixer() {
 			if (window.confirm("Really stop mixer and end stream?")) {
 				console.log("Really stop mixer and end stream.");
-				var xhttp = new XMLHttpRequest();
-				xhttp.onreadystatechange = function() {
-					if (this.readyState == 4) {
-						if (this.status == 200) {
-							console.log("stopMixer response: OK");
-						} else {
-				        	try {
-				        		const responseObj = JSON.parse(xhttp.response);
-				        		console.log("Errror:\n", JSON.stringify(responseObj, null, 4)); // pretty
-				        	} catch (e) {
-					            console.log("Error:\n", this.status, e, xhttp.response);
-				        	}
-						}
-					}
-				};
-				const url = "/brewmixer/1.0/" + eventId;
-				console.log("DELETE " + url);
-				xhttp.open("DELETE", url, true);
-				xhttp.setRequestHeader("Content-type", "application/json");
-				xhttp.send();
+				await brewmixer.stopMixerEvent(jwt, nodeGroupName, eventId);
+
+				// refresh page/reset
+				location.reload();
 			}
 		}
 		
@@ -1534,6 +1537,7 @@ body {
 			initStreamGuid();
 			
 			// start the mixer
+			/*
 			var xhttp = new XMLHttpRequest();
 			xhttp.onreadystatechange = async function() {
 				if (this.readyState == 4) {
@@ -1542,7 +1546,7 @@ body {
 						
 						// create the default nodegraph
 						globalNodeGraph = JSON.parse(defaultNodeGraph.value)[0];
-						innerUpdateServerNodeGraph();
+						brewmixer.updateRenderTrees(jwt, nodeGroupName, eventId, [globalNodeGraph]);
 						
 						// sleep before subscribe
 						await new Promise(r => setTimeout(r, 1000));
@@ -1560,7 +1564,8 @@ body {
 		        }
 
 			};
-			
+			*/
+
 			eventId = document.getElementById("eventIdField").value
 			outputWidth = document.getElementById("outputWidth").value
 			outputHeight = document.getElementById("outputHeight").value
@@ -1570,7 +1575,7 @@ body {
 			maxbitrate = document.getElementById("maxbitrate").value
 			framerate = document.getElementById("framerate").value
 			audiorate = document.getElementById("audiorate").value
-			
+		/*	
 			const url = "/brewmixer/1.0/" + eventId;
 			console.log("POST " + url);
 			xhttp.open("POST", url, true);
@@ -1592,6 +1597,44 @@ body {
 					"subMixes": 1
 				}				
 			));
+*/
+			const request = {
+					"eventId": eventId,
+					"streamGuid": streamPath + "/" + streamName,
+					"width": outputWidth,
+					"height": outputHeight,
+					"frameRate": framerate,
+					"bitRate": bitrate,
+					"maxBitRate": maxbitrate,
+					"qpMin": qpmin,
+					"qpMax": qpmax,
+					"audioSampleRate": audiorate,
+					"audioChannels": 2,
+					"subMixes": 1
+				}
+				const response = await brewmixer.createMixerEvent(jwt, nodeGroupName, request);	
+
+				if (response.ok) {
+						console.log("createMixerEvent response: " + response.text);
+						
+						// create the default nodegraph
+						globalNodeGraph = JSON.parse(defaultNodeGraph.value)[0];
+						brewmixer.updateRenderTrees(jwt, nodeGroupName, eventId, [globalNodeGraph]);
+						
+						// sleep before subscribe
+						await new Promise(r => setTimeout(r, 1000));
+						
+						// init / start subscription
+						init();
+					} else {
+			        	try {
+			        		const responseObj = JSON.parse(xhttp.response);
+			        		console.log("Error:\n", JSON.stringify(responseObj, null, 4)); // pretty
+			        	} catch (e) {
+				            console.log("Error:\n", xhttp.response);
+			        	}
+					}
+
 
 			/*
 			xhttp.send("action=start&doForward=true&sessionId=" + streamName //
@@ -1643,7 +1686,7 @@ body {
 				host: host,
 				app: streamPath,
 				streamName: streamName,
-				rtcConfiguration: {
+				rtcConfiguration: { 
 				iceServers: [{urls: 'stun:stun2.l.google.com:19302'}],
 				iceCandidatePoolSize: 2,
 				bundlePolicy: 'max-bundle'
@@ -1675,50 +1718,29 @@ body {
 			const vid = document.getElementById("red5pro-subscriber");
 			vid.muted = !vid.muted;			
 		}
-		
- 		async function fetchNodeGraph() {
+		 		
+		async function fetchSwapStreams() {
 			const port = (location.port) ? ":" + location.port : "";
-			const url = location.protocol + "//" + host + port + "/brewmixer/1.0/" + eventId;
+			const url = location.protocol + "//" + host + port + "/as/v1/streams/stream/" + nodeGroupName;
 			console.log("GET " + url);
 			const response = await fetch(url).catch((error) => { console.log("hey i caught this error: " + error) });
-			
-			var result = null;
+			var result = []
 			if (response.ok) {
-				result = await response.json(); 
-				// console.log("NODEGRAPH RESPONSE: " + JSON.stringify(result, null, 4));
+				const streams = await response.json();
+				if (streams && streams.length > 0) {
+					for (const stream of streams.data) {
+						// exclude the streams matching the regex, and the mixer's own output stream
+						// (if you include the mixer output stream as a swap stream, you'll get a hall of mirrors)
+						if (!STREAM_REGEX.test(stream) && stream !== streamName /* mixer stream name -- comment out for hall of mirrors */) {
+							result.push("live/" + stream);
+						}
+					}
+				}
 			} else {
-				console.log("NODEGRAPH RESPONSE ERROR " + response.status);				
+				console.log("RENDERTREE RESPONSE ERROR " + response.status);				
 			}
-			
-			if (result) {
-				activeNodeGraph.value = JSON.stringify(result[0], null, 2);
-			}
-			
 			return result;
 		}
- 		
- 		async function fetchSwapStreams() {
-			const port = (location.port) ? ":" + location.port : "";
-			var accessToken = new URLSearchParams(window.location.search).get("accessToken");
-			if (!accessToken) {
-				accessToken = "abc123";
-			}
-			const url = location.protocol + "//" + host + port + "/api/v1/applications/live/streams?accessToken=" + accessToken;
-			console.log("GET " + url);
- 			const response = await fetch(url).catch((error) => { console.log("hey i caught this error: " + error) });
- 			const json = await response.json();
-			
-			var result = []
-			for (const stream of json.data) {
-				// exclude the streams matching the regex, and the mixer's own output stream
-				// (if you include the mixer output stream as a swap stream, you'll get a hall of mirrors)
-				if (!STREAM_REGEX.test(stream) && stream !== streamName /* mixer stream name -- comment out for hall of mirrors */) {
-					result.push("live/" + stream);
-				}
-			}
-			
-			return result;
- 		}
 
 		function sizeCanvas(width, height) {
 			canvas.style.width =  width + "px";
@@ -1749,10 +1771,10 @@ body {
 		function submitUserTree() {
 			// get contents of text box
 			globalNodeGraph = JSON.parse(activeNodeGraph.value);
-			updateServerNodeGraph();
+			brewmixer.updateRenderTrees(jwt, nodeGroupName, eventId, [globalNodeGraph]);
 		}
 		
-		function init() {
+		async function init() {
 			for (i = 0; i < 25; i++) {
 				guids[i] = "live/stream"+ (i + 1);
 			}
@@ -1782,12 +1804,22 @@ body {
 			
 			
 			initCanvasEvents();
+
+			// XXX this JWT will expire, but we cache it forever with no strategy to update		
+	        jwt = await streamManagerUtil.authenticate(
+	    	        host,
+	    	        streamManagerUser,
+	    	        streamManagerPassword
+	    	      )
+	    	console.log("jwt: " + jwt);
 			
 			// first, use the query params and try to get the nodegraph for the specified stream (if any).
 			// if it exists, start subscription, show controls etc
 			// [if it doesn't exist, only show the Start New Mixer controls (default behavior for simplicity)]
-			fetchNodeGraph().then(nodeGraph => {
-				if (nodeGraph) {
+			brewmixer.getRenderTrees(jwt, nodeGroupName, eventId).then(renderTrees => {
+				if (renderTrees) {
+					activeNodeGraph.value = JSON.stringify(renderTrees[0], null, 2);
+					
 					// show controls
 					startComp.classList.toggle("hidden", force=true);
 					startComp.classList.toggle("offscreen", force=true);
@@ -1798,9 +1830,8 @@ body {
 					activeTreeBox.classList.toggle("hidden", force=false);					
 					activeTreeBox.classList.toggle("offscreen", force=false);
 					
-					
 					// assign the global ref
-					globalNodeGraph = nodeGraph[0];
+					globalNodeGraph = renderTrees[0];
 					
 					// start subscription;
 					startSubscription();
