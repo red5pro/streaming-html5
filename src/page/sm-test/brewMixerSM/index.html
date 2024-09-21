@@ -586,6 +586,7 @@ body {
 		</textarea>
 	</div>
 
+    {{> body-scripts}}
 
 	<script src="brewmixer.js"></script>
 
@@ -603,6 +604,47 @@ body {
 		var streamName = "";
 		var gridWidth = 2;
 		var guids = []; // mapping (list) of grid position (index = j * width + i) to stream name
+		
+		
+		// ---- subscriber junk
+		
+		  const serverSettings = (function () {
+			    const settings = sessionStorage.getItem('r5proServerSettings')
+			    try {
+			      return JSON.parse(settings)
+			    } catch (e) {
+			      console.error(
+			        'Could not read server settings from sessionstorage: ' + e.message
+			      )
+			    }
+			    return {}
+			  })()
+
+			  const configuration = (function () {
+			    const conf = sessionStorage.getItem('r5proTestBed')
+			    try {
+			      return JSON.parse(conf)
+			    } catch (e) {
+			      console.error(
+			        'Could not read testbed configuration from sessionstorage: ' + e.message
+			      )
+			    }
+			    return {}
+			  })()
+			  red5prosdk.setLogLevel(
+			    configuration.verboseLogging
+			      ? red5prosdk.LOG_LEVELS.TRACE
+			      : red5prosdk.LOG_LEVELS.WARN
+			  )
+
+  const instanceId = Math.floor(Math.random() * 0x10000).toString(16)
+			  		  const proxyLocal = window.query('local')
+		  const protocol = proxyLocal ? 'https' : serverSettings.protocol
+		  const isSecure =
+			    protocol === 'https' || window.location.hostname === 'localhost'
+
+		// ---- /subscriber junk
+
 		
 		
 		// XXX not sure how to get these from config yet, but they should come from settings
@@ -1656,63 +1698,8 @@ body {
 					*/
 		}
 		
-		
-		
-		// Local subscriber lifecycle notifications.
-		function onSubscriberEvent(event, name) {
-//			console.log("subscriber event: " + event.type)
-		    if (event.type !== 'Subscribe.Time.Update') {
-//		        console.log('[Red5ProSubscriber] ' + event.type + '.');
-		        if (event.type === 'Subscribe.VideoDimensions.Change') {
-		        	sizeCanvas(event.data.width, event.data.height);
-		        	setState(OverlayStates.IDLE);
-		        } else if (event.type === 'Subscribe.Stop' || event.type === 'Subscribe.Fail' || event.type === 'Subscribe.Connection.Closed') {
-		        	setState(OverlayStates.NOT_RUNNING);
-		        }
-		    }
-		}
-		
-		function startSubscription() {
-			// Create a new instance of the WebRTC subcriber.
-			var subscriber = new red5prosdk.RTCSubscriber();
 	
-			const wsProtocol = (location.protocol === 'https:') ? "wss" : "ws";
-			const wsPort = (location.port) ? location.port : ((location.protocol === 'https:') ? 443 : 5080);
 
-			// Initialize
-			subscriber.init({
-				protocol: wsProtocol,
-				port: wsPort,
-				host: host,
-				app: streamPath,
-				streamName: streamName,
-				rtcConfiguration: { 
-				iceServers: [{urls: 'stun:stun2.l.google.com:19302'}],
-				iceCandidatePoolSize: 2,
-				bundlePolicy: 'max-bundle'
-				}, // See https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/RTCPeerConnection#RTCConfiguration_dictionary
-				mediaElementId: 'red5pro-subscriber',
-				subscriptionId: streamName + Math.floor(Math.random() * 0x10000).toString(16),
-				videoEncoding: 'NONE',
-				audioEncoding: 'NONE'
-			})
-			.then(function(subscriber) {
-				// `subcriber` is the WebRTC Subscriber instance.
-		        subscriber.on('*', function(event){
-		          onSubscriberEvent(event);
-		        });
-				return subscriber.subscribe();
-			})
-			.then(function(subscriber) {
-				// subscription is complete.
-				// playback should begin immediately due to
-				//   declaration of `autoplay` on the `video` element.
-			})
-			.catch(function(error) {
-				// A fault occurred while trying to initialize and playback the stream.
-				console.error(error)
-			});
-		}
 
 		function toggleMute() {
 			const vid = document.getElementById("red5pro-subscriber");
@@ -1774,6 +1761,11 @@ body {
 			brewmixer.updateRenderTrees(jwt, nodeGroupName, eventId, [globalNodeGraph]);
 		}
 		
+		</script>
+		
+		<script src="subscriber.js" ></script>
+		
+		<script>
 		async function init() {
 			for (i = 0; i < 25; i++) {
 				guids[i] = "live/stream"+ (i + 1);
@@ -1848,6 +1840,7 @@ body {
 		
 		window.onload = init;
 	</script>
+	
 
 </body>
 </html>

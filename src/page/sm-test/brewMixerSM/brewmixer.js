@@ -53,9 +53,15 @@ getRenderTrees: async function (jwt, nodeGroupName, eventId) {
 // send the globalNodeGraph to the server
 // note that renderTrees is an array 
 updateRenderTrees: async function (jwt, nodeGroupName, eventId, renderTrees) {
-	const url = "as/v1/streams/mixer/" + nodeGroupName + "/" + eventId;
+	const url = "/as/v1/streams/mixer/" + nodeGroupName + "/" + eventId;
 	console.log("PUT " + url);
-	
+
+	const body = JSON.stringify(renderTrees);
+//	JSON.stringify({
+//					"rootNodes": renderTrees
+//				})
+	console.log("body: " + body);
+				
 	try {
 		const response = await fetch(url, {
 			method: 'PUT',
@@ -65,9 +71,7 @@ updateRenderTrees: async function (jwt, nodeGroupName, eventId, renderTrees) {
 				'Content-Type': 'application/json',
 				Authorization: 'Bearer ' + jwt
 			},
-			body: JSON.stringify({
-				"rootNodes": renderTrees
-			})
+			body: body
 		});
 
 		if (response.ok) {
@@ -80,8 +84,6 @@ updateRenderTrees: async function (jwt, nodeGroupName, eventId, renderTrees) {
 		console.log("Error trying to updateRenderTrees: " + error);
 	}
 },
-
-
 
 
 // Stop Mixer Event
