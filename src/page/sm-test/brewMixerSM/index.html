@@ -476,7 +476,7 @@ body {
 
 	<div id="activeTreeBox" class="hidden offscreen">
 		<div>
-			<h2>Active RenderTree N</h2>
+			<h2>Active RenderTree</h2>
 			<textarea id="activeNodeGraph" rows="80" cols="45">
 			</textarea>
 		</div>
@@ -1559,7 +1559,7 @@ body {
 				}
 			}
 			
-			brewmixer.updateRenderTrees(jwt, nodeGroupName, eventId)
+			brewmixer.updateRenderTrees(jwt, nodeGroupName, eventId, [globalNodeGraph])
 		}
 		
 
