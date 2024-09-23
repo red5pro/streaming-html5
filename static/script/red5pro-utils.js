@@ -362,7 +362,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     origin.name = name
     return origin
   }
-  
+
   /**
    * Find the Origin IP address for a given stream
    */
@@ -432,8 +432,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
   }
 
-  const getProvision = async (host, version, nodeGroup, streamGuid, token) => {
-    const url = `https://${host}/as/${version}/streams/provision/${nodeGroup}/${streamGuid}`
+  const getProvision = async (host, version, nodeGroup, provisionGuid, token) => {
+    const url = `https://${host}/as/${version}/streams/provision/${nodeGroup}/${provisionGuid}`
     const result = await fetch(url, {
       method: 'GET',
       withCredentials: true,
@@ -494,7 +494,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       },
       body: typeof data === 'string' ? data : JSON.stringify(data),
     })
-    
+
     // note: the response may be empty string, or other non json response.
     const json = await result.json()
     if (json && json.errorMessage) {

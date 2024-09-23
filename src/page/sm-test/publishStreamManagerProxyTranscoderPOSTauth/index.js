@@ -117,7 +117,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var authToken =
     auth.enabled && !window.isEmpty(auth.token) ? auth.token : undefined
   var transcoderPOST = {
-    streamGuid: `${configuration.app}/${configuration.stream1}`,
+    provisionGuid: `${configuration.app}/${configuration.stream1}`,
     messageType: 'ProvisionCommand',
     credentials: auth.enabled
       ? {
@@ -387,8 +387,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         streamManagerAPI: version,
         streamManagerNodeGroup: nodeGroup,
       } = configuration
-      const { streamGuid } = transcoderPOST
-      const streams = generateTranscoderPost(streamGuid, transcoderForms)
+      const streams = generateTranscoderPost(transcoderPOST.provisionGuid, transcoderForms)
       transcoderPOST.streams = streams
       const token = await streamManagerUtil.authenticate(
         host,
