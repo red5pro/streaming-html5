@@ -1,5 +1,11 @@
 # Changes
 
+## 13.0.0
+
+- fix: removal of SharedObject functionality. (Todd Anderson)
+- fix: NPE check for mute check util. (Todd Anderson)
+- feat: allowing for endpoint init config to explicitly provide endpoint to connect to for WS and WHIP/WHEP (Todd Anderson)
+
 ## 12.5.1
 
 - fix: baseline munge for in and out. (Todd Anderson)
