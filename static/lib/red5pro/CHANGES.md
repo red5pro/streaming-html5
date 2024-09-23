@@ -1,5 +1,15 @@
 # Changes
 
+## 12.5.1
+
+- fix: baseline munge for in and out. (Todd Anderson)
+
+## 12.2.0
+
+- default for WHIP/WHEP to use Session-Host if provided. (Todd Anderson)
+- fix for check on queries for WHIP/WHEP. (Todd Anderson)
+- monitoring streamingMode on WHEP client initial connection. (Todd Anderson)
+
 ## 12.0.0
 
 - Fix for safari VOD/HLS playback and playhead time. (Todd Anderson)

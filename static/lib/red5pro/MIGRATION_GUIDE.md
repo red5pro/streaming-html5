@@ -1,7 +1,19 @@
+<h3 align="center">
+  <img src="assets/red5pro_logo.png" alt="Red5 Pro Logo" />
+</h3>
+<p align="center">
+  <a href="WHIP_WHEP_README.md">WHIP/WHEP</a> &bull;
+  <a href="PUBLISHER_README.md">publisher</a> &bull;
+  <a href="SUBSCRIBER_README.md">subscriber</a> &bull;
+</p>
+
+---
+
 # Red5 Pro WebRTC SDK Migration Guide
 
 This documentation serves as a guide in migrating client-side code where a breaking change to the API has been made in a distribution.
 
+- [12.x to 13.0.0](#migrating-from-12x-to-1300)
 - [10.x to 11.0.0](#migrating-from-10x-to-1100)
 - [8.0.0 to 9.1.0](#migrating-from-800-to-910)
 - [7.2.0 to 8.0.0](#migrating-from-720-to-800)
@@ -9,6 +21,20 @@ This documentation serves as a guide in migrating client-side code where a break
 - [5.0.0 to 5.4.0](#migrating-from-500-to-540)
 - [4.0.0 to 5.0.0](#migrating-from-400-to-500)
 - [3.5.0 to 4.0.0](#migrating-from-350-to-400)
+
+# Migrating from `12.x` to `13.0.0`
+
+The SDK release of `13.0.0` has additional configuration requirements when integrating with Stream Manager 2.0 deployments. This release sees the introduction of the `endpoint` initialization configuration on which you provide the full URL path to the Stream Manager 2.0 proxy. The proxy will handle directing the clients to the target Origin and Edge nodes.
+
+The `endpoint` init config param is to be used in tandem with a `nodeGroup` connection parameter specifying the name of the target Node Group within the Stream Manager dpeloyment that you intend to target.
+
+More Information related to this configuration is detailed in the following documents:
+
+* [WHIP/WHEP] (./WHIP_WHEP_README.md#stream-manager-20)
+* [RTCPublisher] (./SUBSCRIBER_README.md#stream-manager-20)
+* [RTCSubscriber] (./PUBLISHER_README.md#stream-manager-20)
+
+> [NOTE] SharedObject support has been removed in 13.0.0
 
 # Migrating from `10.x` to `11.0.0`
 
