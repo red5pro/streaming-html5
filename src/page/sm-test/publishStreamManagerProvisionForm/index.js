@@ -81,7 +81,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     auth.enabled && !window.isEmpty(auth.token) ? auth.token : undefined
   const { app, stream1 } = configuration
   var transcoderPOST = {
-    streamGuid: `${app}/${stream1}`,
+    provisionGuid: `${app}/${stream1}`,
     messageType: 'ProvisionCommand',
     credentials: auth.enabled
       ? {
@@ -105,7 +105,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       const result = await streamManagerUtil.getOrigin(
         host,
         app,
-        stream1,
+        stream1 + "_1",
         version,
         nodeGroup,
         transcoder
@@ -124,19 +124,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       streamManagerAPI: version,
       streamManagerNodeGroup: nodeGroup,
     } = configuration
-    const { streamGuid, streams } = transcoderPOST
+    const { provisionGuid, streams } = transcoderPOST
 
     let originResponse
     originResponse = await getOrigin(host, app, stream1, version, nodeGroup)
     if (!originResponse) {
-      originResponse = await getOrigin(
-        host,
-        app,
-        stream1,
-        version,
-        nodeGroup,
-        false
-      )
+      originResponse = await getOrigin(host, app, stream1, version, nodeGroup, false)
     }
 
     if (originResponse) {
@@ -151,7 +144,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       qualityContainer.classList.remove('hidden')
     }
     // Provision Details.
-    const url = `https://${host}/as/${version}/streams/provision/${nodeGroup}/${streamGuid}`
+    const url = `https://${host}/as/${version}/streams/provision/${nodeGroup}/${provisionGuid}`
     document.getElementById('provision-link').href = url
   }
 
@@ -192,8 +185,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         streamManagerAPI: version,
         streamManagerNodeGroup: nodeGroup,
       } = configuration
-      const { streamGuid } = transcoderPOST
-      const streams = generateTranscoderPost(streamGuid, transcoderForms)
+      const streams = generateTranscoderPost(transcoderPOST.provisionGuid, transcoderForms)
       transcoderPOST.streams = streams
       const token = await streamManagerUtil.authenticate(
         host,
