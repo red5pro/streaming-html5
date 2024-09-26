@@ -125,7 +125,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     auth.enabled && !window.isEmpty(auth.token) ? auth.token : undefined
   const { app, stream1 } = configuration
   var transcoderPOST = {
-    streamGuid: `${app}/${stream1}`,
+    provisionGuid: `${app}/${stream1}`,
     messageType: 'ProvisionCommand',
     credentials: auth.enabled
       ? {
