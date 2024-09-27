@@ -79,19 +79,24 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   var settingsSection = document.querySelector('.settings-section')
   var qualityContainer = document.getElementById('quality-container')
+  var qualitySelect = document.getElementById('quality-select')
   var qualitySubmit = document.getElementById('quality-submit')
 
   submitButton.addEventListener('click', submitTranscode)
   streamTitle.innerText = configuration.stream1
 
-  function setPublishState(isPublishing) {
+  function setQualitySubmitState(isPublishing) {
     if (isPublishing) {
-      qualityContainer.classList.add('hidden')
+      qualitySubmit.removeEventListener('click', setQualityAndPublish, false)
+      qualitySubmit.innerText = 'Stop Publishing'
+      qualitySubmit.addEventListener('click', unpublish, false)
     } else {
-      qualityContainer.classList.remove('hidden')
+      qualitySubmit.removeEventListener('click', unpublish, false)
+      qualitySubmit.innerText = 'Start Publishing'
+      qualitySubmit.addEventListener('click', setQualityAndPublish, false)
     }
   }
-  qualitySubmit.addEventListener('click', setQualityAndPublish, false)
+  setQualitySubmitState(false)
 
   var protocol = serverSettings.protocol
   var isSecure = protocol == 'https'
@@ -189,7 +194,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
   function onPublishSuccess(publisher) {
     console.log('[Red5ProPublisher] Publish Complete.')
-    setPublishState(true)
+    setQualitySubmitState(true)
     try {
       var pc = publisher.getPeerConnection()
       var stream = publisher.getMediaStream()
@@ -205,11 +210,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
   function onUnpublishFail(message) {
     console.error('[Red5ProPublisher] Unpublish Error :: ' + message)
-    setPublishState(false)
+    setQualitySubmitState(false)
   }
   function onUnpublishSuccess() {
     console.log('[Red5ProPublisher] Unpublish Complete.')
-    setPublishState(false)
+    setQualitySubmitState(false)
   }
 
   function getRegionIfDefined() {
@@ -281,7 +286,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       connectionParams: {
         ...connectionParams,
         nodeGroup,
-        transcode: true,
+        transcode: streamName.endsWith('_1'),
       },
     }
     return rtcConfig
@@ -289,7 +294,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   const startPublish = async (variant) => {
     try {
-      setPublishState(true)
+      setQualitySubmitState(true)
       const { RTCPublisher, WHIPClient } = red5prosdk
       const { preferWhipWhep, stream1 } = configuration
       const config = getConfiguration(variant)
@@ -301,15 +306,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       streamTitle.innerText = stream1
       targetPublisher = publisher
     } catch (error) {
-      var jsonError =
-        typeof error === 'string' ? error : JSON.stringify(error, null, 2)
       console.error(
-        '[Red5ProPublisher] :: Error in access of Origin IP: ' + jsonError
+        '[Red5ProPublisher] :: startPublish failed: ' + error
       )
       updateStatusFromEvent({
         type: red5prosdk.PublisherEventTypes.CONNECT_FAILURE,
       })
-      onPublishFail(jsonError)
+      onPublishFail(error)
     }
   }
 
@@ -328,10 +331,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   function getHighestVariant() {
     return transcoderPOST.streams.find((s) => s.abrLevel === 1)
-  }
-
-  function setQualityAndPublish() {
-    start(getHighestVariant())
   }
 
   function start(variant) {
@@ -416,6 +415,33 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       alert('Error in POST of transcode configuration: ' + message)
     }
   }
+
+
+//  function setQualityAndPublish() {
+//    start(getHighestVariant())
+//  }
+
+  function setQualityAndPublish() {
+    var selectedQuality = qualitySelect.value
+    var targetName = [configuration.stream1, selectedQuality].join('_')
+    var i = transcoderPOST.streams.length,
+      config
+	const targetGuid = configuration.app + "/" + targetName;
+    while (--i > -1) {
+      config = transcoderPOST.streams[i]
+
+      if (config.streamGuid === targetGuid) {
+        break
+      }
+      config = null
+    }
+
+    if (config) {
+      start(config)
+    }
+  }
+
+
 
   let shuttingDown = false
   const shutdown = async () => {
