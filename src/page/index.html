@@ -173,7 +173,7 @@
       </p>
       <hr class="paddedHR" />
       <h2 class="centered">Authentication</h2>
-      <p class="settings-field settings-field-row">
+      <p class="settings-field settings-collapsable settings-field-row">
         <label class="settings-label">Authentication Enabled:</label>
         <input type="checkbox" id="auth-enabled-field" name="auth-enabled-field" style="vertical-align: middle;">
       </p>
@@ -190,17 +190,22 @@
         <input id="auth-token-field" name="auth-token-field" disabled>
       </p>
       <hr class="paddedHR" />
-      <h2 class="centered">Mixer Specific</h2>
-      <p class="settings-field settings-collapsable">
-        <label class="settings-label">Backend WebSocket For Compositions:</label>
-        <input id="backend-composition-field" name="backend-composition-field" value="<mixer-mock-url>"
-          placeholder="e.g., mydomain.com">
-      </p>
+      <h2 class="centered">Statistics Reporting</h2>
       <p class="settings-field settings-collapsable settings-field-row">
-        <label class="settings-label">Enable Round Trip Authentication:</label>
-        <input type="checkbox" id="enable-mixer-authentication-field" name="enable-mixer-authentication-field"
+        <label class="settings-label">Enable Statistics Reporting:</label>
+        <input type="checkbox" id="enable-statistics-field" name="enable-statistics-field"
           unchecked>
       </p>
+      <p class="settings-field settings-collapsable">
+        <label class="settings-label">Statistics Reporting Interval (in seconds):</label>
+        <input type="number" id="statistics-interval-field" name="statistics-interval-field" min="1" value="5" style="min-width: 120px">
+      </p>
+      <p class="settings-field settings-collapsable">
+        <label class="settings-label">Statistics Reporting Endpoint&ast;:</label>
+        <input id="statistics-endpoint-field" name="statistics-endpoint-field" placeholder="e.g., https://mydomain.com/stats">
+        <span></span>
+      </p>
+      <p class="settings-info" style="max-width: 620px; margin: auto;">&ast;Note that leaving the endpoint field blank will default to sending statistics over the DataChannel or respond to server-side settings related to client statistics.</p>
       <hr class="paddedHR" />
       <p class="settings-field settings-collapsable settings-field-row">
         <label class="settings-label">Verbose R5 Logging:</label>
@@ -275,6 +280,9 @@
       var smNodeGroupField = document.getElementById('sm-nodegroup-field');
       var mixerBackendSocketField = document.getElementById('backend-composition-field');
       var mixerAuthenticationEnabledField = document.getElementById('enable-mixer-authentication-field');
+      var enableStatisticsField = document.getElementById('enable-statistics-field');
+      var statisticsIntervalField = document.getElementById('statistics-interval-field');
+      var statisticsEndpointField = document.getElementById('statistics-endpoint-field');
       var smAPIField = document.getElementById('sm-api-field');
       var authEnabledField = document.getElementById('auth-enabled-field');
       var authUsernameField = document.getElementById('auth-username-field');
@@ -462,16 +470,6 @@
         seal(configuration);
       });
 
-      mixerBackendSocketField.addEventListener('blur', function () {
-        configuration.mixerBackendSocketField = mixerBackendSocketField.value;
-        seal(configuration);
-      });
-
-      mixerAuthenticationEnabledField.addEventListener('change', function () {
-        configuration.mixerAuthenticationEnabled = mixerAuthenticationEnabledField.checked;
-        seal(configuration);
-      });
-
       smRegionField.addEventListener('blur', function () {
         configuration.streamManagerRegion = smRegionField.value;
         seal(configuration);
@@ -484,6 +482,31 @@
 
       smAPIField.addEventListener('blur', function () {
         configuration.streamManagerAPI = smAPIField.value;
+        seal(configuration);
+      });
+
+      enableStatisticsField.addEventListener('change', function () {
+        configuration.stats = enableStatisticsField.checked ? {
+          endpoint: statisticsEndpointField.value,
+          interval: parseInt(statisticsIntervalField.value, 10) * 1000,
+          include: [],
+        } : undefined
+        seal(configuration);
+      });
+
+      statisticsIntervalField.addEventListener('blur', function () {
+        if (configuration.stats) {
+          configuration.stats.interval = parseInt(statisticsIntervalField.value, 10) * 1000;
+        }
+        seal(configuration);
+      });
+
+      statisticsEndpointField.addEventListener('blur', function () {
+        if (configuration.stats) {
+          let value = statisticsEndpointField.value;
+          value = value && value.length > 0 ? value : undefined;
+          configuration.stats.endpoint = value;
+        }
         seal(configuration);
       });
 
@@ -526,8 +549,9 @@
         authPasswordField.value = config.authentication.password;
         authTokenField.value = config.authentication.token;
         authUsernameField.disabled = authPasswordField.disabled = !authEnabledField.checked;
-        mixerBackendSocketField.value = config.mixerBackendSocketField;
-        mixerAuthenticationEnabledField.checked = config.mixerAuthenticationEnabled ? config.mixerAuthenticationEnabled : false
+        enableStatisticsField.checked = config.stats ? true : false;
+        statisticsIntervalField.value = config.stats ? Math.floor(parseInt(config.stats.interval, 10) / 1000) : 5;
+        statisticsEndpointField.value = config.stats ? config.stats.endpoint : '';
 
         function selectFieldFromConfiguration(value, selectElem) {
           var i = selectElem.childNodes.length;

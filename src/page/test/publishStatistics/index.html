@@ -1,0 +1,54 @@
+<!doctype html>
+{{> license}}
+<html>
+  <head>
+    {{> meta title='Publish Statistics Monitoring Test'}}
+    {{> header-scripts}}
+    {{> header-stylesheets}}
+    <style>
+      .settings-area {
+        background-color: #eeee;
+      }
+      .settings-field, .settings-field > input {
+        font-size: 1em;
+      }
+      .info-title {
+        padding: 20px 0;
+      }
+      .paddedHR {
+        margin: 0!important;
+        margin-top: 10px;
+      }
+      #stats-form {
+        text-align: center;
+        padding-bottom: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    {{> top-bar }}
+    <div id="app">
+      {{> settings-link}}
+      {{> test-info testTitle='Publish Statistics Monitoring Test'}}
+      <div class="stream-section">
+        <div id="stats-form" class="settings-area">
+          <h3 class="centered info-title">Statistics Configuration:</h3>
+          <hr class="paddedHR">
+          <p class="settings-field settings-collapsable"><label for="endpoint-field" class="settings-label">Endpoint:</label><input id="endpoint-field" name="endpoint-field" placeholder="Leaving blank will send stat metadata on DataChannel"></p>
+          <p class="settings-field settings-collapsable"><label for="interval-field" class="settings-label">Interval (in seconds):</label><input type="number" min="1" value="5" id="interval-field" name="interval-field"></p>
+          <button id="submit-button" class="ui-button">Start</button>
+        </div>
+        {{> status-field-publisher}}
+        {{> statistics-field packets_field='Packets Sent'}}
+        <div class="centered">
+          <video id="red5pro-publisher" class="red5pro-publisher"
+                 controls autoplay playsinline muted>
+          </video>
+        </div>
+      </div>
+    </div>
+    {{> footer}}
+    {{> body-scripts}}
+    <script src="index.js"></script>
+  </body>
+</html>
