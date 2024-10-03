@@ -77,7 +77,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   const packetsField = document.getElementById('packets-field')
   const resolutionField = document.getElementById('resolution-field')
 
-  endpointField.value = endpoint
+  endpointField.value = endpoint ? (endpoint === 'null' ? null : endpoint) : ''
   intervalField.value = interval
   streamTitle.innerText = configuration.stream1
 

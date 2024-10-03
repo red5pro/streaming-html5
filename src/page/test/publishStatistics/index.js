@@ -81,7 +81,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   let frameWidth = 0
   let frameHeight = 0
 
-  endpointField.value = endpoint
+  endpointField.value = endpoint ? (endpoint === 'null' ? null : endpoint) : ''
   intervalField.value = interval
 
   const updateStatistics = (b, p, w, h) => {
