@@ -64,8 +64,8 @@
     <div class="stream-section">
       <div class="centered settings-area">
         <p class="settings-field settings-collapsable">
-          <label for="name-input" class="settings-label">Name:</label>
-          <input type="text" name="name-input" id="name-input" placeholder="stream1.m3u8">
+          <label for="name-input" class="settings-label">Full URL:</label>
+          <input type="text" name="name-input" id="name-input" placeholder="https://mycdn/bucket/stream1.m3u8">
         </p>
         <p>
           <button id="submit-button" class="ui-button">Play File</button>
@@ -86,9 +86,8 @@
   </div>
     {{> footer}}
   {{> body-scripts}}
-  {{> sm-scripts}}
-  <script src="index.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <script src="index.js"></script>
 </body>
 
 </html>

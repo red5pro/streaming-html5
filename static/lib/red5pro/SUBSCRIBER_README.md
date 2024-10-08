@@ -2,9 +2,9 @@
   <img src="assets/red5pro_logo.png" alt="Red5 Pro Logo" />
 </h3>
 <p align="center">
+  <a href="WHIP_WHEP_README.md">WHIP/WHEP</a> &bull
   <a href="PUBLISHER_README.md">publisher</a> &bull;
   <a href="SUBSCRIBER_README.md">subscriber</a> &bull;
-  <a href="SHARED_OBJECT_README.md">shared object</a>
 </p>
 
 ---
@@ -28,6 +28,7 @@ This document describes how to use the Red5 Pro WebRTC SDK to subscribe to a bro
 * [Other Information](#other-information)
   * [Autoplay Restrictions](#autoplay-restrictions)
   * [Insertable Streams](#insertable-streams)
+* [Stream Manager 2.0 Integration](#stream-manager-20)
 
 # Requirements
 
@@ -112,6 +113,7 @@ _It is *highly* recommended to include [adapter.js](https://github.com/webrtcHac
 | buffer | [-] | `0` | Request to set a buffer - in seconds - for playback.
 | maintainStreamVariant | [-] | `false` | Flag to instruct the server - when utilizing transcoding - to not switch subscriber stream variants when network conditions change. By setting this to `true`, when you request to playback a stream that is transcoded, the server will not deliver a variant of higher or lower quality dependending on current network conditions. |
 | liveSeek | [-] | *None* | Configuration object to enable live seek capability. See [Live Seek](#live-seek) for more information. |
+| endpoint | [-] | `undefined` | The full URL of the endpoint to stream to. **This is primarily used in Stream Manager 2.0 integration for clients.** [Refer to the Stream Manager 2.0 Section](#stream-manager-20)
 
 #### Live Seek
 
@@ -960,3 +962,31 @@ const config = {
   }
 }
 ```
+
+# Stream Manager 2.0
+
+> This section provides information that relate to the release of Stream Manager 2.0 and its integration with WHIP/WHEP clients.
+
+The Stream Manager 2.0 simplifies the proxying of web clients to Origin and Edge nodes. As such, an initialization configuration property called `endpoint` was added to the WebRTC SDK. This `endpoint` value should be the full URL path to the proxy endpoint on the Stream Manager as is used as such:
+
+## RTCSubscriber Proxy
+
+```javascript
+const host = 'my-deployment'
+const streamName = 'mystream'
+const nodeGroup = 'my-node-group'
+const endpoint = `https://${host}/as/v1/proxy/ws/subscribe/live/${streamName}`
+const config = {
+  endpoint,
+  streamName,
+  connectionParams: {
+    nodeGroup
+  },
+  // additional configurations
+}
+const subscriber = await new RTCSubscriber().init(config)
+subscriber.on('*', (event) => console.log(event))
+await subscriber.subscribe()
+```
+
+> Note: The requirement of a `nodeGroup` connection parameter that is the target nodegroup within your Stream Manager deployment on which you want to proxy the Publisher and Subscriber client(s).

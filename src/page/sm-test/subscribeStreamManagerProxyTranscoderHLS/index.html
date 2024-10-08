@@ -14,7 +14,7 @@
       {{> test-info testTitle='Subscriber Stream Manager Transcoder Proxy Test (HLS)'}}
       <div class="stream-section">
         {{> status-field-subscriber}}
-        <div class="centered"><p id="address-field" class="address-field">Edge Address: N/A</p></div>
+        <div class="centered"><p id="address-field" class="address-field hidden">Edge Address: N/A</p></div>
         <div class="centered">
           <video id="red5pro-subscriber"
                   controls autoplay playsinline
@@ -27,7 +27,7 @@
     {{> footer}}
     {{> body-scripts}}
     {{> mobile-subscriber-util}}
-    {{> sm-scripts}}
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <script src="index.js"></script>
   </body>
 </html>

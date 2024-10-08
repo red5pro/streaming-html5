@@ -140,6 +140,23 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
   }
 
+  /**
+   * Request to get Origin data to broadcast for conference stream manager proxy.
+   */
+  const getOriginForConference = async (host, context) => {
+    try {
+      let url = `https://${host}/streammanager/api/4.0/event/${context}/join`
+      const result = await fetch(url)
+      const json = await result.json()
+      if (json.errorMessage) {
+        throw new Error(json.errorMessage)
+      }
+      return json
+    } catch (e) {
+      throw e
+    }
+  }
+
   const postTranscode = async (
     host,
     context,
@@ -253,6 +270,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     getStreamList,
     getOrigin,
     getEdge,
+    getOriginForConference,
     postTranscode,
     requestInterstitial,
     resumeInterstitial,

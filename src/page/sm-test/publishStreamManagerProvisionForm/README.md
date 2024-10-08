@@ -4,23 +4,11 @@ To enable Adaptive Bitrate (**ABR**) control of a stream being played back by a 
 
 ---
 
-The streammanager WebRTC proxy is a communication layer built inside streammanager web application which allows it to act as a proxy gateway for webrtc publishers / subscribers. The target use case of this communication layer is to facilitate a secure browser client to be able to connect to a "unsecure" remote websocket endpoint for consuming WebRTC services offered by Red5pro.
+The Stream Manager WebRTC proxy is a communication layer built inside streammanager web application which allows it to act as a proxy gateway for webrtc publishers / subscribers. The target use case of this communication layer is to facilitate a secure browser client to be able to connect to a "unsecure" remote websocket endpoint for consuming WebRTC services offered by Red5pro.
 
-Streammanager autoscaling works with dynamic nodes which are associated with dynamic IP addresses and cannot have a SSL attached to them. The proxy layer helps publishers to connect and initiate a WebRTC publish session from a `secure` (ssl enabled) domain to a `unsecure` Red5pro origin having using an IP address.
+Stream Manager autoscaling works with dynamic nodes which are associated with dynamic IP addresses and cannot have a SSL attached to them. The proxy layer helps publishers to connect and initiate a WebRTC publish session from a `secure` (ssl enabled) domain to a `unsecure` Red5pro origin having using an IP address.
 
 **Please refer to the [Basic Publisher Documentation](../publishStreamManagerProxy/README.md) to learn more about the basic setup.**
-
-## Server Configuration
-
-> Please read about [WHIP/WHEP Configuration for Standalone and Stream Manager support.](https://www.red5.net/docs/special/user-guide/whip-whep-configuration/#gatsby-focus-wrapper)
-
-You also need to ensure that the stream manager proxy layer is `enabled`. The configuration section can be found in stream manager's config file - `red5-web.properties`
-
-```sh
-## WEBSOCKET PROXY SECTION
-
-proxy.enabled=false
-```
 
 ### Example Code
 
@@ -33,132 +21,106 @@ This example provides a simple form that allows you to provision a `High`, `Mid`
 
 Once you have started a broadcast for each variant, open the [../subscribeStreamManagerProxyTranscoder](Subscribe Stream Manager Transcoder Proxy) example to see how you can subscribe to a stream that will have dynammic ABR based on your client's network conditions.
 
+> Additionally, once the provision has been posted, you can start a WebRTC broadcast as demonstrated in [Publish Stream Manager Transcoder POST](../publishStreamManagerProxyTranscoderPOST/)
+
+## Broadcast, Transcode and Playback
+
+When creating the ABR ladder, you will do the following:
+
+1. Post of Provision to the Stream Manager detailing the stream variants to generate.
+2. Request the Transcoder node from the Stream Manager.
+3. Broadcast to the Transcoder using the highest variant `streamGuid`.
+
+In doing Step #3, the Transcoder node will generate the lower stream variants and propagate all streams to Edge node(s) available for playback. Additionally, upon subscribe and playback, the Red5 Server will handle switching the variants delivered based on bandwidth estimation of the subscriber client.
+
 ## API
 
 The API to `POST` a provision is as follows:
 
-### Endpoint
+### Authentication
 
-The following endpoint accepts a `POST` of JSON explained in the next section. Replace `yourstreammanager.com`, `mystream` and `myaccessToken` accordingly to your Red5 Pro Server remote location, target top-level stream name and `accessToken` defined in your Stream Manager configurations:
+Posting a Provision to the Stream Manager requires an authentication token. In order to obtain an authentication token, you will need to know the `username` and `password` associated with your Stream Manager deployment (replace `yourstreammanager.com`, `smUsername`, and `smPassword`):
 
 ```js
-https://yourstreammanager.com/streammanager/api/3.0/admin/event/meta/live/mystream?accessToken=myaccessToken
+const url = `https://${yourstreammanager.com}/as/v1/auth/login`
+const token = 'Basic ' + btoa(`${smUsername}:${smPassword}`)
+const response = await fetch(url, {
+  method: 'PUT',
+  withCredentials: true,
+  credentials: 'include',
+  headers: {
+    Authorization: token,
+    'Content-Type': 'application/json',
+  },
+})
+
+console.log('Authenticate response: ' + response.status)
+var json = await response.json()
+return json.token
+```
+
+### Endpoint
+
+With the authentication token received, the following endpoint accepts a `POST` of JSON body explained in the next section. Replace `yourstreammanager.com` and `nodeGroup` with your Stream Manager deployment and the desired target node group, respectively.
+
+```js
+const url = `https://${yourstreammanager.com}/as/v1/streams/provision/${nodeGroup}`
+const body = JSON.stringify(provision)
+const result = await fetch(url, {
+  method: 'POST',
+  withCredentials: true,
+  credentials: 'include',
+  headers: {
+    Authorization: `Bearer ${token}`,
+    'Content-Type': 'application/json',
+  },
+  body,
+})
 ```
 
 ### JSON Schema
 
-The JSON schema of the data to `POST` to the endpoint above has the following structure:
+The basic JSON schema of the data to `POST` to the endpoint above has the following structure:
 
-```js
-{
-  "meta": {
-    "authentication": {
-      "password": "",
-      "username": ""
-    },
-    "qos": <int>,
-    "georules": {
-      "regions": [<"",...>],
-      "restricted": <true|false>,
-    },
-    "stream": [
+```json
+[
+  {
+    "streamGuid": "live/test",
+    "streams": [
       {
-        "level": <int>,
-        "name": <string>,
-        "properties": [
-          "videoBR": <int>,
-          "videoHeight": <int>,
-          "videoWidth": <int>
-        ]
-      }, ...
-    ]
-  }
-}
-```
-
-As an example, using `mystream` as the top-level GUID, the JSON in the `POST` to the above endpoint would look like the following:
-
-```js
-{
-  "meta": {
-    "authentication": {
-      "password": "",
-      "username": ""
-    },
-    "qos": 3,
-    "georules": {
-      "regions": ["US", "UK"],
-      "restricted": false,
-    },
-    "stream": [
-      {
-        "level": 3,
-        "name": "mystream_3",
-        "properties": [
-          "videoBR": 128000,
+        "streamGuid": "live/test_3",
+        "abrLevel": 3,
+        "videoParams": {
+          "videoWidth": 320,
           "videoHeight": 180,
-          "videoWidth": 320
-        ]
+          "videoBitRate": 500000
+        }
       },
       {
-        "level": 2,
-        "name": "mystream_2",
-        "properties": [
-          "videoBR": 512000,
+        "streamGuid": "live/test_2",
+        "abrLevel": 2,
+        "videoParams": {
+          "videoWidth": 640,
           "videoHeight": 360,
-          "videoWidth": 640
-        ]
+          "videoBitRate": 1000000
+        }
       },
       {
-        "level": 1,
-        "name": "mystream_1",
-        "properties": [
-          "videoBR": 1000000,
+        "streamGuid": "live/test_1",
+        "abrLevel": 1,
+        "videoParams": {
+          "videoWidth": 1280,
           "videoHeight": 720,
-          "videoWidth": 1280
-        ]
+          "videoBitRate": 2000000
+        }
       }
     ]
   }
-}
+]
 ```
+
+The top-level `streamGuid` is the path of `<app context>/<stream name>` from which the stream name variants listed in `streams` derive their name.
 
 ### Response
 
-A successful response will return the top-level provisioning with the `meta` field populated with the JSON sent in the `POST`:
-
-```js
-{
-  "name": "mystream",
-  "scope": "live",
-  "data": {
-    "meta": <see above JSON>
-  }
-}
-```
-
-You can, as well, access this new provision at any time by making a `GET` request on the Stream Manager as such:
-
-```js
-https://yourstreammanager.com/streammanager/api/3.0/admin/event/meta/live/mystream?accessToken=myaccessToken
-```
-
-## Accessing the Origins to Broadcast On
-
-This example is very simple in that it makes one request for an origin to broadcast all the variants on. In real-world cases, you will want to request the server address (Origin) to broadcast on for each variant type.
-
-To access the Origin server address for a variant:
-
-### Endpoint
-
-Following along with the previous examples for URL structure, you would have the following 3 urls to make a `GET` request on to receiev the Origin server address to broadcast each on:
-
-```js
-https://yourstreammanager.com/streammanager/api/3.0/event/live/mystream_1?action=broadcast&accessToken=myaccessToken
-https://yourstreammanager.com/streammanager/api/3.0/event/live/mystream_2?action=broadcast&accessToken=myaccessToken
-https://yourstreammanager.com/streammanager/api/3.0/event/live/mystream_3?action=broadcast&accessToken=myaccessToken
-```
-
-You will request server address and broadcast using the stream name form of: `<stream name guid>_<level>`. In following with the above example, requesting to broadcast the higest variant would be: `mystream_1`.
-
-The response is the same response and JSON structure you are already familiar with when utilizing the Stream Manager.
+A successful response will return with a code between `200` and `299`, inclusive. A `409` (Conflict) status code will be returned when a provision with the top-level `streamGuid` already exists in the system.

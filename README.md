@@ -139,10 +139,6 @@ If you decide to de-select the **WHIP/WHEP** option, all tests will revert to us
 | :-----
 | _An example of utilizing the screen sharing capabilities of_ **Chrome** _and_ **Firefox**.<br> For use with Subscribe Screen Share example.
 
-| **[Shared Object](src/page/test/publishSharedObject)**
-| :-----
-| _Demonstrates using remote Shared Object to send and recieve information between connected clients._
-
 | **[Social Media Stream Push](src/page/test/publishSocialPusher)**
 | :-----
 | _An example of rebroadcasting a live stream to a social media platform._
@@ -219,10 +215,6 @@ If you decide to de-select the **WHIP/WHEP** option, all tests will revert to us
 | :-----
 | _Demonstrates multi-party communication using Red5 Pro over Stream Manager. It also demonstrates using Shared Objects as notifications to recognize the addition and removal of parties broadcasting._
 
-| **[Shared Object (websockets only)](src/page/test/sharedObject)**
-| :-----
-| _Demonstrates the use of Shared Objects through a WebSocket proxy from the Red5 Pro HTML SDK._
-
 ### Subscribing
 
 | **[Subscriber](src/page/test/subscribe)**
@@ -276,10 +268,6 @@ If you decide to de-select the **WHIP/WHEP** option, all tests will revert to us
 | **[Screen Share](src/page/test/subscribeScreenShare)**
 | :-----
 | _An example of utilizing the screen sharing capabilities of_ **Chrome** _and_ **Firefox**. _For use with Publish Screen Share example._
-
-| **[Shared Object](src/page/test/subscribeSharedObject)**
-| :-----
-| _Demonstrates using remote Shared Object to send and recieve information between connected clients._
 
 | **[Standby](src/page/test/subscribeStandby)**
 | :-----

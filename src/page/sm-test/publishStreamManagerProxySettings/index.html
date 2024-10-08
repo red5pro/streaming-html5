@@ -79,7 +79,7 @@
         {{> status-field-publisher}}
         {{> statistics-field packets_field='Packets Sent'}}
         <div class="centered">
-          <p id="address-field" class="address-field">Origin Address: N/A</p>
+          <p id="address-field" class="address-field hidden">Origin Address: N/A</p>
         </div>
         <video id="red5pro-publisher" class="red5pro-publisher"
                controls autoplay playsinline muted>
@@ -88,7 +88,6 @@
     </div>
     {{> footer}}
     {{> body-scripts}}
-    {{> sm-scripts}}
     <script src="index.js"></script>
   </body>
 </html>

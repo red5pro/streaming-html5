@@ -23,25 +23,13 @@ NONINFRINGEMENT.   IN  NO  EVENT  SHALL INFRARED5, INC. BE LIABLE FOR ANY CLAIM,
 WHETHER IN  AN  ACTION  OF  CONTRACT,  TORT  OR  OTHERWISE,  ARISING  FROM,  OUT  OF  OR  IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
+/* global red5prosdk */
 import {
-  getRtcDrmTransformVersion,
-  setDrm,
-  videoTransformFunction,
-  audioTransformFunction,
-  Environments,
+  rtcDrmGetVersion,
+  rtcDrmEnvironments,
+  rtcDrmConfigure,
+  rtcDrmOnTrack,
 } from '../../lib/castlabs/rtc-drm-transform/rtc-drm-transform.min.js'
-
-var serverSettings = (function () {
-  var settings = sessionStorage.getItem('r5proServerSettings')
-  try {
-    return JSON.parse(settings)
-  } catch (e) {
-    console.error(
-      'Could not read server settings from sessionstorage: ' + e.message
-    )
-  }
-  return {}
-})()
 
 var configuration = (function () {
   var conf = sessionStorage.getItem('r5proTestBed')
@@ -54,16 +42,34 @@ var configuration = (function () {
   }
   return {}
 })()
+
 red5prosdk.setLogLevel(
   configuration.verboseLogging
     ? red5prosdk.LOG_LEVELS.TRACE
     : red5prosdk.LOG_LEVELS.WARN
 )
 
-const EncryptionScheme = {
-  CBCS: 'cbcs',
-  CENC: 'cenc',
+const DecryptMode = Object.freeze({
+  InPlace: 0,
+  ClearKey: 1,
+  ProdDrm: 2,
+})
+
+const toggleProdDrmFields = (show) => {
+  const prodDrmFields = document.querySelectorAll('.prod-drm-field')
+  prodDrmFields.forEach((field) => {
+    field.classList.toggle('hidden', !show)
+  })
 }
+
+const decryptionModeSelect = document.querySelector('#decrypt-select')
+decryptionModeSelect.addEventListener('change', (e) => {
+  const { value } = e.target
+  toggleProdDrmFields(parseInt(value, 10) === DecryptMode.ProdDrm)
+})
+toggleProdDrmFields(
+  1 + decryptionModeSelect.selectedIndex === DecryptMode.ProdDrm
+)
 
 const getPortAndProtocol = (host) => {
   let ipReg = /^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/
@@ -85,7 +91,23 @@ const getValueFromId = (id) => {
 }
 
 const Uint8ArrayFromHex = (hex) => {
+  if (!hex) return null
+  if (hex.length % 2 !== 0) {
+    console.error(`Malformed hex string (${hex}), odd length`)
+    return null
+  }
   return Uint8Array.from(hex.match(/.{1,2}/g).map((byte) => parseInt(byte, 16)))
+}
+
+const getPlatform = () => {
+  try {
+    const platform =
+      window?.navigator?.userAgentData?.platform || window?.navigator?.platform
+    return platform
+  } catch (e) {
+    // ignore
+  }
+  return undefined
 }
 
 const getAuthenticationParams = () => {
@@ -129,20 +151,6 @@ const baseConfig = {
   },
 }
 document.querySelector('#stream-title').innerText = baseConfig.streamName
-
-// newer, properly standardized RTCRtpScriptTransform API, only supported by Safari atm. The worker just pushes
-// arriving video frames back here to run through videoTransformFunction() just like Chrome
-const worker = new Worker('./worker.js', {
-  name: 'RTCRtpScriptTransform worker',
-  type: 'module',
-})
-worker.onmessage = (m) => {
-  if (m.data.streamType === 'video') {
-    videoTransformFunction(m.data.frame, null)
-  } else {
-    audioTransformFunction(m.data.frame, null)
-  }
-}
 
 const monitorBitrate = (pc, bitrateField, packetsField, resolutionField) => {
   return trackBitrate(
@@ -235,36 +243,47 @@ const decryptPlayback = async () => {
   const { preferWhipWhep } = configuration
   const { WHEPClient, RTCSubscriber } = red5prosdk
 
-  console.info(`Using castLabs RTC DRM v${getRtcDrmTransformVersion()}`)
+  console.info(`Using castLabs RTC DRM v${rtcDrmGetVersion()}`)
 
   decryptButton.disabled = true
   try {
-    const transforms = {
-      video: videoTransformFunction,
-      audio: audioTransformFunction,
-      worker: worker,
-    }
-
-    subscriber = new RTCSubscriber()
-    await subscriber.init(baseConfig, transforms)
-    subscriber.on('*', (event) => onDecryptedSubscriberEvent(event))
-    await subscriber.subscribe()
-
     const element = document.querySelector(`#${baseConfig.mediaElementId}`)
     const encryption = getValueFromId('scheme-select')
-    const keyId = Uint8ArrayFromHex(getValueFromId('key-input'))
+    const keyId = Uint8ArrayFromHex(getValueFromId('key-id-input'))
     const iv = Uint8ArrayFromHex(getValueFromId('iv-input'))
 
-    const drmConfig = {
-      environment: Environments.Staging,
-      merchant: getValueFromId('merchant-input'),
-      encryption,
-      audioEncrypted: false,
-      keyId,
-      iv,
+    let platform = getPlatform()
+    const requestProdDRM =
+      decryptionModeSelect.selectedIndex === DecryptMode.ProdDrm
+    let video = {
+      codec: 'H264',
+      encryption: encryption.toUpperCase() === 'CTR' ? 'cenc' : 'cbcs',
+      keyId: requestProdDRM ? keyId : undefined,
+      iv: requestProdDRM ? iv : undefined,
+      robustness: platform === 'Android' ? 'HW' : undefined,
     }
-    // castLabs.
-    setDrm(element, drmConfig)
+    let drmConfig = {
+      environment: rtcDrmEnvironments.Staging,
+      merchant: getValueFromId('merchant-input'),
+      videoElement: element,
+      video,
+    }
+
+    drmConfig.videoElement.addEventListener('rtcdrmerror', (event) => {
+      alert(`DRM error: ${event.detail.message}`)
+    })
+    rtcDrmConfigure(drmConfig)
+
+    subscriber = preferWhipWhep ? new WHEPClient() : new RTCSubscriber()
+    await subscriber.init(baseConfig)
+    subscriber.on('WebRTC.PeerConnection.Available', () => {
+      // Listen for ontrack event to get the decrypted stream.
+      const pc = subscriber.getPeerConnection()
+      pc.ontrack = (e) => rtcDrmOnTrack(e)
+    })
+    subscriber.on('*', (event) => onDecryptedSubscriberEvent(event))
+
+    await subscriber.subscribe()
 
     // UI.
     monitor(subscriber, 'decrypted')

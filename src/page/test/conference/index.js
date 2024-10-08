@@ -249,7 +249,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     window.red5propublisher = publisher
     console.log('[Red5ProPublisher] Publish Complete.')
     // [NOTE] Moving SO setup until Package Sent amount is sufficient.
-    //    establishSharedObject(publisher, roomField.value, streamNameField.value);
     if (publisher.getType().toUpperCase() !== 'RTC') {
       // It's flash, let it go.
       establishSocketHost(publisher, roomField.value, streamNameField.value)

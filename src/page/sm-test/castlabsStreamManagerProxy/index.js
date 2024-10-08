@@ -23,25 +23,13 @@ NONINFRINGEMENT.   IN  NO  EVENT  SHALL INFRARED5, INC. BE LIABLE FOR ANY CLAIM,
 WHETHER IN  AN  ACTION  OF  CONTRACT,  TORT  OR  OTHERWISE,  ARISING  FROM,  OUT  OF  OR  IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
+/* global red5prosdk */
 import {
-  getRtcDrmTransformVersion,
-  setDrm,
-  videoTransformFunction,
-  audioTransformFunction,
-  Environments,
+  rtcDrmGetVersion,
+  rtcDrmEnvironments,
+  rtcDrmConfigure,
+  rtcDrmOnTrack,
 } from '../../lib/castlabs/rtc-drm-transform/rtc-drm-transform.min.js'
-
-var serverSettings = (function () {
-  var settings = sessionStorage.getItem('r5proServerSettings')
-  try {
-    return JSON.parse(settings)
-  } catch (e) {
-    console.error(
-      'Could not read server settings from sessionstorage: ' + e.message
-    )
-  }
-  return {}
-})()
 
 var configuration = (function () {
   var conf = sessionStorage.getItem('r5proTestBed')
@@ -54,23 +42,34 @@ var configuration = (function () {
   }
   return {}
 })()
+
 red5prosdk.setLogLevel(
   configuration.verboseLogging
     ? red5prosdk.LOG_LEVELS.TRACE
     : red5prosdk.LOG_LEVELS.WARN
 )
 
-const EncryptTypes = {
-  CBCS: 'cbcs',
-  CENC: 'cenc',
+const DecryptMode = Object.freeze({
+  InPlace: 0,
+  ClearKey: 1,
+  ProdDrm: 2,
+})
+
+const toggleProdDrmFields = (show) => {
+  const prodDrmFields = document.querySelectorAll('.prod-drm-field')
+  prodDrmFields.forEach((field) => {
+    field.classList.toggle('hidden', !show)
+  })
 }
 
-const EntryptionTypeValues = {
-  CLEARKEY: 'clearkey',
-  WIDEVINE: 'widevine',
-  FAIRPLAY: 'fairplay',
-  PLAYREADY: 'playready',
-}
+const decryptionModeSelect = document.querySelector('#decrypt-select')
+decryptionModeSelect.addEventListener('change', (e) => {
+  const { value } = e.target
+  toggleProdDrmFields(parseInt(value, 10) === DecryptMode.ProdDrm)
+})
+toggleProdDrmFields(
+  1 + decryptionModeSelect.selectedIndex === DecryptMode.ProdDrm
+)
 
 const getPortAndProtocol = (host) => {
   let ipReg = /^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/
@@ -92,23 +91,24 @@ const getValueFromId = (id) => {
 }
 
 const Uint8ArrayFromHex = (hex) => {
+  if (!hex) return null
+  if (hex.length % 2 !== 0) {
+    console.error(`Malformed hex string (${hex}), odd length`)
+    return null
+  }
   return Uint8Array.from(hex.match(/.{1,2}/g).map((byte) => parseInt(byte, 16)))
 }
 
-const getEncryptionTypeFromValue = (value) => {
-  if (value.toLowerCase() === EntryptionTypeValues.CLEARKEY.toLowerCase()) {
-    return EncryptTypes.CBCS
+const getPlatform = () => {
+  try {
+    const platform =
+      window?.navigator?.userAgentData?.platform || window?.navigator?.platform
+    return platform
+  } catch (e) {
+    // ignore
   }
-  return EncryptTypes.CENC
+  return undefined
 }
-
-const encryptKeyValue = (value) =>
-  new Uint8Array(
-    atob(value)
-      .split('')
-      .map((c) => c.charCodeAt(0))
-  )
-
 const getAuthenticationParams = () => {
   const auth = configuration.authentication
   return auth && auth.enabled
@@ -123,7 +123,7 @@ const getAuthenticationParams = () => {
 }
 
 const getRegionIfDefined = () => {
-  var region = configuration.streamManagerRegion
+  const region = configuration.streamManagerRegion
   if (
     typeof region === 'string' &&
     region.length > 0 &&
@@ -132,27 +132,6 @@ const getRegionIfDefined = () => {
     return region
   }
   return undefined
-}
-
-const requestEdge = async (configuration, forWhipWhep) => {
-  const { preferWhipWhep, host, app, stream1 } = configuration
-  var region = getRegionIfDefined()
-  if (!preferWhipWhep || !forWhipWhep) {
-    return streamManagerUtil.getOrigin(host, app, stream1, region)
-  } else {
-    // WHIP/WHEP knows how to handle proxy requests.
-    return {
-      serverAddress: host,
-      scope: app,
-      name: stream1,
-      params: region
-        ? {
-            region,
-            strict: true,
-          }
-        : undefined,
-    }
-  }
 }
 
 let subscriber
@@ -184,20 +163,6 @@ const baseConfig = {
   },
 }
 document.querySelector('#stream-title').innerText = baseConfig.streamName
-
-// newer, properly standardized RTCRtpScriptTransform API, only supported by Safari atm. The worker just pushes
-// arriving video frames back here to run through videoTransformFunction() just like Chrome
-const worker = new Worker('./worker.js', {
-  name: 'RTCRtpScriptTransform worker',
-  type: 'module',
-})
-worker.onmessage = (m) => {
-  if (m.data.streamType === 'video') {
-    videoTransformFunction(m.data.frame, null)
-  } else {
-    audioTransformFunction(m.data.frame, null)
-  }
-}
 
 const monitorBitrate = (pc, bitrateField, packetsField, resolutionField) => {
   return trackBitrate(
@@ -251,6 +216,7 @@ const onEncryptedSubscriberEvent = (event) => {
   if (type === 'WebRTC.Endpoint.Changed') {
     const { data } = event
     const { endpoint } = data
+    encryptedAddressField.classList.remove('hidden')
     encryptedAddressField.innerText = `Edge Address: ${endpoint}`
   }
 }
@@ -266,40 +232,79 @@ const onDecryptedSubscriberEvent = (event) => {
   if (type === 'WebRTC.Endpoint.Changed') {
     const { data } = event
     const { endpoint } = data
+    decryptedAddressField.classList.remove('hidden')
     decryptedAddressField.innerText = `Edge Address: ${endpoint}`
   }
 }
 
+const getConfiguration = (
+  forceSocketClient,
+  mediaElementId,
+  insertableStream
+) => {
+  const {
+    host,
+    app,
+    stream1,
+    streamManagerAPI,
+    preferWhipWhep,
+    streamManagerNodeGroup: nodeGroup,
+  } = baseConfig
+
+  const region = getRegionIfDefined()
+  const params = region
+    ? {
+        region,
+        strict: true,
+      }
+    : undefined
+  const preferSocket = forceSocketClient || !preferWhipWhep
+  const appContext = !preferSocket
+    ? `as/${streamManagerAPI}/proxy/${app}`
+    : `as/${streamManagerAPI}/proxy/ws/subscribe/${app}/${stream1}`
+
+  const httpProtocol = protocol === 'wss' ? 'https' : 'http'
+  const endpoint = !preferSocket
+    ? `${httpProtocol}://${host}:${port}/as/${streamManagerAPI}/proxy/whep/${app}/${stream1}`
+    : `${protocol}://${host}:${port}/as/${streamManagerAPI}/proxy/ws/subscribe/${app}/${stream1}`
+
+  var connectionParams = params
+    ? { ...params, ...getAuthenticationParams().connectionParams }
+    : getAuthenticationParams().connectionParams
+
+  var rtcConfig = {
+    ...baseConfig,
+    endpoint,
+    protocol,
+    port,
+    host,
+    streamName: stream1,
+    app: appContext,
+    mediaElementId,
+    rtcConfiguration: {
+      ...baseConfig.rtcConfiguration,
+      encodedInsertableStreams: insertableStream,
+    },
+    connectionParams: preferWhipWhep
+      ? {
+          ...connectionParams,
+          nodeGroup,
+        }
+      : {
+          ...connectionParams,
+          nodeGroup,
+          host,
+          app,
+        },
+  }
+  return rtcConfig
+}
+
 const encryptedPlayback = async () => {
-  const { app, proxy, preferWhipWhep } = configuration
+  const { preferWhipWhep } = configuration
   const { WHEPClient, RTCSubscriber } = red5prosdk
   try {
-    const { proxy, app } = configuration
-    const { rtcConfiguration } = baseConfig
-    const edgeConnection = await requestEdge(baseConfig)
-    const { serverAddress, scope } = edgeConnection
-    let connectionParams = edgeConnection
-      ? { ...edgeConnection, ...getAuthenticationParams().connectionParams }
-      : getAuthenticationParams().connectionParams
-    var config = Object.assign({}, baseConfig, {
-      protocol,
-      port,
-      app: preferWhipWhep ? app : proxy,
-      mediaElementId: 'red5pro-encrypted',
-      rtcConfiguration: {
-        ...rtcConfiguration,
-        encodedInsertableStreams: false,
-      },
-      connectionParams: preferWhipWhep
-        ? connectionParams
-        : {
-            ...connectionParams,
-            host: serverAddress,
-            app: scope,
-          },
-    })
-    encryptedAddressField.innerText = `Edge Address: ${serverAddress}`
-
+    const config = getConfiguration(!preferWhipWhep, 'red5pro-encrypted', false)
     encryptedSubscriber = preferWhipWhep
       ? new WHEPClient()
       : new RTCSubscriber()
@@ -316,54 +321,49 @@ const encryptedPlayback = async () => {
 }
 
 const decryptPlayback = async () => {
-  const { RTCSubscriber } = red5prosdk
+  const { preferWhipWhep } = configuration
+  const { WHEPClient, RTCSubscriber } = red5prosdk
   decryptButton.disabled = true
 
-  console.info(`Using castLabs RTC DRM v${getRtcDrmTransformVersion()}`)
+  console.info(`Using castLabs RTC DRM v${rtcDrmGetVersion()}`)
   try {
-    const transforms = {
-      video: videoTransformFunction,
-      audio: audioTransformFunction,
-      worker: worker,
-    }
-
-    const { proxy } = configuration
-    const edgeConnection = await requestEdge(baseConfig, false)
-    const { serverAddress, scope } = edgeConnection
-    let connectionParams = edgeConnection
-      ? { ...edgeConnection, ...getAuthenticationParams().connectionParams }
-      : getAuthenticationParams().connectionParams
-    var config = Object.assign({}, baseConfig, {
-      protocol,
-      port,
-      app: proxy,
-      connectionParams: {
-        ...connectionParams,
-        host: serverAddress,
-        app: scope,
-      },
-    })
-    decryptedAddressField.innerText = `Edge Address: ${serverAddress}`
-
-    subscriber = await new RTCSubscriber().init(config, transforms)
-    subscriber.on('*', (event) => onDecryptedSubscriberEvent(event))
-    await subscriber.subscribe()
-
     const element = document.querySelector(`#${baseConfig.mediaElementId}`)
     const encryption = getValueFromId('scheme-select')
-    const keyId = Uint8ArrayFromHex(getValueFromId('key-input'))
+    const keyId = Uint8ArrayFromHex(getValueFromId('key-id-input'))
     const iv = Uint8ArrayFromHex(getValueFromId('iv-input'))
 
-    const drmConfig = {
-      environment: Environments.Staging,
-      merchant: getValueFromId('merchant-input'),
-      audioEncrypted: false,
-      encryption,
-      keyId,
-      iv,
+    let platform = getPlatform()
+    const requestProdDRM =
+      decryptionModeSelect.selectedIndex === DecryptMode.ProdDrm
+    let video = {
+      codec: 'H264',
+      encryption: encryption.toUpperCase() === 'CTR' ? 'cenc' : 'cbcs',
+      keyId: requestProdDRM ? keyId : undefined,
+      iv: requestProdDRM ? iv : undefined,
+      robustness: platform === 'Android' ? 'HW' : undefined,
     }
-    // castLabs.
-    setDrm(element, drmConfig)
+    let drmConfig = {
+      environment: rtcDrmEnvironments.Staging,
+      merchant: getValueFromId('merchant-input'),
+      videoElement: element,
+      video,
+    }
+
+    drmConfig.videoElement.addEventListener('rtcdrmerror', (event) => {
+      alert(`DRM error: ${event.detail.message}`)
+    })
+    rtcDrmConfigure(drmConfig)
+
+    const config = getConfiguration(!preferWhipWhep, 'red5pro-subscriber', true)
+    subscriber = preferWhipWhep ? new WHEPClient() : new RTCSubscriber()
+    await subscriber.init(config)
+    subscriber.on('WebRTC.PeerConnection.Available', () => {
+      // Listen for ontrack event to get the decrypted stream.
+      const pc = subscriber.getPeerConnection()
+      pc.ontrack = (e) => rtcDrmOnTrack(e)
+    })
+    subscriber.on('*', (event) => onDecryptedSubscriberEvent(event))
+    await subscriber.subscribe()
 
     // UI.
     monitor(subscriber, 'decrypted')
