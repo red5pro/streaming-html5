@@ -24,6 +24,13 @@ WHETHER IN  AN  ACTION  OF  CONTRACT,  TORT  OR  OTHERWISE,  ARISING  FROM,  OUT
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 /* GENERAL */
+:root {
+  --color-lightgray: #dadada;
+  --color-black: rgb(12, 12, 12);
+  --color-darkgray: rgb(27, 27, 27);
+  --color-midgray: rgb(55, 57, 57);
+}
+
 label,
 button,
 fieldset,
@@ -72,7 +79,7 @@ textarea {
 /* GENERAL */
 
 /* Modal ~~ */
-.modal {
+.mixer-modal {
   position: fixed;
   background-color: rgba(0, 0, 0, 0.3);
   top: 0;
@@ -85,7 +92,7 @@ textarea {
   -moz-transition: all 0.3s;
   transition: all 0.3s;
 }
-.modal > div {
+.mixer-modal > div {
   position: absolute;
   top: 50%;
   left: 50%;
@@ -139,7 +146,7 @@ textarea {
 .mixer-form-item > label {
   width: 90px;
   color: var(--color-lightgray);
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 400;
   line-height: 24px;
   letter-spacing: 0.32px;
@@ -200,7 +207,7 @@ textarea {
   flex-direction: row;
   align-items: center;
   column-gap: 16px;
-  padding: 7px 16px 7px 34px;
+  padding: 7px 16px 7px 16px;
   background-color: var(--color-darkgray);
   height: 100%;
 }
@@ -213,6 +220,7 @@ textarea {
 
 #toggleMute {
   padding: 7px 10px;
+  height: 100%;
   background-color: var(--color-darkgray);
   cursor: pointer;
 }

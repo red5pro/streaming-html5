@@ -49,26 +49,29 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
     // Get RenderTrees for Mixer Event
     getRenderTrees: async (jwt, smVersion, nodeGroupName, eventId) => {
-      const url = `/as/${smVersion}/streams/mixer/${nodeGroupName}/${eventId}`
-      const response = await fetch(url, {
-        method: 'GET',
-        withCredentials: true,
-        credentials: 'include',
-        headers: {
-          Authorization: 'Bearer ' + jwt,
-        },
-      }).catch((error) => {
-        console.log('error trying to getRenderTrees: ' + error)
-      })
-
       var result = null
-      if (response.ok) {
-        result = await response.json()
-        // console.log("RENDERTREE RESPONSE: " + JSON.stringify(result, null, 4));
-      } else {
-        console.log('RENDERTREE RESPONSE ERROR ' + response.status)
-      }
+      const url = `/as/${smVersion}/streams/mixer/${nodeGroupName}/${eventId}`
+      try {
+        const response = await fetch(url, {
+          method: 'GET',
+          withCredentials: true,
+          credentials: 'include',
+          headers: {
+            Authorization: 'Bearer ' + jwt,
+          },
+        }).catch((error) => {
+          console.log('error trying to getRenderTrees: ' + error)
+        })
 
+        if (response.ok) {
+          result = await response.json()
+          // console.log("RENDERTREE RESPONSE: " + JSON.stringify(result, null, 4));
+        } else {
+          console.log('RENDERTREE RESPONSE ERROR ' + response.status)
+        }
+      } catch (error) {
+        console.log('Error trying to getRenderTrees: ' + error)
+      }
       return result
     },
 

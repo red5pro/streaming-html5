@@ -111,7 +111,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       preferWhipWhep,
       streamManagerNodeGroup: nodeGroup,
     } = configuration
-    const { protocol, port } = getSocketLocationFromProtocol()
+    const { protocol, port } = getSocketLocationFromProtocol(host)
 
     const region = getRegionIfDefined()
     const params = region
@@ -1171,10 +1171,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   const fetchSwapStreams = async () => {
     const { host, streamManagerAPI } = configuration
-    const { protocol, port } = getSocketLocationFromProtocol()
+    const { protocol, port } = getSocketLocationFromProtocol(host)
     const url =
-      protocol +
-      '//' +
+      (protocol === 'ws' ? 'http' : 'https') +
+      '://' +
       host +
       port +
       '/as/' +
