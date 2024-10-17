@@ -15,25 +15,33 @@
         <h1 class="centered test-title red-text">Brew Mixer Stream Manager Proxy Test</h1>
       </div>
       <div class="mixer-section">
-        <!-- Video Controls -->
-        <div id="videoControls" class="container">
-          <div id="layout" class="layout-controls">
-            <p class="layout-item">
-              <label> <input type="radio" name="layout" value="2" checked> <img src="assets/2x2.svg" alt="2x2"></label>
-            </p>
-            <p class="layout-item">
-              <label> <input type="radio" name="layout" value="3"> <img src="assets/3x3.svg" alt="3x3"></label>
-            </p>
-            <p class="layout-item">
-              <label> <input type="radio" name="layout" value="4" size="3"> <img src="assets/4x4.svg" alt="4x4"></label>
-            </p>
+        <div id="topBarControls" class="container">
+          <!-- Video Controls -->
+          <div id="videoControls">
+            <div id="layout" class="layout-controls">
+              <p class="layout-item">
+                <label> <input type="radio" name="layout" value="2" checked> <img src="assets/2x2.svg" alt="2x2"></label>
+              </p>
+              <p class="layout-item">
+                <label> <input type="radio" name="layout" value="3"> <img src="assets/3x3.svg" alt="3x3"></label>
+              </p>
+              <p class="layout-item">
+                <label> <input type="radio" name="layout" value="4" size="3"> <img src="assets/4x4.svg" alt="4x4"></label>
+              </p>
+            </div>
+            <div id="toggleMute">
+              <p id="unmuteButton" class="mute-button">
+                <img src="assets/volume_off.svg" width="12" height="12" alt="Mute">
+              </p>
+              <p id="muteButton" class="mute-button hidden">
+                <img src="assets/volume_on.svg" width="12" height="12" alt="Unmute">
+              </p>
+            </div>
           </div>
-          <div id="toggleMute" onClick="toggleMute()">
-            <p id="unmuteButton" class="mute-button">
-              <img src="assets/volume_off.svg" width="12" height="12" alt="Mute">
-            </p>
-            <p id="muteButton" class="mute-button hidden">
-              <img src="assets/volume_on.svg" width="12" height="12" alt="Unmute">
+          <div id="mixerControls">
+            <p id="stopButton" class="stop-button">
+              <img src="assets/stop_button.svg" width="12" height="12" alt="Stop">
+              <span>Stop Mixer</span>
             </p>
           </div>
         </div>
@@ -100,12 +108,26 @@
                   size="5" value="48000">
                 </p>
                 <p class="mixer-form-controls">
-                  <input type="button" class="mixer-form-submit" onclick="newMixer()"
-                  value="START">
+                  <input id="mixer-form-submit" type="button" class="mixer-form-submit" value="START" disabled>
                 </p>
               </form>
             </div>
           </div>
+        </div>
+        <!-- Render Graph -->
+        <div id="activeTreeBox" class="hidden offscreen">
+          <div>
+            <h2>Active RenderTree</h2>
+            <textarea id="activeNodeGraph" rows="80" cols="45">
+            </textarea>
+          </div>
+          <div>
+            <input type="button" class="mybutton" id="submitUserTree"
+              value="Submit" onClick="submitUserTree()">
+          </div>
+        </div>
+        <div class="hidden offscreen">
+          <textarea id="defaultNodeGraph" rows="80" cols="45"></textarea>
         </div>
       </div>
     </div>

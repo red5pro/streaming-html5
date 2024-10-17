@@ -27,42 +27,87 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   // BrewMixer API Service Module
   window.brewmixer = {
     // Create Mixer Event
-    createMixerEvent: async (jwt, smVersion, nodeGroupName, mixerRequest) => {
-      const url = `/as/${smVersion}/streams/mixer/${nodeGroupName}`
-      const response = await fetch(url, {
-        method: 'POST',
-        withCredentials: true,
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: 'Bearer ' + jwt,
-        },
-        body: JSON.stringify(mixerRequest),
-      }).catch((error) => {
-        console.log('error trying to createMixerEvent: ' + error)
-      })
 
-      return response
+    /*
+    RESPONSE
+    ========================
+    [
+    {
+        "streamGuid": "live/mix1",
+        "serverAddress": "129.213.90.68",
+        "nodeRole": "mixer",
+        "subGroup": "ashburn",
+        "nodeState": "INSERVICE"
+    },
+    {
+        "streamGuid": "live/mix1",
+        "serverAddress": "132.145.177.11",
+        "nodeRole": "origin",
+        "subGroup": "ashburn",
+        "nodeState": "INSERVICE",
+        "subscribers": 0
+    }
+    ]
+     */
+    createMixerEvent: async (
+      host,
+      jwt,
+      smVersion,
+      nodeGroupName,
+      mixerRequest
+    ) => {
+      const url = `https://${host}/as/${smVersion}/streams/mixer/${nodeGroupName}`
+      try {
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: 'Bearer ' + jwt,
+          },
+          body: JSON.stringify(mixerRequest),
+        })
+        return response
+      } catch (error) {
+        return { error: 'Error trying to createMixerEvent: ' + error }
+      }
     },
 
-    // TODO: Get All Mixer Events
-
-    // Get RenderTrees for Mixer Event
-    getRenderTrees: async (jwt, smVersion, nodeGroupName, eventId) => {
+    // Get All Mixer Events
+    listMixerEvents: async (host, jwt, smVersion, nodeGroupName) => {
       var result = null
-      const url = `/as/${smVersion}/streams/mixer/${nodeGroupName}/${eventId}`
+      const url = `https://${host}/as/${smVersion}/streams/mixer/${nodeGroupName}`
       try {
         const response = await fetch(url, {
           method: 'GET',
-          withCredentials: true,
-          credentials: 'include',
           headers: {
             Authorization: 'Bearer ' + jwt,
+            'Content-Type': 'application/json',
           },
-        }).catch((error) => {
-          console.log('error trying to getRenderTrees: ' + error)
         })
+        if (response.ok) {
+          result = await response.json()
+          // console.log("listMixerEvents RESPONSE: " + JSON.stringify(result, null, 4));
+        } else {
+          console.log('LISTMIXEREVENTS RESPONSE ERROR ' + response.status)
+        }
+      } catch (error) {
+        console.log('Error trying to listMixerEvents: ' + error)
+      }
+      return result
+    },
 
+    // Get RenderTrees for Mixer Event
+    getRenderTrees: async (host, jwt, smVersion, nodeGroupName, event) => {
+      var result = null
+      const url = `https://${host}/as/${smVersion}/streams/mixer/${nodeGroupName}/${event}`
+      try {
+        const response = await fetch(url, {
+          method: 'GET',
+          headers: {
+            Authorization: 'Bearer ' + jwt,
+            'Content-Type': 'application/json',
+          },
+        })
         if (response.ok) {
           result = await response.json()
           // console.log("RENDERTREE RESPONSE: " + JSON.stringify(result, null, 4));
@@ -79,19 +124,18 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     // send the globalNodeGraph to the server
     // note that renderTrees is an array
     updateRenderTrees: async function (
+      host,
       jwt,
       smVersion,
       nodeGroupName,
       eventId,
       renderTrees
     ) {
-      const url = `/as/${smVersion}/streams/mixer/${nodeGroupName}/${eventId}`
+      const url = `https://${host}/as/${smVersion}/streams/mixer/${nodeGroupName}/${eventId}`
       const body = JSON.stringify(renderTrees)
       try {
         const response = await fetch(url, {
           method: 'PUT',
-          withCredentials: true,
-          credentials: 'include',
           headers: {
             'Content-Type': 'application/json',
             Authorization: 'Bearer ' + jwt,
@@ -111,20 +155,26 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     },
 
     // Stop Mixer Event
-    stopMixerEvent: async function (jwt, smVersion, nodeGroupName, eventId) {
-      const url = `/as/${smVersion}/streams/mixer/${nodeGroupName}/${eventId}`
-      const response = await fetch(url, {
-        method: 'DELETE',
-        withCredentials: true,
-        credentials: 'include',
-        headers: {
-          Authorization: 'Bearer ' + jwt,
-        },
-      }).catch((error) => {
-        console.log('error trying to stopMixerEvent: ' + error)
-      })
-
-      return response
+    stopMixerEvent: async function (
+      host,
+      jwt,
+      smVersion,
+      nodeGroupName,
+      eventId
+    ) {
+      const url = `https://${host}/as/${smVersion}/streams/mixer/${nodeGroupName}/${eventId}`
+      try {
+        const response = await fetch(url, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: 'Bearer ' + jwt,
+          },
+        })
+        return response
+      } catch (error) {
+        return { error: 'Error trying to stopMixerEvent: ' + error }
+      }
     },
   }
 })(window)

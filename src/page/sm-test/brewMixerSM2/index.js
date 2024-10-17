@@ -59,6 +59,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   let guids = []
   const GUID_COUNT = 25
   const {
+    host,
     streamManagerUser,
     streamManagerPassword,
     streamManagerAPI: smVersion,
@@ -190,14 +191,126 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   let mixerStreamGuid = urlParams.get('mixer')
   var mixerStreamPath = ''
   var mixerStreamName = ''
+  var defaultGraphValue = JSON.stringify([
+    {
+      rootVideoNode: {
+        nodes: [
+          {
+            red: 0,
+            green: 0,
+            blue: 0,
+            alpha: 1,
+            node: 'SolidColorNode',
+          },
+          {
+            node: 'VideoSourceNode',
+            streamGuid: 'live/stream1',
+            sourceX: 0,
+            sourceY: 0,
+            sourceWidth: 1920,
+            sourceHeight: 1080,
+            destX: 0,
+            destY: 0,
+            destWidth: 960,
+            destHeight: 540,
+          },
+          {
+            node: 'VideoSourceNode',
+            streamGuid: 'live/stream2',
+            sourceX: 0,
+            sourceY: 0,
+            sourceWidth: 1920,
+            sourceHeight: 1080,
+            destX: 960,
+            destY: 0,
+            destWidth: 960,
+            destHeight: 540,
+          },
+          {
+            node: 'VideoSourceNode',
+            streamGuid: 'live/stream3',
+            sourceX: 0,
+            sourceY: 0,
+            sourceWidth: 1920,
+            sourceHeight: 1080,
+            destX: 0,
+            destY: 540,
+            destWidth: 960,
+            destHeight: 540,
+          },
+          {
+            node: 'VideoSourceNode',
+            streamGuid: 'live/stream4',
+            sourceX: 0,
+            sourceY: 0,
+            sourceWidth: 1920,
+            sourceHeight: 1080,
+            destX: 960,
+            destY: 540,
+            destWidth: 960,
+            destHeight: 540,
+          },
+        ],
+        node: 'CompositorNode',
+      },
+      rootAudioNode: {
+        nodes: [
+          {
+            streamGuid: 'live/stream1',
+            pan: 0,
+            gain: -6,
+            node: 'AudioSourceNode',
+          },
+          {
+            streamGuid: 'live/stream2',
+            pan: 0,
+            gain: -100,
+            node: 'AudioSourceNode',
+          },
+          {
+            streamGuid: 'live/stream3',
+            pan: 0,
+            gain: -100,
+            node: 'AudioSourceNode',
+          },
+          {
+            streamGuid: 'live/stream4',
+            pan: 0,
+            gain: -100,
+            node: 'AudioSourceNode',
+          },
+        ],
+        node: 'SumNode',
+      },
+    },
+  ])
 
   const video = document.getElementById('red5pro-subscriber')
   const canvas = document.getElementById('videoOverlay')
 
   const activeNodeGraph = document.getElementById('activeNodeGraph')
   const startComp = document.getElementById('startComp')
+  const toggleMuteButton = document.getElementById('toggleMute')
+  const stopButton = document.getElementById('stopButton')
   const playerContainer = document.getElementById('playerContainer')
   const mixerGuidField = document.getElementById('mixerGuidField')
+  const mixerFormSubmit = document.getElementById('mixer-form-submit')
+  const defaultNodeGraph = document.getElementById('defaultNodeGraph')
+
+  defaultNodeGraph.value = defaultGraphValue
+
+  stopButton.addEventListener('click', (event) => {
+    event.preventDefault()
+    stopMixer()
+  })
+  mixerFormSubmit.addEventListener('click', (event) => {
+    event.preventDefault()
+    startNewMixer()
+  })
+  toggleMuteButton.addEventListener('click', (event) => {
+    event.preventDefault()
+    toggleMute()
+  })
 
   // ============= DRAWING FUNCTIONS ===============
 
@@ -696,7 +809,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     zoomNode.destWidth = w
     zoomNode.destHeight = h
 
-    brewmixer.updateRenderTrees(jwt, smVersion, nodeGroupName, eventId, [
+    brewmixer.updateRenderTrees(host, jwt, smVersion, nodeGroupName, eventId, [
       globalNodeGraph,
     ])
   }
@@ -792,9 +905,14 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     for (const node of audioNodes) {
       if (node.streamGuid === streamGuid) {
         node.gain = gain
-        brewmixer.updateRenderTrees(jwt, smVersion, nodeGroupName, eventId, [
-          globalNodeGraph,
-        ])
+        brewmixer.updateRenderTrees(
+          host,
+          jwt,
+          smVersion,
+          nodeGroupName,
+          eventId,
+          [globalNodeGraph]
+        )
         break
       }
     }
@@ -828,9 +946,14 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         if (node != null && currentState == OverlayStates.IDLE) {
           selectedNode = node
           videoNodeToTop(selectedNode)
-          brewmixer.updateRenderTrees(jwt, smVersion, nodeGroupName, eventId, [
-            globalNodeGraph,
-          ])
+          brewmixer.updateRenderTrees(
+            host,
+            jwt,
+            smVersion,
+            nodeGroupName,
+            eventId,
+            [globalNodeGraph]
+          )
           setState(OverlayStates.SELECTED)
         } else if (currentState == OverlayStates.SELECTED) {
           var handled = false
@@ -884,6 +1007,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
                 }
 
                 brewmixer.updateRenderTrees(
+                  host,
                   jwt,
                   smVersion,
                   nodeGroupName,
@@ -914,6 +1038,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
                     }
 
                     brewmixer.updateRenderTrees(
+                      host,
                       jwt,
                       smVersion,
                       nodeGroupName,
@@ -964,9 +1089,14 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         zoomT = 0.0
         zoomIncr = 0.14
         setState(OverlayStates.ZOOMING)
-        brewmixer.updateRenderTrees(jwt, smVersion, nodeGroupName, eventId, [
-          globalNodeGraph,
-        ])
+        brewmixer.updateRenderTrees(
+          host,
+          jwt,
+          smVersion,
+          nodeGroupName,
+          eventId,
+          [globalNodeGraph]
+        )
         setTimeout(doZoom, 30)
       }
       // else, they clicked empty space: no-op
@@ -1062,9 +1192,14 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
         drawCanvas()
 
-        brewmixer.updateRenderTrees(jwt, smVersion, nodeGroupName, eventId, [
-          globalNodeGraph,
-        ])
+        brewmixer.updateRenderTrees(
+          host,
+          jwt,
+          smVersion,
+          nodeGroupName,
+          eventId,
+          [globalNodeGraph]
+        )
       } else if (currentState == OverlayStates.RESIZING) {
         let w, h
         const x = event.clientX - canvas.getBoundingClientRect().left
@@ -1082,9 +1217,14 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           selectedNode.destHeight = h
           drawCanvas()
 
-          brewmixer.updateRenderTrees(jwt, smVersion, nodeGroupName, eventId, [
-            globalNodeGraph,
-          ])
+          brewmixer.updateRenderTrees(
+            host,
+            jwt,
+            smVersion,
+            nodeGroupName,
+            eventId,
+            [globalNodeGraph]
+          )
         } else if (dragTarget == Direction.NORTHEAST) {
           w = x - drawParams.x
 
@@ -1095,9 +1235,14 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           selectedNode.destHeight = h
           drawCanvas()
 
-          brewmixer.updateRenderTrees(jwt, smVersion, nodeGroupName, eventId, [
-            globalNodeGraph,
-          ])
+          brewmixer.updateRenderTrees(
+            host,
+            jwt,
+            smVersion,
+            nodeGroupName,
+            eventId,
+            [globalNodeGraph]
+          )
         } else if (dragTarget == Direction.SOUTHWEST) {
           selectedNode.destX = x - dragX
 
@@ -1108,9 +1253,14 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           selectedNode.destHeight = h
           drawCanvas()
 
-          brewmixer.updateRenderTrees(jwt, smVersion, nodeGroupName, eventId, [
-            globalNodeGraph,
-          ])
+          brewmixer.updateRenderTrees(
+            host,
+            jwt,
+            smVersion,
+            nodeGroupName,
+            eventId,
+            [globalNodeGraph]
+          )
         } else if (dragTarget == Direction.SOUTHEAST) {
           w = x - drawParams.x
           h = y - drawParams.y
@@ -1119,9 +1269,14 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           selectedNode.destHeight = h
           drawCanvas()
 
-          brewmixer.updateRenderTrees(jwt, smVersion, nodeGroupName, eventId, [
-            globalNodeGraph,
-          ])
+          brewmixer.updateRenderTrees(
+            host,
+            jwt,
+            smVersion,
+            nodeGroupName,
+            eventId,
+            [globalNodeGraph]
+          )
         }
       } else {
         //					console.log(`mouse moving but some other state, cur state ${curState}`);
@@ -1169,18 +1324,17 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
   }
 
+  const toggleMute = () => {
+    const vid = document.getElementById('red5pro-subscriber')
+    vid.muted = !vid.muted
+  }
+
   const fetchSwapStreams = async () => {
     const { host, streamManagerAPI } = configuration
     const { protocol, port } = getSocketLocationFromProtocol(host)
-    const url =
-      (protocol === 'ws' ? 'http' : 'https') +
-      '://' +
-      host +
-      port +
-      '/as/' +
-      streamManagerAPI +
-      '/streams/stream/' +
-      nodeGroupName
+    const url = `${
+      protocol === 'ws' ? 'http' : 'https'
+    }://${host}:${port}/as/${streamManagerAPI}/streams/stream/${nodeGroupName}`
     try {
       const response = await fetch(url)
       let result = []
@@ -1227,6 +1381,85 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   initStreamGuid()
 
   // ============= INITIALIZATION ===============
+  const startNewMixer = async () => {
+    mixerFormSubmit.disabled = true
+    mixerStreamGuid = mixerGuidField.value
+    initStreamGuid()
+
+    const eventId = document.getElementById('eventIdField').value
+    const outputWidth = document.getElementById('outputWidth').value
+    const outputHeight = document.getElementById('outputHeight').value
+    const bitrate = document.getElementById('bitrate').value
+    const qpmin = document.getElementById('qpmin').value
+    const qpmax = document.getElementById('qpmax').value
+    const maxbitrate = document.getElementById('maxbitrate').value
+    const framerate = document.getElementById('framerate').value
+    const audiorate = document.getElementById('audiorate').value
+
+    const request = {
+      eventId: eventId,
+      streamGuid: mixerStreamGuid,
+      width: outputWidth,
+      height: outputHeight,
+      frameRate: framerate,
+      bitRate: bitrate,
+      maxBitRate: maxbitrate,
+      qpMin: qpmin,
+      qpMax: qpmax,
+      audioSampleRate: audiorate,
+      audioChannels: 2,
+      subMixes: 1,
+    }
+
+    const response = await brewmixer.createMixerEvent(
+      host,
+      jwt,
+      smVersion,
+      nodeGroupName,
+      request
+    )
+    if (response.ok) {
+      console.log('createMixerEvent response: ' + response.text)
+
+      // create the default nodegraph
+      globalNodeGraph = JSON.parse(defaultNodeGraph.value)[0]
+      brewmixer.updateRenderTrees(
+        host,
+        jwt,
+        smVersion,
+        nodeGroupName,
+        eventId,
+        [globalNodeGraph]
+      )
+
+      // sleep before subscribe
+      await new Promise((r) => setTimeout(r, 1000))
+      // init / start subscription
+      init(getConfiguration(), 'stream')
+    } else {
+      try {
+        const responseObj = JSON.parse(response)
+        console.log('Error:\n', JSON.stringify(responseObj, null, 4)) // pretty
+      } catch (e) {
+        console.log('Error:\n', response)
+      }
+    }
+  }
+
+  const stopMixer = async () => {
+    if (window.confirm('Really stop mixer and end stream?')) {
+      await brewmixer.stopMixerEvent(
+        host,
+        jwt,
+        smVersion,
+        nodeGroupName,
+        eventId
+      )
+      // refresh page/reset
+      location.reload()
+    }
+  }
+
   const init = async (configuration, prefix = 'stream') => {
     const { app, host } = configuration
 
@@ -1252,17 +1485,21 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
     initCanvasEvents()
 
-    // This JWT will expire, but we cache it forever with no strategy to update
-    jwt = await streamManagerUtil.authenticate(
-      host,
-      streamManagerUser,
-      streamManagerPassword
-    )
+    if (!jwt) {
+      // This JWT will expire, but we cache it forever with no strategy to update
+      jwt = await streamManagerUtil.authenticate(
+        host,
+        smVersion,
+        streamManagerUser,
+        streamManagerPassword
+      )
+    }
 
     // first, use the query params and try to get the nodegraph for the specified stream (if any).
     // if it exists, start subscription, show controls etc
     // [if it doesn't exist, only show the Start New Mixer controls (default behavior for simplicity)]
     const renderTrees = await brewmixer.getRenderTrees(
+      host,
       jwt,
       smVersion,
       nodeGroupName,
@@ -1272,9 +1509,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       activeNodeGraph.value = JSON.stringify(renderTrees[0], null, 2)
 
       // show controls
-      startComp.classList.toggle('hidden') // , (force = true))
-      startComp.classList.toggle('offscreen') // , (force = true))
-      playerContainer.classList.toggle('hidden') // , (force = false))
+      startComp.classList.toggle('hidden', true)
+      startComp.classList.toggle('offscreen', true)
+      // playerContainer.classList.toggle('hidden', (force = false))
       // videoControls.classList.toggle('hidden') //, (force = false))
 
       // activeTreeBox.classList.toggle('hidden') //, (force = false))
@@ -1285,6 +1522,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
       // start subscription;
       startSubscription()
+    } else {
+      mixerFormSubmit.disabled = false
     }
 
     const streamList = await fetchSwapStreams()
@@ -1295,6 +1534,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   window.onload = () => {
+    mixerFormSubmit.disabled = true
     init(getConfiguration(), 'stream')
   }
   // ============= INITIALIZATION ===============

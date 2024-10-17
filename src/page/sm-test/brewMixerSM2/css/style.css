@@ -191,8 +191,19 @@ textarea {
   margin-top: 48px;
   cursor: pointer;
 }
+.mixer-form-submit:disabled,
+.render-tree-submit:disabled {
+  opacity: 0.5;
+  cursor: unset;
+}
 /* ~~ Modal */
 /* ~~ Video Controls */
+#topBarControls {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+}
+
 #videoControls {
   display: flex;
   flex-direction: row;
@@ -258,11 +269,36 @@ textarea {
 }
 /* ~~ Video Controls */
 
+/* Mixer Controls ~~ */
+#mixerControls {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  column-gap: 16px;
+  padding: 0 16px;
+  background-color: var(--color-darkgray);
+  height: 100%;
+}
+.stop-button {
+  height: 100%;
+  display: flex;
+  flex-direction: row;
+  column-gap: 8px;
+  align-items: center;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--color-lightgray);
+}
+/* ~~ Mixer Controls */
+
 /* Player Container ~~ */
 #playerContainer {
   background-color: rgb(57, 57, 57);
   width: 100%;
   height: 100%;
+}
+#red5pro-subscriber {
+  width: 100%;
 }
 .centerContents {
   justify-content: center;

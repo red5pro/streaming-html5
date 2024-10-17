@@ -648,6 +648,7 @@ body {
 
 
 		// XXX not sure how to get these from config yet, but they should come from settings
+		var smVersion = "v1";
 		var streamManagerUser = "admin";
 		var streamManagerPassword = "xyz123";
 		var nodeGroupName = "nate1";
@@ -1800,6 +1801,7 @@ body {
 			// XXX this JWT will expire, but we cache it forever with no strategy to update
 	        jwt = await streamManagerUtil.authenticate(
 	    	        host,
+								smVersion,
 	    	        streamManagerUser,
 	    	        streamManagerPassword
 	    	      )
