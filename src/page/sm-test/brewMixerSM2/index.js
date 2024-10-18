@@ -1313,7 +1313,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   const submitUserTree = () => {
     globalNodeGraph = JSON.parse(activeNodeGraph.value)
-    brewmixer.updateRenderTrees(jwt, nodeGroupName, eventId, [globalNodeGraph])
+    brewmixer.updateRenderTrees(host, jwt, smVersion, nodeGroupName, eventId, [
+      globalNodeGraph,
+    ])
+    // toggleRenderTree()
   }
 
   const onSubscriberEvent = (event) => {
