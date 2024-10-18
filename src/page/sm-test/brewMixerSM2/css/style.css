@@ -171,6 +171,7 @@ textarea {
   display: flex;
   align-items: flex-end;
   justify-content: flex-end;
+  margin-top: 48px;
 }
 
 .mixer-form-submit,
@@ -184,11 +185,9 @@ textarea {
   background: #fff;
   color: #000;
   border: unset;
-  font-family: 'Clash Grotesk';
   font-weight: 500;
   letter-spacing: 1.5px;
   font-size: 14px;
-  margin-top: 48px;
   cursor: pointer;
 }
 .mixer-form-submit:disabled,
@@ -274,20 +273,20 @@ textarea {
   display: flex;
   flex-direction: row;
   align-items: center;
-  column-gap: 16px;
-  padding: 0 16px;
-  background-color: var(--color-darkgray);
+  column-gap: 4px;
   height: 100%;
 }
-.stop-button {
+.mixer-controls-button {
   height: 100%;
   display: flex;
   flex-direction: row;
   column-gap: 8px;
+  padding: 0 16px;
   align-items: center;
   cursor: pointer;
   font-size: 14px;
-  color: var(--color-lightgray);
+  background-color: var(--color-darkgray);
+  color: var(--color-gray);
 }
 /* ~~ Mixer Controls */
 
@@ -296,12 +295,64 @@ textarea {
   background-color: rgb(57, 57, 57);
   width: 100%;
   height: 100%;
+  position: relative;
+  display: flex;
 }
+
+#videoOverlay,
 #red5pro-subscriber {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1;
+}
+
+#red5pro-subscriber {
+  z-index: 0;
   width: 100%;
 }
+
 .centerContents {
   justify-content: center;
   text-align: center;
 }
 /* ~~ Player Container */
+
+/* Active Tree ~~ */
+#activeTreeBox {
+  position: absolute;
+  right: 0;
+  top: 0;
+  height: 100%;
+  background-color: #000;
+  padding: 12px;
+  width: 333px;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  align-items: center;
+  z-index: 104;
+  row-gap: 16px;
+  border: 1px solid var(--color-gray);
+}
+
+#activeNodeGraph {
+  width: 100%;
+  flex: 2;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 24px;
+  letter-spacing: 0.32px;
+  flex-grow: 2;
+  border: none;
+  background-color: var(--color-darkgray);
+}
+
+.active-tree-header {
+  font-size: 14px;
+  color: var(--color-gray);
+  text-align: center;
+  width: 100%;
+}
+/* ~~ Active Tree */

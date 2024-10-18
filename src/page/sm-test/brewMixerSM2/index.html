@@ -39,7 +39,11 @@
             </div>
           </div>
           <div id="mixerControls">
-            <p id="stopButton" class="stop-button">
+            <p id="renderTreeToggle" class="mixer-controls-button">
+              <img src="assets/render_tree.svg" alt="Render Tree">
+              <span>Render Tree</span>
+            </p>
+            <p id="stopButton" class="mixer-controls-button">
               <img src="assets/stop_button.svg" width="12" height="12" alt="Stop">
               <span>Stop Mixer</span>
             </p>
@@ -47,9 +51,14 @@
         </div>
         <!-- Player Container -->
         <div id="playerContainer" class="centerContents">
-          <video id="red5pro-subscriber" autoplay="">
-          </video>
-          <canvas class="canvas" id="videoOverlay" width="300" height="150" style="width: 300px; height: 150px; left: 290px; top: 102.5px;"></canvas>
+          <video id="red5pro-subscriber" autoplay=""></video>
+          <canvas id="videoOverlay" class="canvas"></canvas>
+          <!-- Render Graph -->
+          <div id="activeTreeBox" class="hidden offscreen">
+            <p class="active-tree-header">Active Render Tree</p>
+            <textarea id="activeNodeGraph"></textarea>
+            <input type="button" id="render-tree-submit" class="render-tree-submit" value="Submit">
+          </div>
         </div>
         <!-- Modal Settings -->
         <div id="startComp" class="mixer-modal">
@@ -113,21 +122,6 @@
               </form>
             </div>
           </div>
-        </div>
-        <!-- Render Graph -->
-        <div id="activeTreeBox" class="hidden offscreen">
-          <div>
-            <h2>Active RenderTree</h2>
-            <textarea id="activeNodeGraph" rows="80" cols="45">
-            </textarea>
-          </div>
-          <div>
-            <input type="button" class="mybutton" id="submitUserTree"
-              value="Submit" onClick="submitUserTree()">
-          </div>
-        </div>
-        <div class="hidden offscreen">
-          <textarea id="defaultNodeGraph" rows="80" cols="45"></textarea>
         </div>
       </div>
     </div>

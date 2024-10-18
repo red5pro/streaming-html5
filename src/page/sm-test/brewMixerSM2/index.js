@@ -285,20 +285,23 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     },
   ])
 
-  const video = document.getElementById('red5pro-subscriber')
   const canvas = document.getElementById('videoOverlay')
+  const video = document.getElementById('red5pro-subscriber')
 
   const activeNodeGraph = document.getElementById('activeNodeGraph')
   const startComp = document.getElementById('startComp')
   const toggleMuteButton = document.getElementById('toggleMute')
+  const renderTreeToggle = document.getElementById('renderTreeToggle')
   const stopButton = document.getElementById('stopButton')
-  const playerContainer = document.getElementById('playerContainer')
   const mixerGuidField = document.getElementById('mixerGuidField')
   const mixerFormSubmit = document.getElementById('mixer-form-submit')
-  const defaultNodeGraph = document.getElementById('defaultNodeGraph')
+  const activeTreeBox = document.getElementById('activeTreeBox')
+  const renderTreeSubmit = document.getElementById('render-tree-submit')
 
-  defaultNodeGraph.value = defaultGraphValue
-
+  renderTreeToggle.addEventListener('click', (event) => {
+    event.preventDefault()
+    toggleRenderTree()
+  })
   stopButton.addEventListener('click', (event) => {
     event.preventDefault()
     stopMixer()
@@ -310,6 +313,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   toggleMuteButton.addEventListener('click', (event) => {
     event.preventDefault()
     toggleMute()
+  })
+  renderTreeSubmit.addEventListener('click', (event) => {
+    event.preventDefault()
+    submitUserTree()
   })
 
   // ============= DRAWING FUNCTIONS ===============
@@ -773,11 +780,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     canvas.style.height = height + 'px'
     canvas.height = height
 
-    const vidStyleData = video.getBoundingClientRect()
-    const xOffset = vidStyleData.left + window.pageXOffset
-    const yOffset = vidStyleData.top + window.pageYOffset
-    canvas.style.left = xOffset + 'px'
-    canvas.style.top = yOffset + 'px'
+    // const vidStyleData = video.getBoundingClientRect()
+    // const xOffset = vidStyleData.left + window.pageXOffset
+    // const yOffset = vidStyleData.top + window.pageYOffset
+    // canvas.style.left = xOffset + 'px'
+    // canvas.style.top = yOffset + 'px'
 
     drawCanvas()
   }
@@ -1110,6 +1117,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   const onMouseDown = (event) => {
+    canvas.addEventListener('mousemove', onMouseMove)
     isMouseDown = false // true only when dragging
 
     if (currentState == OverlayStates.SELECTED) {
@@ -1171,6 +1179,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   const onMouseUp = () => {
+    canvas.removeEventListener('mousemove', onMouseMove)
     isMouseDown = false
     if (
       currentState == OverlayStates.RESIZING ||
@@ -1292,15 +1301,24 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
     canvas.addEventListener('mousedown', onMouseDown)
     canvas.addEventListener('mouseup', onMouseUp)
-    canvas.addEventListener('mousemove', onMouseMove)
   }
   // << EVENTS
 
   // << CANVAS
 
+  const toggleRenderTree = () => {
+    activeTreeBox.classList.toggle('hidden')
+    activeTreeBox.classList.toggle('offscreen')
+  }
+
+  const submitUserTree = () => {
+    globalNodeGraph = JSON.parse(activeNodeGraph.value)
+    brewmixer.updateRenderTrees(jwt, nodeGroupName, eventId, [globalNodeGraph])
+  }
+
   const onSubscriberEvent = (event) => {
     const { type } = event
-    if (type !== 'Subcribe.Time.Update') {
+    if (type !== 'Subscribe.Time.Update') {
       console.log('[Red5ProSubscriber] :: ' + type + '.')
     }
   }
@@ -1325,8 +1343,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   const toggleMute = () => {
-    const vid = document.getElementById('red5pro-subscriber')
-    vid.muted = !vid.muted
+    video.muted = !video.muted
   }
 
   const fetchSwapStreams = async () => {
@@ -1422,7 +1439,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       console.log('createMixerEvent response: ' + response.text)
 
       // create the default nodegraph
-      globalNodeGraph = JSON.parse(defaultNodeGraph.value)[0]
+      globalNodeGraph = JSON.parse(defaultGraphValue)[0]
       brewmixer.updateRenderTrees(
         host,
         jwt,
@@ -1481,7 +1498,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         }
       }
     })
-    resizeObserver.observe(document.getElementById('red5pro-subscriber'))
+    resizeObserver.observe(video)
 
     initCanvasEvents()
 
@@ -1514,8 +1531,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       // playerContainer.classList.toggle('hidden', (force = false))
       // videoControls.classList.toggle('hidden') //, (force = false))
 
-      // activeTreeBox.classList.toggle('hidden') //, (force = false))
-      // activeTreeBox.classList.toggle('offscreen') // , (force = false))
+      activeTreeBox.classList.toggle('hidden', true)
+      activeTreeBox.classList.toggle('offscreen', true)
 
       // assign the global ref
       globalNodeGraph = renderTrees[0]
