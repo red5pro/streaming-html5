@@ -181,6 +181,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   audioSet.add(`${configuration.app}/${configuration.stream1}`) // to match the default nodegraph
 
   let gridWidth = 2
+  let gridHeight = 2
   let isMouseDown = false
   let dragTarget = null
   let dragX = 0,
@@ -297,6 +298,21 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   const mixerFormSubmit = document.getElementById('mixer-form-submit')
   const activeTreeBox = document.getElementById('activeTreeBox')
   const renderTreeSubmit = document.getElementById('render-tree-submit')
+  const radioButtons = document.querySelectorAll('input[name="layout"]')
+  radioButtons.forEach((radioButton) => {
+    radioButton.addEventListener('change', async (event) => {
+      const { checked, value } = event.target
+      if (checked) {
+        reGrid(parseInt(value, 10))
+        setState(OverlayStates.IDLE)
+        swapped.clear()
+        swapAvail = []
+
+        const streamList = await fetchSwapStreams()
+        swapAvail.concat(streamList)
+      }
+    })
+  })
 
   renderTreeToggle.addEventListener('click', (event) => {
     event.preventDefault()
@@ -1327,6 +1343,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   const startSubscription = async () => {
+    currentState = OverlayStates.IDLE
     try {
       const { RTCSubscriber, WHEPClient } = window.red5prosdk
       const { preferWhipWhep } = configuration
@@ -1347,6 +1364,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   const toggleMute = () => {
     video.muted = !video.muted
+    document.querySelector('#unmuteButton').classList.toggle('hidden')
+    document.querySelector('#muteButton').classList.toggle('hidden')
   }
 
   const fetchSwapStreams = async () => {
@@ -1361,7 +1380,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       if (response.ok) {
         const streams = await response.json()
         if (streams && streams.length > 0) {
-          for (const stream of streams.data) {
+          for (const stream of streams) {
             // exclude the streams matching the regex, and the mixer's own output stream
             // (if you include the mixer output stream as a swap stream, you'll get a hall of mirrors)
             if (
@@ -1478,6 +1497,72 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       // refresh page/reset
       location.reload()
     }
+  }
+
+  // lay the videos out in a grid of sideLength x sideLength cells
+  // we assume all input videos are streaming, and named stream1 through streamn
+  // and that each input is 1920x1080.
+  // and that the mixer is also 1920x1080
+  const reGrid = (sideLength) => {
+    const vid = document.getElementById('red5pro-subscriber')
+    let cellSourceWidth = vid.videoWidth,
+      cellSourceHeight = vid.videoHeight
+    gridWidth = sideLength
+    gridHeight = sideLength <= 4 ? sideLength : 4 // special case for 6x4 grid;
+
+    let cellWidth
+    let cellHeight
+    let xOffset
+    if (sideLength <= 4) {
+      cellWidth = cellSourceWidth / gridWidth
+      cellHeight = cellSourceHeight / gridHeight
+      xOffset = 0
+    } else {
+      // this is a special case where we know the source videos are SQUARE
+      cellSourceWidth = cellSourceHeight
+      cellHeight = cellSourceHeight / gridHeight
+      cellWidth = cellHeight
+
+      xOffset = 0.5 * (cellSourceWidth - cellWidth * gridWidth)
+    }
+
+    globalNodeGraph.rootVideoNode.nodes.length = 1 // clear the array, but keep the first node (the SolidColorNode)
+    globalNodeGraph.rootAudioNode.nodes.length = 0 // clear the source audio nodes (this keeps the SumNode at rootAudioNode.node)
+    for (let j = 0; j < gridHeight; j++) {
+      for (let i = 0; i < gridWidth; i++) {
+        let sName = guids[j * gridWidth + i]
+        let cell = {}
+        cell.node = 'VideoSourceNode'
+        cell.streamGuid = sName
+        cell.sourceX = 0
+        cell.sourceY = 0
+        cell.sourceWidth = cellSourceWidth
+        cell.sourceHeight = cellSourceHeight
+        cell.destX = xOffset + cellWidth * i
+        cell.destY = cellHeight * j
+        cell.destWidth = cellWidth
+        cell.destHeight = cellHeight
+
+        globalNodeGraph.rootVideoNode.nodes.push(cell)
+
+        let acell = {}
+        acell.streamGuid = sName
+        acell.pan = 0
+
+        if (audioSet.has(cell.streamGuid)) {
+          acell.gain = -6.0
+        } else {
+          acell.gain = -100
+        }
+
+        acell.node = 'AudioSourceNode'
+        globalNodeGraph.rootAudioNode.nodes.push(acell)
+      }
+    }
+
+    brewmixer.updateRenderTrees(host, jwt, smVersion, nodeGroupName, eventId, [
+      globalNodeGraph,
+    ])
   }
 
   const init = async (configuration, prefix = 'stream') => {

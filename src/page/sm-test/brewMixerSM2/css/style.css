@@ -55,7 +55,6 @@ label {
   font-size: 12px;
 }
 
-input:focus,
 textarea:focus {
   color: #ffffff;
 }

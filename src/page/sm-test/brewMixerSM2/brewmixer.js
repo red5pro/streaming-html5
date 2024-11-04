@@ -86,7 +86,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         })
         if (response.ok) {
           result = await response.json()
-          // console.log("listMixerEvents RESPONSE: " + JSON.stringify(result, null, 4));
+          // console.log(
+          //   'listMixerEvents RESPONSE: ' + JSON.stringify(result, null, 4)
+          // )
         } else {
           console.log('LISTMIXEREVENTS RESPONSE ERROR ' + response.status)
         }
