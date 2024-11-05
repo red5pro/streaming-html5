@@ -23,7 +23,7 @@ NONINFRINGEMENT.   IN  NO  EVENT  SHALL INFRARED5, INC. BE LIABLE FOR ANY CLAIM,
 WHETHER IN  AN  ACTION  OF  CONTRACT,  TORT  OR  OTHERWISE,  ARISING  FROM,  OUT  OF  OR  IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
-;((window, red5prosdk, streamManagerUtil, brewmixer) => {
+;((window, red5prosdk, streamManagerUtil, brewmixer, getCoordinates) => {
   'use strict'
 
   const serverSettings = (function () {
@@ -337,314 +337,205 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   // ============= DRAWING FUNCTIONS ===============
 
-  const drawMoveHandle = (ctx, drawParams) => {
+  const getCoords = () => {
+    const { clientWidth, clientHeight } = video
+    const { videoWidth, videoHeight } = video
+    return getCoordinates(videoWidth, videoHeight, clientWidth, clientHeight)
+  }
+
+  const drawMoveHandle = (ctx, drawParams, sizePercent = 0.5) => {
     // =================================
     // circular drag handle
+    const coords = getCoords()
+    const { centerX, centerY } = drawParams
+    const size = 64 * sizePercent
     ctx.beginPath()
-    ctx.ellipse(drawParams.centerX, drawParams.centerY, 64, 64, 0, 0, 360)
+    ctx.ellipse(centerX, centerY, size, size, 0, 0, 360)
     ctx.stroke()
+
+    console.log('COORDs: ' + JSON.stringify(coords, null, 2))
   }
 
-  const drawEastResize = (ctx, drawParams) => {
+  const drawEastResize = (ctx, drawParams, scale = 1.0) => {
+    const { x, y, halfHeight, quarterHeight, width } = drawParams
     // =================================
     // right
-    ctx.fillRect(
-      drawParams.x + drawParams.width - 8,
-      drawParams.y + drawParams.quarterHeight + 4,
-      4,
-      drawParams.halfHeight - 8
-    )
+    ctx.fillRect(x + width - 8, y + quarterHeight + 4, 4, halfHeight - 8)
 
     // arrow
     ctx.beginPath()
-    ctx.moveTo(
-      drawParams.x + drawParams.width - 12,
-      drawParams.y + drawParams.halfHeight
-    )
-    ctx.lineTo(
-      drawParams.x + drawParams.width - 12 - 48,
-      drawParams.y + drawParams.halfHeight + 32
-    )
-    ctx.lineTo(
-      drawParams.x + drawParams.width - 12 - 48,
-      drawParams.y + drawParams.halfHeight - 32
-    )
+    ctx.moveTo(x + width - 12, y + halfHeight)
+    ctx.lineTo(x + width - 12 - 48 * scale, y + halfHeight + 32 * scale)
+    ctx.lineTo(x + width - 12 - 48 * scale, y + halfHeight - 32 * scale)
     ctx.fill()
   }
 
-  const drawNortheastResize = (ctx, drawParams) => {
+  const drawNortheastResize = (ctx, drawParams, scale = 1.0) => {
+    const { x, y, halfWidth, quarterWidth, quarterHeight, width } = drawParams
     // =================================
     // upper right corner
-    ctx.fillRect(
-      drawParams.x + drawParams.halfWidth + drawParams.quarterWidth + 4,
-      drawParams.y + 4,
-      drawParams.quarterWidth - 8,
-      4
-    )
-    ctx.fillRect(
-      drawParams.x + drawParams.width - 8,
-      drawParams.y + 4,
-      4,
-      drawParams.quarterHeight - 8
-    )
+    ctx.fillRect(x + halfWidth + quarterWidth + 4, y + 4, quarterWidth - 8, 4)
+    ctx.fillRect(x + width - 8, y + 4, 4, quarterHeight - 8)
 
     // arrow
     ctx.beginPath()
-    ctx.moveTo(drawParams.x + drawParams.width - 12, drawParams.y + 12)
-    ctx.lineTo(
-      drawParams.x + drawParams.width - 12 - 11,
-      drawParams.y + 12 + 56
-    )
-    ctx.lineTo(
-      drawParams.x + drawParams.width - 12 - 56,
-      drawParams.y + 12 + 11
-    )
+    ctx.moveTo(x + width - 12, y + 12)
+    ctx.lineTo(x + width - 12 - 11 * scale, y + 12 + 56 * scale)
+    ctx.lineTo(x + width - 12 - 56 * scale, y + 12 + 11 * scale)
     ctx.fill()
   }
 
-  const drawNorthResize = (ctx, drawParams) => {
+  const drawNorthResize = (ctx, drawParams, scale = 1.0) => {
+    const { x, y, centerX, halfWidth, quarterWidth } = drawParams
     // =================================
     // top
-    ctx.fillRect(
-      drawParams.x + drawParams.quarterWidth + 4,
-      drawParams.y + 4,
-      drawParams.halfWidth - 8,
-      4
-    )
+    ctx.fillRect(x + quarterWidth + 4, y + 4, halfWidth - 8, 4)
 
     // arrow
     ctx.beginPath()
-    ctx.moveTo(drawParams.centerX, drawParams.y + 12)
-    ctx.lineTo(drawParams.centerX - 32, drawParams.y + 12 + 48)
-    ctx.lineTo(drawParams.centerX + 32, drawParams.y + 12 + 48)
+    ctx.moveTo(centerX, y + 12)
+    ctx.lineTo(centerX - 32 * scale, y + 12 + 48 * scale)
+    ctx.lineTo(centerX + 32 * scale, y + 12 + 48 * scale)
     ctx.fill()
   }
 
-  const drawNorthwestResize = (ctx, drawParams) => {
+  const drawNorthwestResize = (ctx, drawParams, scale = 1.0) => {
+    const { x, y, quarterWidth, quarterHeight } = drawParams
     // =================================
     // upper left corner
-    ctx.fillRect(
-      drawParams.x + 4,
-      drawParams.y + 4,
-      4,
-      drawParams.quarterHeight - 8
-    )
-    ctx.fillRect(
-      drawParams.x + 4,
-      drawParams.y + 4,
-      drawParams.quarterWidth - 8,
-      4
-    )
+    ctx.fillRect(x + 4, y + 4, 4, quarterHeight - 8)
+    ctx.fillRect(x + 4, y + 4, quarterWidth - 8, 4)
 
     // arrow
     ctx.beginPath()
-    ctx.moveTo(drawParams.x + 12, drawParams.y + 12)
-    ctx.lineTo(drawParams.x + 12 + 11, drawParams.y + 12 + 56)
-    ctx.lineTo(drawParams.x + 12 + 56, drawParams.y + 12 + 11)
+    ctx.moveTo(x + 12, y + 12)
+    ctx.lineTo(x + 12 + 11 * scale, y + 12 + 56 * scale)
+    ctx.lineTo(x + 12 + 56 * scale, y + 12 + 11 * scale)
     ctx.fill()
   }
 
-  const drawWestResize = (ctx, drawParams) => {
+  const drawWestResize = (ctx, drawParams, scale = 1.0) => {
+    const { x, y, halfHeight, quarterHeight } = drawParams
     // =================================
     // left
-    ctx.fillRect(
-      drawParams.x + 4,
-      drawParams.y + drawParams.quarterHeight + 4,
-      4,
-      drawParams.halfHeight - 8
-    )
+    ctx.fillRect(x + 4, y + quarterHeight + 4, 4, halfHeight - 8)
 
     // arrow
     ctx.beginPath()
-    ctx.moveTo(drawParams.x + 12, drawParams.y + drawParams.halfHeight)
-    ctx.lineTo(
-      drawParams.x + 12 + 48,
-      drawParams.y + drawParams.halfHeight + 32
-    )
-    ctx.lineTo(
-      drawParams.x + 12 + 48,
-      drawParams.y + drawParams.halfHeight - 32
-    )
+    ctx.moveTo(x + 12, y + halfHeight)
+    ctx.lineTo(x + 12 + 48 * scale, y + halfHeight + 32 * scale)
+    ctx.lineTo(x + 12 + 48 * scale, y + halfHeight - 32 * scale)
     ctx.fill()
   }
 
-  const drawSouthwestResize = (ctx, drawParams) => {
+  const drawSouthwestResize = (ctx, drawParams, scale = 1.0) => {
+    const { x, y, halfHeight, quarterWidth, quarterHeight, height } = drawParams
     // =================================
     // lower left corner
+    ctx.fillRect(x + 4, y + height - 8, quarterWidth - 8, 4)
     ctx.fillRect(
-      drawParams.x + 4,
-      drawParams.y + drawParams.height - 8,
-      drawParams.quarterWidth - 8,
-      4
-    )
-    ctx.fillRect(
-      drawParams.x + 4,
-      drawParams.y + drawParams.halfHeight + drawParams.quarterHeight + 4,
+      x + 4,
+      y + halfHeight + quarterHeight + 4,
       4,
-      drawParams.quarterHeight - 8
+      quarterHeight - 8
     )
 
     // arrow
     ctx.beginPath()
-    ctx.moveTo(drawParams.x + 12, drawParams.y + drawParams.height - 12)
-    ctx.lineTo(
-      drawParams.x + 12 + 11,
-      drawParams.y + drawParams.height - 12 - 56
-    )
-    ctx.lineTo(
-      drawParams.x + 12 + 56,
-      drawParams.y + drawParams.height - 12 - 11
-    )
+    ctx.moveTo(x + 12, y + height - 12)
+    ctx.lineTo(x + 12 + 11 * scale, y + height - 12 - 56 * scale)
+    ctx.lineTo(x + 12 + 56 * scale, y + height - 12 - 11 * scale)
     ctx.fill()
   }
 
-  const drawSouthResize = (ctx, drawParams) => {
+  const drawSouthResize = (ctx, drawParams, scale = 1.0) => {
+    const { x, y, centerX, halfWidth, quarterWidth, height } = drawParams
     // =================================
     // bottom
-    ctx.fillRect(
-      drawParams.x + drawParams.quarterWidth + 4,
-      drawParams.y + drawParams.height - 8,
-      drawParams.halfWidth - 8,
-      4
-    )
+    ctx.fillRect(x + quarterWidth + 4, y + height - 8, halfWidth - 8, 4)
 
     // arrow
     ctx.beginPath()
-    ctx.moveTo(drawParams.centerX, drawParams.y + drawParams.height - 12)
-    ctx.lineTo(
-      drawParams.centerX - 32,
-      drawParams.y + drawParams.height - 12 - 48
-    )
-    ctx.lineTo(
-      drawParams.centerX + 32,
-      drawParams.y + drawParams.height - 12 - 48
-    )
+    ctx.moveTo(centerX, y + height - 12)
+    ctx.lineTo(centerX - 32 * scale, y + height - 12 - 48 * scale)
+    ctx.lineTo(centerX + 32 * scale, y + height - 12 - 48 * scale)
     ctx.fill()
   }
 
-  const drawSoutheastResize = (ctx, drawParams) => {
+  const drawSoutheastResize = (ctx, drawParams, scale = 1.0) => {
+    const {
+      x,
+      y,
+      halfWidth,
+      halfHeight,
+      quarterWidth,
+      quarterHeight,
+      height,
+      width,
+    } = drawParams
     // =================================
     // lower right corner
     ctx.fillRect(
-      drawParams.x + drawParams.halfWidth + drawParams.quarterWidth + 4,
-      drawParams.y + drawParams.height - 8,
-      drawParams.quarterWidth - 8,
+      x + halfWidth + quarterWidth + 4,
+      y + height - 8,
+      quarterWidth - 8,
       4
     )
     ctx.fillRect(
-      drawParams.x + drawParams.width - 8,
-      drawParams.y + drawParams.halfHeight + drawParams.quarterHeight + 4,
+      x + width - 8,
+      y + halfHeight + quarterHeight + 4,
       4,
-      drawParams.quarterHeight - 8
+      quarterHeight - 8
     )
 
     // arrow
     ctx.beginPath()
-    ctx.moveTo(
-      drawParams.x + drawParams.width - 12,
-      drawParams.y + drawParams.height - 12
-    )
-    ctx.lineTo(
-      drawParams.x + drawParams.width - 12 - 11,
-      drawParams.y + drawParams.height - 12 - 56
-    )
-    ctx.lineTo(
-      drawParams.x + drawParams.width - 12 - 56,
-      drawParams.y + drawParams.height - 12 - 11
-    )
+    ctx.moveTo(x + width - 12, y + height - 12)
+    ctx.lineTo(x + width - 12 - 11 * scale, y + height - 12 - 56 * scale)
+    ctx.lineTo(x + width - 12 - 56 * scale, y + height - 12 - 11 * scale)
     ctx.fill()
   }
 
-  const drawMicrophone = (ctx, drawParams) => {
+  const drawMicrophone = (ctx, drawParams, scale = 1.0) => {
+    const { centerX, centerY, quarterWidth } = drawParams
     // =================================
     // microphone
     ctx.beginPath()
+    ctx.arc(centerX + quarterWidth, centerY, 16 * scale, 2 * Math.PI, Math.PI)
     ctx.arc(
-      drawParams.centerX + drawParams.quarterWidth,
-      drawParams.centerY,
-      16,
-      2 * Math.PI,
-      Math.PI
-    )
-    ctx.arc(
-      drawParams.centerX + drawParams.quarterWidth,
-      drawParams.centerY - 32,
-      16,
+      centerX + quarterWidth,
+      centerY - 32 * scale,
+      16 * scale,
       Math.PI,
       0
     )
     ctx.fill()
 
     ctx.beginPath()
-    ctx.arc(
-      drawParams.centerX + drawParams.quarterWidth,
-      drawParams.centerY,
-      26,
-      2 * Math.PI,
-      Math.PI
-    )
-    ctx.moveTo(
-      drawParams.centerX + drawParams.quarterWidth,
-      drawParams.centerY + 26
-    )
-    ctx.lineTo(
-      drawParams.centerX + drawParams.quarterWidth,
-      drawParams.centerY + 26 + 16
-    )
-    ctx.moveTo(
-      drawParams.centerX + drawParams.quarterWidth - 20,
-      drawParams.centerY + 26 + 16
-    )
-    ctx.lineTo(
-      drawParams.centerX + drawParams.quarterWidth + 20,
-      drawParams.centerY + 26 + 16
-    )
+    ctx.arc(centerX + quarterWidth, centerY, 26 * scale, 2 * Math.PI, Math.PI)
+    ctx.moveTo(centerX + quarterWidth, centerY + 26 * scale)
+    ctx.lineTo(centerX + quarterWidth, centerY + 26 + 16 * scale)
+    ctx.moveTo(centerX + quarterWidth - 20, centerY + 26 + 16 * scale)
+    ctx.lineTo(centerX + quarterWidth + 20, centerY + 26 + 16 * scale)
     ctx.stroke()
   }
 
   const drawSwapIcon = (ctx, drawParams) => {
+    const { centerX, centerY, quarterWidth } = drawParams
     // =================================
     // swap icon
-    ctx.fillRect(
-      drawParams.centerX - drawParams.quarterWidth - 15,
-      drawParams.centerY - 15 - 3,
-      45,
-      3
-    )
+    ctx.fillRect(centerX - quarterWidth - 15, centerY - 15 - 3, 45, 3)
     ctx.beginPath()
-    ctx.moveTo(
-      drawParams.centerX - drawParams.quarterWidth - 15,
-      drawParams.centerY - 15
-    )
-    ctx.lineTo(
-      drawParams.centerX - drawParams.quarterWidth - 15,
-      drawParams.centerY - 15 - 12
-    )
-    ctx.lineTo(
-      drawParams.centerX - drawParams.quarterWidth - 30,
-      drawParams.centerY - 15
-    )
+    ctx.moveTo(centerX - quarterWidth - 15, centerY - 15)
+    ctx.lineTo(centerX - quarterWidth - 15, centerY - 15 - 12)
+    ctx.lineTo(centerX - quarterWidth - 30, centerY - 15)
     ctx.fill()
 
-    ctx.fillRect(
-      drawParams.centerX - drawParams.quarterWidth - 30,
-      drawParams.centerY + 15,
-      45,
-      3
-    )
+    ctx.fillRect(centerX - quarterWidth - 30, centerY + 15, 45, 3)
     ctx.beginPath()
-    ctx.moveTo(
-      drawParams.centerX - drawParams.quarterWidth + 15,
-      drawParams.centerY + 15
-    )
-    ctx.lineTo(
-      drawParams.centerX - drawParams.quarterWidth + 15,
-      drawParams.centerY + 15 + 12
-    )
-    ctx.lineTo(
-      drawParams.centerX - drawParams.quarterWidth + 30,
-      drawParams.centerY + 15
-    )
+    ctx.moveTo(centerX - quarterWidth + 15, centerY + 15)
+    ctx.lineTo(centerX - quarterWidth + 15, centerY + 15 + 12)
+    ctx.lineTo(centerX - quarterWidth + 30, centerY + 15)
     ctx.fill()
   }
 
@@ -659,17 +550,24 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   const calculateDrawParams = () => {
-    var x = selectedNode.destX
-    var y = selectedNode.destY
-    var width = selectedNode.destWidth
-    var height = selectedNode.destHeight
-    var centerX = lerp(x, x + width, 0.5)
-    var centerY = lerp(y, y + height, 0.5)
+    const coords = getCoords()
+    const { width: coordWidth, height: coordHeight } = coords
+    const { destX, destY, destWidth, destHeight, sourceWidth, sourceHeight } =
+      selectedNode
+    const x = destX + coords.x
+    const y = destY + coords.y
+    const destPercWidth = destWidth / sourceWidth
+    const destPercHeight = destHeight / sourceHeight
 
-    var halfWidth = width / 2
-    var halfHeight = height / 2
-    var quarterWidth = width / 4
-    var quarterHeight = height / 4
+    const width = coordWidth * destPercWidth
+    const height = coordHeight * destPercHeight
+    const centerX = lerp(x, x + width, 0.5)
+    const centerY = lerp(y, y + height, 0.5)
+
+    const halfWidth = width / 2
+    const halfHeight = height / 2
+    const quarterWidth = width / 4
+    const quarterHeight = height / 4
 
     var drawParams = {
       x,
@@ -682,8 +580,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       halfHeight,
       quarterWidth,
       quarterHeight,
+      percWidth: destPercWidth,
+      percHeight: destPercHeight,
     }
 
+    console.log('SELECTED', JSON.stringify(selectedNode, null, 2))
     return drawParams
   }
 
@@ -709,18 +610,20 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       ctx.fillStyle = 'rgba(255,255,255,255)'
 
       const drawParams = calculateDrawParams()
-      drawMoveHandle(ctx, drawParams)
-      drawNortheastResize(ctx, drawParams)
-      drawNorthwestResize(ctx, drawParams)
-      drawSouthwestResize(ctx, drawParams)
-      drawSoutheastResize(ctx, drawParams)
+      const { percWidth, percHeight } = drawParams
+      const scale = Math.min(percWidth, percHeight)
+      drawMoveHandle(ctx, drawParams, scale)
+      drawNortheastResize(ctx, drawParams, scale)
+      drawNorthwestResize(ctx, drawParams, scale)
+      drawSouthwestResize(ctx, drawParams, scale)
+      drawSoutheastResize(ctx, drawParams, scale)
 
       // if mic active
       if (audioSet.has(selectedNode.streamGuid)) {
         ctx.strokeStyle = 'rgba(68,160,255,255)'
         ctx.fillStyle = 'rgba(68,160,255,255)'
       }
-      drawMicrophone(ctx, drawParams)
+      drawMicrophone(ctx, drawParams, scale)
 
       // if swap active
       if (swapped.has(selectedNode.streamGuid)) {
@@ -735,7 +638,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       // swap streams only when not showing 4x4 grid
       // (in a 4x4 grid all 16 streams are shown, but the demo only has 16 streams total)
       if (gridWidth < 4) {
-        drawSwapIcon(ctx, drawParams)
+        drawSwapIcon(ctx, drawParams, scale)
       }
 
       //console.log("drawCanvas SELECTED");
@@ -753,39 +656,41 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       ctx.fillStyle = 'rgba(255,255,255,255)'
 
       const drawParams = calculateDrawParams()
+      const { percWidth, percHeight } = drawParams
+      const scale = Math.min(percWidth, percHeight)
 
-      drawMoveHandle(ctx, drawParams)
-      drawNortheastResize(ctx, drawParams)
-      drawNorthwestResize(ctx, drawParams)
-      drawSouthwestResize(ctx, drawParams)
-      drawSoutheastResize(ctx, drawParams)
-      drawMicrophone(ctx, drawParams)
+      drawMoveHandle(ctx, drawParams, scale)
+      drawNortheastResize(ctx, drawParams, scale)
+      drawNorthwestResize(ctx, drawParams, scale)
+      drawSouthwestResize(ctx, drawParams, scale)
+      drawSoutheastResize(ctx, drawParams, scale)
+      drawMicrophone(ctx, drawParams, scale)
 
       if (gridWidth < 4) {
-        drawSwapIcon(ctx, drawParams)
+        drawSwapIcon(ctx, drawParams, scale)
       }
 
       ctx.strokeStyle = 'rgba(68,160,255,255)'
       ctx.fillStyle = 'rgba(68,160,255,255)'
 
       if (dragTarget == Direction.EAST) {
-        drawEastResize(ctx, drawParams)
+        drawEastResize(ctx, drawParams, scale)
       } else if (dragTarget == Direction.NORTHEAST) {
-        drawNortheastResize(ctx, drawParams)
+        drawNortheastResize(ctx, drawParams, scale)
       } else if (dragTarget == Direction.NORTH) {
-        drawNorthResize(ctx, drawParams)
+        drawNorthResize(ctx, drawParams, scale)
       } else if (dragTarget == Direction.NORTHWEST) {
-        drawNorthwestResize(ctx, drawParams)
+        drawNorthwestResize(ctx, drawParams, scale)
       } else if (dragTarget == Direction.WEST) {
-        drawWestResize(ctx, drawParams)
+        drawWestResize(ctx, drawParams, scale)
       } else if (dragTarget == Direction.SOUTHWEST) {
-        drawSouthwestResize(ctx, drawParams)
+        drawSouthwestResize(ctx, drawParams, scale)
       } else if (dragTarget == Direction.SOUTH) {
-        drawSouthResize(ctx, drawParams)
+        drawSouthResize(ctx, drawParams, scale)
       } else if (dragTarget == Direction.SOUTHEAST) {
-        drawSoutheastResize(ctx, drawParams)
+        drawSoutheastResize(ctx, drawParams, scale)
       } else if (dragTarget == MOVE_HANDLE) {
-        drawMoveHandle(ctx, drawParams)
+        drawMoveHandle(ctx, drawParams, scale)
       }
     }
   }
@@ -795,13 +700,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     canvas.width = width
     canvas.style.height = height + 'px'
     canvas.height = height
-
-    // const vidStyleData = video.getBoundingClientRect()
-    // const xOffset = vidStyleData.left + window.pageXOffset
-    // const yOffset = vidStyleData.top + window.pageYOffset
-    // canvas.style.left = xOffset + 'px'
-    // canvas.style.top = yOffset + 'px'
-
     drawCanvas()
   }
 
@@ -1643,4 +1541,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     init(getConfiguration(), 'stream')
   }
   // ============= INITIALIZATION ===============
-})(window, window.red5prosdk, window.streamManagerUtil, window.brewmixer)
+})(
+  window,
+  window.red5prosdk,
+  window.streamManagerUtil,
+  window.brewmixer,
+  window.getCoordinates
+)
