@@ -343,12 +343,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     return getCoordinates(videoWidth, videoHeight, clientWidth, clientHeight)
   }
 
-  const drawMoveHandle = (ctx, drawParams, sizePercent = 0.5) => {
+  const drawMoveHandle = (ctx, drawParams, scale = 1.0) => {
     // =================================
     // circular drag handle
     const coords = getCoords()
     const { centerX, centerY } = drawParams
-    const size = 64 * sizePercent
+    const size = 32 * scale
     ctx.beginPath()
     ctx.ellipse(centerX, centerY, size, size, 0, 0, 360)
     ctx.stroke()
@@ -497,6 +497,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   const drawMicrophone = (ctx, drawParams, scale = 1.0) => {
+    console.log('SCALE', scale)
     const { centerX, centerY, quarterWidth } = drawParams
     // =================================
     // microphone
@@ -514,28 +515,30 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     ctx.beginPath()
     ctx.arc(centerX + quarterWidth, centerY, 26 * scale, 2 * Math.PI, Math.PI)
     ctx.moveTo(centerX + quarterWidth, centerY + 26 * scale)
-    ctx.lineTo(centerX + quarterWidth, centerY + 26 + 16 * scale)
-    ctx.moveTo(centerX + quarterWidth - 20, centerY + 26 + 16 * scale)
-    ctx.lineTo(centerX + quarterWidth + 20, centerY + 26 + 16 * scale)
+    ctx.lineTo(centerX + quarterWidth, centerY + (26 + 16) * scale)
+    ctx.moveTo(centerX + quarterWidth - 20 * scale, centerY + (26 + 16) * scale)
+    ctx.lineTo(centerX + quarterWidth + 20 * scale, centerY + (26 + 16) * scale)
     ctx.stroke()
   }
 
-  const drawSwapIcon = (ctx, drawParams) => {
+  const drawSwapIcon = (ctx, drawParams, scale = 1.0) => {
     const { centerX, centerY, quarterWidth } = drawParams
     // =================================
+    const width = quarterWidth
+    const length = 15 * scale
     // swap icon
-    ctx.fillRect(centerX - quarterWidth - 15, centerY - 15 - 3, 45, 3)
+    ctx.fillRect(centerX - width - length, centerY - length - 3, length * 3, 3)
     ctx.beginPath()
-    ctx.moveTo(centerX - quarterWidth - 15, centerY - 15)
-    ctx.lineTo(centerX - quarterWidth - 15, centerY - 15 - 12)
-    ctx.lineTo(centerX - quarterWidth - 30, centerY - 15)
+    ctx.moveTo(centerX - width - length, centerY - length)
+    ctx.lineTo(centerX - width - length, centerY - length - 12)
+    ctx.lineTo(centerX - width - length * 2, centerY - length)
     ctx.fill()
 
-    ctx.fillRect(centerX - quarterWidth - 30, centerY + 15, 45, 3)
+    ctx.fillRect(centerX - width - length * 2, centerY + length, length * 3, 3)
     ctx.beginPath()
-    ctx.moveTo(centerX - quarterWidth + 15, centerY + 15)
-    ctx.lineTo(centerX - quarterWidth + 15, centerY + 15 + 12)
-    ctx.lineTo(centerX - quarterWidth + 30, centerY + 15)
+    ctx.moveTo(centerX - width + length, centerY + length)
+    ctx.lineTo(centerX - width + length, centerY + length + 12)
+    ctx.lineTo(centerX - width + length * 2, centerY + length)
     ctx.fill()
   }
 
@@ -551,7 +554,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   const calculateDrawParams = () => {
     const coords = getCoords()
-    const { width: coordWidth, height: coordHeight } = coords
+    const { width: coordWidth, height: coordHeight, xscale, yscale } = coords
     const { destX, destY, destWidth, destHeight, sourceWidth, sourceHeight } =
       selectedNode
     const x = destX + coords.x
@@ -582,6 +585,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       quarterHeight,
       percWidth: destPercWidth,
       percHeight: destPercHeight,
+      scaleWidth: xscale,
+      scaleHeight: yscale,
     }
 
     console.log('SELECTED', JSON.stringify(selectedNode, null, 2))
@@ -592,6 +597,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     const ctx = canvas.getContext('2d')
     ctx.fillStyle = 'rgba(0,0,0,0)'
     ctx.clearRect(0, 0, canvas.width, canvas.height)
+
+    const drawParams = calculateDrawParams()
+    const { scaleWidth: percWidth, scaleHeight: percHeight } = drawParams
+    const scale = Math.min(percWidth, percHeight)
 
     if (currentState == OverlayStates.NOT_RUNNING) {
       // no-op; hide overlay completely.
@@ -609,9 +618,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       ctx.strokeStyle = 'rgba(255,255,255,255)'
       ctx.fillStyle = 'rgba(255,255,255,255)'
 
-      const drawParams = calculateDrawParams()
-      const { percWidth, percHeight } = drawParams
-      const scale = Math.min(percWidth, percHeight)
       drawMoveHandle(ctx, drawParams, scale)
       drawNortheastResize(ctx, drawParams, scale)
       drawNorthwestResize(ctx, drawParams, scale)
@@ -654,10 +660,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       ctx.lineWidth = 4
       ctx.strokeStyle = 'rgba(255,255,255,255)'
       ctx.fillStyle = 'rgba(255,255,255,255)'
-
-      const drawParams = calculateDrawParams()
-      const { percWidth, percHeight } = drawParams
-      const scale = Math.min(percWidth, percHeight)
 
       drawMoveHandle(ctx, drawParams, scale)
       drawNortheastResize(ctx, drawParams, scale)
