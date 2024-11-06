@@ -98,6 +98,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       clientHeight,
       xscale: dw,
       yscale: dh,
+      widthPercentage: width / viewWidth,
+      heightPercentage: height / viewHeight,
     }
   }
 })(window)

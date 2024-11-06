@@ -27,7 +27,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   // BrewMixer API Service Module
   window.brewmixer = {
     // Create Mixer Event
-
+    manifestDelegate: undefined,
     /*
     RESPONSE
     ========================
@@ -147,9 +147,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
         if (response.ok) {
           console.log('Update successful')
+          if (this.manifestDelegate && renderTrees.length > 0) {
+            this.manifestDelegate.call(null, renderTrees[0])
+          }
         } else {
           const responseObj = await response.json()
-          console.log('Error:\n', JSON.stringify(responseObj, null, 4))
+          throw new Error(JSON.stringify(responseObj, null, 4))
         }
       } catch (error) {
         console.log('Error trying to updateRenderTrees: ' + error)

@@ -332,6 +332,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   })
   renderTreeSubmit.addEventListener('click', (event) => {
     event.preventDefault()
+    setState(OverlayStates.IDLE)
     submitUserTree()
   })
 
@@ -346,14 +347,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   const drawMoveHandle = (ctx, drawParams, scale = 1.0) => {
     // =================================
     // circular drag handle
-    const coords = getCoords()
     const { centerX, centerY } = drawParams
     const size = 32 * scale
     ctx.beginPath()
     ctx.ellipse(centerX, centerY, size, size, 0, 0, 360)
     ctx.stroke()
-
-    console.log('COORDs: ' + JSON.stringify(coords, null, 2))
+    // console.log('COORDs: ' + JSON.stringify(coords, null, 2))
   }
 
   const drawEastResize = (ctx, drawParams, scale = 1.0) => {
@@ -497,7 +496,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   const drawMicrophone = (ctx, drawParams, scale = 1.0) => {
-    console.log('SCALE', scale)
     const { centerX, centerY, quarterWidth } = drawParams
     // =================================
     // microphone
@@ -553,15 +551,27 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   const calculateDrawParams = () => {
+    if (!selectedNode) {
+      return
+    }
     const coords = getCoords()
-    const { width: coordWidth, height: coordHeight, xscale, yscale } = coords
+    const {
+      x: coordX,
+      y: coordY,
+      width: coordWidth,
+      height: coordHeight,
+      xscale,
+      yscale,
+      widthPercentage,
+      heightPercentage,
+    } = coords
     const { destX, destY, destWidth, destHeight, sourceWidth, sourceHeight } =
       selectedNode
-    const x = destX + coords.x
-    const y = destY + coords.y
+
     const destPercWidth = destWidth / sourceWidth
     const destPercHeight = destHeight / sourceHeight
-
+    const x = coordX + destX * widthPercentage
+    const y = coordY + destY * heightPercentage
     const width = coordWidth * destPercWidth
     const height = coordHeight * destPercHeight
     const centerX = lerp(x, x + width, 0.5)
@@ -589,7 +599,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       scaleHeight: yscale,
     }
 
-    console.log('SELECTED', JSON.stringify(selectedNode, null, 2))
+    // console.log('SELECTED', JSON.stringify(selectedNode, null, 2))
     return drawParams
   }
 
@@ -599,6 +609,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     ctx.clearRect(0, 0, canvas.width, canvas.height)
 
     const drawParams = calculateDrawParams()
+    if (!drawParams) {
+      return
+    }
     const { scaleWidth: percWidth, scaleHeight: percHeight } = drawParams
     const scale = Math.min(percWidth, percHeight)
 
@@ -612,7 +625,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       // also no-op? overlay hidden
     } else if (currentState == OverlayStates.SELECTED) {
       // show overlay controls (disable highlight)
-
+      console.log('DRAW CANVAS:SELECTED', JSON.stringify(drawParams, null, 2))
       ctx.setTransform(1, 0, 0, 1, 0, 0)
       ctx.lineWidth = 4
       ctx.strokeStyle = 'rgba(255,255,255,255)'
@@ -655,6 +668,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     ) {
       // highlight the active resize control
 
+      console.log('DRAW CANVAS:MOVE/RESIZE')
       // first draw in white
       ctx.setTransform(1, 0, 0, 1, 0, 0)
       ctx.lineWidth = 4
@@ -774,13 +788,21 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   const nodeAt = (x, y) => {
-    var result = null
     const videoNodes = globalNodeGraph.rootVideoNode.nodes
-    for (let i = videoNodes.length - 1; i >= 0; i--) {
+    let result = null
+    let i = videoNodes.length
+    const { widthPercentage, heightPercentage } = getCoords()
+    while (--i > 0) {
       const node = videoNodes[i]
-      if (
-        hitBox(x, y, node.destX, node.destY, node.destWidth, node.destHeight)
-      ) {
+      const { streamGuid, destX, destY, destWidth, destHeight } = node
+      const scaleX = destX * widthPercentage
+      const scaleY = destY * heightPercentage
+      const scaleWidth = (destX + destWidth) * widthPercentage
+      const scaleHeight = (destY + destHeight) * heightPercentage
+      console.log(
+        `nodeAt ${streamGuid}: ${scaleX}, ${scaleY}, ${scaleWidth}, ${scaleHeight}`
+      )
+      if (hitBox(x, y, scaleX, scaleY, scaleWidth, scaleHeight)) {
         result = node
         break
       }
@@ -852,8 +874,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   // EVENTS >>
 
   const clickCanvas = (event) => {
+    const coords = getCoords()
+    const { offsetX, offsetY } = event
+    const x = offsetX - coords.x
+    const y = offsetY - coords.y
     console.log(
-      `click at ${event.clientX}, ${event.clientY}, currentState state ${currentState} -- detail: ${event.detail}`
+      `click at ${x}, ${y}, currentState state ${currentState} -- detail: ${event.detail}`
     )
     if (event.detail == 1) {
       let audioNode
@@ -862,9 +888,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         currentState == OverlayStates.IDLE ||
         currentState == OverlayStates.SELECTED
       ) {
-        const x = event.clientX - canvas.getBoundingClientRect().left
-        const y = event.clientY - canvas.getBoundingClientRect().top
-
         var node = nodeAt(x, y)
         if (node != null && currentState == OverlayStates.IDLE) {
           selectedNode = node
@@ -993,16 +1016,15 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   const doubleClickCanvas = (event) => {
-    console.log(
-      `doubleClickCanvas at ${event.clientX}, ${event.clientY}, cur state ${currentState}`
-    )
+    const coords = getCoords()
+    const { offsetX, offsetY } = event
+    const x = offsetX - coords.x
+    const y = offsetY - coords.y
+    console.log(`doubleClickCanvas at ${x}, ${y}, cur state ${currentState}`)
     if (
       currentState == OverlayStates.IDLE ||
       currentState == OverlayStates.SELECTED
     ) {
-      const x = event.clientX - canvas.getBoundingClientRect().left
-      const y = event.clientY - canvas.getBoundingClientRect().top
-
       var node = nodeAt(x, y)
       if (node) {
         // start zooming in
@@ -1034,13 +1056,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   const onMouseDown = (event) => {
     canvas.addEventListener('mousemove', onMouseMove)
+    const coords = getCoords()
+    const { offsetX, offsetY } = event
+    const x = offsetX - coords.x
+    const y = offsetY - coords.y
     isMouseDown = false // true only when dragging
 
     if (currentState == OverlayStates.SELECTED) {
-      const x = event.clientX - canvas.getBoundingClientRect().left
-      const y = event.clientY - canvas.getBoundingClientRect().top
-      //				console.log(`onMouseDown at ${event.clientX}, ${event.clientY}, cur state ${curState}`);
-
       // if in state SELECTED, check if we clicked a drag handle inside the selected video
       const drawParams = calculateDrawParams()
       var dragging = false
@@ -1222,6 +1244,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   // << CANVAS
 
+  const renderTreeManifestUpdate = (manifest) => {
+    activeNodeGraph.value = JSON.stringify(manifest, null, 2)
+    globalNodeGraph = manifest
+  }
+
   const toggleRenderTree = () => {
     activeTreeBox.classList.toggle('hidden')
     activeTreeBox.classList.toggle('offscreen')
@@ -1234,6 +1261,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     ])
     // toggleRenderTree()
   }
+
+  brewmixer.manifestDelegate = renderTreeManifestUpdate
 
   const onSubscriberEvent = (event) => {
     const { type } = event
