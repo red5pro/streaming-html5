@@ -797,8 +797,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       const { streamGuid, destX, destY, destWidth, destHeight } = node
       const scaleX = destX * widthPercentage
       const scaleY = destY * heightPercentage
-      const scaleWidth = (destX + destWidth) * widthPercentage
-      const scaleHeight = (destY + destHeight) * heightPercentage
+      const scaleWidth = destWidth * widthPercentage
+      const scaleHeight = destHeight * heightPercentage
       console.log(
         `nodeAt ${streamGuid}: ${scaleX}, ${scaleY}, ${scaleWidth}, ${scaleHeight}`
       )
