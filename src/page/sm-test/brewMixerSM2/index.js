@@ -337,13 +337,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   })
 
   // ============= DRAWING FUNCTIONS ===============
-
-  const getCoords = () => {
-    const { clientWidth, clientHeight } = video
-    const { videoWidth, videoHeight } = video
-    return getCoordinates(videoWidth, videoHeight, clientWidth, clientHeight)
-  }
-
   const drawMoveHandle = (ctx, drawParams, scale = 1.0) => {
     // =================================
     // circular drag handle
@@ -550,6 +543,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     drawCanvas()
   }
 
+  const getCoords = () => {
+    const { clientWidth, clientHeight } = video
+    const { videoWidth, videoHeight } = video
+    return getCoordinates(videoWidth, videoHeight, clientWidth, clientHeight)
+  }
+
   const calculateDrawParams = () => {
     if (!selectedNode) {
       return
@@ -565,6 +564,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       widthPercentage,
       heightPercentage,
     } = coords
+
     const { destX, destY, destWidth, destHeight, sourceWidth, sourceHeight } =
       selectedNode
 
@@ -659,16 +659,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       if (gridWidth < 4) {
         drawSwapIcon(ctx, drawParams, scale)
       }
-
-      //console.log("drawCanvas SELECTED");
-      //console.log(`canvas size: ${canvas.width}, ${canvas.height}`);
     } else if (
       currentState == OverlayStates.RESIZING ||
       currentState == OverlayStates.MOVING
     ) {
       // highlight the active resize control
-
       console.log('DRAW CANVAS:MOVE/RESIZE')
+
       // first draw in white
       ctx.setTransform(1, 0, 0, 1, 0, 0)
       ctx.lineWidth = 4
@@ -1128,15 +1125,15 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   const onMouseMove = (event) => {
+    const coords = getCoords()
+    const { offsetX, offsetY } = event
+    const x = offsetX - coords.x
+    const y = offsetY - coords.y
     if (isMouseDown) {
       if (currentState == OverlayStates.MOVING && dragTarget == MOVE_HANDLE) {
-        const x = event.clientX - canvas.getBoundingClientRect().left
-        const y = event.clientY - canvas.getBoundingClientRect().top
         const drawParams = calculateDrawParams()
-
         selectedNode.destX = x - drawParams.halfWidth
         selectedNode.destY = y - drawParams.halfHeight
-
         drawCanvas()
 
         brewmixer.updateRenderTrees(
@@ -1149,10 +1146,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         )
       } else if (currentState == OverlayStates.RESIZING) {
         let w, h
-        const x = event.clientX - canvas.getBoundingClientRect().left
-        const y = event.clientY - canvas.getBoundingClientRect().top
         const drawParams = calculateDrawParams()
-
         if (dragTarget == Direction.NORTHWEST) {
           selectedNode.destX = x - dragX
           selectedNode.destY = y - dragY
@@ -1541,15 +1535,28 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     )
     if (renderTrees) {
       activeNodeGraph.value = JSON.stringify(renderTrees[0], null, 2)
+      let nodeCount = 3
+      try {
+        nodeCount = renderTrees[0].rootVideoNode.nodes.filter(
+          (n) => n.node === 'VideoSourceNode'
+        ).length
+      } catch (e) {
+        console.log('error parsing render tree')
+      }
 
       // show controls
       startComp.classList.toggle('hidden', true)
       startComp.classList.toggle('offscreen', true)
-      // playerContainer.classList.toggle('hidden', (force = false))
-      // videoControls.classList.toggle('hidden') //, (force = false))
-
       activeTreeBox.classList.toggle('hidden', true)
       activeTreeBox.classList.toggle('offscreen', true)
+
+      const columns = Math.sqrt(nodeCount)
+      const control = Array.from(radioButtons).find(
+        (control) => control.value === '' + columns
+      )
+      if (control) {
+        control.checked = true
+      }
 
       // assign the global ref
       globalNodeGraph = renderTrees[0]
