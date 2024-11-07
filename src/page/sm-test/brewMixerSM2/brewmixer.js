@@ -24,6 +24,15 @@ WHETHER IN  AN  ACTION  OF  CONTRACT,  TORT  OR  OTHERWISE,  ARISING  FROM,  OUT
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 ;((window) => {
+  const DELAY = 100
+  let timeout
+  const debounce = (func, delay) => {
+    return function (...args) {
+      clearTimeout(timeout)
+      timeout = setTimeout(() => func.apply(this, args), delay)
+    }
+  }
+
   // BrewMixer API Service Module
   window.brewmixer = {
     // Create Mixer Event
@@ -126,6 +135,24 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     // send the globalNodeGraph to the server
     // note that renderTrees is an array
     updateRenderTrees: async function (
+      host,
+      jwt,
+      smVersion,
+      nodeGroupName,
+      eventId,
+      renderTrees
+    ) {
+      return debounce(this._updateRenderTrees, DELAY)(
+        host,
+        jwt,
+        smVersion,
+        nodeGroupName,
+        eventId,
+        renderTrees
+      )
+    },
+
+    _updateRenderTrees: async function (
       host,
       jwt,
       smVersion,

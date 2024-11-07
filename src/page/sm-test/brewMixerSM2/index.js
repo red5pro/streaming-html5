@@ -345,7 +345,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     ctx.beginPath()
     ctx.ellipse(centerX, centerY, size, size, 0, 0, 360)
     ctx.stroke()
-    // console.log('COORDs: ' + JSON.stringify(coords, null, 2))
   }
 
   const drawEastResize = (ctx, drawParams, scale = 1.0) => {
@@ -779,9 +778,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   const hitCircle = (x, y, circX, circY, radius) => {
-    const dx = circX - x
-    const dy = circY - y
-    return dx * dx + dy * dy <= radius * radius
+    const dx = x - circX
+    const dy = y - circY
+    console.log('HIT CIRCLE', x, y, circX, circY, radius)
+    console.log('HIT CIRCLE:2', dx, dy, dx * dx + dy * dy, radius * radius)
+    const distance = Math.sqrt(dx ** 2 + dy ** 2)
+    return distance <= radius
   }
 
   const nodeAt = (x, y) => {
@@ -1055,8 +1057,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     canvas.addEventListener('mousemove', onMouseMove)
     const coords = getCoords()
     const { offsetX, offsetY } = event
-    const x = offsetX - coords.x
-    const y = offsetY - coords.y
+    const x = offsetX // - coords.x
+    const y = offsetY // - coords.y
     isMouseDown = false // true only when dragging
 
     if (currentState == OverlayStates.SELECTED) {
@@ -1066,7 +1068,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       if (hitCircle(x, y, drawParams.centerX, drawParams.centerY, 70)) {
         dragTarget = MOVE_HANDLE
         isMouseDown = true
-
         setState(OverlayStates.MOVING)
       } else if (hitBox(x, y, drawParams.x, drawParams.y, 70, 70)) {
         dragTarget = Direction.NORTHWEST
@@ -1127,13 +1128,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   const onMouseMove = (event) => {
     const coords = getCoords()
     const { offsetX, offsetY } = event
-    const x = offsetX - coords.x
-    const y = offsetY - coords.y
+    const x = (offsetX - coords.x) / coords.widthPercentage
+    const y = (offsetY - coords.y) / coords.heightPercentage
     if (isMouseDown) {
       if (currentState == OverlayStates.MOVING && dragTarget == MOVE_HANDLE) {
-        const drawParams = calculateDrawParams()
-        selectedNode.destX = x - drawParams.halfWidth
-        selectedNode.destY = y - drawParams.halfHeight
+        const { destWidth, destHeight } = selectedNode
+        selectedNode.destX = x - destWidth / 2
+        selectedNode.destY = y - destHeight / 2
         drawCanvas()
 
         brewmixer.updateRenderTrees(
@@ -1423,9 +1424,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   // lay the videos out in a grid of sideLength x sideLength cells
-  // we assume all input videos are streaming, and named stream1 through streamn
-  // and that each input is 1920x1080.
-  // and that the mixer is also 1920x1080
+  // we assume all input videos are streaming, and named stream1 through stream<N>
+  // and that each input is the same aspect ratio as the single output
   const reGrid = (sideLength) => {
     const vid = document.getElementById('red5pro-subscriber')
     let cellSourceWidth = vid.videoWidth,
