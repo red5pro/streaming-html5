@@ -724,7 +724,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     sizeCanvas(vidStyleData.width, vidStyleData.height)
   }
 
-  const updateZoom = () => {
+  const updateZoom = async () => {
     var w0 = zoomInitial.destWidth
     var h0 = zoomInitial.destHeight
     var x0 = zoomInitial.destX
@@ -732,8 +732,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
     var x1 = 0.0
     var y1 = 0.0
-    var w1 = canvas.width
-    var h1 = canvas.height
+    var w1 = video.videoWidth
+    var h1 = video.videoHeight
 
     var x = lerp(x0, x1, zoomT)
     var y = lerp(y0, y1, zoomT)
@@ -745,7 +745,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     zoomNode.destWidth = w
     zoomNode.destHeight = h
 
-    brewmixer.updateRenderTrees(
+    await brewmixer.updateRenderTrees(
       host,
       jwt,
       smVersion,
@@ -1038,11 +1038,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         // start zooming in
         zoomNode = node
         videoNodeToTop(node)
-        zoomInitial = {
-          ...structuredClone(node),
-          destWidth: video.videoWidth,
-          destHeight: video.videoHeight,
-        }
+        zoomInitial = structuredClone(node)
         zoomT = 0.0
         zoomIncr = 0.14
         setState(OverlayStates.ZOOMING)
