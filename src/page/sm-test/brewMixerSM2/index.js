@@ -58,6 +58,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   let jwt
   let guids = []
   const GUID_COUNT = 25
+  const ZOOM_DELAY = 30
   const {
     host,
     streamManagerUser,
@@ -65,7 +66,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     streamManagerAPI: smVersion,
     streamManagerNodeGroup: nodeGroupName,
   } = configuration
-  let eventId = 'event1'
 
   let ipReg = /^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/
   let localhostReg = /^localhost.*/
@@ -104,10 +104,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   const getConfiguration = () => {
+    const { path, name } = pathAndNameFromGuid(mixerStreamGuid)
     const {
       host,
-      app,
-      stream1,
       streamManagerAPI,
       preferWhipWhep,
       streamManagerNodeGroup: nodeGroup,
@@ -124,8 +123,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
     const httpProtocol = protocol === 'wss' ? 'https' : 'http'
     const endpoint = !preferWhipWhep
-      ? `${protocol}://${host}:${port}/as/${streamManagerAPI}/proxy/ws/subscribe/${app}/${stream1}`
-      : `${httpProtocol}://${host}:${port}/as/${streamManagerAPI}/proxy/whep/${app}/${stream1}`
+      ? `${protocol}://${host}:${port}/as/${streamManagerAPI}/proxy/ws/subscribe/${path}/${name}`
+      : `${httpProtocol}://${host}:${port}/as/${streamManagerAPI}/proxy/whep/${path}/${name}`
 
     var connectionParams = params
       ? { ...params, ...getAuthenticationParams().connectionParams }
@@ -134,7 +133,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     var rtcConfig = {
       ...configuration,
       endpoint,
-      streamName: stream1,
+      app: path,
+      streamName: name,
       connectionParams: {
         ...connectionParams,
         nodeGroup,
@@ -189,7 +189,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   const STREAM_REGEX = /^stream((1[0-2]?)|([1-9]))\b/
   const urlParams = new URLSearchParams(window.location.search)
-  let mixerStreamGuid = urlParams.get('mixer')
+  let eventId = urlParams.get('event') || 'event1'
+  let mixerStreamGuid = urlParams.get('mixer') || 'live/mix1'
+
   var mixerStreamPath = ''
   var mixerStreamName = ''
   var defaultGraphValue = JSON.stringify([
@@ -294,6 +296,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   const toggleMuteButton = document.getElementById('toggleMute')
   const renderTreeToggle = document.getElementById('renderTreeToggle')
   const stopButton = document.getElementById('stopButton')
+  const eventIdField = document.getElementById('eventIdField')
   const mixerGuidField = document.getElementById('mixerGuidField')
   const mixerFormSubmit = document.getElementById('mixer-form-submit')
   const activeTreeBox = document.getElementById('activeTreeBox')
@@ -742,9 +745,15 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     zoomNode.destWidth = w
     zoomNode.destHeight = h
 
-    brewmixer.updateRenderTrees(host, jwt, smVersion, nodeGroupName, eventId, [
-      globalNodeGraph,
-    ])
+    brewmixer.updateRenderTrees(
+      host,
+      jwt,
+      smVersion,
+      nodeGroupName,
+      eventId,
+      [globalNodeGraph],
+      false
+    )
   }
 
   const doZoom = () => {
@@ -755,7 +764,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       // update node params
       updateZoom()
       // repeat
-      setTimeout(doZoom, 30)
+      setTimeout(doZoom, ZOOM_DELAY)
     }
 
     // if, after that, we're out of bounds, then we're done
@@ -1029,7 +1038,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         // start zooming in
         zoomNode = node
         videoNodeToTop(node)
-        zoomInitial = structuredClone(node)
+        zoomInitial = {
+          ...structuredClone(node),
+          destWidth: video.videoWidth,
+          destHeight: video.videoHeight,
+        }
         zoomT = 0.0
         zoomIncr = 0.14
         setState(OverlayStates.ZOOMING)
@@ -1039,9 +1052,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           smVersion,
           nodeGroupName,
           eventId,
-          [globalNodeGraph]
+          [globalNodeGraph],
+          false
         )
-        setTimeout(doZoom, 30)
+        setTimeout(doZoom, ZOOM_DELAY)
       }
       // else, they clicked empty space: no-op
     } else if (currentState == OverlayStates.ZOOMED_IN) {
@@ -1049,31 +1063,38 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       zoomT = 1.0
       zoomIncr = -0.14
       setState(OverlayStates.ZOOMING)
-      setTimeout(doZoom, 30)
+      setTimeout(doZoom, ZOOM_DELAY)
     }
   }
 
   const onMouseDown = (event) => {
     canvas.addEventListener('mousemove', onMouseMove)
-    const coords = getCoords()
     const { offsetX, offsetY } = event
-    const x = offsetX // - coords.x
-    const y = offsetY // - coords.y
+    const x = offsetX
+    const y = offsetY
+    const radius = 70
     isMouseDown = false // true only when dragging
 
     if (currentState == OverlayStates.SELECTED) {
       // if in state SELECTED, check if we clicked a drag handle inside the selected video
       const drawParams = calculateDrawParams()
       var dragging = false
-      if (hitCircle(x, y, drawParams.centerX, drawParams.centerY, 70)) {
+      if (hitCircle(x, y, drawParams.centerX, drawParams.centerY, radius)) {
         dragTarget = MOVE_HANDLE
         isMouseDown = true
         setState(OverlayStates.MOVING)
-      } else if (hitBox(x, y, drawParams.x, drawParams.y, 70, 70)) {
+      } else if (hitBox(x, y, drawParams.x, drawParams.y, radius, radius)) {
         dragTarget = Direction.NORTHWEST
         dragging = true
       } else if (
-        hitBox(x, y, drawParams.x + drawParams.width - 70, drawParams.y, 70, 70)
+        hitBox(
+          x,
+          y,
+          drawParams.x + drawParams.width - radius,
+          drawParams.y,
+          radius,
+          radius
+        )
       ) {
         dragTarget = Direction.NORTHEAST
         dragging = true
@@ -1081,10 +1102,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         hitBox(
           x,
           y,
-          drawParams.x + drawParams.width - 70,
-          drawParams.y + drawParams.height - 70,
-          70,
-          70
+          drawParams.x + drawParams.width - radius,
+          drawParams.y + drawParams.height - radius,
+          radius,
+          radius
         )
       ) {
         dragTarget = Direction.SOUTHEAST
@@ -1094,9 +1115,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           x,
           y,
           drawParams.x,
-          drawParams.y + drawParams.height - 70,
-          70,
-          70
+          drawParams.y + drawParams.height - radius,
+          radius,
+          radius
         )
       ) {
         dragTarget = Direction.SOUTHWEST
@@ -1149,8 +1170,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         let w, h
         const drawParams = calculateDrawParams()
         if (dragTarget == Direction.NORTHWEST) {
-          selectedNode.destX = x - dragX
-          selectedNode.destY = y - dragY
+          console.log('DRAG', x, dragX)
+          selectedNode.destX = x - dragX / coords.widthPercentage
+          selectedNode.destY = y - dragY / coords.heightPercentage
 
           w = zoomInitial.destX - selectedNode.destX + zoomInitial.destWidth
           h = zoomInitial.destY - selectedNode.destY + zoomInitial.destHeight
@@ -1168,9 +1190,17 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             [globalNodeGraph]
           )
         } else if (dragTarget == Direction.NORTHEAST) {
-          w = x - drawParams.x
+          console.log('DRAG', x, dragX)
+          console.log(
+            'DRAG:thing',
+            dragX,
+            selectedNode.destX,
+            selectedNode.destWidth
+          )
+          w = x - selectedNode.destX
+          // w = x + dragX * coords.widthPercentage - selectedNode.destX
 
-          selectedNode.destY = y - dragY
+          selectedNode.destY = y - dragY / coords.heightPercentage
           h = zoomInitial.destY - selectedNode.destY + zoomInitial.destHeight
 
           selectedNode.destWidth = w
@@ -1186,13 +1216,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             [globalNodeGraph]
           )
         } else if (dragTarget == Direction.SOUTHWEST) {
-          selectedNode.destX = x - dragX
+          selectedNode.destX = x - dragX / coords.widthPercentage
 
           w = zoomInitial.destX - selectedNode.destX + zoomInitial.destWidth
-          h = y - drawParams.y
+          h = y - drawParams.y / coords.heightPercentage
 
           selectedNode.destWidth = w
-          selectedNode.destHeight = h
+          selectedNode.destHeight = h + selectedNode.destY
           drawCanvas()
 
           brewmixer.updateRenderTrees(
@@ -1204,11 +1234,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             [globalNodeGraph]
           )
         } else if (dragTarget == Direction.SOUTHEAST) {
-          w = x - drawParams.x
-          h = y - drawParams.y
+          w = x - drawParams.x / coords.widthPercentage
+          h = y - drawParams.y / coords.heightPercentage
 
           selectedNode.destWidth = w
-          selectedNode.destHeight = h
+          selectedNode.destHeight = h + selectedNode.destY
           drawCanvas()
 
           brewmixer.updateRenderTrees(
@@ -1340,6 +1370,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       : mixerStreamGuid.substring(index + 1)
 
     mixerGuidField.value = mixerStreamGuid
+  }
+  const pathAndNameFromGuid = (guid) => {
+    var index = !guid ? 0 : guid.lastIndexOf('/')
+    var path = !guid ? '' : guid.substring(0, index)
+    var name = !guid ? '' : guid.substring(index + 1)
+    return { path, name }
   }
   initStreamGuid()
 
@@ -1575,6 +1611,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   window.onload = () => {
+    eventIdField.value = eventId
+    mixerGuidField.value = mixerStreamGuid
     mixerFormSubmit.disabled = true
     init(getConfiguration(), 'stream')
   }

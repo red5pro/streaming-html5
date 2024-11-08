@@ -140,16 +140,28 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       smVersion,
       nodeGroupName,
       eventId,
-      renderTrees
+      renderTrees,
+      useDebounce = true
     ) {
-      return debounce(this._updateRenderTrees, DELAY)(
-        host,
-        jwt,
-        smVersion,
-        nodeGroupName,
-        eventId,
-        renderTrees
-      )
+      if (useDebounce) {
+        return debounce(this._updateRenderTrees, DELAY)(
+          host,
+          jwt,
+          smVersion,
+          nodeGroupName,
+          eventId,
+          renderTrees
+        )
+      } else {
+        return this._updateRenderTrees(
+          host,
+          jwt,
+          smVersion,
+          nodeGroupName,
+          eventId,
+          renderTrees
+        )
+      }
     },
 
     _updateRenderTrees: async function (
