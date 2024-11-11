@@ -600,7 +600,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       // also no-op? overlay hidden
     } else if (currentState == OverlayStates.SELECTED) {
       // show overlay controls (disable highlight)
-      console.log('DRAW CANVAS:SELECTED', JSON.stringify(drawParams, null, 2))
       ctx.setTransform(1, 0, 0, 1, 0, 0)
       ctx.lineWidth = 4
       ctx.strokeStyle = 'rgba(255,255,255,255)'
@@ -623,8 +622,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       currentState == OverlayStates.MOVING
     ) {
       // highlight the active resize control
-      console.log('DRAW CANVAS:MOVE/RESIZE')
-
       // first draw in white
       ctx.setTransform(1, 0, 0, 1, 0, 0)
       ctx.lineWidth = 4
@@ -710,7 +707,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   const doZoom = () => {
-    console.log('doZoom() -- zoomT: ' + zoomT)
     zoomT += zoomIncr
 
     if (zoomT > 0 && zoomT < 1) {
@@ -731,7 +727,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       } else {
         setState(OverlayStates.IDLE)
       }
-      console.log('done zooming')
     }
   }
 
@@ -753,14 +748,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     const { widthPercentage, heightPercentage } = getCoords()
     while (--i > 0) {
       const node = videoNodes[i]
-      const { streamGuid, destX, destY, destWidth, destHeight } = node
+      const { destX, destY, destWidth, destHeight } = node
       const scaleX = destX * widthPercentage
       const scaleY = destY * heightPercentage
       const scaleWidth = destWidth * widthPercentage
       const scaleHeight = destHeight * heightPercentage
-      // console.log(
-      //   `nodeAt ${streamGuid}: ${scaleX}, ${scaleY}, ${scaleWidth}, ${scaleHeight}`
-      // )
       if (hitBox(x, y, scaleX, scaleY, scaleWidth, scaleHeight)) {
         result = node
         break
@@ -817,9 +809,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     const { offsetX, offsetY } = event
     const x = offsetX - coords.x
     const y = offsetY - coords.y
-    console.log(
-      `click at ${x}, ${y}, currentState state ${currentState} -- detail: ${event.detail}`
-    )
     if (event.detail == 1) {
       // if single-click
       if (
@@ -932,7 +921,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     const videoDownY = y - coords.y
     const magVideoDownX = videoDownX / widthPercentage
     const magVideoDownY = videoDownY / heightPercentage
-    console.log('X,Y', videoDownX, videoDownY, magVideoDownX, magVideoDownY)
     let node = nodeAt(videoDownX, videoDownY)
     let offsetx = 0
     let offsety = 0
@@ -996,9 +984,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       }
 
       if (dragging) {
-        console.log('OFFSET', x, y, offsetx, offsety)
-        console.log('DRAGGING', JSON.stringify(node, null, 2))
-        console.log('COORDSS', JSON.stringify(coords, null, 2))
         dragX = x - drawParams.x
         dragY = y - drawParams.y
         dragOffsetX = offsetx
@@ -1047,13 +1032,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       } else if (currentState == OverlayStates.RESIZING) {
         let w, h
         const drawParams = calculateDrawParams()
-        console.log('X,Y', x, y)
-        console.log('DRAG', dragX, dragY)
-
-        console.log('SELECTED', JSON.stringify(selectedNode, null, 2))
-        console.log('DRAW', JSON.stringify(drawParams, null, 2))
-        console.log('COORDS', JSON.stringify(coords, null, 2))
-
         if (dragTarget == Direction.NORTHWEST) {
           selectedNode.destX = x - dragOffsetX
           selectedNode.destY = y - dragOffsetY
@@ -1095,10 +1073,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           selectedNode.destX = x - dragOffsetX
 
           w = zoomInitial.destX - selectedNode.destX + zoomInitial.destWidth
-          h = y - drawParams.y / coords.heightPercentage + dragOffsetY
+          h = y - selectedNode.destY - dragOffsetY
 
           selectedNode.destWidth = w
-          selectedNode.destHeight = h + selectedNode.destY
+          selectedNode.destHeight = h
           drawCanvas()
 
           brewmixer.updateRenderTrees(
@@ -1111,10 +1089,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           )
         } else if (dragTarget == Direction.SOUTHEAST) {
           w = x - drawParams.x / coords.widthPercentage + dragOffsetX
-          h = y - drawParams.y / coords.heightPercentage
+          h = y - selectedNode.destY - dragOffsetY
 
           selectedNode.destWidth = w
-          selectedNode.destHeight = h + selectedNode.destY
+          selectedNode.destHeight = h
           drawCanvas()
 
           brewmixer.updateRenderTrees(
