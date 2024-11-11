@@ -26,10 +26,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ;((window) => {
   const DELAY = 100
   let timeout
-  const debounce = (func, delay) => {
+  const debounce = (target, func, delay) => {
     return function (...args) {
       clearTimeout(timeout)
-      timeout = setTimeout(() => func.apply(this, args), delay)
+      timeout = setTimeout(() => func.apply(target, args), delay)
     }
   }
 
@@ -144,7 +144,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       useDebounce = true
     ) {
       if (useDebounce) {
-        return debounce(this._updateRenderTrees, DELAY)(
+        return debounce(this, this._updateRenderTrees, DELAY)(
           host,
           jwt,
           smVersion,

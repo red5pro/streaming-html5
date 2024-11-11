@@ -175,8 +175,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   let zoomInitial = null
   let zoomT = 0.0
   let zoomIncr = 0.15
-  let swapAvail = []
-  let swapped = new Map()
   let audioSet = new Set()
   audioSet.add(`${configuration.app}/${configuration.stream1}`) // to match the default nodegraph
 
@@ -185,9 +183,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   let isMouseDown = false
   let dragTarget = null
   let dragX = 0,
-    dragY = 0
+    dragY = 0,
+    dragOffsetX = 0,
+    dragOffsetY = 0
 
-  const STREAM_REGEX = /^stream((1[0-2]?)|([1-9]))\b/
   const urlParams = new URLSearchParams(window.location.search)
   let eventId = urlParams.get('event') || 'event1'
   let mixerStreamGuid = urlParams.get('mixer') || 'live/mix1'
@@ -308,11 +307,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       if (checked) {
         reGrid(parseInt(value, 10))
         setState(OverlayStates.IDLE)
-        swapped.clear()
-        swapAvail = []
-
-        const streamList = await fetchSwapStreams()
-        swapAvail.concat(streamList)
       }
     })
   })
@@ -514,27 +508,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     ctx.stroke()
   }
 
-  const drawSwapIcon = (ctx, drawParams, scale = 1.0) => {
-    const { centerX, centerY, quarterWidth } = drawParams
-    // =================================
-    const width = quarterWidth
-    const length = 15 * scale
-    // swap icon
-    ctx.fillRect(centerX - width - length, centerY - length - 3, length * 3, 3)
-    ctx.beginPath()
-    ctx.moveTo(centerX - width - length, centerY - length)
-    ctx.lineTo(centerX - width - length, centerY - length - 12)
-    ctx.lineTo(centerX - width - length * 2, centerY - length)
-    ctx.fill()
-
-    ctx.fillRect(centerX - width - length * 2, centerY + length, length * 3, 3)
-    ctx.beginPath()
-    ctx.moveTo(centerX - width + length, centerY + length)
-    ctx.lineTo(centerX - width + length, centerY + length + 12)
-    ctx.lineTo(centerX - width + length * 2, centerY + length)
-    ctx.fill()
-  }
-
   const lerp = (a, b, t) => {
     return a * (1.0 - t) + b * t
   }
@@ -645,22 +618,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         ctx.fillStyle = 'rgba(68,160,255,255)'
       }
       drawMicrophone(ctx, drawParams, scale)
-
-      // if swap active
-      if (swapped.has(selectedNode.streamGuid)) {
-        ctx.strokeStyle = 'rgba(68,160,255,255)'
-        ctx.fillStyle = 'rgba(68,160,255,255)'
-      } else {
-        // else, active mic might have changed the color to blue; if so, here we change it back to white
-        ctx.strokeStyle = 'rgba(255,255,255,255)'
-        ctx.fillStyle = 'rgba(255,255,255,255)'
-      }
-
-      // swap streams only when not showing 4x4 grid
-      // (in a 4x4 grid all 16 streams are shown, but the demo only has 16 streams total)
-      if (gridWidth < 4) {
-        drawSwapIcon(ctx, drawParams, scale)
-      }
     } else if (
       currentState == OverlayStates.RESIZING ||
       currentState == OverlayStates.MOVING
@@ -680,10 +637,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       drawSouthwestResize(ctx, drawParams, scale)
       drawSoutheastResize(ctx, drawParams, scale)
       drawMicrophone(ctx, drawParams, scale)
-
-      if (gridWidth < 4) {
-        drawSwapIcon(ctx, drawParams, scale)
-      }
 
       ctx.strokeStyle = 'rgba(68,160,255,255)'
       ctx.fillStyle = 'rgba(68,160,255,255)'
@@ -789,8 +742,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   const hitCircle = (x, y, circX, circY, radius) => {
     const dx = x - circX
     const dy = y - circY
-    console.log('HIT CIRCLE', x, y, circX, circY, radius)
-    console.log('HIT CIRCLE:2', dx, dy, dx * dx + dy * dy, radius * radius)
     const distance = Math.sqrt(dx ** 2 + dy ** 2)
     return distance <= radius
   }
@@ -807,9 +758,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       const scaleY = destY * heightPercentage
       const scaleWidth = destWidth * widthPercentage
       const scaleHeight = destHeight * heightPercentage
-      console.log(
-        `nodeAt ${streamGuid}: ${scaleX}, ${scaleY}, ${scaleWidth}, ${scaleHeight}`
-      )
+      // console.log(
+      //   `nodeAt ${streamGuid}: ${scaleX}, ${scaleY}, ${scaleWidth}, ${scaleHeight}`
+      // )
       if (hitBox(x, y, scaleX, scaleY, scaleWidth, scaleHeight)) {
         result = node
         break
@@ -841,18 +792,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
   }
 
-  const getAudioNodeByName = (streamGuid) => {
-    let result = null
-    const audioNodes = globalNodeGraph.rootAudioNode.nodes
-    for (let i = audioNodes.length - 1; i >= 0; i--) {
-      if (audioNodes[i].streamGuid === streamGuid) {
-        result = audioNodes[i]
-        break
-      }
-    }
-    return result
-  }
-
   const setGain = (streamGuid, gain) => {
     const audioNodes = globalNodeGraph.rootAudioNode.nodes
     for (const node of audioNodes) {
@@ -871,14 +810,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
   }
 
-  function logSwapAvail() {
-    console.log('--swapAvail--')
-    for (const s of swapAvail) {
-      console.log('  ' + s)
-    }
-    console.log('-------------')
-  }
-
   // EVENTS >>
 
   const clickCanvas = (event) => {
@@ -890,7 +821,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       `click at ${x}, ${y}, currentState state ${currentState} -- detail: ${event.detail}`
     )
     if (event.detail == 1) {
-      let audioNode
       // if single-click
       if (
         currentState == OverlayStates.IDLE ||
@@ -910,20 +840,21 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           )
           setState(OverlayStates.SELECTED)
         } else if (currentState == OverlayStates.SELECTED) {
-          var handled = false
+          let handled = false
           if (node == selectedNode) {
             handled = true
             const drawParams = calculateDrawParams()
-
+            const micWidth = 56
+            const micHeight = 90
             // - microphone
             if (
               hitBox(
-                x,
-                y,
-                drawParams.centerX + drawParams.quarterWidth - 28,
-                drawParams.centerY - 45,
-                56,
-                90
+                offsetX,
+                offsetY,
+                drawParams.centerX + drawParams.quarterWidth - micWidth / 2,
+                drawParams.centerY - micHeight / 2,
+                micWidth,
+                micHeight
               )
             ) {
               if (audioSet.has(selectedNode.streamGuid)) {
@@ -934,81 +865,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
                 setGain(selectedNode.streamGuid, -6)
               }
               drawCanvas()
-            }
-            // - swap
-            else if (
-              hitBox(
-                x,
-                y,
-                drawParams.centerX - drawParams.quarterWidth - 30,
-                drawParams.centerY - 30,
-                60,
-                60
-              )
-            ) {
-              console.log('swap ' + selectedNode.streamGuid)
-
-              if (swapped.has(selectedNode.streamGuid)) {
-                const swap = selectedNode.streamGuid
-                const prev = swapped.get(selectedNode.streamGuid)
-                swapped.delete(swap)
-                selectedNode.streamGuid = prev
-                console.log('swapping back to ' + prev)
-
-                audioNode = getAudioNodeByName(swap)
-                if (audioNode) {
-                  audioNode.streamGuid = prev
-                }
-
-                brewmixer.updateRenderTrees(
-                  host,
-                  jwt,
-                  smVersion,
-                  nodeGroupName,
-                  eventId,
-                  [globalNodeGraph]
-                )
-                drawCanvas()
-              } else {
-                // update swap avail
-                fetchSwapStreams().then((streamList) => {
-                  swapAvail = []
-                  for (const stream of streamList) {
-                    if (!swapped.has(stream)) {
-                      swapAvail.push(stream)
-                    }
-                  }
-
-                  logSwapAvail()
-                  if (swapAvail.length > 0 && gridWidth < 4) {
-                    const swap = swapAvail.pop()
-                    const prev = selectedNode.streamGuid
-                    swapped.set(swap, prev)
-                    selectedNode.streamGuid = swap
-
-                    audioNode = getAudioNodeByName(prev)
-                    if (audioNode) {
-                      audioNode.streamGuid = swap
-                    }
-
-                    brewmixer.updateRenderTrees(
-                      host,
-                      jwt,
-                      smVersion,
-                      nodeGroupName,
-                      eventId,
-                      [globalNodeGraph]
-                    )
-                  } else {
-                    if (swapAvail.length == 0) {
-                      console.log("don't swap: no swap stream available.")
-                    } else if (gridWidth >= 4) {
-                      console.log("don't swap: large layout")
-                    }
-                  }
-                  drawCanvas()
-                })
-              }
             }
           }
 
@@ -1065,10 +921,21 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   const onMouseDown = (event) => {
     canvas.addEventListener('mousemove', onMouseMove)
+    const coords = getCoords()
+    const { widthPercentage, heightPercentage } = coords
     const { offsetX, offsetY } = event
     const x = offsetX
     const y = offsetY
     const radius = 70
+
+    const videoDownX = x - coords.x
+    const videoDownY = y - coords.y
+    const magVideoDownX = videoDownX / widthPercentage
+    const magVideoDownY = videoDownY / heightPercentage
+    console.log('X,Y', videoDownX, videoDownY, magVideoDownX, magVideoDownY)
+    let node = nodeAt(videoDownX, videoDownY)
+    let offsetx = 0
+    let offsety = 0
     isMouseDown = false // true only when dragging
 
     if (currentState == OverlayStates.SELECTED) {
@@ -1082,6 +949,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       } else if (hitBox(x, y, drawParams.x, drawParams.y, radius, radius)) {
         dragTarget = Direction.NORTHWEST
         dragging = true
+        offsetx = magVideoDownX - node.destX
+        offsety = magVideoDownY - node.destY
       } else if (
         hitBox(
           x,
@@ -1094,6 +963,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       ) {
         dragTarget = Direction.NORTHEAST
         dragging = true
+        offsetx = node.destX + node.destWidth - magVideoDownX
+        offsety = magVideoDownY - node.destY
       } else if (
         hitBox(
           x,
@@ -1106,6 +977,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       ) {
         dragTarget = Direction.SOUTHEAST
         dragging = true
+        offsetx = node.destX + node.destWidth - magVideoDownX
+        offsety = magVideoDownY - node.destY - node.destHeight
       } else if (
         hitBox(
           x,
@@ -1118,15 +991,24 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       ) {
         dragTarget = Direction.SOUTHWEST
         dragging = true
+        offsetx = magVideoDownX - node.destX
+        offsety = magVideoDownY - node.destY - node.destHeight
       }
 
       if (dragging) {
+        console.log('OFFSET', x, y, offsetx, offsety)
+        console.log('DRAGGING', JSON.stringify(node, null, 2))
+        console.log('COORDSS', JSON.stringify(coords, null, 2))
         dragX = x - drawParams.x
         dragY = y - drawParams.y
+        dragOffsetX = offsetx
+        dragOffsetY = offsety
 
         zoomInitial = structuredClone(selectedNode)
         isMouseDown = true
         setState(OverlayStates.RESIZING)
+      } else {
+        dragX = dragY = dragOffsetX = dragOffsetY = 0
       }
     }
   }
@@ -1165,10 +1047,16 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       } else if (currentState == OverlayStates.RESIZING) {
         let w, h
         const drawParams = calculateDrawParams()
+        console.log('X,Y', x, y)
+        console.log('DRAG', dragX, dragY)
+
+        console.log('SELECTED', JSON.stringify(selectedNode, null, 2))
+        console.log('DRAW', JSON.stringify(drawParams, null, 2))
+        console.log('COORDS', JSON.stringify(coords, null, 2))
+
         if (dragTarget == Direction.NORTHWEST) {
-          console.log('DRAG', x, dragX)
-          selectedNode.destX = x - dragX / coords.widthPercentage
-          selectedNode.destY = y - dragY / coords.heightPercentage
+          selectedNode.destX = x - dragOffsetX
+          selectedNode.destY = y - dragOffsetY
 
           w = zoomInitial.destX - selectedNode.destX + zoomInitial.destWidth
           h = zoomInitial.destY - selectedNode.destY + zoomInitial.destHeight
@@ -1186,17 +1074,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             [globalNodeGraph]
           )
         } else if (dragTarget == Direction.NORTHEAST) {
-          console.log('DRAG', x, dragX)
-          console.log(
-            'DRAG:thing',
-            dragX,
-            selectedNode.destX,
-            selectedNode.destWidth
-          )
-          w = x - selectedNode.destX
-          // w = x + dragX * coords.widthPercentage - selectedNode.destX
+          w = x - drawParams.x / coords.widthPercentage + dragOffsetX
 
-          selectedNode.destY = y - dragY / coords.heightPercentage
+          selectedNode.destY = y - dragOffsetY
           h = zoomInitial.destY - selectedNode.destY + zoomInitial.destHeight
 
           selectedNode.destWidth = w
@@ -1212,10 +1092,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             [globalNodeGraph]
           )
         } else if (dragTarget == Direction.SOUTHWEST) {
-          selectedNode.destX = x - dragX / coords.widthPercentage
+          selectedNode.destX = x - dragOffsetX
 
           w = zoomInitial.destX - selectedNode.destX + zoomInitial.destWidth
-          h = y - drawParams.y / coords.heightPercentage
+          h = y - drawParams.y / coords.heightPercentage + dragOffsetY
 
           selectedNode.destWidth = w
           selectedNode.destHeight = h + selectedNode.destY
@@ -1230,7 +1110,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             [globalNodeGraph]
           )
         } else if (dragTarget == Direction.SOUTHEAST) {
-          w = x - drawParams.x / coords.widthPercentage
+          w = x - drawParams.x / coords.widthPercentage + dragOffsetX
           h = y - drawParams.y / coords.heightPercentage
 
           selectedNode.destWidth = w
@@ -1318,60 +1198,22 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     document.querySelector('#muteButton').classList.toggle('hidden')
   }
 
-  const fetchSwapStreams = async () => {
-    const { host, streamManagerAPI } = configuration
-    const { protocol, port } = getSocketLocationFromProtocol(host)
-    const url = `${
-      protocol === 'ws' ? 'http' : 'https'
-    }://${host}:${port}/as/${streamManagerAPI}/streams/stream/${nodeGroupName}`
-    try {
-      const response = await fetch(url)
-      let result = []
-      if (response.ok) {
-        const streams = await response.json()
-        if (streams && streams.length > 0) {
-          for (const stream of streams) {
-            // exclude the streams matching the regex, and the mixer's own output stream
-            // (if you include the mixer output stream as a swap stream, you'll get a hall of mirrors)
-            if (
-              !STREAM_REGEX.test(stream) &&
-              stream !==
-                mixerStreamName /* mixer stream name -- comment out for hall of mirrors */
-            ) {
-              result.push(`${configuration.app}/${stream}`)
-            }
-          }
-        }
-      } else {
-        console.log('RENDERTREE RESPONSE ERROR ' + response.status)
-      }
-      return result
-    } catch (error) {
-      console.log('hey i caught this error: ' + error)
-    }
-  }
-
   // ============= SLOP ===============
-  const initStreamGuid = () => {
-    if (!mixerStreamGuid) {
-      mixerStreamGuid = `${configuration.app}/mix1`
-    }
-
-    var index = !mixerStreamGuid ? 0 : mixerStreamGuid.lastIndexOf('/')
-    mixerStreamPath = !mixerStreamGuid
-      ? ''
-      : mixerStreamGuid.substring(0, index)
-    mixerStreamName = !mixerStreamGuid
-      ? ''
-      : mixerStreamGuid.substring(index + 1)
-
-    mixerGuidField.value = mixerStreamGuid
-  }
   const pathAndNameFromGuid = (guid) => {
     var index = !guid ? 0 : guid.lastIndexOf('/')
     var path = !guid ? '' : guid.substring(0, index)
     var name = !guid ? '' : guid.substring(index + 1)
     return { path, name }
+  }
+
+  const initStreamGuid = () => {
+    if (!mixerStreamGuid) {
+      mixerStreamGuid = `${configuration.app}/mix1`
+    }
+    const { path, name } = pathAndNameFromGuid(mixerStreamGuid)
+    mixerStreamPath = path
+    mixerStreamName = name
+    mixerGuidField.value = mixerStreamGuid
   }
   initStreamGuid()
 
@@ -1598,9 +1440,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     } else {
       mixerFormSubmit.disabled = false
     }
-
-    const streamList = await fetchSwapStreams()
-    swapAvail.concat(streamList)
 
     // if they stop the mixer, hide the other controls and revert to only New Mixer controls.
     // rely on the subscriber client to stop on its own.
