@@ -37,27 +37,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   window.brewmixer = {
     // Create Mixer Event
     manifestDelegate: undefined,
-    /*
-    RESPONSE
-    ========================
-    [
-    {
-        "streamGuid": "live/mix1",
-        "serverAddress": "129.213.90.68",
-        "nodeRole": "mixer",
-        "subGroup": "ashburn",
-        "nodeState": "INSERVICE"
-    },
-    {
-        "streamGuid": "live/mix1",
-        "serverAddress": "132.145.177.11",
-        "nodeRole": "origin",
-        "subGroup": "ashburn",
-        "nodeState": "INSERVICE",
-        "subscribers": 0
-    }
-    ]
-     */
+
     createMixerEvent: async (
       host,
       jwt,
@@ -95,9 +75,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         })
         if (response.ok) {
           result = await response.json()
-          // console.log(
-          //   'listMixerEvents RESPONSE: ' + JSON.stringify(result, null, 4)
-          // )
         } else {
           console.log('LISTMIXEREVENTS RESPONSE ERROR ' + response.status)
         }
@@ -121,7 +98,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         })
         if (response.ok) {
           result = await response.json()
-          // console.log("RENDERTREE RESPONSE: " + JSON.stringify(result, null, 4));
         } else {
           console.log('RENDERTREE RESPONSE ERROR ' + response.status)
         }
@@ -164,6 +140,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       }
     },
 
+    // Internal method for debouncing
     _updateRenderTrees: async function (
       host,
       jwt,

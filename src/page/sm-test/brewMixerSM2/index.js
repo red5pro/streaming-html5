@@ -126,11 +126,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       ? `${protocol}://${host}:${port}/as/${streamManagerAPI}/proxy/ws/subscribe/${path}/${name}`
       : `${httpProtocol}://${host}:${port}/as/${streamManagerAPI}/proxy/whep/${path}/${name}`
 
-    var connectionParams = params
+    const connectionParams = params
       ? { ...params, ...getAuthenticationParams().connectionParams }
       : getAuthenticationParams().connectionParams
 
-    var rtcConfig = {
+    const rtcConfig = {
       ...configuration,
       endpoint,
       app: path,
@@ -182,18 +182,16 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   let gridHeight = 2
   let isMouseDown = false
   let dragTarget = null
-  let dragX = 0,
-    dragY = 0,
-    dragOffsetX = 0,
+  let dragOffsetX = 0,
     dragOffsetY = 0
 
   const urlParams = new URLSearchParams(window.location.search)
   let eventId = urlParams.get('event') || 'event1'
   let mixerStreamGuid = urlParams.get('mixer') || 'live/mix1'
 
-  var mixerStreamPath = ''
-  var mixerStreamName = ''
-  var defaultGraphValue = JSON.stringify([
+  let mixerStreamPath = ''
+  let mixerStreamName = ''
+  const defaultGraphValue = JSON.stringify([
     {
       rootVideoNode: {
         nodes: [
@@ -557,7 +555,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     const quarterWidth = width / 4
     const quarterHeight = height / 4
 
-    var drawParams = {
+    const drawParams = {
       x,
       y,
       width,
@@ -675,20 +673,20 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   const updateZoom = async () => {
-    var w0 = zoomInitial.destWidth
-    var h0 = zoomInitial.destHeight
-    var x0 = zoomInitial.destX
-    var y0 = zoomInitial.destY
+    let w0 = zoomInitial.destWidth
+    let h0 = zoomInitial.destHeight
+    let x0 = zoomInitial.destX
+    let y0 = zoomInitial.destY
 
-    var x1 = 0.0
-    var y1 = 0.0
-    var w1 = video.videoWidth
-    var h1 = video.videoHeight
+    let x1 = 0.0
+    let y1 = 0.0
+    let w1 = video.videoWidth
+    let h1 = video.videoHeight
 
-    var x = lerp(x0, x1, zoomT)
-    var y = lerp(y0, y1, zoomT)
-    var w = lerp(w0, w1, zoomT)
-    var h = lerp(h0, h1, zoomT)
+    let x = lerp(x0, x1, zoomT)
+    let y = lerp(y0, y1, zoomT)
+    let w = lerp(w0, w1, zoomT)
+    let h = lerp(h0, h1, zoomT)
 
     zoomNode.destX = x
     zoomNode.destY = y
@@ -763,7 +761,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   const videoNodeToTop = (node) => {
     const videoNodes = globalNodeGraph.rootVideoNode.nodes
-    var nodeIndex = -1
+    let nodeIndex = -1
     for (let i = videoNodes.length - 1; i >= 0; i--) {
       if (videoNodes[i] == node) {
         nodeIndex = i
@@ -815,7 +813,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         currentState == OverlayStates.IDLE ||
         currentState == OverlayStates.SELECTED
       ) {
-        var node = nodeAt(x, y)
+        let node = nodeAt(x, y)
         if (node != null && currentState == OverlayStates.IDLE) {
           selectedNode = node
           videoNodeToTop(selectedNode)
@@ -878,7 +876,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       currentState == OverlayStates.IDLE ||
       currentState == OverlayStates.SELECTED
     ) {
-      var node = nodeAt(x, y)
+      let node = nodeAt(x, y)
       if (node) {
         // start zooming in
         zoomNode = node
@@ -929,7 +927,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     if (currentState == OverlayStates.SELECTED) {
       // if in state SELECTED, check if we clicked a drag handle inside the selected video
       const drawParams = calculateDrawParams()
-      var dragging = false
+      let dragging = false
       if (hitCircle(x, y, drawParams.centerX, drawParams.centerY, radius)) {
         dragTarget = MOVE_HANDLE
         isMouseDown = true
@@ -984,8 +982,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       }
 
       if (dragging) {
-        dragX = x - drawParams.x
-        dragY = y - drawParams.y
         dragOffsetX = offsetx
         dragOffsetY = offsety
 
@@ -993,7 +989,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         isMouseDown = true
         setState(OverlayStates.RESIZING)
       } else {
-        dragX = dragY = dragOffsetX = dragOffsetY = 0
+        dragOffsetX = dragOffsetY = 0
       }
     }
   }
@@ -1178,9 +1174,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   // ============= SLOP ===============
   const pathAndNameFromGuid = (guid) => {
-    var index = !guid ? 0 : guid.lastIndexOf('/')
-    var path = !guid ? '' : guid.substring(0, index)
-    var name = !guid ? '' : guid.substring(index + 1)
+    const index = !guid ? 0 : guid.lastIndexOf('/')
+    const path = !guid ? '' : guid.substring(0, index)
+    const name = !guid ? '' : guid.substring(index + 1)
     return { path, name }
   }
 
@@ -1347,8 +1343,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       guids[i] = `${app}/${prefix}${i + 1}`
     }
 
+    // Listen on resize events to recalculate grid and canvas.
     window.addEventListener('resize', resizeOverlayCanvas)
-
     const resizeObserver = new ResizeObserver((entries) => {
       for (const entry of entries) {
         if (entry.borderBoxSize?.length > 0) {
@@ -1362,7 +1358,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       }
     })
     resizeObserver.observe(video)
-
     initCanvasEvents()
 
     if (!jwt) {
