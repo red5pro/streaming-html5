@@ -386,6 +386,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       transcoderPOST.streams = streams
       const token = await streamManagerUtil.authenticate(
         host,
+        version,
         streamManagerUser,
         streamManagerPassword
       )
