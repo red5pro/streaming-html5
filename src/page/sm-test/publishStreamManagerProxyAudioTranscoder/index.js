@@ -125,7 +125,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     auth.enabled && !window.isEmpty(auth.token) ? auth.token : undefined
   const { app, stream1 } = configuration
   var transcoderPOST = {
-    streamGuid: `${app}/${stream1}`,
+    provisionGuid: `${app}/${stream1}`,
     messageType: 'ProvisionCommand',
     credentials: auth.enabled
       ? {
@@ -364,6 +364,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
     const { streamGuid, videoParams } = variant
     const streamName = streamGuid.split('/').pop()
+    const stream1 = streamName
 
     const region = getRegionIfDefined()
     const params = region
@@ -387,7 +388,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       ...defaultConfiguration,
       ...getUserMediaConfiguration(videoParams),
       endpoint,
-      streamName,
+      stream1,
       bandwidth: {
         audio: parseInt(bandwidthAudioField.value, 10),
         video: videoParams.videoBitRate / 1000,
@@ -405,8 +406,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     try {
       setPublishState(true)
       const { RTCPublisher, WHIPClient } = red5prosdk
-      const { preferWhipWhep, stream1 } = configuration
       const config = getConfiguration(variant)
+      const { preferWhipWhep, stream1 } = config
       const publisher = preferWhipWhep ? new WHIPClient() : new RTCPublisher()
       publisher.on('*', onPublisherEvent)
       await publisher.init(config)
@@ -486,6 +487,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     return streams
   }
 
+  // XXX nnn
   async function submitTranscode() {
     try {
       const {
@@ -495,8 +497,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         streamManagerAPI: version,
         streamManagerNodeGroup: nodeGroup,
       } = configuration
-      const { streamGuid } = transcoderPOST
-      const streams = generateTranscoderPost(streamGuid, transcoderForms)
+      const streams = generateTranscoderPost(transcoderPOST.provisionGuid, transcoderForms)
       transcoderPOST.streams = streams
       const token = await streamManagerUtil.authenticate(
         host,

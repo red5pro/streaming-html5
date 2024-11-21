@@ -1,3 +1,14 @@
+<h3 align="center">
+  <img src="assets/red5pro_logo.png" alt="Red5 Pro Logo" />
+</h3>
+<p align="center">
+  <a href="WHIP_WHEP_README.md">WHIP/WHEP</a> &bull;
+  <a href="PUBLISHER_README.md">publisher</a> &bull;
+  <a href="SUBSCRIBER_README.md">subscriber</a> &bull;
+</p>
+
+---
+
 # WHIP / WHEP Support in Red5 Pro
 
 The [WebRTC-HTTP ingestion](https://www.ietf.org/archive/id/draft-ietf-wish-whip-01.html)(WHIP) and [WebRTC-HTTP egress](https://www.ietf.org/archive/id/draft-murillo-whep-00.html)(WHEP) protocols provide the ability to negotation and establish a connection using HTTP/S requests. This removes the requirement for a WebSocket, which historically has been used for the role of negotiation and connection.
@@ -123,3 +134,55 @@ There are two additional configuration properties that pertain to WHEP clients o
 - `trickleIce`: flag to send candidates after establishing a connection and generation. Default: _true_. By default, the SDK will send ICE candidates in a patch after POST of an Offer. By turning this to _false_, it will send an all candidates along in the POST of the Offer.
 - `enableChannelSignaling`: flag to also open a data channel for messaging. Default: _true_. You can turn this to _false_ to not open an additional data channel, though **be warned that this will also turn off any essential messaging that comes from the server.**
 - `disableProxy`: flag to use the `Session-Host` header value returned in the initial `OPTIONS` request during negotiation. Default: _true_. If set to `true`, this will use the same `Session-Host` for all negotiation. May be useful in a multiple Stream Manager and region scenario.
+
+# Stream Manager 2.0
+
+> This section provides information that relate to the release of Stream Manager 2.0 and its integration with WHIP/WHEP clients.
+
+The Stream Manager 2.0 simplifies the proxying of web clients to Origin and Edge nodes. As such, an initialization configuration property called `endpoint` was added to the WebRTC SDK. This `endpoint` value should be the full URL path to the proxy endpoint on the Stream Manager as is used as such:
+
+## WHIP Proxy
+
+```javascript
+const host = 'my-deployment'
+const streamName = 'mystream'
+const nodeGroup = 'my-node-group'
+const endpoint = `https://${host}/as/v1/proxy/whip/live/${streamName}`
+const config = {
+  endpoint,
+  streamName,
+  connectionParams: {
+    nodeGroup
+  },
+  // additional configurations
+}
+const publisher = await new WHIPClient().init(config)
+publisher.on('*', (event) => console.log(event))
+await publisher.publish()
+```
+
+## WHEP Proxy
+
+```javascript
+const host = 'my-deployment'
+const streamName = 'mystream'
+const nodeGroup = 'my-node-group'
+const endpoint = `https://${host}/as/v1/proxy/whep/live/${streamName}`
+const config = {
+  endpoint,
+  streamName,
+  connectionParams: {
+    nodeGroup
+  },
+  // additional configurations
+}
+const subscriber = await new WHEPClient().init(config)
+subscriber.on('*', (event) => console.log(event))
+await subscriber.subscribe()
+```
+
+There are a few things to note here:
+
+* The difference of `/whip` and `/whep` in the URI for the endpoint calls between `WHIPClient` and `WHEPClient`, respecively.
+* The requirement of a `nodeGroup` connection parameter that is the target nodegroup within your Stream Manager deployment on which you want to proxy the WHIP/WHEP client(s).
+

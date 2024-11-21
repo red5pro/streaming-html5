@@ -109,6 +109,14 @@
       </div>
       <div class="stream-section">
         <div id="quality-container" class="hidden quality-container">
+			<p class="quality-subheader">
+			  Choose which quality to publish on:
+			  <select id="quality-select" class="quality-select">
+			    <option value="1" selected>High_1</option>
+			    <option value="2">Mid_2</option>
+			    <option value="3">Low_3</option>
+			  </select>
+			</p>
           <button id="quality-submit" class="ui-button">Start Publishing</button>
         </div>
         {{> status-field-publisher}}

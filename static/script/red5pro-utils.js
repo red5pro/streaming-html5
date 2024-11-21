@@ -430,8 +430,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
   }
 
-  const getProvision = async (host, version, nodeGroup, streamGuid, token) => {
-    const url = `https://${host}/as/${version}/streams/provision/${nodeGroup}/${streamGuid}`
+  const getProvision = async (host, version, nodeGroup, provisionGuid, token) => {
+    const url = `https://${host}/as/${version}/streams/provision/${nodeGroup}/${provisionGuid}`
     const result = await fetch(url, {
       method: 'GET',
       withCredentials: true,
