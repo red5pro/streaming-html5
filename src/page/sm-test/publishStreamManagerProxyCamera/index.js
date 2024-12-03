@@ -101,13 +101,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var mediaConstraints = {
     video: {
       width: {
-        exact: 640,
+        ideal: 640,
       },
       height: {
-        exact: 360,
+        ideal: 360,
       },
       frameRate: {
-        exact: 24,
+        ideal: 24,
       },
     },
     audio: true,
@@ -216,11 +216,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   function establishCameraSelection(selection) {
     var pubElement = document.getElementById('red5pro-publisher')
     if (mediaConstraints.video && typeof mediaConstraints.video !== 'boolean') {
-      mediaConstraints.video.deviceId = { exact: selection }
+      mediaConstraints.video.deviceId = selection
       delete mediaConstraints.video.frameRate
     } else {
       mediaConstraints.video = {
-        deviceId: { exact: selection },
+        deviceId: selection,
       }
     }
     navigator.mediaDevices
@@ -239,11 +239,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   async function swapCameraSelection(selection) {
     const connection = targetPublisher.getPeerConnection()
     if (mediaConstraints.video && typeof mediaConstraints.video !== 'boolean') {
-      mediaConstraints.video.deviceId = { exact: selection }
+      mediaConstraints.video.deviceId = selection
       delete mediaConstraints.video.frameRate
     } else {
       mediaConstraints.video = {
-        deviceId: { exact: selection },
+        deviceId: selection,
       }
     }
     mediaConstraints.audio = configuration.useAudio
@@ -399,11 +399,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   window.addEventListener('pagehide', shutdown)
   window.addEventListener('beforeunload', shutdown)
 
-  navigator.mediaDevices
-    .enumerateDevices()
-    .then(listDevices)
-    .then(onCameraSelect)
-    .catch(onDeviceError)
+  navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then(() => {
+    navigator.mediaDevices
+      .enumerateDevices()
+      .then(listDevices)
+      .then(onCameraSelect)
+      .catch(onDeviceError)
+  })
 
   cameraSelect.addEventListener('change', function () {
     onCameraSelect(cameraSelect.value)

@@ -329,7 +329,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     var stream
     var constraints = {
       audio: false,
-      video: deviceId ? { deviceId: { exact: deviceId } } : true,
+      video: deviceId ? deviceId : true,
     }
     var pubElement = document.getElementById('red5pro-publisher')
     var delay = clearEstablishedStream() ? 200 : 0
@@ -404,15 +404,15 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         : false,
       video: configuration.useVideo
         ? {
-            width: { exact: parseInt(cameraWidthField.value) },
-            height: { exact: parseInt(cameraHeightField.value) },
+            width: { ideal: parseInt(cameraWidthField.value) },
+            height: { ideal: parseInt(cameraHeightField.value) },
             frameRate: { min: parseInt(framerateField.value) },
           }
         : false,
     }
     if (cameraSelect.value && cameraSelect.value.length > 0) {
       var v = Object.assign(config.video, {
-        deviceId: { exact: cameraSelect.value },
+        deviceId: cameraSelect.value,
       })
       config.video = v
     }
@@ -513,13 +513,15 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
   }
 
-  navigator.mediaDevices
-    .enumerateDevices()
-    .then(function (devices) {
-      listDevices(devices)
-      establishInitialStream()
-    })
-    .catch(onDeviceError)
+  navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then(() => {
+    navigator.mediaDevices
+      .enumerateDevices()
+      .then(function (devices) {
+        listDevices(devices)
+        establishInitialStream()
+      })
+      .catch(onDeviceError)
+  })
 
   cameraSelect.addEventListener('change', function () {
     onCameraSelect(cameraSelect.value)
