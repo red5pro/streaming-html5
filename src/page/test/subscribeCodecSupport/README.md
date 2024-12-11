@@ -1,119 +1,65 @@
-# Publish & Subscribe to DataChannel Messages
+# Subscribing Using Codec Support
 
-This example demonstrates utilizing the underlying `RTCDataChannel` of a Publisher and Subscriber to send and receive messages.
+This example demonstrates specifying desired Video and Audio decoders for playback.
 
-Though the Publisher example demonstrates sending the messages, while the Subscriber example demonstrates receiving the messages, either peer can act as the sender and receiver when utilizing the `RTCDataChannel`.
-
-To access the underlying `RTCDataChannel` instance of an `RTCPublisher` and `RTCSubscriber` use the access method: `getDataChannel()`.
-
-> This example requires the configuration attribute of `signalingSocketOnly` being set to the default value of `true`.
-
-**Please refer to the [Basic Publisher Documentation](../publish/README.md) to learn more about the basic setup.**
+**Please refer to the [Basic Subscriber Documentation](../subscribe/README.md) to learn more about the basic setup.**
 
 ## Example Code
-
-### Publisher
 
 - **[index.html](index.html)**
 - **[index.js](index.js)**
 
-### Subscriber
+# Codec Selection
 
-- **[index.html](../subscribeDataChannel/index.html)**
-- **[index.js](../subscribeDataChannel/index.js)**
-
-# Running the example
-
-Two clients are required to run this example: one as a publisher, and the other as a subscriber.
-
-Connect the first client (publisher) with the _Publish - Data Channel Messaging_ example. On the second lient (subscriber) use the _Subscribe - Data Channel Messaging_ example.
-
-There are 3 types of messaging that can go through the `RTCDataChannel`:
-
-- RPC Message - using the [Send API](../publishRemoteCall) with a defined JSON schema that the server knows how to properly handle.
-- Basic Message - sending any arbitrary String, mostly represented as JSON.
-- Raw Data - typically the most supported form of `ArrayBuffer`.
-
-## RPC Message
-
-Remote Procedural Call (RPC) Messages use the **Send API** of the `RTCPublisher` API:
+The list of available codecs provided from the browser vendor (e.g., Chrome, Firefox, etc) can be found on the `RTCRtpReceiver` of the WebRTC API:
 
 ```js
-send('incomingNotification', {
-  message:
-    rpcInput.value === '' ? 'What lovely weather today.' : rpcInput.value,
-  timestamp: new Date().getTime(),
-})
-```
-
-## Method signature
-
-The method signature for the `send` API is:
-
-| Param      | Description                                                                             |
-| ---------- | --------------------------------------------------------------------------------------- |
-| methodName | The name of the method associated with the data to be parsed on the subscriber clients. |
-| data       | A javascript `Object` describing the message data to send to subscriber clients.        |
-
-If the subscribing client is browser-based, a `Subscriber.Send.Invoke` event is triggered on the subscriber.
-
-The `methodName` you provide will be included as the `SubscriberEvent:methodName` of the `Subscriber.Send.Invoke` event if the client is browser-based. For iOS and Android subscribers, it will be invoked on the `R5Stream:client` instance.
-
-The structure of `data` can be any javascript `Object`. The data will be serialized and unpacked appropriately on the corresponding clients and given as the first argument when invoking the `methodName`.
-
-> You should _not_ send the `data` object as a `String`.
-
-## Basic Message
-
-Basic JSON String messages can also be sent along the `RTCDataChannel`. This allows for custom messaging that is understood between peers based on you applications requirements:
-
-```js
-const message = JSON.stringify({
-  message: messageInput.value,
-  timestamp: new Date(),
-})
-targetPublisher.getDataChannel().send(message)
-```
-
-## Raw Data
-
-Raw binary data can also be sent along the `RTCDataChannel` to shared arbitraty information between peers. This can be used to send encrypted data, files, etc.
-
-Check the browser support of data types allowed to be sent along the `RTCDataChannel` implementation. The most commonly accepted type is an `ArrayBuffer`.
-
-This example demonstrates recording a small amount of audio of the current `MediaStream` and sending it to all peers for playback:
-
-```js
-const stream = new MediaStream()
-stream.addTrack(targetPublisher.getMediaStream().getAudioTracks()[0])
-
-const recorder = new MediaRecorder(stream)
-let chunks = []
-recorder.ondataavailable = (e) => {
-  chunks.push(e.data)
+const getUniqueCodecListing = (codecType) => {
+  const { PlaybackVideoEncoder, PlaybackAudioEncoder } = red5prosdk
+  const encoder =
+    codecType === 'video' ? PlaybackVideoEncoder : PlaybackAudioEncoder
+  let capabilities = RTCRtpReceiver.getCapabilities(codecType)
+  let codecs = capabilities.codecs.map((codec) =>
+    codec.mimeType.match(new RegExp(codecType + '/(.*)'))[1].toUpperCase()
+  )
+  codecs = codecs.filter((codec) => {
+    return encoder[codec]
+  })
+  codecs = codecs
+    .filter((value, index, self) => {
+      return self.indexOf(value) === index
+    })
+    .sort()
+  return codecs
 }
-
-recorder.onstop = async () => {
-  let blobChunks = [chunks.shift()]
-  let i = 0
-  // 262144 is max bytes able to send on DC in one message.
-  let maxbytes = 262144 - blobChunks[0].size
-  while (chunks.length > 0) {
-    const chunk = chunks.shift()
-    maxbytes -= chunk.size
-    if (maxbytes > 0) {
-      blobChunks.push(chunk)
-    }
-  }
-  const blob = new Blob(blobChunks)
-  const buffer = await new Response(blob).arrayBuffer()
-  console.log('Sending bytes...', buffer.byteLength)
-  console.log(buffer)
-  targetPublisher.getDataChannel().send(buffer)
-}
-
-recorder.start(1000)
-setTimeout(() => {
-  recorder.stop()
-}, 5000)
 ```
+
+The previous code snippet will assemble a list of available codecs from the browser and filter them based on the codec support of the Red5 Server.
+
+# Selection & Assignment
+
+Before subscribing, you have the ability to select the Video and/or Audio encoder to request - or leave the default to allow Red5 to decide based on listing in the Offer/Answer SDP.
+
+Once playback is requested, any selections will be relayed in the `videoEncoding` and `audioEncoding` init conifuguration params:
+
+```js
+let rtcConfig = {
+  ...configuration,
+  ...defaultConfiguration,
+  ...getAuthenticationParams(),
+  streamName,
+  protocol,
+  port,
+  subscriptionId: 'subscriber-' + instanceId,
+  videoEncoding:
+    videoSelect.value === 'default'
+      ? undefined
+      : PlaybackVideoEncoder[videoSelect.value.toUpperCase()],
+  audioEncoding:
+    audioSelect.value === 'default'
+      ? undefined
+      : PlaybackAudioEncoder[audioSelect.value.toUpperCase()],
+}
+```
+
+> The supported codecs for a subscriber can be found on the `PlaybackVideoEncoder` and `PlaybackAudioEncoder` enums from the Red5 WebRTC SDK.
