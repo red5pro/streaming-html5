@@ -1,5 +1,9 @@
 # Changes
 
+## 13.3.0-beta.1
+
+- fix: viewless subscriber for WHEPClient. (Todd Anderson)
+
 ## 13.0.0
 
 - fix: removal of SharedObject functionality. (Todd Anderson)
