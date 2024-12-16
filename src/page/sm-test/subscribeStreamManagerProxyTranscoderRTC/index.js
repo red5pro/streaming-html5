@@ -221,7 +221,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       streamManagerPassword: password,
       streamManagerNodeGroup: nodeGroup,
     } = configuration
-    const token = await streamManagerUtil.authenticate(host, username, password)
+    const token = await streamManagerUtil.authenticate(
+      host,
+      version,
+      username,
+      password
+    )
     const streamGuid = `${app}/${streamName}`
     const provision = await streamManagerUtil.getProvision(
       host,

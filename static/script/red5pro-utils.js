@@ -304,11 +304,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
    * Given Basic Auth params, request JWT
    * curl -v -H "Content-Type: application/json" -X PUT https://admin:xyz123@as-test1.red5pro.net/as/v1/auth/login
    */
-  const authenticate = async (smHost, smUser, smPassword) => {
+  const authenticate = async (smHost, smVersion = 'v1', smUser, smPassword) => {
     console.log('Request Authentication')
 
     try {
-      const url = `https://${smHost}/as/v1/auth/login`
+      const url = `https://${smHost}/as/${smVersion}/auth/login`
       const token = 'Basic ' + btoa(smUser + ':' + smPassword)
       const response = await fetch(url, {
         method: 'PUT',
@@ -366,22 +366,20 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   /**
    * Find the Origin IP address for a given stream
    */
-	const getOriginForStream = async (host, version, nodeGroup, streamGuid) => {
-		// aggregate=true -- will return only one server, the publishing origin
-		let url = `https://${host}/as/${version}/streams/stream/${nodeGroup}/stream/${streamGuid}?aggregate=true`
-		console.log("getOriginForStream URL: " + url)
-		const result = await fetch(url)
-		if (!result.ok) {
-			const text = await result.text()
-			throw new Error(text)
-		}
-		const json = await result.json()
-		const serverAddress = json[0].serverAddress; // it's always an array of one item (or an error)
-		console.log("getOriginForStream() SUCCESS! result: " + serverAddress)
-		return serverAddress;
-	}
-
-
+  const getOriginForStream = async (host, version, nodeGroup, streamGuid) => {
+    // aggregate=true -- will return only one server, the publishing origin
+    let url = `https://${host}/as/${version}/streams/stream/${nodeGroup}/stream/${streamGuid}?aggregate=true`
+    console.log('getOriginForStream URL: ' + url)
+    const result = await fetch(url)
+    if (!result.ok) {
+      const text = await result.text()
+      throw new Error(text)
+    }
+    const json = await result.json()
+    const serverAddress = json[0].serverAddress // it's always an array of one item (or an error)
+    console.log('getOriginForStream() SUCCESS! result: ' + serverAddress)
+    return serverAddress
+  }
 
   /**
    * Request to get Edge on stream managaer to consume stream from stream manager proxy.
