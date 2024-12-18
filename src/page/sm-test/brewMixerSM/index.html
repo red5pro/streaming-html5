@@ -6,6 +6,34 @@
     {{> header-scripts}}
     {{> header-stylesheets}}
     <link rel="stylesheet" href="css/style.css">
+    <style>
+      .stream-details {
+        padding: 20px;
+        background-color: #ddd;
+        display: flex;
+        flex-direction: column;
+        row-gap: 6px;
+      }
+
+      .stream-detail-field {
+        display: flex;
+        flex-direction: row;
+        column-gap: 10px;
+      }
+
+      .stream-detail-field p {
+        text-align: left;
+      }
+
+      .stream-detail-field p:first-child {
+        text-align: right;
+      }
+
+      .stream-detail-field > p {
+        display: inline-block;
+        width: 50%;
+      }
+    </style>
   </head>
   <body>
     {{> top-bar }}
@@ -13,6 +41,10 @@
       {{> settings-link}}
       <div class="test-info">
         <h1 class="centered test-title red-text">Brew Mixer Stream Manager Proxy Test</h1>
+        <div class="centered stream-details">
+          <div id="stream-field" class="stream-detail-field"></div>
+          <div id="endpoint-field" class="stream-detail-field"></div>
+        </div>
       </div>
       <div class="mixer-section">
         <div id="topBarControls" class="container">

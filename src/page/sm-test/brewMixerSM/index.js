@@ -55,6 +55,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       : red5prosdk.LOG_LEVELS.WARN
   )
 
+  const streamDetailsField = document.getElementById('stream-field')
+  const endpointField = document.getElementById('endpoint-field')
+
   let jwt
   let guids = []
   const GUID_COUNT = 25
@@ -571,8 +574,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       scaleWidth: xscale,
       scaleHeight: yscale,
     }
-
-    // console.log('SELECTED', JSON.stringify(selectedNode, null, 2))
     return drawParams
   }
 
@@ -871,7 +872,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     const { offsetX, offsetY } = event
     const x = offsetX - coords.x
     const y = offsetY - coords.y
-    console.log(`doubleClickCanvas at ${x}, ${y}, cur state ${currentState}`)
     if (
       currentState == OverlayStates.IDLE ||
       currentState == OverlayStates.SELECTED
@@ -1143,6 +1143,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     const { type } = event
     if (type !== 'Subscribe.Time.Update') {
       console.log('[Red5ProSubscriber] :: ' + type + '.')
+      if (type === 'WebRTC.Endpoint.Changed') {
+        const { data } = event
+        endpointField.innerHTML = `<p>Connected to:</p><p>${data.endpoint}</p>`
+      }
     }
   }
 
@@ -1156,13 +1160,15 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       subscriber.on('*', onSubscriberEvent)
       await subscriber.init(config)
       await subscriber.subscribe()
+      streamDetailsField.innerHTML = `<p>Stream Guid:</p><p>${config.app}/${config.streamName}</p>`
     } catch (error) {
       console.error(
-        '[Red5ProSubscriber] :: Error in access of Edge IP: ' +
-          error +
-          ' for stream ' +
-          getConfiguration().streamName
+        '[Red5ProSubscriber] :: Error: for stream ' +
+          getConfiguration().streamName,
+        error
       )
+      streamDetailsField.textContent = `Could not start subscription. See console for error.`
+      alert('Could not start subscription. See console for error.')
     }
   }
 
@@ -1250,9 +1256,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     } else {
       try {
         const responseObj = JSON.parse(response)
-        console.log('Error:\n', JSON.stringify(responseObj, null, 4)) // pretty
+        console.warn('Error:\n', JSON.stringify(responseObj, null, 4)) // pretty
+        alert('Error creating mixer event. See console for details.')
       } catch (e) {
-        console.log('Error:\n', response)
+        console.error('Error:\n', response)
+        alert('Error creating mixer event. See console for details.')
       }
     }
   }
@@ -1362,12 +1370,22 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
     if (!jwt) {
       // This JWT will expire, but we cache it forever with no strategy to update
-      jwt = await streamManagerUtil.authenticate(
-        host,
-        smVersion,
-        streamManagerUser,
-        streamManagerPassword
-      )
+      try {
+        jwt = await streamManagerUtil.authenticate(
+          host,
+          smVersion,
+          streamManagerUser,
+          streamManagerPassword
+        )
+      } catch (e) {
+        console.error('Error authenticating with Stream Manager', e)
+        alert(
+          `Error authenticating with Stream Manager: ${
+            e.message ? e.message : 'error'
+          }. See console for details.`
+        )
+        return
+      }
     }
 
     // first, use the query params and try to get the nodegraph for the specified stream (if any).
