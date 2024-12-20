@@ -66,7 +66,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   const backgroundImage = new Image(640, 360)
   backgroundImage.crossOrigin = 'anonymous'
-  backgroundImage.src = 'images/bbb.png'
+  backgroundImage.src = 'images/malaga.jpg'
 
   let selection = 'bgColor'
   const radioButtons = document.querySelectorAll('input[type="radio"]')
@@ -248,13 +248,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       selfieSegmentation.onResults(onResults)
 
       const media = await navigator.mediaDevices.getUserMedia({
-        audio: true,
+        audio: false,
         video: {
           width: 640,
           height: 360,
         },
       })
-      const audioTrack = media.getAudioTracks()[0]
+      // const audioTrack = media.getAudioTracks()[0]
       const videoTrack = media.getVideoTracks()[0]
 
       const trackProcessor = new MediaStreamTrackProcessor({
@@ -279,7 +279,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         .pipeTo(trackGenerator.writable)
 
       // Assemble stream
-      const stream = new MediaStream([trackGenerator, audioTrack])
+      const stream = new MediaStream([trackGenerator]) //, audioTrack])
 
       targetPublisher = new red5prosdk.WHIPClient()
       targetPublisher.on('*', onPublisherEvent)

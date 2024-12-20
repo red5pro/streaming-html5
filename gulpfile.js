@@ -51,6 +51,7 @@ gulp.task(
         path.join(sourceDirectory, 'page', '**', '*.css'),
         path.join(sourceDirectory, 'page', '**', '*.svg'),
         path.join(sourceDirectory, 'page', '**', '*.png'),
+        path.join(sourceDirectory, 'page', '**', '*.jpg'),
         path.join(sourceDirectory, 'page', '**', '*.swf'),
       ])
       .pipe(gulp.dest(buildDirectory))
