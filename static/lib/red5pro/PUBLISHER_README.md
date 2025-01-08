@@ -93,7 +93,7 @@ _It is *highly* recommended to include [adapter.js](https://github.com/webrtcHac
 | signalingSocketOnly | [-] | `true` | Flag to indicate whether the `WebSocket` should only be used for signaling while establishing a connection. Afterward, all data between client and server will be sent over an `RTCDataChannel`.
 | dataChannelConfiguration | [-] | `{name: "red5pro"}` | An object used in configuring a n `RTCDataChannel`. _Only used when `signalingSocketOnly` is defined as `true`_ |
 | forceVP8 | [-] | `false` | Flag to force VP8 as the encoder for the outgoing stream. _Marked for Deprecation._ |
-| videoEncoding | [-] | `undefined` | `PublishVideoEncoder` enum: `VP8` | `VP9` | `H264` | `H265` | `AV1`. _Replacement of `forceVP8`._ |
+| videoEncoding | [-] | `undefined` | `PublishVideoEncoder` enum: `VP8` | `H264` | `H265` . _Replacement of `forceVP8`._ |
 | audioEncoding | [-] | `undefined` | `PublishAudioEncoder` enum. |
 | endpoint | [-] | `undefined` | The full URL of the endpoint to stream to. **This is primarily used in Stream Manager 2.0 integration for clients.** [Refer to the Stream Manager 2.0 Section](#stream-manager-20)
 

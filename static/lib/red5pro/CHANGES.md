@@ -1,8 +1,10 @@
 # Changes
 
-## 13.3.0-beta.1
+## 14.0.0
 
+- fix: publish codec listings. (Todd Anderson)
 - fix: viewless subscriber for WHEPClient. (Todd Anderson)
+- feat: codec init param support for WHIP and RTC publishers. (Todd Anderson)
 
 ## 13.0.0
 
