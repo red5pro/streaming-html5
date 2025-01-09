@@ -79,7 +79,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           console.log('LISTMIXEREVENTS RESPONSE ERROR ' + response.status)
         }
       } catch (error) {
-        console.log('Error trying to listMixerEvents: ' + error)
+        alert('Error trying to listMixerEvents: ' + error)
       }
       return result
     },
@@ -102,7 +102,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           console.log('RENDERTREE RESPONSE ERROR ' + response.status)
         }
       } catch (error) {
-        console.log('Error trying to getRenderTrees: ' + error)
+        alert('Error trying to getRenderTrees: ' + error)
       }
       return result
     },
@@ -162,7 +162,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         })
 
         if (response.ok) {
-          console.log('Update successful')
           if (this.manifestDelegate && renderTrees.length > 0) {
             this.manifestDelegate.call(null, renderTrees[0])
           }
@@ -171,7 +170,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           throw new Error(JSON.stringify(responseObj, null, 4))
         }
       } catch (error) {
-        console.log('Error trying to updateRenderTrees: ' + error)
+        alert('Error trying to updateRenderTrees: ' + error)
       }
     },
 
