@@ -356,17 +356,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			let responseBody;
 	
 			// Try parsing the response
-			if (contentType.includes('application/json')) {
-				try {
-					responseBody = JSON.parse(xhr.responseText); // Safe JSON parsing
-				} catch (parseError) {
-					console.error('Error parsing JSON response:', parseError);
-					throw new Error(`HTTP ${xhr.status}: JSON parse error`);
-				}
-			} else {
-				// If text or other response type, log and notify
-				responseBody = xhr.responseText;
-				console.error(`HTTP ${xhr.status} Text Response:`, responseBody);
+			try {
+				responseBody = JSON.parse(xhr.responseText); // Safe JSON parsing
+			} catch (parseError) {
+				console.error('Error parsing JSON response:', parseError);
+				throw new Error(`HTTP ${xhr.status}: JSON parse error`);
 			}
 	
 			// Handle HTTP errors
