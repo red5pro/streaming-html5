@@ -361,36 +361,27 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 					responseBody = JSON.parse(xhr.responseText); // Safe JSON parsing
 				} catch (parseError) {
 					console.error('Error parsing JSON response:', parseError);
-//					alert(`HTTP ${xhr.status}: Unable to parse JSON response. See console for details.`);
 					throw new Error(`HTTP ${xhr.status}: JSON parse error`);
 				}
 			} else {
 				// If text or other response type, log and notify
 				responseBody = xhr.responseText;
 				console.error(`HTTP ${xhr.status} Text Response:`, responseBody);
-//				alert(`HTTP ${xhr.status}: See console log for details.`);
 			}
 	
 			// Handle HTTP errors
 			switch (xhr.status) {
 				case 200:
-					if (responseBody.errorMessage) {
-//						alert(`Authentication failed: ${responseBody.errorMessage}`);
-						throw new Error(`Authentication error: ${responseBody.errorMessage}`);
-					}
 					console.log('Authentication successful');
 					return responseBody.token; // Return the authentication token
 				case 401:
-//					alert(`HTTP 401: Unauthorized. Invalid username or password.`);
 					throw new Error('HTTP 401: Unauthorized');
 				default:
-//					alert(`HTTP ${xhr.status}: Unexpected error.`);
 					throw new Error(`HTTP ${xhr.status}: Unexpected error`);
 			}
 		} catch (error) {
 			// Handle any unexpected network or processing errors
 			console.error('Error in authenticate:', error);
-//			alert(`Error: ${error.message}`);
 			throw error; // Re-throw for the caller to catch
 		}
 	};

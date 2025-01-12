@@ -62,7 +62,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 					responseBody = JSON.parse(xhr.responseText); // Safe JSON parsing
 				} catch (parseError) {
 					console.warn('Error parsing JSON response:', parseError);
-//						alert(`HTTP ${xhr.status}: Unable to parse JSON response. See console for details.`);
 					throw new Error(`HTTP ${xhr.status}: JSON parse error`);
 				}
 		
@@ -71,7 +70,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 					const errorMessage = typeof responseBody === 'object' && responseBody.error
 						? responseBody.error
 						: 'Unknown error message';
-//					alert(`HTTP ${xhr.status}: ${errorMessage}`);
 					throw new Error(`HTTP ${xhr.status}: ${errorMessage}`);
 				}
 		
@@ -80,7 +78,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			} catch (error) {
 				// Handle any unexpected errors
 				console.warn('Error in createMixerEvent:', error);
-//				alert(`Error: ${error.message}`);
 				throw error; // Re-throw for the caller to catch
 			}
 		},
@@ -114,7 +111,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 						responseBody = JSON.parse(xhr.responseText); // Safe JSON parsing
 				} catch (parseError) {
 					console.warn('Error parsing JSON response:', parseError);
-					alert(`HTTP ${xhr.status}: Unable to parse JSON response. See console for details.`);
 					throw new Error(`HTTP ${xhr.status}: JSON parse error`);
 				}
 		
@@ -126,48 +122,21 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 						}
 						return responseBody; // Return the map (object)
 					case 401:
-//						alert(`HTTP 401: Unauthorized. Missing or invalid JWT Authorization header.`);
 						throw new Error('HTTP 401: Unauthorized');
 					case 404:
-//						alert(`HTTP 404: Not Found. No NodeGroup found with nodeGroupName.`);
 						throw new Error('HTTP 404: Not Found');
 					default:
-//						alert(`HTTP ${xhr.status}: Unexpected error.`);
 						throw new Error(`HTTP ${xhr.status}: Unexpected error`);
 				}
 			} catch (error) {
 				// Handle any unexpected network or processing errors
 				console.warn('Error in getMixerEventsMap:', error);
-//				alert(`Error: ${error.message}`);
 				throw error; // Re-throw for the caller to catch
 			}
 		},
 		
 
 		// Get RenderTrees for Mixer Event
-		getRenderTreesOld: async (host, jwt, smVersion, nodeGroupName, event) => {
-			var result = null
-			const url = `https://${host}/as/${smVersion}/streams/mixer/${nodeGroupName}/${event}`
-			try {
-				const response = await fetch(url, {
-					method: 'GET',
-					headers: {
-						Authorization: 'Bearer ' + jwt,
-						'Content-Type': 'application/json',
-					},
-				})
-				if (response.ok) {
-					result = await response.json()
-				} else {
-					console.log('RENDERTREE RESPONSE ERROR ' + response.status)
-				}
-			} catch (error) {
-				alert('Error trying to getRenderTrees: ' + error)
-			}
-			return result
-		},
-
-
 		getRenderTrees: (host, jwt, smVersion, nodeGroupName, event) => {
 			const url = `https://${host}/as/${smVersion}/streams/mixer/${nodeGroupName}/${event}`;
 		
@@ -192,7 +161,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 					responseBody = JSON.parse(xhr.responseText); // Safe JSON parsing
 				} catch (parseError) {
 					console.warn('Error parsing JSON response:', parseError);
-//						alert(`HTTP ${xhr.status}: Unable to parse JSON response. See console for details.`);
 					throw new Error(`HTTP ${xhr.status}: JSON parse error`);
 				}
 		
@@ -204,19 +172,15 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 						}
 						return responseBody; // Return the list of objects
 					case 401:
-//						alert(`HTTP 401: Unauthorized. Missing or invalid JWT Authorization header.`);
 						throw new Error('HTTP 401: Unauthorized');
 					case 404:
-//						alert(`HTTP 404: Not Found. No NodeGroup found with nodeGroupName, or no mixer event found for eventId.`);
 						throw new Error('HTTP 404: Not Found');
 					default:
-//						alert(`HTTP ${xhr.status}: Unexpected error.`);
 						throw new Error(`HTTP ${xhr.status}: Unexpected error`);
 				}
 			} catch (error) {
 				// Handle any unexpected network or processing errors
 				console.warn('Error in getRenderTrees:', error);
-//				alert(`Error: ${error.message}`);
 				throw error; // Re-throw for the caller to catch
 			}
 		},
