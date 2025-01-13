@@ -205,12 +205,15 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
 	async function newPushIt() {
+		sendButton.disabled = true
+
 		// gather info
+		let smApi = "v1"
 		const {
 			host,
 			app,
 			stream1,
-			streamManagerAPI: version,
+			smApi: version,
 			streamManagerNodeGroup: nodeGroup,
 		} = configuration
 		const data = JSON.stringify({
@@ -228,8 +231,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 		})
 
 		// first login for proxy JWT
+		let jwt;
 		try {
-			jwt = await streamManagerUtil.authenticate2(host, smVersion, proxyUser.value, proxyPasswd.value)
+			jwt = await streamManagerUtil.authenticate2(host, smApi, proxyUser.value, proxyPasswd.value)
 		} catch (e) {
 			console.error('Error authenticating with Stream Manager (failed to log in with Proxy User)', e)
 			alert(
@@ -241,24 +245,25 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 		}
 
 		// get the origin for the stream
-		const origin = await streamManagerUtil.getOriginForStream(host, version, nodeGroup, app + "/" + stream1)
+		const origin = await streamManagerUtil.getOriginForStream(host, smApi, nodeGroup, app + "/" + stream1)
 
 		let digestAction = `provision.${isForwarding ? 'delete' : 'create'}`
 		let originUrl = `http://${origin}:5080/socialpusher/api`
 
-		let url = `https://${host}/as/${version}/proxy/forward/?digestAction=${digestAction}&target=${encodeURIComponent(
+		let url = `https://${host}/as/${smApi}/proxy/forward/?nodegroup=${nodeGroup}&digestAction=${digestAction}&target=${encodeURIComponent(
 			originUrl
 		)}`
 
 		console.log('POST to uri: ' + url)
 		console.log('Send data: ' + data)
 
+		/* old async
 		const result = await fetch(url, {
 			method: 'POST',
 			withCredentials: true,
 			credentials: 'include',
 			headers: {
-				Authorization: `Bearer ${token}`,
+				Authorization: `Bearer ${jwt}`,
 				'Content-Type': 'application/json',
 			},
 			body: typeof data === 'string' ? data : JSON.stringify(data),
@@ -292,6 +297,66 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			sendButton.disabled = false
 			console.log('Error: Failed to POST Social Pusher provision: ' + result.status)
 			alert("Error: Failed to POST Social Pusher provision" + result.status + " " + result.statusText);
+		}
+		*/
+
+		// new synchronous
+		while (attempts < attemptLimit) {
+			const xhr = new XMLHttpRequest();
+			try {
+				// Open the synchronous request
+				xhr.open('POST', url, false); // false makes it synchronous
+				xhr.withCredentials = true; // Send credentials (cookies)
+				xhr.setRequestHeader('Authorization', `Bearer ${jwt}`);
+				xhr.setRequestHeader('Content-Type', 'application/json');
+	
+				// Send the request body
+				xhr.send(typeof data === 'string' ? data : JSON.stringify(data));
+	
+				let responseBody = xhr.responseText;
+	
+				// Always try to parse JSON, regardless of Content-Type
+				try {
+					responseBody = JSON.parse(responseBody);
+				} catch (parseError) {
+					console.warn('Response is not valid JSON:', parseError);
+					// Leave responseBody as text if parsing fails
+				}
+	
+				// Handle successful response (status 2xx)
+				if (xhr.status >= 200 && xhr.status < 300) {
+					isForwarding = !isForwarding
+					sendButton.disabled = false
+					sendButton.innerHTML = isForwarding
+						? 'Stop Forwarding'
+						: 'Begin Forwarding'
+					console.log('isForwarding: ' + isForwarding)
+
+					return;
+				} else if (xhr.status === 504) { // Handle 504 Gateway Timeout (this signals that Red5Pro server timed out while trying to forward the stream to the social media platform)
+					attempts++;
+					console.log(`Social media connection timed out. Retrying attempt ${attempts}/${attemptLimit}...`);
+					if (attempts < attemptLimit) {
+						sleep(10 * 1000); // Wait for 10 seconds before retrying
+						continue; // Retry the request
+					} else {
+						// throw timeout exception
+						throw new Error(`Social media connection timed out after ${attempts} attempts. Please try again.`);
+					}
+				} else {
+					// Handle other HTTP errors (do not retry non-timeout failures)
+					throw new Error(`HTTP ${xhr.status}: ${xhr.statusText}`);
+				}
+			} catch (error) {
+				sendButton.disabled = false
+				let responseBody = xhr.responseText;
+				console.error(`Error in synchronousPost attempt ${attempts + 1}:`, error, responseBody);
+				if (xhr.status !== 504) {
+					// For non-504 errors, stop retrying 
+					alert(`Error: Failed to POST Social Pusher provision. ${error.message} -- ${responseBody}`);
+					throw error;
+				} // else if it WAS 504, then maybe retry according to attemptLimit (implicitly handled by the loop)
+			}
 		}
 	}
 
