@@ -26,7 +26,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 /**
  * Utility method to get the actualized bounding box coordinates for the visible area of a video element.
  * This will return the x, y, width and height of the visible area of the video element based on the size
- *  of the element and the assigned `object-fit` style.
+ * of the element and the assigned `object-fit` style.
  * The following `object-fit` values are supported:
  * - contain
  * - cover
@@ -40,66 +40,66 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * @returns
  */
 ;((window) => {
-  window.getCoordinates = (
-    viewWidth,
-    viewHeight,
-    clientWidth,
-    clientHeight,
-    objectFit = 'contain'
-  ) => {
-    const viewRatio = viewWidth / viewHeight
-    const clientRatio = clientWidth / clientHeight
-    let dw,
-      dh = 1
-    let x,
-      y,
-      width,
-      height = 0
-    // Determine the dimensional percentages of the video element to the video itself.
-    // Then, based on the `object-fit` style, determine the actualized bounding box coordinates.
-    if (objectFit === 'contain') {
-      if (viewRatio > clientRatio) {
-        dw = 1
-        dh = viewHeight / clientHeight / (viewWidth / clientWidth)
-      } else {
-        dw = viewWidth / clientWidth / (viewHeight / clientHeight)
-        dh = 1
-      }
-      x = clientWidth * (1 - dw) * 0.5
-      y = clientHeight * (1 - dh) * 0.5
-    } else if (objectFit === 'cover') {
-      if (viewRatio > clientRatio) {
-        dw = viewWidth / clientWidth / (viewHeight / clientHeight)
-        dh = 1
-      } else {
-        dw = 1
-        dh = viewHeight / clientHeight / (viewWidth / clientWidth)
-      }
+	window.getCoordinates = (
+		viewWidth,
+		viewHeight,
+		clientWidth,
+		clientHeight,
+		objectFit = 'contain'
+	) => {
+		const viewRatio = viewWidth / viewHeight
+		const clientRatio = clientWidth / clientHeight
+		let dw,
+			dh = 1
+		let x,
+			y,
+			width,
+			height = 0
+		// Determine the dimensional percentages of the video element to the video itself.
+		// Then, based on the `object-fit` style, determine the actualized bounding box coordinates.
+		if (objectFit === 'contain') {
+			if (viewRatio > clientRatio) {
+				dw = 1
+				dh = viewHeight / clientHeight / (viewWidth / clientWidth)
+			} else {
+				dw = viewWidth / clientWidth / (viewHeight / clientHeight)
+				dh = 1
+			}
+			x = clientWidth * (1 - dw) * 0.5
+			y = clientHeight * (1 - dh) * 0.5
+		} else if (objectFit === 'cover') {
+			if (viewRatio > clientRatio) {
+				dw = viewWidth / clientWidth / (viewHeight / clientHeight)
+				dh = 1
+			} else {
+				dw = 1
+				dh = viewHeight / clientHeight / (viewWidth / clientWidth)
+			}
 
-      x = (clientWidth - clientWidth * dw) * 0.5
-      y = (clientHeight - clientHeight * dh) * 0.5
-    } else {
-      dw = viewWidth / clientWidth
-      dh = viewHeight / clientHeight
-      x = (clientWidth - clientWidth * dw) * 0.5
-      y = (clientHeight - clientHeight * dh) * 0.5
-    }
-    width = clientWidth * dw
-    height = clientHeight * dh
-    // Return the coordinates.
-    return {
-      x,
-      y,
-      width,
-      height,
-      viewWidth,
-      viewHeight,
-      clientWidth,
-      clientHeight,
-      xscale: dw,
-      yscale: dh,
-      widthPercentage: width / viewWidth,
-      heightPercentage: height / viewHeight,
-    }
-  }
+			x = (clientWidth - clientWidth * dw) * 0.5
+			y = (clientHeight - clientHeight * dh) * 0.5
+		} else {
+			dw = viewWidth / clientWidth
+			dh = viewHeight / clientHeight
+			x = (clientWidth - clientWidth * dw) * 0.5
+			y = (clientHeight - clientHeight * dh) * 0.5
+		}
+		width = clientWidth * dw
+		height = clientHeight * dh
+		// Return the coordinates.
+		return {
+			x,
+			y,
+			width,
+			height,
+			viewWidth,
+			viewHeight,
+			clientWidth,
+			clientHeight,
+			xscale: dw,
+			yscale: dh,
+			widthPercentage: width / viewWidth,
+			heightPercentage: height / viewHeight,
+		}
+	}
 })(window)

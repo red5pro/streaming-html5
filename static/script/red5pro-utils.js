@@ -334,6 +334,53 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
   }
 
+// more robust, synchronous version of authenticate
+  const authenticate2 =  (smHost, smVersion = 'v1', smUser, smPassword) => {
+		console.log('Request Authentication');
+	
+		const url = `https://${smHost}/as/${smVersion}/auth/login`;
+		const token = 'Basic ' + btoa(smUser + ':' + smPassword);
+		const xhr = new XMLHttpRequest();
+	
+		try {
+			// Open the request as PUT
+			xhr.open('PUT', url, false); // false makes it synchronous
+			xhr.withCredentials = true; // Enable cookies
+			xhr.setRequestHeader('Authorization', token);
+			xhr.setRequestHeader('Content-Type', 'application/json');
+	
+			// Send the request
+			xhr.send();
+	
+			const contentType = xhr.getResponseHeader('Content-Type') || '';
+			let responseBody;
+	
+			// Try parsing the response
+			try {
+				responseBody = JSON.parse(xhr.responseText); // Safe JSON parsing
+			} catch (parseError) {
+				console.error('Error parsing JSON response:', parseError);
+				throw new Error(`HTTP ${xhr.status}: JSON parse error`);
+			}
+	
+			// Handle HTTP errors
+			switch (xhr.status) {
+				case 200:
+					console.log('Authentication successful');
+					return responseBody.token; // Return the authentication token
+				case 401:
+					throw new Error('HTTP 401: Unauthorized');
+				default:
+					throw new Error(`HTTP ${xhr.status}: Unexpected error`);
+			}
+		} catch (error) {
+			// Handle any unexpected network or processing errors
+			console.error('Error in authenticate:', error);
+			throw error; // Re-throw for the caller to catch
+		}
+	};
+	
+
   /**
    * Request to get Origin data to broadcast on stream manager proxy.
    */
@@ -521,6 +568,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     getOriginForStream: getOriginForStream,
     getEdge: getEdge,
     authenticate: authenticate,
+    authenticate2: authenticate2,
     postProvision: postProvision,
     getProvision,
     forward,
