@@ -374,14 +374,15 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     return new Promise(function (resolve) {
       // For each HD listing, check if resolution is supported in the browser and
       //  add to selection UI if available.
+
       var checkValid = function (index) {
         var dim = list[index]
+        const { width: videoWidth, height: videoHeight } = dim
         var constraints = {
           audio: false,
           video: {
-            width: { exact: dim.width },
-            height: { exact: dim.height },
-            //            frameRate: { exact: dim.frameRate },
+            width: { exact: videoWidth },
+            height: { exact: videoHeight },
             deviceId: deviceId,
           },
         }
@@ -514,14 +515,20 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   function getUserMediaConstraints(res) {
+    var { width, height } = res
+    var videoWidth = parseInt(width)
+    var videoHeight = parseInt(height)
     var config = {
       audio: configuration.useAudio
         ? configuration.mediaConstraints.audio
         : false,
       video: configuration.useVideo
         ? {
-            width: { exact: parseInt(res.width) },
-            height: { exact: parseInt(res.height) },
+            width: { min: videoWidth, ideal: videoWidth },
+            height: {
+              min: videoHeight,
+              ideal: videoHeight,
+            },
             frameRate: { min: parseInt(res.frameRate) },
           }
         : false,
