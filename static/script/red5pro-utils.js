@@ -165,7 +165,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     if (withTicket) {
       var ticket = [
         'bitrateTicket',
-        Math.floor(Math.random() * 0x10000).toString(16),
+        Math.floor(Math.random() * 0x10000).toString(16)
       ].join('-')
       bitrateTickets[ticket] = t
       t.start()
@@ -232,11 +232,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       if (requiresStreamManager) {
         return (
           json.filter(
-            (stream) => stream.name === streamName && stream.type === 'edge'
+            stream => stream.name === streamName && stream.type === 'edge'
           ).length > 0
         )
       } else {
-        return json.filter((stream) => stream.name === streamName).length > 0
+        return json.filter(stream => stream.name === streamName).length > 0
       }
     } catch (e) {
       console.error(e)
@@ -247,7 +247,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   /**
    * Returns the stream listing on the server.
    */
-  const getCompleteStreamList = async (url) => {
+  const getCompleteStreamList = async url => {
     let payload
     let streamList
     const response = await fetch(url)
@@ -294,7 +294,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
    */
   const getStreamList = async (url, scope) => {
     const list = await getCompleteStreamList(url)
-    const filtered = list.filter((item) => {
+    const filtered = list.filter(item => {
       return item.scope === scope && item.type === 'edge'
     })
     return filtered
@@ -316,8 +316,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         credentials: 'include',
         headers: {
           Authorization: token,
-          'Content-Type': 'application/json',
-        },
+          'Content-Type': 'application/json'
+        }
       })
 
       console.log('Authenticate response: ' + response.status)
@@ -334,52 +334,49 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
   }
 
-// more robust, synchronous version of authenticate
-  const authenticate2 =  (smHost, smVersion = 'v1', smUser, smPassword) => {
-		console.log('Request Authentication');
-	
-		const url = `https://${smHost}/as/${smVersion}/auth/login`;
-		const token = 'Basic ' + btoa(smUser + ':' + smPassword);
-		const xhr = new XMLHttpRequest();
-	
-		try {
-			// Open the request as PUT
-			xhr.open('PUT', url, false); // false makes it synchronous
-			xhr.withCredentials = true; // Enable cookies
-			xhr.setRequestHeader('Authorization', token);
-			xhr.setRequestHeader('Content-Type', 'application/json');
-	
-			// Send the request
-			xhr.send();
-	
-			const contentType = xhr.getResponseHeader('Content-Type') || '';
-	
-			// Handle HTTP errors
-			switch (xhr.status) {
-				case 200:
-					console.log('Authentication successful');
-					let bodyText;
-					try {
-						bodyText = xhr.responseText;
-						let responseBody = JSON.parse(bodyText); // Safe JSON parsing
-						return responseBody.token; // Return the authentication token
-					} catch (parseError) {
-						console.error('Error parsing JSON response:', parseError);
-						console.error('bodyText:', bodyText);
-						throw new Error(`HTTP ${xhr.status}: JSON parse error`);
-					}
-				case 401:
-					throw new Error('HTTP 401: Unauthorized');
-				default:
-					throw new Error(`HTTP ${xhr.status}: Unexpected error`);
-			}
-		} catch (error) {
-			// Handle any unexpected network or processing errors
-			console.error('Error in authenticate:', error);
-			throw error; // Re-throw for the caller to catch
-		}
-	};
-	
+  // more robust, synchronous version of authenticate
+  const authenticate2 = async (
+    smHost,
+    smVersion = 'v1',
+    smUser,
+    smPassword
+  ) => {
+    console.log('Request Authentication')
+
+    const url = `https://${smHost}/as/${smVersion}/auth/login`
+    const token = 'Basic ' + btoa(smUser + ':' + smPassword)
+
+    try {
+      const response = await fetch(url, {
+        method: 'PUT',
+        credentials: 'include', // Enable cookies
+        headers: {
+          Authorization: token,
+          'Content-Type': 'application/json'
+        }
+      })
+
+      // Handle HTTP errors
+      if (response.ok) {
+        console.log('Authentication successful')
+        try {
+          const responseBody = await response.json() // Parse JSON response
+          return responseBody.token // Return the authentication token
+        } catch (parseError) {
+          console.error('Error parsing JSON response:', parseError)
+          throw new Error(`HTTP ${response.status}: JSON parse error`)
+        }
+      } else if (response.status === 401) {
+        throw new Error('HTTP 401: Unauthorized')
+      } else {
+        throw new Error(`HTTP ${response.status}: Unexpected error`)
+      }
+    } catch (error) {
+      // Handle any unexpected network or processing errors
+      console.error('Error in authenticate:', error)
+      throw error // Re-throw for the caller to catch
+    }
+  }
 
   /**
    * Request to get Origin data to broadcast on stream manager proxy.
@@ -451,9 +448,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       credentials: 'include',
       headers: {
         Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/json'
       },
-      body,
+      body
     })
     if (result.status >= 200 && result.status < 300) {
       try {
@@ -477,7 +474,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
   }
 
-  const getProvision = async (host, version, nodeGroup, provisionGuid, token) => {
+  const getProvision = async (
+    host,
+    version,
+    nodeGroup,
+    provisionGuid,
+    token
+  ) => {
     const url = `https://${host}/as/${version}/streams/provision/${nodeGroup}/${provisionGuid}`
     const result = await fetch(url, {
       method: 'GET',
@@ -485,8 +488,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       credentials: 'include',
       headers: {
         Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
+        'Content-Type': 'application/json'
+      }
     })
     if (result.status >= 200 && result.status < 300) {
       try {
@@ -518,8 +521,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     const result = await fetch(url, {
       method,
       headers: {
-        'Content-Type': 'application/json',
-      },
+        'Content-Type': 'application/json'
+      }
     })
     const json = await result.json()
     if (json && json.errorMessage) {
@@ -535,9 +538,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     const result = await fetch(url, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/json'
       },
-      body: typeof data === 'string' ? data : JSON.stringify(data),
+      body: typeof data === 'string' ? data : JSON.stringify(data)
     })
 
     // note: the response may be empty string, or other non json response.
@@ -555,9 +558,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     return await fetch(url, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/json'
       },
-      body: typeof data === 'string' ? data : JSON.stringify(data),
+      body: typeof data === 'string' ? data : JSON.stringify(data)
     })
   }
 
@@ -574,7 +577,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     forward,
     forwardPost,
     forwardPostWithResult,
-    getForwardRequestURL,
+    getForwardRequestURL
   }
 
   window.getStreamList = getCompleteStreamList

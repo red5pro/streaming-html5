@@ -86,21 +86,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var sendButton = document.getElementById('send-button')
   var resumeButton = document.getElementById('resume-button')
 
-  function postInterstitialRest(json) {
-    const xhr = new XMLHttpRequest()
-    xhr.addEventListener('readystatechange', function () {
-      if (this.readyState === this.DONE) {
-        if (this.status >= 200 && this.status < 300) {
-          console.log('SUCCESS status.')
-        } else {
-          console.log(
-            'ERROR status: ' + this.status + ' : ' + this.responseText
-          )
-          alert('Error ' + this.status + ' : ' + this.responseText)
-        }
-      }
-    })
-
+  var postInterstitialRest = async json => {
     var uri =
       serverSettings.protocol +
       '://' +
@@ -114,10 +100,27 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     console.log('POST to uri: ' + uri)
     console.log('send data: ' + json)
 
-    xhr.open('POST', uri)
-    xhr.setRequestHeader('accept', 'application/json')
-    xhr.setRequestHeader('content-type', 'application/json')
-    xhr.send(json)
+    try {
+      const response = await fetch(uri, {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: json // Sending the JSON data
+      })
+
+      if (response.ok) {
+        console.log('SUCCESS status.')
+      } else {
+        const responseText = await response.text() // Get error text if present
+        console.error('ERROR status: ' + response.status + ' : ' + responseText)
+        alert('Error ' + response.status + ' : ' + responseText)
+      }
+    } catch (error) {
+      console.error('Network error or fetch failed:', error)
+      alert('Network error or fetch failed: ' + error.message)
+    }
   }
 
   sendButton.addEventListener('click', async function () {
@@ -140,9 +143,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
               isInterstitialAudio: switchAudio.checked,
               isInterstitialVideo: switchVideo.checked,
               start: start.value,
-              duration: duration.value,
-            },
-          ],
+              duration: duration.value
+            }
+          ]
         })
       )
     }
@@ -156,7 +159,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         JSON.stringify({
           user: 'foo',
           digest: 'bar',
-          resume: target.value,
+          resume: target.value
         })
       )
     }
@@ -194,7 +197,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var defaultConfiguration = (function (useVideo, useAudio) {
     var c = {
       protocol: getSocketLocationFromProtocol().protocol,
-      port: getSocketLocationFromProtocol().port,
+      port: getSocketLocationFromProtocol().port
     }
     if (!useVideo) {
       c.videoEncoding = red5prosdk.PlaybackVideoEncoder.NONE
@@ -250,8 +253,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           connectionParams: {
             username: auth.username,
             password: auth.password,
-            token: auth.token,
-          },
+            token: auth.token
+          }
         }
       : {}
   }
@@ -290,7 +293,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
       protocol: getSocketLocationFromProtocol().protocol,
       port: getSocketLocationFromProtocol().port,
-      subscriptionId: 'subscriber-' + instanceId,
+      subscriptionId: 'subscriber-' + instanceId
     }
   )
 

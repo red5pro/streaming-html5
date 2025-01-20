@@ -91,7 +91,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8) // hash the message
     const hashArray = Array.from(new Uint8Array(hashBuffer)) // convert buffer to byte array
     const hashHex = hashArray
-      .map((b) => {
+      .map(b => {
         var result = b.toString(16).padStart(2, '0')
         //console.log("b: " + b + " result: " + result);
         return result
@@ -121,42 +121,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           context: app,
           name: streamName,
           parameters: {
-            destURI: destUri.value + '/' + streamKey.value,
-          },
-        },
-      ],
-    })
-
-    const xhr = new XMLHttpRequest()
-    xhr.addEventListener('readystatechange', function () {
-      if (this.readyState === this.DONE) {
-        console.log(this.responseText)
-
-        if (this.status >= 200 && this.status < 300) {
-          isForwarding = !isForwarding
-          sendButton.disabled = false
-          sendButton.innerHTML = isForwarding
-            ? 'Stop Forwarding'
-            : 'Begin Forwarding'
-          console.log('isForwarding: ' + isForwarding)
-        } else if (this.status == 504) {
-          // The server response 504 when the stream forwarding attempt fails due to timeout.
-          // Other failures should not be retried.
-          if (++attempts < attemptLimit) {
-            console.log('Social media connection timed out. Retrying...')
-            var t = setTimeout(() => {
-              clearTimeout(t)
-              pushItSocial()
-            }, 10000) // 10000: 10s; The server may take up to 7 seconds (plus client-to-server roundtrip latency) to respond.
+            destURI: destUri.value + '/' + streamKey.value
           }
-        } else {
-          sendButton.disabled = false
-          console.log('error status: ' + this.status)
         }
-      }
+      ]
     })
 
-    var uri =
+    let uri =
       serverSettings.protocol +
       '://' +
       configuration.host +
@@ -165,18 +136,55 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       '/socialpusher/api?action=provision.'
     uri += isForwarding ? 'delete' : 'create'
 
-    var timestamp = Date.now()
-    uri += '&timestamp=' + timestamp
+    try {
+      const timestamp = Date.now()
+      uri += `&timestamp=${timestamp}`
+      const signature = await createSignature(timestamp)
+      uri += `&signature=${encodeURIComponent(signature)}`
 
-    var signature = await createSignature(timestamp)
-    uri += '&signature=' + encodeURI(signature)
+      console.log('POST to uri: ' + uri)
+      console.log('send data: ' + data)
 
-    xhr.open('POST', uri)
-    xhr.setRequestHeader('content-type', 'application/json')
-    xhr.send(data)
+      const response = await fetch(uri, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: data // JSON data sent with the request
+      })
 
-    console.log('POST to uri: ' + uri)
-    console.log('send data: ' + data)
+      let responseBody
+      try {
+        responseBody = await response.json()
+      } catch (parseError) {
+        console.warn('Error parsing JSON response:', parseError)
+        // throw new Error(`HTTP ${response.status}: JSON parse error`)
+      }
+      console.log(responseBody)
+
+      if (response.ok) {
+        isForwarding = !isForwarding
+        sendButton.disabled = false
+        sendButton.innerHTML = isForwarding
+          ? 'Stop Forwarding'
+          : 'Begin Forwarding'
+        console.log('isForwarding: ' + isForwarding)
+      } else if (response.status === 504) {
+        // Handle timeout and retry
+        if (++attempts < attemptLimit) {
+          console.log('Social media connection timed out. Retrying...')
+          setTimeout(pushItSocial, 10000) // Retry after 10 seconds
+        }
+      } else {
+        // Handle other errors
+        sendButton.disabled = false
+        console.log('error status: ' + response.status)
+      }
+    } catch (error) {
+      // Handle network or fetch errors
+      console.error('Fetch error:', error)
+      sendButton.disabled = false
+    }
   }
 
   sendButton.addEventListener('click', () => {
@@ -240,8 +248,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           connectionParams: {
             username: auth.username,
             password: auth.password,
-            token: auth.token,
-          },
+            token: auth.token
+          }
         }
       : {}
   }
@@ -254,8 +262,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           : false,
         video: configuration.useVideo
           ? configuration.mediaConstraints.video
-          : false,
-      },
+          : false
+      }
     }
   }
 
@@ -290,7 +298,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       protocol: getSocketLocationFromProtocol().protocol,
       port: getSocketLocationFromProtocol().port,
       streamName: configuration.stream1,
-      streamMode: configuration.recordBroadcast ? 'record' : 'live',
+      streamMode: configuration.recordBroadcast ? 'record' : 'live'
     }
   )
 
