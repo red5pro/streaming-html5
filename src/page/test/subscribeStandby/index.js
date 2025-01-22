@@ -67,7 +67,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var standbyButton = document.getElementById('standby-button')
 
   var protocol = serverSettings.protocol
-  var isSecure = protocol === 'https'
 
   var bitrate = 0
   var packetsReceived = 0
@@ -111,9 +110,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   // Determines the ports and protocols based on being served over TLS.
   function getSocketLocationFromProtocol() {
-    return !isSecure
-      ? { protocol: 'ws', port: serverSettings.wsport }
-      : { protocol: 'wss', port: serverSettings.wssport }
+    return window.getSocketProtocolPort(
+      protocol,
+      serverSettings,
+      configuration.usePortMux
+    )
   }
 
   // Base configuration to extend in ptoviding specific tech failover configurations.

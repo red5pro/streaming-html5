@@ -97,11 +97,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var statisticsField = document.getElementById('statistics-field')
 
   var protocol = serverSettings.protocol
-  var isSecure = protocol == 'https'
   function getSocketLocationFromProtocol() {
-    return !isSecure
-      ? { protocol: 'ws', port: serverSettings.wsport }
-      : { protocol: 'wss', port: serverSettings.wssport }
+    return window.getSocketProtocolPort(
+      protocol,
+      serverSettings,
+      configuration.usePortMux
+    )
   }
 
   function onBitrateUpdate(bitrate, packetsSent) {

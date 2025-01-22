@@ -84,9 +84,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var protocol = serverSettings.protocol
   var isSecure = protocol === 'https'
   function getSocketLocationFromProtocol() {
-    return !isSecure
-      ? { protocol: 'ws', port: serverSettings.wsport }
-      : { protocol: 'wss', port: serverSettings.wssport }
+    return window.getSocketProtocolPort(
+      protocol,
+      serverSettings,
+      configuration.usePortMux
+    )
   }
 
   var defaultConfiguration = (function (useVideo, useAudio) {
@@ -139,12 +141,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   function getFileURL(filename) {
+    const { port } = getSocketLocationFromProtocol()
     var baseURL =
       protocol +
       '://' +
       configuration.host +
       ':' +
-      (isSecure ? serverSettings.hlssport : serverSettings.hlsport) +
+      port +
       '/' +
       configuration.app
     if (isMP4File(filename)) {

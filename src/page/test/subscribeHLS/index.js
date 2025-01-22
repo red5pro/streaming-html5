@@ -63,9 +63,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var protocol = serverSettings.protocol
   var isSecure = protocol === 'https'
   function getSocketLocationFromProtocol() {
-    return !isSecure
-      ? { protocol: 'ws', port: serverSettings.wsport }
-      : { protocol: 'wss', port: serverSettings.wssport }
+    return window.getSocketProtocolPort(
+      protocol,
+      serverSettings,
+      configuration.usePortMux
+    )
   }
 
   var defaultConfiguration = (function (useVideo, useAudio) {
@@ -179,7 +181,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var config = Object.assign({}, configuration, defaultConfiguration)
   var hlsConfig = Object.assign({}, config, {
     protocol: protocol,
-    port: isSecure ? serverSettings.hlssport : serverSettings.hlsport,
+    port: getSocketLocationFromProtocol().port,
     streamName: config.stream1,
     mimeType: 'application/x-mpegURL',
   })
