@@ -23,7 +23,7 @@ NONINFRINGEMENT.   IN  NO  EVENT  SHALL INFRARED5, INC. BE LIABLE FOR ANY CLAIM,
 WHETHER IN  AN  ACTION  OF  CONTRACT,  TORT  OR  OTHERWISE,  ARISING  FROM,  OUT  OF  OR  IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
-;(function (window, document, red5prosdk) {
+;(function (window, document, red5prosdk, adapter) {
   'use strict'
 
   var serverSettings = (function () {
@@ -374,15 +374,17 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     return new Promise(function (resolve) {
       // For each HD listing, check if resolution is supported in the browser and
       //  add to selection UI if available.
+      // Firefox deviceId does not like having exact specified :/
+      var isFirefox = adapter.browserDetails.browser.includes('firefox')
       var checkValid = function (index) {
         var dim = list[index]
+        const { width: videoWidth, height: videoHeight } = dim
         var constraints = {
           audio: false,
           video: {
-            width: { exact: dim.width },
-            height: { exact: dim.height },
-            //            frameRate: { exact: dim.frameRate },
-            deviceId: deviceId,
+            width: { exact: videoWidth },
+            height: { exact: videoHeight },
+            deviceId: isFirefox ? deviceId : { exact: deviceId },
           },
         }
 
@@ -406,6 +408,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           })
           .catch(function (error) {
             console.log(error.name + ':: ' + JSON.stringify(dim))
+            dim.media = undefined
             resContainer.appendChild(generateResOption(dim, index, false))
             resContainer.firstChild.firstChild.setAttribute(
               'checked',
@@ -514,14 +517,20 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   function getUserMediaConstraints(res) {
+    var { width, height } = res
+    var videoWidth = parseInt(width)
+    var videoHeight = parseInt(height)
     var config = {
       audio: configuration.useAudio
         ? configuration.mediaConstraints.audio
         : false,
       video: configuration.useVideo
         ? {
-            width: { exact: parseInt(res.width) },
-            height: { exact: parseInt(res.height) },
+            width: { min: videoWidth, ideal: videoWidth },
+            height: {
+              min: videoHeight,
+              ideal: videoHeight,
+            },
             frameRate: { min: parseInt(res.frameRate) },
           }
         : false,
@@ -637,8 +646,17 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   navigator.mediaDevices
     .enumerateDevices()
     .then(function (devices) {
+      let defaultVideoDeviceId = undefined
+      if (devices.length > 0) {
+        const defaultVideo = devices.find(function (device) {
+          return device.kind === 'videoinput' && device.id !== 'default'
+        })
+        if (defaultVideo) {
+          defaultVideoDeviceId = defaultVideo.deviceId
+        }
+      }
       listDevices(devices)
-      establishInitialStream()
+      establishInitialStream(defaultVideoDeviceId)
     })
     .catch(onDeviceError)
 
@@ -663,4 +681,4 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
   window.addEventListener('pagehide', shutdown)
   window.addEventListener('beforeunload', shutdown)
-})(this, document, window.red5prosdk)
+})(this, document, window.red5prosdk, window.adapter)
