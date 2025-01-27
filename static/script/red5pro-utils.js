@@ -50,104 +50,110 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     var isSubscriber = this.isSubscriber
     // Based on https://github.com/webrtc/samples/blob/gh-pages/src/content/peerconnection/bandwidth/js/main.js
     this.bitrateInterval = setInterval(function () {
-      if (!connection) {
-        window.untrackBitrate(ticket)
-        return
-      }
-      connection.getStats(null).then(function (res) {
-        res.forEach(function (report) {
-          var bytes
-          var packets
-          var now = report.timestamp
-          var bitrate
-          if (
-            !isSubscriber &&
-            (report.type === 'outboundrtp' ||
-              report.type === 'outbound-rtp' ||
-              (report.type === 'ssrc' && report.bytesSent))
-          ) {
-            bytes = report.bytesSent
-            packets = report.packetsSent
+      try {
+        if (!connection) {
+          ticket.stop.call(ticket)
+          window.untrackBitrate(ticket)
+          return
+        }
+        connection.getStats(null).then(function (res) {
+          res.forEach(function (report) {
+            var bytes
+            var packets
+            var now = report.timestamp
+            var bitrate
             if (
-              report.mediaType === 'video' ||
-              report.kind === 'video' ||
-              report.id.match(vRegex)
+              !isSubscriber &&
+              (report.type === 'outboundrtp' ||
+                report.type === 'outbound-rtp' ||
+                (report.type === 'ssrc' && report.bytesSent))
             ) {
-              if (lastResult && lastResult.get(report.id)) {
-                // calculate bitrate
-                bitrate =
-                  (8 * (bytes - lastResult.get(report.id).bytesSent)) /
-                  (now - lastResult.get(report.id).timestamp)
-                cb(bitrate, packets)
-              }
-            }
-          }
-          // playback.
-          else if (
-            isSubscriber &&
-            (report.type === 'inboundrtp' ||
-              report.type === 'inbound-rtp' ||
-              (report.type === 'ssrc' && report.bytesReceived))
-          ) {
-            bytes = report.bytesReceived
-            packets = report.packetsReceived
-            if (
-              ticket.audioOnly &&
-              (report.mediaType === 'audio' ||
-                report.kind === 'audio' ||
-                report.id.match(aRegex))
-            ) {
-              if (lastResult && lastResult.get(report.id)) {
-                // calculate bitrate
-                bitrate =
-                  (8 * (bytes - lastResult.get(report.id).bytesReceived)) /
-                  (now - lastResult.get(report.id).timestamp)
-                cb(bitrate, packets)
-              }
-            } else if (
-              !ticket.audioOnly &&
-              (report.mediaType === 'video' ||
+              bytes = report.bytesSent
+              packets = report.packetsSent
+              if (
+                report.mediaType === 'video' ||
                 report.kind === 'video' ||
-                report.id.match(vRegex))
-            ) {
-              if (lastResult && lastResult.get(report.id)) {
-                // calculate bitrate
-                bitrate =
-                  (8 * (bytes - lastResult.get(report.id).bytesReceived)) /
-                  (now - lastResult.get(report.id).timestamp)
-                cb(bitrate, packets)
-              }
-              if (report.frameWidth && report.frameHeight) {
-                const { frameWidth, frameHeight } = report
-                if (frameWidth > 0 || frameHeight > 0) {
-                  resolutionCb(report.frameWidth, report.frameHeight)
+                report.id.match(vRegex)
+              ) {
+                if (lastResult && lastResult.get(report.id)) {
+                  // calculate bitrate
+                  bitrate =
+                    (8 * (bytes - lastResult.get(report.id).bytesSent)) /
+                    (now - lastResult.get(report.id).timestamp)
+                  cb(bitrate, packets)
                 }
               }
             }
-          } else if (
-            resolutionCb &&
-            (report.type === 'track' || report.kind === 'video')
-          ) {
-            var fw = 0
-            var fh = 0
-            if (
-              report.kind === 'video' ||
-              report.frameWidth ||
-              report.frameHeight
+            // playback.
+            else if (
+              isSubscriber &&
+              (report.type === 'inboundrtp' ||
+                report.type === 'inbound-rtp' ||
+                (report.type === 'ssrc' && report.bytesReceived))
             ) {
-              fw = report.frameWidth
-              fh = report.frameHeight
-              if (fw > 0 || fh > 0) {
-                resolutionCb(fw, fh)
+              bytes = report.bytesReceived
+              packets = report.packetsReceived
+              if (
+                ticket.audioOnly &&
+                (report.mediaType === 'audio' ||
+                  report.kind === 'audio' ||
+                  report.id.match(aRegex))
+              ) {
+                if (lastResult && lastResult.get(report.id)) {
+                  // calculate bitrate
+                  bitrate =
+                    (8 * (bytes - lastResult.get(report.id).bytesReceived)) /
+                    (now - lastResult.get(report.id).timestamp)
+                  cb(bitrate, packets)
+                }
+              } else if (
+                !ticket.audioOnly &&
+                (report.mediaType === 'video' ||
+                  report.kind === 'video' ||
+                  report.id.match(vRegex))
+              ) {
+                if (lastResult && lastResult.get(report.id)) {
+                  // calculate bitrate
+                  bitrate =
+                    (8 * (bytes - lastResult.get(report.id).bytesReceived)) /
+                    (now - lastResult.get(report.id).timestamp)
+                  cb(bitrate, packets)
+                }
+                if (report.frameWidth && report.frameHeight) {
+                  const { frameWidth, frameHeight } = report
+                  if (frameWidth > 0 || frameHeight > 0) {
+                    resolutionCb(report.frameWidth, report.frameHeight)
+                  }
+                }
+              }
+            } else if (
+              resolutionCb &&
+              (report.type === 'track' || report.kind === 'video')
+            ) {
+              var fw = 0
+              var fh = 0
+              if (
+                report.kind === 'video' ||
+                report.frameWidth ||
+                report.frameHeight
+              ) {
+                fw = report.frameWidth
+                fh = report.frameHeight
+                if (fw > 0 || fh > 0) {
+                  resolutionCb(fw, fh)
+                }
               }
             }
-          }
+          })
+          lastResult = res
         })
-        lastResult = res
-      })
+      } catch (e) {
+        console.error('Error in trackBitrate: ' + e)
+      }
     }, 1000)
   }
   BitrateTicket.prototype.stop = function () {
+    this.connection = undefined
     clearInterval(this.bitrateInterval)
   }
   BitrateTicket.prototype.audioOnly = function () {
