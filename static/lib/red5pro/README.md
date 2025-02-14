@@ -4,12 +4,12 @@
 <p align="center">
   <a href="PUBLISHER_README.md">publisher</a> &bull;
   <a href="SUBSCRIBER_README.md">subscriber</a> &bull;
-  <a href="SHARED_OBJECT_README.md">shared object</a>
 </p>
 
 ---
 
 # Red5 Pro WebRTC SDK
+
 > The **Red5 Pro WebRTC SDK** allows you to integrate live streaming video into your desktop and mobile browser.
 
 * [Quickstart](#quickstart)
@@ -24,9 +24,6 @@
     * [HLS](SUBSCRIBER_README.md#hls)
     * [Auto Failover](SUBSCRIBER_README.md#auto-failover-and-order)
     * [Lifecycle Events](SUBSCRIBER_README.md#lifecycle-events)
-  * [Shared Object](#shared-object)
-    * [Usage](SHARED_OBJECT_README.md#shared-object-usage)
-    * [Lifecycle Events](SHARED_OBJECT_README.md#lifecycle-events-shared-object)
 * [Contributing](#contributing)
 
 # Quickstart
@@ -79,7 +76,8 @@ import { WHIPClient, WHEPClient } from 'red5pro-webrtc-sdk'
 
 To begin working with the *Red5 Pro HTML5 SDK* in your project:
 
-### Quick Start (browser)
+### Quick Start - Standalone Server Deployment
+
 ```html
 <!doctype html>
 <html>
@@ -101,12 +99,12 @@ To begin working with the *Red5 Pro HTML5 SDK* in your project:
     <script src="https://unpkg.com/red5pro-webrtc-sdk@latest/red5pro-sdk.min.js"></script>
     <!-- Create Pub/Sub -->
     <script>
-      (function(red5prosdk) {
-        'use strict';
+      ((red5prosdk) => {
+        'use strict'
 
-        var rtcPublisher = new red5prosdk.WHIPClient();
-        var rtcSubscriber = new red5prosdk.WHEPClient();
-        var config = {
+        const rtcPublisher = new red5prosdk.WHIPClient()
+        const rtcSubscriber = new red5prosdk.WHEPClient()
+        const config = {
           protocol: 'ws',
           host: 'localhost',
           port: 5080,
@@ -115,46 +113,131 @@ To begin working with the *Red5 Pro HTML5 SDK* in your project:
           rtcConfiguration: {
             iceServers: [{urls: 'stun:stun2.l.google.com:19302'}],
             iceCandidatePoolSize: 2,
-            bundlePolicy: 'max-bundle'
+            bundlePolicy: 'max-bundle',
           } // See https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/RTCPeerConnection#RTCConfiguration_dictionary
         };
 
-        function subscribe () {
-          rtcSubscriber.init(config)
-            .then(function () {
-              return rtcSubscriber.subscribe();
-            })
-            .then(function () {
-              console.log('Playing!');
-            })
-            .catch(function (err) {
-              console.log('Could not play: ' + err);
-            });
+        const subscribe = async () => {
+          try {
+            await rtcSubscriber.init(config)
+            await rtcSubscriber.subscribe()
+          } catch (err) {
+              console.error('Could not play: ' + err)
+          }
         }
 
-        rtcPublisher.init(config)
-          .then(function () {
-            // On broadcast started, subscribe.
-            rtcPublisher.on(red5prosdk.PublisherEventTypes.PUBLISH_START, subscribe);
-            return rtcPublisher.publish();
-          })
-          .then(function () {
-            console.log('Publishing!');
-          })
-          .catch(function (err) {
-            console.error('Could not publish: ' + err);
-          });
+        const publish = async () => {
+          try {
+            // Once publishing, call subscribe!
+            rtcPublisher.on(red5prosdk.PublisherEventTypes.PUBLISH_START, subscribe)
+            await rtcPublisher.init(config)
+            await rtcPublisher.publish()
+          } catch(err) {
+            console.error('Could not publish: ' + err)
+          }
+        }
 
-      }(window.red5prosdk));
+        // Start Publisher first ->
+        publish()
+
+      }(window.red5prosdk))
     </script>
   </body>
 </html>
 ```
 
-# Requirements
-The **Red5 Pro WebRTC SDK** is intended to communicate with a [Red5 Pro Server](https://www.red5pro.com/), which allows for broadcasting and consuming live streams utilizing [WebRTC](https://developer.mozilla.org/en-US/docs/Web/Guide/API/WebRTC) and other protocols, including [RTMP](https://en.wikipedia.org/wiki/Real_Time_Messaging_Protocol) and [HLS](https://en.wikipedia.org/wiki/HTTP_Live_Streaming).
+### Quick Start - StreamManager 2.0 Deployment
 
-As such, you will need a distribution of the [Red5 Pro Server](https://www.red5pro.com/) running locally or accessible from the web, such as [Amazon Web Services](https://www.red5pro.com/docs/server/awsinstall/).
+With the Stream Manager 2.0 Release, the `endpoint` init configuration property was introduced in the SDK to allow developers to specify the specific endpoint to proxy through on the Stream Manager.
+
+> Note: You will need to know which Node Group you intend to target for publishing and subscribing.
+
+```html
+<!doctype html>
+<html>
+  <head>
+    <!-- *Recommended WebRTC Shim -->
+    <script src="https://webrtchacks.github.io/adapter/adapter-latest.js"></script>
+  </head>
+  <body>
+    <!-- video containers -->
+    <!-- publisher -->
+    <div>
+      <video id="red5pro-publisher" width="640" height="480" muted autoplay></video>
+    </div>
+    <!-- subscriber -->
+    <div>
+      <video id="red5pro-subscriber" width="640" height="480" controls autoplay></video>
+    </div>
+    <!-- Red5 Pro SDK -->
+    <script src="https://unpkg.com/red5pro-webrtc-sdk@latest/red5pro-sdk.min.js"></script>
+    <!-- Create Pub/Sub -->
+    <script>
+      <script>
+      ((red5prosdk) => {
+        'use strict'
+
+        const host = 'my-server-deployment'
+        const nodeGroup = 'my-node-group'
+        const streamName = 'my-stream-name'
+
+        const rtcPublisher = new red5prosdk.WHIPClient()
+        const rtcSubscriber = new red5prosdk.WHEPClient()
+        const config = {
+          streamName,
+          rtcConfiguration: {
+            iceServers: [{urls: 'stun:stun2.l.google.com:19302'}],
+            iceCandidatePoolSize: 2,
+            bundlePolicy: 'max-bundle',
+          } // See https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/RTCPeerConnection#RTCConfiguration_dictionary
+        };
+
+        const subscribe = async () => {
+          try {
+            await rtcSubscriber.init({
+              ...config,
+              endpoint: `https://${host}/as/v1/proxy/whep/live/${streamName}`,
+              connectionParams: {
+                nodeGroup
+              }
+            })
+            await rtcSubscriber.subscribe()
+          } catch (err) {
+              console.error('Could not play: ' + err)
+          }
+        }
+
+        const publish = async () => {
+          try {
+            // Once publishing, call subscribe!
+            rtcPublisher.on(red5prosdk.PublisherEventTypes.PUBLISH_START, subscribe)
+            await rtcPublisher.init({
+              ...config,
+              endpoint: `https://${host}/as/v1/proxy/whip/live/${streamName}`,
+              connectionParams: {
+                nodeGroup
+              }
+            })
+            await rtcPublisher.publish()
+          } catch(err) {
+            console.error('Could not publish: ' + err)
+          }
+
+          // Start Publisher first ->
+          publish()
+
+      }(window.red5prosdk))
+    </script>
+  </body>
+</html>
+```
+
+
+# Requirements
+
+The **Red5 Pro WebRTC SDK** is intended to communicate with a [Red5 Pro Server](https://www.red5.net/red5-pro/low-latency-streaming-software/), which allows for broadcasting and consuming live streams utilizing [WebRTC](https://developer.mozilla.org/en-US/docs/Web/Guide/API/WebRTC) and other protocols, including [RTMP](https://en.wikipedia.org/wiki/Real_Time_Messaging_Protocol) and [HLS](https://en.wikipedia.org/wiki/HTTP_Live_Streaming).
+
+As such, you will need a distribution of the [Red5 Pro Server](https://www.red5.net/) running locally or accessible from the web, such as [Amazon Web Services](https://www.red5.net//docs/server/awsinstall/).
 
 > **[Click here to start using the Red5 Pro Server today!](https://account.red5.net/login)**
 
@@ -169,9 +252,6 @@ Please refer to the [Publisher Readme](PUBLISHER_README.md) for information abou
 
 ## Subscriber
 Please refer to the [Subscriber Readme](SUBSCRIBER_README.md) for information about setting up a subscriber session.
-
-# Shared Object
-Please refer to the [SharedObject Documentation](SHARED_OBJECT_README.md) for information about using SharedObjects in both Publishers and Subscribers.
 
 # Contributing
 > Please refer to the [Contributing Documentation](CONTRIBUTING.md) to learn more about contributing to the development of the Red5 Pro WebRTC SDK.

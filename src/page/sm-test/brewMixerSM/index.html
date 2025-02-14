@@ -1,0 +1,179 @@
+<!doctype html>
+{{> license}}
+<html>
+  <head>
+    {{> meta title='Brew Mixer Stream Manager Test'}}
+    {{> header-scripts}}
+    {{> header-stylesheets}}
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+      .stream-details {
+        padding: 20px;
+        background-color: #ddd;
+        display: flex;
+        flex-direction: column;
+        row-gap: 6px;
+      }
+
+      .stream-detail-field {
+        display: flex;
+        flex-direction: row;
+        column-gap: 10px;
+      }
+
+      .stream-detail-field p {
+        text-align: left;
+      }
+
+      .stream-detail-field p:first-child {
+        text-align: right;
+      }
+
+      .stream-detail-field > p {
+        display: inline-block;
+        width: 50%;
+      }
+    </style>
+  </head>
+  <body>
+    {{> top-bar }}
+    <div id="app">
+      {{> settings-link}}
+      <div class="test-info">
+        <h1 class="centered test-title red-text">Brew Mixer Stream Manager Proxy Test</h1>
+        <div class="centered stream-details">
+          <div id="stream-field" class="stream-detail-field"></div>
+          <div id="endpoint-field" class="stream-detail-field"></div>
+        </div>
+      </div>
+      <div class="mixer-section">
+        <div id="topBarControls" class="container">
+          <!-- Video Controls -->
+          <div id="videoControls">
+            <div id="layout" class="layout-controls">
+              <p class="layout-item">
+                <label> <input type="radio" name="layout" value="2" checked> <img src="assets/2x2.svg" alt="2x2"></label>
+              </p>
+              <p class="layout-item">
+                <label> <input type="radio" name="layout" value="3"> <img src="assets/3x3.svg" alt="3x3"></label>
+              </p>
+              <p class="layout-item">
+                <label> <input type="radio" name="layout" value="4" size="3"> <img src="assets/4x4.svg" alt="4x4"></label>
+              </p>
+            </div>
+            <div id="toggleMute">
+              <p id="unmuteButton" class="mute-button">
+                <img src="assets/volume_off.svg" width="12" height="12" alt="Mute">
+              </p>
+              <p id="muteButton" class="mute-button hidden">
+                <img src="assets/volume_on.svg" width="12" height="12" alt="Unmute">
+              </p>
+            </div>
+          </div>
+          <div id="mixerControls">
+            <p id="renderTreeToggle" class="mixer-controls-button">
+              <img src="assets/render_tree.svg" alt="Render Tree">
+              <span>Render Tree</span>
+            </p>
+            <p id="stopButton" class="mixer-controls-button">
+              <img src="assets/stop_button.svg" width="12" height="12" alt="Stop">
+              <span>Stop Mixer</span>
+            </p>
+          </div>
+        </div>
+        <!-- Player Container -->
+        <div id="playerContainer" class="centerContents">
+          <video id="red5pro-subscriber" autoplay=""></video>
+          <canvas id="videoOverlay" class="canvas"></canvas>
+          <!-- Render Graph -->
+          <div id="activeTreeBox" class="hidden offscreen">
+            <p class="active-tree-header">Active Render Tree</p>
+            <textarea id="activeNodeGraph"></textarea>
+            <input type="button" id="render-tree-submit" class="render-tree-submit" value="SUBMIT">
+          </div>
+        </div>
+        <!-- Modal Settings -->
+        <div id="startComp" class="mixer-modal">
+          <div class="mixer-form-container">
+            <div class="mixer-form-header">
+              <p class="mixer-form-title">Start New Mixer</p>
+              <p><img class="mixer-close-button hidden" src="assets/close_button.svg"/></p>
+            </div>
+            <div>
+              <form class="mixer-form">
+                <p class="mixer-form-item">
+                  <label>Event ID</label>
+                  <input type="text"
+                  id="eventIdField"
+                  name="eventIdField"
+                  size="30" value="event1">
+                </p>
+                <p class="mixer-form-item">
+                <label>Output GUID</label>
+                <input type="text"
+                  id="mixerGuidField"
+                  name="mixerGuidField"
+                  size="30" value="brewmixer/mix1">
+                </p>
+                <p class="mixer-form-item">
+                  <label>Width</label>
+                  <input type="text"
+                  id="outputWidth"
+                  size="4" value="1920">
+                </p>
+                <p class="mixer-form-item">
+                  <label>Height</label>
+                  <input type="text"
+                  id="outputHeight"
+                  size="4" value="1080">
+                </p>
+                <p class="mixer-form-item">
+                  <label>Bitrate</label>
+                  <input type="text"
+                  id="bitrate"
+                  size="10" value="7000000">
+                <p class="mixer-form-item">
+                  <label>Max Bitrate</label>
+                  <input type="text"
+                  id="maxbitrate"
+                  size="10" value="10000000">
+                </p>
+                <p class="mixer-form-item">
+                  <label>QP Min</label>
+                  <input type="text"
+                  id="qpmin"
+                  size="4" value="28">
+                </p>
+                <p class="mixer-form-item">
+                  <label>QP Max</label>
+                  <input type="text"
+                  id="qpmax"
+                  size="4" value="48">
+                <p class="mixer-form-item">
+                  <label>Framerate</label>
+                  <input type="text"
+                  id="framerate"
+                  size="3" value="30">
+                </p>
+                <p class="mixer-form-item">
+                  <label>Audiorate</label>
+                  <input type="text"
+                  id="audiorate"
+                  size="5" value="48000">
+                </p>
+                <p class="mixer-form-controls">
+                  <input id="mixer-form-submit" type="button" class="mixer-form-submit" value="START" disabled>
+                </p>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    {{> footer}}
+    {{> body-scripts}}
+    <script src="brewmixer.js"></script>
+    <script src="coord-util.js"></script>
+    <script src="index.js"></script>
+  </body>
+</html>

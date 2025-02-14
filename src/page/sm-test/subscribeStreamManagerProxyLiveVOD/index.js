@@ -171,70 +171,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     return undefined
   }
 
-  const requestEdge = (configuration) => {
-    const host = configuration.host
-    const app = configuration.app
-    const port = serverSettings.httpport
-    const baseUrl = protocol + '://' + host + ':' + port
-    const streamName = configuration.stream1
-    const apiVersion = configuration.streamManagerAPI || '4.0'
-    const region = getRegionIfDefined()
-    let url =
-      baseUrl +
-      '/streammanager/api/' +
-      apiVersion +
-      '/event/' +
-      app +
-      '/' +
-      streamName +
-      '?action=subscribe'
-    if (region) {
-      url += '&region=' + region
-    }
-    return new Promise(function (resolve, reject) {
-      fetch(url)
-        .then(function (res) {
-          if (res.status == 200) {
-            if (
-              res.headers.get('content-type') &&
-              res.headers
-                .get('content-type')
-                .toLowerCase()
-                .indexOf('application/json') >= 0
-            ) {
-              return res.json()
-            } else {
-              throw new TypeError('Could not properly parse response.')
-            }
-          } else {
-            let msg = ''
-            if (res.status == 400) {
-              msg = 'An invalid request was detected'
-            } else if (res.status == 404) {
-              msg = 'Data for the request could not be located/provided.'
-            } else if (res.status == 500) {
-              msg = 'Improper server state error was detected.'
-            } else {
-              msg = 'Unknown error'
-            }
-            throw new TypeError(msg)
-          }
-        })
-        .then(function (json) {
-          resolve(json)
-        })
-        .catch(function (error) {
-          const jsonError =
-            typeof error === 'string' ? error : JSON.stringify(error, null, 2)
-          console.error(
-            '[SubscribeStreamManagerTest] :: Error - Could not request Edge IP from Stream Manager. ' +
-              jsonError
-          )
-          reject(error)
-        })
-    })
-  }
-
   const getAuthenticationParams = () => {
     const auth = configuration.authentication
     return auth && auth.enabled
@@ -301,14 +237,50 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
   }
 
-  const subscribe = async (
-    serverAddress,
-    scope,
-    baseURL,
-    fullURL,
-    useCustomControls
-  ) => {
-    const { app, proxy, preferWhipWhep } = configuration
+  const getConfiguration = () => {
+    const {
+      host,
+      app,
+      stream1,
+      streamManagerAPI,
+      preferWhipWhep,
+      streamManagerNodeGroup: nodeGroup,
+    } = configuration
+    const { protocol, port } = getSocketLocationFromProtocol()
+
+    const region = getRegionIfDefined()
+    const params = region
+      ? {
+          region,
+          strict: true,
+        }
+      : undefined
+
+    const httpProtocol = protocol === 'wss' ? 'https' : 'http'
+    const endpoint = !preferWhipWhep
+      ? `${protocol}://${host}:${port}/as/${streamManagerAPI}/proxy/ws/subscribe/${app}/${stream1}`
+      : `${httpProtocol}://${host}:${port}/as/${streamManagerAPI}/proxy/whep/${app}/${stream1}`
+
+    var connectionParams = params
+      ? { ...params, ...getAuthenticationParams().connectionParams }
+      : getAuthenticationParams().connectionParams
+
+    var rtcConfig = {
+      ...configuration,
+      ...defaultConfiguration,
+      endpoint,
+      streamName: stream1,
+      subscriptionId: 'subscriber-' + instanceId,
+      connectionParams: {
+        ...connectionParams,
+        nodeGroup,
+      },
+    }
+    return rtcConfig
+  }
+
+  const subscribe = async (baseURL, fullURL, useCustomControls) => {
+    const { preferWhipWhep } = configuration
     const { WHEPClient, RTCSubscriber } = red5prosdk
 
     subscribeButton.disabled = true
@@ -319,9 +291,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     window.scrollTo(0, document.body.scrollHeight)
 
     try {
-      const connectionParams = config.connectionParams || {}
       const rtcConfig = {
-        ...config,
+        ...getConfiguration(),
         ...{
           subscriptionId: 'subscriber-' + instanceId,
           liveSeek: {
@@ -332,14 +303,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             usePlaybackControlsUI: !useCustomControls,
             options: { debug: true, backBufferLength: 0 },
           },
-          app: preferWhipWhep ? app : proxy,
-          connectionParams: preferWhipWhep
-            ? connectionParams
-            : {
-                ...connectionParams,
-                host: serverAddress,
-                app: scope,
-              },
         },
       }
       subscriber = preferWhipWhep ? new WHEPClient() : new RTCSubscriber()
@@ -378,39 +341,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   window.addEventListener('pagehide', shutdown)
   window.addEventListener('beforeunload', shutdown)
 
-  let retryCount = 0
-  let retryLimit = 3
-  const respondToEdgeFailure = (
-    error,
-    config,
-    baseURL,
-    fullURL,
-    useCustomControls
-  ) => {
-    if (retryCount++ < retryLimit) {
-      var retryTimer = setTimeout(function () {
-        clearTimeout(retryTimer)
-        startup(config, baseURL, fullURL, useCustomControls)
-      }, 1000)
-    } else {
-      var jsonError =
-        typeof error === 'string' ? error : JSON.stringify(error, null, 2)
-      console.error(
-        '[Red5ProSubscriber] :: Retry timeout in subscribing - ' + jsonError
-      )
-    }
-  }
-
   // Start
-  const startup = (config, baseURL, fullURL, useCustomControls) => {
-    requestEdge(config)
-      .then((response) => {
-        const { scope, serverAddress } = response
-        subscribe(serverAddress, scope, baseURL, fullURL, useCustomControls)
-      })
-      .catch((error) => {
-        respondToEdgeFailure(error, config, baseURL, fullURL, useCustomControls)
-      })
+  const startup = (baseURL, fullURL, useCustomControls) => {
+    subscribe(baseURL, fullURL, useCustomControls)
   }
 
   baseCheck.onchange = () => {
@@ -424,17 +357,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
   }
 
-  // Start
-  // Define tech specific configurations for each failover item.
-  const config = {
-    ...configuration,
-    ...defaultConfiguration,
-    ...getAuthenticationParams(),
-    ...{
-      streamName: configuration.stream1,
-    },
-  }
-
   subscribeButton.addEventListener('click', () => {
     const useCustomControls = controlsCheck.checked
     const baseURL = baseCheck.checked ? urlInput.value : undefined
@@ -442,6 +364,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     if (!baseURL && !fullURL) {
       return
     }
-    startup(config, baseURL, fullURL, useCustomControls)
+    startup(baseURL, fullURL, useCustomControls)
   })
 })(this, document, window.red5prosdk, window.CustomControls)

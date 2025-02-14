@@ -2,9 +2,9 @@
   <img src="assets/red5pro_logo.png" alt="Red5 Pro Logo" />
 </h3>
 <p align="center">
+  <a href="WHIP_WHEP_README.md">WHIP/WHEP</a> &bull;
   <a href="PUBLISHER_README.md">publisher</a> &bull;
   <a href="SUBSCRIBER_README.md">subscriber</a> &bull;
-  <a href="SHARED_OBJECT_README.md">shared object</a>
 </p>
 
 ---
@@ -21,6 +21,7 @@ This document describes how to use the Red5 Pro WebRTC SDK to start a broadcast 
   * [Configuration Parameters](#webrtc-configuration-parameters)
   * [Example](#webrtc-example)
 * [Lifecycle Events](#lifecycle-events)
+* [Stream Manager 2.0](#stream-manager-20)
 
 # Requirements
 
@@ -91,7 +92,10 @@ _It is *highly* recommended to include [adapter.js](https://github.com/webrtcHac
 | onGetUserMedia | [-] | [see below](#using-mediaconstraints-and-ongetusermedia) | An override method for performing your own `getUserMedia` request. |
 | signalingSocketOnly | [-] | `true` | Flag to indicate whether the `WebSocket` should only be used for signaling while establishing a connection. Afterward, all data between client and server will be sent over an `RTCDataChannel`.
 | dataChannelConfiguration | [-] | `{name: "red5pro"}` | An object used in configuring a n `RTCDataChannel`. _Only used when `signalingSocketOnly` is defined as `true`_ |
-| forceVP8 | [-] | `false` | Flag to force VP8 as the encoder for the outgoing stream. |
+| forceVP8 | [-] | `false` | Flag to force VP8 as the encoder for the outgoing stream. _Marked for Deprecation._ |
+| videoEncoding | [-] | `undefined` | `PublishVideoEncoder` enum: `VP8` | `H264` | `H265` . _Replacement of `forceVP8`._ |
+| audioEncoding | [-] | `undefined` | `PublishAudioEncoder` enum. |
+| endpoint | [-] | `undefined` | The full URL of the endpoint to stream to. **This is primarily used in Stream Manager 2.0 integration for clients.** [Refer to the Stream Manager 2.0 Section](#stream-manager-20)
 
 ## WebRTC Example
 
@@ -399,4 +403,32 @@ The following events are specific to the `RTCPublisher` implementation and acces
 | DATA_CHANNEL_MESSAGE | 'WebRTC.DataChannel.Message' | When a message has been delivered over the underlying `RTCDataChannel` when `signalingSocketOnly` configuration is used. |
 | UNSUPPORTED_FEATURE | 'WebRTC.Unsupported.Feature' | Notification that a feature attempting to use in WebRTC is not supported or available in the current browser that the SDK is being employed. e.g., [Insertable Streams](#insertable-streams). |
 | TRANSFORM_ERROR | 'WebRTC.Transform.Error' | An error has occurred while trying to apply transform to a media track. See [Insertable Streams](#insertable-streams)|
+
+# Stream Manager 2.0
+
+> This section provides information that relate to the release of Stream Manager 2.0 and its integration with WHIP/WHEP clients.
+
+The Stream Manager 2.0 simplifies the proxying of web clients to Origin and Edge nodes. As such, an initialization configuration property called `endpoint` was added to the WebRTC SDK. This `endpoint` value should be the full URL path to the proxy endpoint on the Stream Manager as is used as such:
+
+## RTCPublisher Proxy
+
+```javascript
+const host = 'my-deployment'
+const streamName = 'mystream'
+const nodeGroup = 'my-node-group'
+const endpoint = `https://${host}/as/v1/proxy/ws/publish/live/${streamName}`
+const config = {
+  endpoint,
+  streamName,
+  connectionParams: {
+    nodeGroup
+  },
+  // additional configurations
+}
+const publisher = await new RTCPublisher().init(config)
+publisher.on('*', (event) => console.log(event))
+await publisher.publish()
+```
+
+> Note: The requirement of a `nodeGroup` connection parameter that is the target nodegroup within your Stream Manager deployment on which you want to proxy the Publisher and Subscriber client(s).
 

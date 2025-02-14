@@ -1,0 +1,346 @@
+<!-- Copyright © 2015 Infrared5, Inc. All rights reserved.
+
+The accompanying code comprising examples for use solely in conjunction with Red5 Pro (the "Example Code")
+is  licensed  to  you  by  Infrared5  Inc.  in  consideration  of  your  agreement  to  the  following
+license terms  and  conditions.  Access,  use,  modification,  or  redistribution  of  the  accompanying
+code  constitutes your acceptance of the following license terms and conditions.
+
+Permission is hereby granted, free of charge, to you to use the Example Code and associated documentation
+files (collectively, the "Software") without restriction, including without limitation the rights to use,
+copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit
+persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The Software shall be used solely in conjunction with Red5 Pro. Red5 Pro is licensed under a separate end
+user  license  agreement  (the  "EULA"),  which  must  be  executed  with  Infrared5,  Inc.
+An  example  of  the EULA can be found on our website at: https://account.red5pro.com/assets/LICENSE.txt.
+
+The above copyright notice and this license shall be included in all copies or portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,  INCLUDING  BUT
+NOT  LIMITED  TO  THE  WARRANTIES  OF  MERCHANTABILITY, FITNESS  FOR  A  PARTICULAR  PURPOSE  AND
+NONINFRINGEMENT.   IN  NO  EVENT  SHALL INFRARED5, INC. BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+WHETHER IN  AN  ACTION  OF  CONTRACT,  TORT  OR  OTHERWISE,  ARISING  FROM,  OUT  OF  OR  IN CONNECTION
+WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. -->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Red5 Player</title>
+    <script src="//webrtchacks.github.io/adapter/adapter-latest.js"></script>
+    <script src="lib/red5pro/red5pro-sdk.min.js"></script>
+    <style>
+      :root {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+          Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;
+        line-height: 1.5;
+        font-weight: 400;
+        height: 100%;
+
+        color: rgba(255, 255, 255, 0.87);
+
+        font-synthesis: none;
+        text-rendering: optimizeLegibility;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        -webkit-text-size-adjust: 100%;
+
+        --color-black: rgb(12, 12, 12);
+        --color-red5: rgb(208, 56, 50);
+        --color-gray: rgb(136, 136, 136);
+        --color-offwhite: rgb(245, 245, 245, 0.87);
+      }
+
+      body {
+        margin: 0;
+        font-weight: 300;
+        font-size: 0.8rem;
+        background-color: var(--color-black);
+        height: 100%;
+      }
+
+      .hidden {
+        display: none;
+      }
+
+      .app {
+        display: flex;
+        flex-direction: row;
+        column-gap: 16px;
+        column-gap: 16px;
+        width: 100%;
+        height: 100%;
+      }
+
+      .app .video-container {
+        flex: 1;
+        flex-basis: 0;
+      }
+
+      .red5pro-publisher, .red5pro-subscriber {
+        width: 100%;
+        height: 100%;
+      }
+
+      video {
+        object-fit: contain;
+      }
+    </style>
+    <script>
+        ;(function () {
+          console.log('------- USAGE --------')
+          console.log('')
+          console.log(
+            'This page is designed to establish a Red5 Player using query params. You can provide query params in the URL in order to configure the player.'
+          )
+          console.log('The following query params are available:')
+          console.log(
+            '%c [host] ' +
+              '%c       : hostname or IP. Default: `window.location.hostname`',
+            'background: #222; color: #ebefd0',
+            'background: #fff; color: #222'
+          )
+          console.log('')
+          console.log(
+            '%c [app] ' + '%c       : app context. Default: `live`',
+            'background: #222; color: #ebefd0',
+            'background: #fff; color: #222'
+          )
+          console.log('')
+          console.log(
+            '%c [stream_name] ' + '%c       : The name of the stream to pub/sub. Default: `mystream`',
+            'background: #222; color: #ebefd0',
+            'background: #fff; color: #222'
+          )
+          console.log('')
+          console.log(
+            '%c [api_version] ' + '%c       : The version of the Stream Manager 2.0 API. Default: `v1`',
+            'background: #222; color: #ebefd0',
+            'background: #fff; color: #222'
+          )
+          console.log('')
+          console.log(
+            '%c [node_group] ' + '%c       : The name of the node group to target if using Stream Manager 2.0. Default: `default`',
+            'background: #222; color: #ebefd0',
+            'background: #fff; color: #222'
+          )
+          console.log('')
+          console.log(
+            '%c [rta_user] ' + '%c       : Username for RoundTrip Authentication if using. Default: `undefined`',
+            'background: #222; color: #ebefd0',
+            'background: #fff; color: #222'
+          )
+          console.log('')
+          console.log(
+            '%c [rta_pass] ' + '%c       : Password for RoundTrip Authentication if using. Default: `undefined`',
+            'background: #222; color: #ebefd0',
+            'background: #fff; color: #222'
+          )
+          console.log('')
+          console.log(
+            '%c [rta_token] ' + '%c       : Token for RoundTrip Authentication if using. Default: `undefined`',
+            'background: #222; color: #ebefd0',
+            'background: #fff; color: #222'
+          )
+          console.log('')
+          console.log(
+            '%c [standalone] ' + '%c       : Flag to indicate that the streaming is requested on a standalone deployment - not Stream Manager 2.0. Default: `false`',
+            'background: #222; color: #ebefd0',
+            'background: #fff; color: #222'
+          )
+          console.log('')
+          console.log(
+            '%c [mode] ' + '%c       : Mode to display. Either `pubsub`, `pub` or `sub`. Default: `pubsub`',
+            'background: #222; color: #ebefd0',
+            'background: #fff; color: #222'
+          )
+          console.log('')
+          console.log(
+            '%c [object_fit] ' + '%c       : Object fit style to assign to the video elements. https://developer.mozilla.org/en-US/docs/Web/CSS/object-fit',
+            'background: #222; color: #ebefd0',
+            'background: #fff; color: #222'
+          )
+        })()
+    </script>
+  </head>
+  <body>
+    <div class="app">
+        <div class="video-container publish-container hidden">
+            <video id="red5pro-publisher" class="red5pro-publisher" autoplay playsinline muted></video>
+        </div>
+        <div class="video-container subscribe-container hidden">
+            <video id="red5pro-subscriber" class="red5pro-subscriber" autoplay playsinline controls></video>
+        </div>
+    </div>
+    <script>
+      ;((window, red5) => {
+        const MODE_SUB = 'sub'
+        const MODE_PUB = 'pub'
+        const MODE_PUBSUB = 'pubsub'
+
+        const publishContainer = document.querySelector('.publish-container')
+        const subscribeContainer = document.querySelector('.subscribe-container')
+
+        const searchParams = new URLSearchParams(window.location.search)
+        const query = (param, defaultValue) => {
+          return searchParams.has(param) ? searchParams.get(param) : defaultValue
+        }
+
+        const mode = query('mode', MODE_PUBSUB)
+        const host = query('host', window.location.hostName)
+        const app = query('app', 'live')
+        const streamName = query('stream_name', 'mystream')
+        const apiVersion = query('api_version', 'v1')
+        const nodeGroup = query('node_group', 'default')
+        const rtaUser = query('rta_user')
+        const rtaPass = query('rta_pass')
+        const rtaToken = query('rta_token')
+        const objectFit = query('object_fit', 'contain')
+        const standalone = query('standalone', 'false') === 'true'
+
+        let publisher
+        let subscriber
+        const { WHIPClient, WHEPClient } = red5
+
+        const configureAuth = params => {
+          if (rtaUser && rtaPass) {
+            params.user = rtaUser
+            params.password = rtaPass
+          }
+          if (rtaToken) {
+            params.token = rtaToken
+          }
+          return params
+        }
+
+        const getConfiguration = (client = 'whip') => {
+          if (standalone) {
+            return {
+              host,
+              app,
+              streamName,
+              connectionParams: configureAuth({})
+            }
+          }
+          // Else, Stream Manager 2.0 integration.
+          return {
+            endpoint: `https://${host}/as/${apiVersion}/proxy/${client}/${app}/${streamName}`,
+            streamName,
+            connectionParams: configureAuth({
+              nodeGroup
+            })
+          }
+        }
+
+        const onPublisherEvent = event => {
+          const { type } = event
+          console.log('[Publisher]', type)
+        }
+
+        const onSubscriberEvent = event => {
+          const { type } = event
+          if (type === 'Subscribe.Time.Update') {
+            return
+          }
+          console.log('[Subscriber]', type)
+        }
+
+        const publish = async () => {
+          try {
+            let config = getConfiguration('whip')
+            publisher = new red5.WHIPClient()
+            publisher.on('*', onPublisherEvent)
+            await publisher.init(config)
+            await publisher.publish()
+          } catch (e) {
+            unpublish()
+            alert(`Could not publish stream: ${e.message}`)
+            throw e
+          }
+        }
+
+        const subscribe = async () => {
+          try {
+            const config = getConfiguration('whep')
+            subscriber = new red5.WHEPClient()
+            subscriber.on('*', onSubscriberEvent)
+            await subscriber.init(config)
+            await subscriber.subscribe()
+          } catch (e) {
+            unsubscribe()
+            if (mode === MODE_PUBSUB) {
+              // Retry. May be propagating.
+              let t = setTimeout(async () => {
+                clearTimeout(t)
+                await subscribe()
+              }, 2000)
+            }
+          }
+        }
+
+        const unpublish = async () => {
+          try {
+            publisher.off('*', onPublisherEvent)
+            await publisher.unpublish()
+            publisher = undefined
+          } catch (e) {
+            // noop.
+          }
+        }
+
+        const unsubscribe = async () => {
+          try {
+            subscriber.off('*', onSubscriberEvent)
+            await subscriber.unsubscribe()
+            subscriber = undefined
+          } catch (e) {
+            // noop.
+          }
+        }
+
+        const start = async () => {
+          document.querySelectorAll('video').forEach(video => {
+            video.style.objectFit = objectFit
+          })
+
+          try {
+            switch (mode) {
+              case MODE_SUB:
+                subscribeContainer.classList.remove('hidden')
+                subscribe()
+                break
+              case MODE_PUB:
+                publishContainer.classList.remove('hidden')
+                publish()
+                break
+              case MODE_PUBSUB:
+              default:
+                publishContainer.classList.remove('hidden')
+                subscribeContainer.classList.remove('hidden')
+                await publish()
+                // Allow it to propagate.
+                let t = setTimeout(async () => {
+                  clearTimeout(t)
+                  await subscribe()
+                }, 2000)
+            }
+          } catch (e) {
+            alert(`Could not start player: ${e.message}`)
+          }
+        }
+
+        // Clean up on leave of page.
+        window.addEventListener('beforeunload', async () => {
+          await unpublish()
+          await unsubscribe()
+        })
+        window.addEventListener('pagehide', async () => {
+          await unpublish()
+          await unsubscribe()
+        })
+
+        start()
+      })(window, window.red5prosdk)
+    </script>
+  </body>
+</html>

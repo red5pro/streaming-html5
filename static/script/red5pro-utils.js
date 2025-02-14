@@ -50,104 +50,110 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     var isSubscriber = this.isSubscriber
     // Based on https://github.com/webrtc/samples/blob/gh-pages/src/content/peerconnection/bandwidth/js/main.js
     this.bitrateInterval = setInterval(function () {
-      if (!connection) {
-        window.untrackBitrate(ticket)
-        return
-      }
-      connection.getStats(null).then(function (res) {
-        res.forEach(function (report) {
-          var bytes
-          var packets
-          var now = report.timestamp
-          var bitrate
-          if (
-            !isSubscriber &&
-            (report.type === 'outboundrtp' ||
-              report.type === 'outbound-rtp' ||
-              (report.type === 'ssrc' && report.bytesSent))
-          ) {
-            bytes = report.bytesSent
-            packets = report.packetsSent
+      try {
+        if (!connection) {
+          ticket.stop.call(ticket)
+          window.untrackBitrate(ticket)
+          return
+        }
+        connection.getStats(null).then(function (res) {
+          res.forEach(function (report) {
+            var bytes
+            var packets
+            var now = report.timestamp
+            var bitrate
             if (
-              report.mediaType === 'video' ||
-              report.kind === 'video' ||
-              report.id.match(vRegex)
+              !isSubscriber &&
+              (report.type === 'outboundrtp' ||
+                report.type === 'outbound-rtp' ||
+                (report.type === 'ssrc' && report.bytesSent))
             ) {
-              if (lastResult && lastResult.get(report.id)) {
-                // calculate bitrate
-                bitrate =
-                  (8 * (bytes - lastResult.get(report.id).bytesSent)) /
-                  (now - lastResult.get(report.id).timestamp)
-                cb(bitrate, packets)
-              }
-            }
-          }
-          // playback.
-          else if (
-            isSubscriber &&
-            (report.type === 'inboundrtp' ||
-              report.type === 'inbound-rtp' ||
-              (report.type === 'ssrc' && report.bytesReceived))
-          ) {
-            bytes = report.bytesReceived
-            packets = report.packetsReceived
-            if (
-              ticket.audioOnly &&
-              (report.mediaType === 'audio' ||
-                report.kind === 'audio' ||
-                report.id.match(aRegex))
-            ) {
-              if (lastResult && lastResult.get(report.id)) {
-                // calculate bitrate
-                bitrate =
-                  (8 * (bytes - lastResult.get(report.id).bytesReceived)) /
-                  (now - lastResult.get(report.id).timestamp)
-                cb(bitrate, packets)
-              }
-            } else if (
-              !ticket.audioOnly &&
-              (report.mediaType === 'video' ||
+              bytes = report.bytesSent
+              packets = report.packetsSent
+              if (
+                report.mediaType === 'video' ||
                 report.kind === 'video' ||
-                report.id.match(vRegex))
-            ) {
-              if (lastResult && lastResult.get(report.id)) {
-                // calculate bitrate
-                bitrate =
-                  (8 * (bytes - lastResult.get(report.id).bytesReceived)) /
-                  (now - lastResult.get(report.id).timestamp)
-                cb(bitrate, packets)
-              }
-              if (report.frameWidth && report.frameHeight) {
-                const { frameWidth, frameHeight } = report
-                if (frameWidth > 0 || frameHeight > 0) {
-                  resolutionCb(report.frameWidth, report.frameHeight)
+                report.id.match(vRegex)
+              ) {
+                if (lastResult && lastResult.get(report.id)) {
+                  // calculate bitrate
+                  bitrate =
+                    (8 * (bytes - lastResult.get(report.id).bytesSent)) /
+                    (now - lastResult.get(report.id).timestamp)
+                  cb(bitrate, packets)
                 }
               }
             }
-          } else if (
-            resolutionCb &&
-            (report.type === 'track' || report.kind === 'video')
-          ) {
-            var fw = 0
-            var fh = 0
-            if (
-              report.kind === 'video' ||
-              report.frameWidth ||
-              report.frameHeight
+            // playback.
+            else if (
+              isSubscriber &&
+              (report.type === 'inboundrtp' ||
+                report.type === 'inbound-rtp' ||
+                (report.type === 'ssrc' && report.bytesReceived))
             ) {
-              fw = report.frameWidth
-              fh = report.frameHeight
-              if (fw > 0 || fh > 0) {
-                resolutionCb(fw, fh)
+              bytes = report.bytesReceived
+              packets = report.packetsReceived
+              if (
+                ticket.audioOnly &&
+                (report.mediaType === 'audio' ||
+                  report.kind === 'audio' ||
+                  report.id.match(aRegex))
+              ) {
+                if (lastResult && lastResult.get(report.id)) {
+                  // calculate bitrate
+                  bitrate =
+                    (8 * (bytes - lastResult.get(report.id).bytesReceived)) /
+                    (now - lastResult.get(report.id).timestamp)
+                  cb(bitrate, packets)
+                }
+              } else if (
+                !ticket.audioOnly &&
+                (report.mediaType === 'video' ||
+                  report.kind === 'video' ||
+                  report.id.match(vRegex))
+              ) {
+                if (lastResult && lastResult.get(report.id)) {
+                  // calculate bitrate
+                  bitrate =
+                    (8 * (bytes - lastResult.get(report.id).bytesReceived)) /
+                    (now - lastResult.get(report.id).timestamp)
+                  cb(bitrate, packets)
+                }
+                if (report.frameWidth && report.frameHeight) {
+                  const { frameWidth, frameHeight } = report
+                  if (frameWidth > 0 || frameHeight > 0) {
+                    resolutionCb(report.frameWidth, report.frameHeight)
+                  }
+                }
+              }
+            } else if (
+              resolutionCb &&
+              (report.type === 'track' || report.kind === 'video')
+            ) {
+              var fw = 0
+              var fh = 0
+              if (
+                report.kind === 'video' ||
+                report.frameWidth ||
+                report.frameHeight
+              ) {
+                fw = report.frameWidth
+                fh = report.frameHeight
+                if (fw > 0 || fh > 0) {
+                  resolutionCb(fw, fh)
+                }
               }
             }
-          }
+          })
+          lastResult = res
         })
-        lastResult = res
-      })
+      } catch (e) {
+        console.error('Error in trackBitrate: ' + e)
+      }
     }, 1000)
   }
   BitrateTicket.prototype.stop = function () {
+    this.connection = undefined
     clearInterval(this.bitrateInterval)
   }
   BitrateTicket.prototype.audioOnly = function () {
@@ -248,36 +254,32 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
    * Returns the stream listing on the server.
    */
   const getCompleteStreamList = async (url) => {
-    try {
-      let payload
-      let streamList
-      const response = await fetch(url)
-      if (
-        response.headers.get('content-type') &&
-        response.headers
-          .get('content-type')
-          .toLowerCase()
-          .indexOf('application/json') >= 0
-      ) {
-        payload = await response.json()
-      } else {
-        payload = await response.text()
-      }
-      streamList = payload
-      if (typeof payload === 'string') {
-        try {
-          streamList = JSON.parse(payload)
-        } catch (e) {
-          console.error(`Stream list error from: ${payload}`)
-          throw new TypeError(
-            'Could not properly parse stream list response: ' + e.message
-          )
-        }
-      }
-      return streamList
-    } catch (e) {
-      throw e
+    let payload
+    let streamList
+    const response = await fetch(url)
+    if (
+      response.headers.get('content-type') &&
+      response.headers
+        .get('content-type')
+        .toLowerCase()
+        .indexOf('application/json') >= 0
+    ) {
+      payload = await response.json()
+    } else {
+      payload = await response.text()
     }
+    streamList = payload
+    if (typeof payload === 'string') {
+      try {
+        streamList = JSON.parse(payload)
+      } catch (e) {
+        console.error(`Stream list error from: ${payload}`)
+        throw new TypeError(
+          'Could not properly parse stream list response: ' + e.message
+        )
+      }
+    }
+    return streamList
   }
 
   /**
@@ -297,134 +299,288 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
    * Requests stream list from stream manager and filters on scope/app.
    */
   const getStreamList = async (url, scope) => {
+    const list = await getCompleteStreamList(url)
+    const filtered = list.filter((item) => {
+      return item.scope === scope && item.type === 'edge'
+    })
+    return filtered
+  }
+
+  /**
+   * Given Basic Auth params, request JWT
+   * curl -v -H "Content-Type: application/json" -X PUT https://admin:xyz123@as-test1.red5pro.net/as/v1/auth/login
+   */
+  const authenticate = async (smHost, smVersion = 'v1', smUser, smPassword) => {
+    console.log('Request Authentication')
+
     try {
-      const list = await getCompleteStreamList(url)
-      const filtered = list.filter((item) => {
-        return item.scope === scope && item.type === 'edge'
+      const url = `https://${smHost}/as/${smVersion}/auth/login`
+      const token = 'Basic ' + btoa(smUser + ':' + smPassword)
+      const response = await fetch(url, {
+        method: 'PUT',
+        withCredentials: true,
+        credentials: 'include',
+        headers: {
+          Authorization: token,
+          'Content-Type': 'application/json',
+        },
       })
-      return filtered
+
+      console.log('Authenticate response: ' + response.status)
+
+      var json = await response.json()
+      if (json.errorMessage) {
+        throw new Error(json.errorMessage)
+      }
+
+      return json.token
     } catch (e) {
+      console.log('authenticate() fail: ' + e)
       throw e
     }
   }
+
+// more robust, synchronous version of authenticate
+  const authenticate2 =  (smHost, smVersion = 'v1', smUser, smPassword) => {
+		console.log('Request Authentication');
+	
+		const url = `https://${smHost}/as/${smVersion}/auth/login`;
+		const token = 'Basic ' + btoa(smUser + ':' + smPassword);
+		const xhr = new XMLHttpRequest();
+	
+		try {
+			// Open the request as PUT
+			xhr.open('PUT', url, false); // false makes it synchronous
+			xhr.withCredentials = true; // Enable cookies
+			xhr.setRequestHeader('Authorization', token);
+			xhr.setRequestHeader('Content-Type', 'application/json');
+	
+			// Send the request
+			xhr.send();
+	
+			const contentType = xhr.getResponseHeader('Content-Type') || '';
+			let responseBody;
+	
+			// Try parsing the response
+			try {
+				responseBody = JSON.parse(xhr.responseText); // Safe JSON parsing
+			} catch (parseError) {
+				console.error('Error parsing JSON response:', parseError);
+				throw new Error(`HTTP ${xhr.status}: JSON parse error`);
+			}
+	
+			// Handle HTTP errors
+			switch (xhr.status) {
+				case 200:
+					console.log('Authentication successful');
+					return responseBody.token; // Return the authentication token
+				case 401:
+					throw new Error('HTTP 401: Unauthorized');
+				default:
+					throw new Error(`HTTP ${xhr.status}: Unexpected error`);
+			}
+		} catch (error) {
+			// Handle any unexpected network or processing errors
+			console.error('Error in authenticate:', error);
+			throw error; // Re-throw for the caller to catch
+		}
+	};
+	
 
   /**
    * Request to get Origin data to broadcast on stream manager proxy.
    */
-  const getOrigin = async (host, context, streamName, transcode = false) => {
-    try {
-      let url = `https://${host}/streammanager/api/4.0/event/${context}/${streamName}?action=broadcast`
-      if (transcode) {
-        url += '&transcode=true'
-      }
-      const result = await fetch(url)
-      const json = await result.json()
-      if (json.errorMessage) {
-        throw new Error(json.errorMessage)
-      }
-      return json
-    } catch (e) {
-      throw e
+  const getOrigin = async (
+    host,
+    context,
+    streamName,
+    version,
+    nodeGroup,
+    transcode = false
+  ) => {
+    let url = `https://${host}/as/${version}/streams/stream/${nodeGroup}/publish/${context}/${streamName}`
+    if (transcode) {
+      url += '?transcode=true'
     }
+    const result = await fetch(url)
+    const json = await result.json()
+    if (json.errorMessage) {
+      throw new Error(json.errorMessage)
+    }
+    const origin = Array.isArray(json) && json.length > 0 ? json[0] : json
+    const { streamGuid } = origin
+    const paths = streamGuid.split('/')
+    const name = paths.pop()
+    origin.scope = paths.join('/')
+    origin.name = name
+    return origin
   }
 
   /**
-   * Request to get Origin data to broadcast for conference stream manager proxy.
+   * Find the Origin IP address for a given stream
    */
-  const getOriginForConference = async (host, context) => {
-    try {
-      let url = `https://${host}/streammanager/api/4.0/event/${context}/join`
-      const result = await fetch(url)
-      const json = await result.json()
-      if (json.errorMessage) {
-        throw new Error(json.errorMessage)
-      }
-      return json
-    } catch (e) {
-      throw e
+  const getOriginForStream = async (host, version, nodeGroup, streamGuid) => {
+    // aggregate=true -- will return only one server, the publishing origin
+    let url = `https://${host}/as/${version}/streams/stream/${nodeGroup}/stream/${streamGuid}?aggregate=true`
+    console.log('getOriginForStream URL: ' + url)
+    const result = await fetch(url)
+    if (!result.ok) {
+      const text = await result.text()
+      throw new Error(text)
     }
+    const json = await result.json()
+    const serverAddress = json[0].serverAddress // it's always an array of one item (or an error)
+    console.log('getOriginForStream() SUCCESS! result: ' + serverAddress)
+    return serverAddress
   }
 
   /**
    * Request to get Edge on stream managaer to consume stream from stream manager proxy.
    */
-  const getEdge = async (host, context, streamName) => {
-    try {
-      const url = `https://${host}/streammanager/api/4.0/event/${context}/${streamName}?action=subscribe`
-      const result = await fetch(url)
-      const json = await result.json()
-      if (json.errorMessage) {
-        throw new Error(json.errorMessage)
+  const getEdge = async (host, context, streamName, version, nodeGroup) => {
+    let url = `https://${host}/as/${version}/streams/stream/${nodeGroup}/subscribe/${context}/${streamName}`
+    const result = await fetch(url)
+    const json = await result.json()
+    if (json.errorMessage) {
+      throw new Error(json.errorMessage)
+    }
+    const edge = Array.isArray(json) && json.length > 0 ? json[0] : json
+    return edge
+  }
+
+  const postProvision = async (host, version, nodeGroup, token, provision) => {
+    const url = `https://${host}/as/${version}/streams/provision/${nodeGroup}`
+    const body = JSON.stringify(provision)
+    const result = await fetch(url, {
+      method: 'POST',
+      withCredentials: true,
+      credentials: 'include',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body,
+    })
+    if (result.status >= 200 && result.status < 300) {
+      try {
+        const json = await result.json()
+        if (json && json.errorMessage) {
+          if (json.errorMessage.indexOf('Provision already exists') < 0) {
+            throw new Error(json.errorMessage)
+          } else {
+            console.log('Provision already exists')
+          }
+          return json
+        }
+      } catch (e) {
+        console.error('Provision response JSON parse failed: ' + e.message)
       }
-      return json
-    } catch (e) {
-      throw e
+      return { success: true }
+    } else if (result.status === 409) {
+      return { errorMessage: 'Provision already exists' }
+    } else {
+      throw new Error(`Provision request failed: ${result.status}`)
     }
   }
 
-  /**
-   * Request to post a transcode provision detailing variants.
-   */
-  const postTranscode = async (
-    host,
-    context,
-    streamName,
-    provision,
-    smPass = '123xyz'
-  ) => {
-    try {
-      const url = `https://${host}/streammanager/api/4.0/admin/event/meta/${context}/${streamName}?accessToken=${smPass}`
-      const result = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(provision),
-      })
-      const json = await result.json()
-      if (json && json.errorMessage) {
-        throw new Error(json.errorMessage)
-      }
-      return json
-    } catch (e) {
-      throw e
-    }
-  }
-
-  const postProvision = async (host, provision, smPass = '123xyz') => {
-    const { context, name } = provision
-    try {
-      const url = `https://${host}/streammanager/api/4.0/admin/event/meta/${context}/${name}?accessToken=${smPass}`
-      const result = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(provision),
-      })
-      const json = await result.json()
-      if (json && json.errorMessage) {
-        if (json.errorMessage.indexOf('Provision already exists') < 0) {
+  const getProvision = async (host, version, nodeGroup, provisionGuid, token) => {
+    const url = `https://${host}/as/${version}/streams/provision/${nodeGroup}/${provisionGuid}`
+    const result = await fetch(url, {
+      method: 'GET',
+      withCredentials: true,
+      credentials: 'include',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    })
+    if (result.status >= 200 && result.status < 300) {
+      try {
+        const json = await result.json()
+        if (json && json.errorMessage) {
           throw new Error(json.errorMessage)
         } else {
-          console.log('Provision already exists')
+          return json
         }
+      } catch (e) {
+        console.error('Provision response JSON parse failed: ' + e.message)
       }
-
-      return json
-    } catch (e) {
-      throw e
+      return { success: true }
+    } else {
+      throw new Error(`Provision request failed: ${result.status}`)
     }
+  }
+
+  const getForwardRequestURL = (host, version, forwardURI) => {
+    return `https://${host}/as/${version}/proxy/forward/?target=${encodeURIComponent(
+      forwardURI
+    )}`
+  }
+
+  const forward = async (host, version, forwardURI, method = 'GET') => {
+    let url = `https://${host}/as/${version}/proxy/forward/?target=${encodeURIComponent(
+      forwardURI
+    )}`
+    const result = await fetch(url, {
+      method,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+    const json = await result.json()
+    if (json && json.errorMessage) {
+      throw new Error(json.errorMessage)
+    }
+    return json
+  }
+
+  const forwardPost = async (host, version, forwardURI, data) => {
+    let url = `https://${host}/as/${version}/proxy/forward/?target=${encodeURIComponent(
+      forwardURI
+    )}`
+    const result = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: typeof data === 'string' ? data : JSON.stringify(data),
+    })
+
+    // note: the response may be empty string, or other non json response.
+    const json = await result.json()
+    if (json && json.errorMessage) {
+      throw new Error(json.errorMessage)
+    }
+    return json
+  }
+
+  const forwardPostWithResult = async (host, version, forwardURI, data) => {
+    let url = `https://${host}/as/${version}/proxy/forward/?target=${encodeURIComponent(
+      forwardURI
+    )}`
+    return await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: typeof data === 'string' ? data : JSON.stringify(data),
+    })
   }
 
   window.streamManagerUtil = {
     getIsStreamAvailable: getIsAvailable,
     getStreamList: getStreamList,
     getOrigin: getOrigin,
-    getOriginForConference: getOriginForConference,
+    getOriginForStream: getOriginForStream,
     getEdge: getEdge,
-    postTranscode: postTranscode,
+    authenticate: authenticate,
+    authenticate2: authenticate2,
     postProvision: postProvision,
+    getProvision,
+    forward,
+    forwardPost,
+    forwardPostWithResult,
+    getForwardRequestURL,
   }
 
   window.getStreamList = getCompleteStreamList

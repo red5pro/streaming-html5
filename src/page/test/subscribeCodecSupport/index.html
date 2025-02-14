@@ -1,0 +1,45 @@
+<!doctype html>
+{{> license}}
+<html>
+  <head>
+    {{> meta title='Subscriber Codec Support'}}
+    {{> header-scripts}}
+    {{> header-stylesheets}}
+    <link rel="stylesheet" href="../../css/modal.css" />
+  </head>
+  <body>
+    {{> top-bar }}
+    <div id="app">
+      {{> settings-link}}
+      {{> test-info testTitle='Subscriber Codec Support'}}
+      <div class="stream-section">
+        <div class="instructions-block">
+          <p class="codec-select-field codec-select-form settings-field settings-collapsable">
+            <label for="video-select" class="label-style settings-label">Select a Video Codec:</label>
+            <select id="video-select" class="control"></select>
+          </p>
+          <p class="codec-select-field codec-select-form settings-field settings-collapsable">
+            <label for="audio-select" class="label-style settings-label">Select an Audio Codec:</label>
+            <select id="audio-select" class="control"></select>
+          </p>
+          <p>
+            <button id="subscribe-button" class="control ui-button" disabled>Subscribe</button>
+          </p>
+        </div>
+        {{> status-field-subscriber}}
+        {{> statistics-field packets_field='Packets Received'}}
+        <div class="centered">
+          <video id="red5pro-subscriber"
+                  controls="controls" autoplay="autoplay" playsinline
+                  class="red5pro-subscriber red5pro-media red5pro-media-background"
+                  width="640" height="480">
+          </video>
+        </div>
+      </div>
+    </div>
+    {{> footer}}
+    {{> body-scripts}}
+    {{> mobile-subscriber-util}}
+    <script src="index.js"></script>
+  </body>
+</html>

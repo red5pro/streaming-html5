@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<!-- Copyright © 2015 Infrared5, Inc. All rights reserved.
+
+The accompanying code comprising examples for use solely in conjunction with Red5 Pro (the "Example Code")
+is  licensed  to  you  by  Infrared5  Inc.  in  consideration  of  your  agreement  to  the  following
+license terms  and  conditions.  Access,  use,  modification,  or  redistribution  of  the  accompanying
+code  constitutes your acceptance of the following license terms and conditions.
+
+Permission is hereby granted, free of charge, to you to use the Example Code and associated documentation
+files (collectively, the "Software") without restriction, including without limitation the rights to use,
+copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit
+persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The Software shall be used solely in conjunction with Red5 Pro. Red5 Pro is licensed under a separate end
+user  license  agreement  (the  "EULA"),  which  must  be  executed  with  Infrared5,  Inc.
+An  example  of  the EULA can be found on our website at: https://account.red5.net/assets/LICENSE.txt.
+
+The above copyright notice and this license shall be included in all copies or portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,  INCLUDING  BUT
+NOT  LIMITED  TO  THE  WARRANTIES  OF  MERCHANTABILITY, FITNESS  FOR  A  PARTICULAR  PURPOSE  AND
+NONINFRINGEMENT.   IN  NO  EVENT  SHALL INFRARED5, INC. BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+WHETHER IN  AN  ACTION  OF  CONTRACT,  TORT  OR  OTHERWISE,  ARISING  FROM,  OUT  OF  OR  IN CONNECTION
+WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. -->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <meta name="viewport" content="width=device-width" />
+    <script src="https://webrtchacks.github.io/adapter/adapter-latest.js"></script>
+    <script src="lib/screenfull/screenfull.min.js"></script>
+    <link href="lib/red5pro/red5pro-media.css" rel="stylesheet" />
+    <link
+      href="//fonts.googleapis.com/css?family=Lato:400,700"
+      rel="stylesheet"
+      type="text/css"
+    />
+    <style>
+      #prompt {
+        text-align: center;
+        padding: 10px;
+      }
+      .in-progress {
+        background-color: rgba(0, 0, 255, 0.2);
+      }
+      .success {
+        background-color: rgba(0, 255, 0, 0.2);
+      }
+      .failure {
+        background-color: rgba(255, 0, 0, 0.2);
+      }
+      #wrapper {
+        width: 100%;
+        height: 100%;
+      }
+      #grid {
+        display: flex;
+        flex-direction: row;
+        column-gap: 10px;
+        row-gap: 10px;
+        flex-wrap: wrap;
+      }
+      .red5pro-media-container {
+        height: unset !important;
+      }
+      .video-holder {
+        width: 320px;
+      }
+      .video {
+        width: 320px;
+        height: 240px;
+      }
+      .prompt {
+        line-height: 40px;
+        text-align: center;
+        margin: 0;
+        padding: 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <script>
+      // SmartMenus init
+      $(function () {
+        var retry = function () {
+          var t = setTimeout(function () {
+            clearTimeout(t)
+            init()
+          }, 500)
+        }
+        var init = function () {
+          if (!$ && !window.jQuery) {
+            retry()
+          } else if (
+            (window.jQuery && window.jQuery().smartmenus) ||
+            ($ && $().smartmenus)
+          ) {
+            ;($ || jQuery)('#main-menu').smartmenus({
+              subMenusSubOffsetX: 1,
+              subMenusSubOffsetY: -8,
+            })
+          } else {
+            retry()
+          }
+        }
+
+        init()
+      })
+
+      // SmartMenus mobile menu toggle button
+      ;(function ($) {
+        var $mainMenuState = $('#main-menu-state')
+        if ($mainMenuState.length) {
+          // animate mobile menu
+          $mainMenuState.change(function (e) {
+            var $menu = $('#main-menu')
+            if (this.checked) {
+              $menu.hide().slideDown(250, function () {
+                $menu.css('display', '')
+              })
+            } else {
+              $menu.show().slideUp(250, function () {
+                $menu.css('display', '')
+              })
+            }
+          })
+          // hide mobile menu beforeunload
+          $(window).bind('beforeunload unload', function () {
+            if ($mainMenuState[0].checked) {
+              $mainMenuState[0].click()
+            }
+          })
+        }
+      })($ || window.jQuery)
+    </script>
+    <div id="wrapper">
+      <div id="grid"></div>
+
+      <!-- <video id="red5pro-subscriber" width="640" height="480"
+             controls autoplay playsinline
+             class="red5pro-media red5pro-media-background">
+     </video> -->
+    </div>
+    <!-- <div id="prompt" class="in-progress">Connecting...</div> -->
+    <script>
+      ;(function () {
+        console.log('------- USAGE --------')
+        console.log('')
+        console.log(
+          'This page is designed to establish a subscriber session over the Stream Manager Proxy of a Red5 Pro Server. You can provide query params in the URL in order to configure the session to your server deployment.'
+        )
+        console.log('The following query params are available:')
+        console.log(
+          '%c [host] ' +
+            '%c       : hostname or IP. Default: `window.location.hostname`',
+          'background: #222; color: #ebefd0',
+          'background: #fff; color: #222'
+        )
+        console.log(
+          '%c [protocol] ' +
+            '%c   : protocol which Stream Manager is served over (`http` or `https`). Default: `window.location.protocol`',
+          'background: #222; color: #ebefd0',
+          'background: #fff; color: #222'
+        )
+        console.log(
+          '%c [port] ' +
+            '%c       : port number that Stream Maager is served on. Default: `window.location.port`',
+          'background: #222; color: #ebefd0',
+          'background: #fff; color: #222'
+        )
+        console.log(
+          '%c [app] ' +
+            '%c        : webapp name to stream to on the server. Default: `live`',
+          'background: #222; color: #ebefd0',
+          'background: #fff; color: #222'
+        )
+        console.log(
+          '%c [api] ' + '%c : The api version of SM 2.0. Default: `v1`.',
+          'background: #222; color: #ebefd0',
+          'background: #fff; color: #222'
+        )
+        console.log(
+          '%c [nodeGroup] ' +
+            '%c : The cluster nodeGroup. Required, no default.',
+          'background: #222; color: #ebefd0',
+          'background: #fff; color: #222'
+        )
+        console.log(
+          '%c [streamName] ' +
+            '%c : The unique stream name to subscribe to. Required, no default.',
+          'background: #222; color: #ebefd0',
+          'background: #fff; color: #222'
+        )
+        console.log(
+          '%c [verbose] ' +
+            '%c    : Flag to enable verbose logging in Dev Console. Optional.',
+          'background: #222; color: #ebefd0',
+          'background: #fff; color: #222'
+        )
+        console.log(
+          '%c [whipwhep] ' +
+            '%c   : Flag to prefer WHIP client and not use a websocket for ICE negotiation. Optional.',
+          'background: #222; color: #ebefd0',
+          'background: #fff; color: #222'
+        )
+        console.log(
+          '%c [dc] ' +
+            '%c       : Request to switch from socket to RTCDataChannel after signalling is complete. Optional.',
+          'background: #222; color: #ebefd0',
+          'background: #fff; color: #222'
+        )
+        console.log(
+          '%c [smuser] ' +
+            '%c       : Username for Stream Manager 2.0. Required for authentication.',
+          'background: #222; color: #ebefd0',
+          'background: #fff; color: #222'
+        )
+        console.log(
+          '%c [smpass] ' +
+            '%c       : Username for Stream Manager 2.0. Required for authentication.',
+          'background: #222; color: #ebefd0',
+          'background: #fff; color: #222'
+        )
+        console.log('')
+        console.log(
+          '%c [ EXAMPLE ] ' +
+            '%c   : ' +
+            '%c proxy-subscriber.html?host=myred5proserver.com&protocol=https&port=443&app=live&streamName=mystream&verbose=1  ',
+          'background: #222; color: #ebefd0',
+          'background: #fff; color: #222',
+          'background: #d0efd2; color: #222'
+        )
+        console.log('')
+        console.log('----------------------')
+        console.log(
+          '%cIf this page is served from the `live` webapp of the Stream Manager Server, the only param you are required to provide is `streamName`.',
+          'padding: 4px; line-height: 20px; background: #222; color: #ebefd0'
+        )
+        console.log('----------------------')
+      })()
+    </script>
+    <script src="lib/es6/es6-fetch.js"></script>
+    <script src="lib/es6/es6-promise.min.js"></script>
+    <script src="lib/red5pro/red5pro-sdk.min.js"></script>
+    <script src="script/r5pro-autoplay-utils.js"></script>
+    <script>
+      ;((window, red5prosdk) => {
+        // Easy access/parse of query params.
+        function getParameterByName(name, url) {
+          // eslint-disable-line no-unused-vars
+          if (!url) {
+            url = window.location.href
+          }
+          name = name.replace(/[\[\]]/g, '\\$&')
+          var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
+            results = regex.exec(url)
+          if (!results) return null
+          if (!results[2]) return ''
+          return decodeURIComponent(results[2].replace(/\+/g, ' '))
+        }
+
+        // Set console log level.
+        if (getParameterByName('verbose') === '1') {
+          red5prosdk.setLogLevel('debug')
+        } else {
+          red5prosdk.setLogLevel('error')
+        }
+
+        const lhReg = /localhost/
+        const ipReg = /((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(\.|$)){4}/
+        const endpointIsUnsecure = (endpoint) =>
+          !!lhReg.exec(endpoint) || !!ipReg.exec(endpoint)
+
+        // Configuration parameters.
+        var host = getParameterByName('host') || window.location.hostname
+        var protocol =
+          getParameterByName('protocol') || endpointIsUnsecure(host)
+            ? 'http'
+            : 'https'
+        var port = getParameterByName('port')
+        var app = getParameterByName('app') || 'live'
+        var streamName = getParameterByName('streamName')
+        var streamManagerAPI = getParameterByName('api') || 'v1'
+        var nodeGroup = getParameterByName('nodeGroup') || 'default'
+        var smUser = getParameterByName('smuser') || 'admin'
+        var smPass = getParameterByName('smpass') || 'xyz123'
+        var isSecure = protocol === 'https'
+        var smProtocol = protocol
+        var smPort = isSecure ? '' : '5080'
+        var wsProtocol = isSecure ? 'wss' : 'ws'
+        var wsPort = isSecure ? 443 : 5080
+        var preferWhipWhep = true
+        if (getParameterByName('whipwhep')) {
+          var whipwhep = getParameterByName('whipwhep')
+          preferWhipWhep = whipwhep === '1' || whipwhep === 'true'
+        }
+        var switchToDC = true
+        if (getParameterByName('dc')) {
+          var dc = getParameterByName('dc')
+          switchToDC = dc === '1' || dc === 'true'
+        }
+        var switchDelay = getParameterByName('delay')
+          ? parseInt(getParameterByName('delay'), 10)
+          : NaN
+
+        let subscribers = []
+
+        // This will be pointing to the unsecure edge itself...
+        var rtcConfig = {
+          streamName: streamName,
+          app: app,
+          protocol: 'ws',
+          port: 5080,
+          signalingSocketOnly: switchToDC,
+          enableChannelSignaling: switchToDC,
+          socketSwitchDelay: !isNaN(switchDelay) ? switchDelay : 5000,
+        }
+
+        // Handler subscriber events.
+        function onSubscriberEvent(event, element, edgeAddress) {
+          if (
+            event.type !== 'Subscribe.Playback.Change' &&
+            event.type !== 'Subscribe.Volume.Change' &&
+            event.type !== 'Subscribe.Time.Update'
+          ) {
+            console.log(
+              `[index.js] : Subscriber Event - ${edgeAddress}, ${event.type}`
+            )
+            if (event.type !== 'Subscribe.Metadata') {
+              displayPrompt(element, edgeAddress, event.type)
+            }
+          }
+        }
+
+        // Update UI prompt with message.
+        function displayPrompt(prompt, address, message) {
+          prompt.innerText = `${address}:: ${message}`
+          if (message === 'Subscribe.Start') {
+            prompt.classList.remove('in-progress')
+            prompt.classList.add('success')
+          } else if (
+            message === 'Subscribe.Fail' ||
+            message === 'Connect.Failure'
+          ) {
+            prompt.classList.remove('in-progress')
+            prompt.classList.add('failure')
+          }
+        }
+
+        const authenticate = async (smHost, smUser, smPassword) => {
+          try {
+            const url = `https://${smHost}/as/v1/auth/login`
+            const token = 'Basic ' + btoa(smUser + ':' + smPassword)
+            const response = await fetch(url, {
+              method: 'PUT',
+              withCredentials: true,
+              // credentials: 'include',
+              headers: {
+                Authorization: token,
+                'Content-Type': 'application/json',
+              },
+            })
+
+            console.log('[r5] Authenticate response: ' + response.status)
+            var json = await response.json()
+            if (json.errorMessage) {
+              throw new Error(json.errorMessage)
+            }
+
+            return json.token
+          } catch (e) {
+            console.log('authenticate() fail: ' + e)
+            throw e
+          }
+        }
+
+        const getAllEdges = async (host, user, pass, nodeGroup) => {
+          const token = await authenticate(host, user, pass)
+          const url = `https://${host}/as/${streamManagerAPI}/admin/nodegroup/status/${nodeGroup}`
+          const result = await fetch(url, {
+            method: 'GET',
+            withCredentials: true,
+            credentials: 'include',
+            headers: {
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            },
+          })
+          const json = await response.json()
+          const edges = json
+            .filter(({ nodeEvent, scalingEvent }) => {
+              const { state } = scalingEvent
+              const { nodeRoleName } = nodeEvent
+              return (
+                state.toLowerCase() === 'inservice' &&
+                nodeRoleName.toLowerCase() === 'edge'
+              )
+            })
+            .map(({ nodeEvent }) => nodeEvent.publicIp)
+          return edges
+        }
+
+        const subscribeOne = async (elementId, edgeAddress) => {
+          rtcConfig = {
+            ...rtcConfig,
+            host: edgeAddress,
+            mediaElementId: elementId,
+          }
+          console.log('[rtc] : ' + JSON.stringify(rtcConfig, null, 2))
+
+          const div = document.createElement('div')
+          const video = document.createElement('video')
+          const prompt = document.createElement('p')
+          video.id = elementId
+          video.autoplay = true
+          video.controls = true
+          video.autoplay = true
+          video.playsinline = true
+          video.classList.add('video')
+          video.classList.add('red5pro-media')
+          video.classList.add('red5pro-media-background')
+          prompt.classList.add('prompt')
+          prompt.classList.add('in-progress')
+          div.classList.add('video-holder')
+          div.appendChild(video)
+          div.appendChild(prompt)
+          document.querySelector(`#grid`).appendChild(div)
+
+          let subscriber
+          const { WHEPClient, RTCSubscriber } = red5prosdk
+          try {
+            subscriber = preferWhipWhep ? new WHEPClient() : new RTCSubscriber()
+            subscriber.on('*', (event) => {
+              onSubscriberEvent(event, prompt, edgeAddress)
+            })
+            await subscriber.init(rtcConfig)
+            await subscriber.subscribe()
+            return subscriber
+          } catch (e) {
+            console.error(e)
+            displayPrompt(prompt, edgeAddress, 'Subscribe.Fail')
+            throw e
+          }
+        }
+
+        const start = async () => {
+          const edges = await getAllEdges(host, smUser, smPass, nodeGroup)
+          console.log('EDGES', edges)
+          edges.forEach(async (edgeAddress, index) => {
+            try {
+              const subscriber = await subscribeOne(
+                `red5pro-subscriber-${index}`,
+                edgeAddress
+              )
+              subscribers.push(subscriber)
+            } catch (error) {
+              console.error(error)
+            }
+          })
+        }
+
+        start()
+
+        const shutdown = async () => {
+          subscribers.forEach(async (subscriber) => {
+            try {
+              await subscriber.unsubscribe()
+              subscriber.off('*', onSubscriberEvent)
+            } catch (e) {
+              console.error(e)
+            }
+          })
+        }
+        window.addEventListener('pagehide', shutdown)
+        window.addEventListener('beforeunload', shutdown)
+
+        window.subscriberLog = function (message) {
+          console.log('[Subscriber] :: ' + message)
+        }
+      })(window, window.red5prosdk)
+    </script>
+  </body>
+</html>
