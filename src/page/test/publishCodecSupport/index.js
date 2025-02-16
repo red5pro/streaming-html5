@@ -94,11 +94,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   streamTitle.innerText = configuration.stream1
 
   const protocol = serverSettings.protocol
-  const isSecure = protocol == 'https'
   const getSocketLocationFromProtocol = () => {
-    return !isSecure
-      ? { protocol: 'ws', port: serverSettings.wsport }
-      : { protocol: 'wss', port: serverSettings.wssport }
+    return window.getSocketProtocolPort(
+      protocol,
+      serverSettings,
+      configuration.usePortMux
+    )
   }
 
   let defaultConfiguration = {

@@ -19,6 +19,10 @@
     .hidden {
       display: none;
     }
+
+    .settings-field > input:disabled {
+      opacity: 0.5;
+    }
   </style>
 </head>
 
@@ -67,6 +71,14 @@
       <p class="settings-field settings-collapsable">
         <label class="settings-label">Stream2 Name:</label>
         <input id="stream2-field" name="stream2-field" value="stream2">
+      </p>
+      <p class="settings-field settings-collapsable settings-field-row">
+        <label class="settings-label">Use Port Mux:</label>
+        <input type="checkbox" id="port-mux-toggle" style="vertical-align: middle;">
+      </p>
+      <p class="settings-field settings-collapsable">
+        <label class="settings-label">Port:</label>
+        <input id="port-mux-field" name="port-mux-field" pattern="[0-9]+" placeholder="set single port to use..." disabled>
       </p>
       <hr class="paddedHR" />
       <p class="settings-field settings-collapsable">
@@ -280,6 +292,9 @@
       var authUsernameField = document.getElementById('auth-username-field');
       var authPasswordField = document.getElementById('auth-password-field');
       var authTokenField = document.getElementById('auth-token-field');
+
+      var portMuxToggle = document.getElementById('port-mux-toggle');
+      var portMuxField = document.getElementById('port-mux-field');
 
       function hideShowICEOptions() {
         var isTurnServer = turnRegex.test(iceField.value);
@@ -496,6 +511,19 @@
         populate(configuration);
       });
 
+      portMuxToggle.addEventListener('change', function () {
+        portMuxField.disabled = !portMuxToggle.checked;
+        configuration.usePortMux = portMuxToggle.checked ? parseInt(portMuxField.value) : NaN;
+        seal(configuration);
+      });
+
+      portMuxField.addEventListener('blur', function () {
+        var value = parseInt(portMuxField.value)
+        configuration.usePortMux = portMuxToggle.checked ? value : NaN;
+        portMuxField.value = isNaN(value) ? null : value;
+        seal(configuration);
+      });
+
       function populate(config) {
         hostField.value = config.host;
         appField.value = config.app;
@@ -528,6 +556,11 @@
         authUsernameField.disabled = authPasswordField.disabled = !authEnabledField.checked;
         mixerBackendSocketField.value = config.mixerBackendSocketField;
         mixerAuthenticationEnabledField.checked = config.mixerAuthenticationEnabled ? config.mixerAuthenticationEnabled : false
+
+        var hasPortMux = config.usePortMux && !isNaN(config.usePortMux);
+        portMuxToggle.checked = hasPortMux;
+        portMuxField.disabled = !hasPortMux;
+        portMuxField.value = hasPortMux ? config.usePortMux : null;
 
         function selectFieldFromConfiguration(value, selectElem) {
           var i = selectElem.childNodes.length;

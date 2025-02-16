@@ -66,7 +66,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var resolutionField = document.getElementById('resolution-field')
 
   var protocol = serverSettings.protocol
-  var isSecure = protocol === 'https'
 
   var bitrate = 0
   var packetsReceived = 0
@@ -92,9 +91,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   function getSocketLocationFromProtocol() {
-    return !isSecure
-      ? { protocol: 'ws', port: serverSettings.wsport }
-      : { protocol: 'wss', port: serverSettings.wssport }
+    return window.getSocketProtocolPort(
+      protocol,
+      serverSettings,
+      configuration.usePortMux
+    )
   }
 
   var defaultConfiguration = (function (useVideo, useAudio) {

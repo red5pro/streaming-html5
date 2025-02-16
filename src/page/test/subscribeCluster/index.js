@@ -101,9 +101,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   function getSocketLocationFromProtocol() {
-    return !isSecure
-      ? { protocol: 'ws', port: serverSettings.wsport }
-      : { protocol: 'wss', port: serverSettings.wssport }
+    return window.getSocketProtocolPort(
+      protocol,
+      serverSettings,
+      configuration.usePortMux
+    )
   }
 
   streamTitle.innerText = configuration.stream1

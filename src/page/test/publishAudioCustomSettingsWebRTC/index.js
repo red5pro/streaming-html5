@@ -188,8 +188,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   streamTitle.innerText = configuration.stream1
 
   var protocol = serverSettings.protocol
-  var isSecure = protocol == 'https'
-
   var isPublishable = true
   function setPublishableState(isPublishableFlag) {
     isPublishable = isPublishableFlag
@@ -205,11 +203,14 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
   setPublishableState(true)
 
-  function getSocketLocationFromProtocol() {
-    return !isSecure
-      ? { protocol: 'ws', port: serverSettings.wsport }
-      : { protocol: 'wss', port: serverSettings.wssport }
+  const getSocketLocationFromProtocol = () => {
+    return window.getSocketProtocolPort(
+      protocol,
+      serverSettings,
+      configuration.usePortMux
+    )
   }
+
   var defaultConfiguration = {
     protocol: getSocketLocationFromProtocol().protocol,
     port: getSocketLocationFromProtocol().port,

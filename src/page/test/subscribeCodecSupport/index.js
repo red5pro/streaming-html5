@@ -70,7 +70,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   const resolutionField = document.getElementById('resolution-field')
 
   const protocol = serverSettings.protocol
-  const isSecure = protocol === 'https'
 
   let bitrate = 0
   let packetsReceived = 0
@@ -97,10 +96,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   // Determines the ports and protocols based on being served over TLS.
-  const getSocketLocationFromProtocol = () => {
-    return !isSecure
-      ? { protocol: 'ws', port: serverSettings.wsport }
-      : { protocol: 'wss', port: serverSettings.wssport }
+  function getSocketLocationFromProtocol() {
+    return window.getSocketProtocolPort(
+      protocol,
+      serverSettings,
+      configuration.usePortMux
+    )
   }
 
   // Base configuration to extend in providing specific tech failover configurations.
