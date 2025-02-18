@@ -398,14 +398,19 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   function getUserMediaConfiguration() {
+    var videoWidth = parseInt(cameraWidthField.value)
+    var videoHeight = parseInt(cameraHeightField.value)
     var config = {
       audio: configuration.useAudio
         ? configuration.mediaConstraints.audio
         : false,
       video: configuration.useVideo
         ? {
-            width: { exact: parseInt(cameraWidthField.value) },
-            height: { exact: parseInt(cameraHeightField.value) },
+            width: { min: 640, ideal: videoWidth },
+            height: {
+              min: 360,
+              ideal: videoHeight,
+            },
             frameRate: { min: parseInt(framerateField.value) },
           }
         : false,

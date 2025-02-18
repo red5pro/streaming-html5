@@ -391,9 +391,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       },
       video: configuration.useVideo
         ? {
-            width: { exact: 640 },
-            height: { exact: 480 },
-            frameRate: { min: 15 },
+            width: { min: 640, ideal: 640 },
+            height: { min: 480, ideal: 480 },
+            frameRate: { min: 24 },
           }
         : false,
     }
