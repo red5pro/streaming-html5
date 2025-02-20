@@ -161,6 +161,13 @@ const getAuthenticationParams = () => {
       }
     : {}
 }
+
+const enableForm = (enabled) => {
+  const fields = document.querySelectorAll('.prod-drm-field')
+  fields.forEach((field) => (field.disabled = !enabled))
+  startButton.disabled = !enabled
+}
+
 const saveSettings = (settings) => {
   localStorage.setItem('castlabsWatermarkSettings', JSON.stringify(settings))
 }
@@ -201,13 +208,14 @@ const addOverlay = (pngData) => {
   const overlay = document.createElement('img')
   overlay.className = 'demo-img watermark-overlay'
   overlay.src = URL.createObjectURL(new Blob([pngData], { type: 'image/png' }))
+  overlay.style.opacity = 0.5
   mediaContainer.prepend(overlay)
   overlay.onload = () => URL.revokeObjectURL(overlay.src)
 }
 
 const requestOverlays = async () => {
   try {
-    startButton.disabled = true
+    enableForm(false)
     loadingDialog.showModal()
     const settings = getSettings()
     saveSettings(settings)
@@ -226,7 +234,7 @@ const requestOverlays = async () => {
     console.error(message)
     alert(message)
     loadingDialog.close()
-    startButton.disabled = false
+    enableForm(true)
   }
 }
 
@@ -260,7 +268,7 @@ const startPreview = async () => {
   try {
     stream = await navigator.mediaDevices.getUserMedia(mediaConstraints)
     document.querySelector('#red5pro-publisher').srcObject = stream
-    startButton.disabled = false
+    enableForm(true)
   } catch (e) {
     const message = 'Could not acquire media: ' + e.message
     console.error(message)
