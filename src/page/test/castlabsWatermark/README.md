@@ -30,7 +30,7 @@ Once you have started a live stream, take a screenshot of the live video area to
 
 1. Take a screenshot of the live video area.
 2. Upload the screenshot to the [castLabs watermarking tool](https://watermark.castlabs.com/)
-3. Select `Blink Extraction`
+3. Select `Blind Extraction`
 4. Upload the screenshot and allow for the extraction to process and complete.
 
 > You may need to adjust the extraction settings to ensure the watermark is extracted correctly.
