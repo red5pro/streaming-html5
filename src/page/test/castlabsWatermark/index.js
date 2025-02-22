@@ -116,7 +116,9 @@ let defaultConfiguration = {
 
 const mediaConstraints = {
   audio: configuration.useAudio ? configuration.mediaConstraints.audio : false,
-  video: configuration.useVideo ? configuration.mediaConstraints.video : false,
+  // watermark overlay resolution is 1920x1080 (16:9 aspect ratio), the video
+  // should ideally match that aspect ratio
+  video: configuration.useVideo ? {width: {ideal: 640}, height: {ideal: 360}, aspectRatio: {ideal: 16 / 9}} : false
 }
 
 const onPublisherEvent = (event) => {
