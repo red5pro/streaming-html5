@@ -24,10 +24,15 @@
         cursor: pointer;
       }
 
-      .demo-img, .red5pro-publisher {
+      .demo-img {
+        pointer-events: none;
+      }
+
+      .demo-img, .red5pro-subscriber {
         width: 100%;
         height: 100%;
         object-fit: contain;
+        aspect-ratio: 16 / 9;
       }
 
       .info-title {
@@ -68,7 +73,7 @@
     {{> top-bar }}
     <div id="app">
       {{> settings-link}}
-      {{> test-info testTitle='castLabs Watermarked Broadscast'}}
+      {{> test-info testTitle='castLabs Watermarked Subscriber'}}
       <div class="stream-section section">
         <div class="centered container">
           <div class="broadcast">
@@ -101,15 +106,16 @@
               <span>Resolution: <span id="resolution-field" class="resolution-field">0x0</span>.
             </p>
             <div id="media-container" style="background-color: black;">
-              <video id="red5pro-publisher"
+              <video id="red5pro-subscriber"
                       autoplay
                       playsinline
-                      class="red5pro-publisher"
-                      width="640" height="480">
+                      controls
+                      class="red5pro-subscriber"
+                      width="640" height="360">
               </video>
             </div>
             <div class="controls-container">
-              <button id="start-button" class="ui-button" disabled>Start</button>
+              <button id="start-button" class="ui-button">Subscribe</button>
             </div>
           </div>
         </div>

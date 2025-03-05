@@ -1,6 +1,6 @@
 # Single Frame Forensic Watermarking with castLabs
 
-This example demonstrates how to use [castLabs forensic watermarking](https://castlabs.com/image-watermarking/) to embed a watermark during a live broadcast.
+This example demonstrates how to use [castLabs forensic watermarking](https://castlabs.com/image-watermarking/) to embed a watermark during a live broadcast playback.
 
 # Requirements
 
@@ -21,12 +21,13 @@ Once the above requirements are met, you will input the form values of the testb
 
 # Usage
 
-1. Click on `Start` to begin credential authentication and watermark overlay request.
-2. Once the watermark overlay request is complete, the watermarked image be overlayed on the live broadcast stream.
+1. Start a broadcast preferrably with 16:9 (e.g., `640x360`) aspect ratio using a Publish example.
+2. Click on `Subscribe` to begin credential authentication and watermark overlay request.
+3. Once the watermark overlay request is complete, the watermarked image be overlayed on the live broadcast playback.
 
 ## Single-Frame Watermark Forensics
 
-Once you have started a live stream, take a screenshot of the live video area to be used in your `castLabs` account for extraction.
+Once playback has started, take a screenshot of the live video area to be used in your `castLabs` account for extraction.
 
 1. Take a screenshot of the live video area.
 2. Upload the screenshot to the [castLabs watermarking tool](https://watermark.castlabs.com/)

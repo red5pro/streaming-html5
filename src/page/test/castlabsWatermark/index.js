@@ -55,8 +55,7 @@ red5prosdk.setLogLevel(
     : red5prosdk.LOG_LEVELS.WARN
 )
 
-let stream
-let targetPublisher
+let targetSubscriber
 
 const accessKeyInput = document.querySelector('#access-key-input')
 const secretKeyInput = document.querySelector('#secret-key-input')
@@ -111,44 +110,47 @@ const getSocketLocationFromProtocol = () => {
 let defaultConfiguration = {
   protocol: getSocketLocationFromProtocol().protocol,
   port: getSocketLocationFromProtocol().port,
-  streamMode: configuration.recordBroadcast ? 'record' : 'live',
 }
 
-const mediaConstraints = {
-  audio: configuration.useAudio ? configuration.mediaConstraints.audio : false,
-  // watermark overlay resolution is 1920x1080 (16:9 aspect ratio), the video
-  // should ideally match that aspect ratio
-  video: configuration.useVideo ? {width: {ideal: 640}, height: {ideal: 360}, aspectRatio: {ideal: 16 / 9}} : false
-}
-
-const onPublisherEvent = (event) => {
-  const { type } = event
-  console.log('[Red5ProPublisher] ' + type + '.')
-  updateStatusFromEvent(event)
-}
-const onPublishFail = (message) => {
-  console.error('[Red5ProPublisher] Publish Error :: ' + message)
-}
-const onPublishSuccess = (publisher) => {
-  console.log('[Red5ProPublisher] Publish Complete.')
-  try {
-    const pc = publisher.getPeerConnection()
-    const stream = publisher.getMediaStream()
-    window.trackBitrate(pc, onBitrateUpdate, onResolutionUpdate)
-    statisticsField.classList.remove('hidden')
-    stream.getVideoTracks().forEach((track) => {
-      var settings = track.getSettings()
-      onResolutionUpdate(settings.width, settings.height)
-    })
-  } catch (e) {
-    // no tracking for you!
+const onSubscribeEvent = (event) => {
+  if (event.type !== 'Subscribe.Time.Update') {
+    console.log('[Red5ProSubscriber] ' + event.type + '.')
+    updateStatusFromEvent(event)
+    if (event.type === 'Subscribe.VideoDimensions.Change') {
+      onResolutionUpdate(event.data.width, event.data.height)
+    }
   }
 }
-const onUnpublishFail = (message) => {
-  console.error('[Red5ProPublisher] Unpublish Error :: ' + message)
+
+const onSubscribeFail = (message) => {
+  console.error('[Red5ProSubsriber] Subscribe Error :: ' + message)
 }
-const onUnpublishSuccess = () => {
-  console.log('[Red5ProPublisher] Unpublish Complete.')
+
+const onSubscribeSuccess = (subscriber) => {
+  console.log('[Red5ProSubsriber] Subscribe Complete.')
+  if (window.exposeSubscriberGlobally) {
+    window.exposeSubscriberGlobally(subscriber)
+  }
+  if (subscriber.getType().toLowerCase() === 'rtc') {
+    try {
+      window.trackBitrate(
+        subscriber.getPeerConnection(),
+        onBitrateUpdate,
+        onResolutionUpdate,
+        true
+      )
+    } catch (e) {
+      //
+    }
+  }
+}
+
+const onUnsubscribeFail = (message) => {
+  console.error('[Red5ProSubsriber] Unsubscribe Error :: ' + message)
+}
+
+const onUnsubscribeSuccess = () => {
+  console.log('[Red5ProSubsriber] Unsubscribe Complete.')
 }
 
 const getAuthenticationParams = () => {
@@ -230,7 +232,7 @@ const requestOverlays = async () => {
     }
 
     loadingDialog.close()
-    startPublisher(stream)
+    startSubscriber()
   } catch (e) {
     const message = 'Could not acquire overlays: ' + e.message
     console.error(message)
@@ -240,10 +242,10 @@ const requestOverlays = async () => {
   }
 }
 
-const startPublisher = async (stream) => {
+const startSubscriber = async () => {
   const { stream1: streamName, preferWhipWhep } = configuration
   try {
-    const { WHIPClient, RTCPublisher } = red5prosdk
+    const { WHEPClient, RTCSubscriber } = red5prosdk
     const { protocol, port } = getSocketLocationFromProtocol()
     const rtcConfig = {
       ...configuration,
@@ -253,44 +255,32 @@ const startPublisher = async (stream) => {
       port,
       streamName,
     }
-    targetPublisher = preferWhipWhep ? new WHIPClient() : new RTCPublisher()
-    targetPublisher.on('*', onPublisherEvent)
-    await targetPublisher.initWithStream(rtcConfig, stream)
-    await targetPublisher.publish()
-    onPublishSuccess(targetPublisher)
+    targetSubscriber = preferWhipWhep ? new WHEPClient() : new RTCSubscriber()
+    targetSubscriber.on('*', onSubscribeEvent)
+    await targetSubscriber.init(rtcConfig)
+    await targetSubscriber.subscribe()
+    onSubscribeSuccess(targetSubscriber)
   } catch (e) {
     const message = 'Could not start publisher: ' + e.message
     console.error(message)
     alert(message)
-    onPublishFail(e.message)
+    onSubscribeFail(e.message)
   }
 }
 
-const startPreview = async () => {
+const unsubscribe = async () => {
   try {
-    stream = await navigator.mediaDevices.getUserMedia(mediaConstraints)
-    document.querySelector('#red5pro-publisher').srcObject = stream
-    enableForm(true)
-  } catch (e) {
-    const message = 'Could not acquire media: ' + e.message
-    console.error(message)
-    alert(message)
-  }
-}
-
-const unpublish = async () => {
-  try {
-    if (targetPublisher) {
-      targetPublisher.off('*', onPublisherEvent)
-      await targetPublisher.unpublish()
-      onUnpublishSuccess()
+    if (targetSubscriber) {
+      targetSubscriber.off('*', onSubscribeEvent)
+      await targetSubscriber.unsubscribe()
+      onUnsubscribeSuccess()
     }
   } catch (error) {
     var jsonError =
       typeof error === 'string' ? error : JSON.stringify(error, 2, null)
-    onUnpublishFail('Unmount Error ' + jsonError)
+    onUnsubscribeFail('Unmount Error ' + jsonError)
   } finally {
-    targetPublisher = undefined
+    targetSubscriber = undefined
   }
 }
 
@@ -299,11 +289,10 @@ const shutdown = async () => {
   if (shuttingDown) return
   shuttingDown = true
   window.untrackBitrate()
-  await unpublish()
+  await unsubscribe()
 }
 window.addEventListener('pagehide', shutdown)
 window.addEventListener('beforeunload', shutdown)
 
 startButton.addEventListener('click', () => requestOverlays())
 fillSettings()
-startPreview()
