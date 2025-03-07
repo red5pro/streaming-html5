@@ -28,6 +28,7 @@ This document describes how to use the Red5 Pro WebRTC SDK to subscribe to a bro
 * [Other Information](#other-information)
   * [Autoplay Restrictions](#autoplay-restrictions)
   * [Insertable Streams](#insertable-streams)
+* [Monitoring Statistics](#monitoring-statistics)
 * [Stream Manager 2.0 Integration](#stream-manager-20)
 
 # Requirements
@@ -564,7 +565,7 @@ To subscribe to all events from a subscriber:
 function handleSubscriberEvent (event) {
   // The name of the event:
   const { type } = event
-  // The dispatching publisher instance:
+  // The dispatching subscriber instance:
   const { subscriber } = event
   // Optional data releated to the event (not available on all events):
   const { data } = event
@@ -612,6 +613,7 @@ The following events are common across all Subscriber implementations from the R
 | FULL_SCREEN_STATE_CHANGE | 'Subscribe.FullScreen.Change' | Invoked when a change in fullscreen state occurs during playback. |
 | AUTO_PLAYBACK_FAILURE | 'Subscribe.Autoplay.Failure' | Invoked when an attempt to `autoplay` on a media element throws a browser exception; typically due to browser security restrictions and their autoplay policies. (WebRTC and HLS, only) [See section on Autoplay Restrictions](#autoplay-restrictions) |
 | AUTO_PLAYBACK_MUTED | 'Subscribe.Autoplay.Muted' | Invoked when an attempt to `autoplay` on a media element throws a browser exception and is muted based on the `muteOnAutoplayRestriction` config property; typically due to browser security restrictions and their autoplay policies. (WebRTC and HLS, only) [See section on Autoplay Restrictions](#autoplay-restrictions) |
+| STATISTICS_ENDPOINT_CHANGE | 'Subscribe.StatisticsEndpoint.Change' | Notification that the server has signaled a change in endpoint to deliver WebRTC Statistics based on RTCStatsReports. _Statistics are only reported after calling [monitorStats](#monitoring-statistics)._ |
 
 ## WebRTC Subscriber Events
 
@@ -643,6 +645,7 @@ The following events are specific to the `RTCSubscriber` implementation and acce
 | TRACK_ADDED | 'WebRTC.PeerConnection.OnTrack' | When a MediaTrack has become available on the underlying `RTCPeerConnection`. |
 | UNSUPPORTED_FEATURE | 'WebRTC.Unsupported.Feature' | Notification that a feature attempting to use in WebRTC is not supported or available in the current browser that the SDK is being employed. e.g., [Insertable Streams](#insertable-streams). |
 | TRANSFORM_ERROR | 'WebRTC.Transform.Error' | An error has occurred while trying to apply transform to a media track. See [Insertable Streams](#insertable-streams)|
+| STATS_REPORT | 'WebRTC.Stats.Report' | An RTCStatsReport has been captured by the WebRTC client based on configurations from calling [monitorStats](#monitoring-statistics). |
 
 ## HLS Subscriber Events
 
@@ -963,9 +966,116 @@ const config = {
 }
 ```
 
-# Stream Manager 2.0
+# Monitoring Statistics
 
-> This section provides information that relate to the release of Stream Manager 2.0 and its integration with WHIP/WHEP clients.
+Both the `RTCSubscriber` and `WHEPClient` subscriber clients support the ability to monitor and POST statistics report data based on the underlying `RTCPeerConnection` of the clients.
+
+## Stats Configuration
+
+The configuration used for statistics monitoring has the following structure:
+
+```js
+{
+  // Optional.
+  // If provided, it will POST stats to this endpoint.
+  // If undefined, it will post stats to message transport.
+  // If null, it will only emit status events.
+  endpoint: undefined,
+  additionalHeaders: undefined,
+  interval: 5000, // Interval to poll stats, in milliseconds.
+  include: [], // Empty array allows SDK to be judicious about what stats to include.
+}
+```
+
+### endpoint
+
+* If the `endpoint` is defined, the SDK will attempt to make `POST` requests with a JSON body representing each individual report.
+* If the `endpoint` is left `undefined`, the SDK will post metadata with type `stats-report` on the underlying message transport (such as the DataChannel or WebSocket).
+* If the `endpoint` is set to `null`, the SDK will only emit events with the metadata on the `WebRTC.StatsReport` event.
+
+### additionalHeaders
+
+By default, if an `endpoint` is defined, the `POST` request body will be in JSON and have the `{ 'Content-Type': 'application/json' }` header set. If requirements - such as authentication - are required, a map of additional headers can be provided to be sent along with the request.
+
+### interval
+
+The polling interval (in milliseconds) to access the `RTCStatsReport` from the underlying `RTCPeerConnection` of the subscriber client.
+
+### include
+
+An array of static type strings. These directly map to the listing of type available for `RTCStatsReport` objects. If left empty or undefined, the SDK will report the statistics it deems suitable for tracking proper broadcast conditions.
+
+> More information about the statistic types are available at [https://developer.mozilla.org/en-US/docs/Web/API/RTCStatsReport#the_statistic_types](https://developer.mozilla.org/en-US/docs/Web/API/RTCStatsReport#the_statistic_types)
+
+## Invocation
+
+To start statistics monitoring, you have a couple of options:
+
+* You can provide a `stats` attribute with the [stats configuration object](#stats-configuration) to the [init configuration](#webrtc-configuration-parameters).
+* You can call `monitorStats` on the subscriber client with the optional [stats configuration object](#stats-configuration) parameter.
+
+> Additionally, you can stop monitoring by calling `unmonitorStats` on the subscriber client.
+
+## Additional Information
+
+Attached to the metadata that is reported are additional properties that pertain to the subscriber client.
+
+As well, Along with the metadata releated to the `RTCStatsReport` objects emitted by the underlying `RTCPeerConnection`, the statistics monitoring also sends out a few event and action metadata related to the operation of a subscriber client.
+
+> See the following section for examples.
+
+## Example of Statistics Metdata
+
+The following is an example of a statistics metadata that is emitted in a `WebRTC.StatsReport` event and POSTed to any defined optional endpoint:
+
+```json
+{
+  "name": "RTCSubscriberStats",
+  "created": 1727789134165,
+  "device": {
+    "browser": "chrome",
+    "version": 129,
+    "appVersion": "5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36",
+    "platform": "MacIntel",
+    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36",
+    "vendor": "Google Inc."
+  },
+  "client": {
+    "host": "myred5.deploy",
+    "app": "live",
+    "streamName": "stream1",
+    "subscriptionId": "subscriber-922e"
+  },
+  "type": "stats-report",
+  "timestamp": 1727789139169,
+  "data": {
+    "type": "inbound-rtp",
+    "kind": "video",
+    "codecId": "CIT01_102_level-asymmetry-allowed=1;packetization-mode=1;profile-level-id=42e01f",
+    "jitter": 0.005,
+    "packetsLost": 0,
+    "packetsReceived": 439,
+    "bytesReceived": 412627,
+    "firCount": 0,
+    "frameWidth": 640,
+    "frameHeight": 480,
+    "framesDecoded": 143,
+    "framesDropped": 0,
+    "framesPerSecond": 30,
+    "framesReceived": 143,
+    "freezeCount": 0,
+    "keyFramesDecoded": 3,
+    "nackCount": 0,
+    "pauseCount": 0,
+    "pliCount": 0,
+    "totalFreezesDuration": 0,
+    "totalPausesDuration": 0,
+    "estimatedBitrate": 660
+  }
+}
+```
+
+# Stream Manager 2.0
 
 The Stream Manager 2.0 simplifies the proxying of web clients to Origin and Edge nodes. As such, an initialization configuration property called `endpoint` was added to the WebRTC SDK. This `endpoint` value should be the full URL path to the proxy endpoint on the Stream Manager as is used as such:
 

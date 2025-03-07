@@ -21,6 +21,7 @@ This document describes how to use the Red5 Pro WebRTC SDK to start a broadcast 
   * [Configuration Parameters](#webrtc-configuration-parameters)
   * [Example](#webrtc-example)
 * [Lifecycle Events](#lifecycle-events)
+* [Monitoring Statistics](#monitoring-statistics)
 * [Stream Manager 2.0](#stream-manager-20)
 
 # Requirements
@@ -92,7 +93,9 @@ _It is *highly* recommended to include [adapter.js](https://github.com/webrtcHac
 | onGetUserMedia | [-] | [see below](#using-mediaconstraints-and-ongetusermedia) | An override method for performing your own `getUserMedia` request. |
 | signalingSocketOnly | [-] | `true` | Flag to indicate whether the `WebSocket` should only be used for signaling while establishing a connection. Afterward, all data between client and server will be sent over an `RTCDataChannel`.
 | dataChannelConfiguration | [-] | `{name: "red5pro"}` | An object used in configuring a n `RTCDataChannel`. _Only used when `signalingSocketOnly` is defined as `true`_ |
-| forceVP8 | [-] | `false` | Flag to force VP8 as the encoder for the outgoing stream. |
+| forceVP8 | [-] | `false` | Flag to force VP8 as the encoder for the outgoing stream. _Marked for Deprecation._ |
+| videoEncoding | [-] | `undefined` | `PublishVideoEncoder` enum: `VP8` | `H264` | `H265` . _Replacement of `forceVP8`._ |
+| audioEncoding | [-] | `undefined` | `PublishAudioEncoder` enum. |
 | endpoint | [-] | `undefined` | The full URL of the endpoint to stream to. **This is primarily used in Stream Manager 2.0 integration for clients.** [Refer to the Stream Manager 2.0 Section](#stream-manager-20)
 
 ## WebRTC Example
@@ -381,6 +384,7 @@ The following events are common across all Publisher implementations from the Re
 | PUBLISH_SUFFICIENT_BANDWIDTH | 'Publish.SufficientBW' | When the current broadcast session has sufficient bandwidth conditions from previously experiencing network issues. |
 | CONNECTION_CLOSED | 'Publisher.Connection.Closed' | Invoked when a close to the connection is detected. |
 | DIMENSION_CHANGE | 'Publisher.Video.DimensionChange' | Notification when the Camera resolution has been set or change. |
+| STATISTICS_ENDPOINT_CHANGE | 'Publisher.StatisticsEndpoint.Change' | Notification that the server has signaled a change in endpoint to deliver WebRTC Statistics based on RTCStatsReports. _Statistics are only reported after calling [monitorStats](#monitoring-statistics)._ |
 
 ## WebRTC Publisher Events
 
@@ -401,10 +405,111 @@ The following events are specific to the `RTCPublisher` implementation and acces
 | DATA_CHANNEL_MESSAGE | 'WebRTC.DataChannel.Message' | When a message has been delivered over the underlying `RTCDataChannel` when `signalingSocketOnly` configuration is used. |
 | UNSUPPORTED_FEATURE | 'WebRTC.Unsupported.Feature' | Notification that a feature attempting to use in WebRTC is not supported or available in the current browser that the SDK is being employed. e.g., [Insertable Streams](#insertable-streams). |
 | TRANSFORM_ERROR | 'WebRTC.Transform.Error' | An error has occurred while trying to apply transform to a media track. See [Insertable Streams](#insertable-streams)|
+| STATS_REPORT | 'WebRTC.Stats.Report' | An RTCStatsReport has been captured by the WebRTC client based on configurations from calling [monitorStats](#monitoring-statistics). |
+
+# Monitoring Statistics
+
+Both the `RTCPublisher` and `WHIPClient` publisher clients support the ability to monitor and POST statistics report data based on the underlying `RTCPeerConnection` of the clients.
+
+## Stats Configuration
+
+The configuration used for statistics monitoring has the following structure:
+
+```js
+{
+  // Optional.
+  // If provided, it will POST stats to this endpoint.
+  // If undefined, it will post stats to message transport.
+  // If null, it will only emit status events.
+  endpoint: undefined,
+  additionalHeaders: undefined,
+  interval: 5000, // Interval to poll stats, in milliseconds.
+  include: [], // Empty array allows SDK to be judicious about what stats to include.
+}
+```
+
+### endpoint
+
+* If the `endpoint` is defined, the SDK will attempt to make `POST` requests with a JSON body representing each individual report.
+* If the `endpoint` is left `undefined`, the SDK will post metadata with type `stats-report` on the underlying message transport (such as the DataChannel or WebSocket).
+* If the `endpoint` is set to `null`, the SDK will only emit events with the metadata on the `WebRTC.StatsReport` event.
+
+### additionalHeaders
+
+By default, if an `endpoint` is defined, the `POST` request body will be in JSON and have the `{ 'Content-Type': 'application/json' }` header set. If requirements - such as authentication - are required, a map of additional headers can be provided to be sent along with the request.
+
+### interval
+
+The polling interval (in milliseconds) to access the `RTCStatsReport` from the underlying `RTCPeerConnection` of the publisher client.
+
+### include
+
+An array of static type strings. These directly map to the listing of type available for `RTCStatsReport` objects. If left empty or undefined, the SDK will report the statistics it deems suitable for tracking proper broadcast conditions.
+
+> More information about the statistic types are available at [https://developer.mozilla.org/en-US/docs/Web/API/RTCStatsReport#the_statistic_types](https://developer.mozilla.org/en-US/docs/Web/API/RTCStatsReport#the_statistic_types)
+
+## Invocation
+
+To start statistics monitoring, you have a couple of options:
+
+* You can provide a `stats` attribute with the [stats configuration object](#stats-configuration) to the [init configuration](#webrtc-configuration-parameters).
+* You can call `monitorStats` on the publisher client with the optional [stats configuration object](#stats-configuration) parameter.
+
+> Additionally, you can stop monitoring by calling `unmonitorStats` on the publisher client.
+
+## Additional Information
+
+Attached to the metadata that is reported are additional properties that pertain to the publisher client.
+
+As well, Along with the metadata releated to the `RTCStatsReport` objects emitted by the underlying `RTCPeerConnection`, the statistics monitoring also sends out a few event and action metadata related to the operation of a publisher client.
+
+> See the following section for examples.
+
+## Example of Statistics Metdata
+
+The following is an example of a statistics metadata that is emitted in a `WebRTC.StatsReport` event and POSTed to any defined optional endpoint:
+
+```json
+{
+  "name": "RTCPublisherStats",
+  "created": 1727788393007,
+  "device": {
+    "browser": "chrome",
+    "version": 129,
+    "appVersion": "5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36",
+    "platform": "MacIntel",
+    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36",
+    "vendor": "Google Inc."
+  },
+  "client": {
+    "host": "myred5.deploy",
+    "app": "live",
+    "streamName": "stream1"
+  },
+  "type": "stats-report",
+  "timestamp": 1727788398015,
+  "data": {
+    "type": "outbound-rtp",
+    "kind": "video",
+    "codecId": "COT01_106_level-asymmetry-allowed=1;packetization-mode=1;profile-level-id=42e01f;sps-pps-idr-in-keyframe=1",
+    "mediaType": "video",
+    "active": true,
+    "bytesSent": 323380,
+    "packetsSent": 335,
+    "firCount": 0,
+    "pliCount": 3,
+    "frameWidth": 640,
+    "frameHeight": 480,
+    "framesEncoded": 136,
+    "framesPerSecond": 30,
+    "framesSent": 136,
+    "keyFramesEncoded": 4,
+    "estimatedBitrate": 0
+  }
+}
+```
 
 # Stream Manager 2.0
-
-> This section provides information that relate to the release of Stream Manager 2.0 and its integration with WHIP/WHEP clients.
 
 The Stream Manager 2.0 simplifies the proxying of web clients to Origin and Edge nodes. As such, an initialization configuration property called `endpoint` was added to the WebRTC SDK. This `endpoint` value should be the full URL path to the proxy endpoint on the Stream Manager as is used as such:
 
