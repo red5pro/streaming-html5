@@ -19,6 +19,11 @@
         margin: 0!important;
         margin-top: 10px;
       }
+      .side-note {
+        font-size: 12px;
+        padding: 0 30px 20px 30px;
+      }
+
       #stats-form {
         text-align: center;
         padding-bottom: 20px;
@@ -36,6 +41,7 @@
           <hr class="paddedHR">
           <p class="settings-field settings-collapsable"><label for="endpoint-field" class="settings-label">Endpoint:</label><input id="endpoint-field" name="endpoint-field" placeholder="Leaving blank will send stat metadata on DataChannel"></p>
           <p class="settings-field settings-collapsable"><label for="interval-field" class="settings-label">Interval (in seconds):</label><input type="number" min="1" value="5" id="interval-field" name="interval-field"></p>
+          <p class="side-note">&ast; Note that leaving the endpoint field blank will default to sending statistics over the DataChannels.</p>
           <button id="submit-button" class="ui-button">Start</button>
         </div>
         {{> status-field-subscriber}}
