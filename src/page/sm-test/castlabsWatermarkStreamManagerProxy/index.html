@@ -1,0 +1,133 @@
+<!doctype html>
+{{> license}}
+<html>
+  <head>
+    {{> meta title='castLabs DRM Encrypted Playback'}}
+    {{> header-scripts}}
+    {{> header-stylesheets}}
+    <style>
+      .section {
+        max-width: unset!important;
+      }
+      .container {
+        width: 80%;
+      }
+
+      #media-container {
+        position: relative;
+      }
+
+      .watermark-overlay {
+        position: absolute;
+        mix-blend-mode: normal;
+        z-index: 2;
+        cursor: pointer;
+      }
+
+      .demo-img {
+        pointer-events: none;
+      }
+
+      .demo-img, .red5pro-subscriber {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        aspect-ratio: 16 / 9;
+      }
+
+      .info-title {
+        padding: 20px 10px;
+        box-sizing: border-box;
+        background-color: #eeee;
+      }
+      .paddedHR {
+        margin: 0!important;
+        margin-top: 10px;
+      }
+      .nsettings {
+        display: grid;
+        grid-template-columns: 25% 70%;
+        grid-gap: 10px;
+        background-color: #eeee;
+        padding: 20px;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .nsettings label {
+        text-align: right;
+      }
+
+      .nsettings input, .nsettings select {
+        font-size: 1em;
+        height: 1.8em;
+      }
+
+      .controls-container {
+        padding: 10px;
+        background-color: #eee;
+      }
+    </style>
+  </head>
+  <body>
+    {{> top-bar }}
+    <div id="app">
+      {{> settings-link}}
+      {{> test-info testTitle='castLabs Watermarked Subscriber'}}
+      <div class="stream-section section">
+        <div class="centered container">
+          <div class="broadcast">
+            <div class="centered info-title">
+              <p>Enter the following information to apply watermarking:</p>
+            </div>
+            <hr class="paddedHR">
+            <div class="nsettings">
+
+              <label for="access-key-input" class="prod-drm-field">Access Key Id:</label>
+              <input id="access-key-input" class="prod-drm-field" name="access-key-input" placeholder="urn:janus:accesskey:0123456789abcdef0123456789abcdef" />
+              <label for="secret-key-input" class="prod-drm-field">Secret Access Key:</label>
+              <input id="secret-key-input" class="prod-drm-field" name="secret-key-input" type="password" />
+              <label for="organization-urn-input" class="prod-drm-field">Organization URN:</label>
+              <input id="organization-urn-input" class="prod-drm-field" name="organization-urn-input" placeholder="urn:janus:organization:0123456789abcdef0123456789abcdef" />
+              <label for="user-urn-input" class="prod-drm-field">User URN:</label>
+              <input id="user-urn-input" class="prod-drm-field" name="user-urn-input" placeholder="urn:janus:user:0123456789abcdef0123456789abcdef" />
+              <label for="watermark-id-input" class="prod-drm-field">Watermark Id:</label>
+              <input id="watermark-id-input" class="prod-drm-field" type="number" min="0" max="8191" value="2025">
+              <label for="num-overlays-input" class="prod-drm-field">Number of Overlays:</label>
+              <input id="num-overlays-input" class="prod-drm-field" type="number" min="1" max="5" value="1">
+
+            </div>
+            {{> status-field-publisher}}
+            {{> statistics-field packets_field='Packets Sent'}}
+            <p id="statistics-field" class="centered status-field statistics-field hidden">
+              Bitrate: <span id="bitrate-field" class="bitrate-field">N/A</span>.&nbsp;
+              Packets Received: <span id="packets-field" class="packets-field">N/A</span>.
+              <br/>
+              <span>Resolution: <span id="resolution-field" class="resolution-field">0x0</span>.
+            </p>
+            <div id="media-container" style="background-color: black;">
+              <video id="red5pro-subscriber"
+                      autoplay
+                      playsinline
+                      controls
+                      class="red5pro-subscriber"
+                      width="640" height="360">
+              </video>
+            </div>
+            <div class="controls-container">
+              <button id="start-button" class="ui-button">Subscribe</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <dialog id="loading-dialog">
+        Loading Overlays...
+      </dialog>
+    </div>
+    {{> footer}}
+    {{> body-scripts}}
+    {{> mobile-subscriber-util}}
+    <script type="module" src="index.js"></script>
+  </body>
+</html>
+
