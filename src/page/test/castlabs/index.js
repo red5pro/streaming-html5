@@ -42,6 +42,13 @@ var configuration = (function () {
   }
   return {}
 })()
+const urlParams = new URLSearchParams(window.location.search)
+if (urlParams.get('host')) {
+  configuration.host = urlParams.get('host')
+}
+if (urlParams.get('streamName')) {
+  configuration.stream1 = urlParams.get('streamName')
+}
 
 red5prosdk.setLogLevel(
   configuration.verboseLogging
@@ -153,7 +160,7 @@ const baseConfig = {
 document.querySelector('#stream-title').innerText = baseConfig.streamName
 
 const monitorBitrate = (pc, bitrateField, packetsField, resolutionField) => {
-  return trackBitrate(
+  return window.trackBitrate(
     pc,
     (b, p) => {
       bitrateField.innerText = b === 0 ? 'N/A' : Math.floor(b)
@@ -254,7 +261,7 @@ const decryptPlayback = async () => {
 
     let platform = getPlatform()
     const requestProdDRM =
-      decryptionModeSelect.selectedIndex === DecryptMode.ProdDrm
+      parseInt(decryptionModeSelect.value, 10) === DecryptMode.ProdDrm
     let video = {
       codec: 'H264',
       encryption: encryption.toUpperCase() === 'CTR' ? 'cenc' : 'cbcs',
@@ -267,6 +274,8 @@ const decryptPlayback = async () => {
       merchant: getValueFromId('merchant-input'),
       videoElement: element,
       video,
+      sessionId: 'p0',
+      logLevel: 4,
     }
 
     drmConfig.videoElement.addEventListener('rtcdrmerror', (event) => {
@@ -279,7 +288,7 @@ const decryptPlayback = async () => {
     subscriber.on('WebRTC.PeerConnection.Available', () => {
       // Listen for ontrack event to get the decrypted stream.
       const pc = subscriber.getPeerConnection()
-      pc.ontrack = (e) => rtcDrmOnTrack(e)
+      pc.ontrack = (e) => rtcDrmOnTrack(e, drmConfig)
     })
     subscriber.on('*', (event) => onDecryptedSubscriberEvent(event))
 
