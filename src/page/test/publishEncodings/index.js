@@ -272,8 +272,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     const { preferWhipWhep } = configuration
     const { WHIPClient, RTCPublisher } = red5prosdk
 
-    var config = Object.assign({})
-
     var rtcConfig = Object.assign(
       {},
       configuration,
@@ -284,7 +282,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
         protocol: getSocketLocationFromProtocol().protocol,
         port: getSocketLocationFromProtocol().port,
-        streamName: config.stream1,
+        streamName: configuration.stream1,
         bandwidth: {
           audio: 56,
           video: 2500,
