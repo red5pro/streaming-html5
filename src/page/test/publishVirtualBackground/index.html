@@ -1,0 +1,91 @@
+<!doctype html>
+{{> license}}
+<html>
+  <head>
+    {{> meta title='Publish WHIP'}}
+    {{> header-scripts}}
+    {{> header-stylesheets}}
+    <style>
+      .background-settings
+      {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: center;
+        background-color: #dbdbdb;
+        column-gap: 12px;
+        padding: 12px;
+      }
+      code {
+        padding: 0 0.5rem;
+        background-color: #fff;
+      }
+      .settings-area {
+        padding-top: 10px;
+        background-color: #eeee;
+      }
+      .settings-field {
+        display: flex;
+        align-items: center;
+      }
+      .control-container {
+        display: flex;
+        flex-direction: row;
+        background-color: #dbdbdb;
+        padding: 20px;
+        justify-content: center;
+      }
+      .control-container > button:nth-child(even) {
+        margin-left: 20px;
+      }
+      @media (max-width:510px) {
+        .control-container {
+          flex-direction: column;
+        }
+        .control-container > button:nth-child(even) {
+          margin-left: 0px;
+          margin-top: 20px;
+        }
+      }
+    </style>
+     <!-- Polyfills for non-standard APIs -->
+     <script src="https://jan-ivar.github.io/polyfills/mediastreamtrackprocessor.js"></script>
+     <script src="https://jan-ivar.github.io/polyfills/mediastreamtrackgenerator.js"></script>
+     <!-- MediaPipe -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/selfie_segmentation.js" crossorigin="anonymous"></script>
+  </head>
+  <body>
+    {{> top-bar }}
+    <div id="app">
+      {{> settings-link}}
+      {{> test-info testTitle='Publish WHIP'}}
+      <div class="stream-section">
+        {{> status-field-publisher}}
+        {{> statistics-field packets_field='Packets Sent'}}
+        <div class="centered">
+          <video id="red5pro-publisher" class="red5pro-publisher"
+                 controls autoplay playsinline muted>
+          </video>
+        </div>
+        <div id="controls">
+          <fieldset class="background-settings">
+            <p>
+              <input name="virtualBackground" type="radio" id="blur" />
+              <label for="blur">Blur</label>
+            </p>
+            <p>
+              <input name="virtualBackground" type="radio" id="image" checked />
+              <label for="image">Image</label>
+            </p>
+            <p>
+              <input name="virtualBackground" type="radio" id="bgColor" />
+              <label for="bgColor">Background Color</label>
+            </p>
+          </fieldset>
+        </div>
+    </div>
+    {{> footer}}
+    {{> body-scripts}}
+    <script src="index.js"></script>
+  </body>
+</html>
