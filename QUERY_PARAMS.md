@@ -7,7 +7,7 @@ This document details the use of query parameters in the URL field when loading 
 The following is a list of recognized Query Parameter keys and their description. These are reflective of several Settings variables available. The query parameters defined will be transferred to pages within the testbed in deep links, but do not necessarily include settings that are specific to an individual testbed (such as provisioning for ABR).
 
 | key | description | value example |
-| :--- | :---: | ---: |
+| :--- | :--- | :--- |
 | `host` | The hostname of the Red5 server endpoint. | `mydeploy.red5.net` |
 | `protocol` | The protocol serving the Red5 server endpoint. | `https` |
 | `port` | The port on which the Red5 server endpoint is served. | `443` |
