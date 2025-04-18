@@ -79,11 +79,24 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     stream2: params.get('stream2'),
     app: params.get('app'),
     streamMode: params.get('streamMode'),
-    preferWhipWhep: params.get('preferWhipWhep'),
-    useAudio: params.get('useAudio'),
-    useVideo: params.get('useVideo'),
-    cameraWidth: params.get('cameraWidth'),
-    cameraHeight: params.get('cameraHeight'),
+    recordBroadcast: params.get('streamMode')
+      ? params.get('streamMode') === 'record'
+      : undefined,
+    preferWhipWhep: params.get('preferWhipWhep')
+      ? params.get('preferWhipWhep') !== 'false'
+      : undefined,
+    useAudio: params.get('useAudio')
+      ? params.get('useAudio') !== 'false'
+      : undefined,
+    useVideo: params.get('useVideo')
+      ? params.get('useVideo') !== 'false'
+      : undefined,
+    cameraWidth: params.get('cameraWidth')
+      ? parseInt(params.get('cameraWidth'))
+      : undefined,
+    cameraHeight: params.get('cameraHeight')
+      ? parseInt(params.get('cameraHeight'))
+      : undefined,
     streamManagerUsername:
       params.get('smUsername') || params.get('streamManagerUsername'),
     streamManagerPassword:
