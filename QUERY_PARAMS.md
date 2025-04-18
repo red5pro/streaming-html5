@@ -21,6 +21,7 @@ The following is a list of recognized Query Parameter keys and their description
 | `useVideo` | Flag to include video in publishing tests. | `true` or `false` |
 | `cameraWidth` | Desired width of the camera resolution for publishing tests. | `640` |
 | `cameraHeight` | Desired height of the camera resolution for publishing tests. | `360` |
+| `frameRate` | Desired fps for publishing tests. | `30` |
 | `audioBW` | Desired bitrate of audio in publishing tests. | `56` |
 | `videoBW` | Desired bitrate of video in publishing tests. | `750` |
 | `keyFramerate` | Desired keyframe reate in publishing tests. | `3000` |

@@ -73,6 +73,47 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
   }
 
+  // Media settings
+  const useAudio = params.get('useAudio')
+    ? params.get('useAudio') !== 'false'
+      ? true
+      : false
+    : undefined
+  const useVideo = params.get('useVideo')
+    ? params.get('useVideo') !== 'false'
+      ? true
+      : false
+    : undefined
+  const cameraWidth = params.get('cameraWidth')
+    ? parseInt(params.get('cameraWidth'))
+    : undefined
+  const cameraHeight = params.get('cameraHeight')
+    ? parseInt(params.get('cameraHeight'))
+    : undefined
+  const frameRate = params.get('frameRate')
+    ? parseInt(params.get('frameRate'))
+    : undefined
+  let mediaConstraints
+  if (cameraWidth || cameraHeight) {
+    mediaConstraints = {
+      audio: useAudio,
+      video: {
+        width: {
+          min: 320,
+          max: cameraWidth || 640
+        },
+        height: {
+          min: 240,
+          max: cameraHeight || 480
+        },
+        frameRate: {
+          min: 8,
+          max: frameRate || 30
+        }
+      }
+    }
+  }
+
   const config = {
     host: params.get('host'),
     stream1: params.get('stream1') || params.get('streamName'),
@@ -84,19 +125,15 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       : undefined,
     preferWhipWhep: params.get('preferWhipWhep')
       ? params.get('preferWhipWhep') !== 'false'
+        ? true
+        : false
       : undefined,
-    useAudio: params.get('useAudio')
-      ? params.get('useAudio') !== 'false'
-      : undefined,
-    useVideo: params.get('useVideo')
-      ? params.get('useVideo') !== 'false'
-      : undefined,
-    cameraWidth: params.get('cameraWidth')
-      ? parseInt(params.get('cameraWidth'))
-      : undefined,
-    cameraHeight: params.get('cameraHeight')
-      ? parseInt(params.get('cameraHeight'))
-      : undefined,
+    useAudio,
+    useVideo,
+    cameraWidth,
+    cameraHeight,
+    frameRate,
+    mediaConstraints,
     streamManagerUsername:
       params.get('smUsername') || params.get('streamManagerUsername'),
     streamManagerPassword:
