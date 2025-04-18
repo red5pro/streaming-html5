@@ -216,7 +216,7 @@ p {
   min-width: 120px;
 }
 
-.ui-button:hover {
+.ui-button:hover:enabled {
   text-decoration: underline;
   text-decoration-style: dotted;
   background-color: #fff;

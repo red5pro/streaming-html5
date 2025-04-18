@@ -58,9 +58,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   let targetPublisher
 
-  const channelCheck = document.querySelector('#channel-check')
-  const trickleCheck = document.querySelector('#trickle-check')
-  const publishButton = document.querySelector('#publish-unpublish-btn')
+  const publishButton = document.querySelector('#publish-button')
+  const openButton = document.querySelector('#open-button')
 
   const updateStatusFromEvent = window.red5proHandlePublisherEvent // defined in src/template/partial/status-field-publisher.hbs
   const streamTitle = document.getElementById('stream-title')
@@ -124,6 +123,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
   const onPublishSuccess = (publisher) => {
     console.log('[Red5ProPublisher] Publish Complete.')
+    publishButton.classList.toggle('hidden')
+    openButton.classList.toggle('hidden')
   }
   const onUnpublishFail = (message) => {
     console.error('[Red5ProPublisher] Unpublish Error :: ' + message)
@@ -148,14 +149,73 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   const getUserMediaConfiguration = () => {
     return {
       mediaConstraints: {
-        audio: configuration.useAudio
-          ? configuration.mediaConstraints.audio
-          : false,
+        audio: false,
         video: configuration.useVideo
           ? configuration.mediaConstraints.video
           : false,
       },
     }
+  }
+
+  const getValueFromId = (id) => {
+    try {
+      const el = document.querySelector(`#${id}`)
+      return el ? el.value : undefined
+    } catch (e) {
+      console.error(e)
+    }
+    return undefined
+  }
+
+  const Uint8ArrayFromHex = (hex) => {
+    if (!hex) return null
+    if (hex.length % 2 !== 0) {
+      console.error(`Malformed hex string (${hex}), odd length`)
+      return null
+    }
+    return Uint8Array.from(
+      hex.match(/.{1,2}/g).map((byte) => parseInt(byte, 16))
+    )
+  }
+
+  const encryptWorker = new Worker('./encrypt-worker.js', {
+    name: 'encrypt worker',
+  })
+
+  const initCrypto = async (videoCodec, aesMode, key, iv) => {
+    encryptWorker.postMessage({
+      operation: 'init',
+      videoCodec,
+      aesMode,
+      key,
+      iv,
+    })
+    const encryptInit = await Promise.race([
+      new Promise((resolve) => {
+        encryptWorker.onmessage = (event) => resolve(event.data === 'init-done')
+      }),
+      new Promise((resolve) => setTimeout(resolve, 15000, false)),
+    ])
+    return encryptInit
+  }
+
+  const setupSenderTransform = (sender) => {
+    if (window.RTCRtpScriptTransform) {
+      sender.transform = new window.RTCRtpScriptTransform(encryptWorker, {
+        operation: `encrypt-${sender.track.kind}`,
+      })
+      return
+    }
+    const senderStreams = sender.createEncodedStreams()
+    const { readable, writable } = senderStreams
+    encryptWorker.postMessage(
+      {
+        operation: `encrypt-${sender.track.kind}`,
+        readable,
+        writable,
+      },
+      [readable, writable]
+    )
   }
 
   const unpublish = async () => {
@@ -169,10 +229,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       onUnpublishFail(jsonError)
     } finally {
       targetPublisher = undefined
-      trickleCheck.disabled = false
-      channelCheck.disabled = false
       publishButton.disabled = false
-      publishButton.innerText = 'Publish'
     }
   }
 
@@ -187,36 +244,51 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   const start = async () => {
     publishButton.disabled = true
-    trickleCheck.disabled = true
-    channelCheck.disabled = true
+    const { preferWhipWhep } = configuration
+    const { RTCPublisher, WHIPClient } = red5prosdk
     try {
       const rtcConfig = {
         ...config,
         protocol: getSocketLocationFromProtocol().protocol,
         port: getSocketLocationFromProtocol().port,
         streamName: config.stream1,
-        enableChannelSignaling: channelCheck.checked,
-        trickleIce: trickleCheck.checked,
+        rtcConfiguration: {
+          iceServers: [{ urls: 'stun:stun2.l.google.com:19302' }],
+          iceCandidatePoolSize: 2,
+          bundlePolicy: 'max-bundle',
+          encodedInsertableStreams: true,
+          // audio jitter buffer settings are part of an origin trial, not sure if they make any
+          // difference at all atm: https://bugs.chromium.org/p/chromium/issues/detail?id=904764
+          // https://source.chromium.org/chromium/chromium/src/+/main:third_party/blink/renderer/modules/peerconnection/rtc_configuration.idl;l=51
+          rtcAudioJitterBufferMaxPackets: 10,
+          rtcAudioJitterBufferFastAccelerate: true,
+        },
       }
-      const protocol = rtcConfig.protocol === 'ws' ? 'http' : 'https'
-      const { host, port, app, streamName } = rtcConfig
-      const baseUrl = `${protocol}://${host}:${port}`
-      const whipUrl = `${baseUrl}/${app}/whip/endpoint/${streamName}`
-      // If you want to keep all the internal default settings for a Publisher,
-      //  you would just send the `whipUrl` and reference to the target `video` element
-      //  in the constructor call:
-      // targetPublisher = new red5prosdk.WHIPClient(whipUrl, document.querySelector('#red5pro-publisher'))
 
-      // Since we have additionally settings that may differ from the default configuration for a Publisher
-      //  we will use the API similar to an `RTCPublisher` with empty constructor args:
+      const encryption =
+        getValueFromId('scheme-select').toUpperCase() === 'CTR'
+          ? 'cenc'
+          : 'cbcs'
+      // const keyId = Uint8ArrayFromHex(getValueFromId('key-id-input'))
+      const key = Uint8ArrayFromHex(getValueFromId('key-input'))
+      const iv = Uint8ArrayFromHex(getValueFromId('iv-input'))
+      await initCrypto('H264', encryption, key, iv)
 
-      targetPublisher = await new red5prosdk.WHIPClient().init(rtcConfig)
+      targetPublisher = preferWhipWhep ? new WHIPClient() : new RTCPublisher()
       targetPublisher.on('*', onPublisherEvent)
+      await targetPublisher.init(rtcConfig)
       await targetPublisher.publish()
+
+      const { streamName } = rtcConfig
       streamTitle.innerText = streamName
+
+      const pc = targetPublisher.getPeerConnection()
+      const transceivers = pc.getTransceivers()
+      for (const tr of transceivers) {
+        tr.direction = 'sendonly'
+        setupSenderTransform(tr.sender)
+      }
       onPublishSuccess(targetPublisher)
-      publishButton.disabled = false
-      publishButton.innerText = 'Unpublish'
     } catch (error) {
       const jsonError =
         typeof error === 'string' ? error : JSON.stringify(error, null, 2)
@@ -227,17 +299,20 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       }
       targetPublisher = undefined
       publishButton.disabled = false
-      trickleCheck.disabled = false
-      channelCheck.disabled = false
     }
   }
 
   publishButton.addEventListener('click', async () => {
-    if (targetPublisher) {
-      await unpublish()
-      return
-    }
     start()
+  })
+
+  openButton.addEventListener('click', () => {
+    const publisherOptions = targetPublisher.getOptions()
+    const { host, streamName } = publisherOptions
+    window.open(
+      `../castlabs/index.html?host=${host}&streamName=${streamName}`,
+      '_blank'
+    )
   })
 
   let shuttingDown = false
