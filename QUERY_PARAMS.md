@@ -29,10 +29,10 @@ The following is a list of recognized Query Parameter keys and their description
 | `authUsername` | Desired username of RTA to use. | `username` |
 | `authPassword` | Desired password of RTA to use. | `pass` |
 | `authToken` | Desired token of RTA to use. | `token` |
-| `smUsername` | Authentication username for SM 2.0. | `admin` |
-| `smPassword` | Authentication password for SM 2.0. | `abc123` |
-| `smNodeGroup` | Target node group name on SM 2.0 deployment. | `nodegroup-oe` |
-| `smRegion` | Target region on SM 2.0 deployment. | `us-east` |
+| `smUsername` or `streamManagerUsername` | Authentication username for SM 2.0. | `admin` |
+| `smPassword` or `streamManagerPassword` | Authentication password for SM 2.0. | `abc123` |
+| `smNodeGroup` or `streamManagerNodeGroup` | Target node group name on SM 2.0 deployment. | `nodegroup-oe` |
+| `smRegion` or `streamManagerRegion` | Target region on SM 2.0 deployment. | `us-east` |
 
 > Note: `endpoint` query parameter allows you to define the full URL endpoint of the server (e.g., `https://mydeploy.red5.net:443`) without having to define `host`, `protocol` and `port` separately.
 

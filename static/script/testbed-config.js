@@ -24,7 +24,7 @@ WHETHER IN  AN  ACTION  OF  CONTRACT,  TORT  OR  OTHERWISE,  ARISING  FROM,  OUT
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 // Defining/accessing testbed configuration.
-;(function (window, adapter, queryParamConfig) {
+;(function (window, adapter, queryParamConfig, queryParamExcludes) {
   if (typeof adapter !== 'undefined') {
     console.log('Browser: ' + JSON.stringify(adapter.browserDetails, null, 2))
   }
@@ -75,7 +75,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       // Merge query params from the current URL into the link
       for (let key in queryParamConfig) {
         const value = queryParamConfig[key]
-        if (!linkParams.has(key)) {
+        if (queryParamExcludes.indexOf(key) < 0 && !linkParams.has(key)) {
           linkParams.set(key, value)
         }
       }
@@ -238,4 +238,4 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     appendQueryParams()
   })
   return { ...json, ...queryParamConfig }
-})(this, window.adapter, window.queryParamConfig)
+})(this, window.adapter, window.queryParamConfig, window.queryParamExcludes)
