@@ -23,57 +23,89 @@ NONINFRINGEMENT.   IN  NO  EVENT  SHALL INFRARED5, INC. BE LIABLE FOR ANY CLAIM,
 WHETHER IN  AN  ACTION  OF  CONTRACT,  TORT  OR  OTHERWISE,  ARISING  FROM,  OUT  OF  OR  IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
-((window) => {
-  const params = new URLSearchParams(window.location.search);
+;(window => {
+  const params = new URLSearchParams(window.location.search)
 
   const bandwidth = {
-    audio: params.get("audioBandwidth")
-      ? parseInt(params.get("audioBandwidth"))
-      : undefined,
-    video: params.get("videoBandwidth")
-      ? parseInt(params.get("videoBandwidth"))
-      : undefined,
-  };
+    audio: params.get('audioBW') ? parseInt(params.get('audioBW')) : undefined,
+    video: params.get('videoBW') ? parseInt(params.get('videoBW')) : undefined
+  }
 
-  const enableAuth = params.get("authEnabled");
+  const enableAuth = params.get('authEnabled')
   const auth =
-    enableAuth === "true"
+    enableAuth === 'true'
       ? {
-          username: params.get("authUsername"),
-          password: params.get("authPassword"),
-          token: params.get("authToken"),
+          username: params.get('authUsername'),
+          password: params.get('authPassword'),
+          token: params.get('authToken')
         }
-      : undefined;
+      : undefined
+
+  const dissectURL = url => {
+    try {
+      const urlObj = new URL(url)
+      const protocol = urlObj.protocol.replace(':', '')
+      const host = urlObj.hostname
+      const port = urlObj.port
+        ? parseInt(urlObj.port)
+        : protocol === 'https'
+        ? 443
+        : null
+      return {
+        protocol,
+        host,
+        port
+      }
+    } catch (e) {
+      // noop
+    }
+    return null
+  }
+
+  // If the endpoint is set, we will use it to set the host, protocol and port
+  const endpoint = params.get('endpoint')
+  if (endpoint) {
+    const dissected = dissectURL(endpoint)
+    if (dissected) {
+      params.set('host', dissected.host)
+      params.set('protocol', dissected.protocol)
+      params.set('port', dissected.port)
+    }
+  }
 
   const config = {
-    host: params.get("host"),
-    stream1: params.get("stream1"),
-    stream2: params.get("stream2"),
-    app: params.get("app"),
-    streamMode: params.get("streamMode"),
-    preferWhipWhep: params.get("preferWhipWhep"),
-    useAudio: params.get("useAudio"),
-    useVideo: params.get("useVideo"),
-    cameraWidth: params.get("cameraWidth"),
-    cameraHeight: params.get("cameraHeight"),
-    streamManagerUsername: params.get("streamManagerUsername"),
-    streamManagerPassword: params.get("streamManagerPassword"),
-    streamManagerNodeGroup: params.get("streamManagerNodeGroup"),
-    streamManagerRegion: params.get("streamManagerRegion"),
-    keyFramerate: params.get("keyFramerate")
-      ? parseInt(params.get("keyFramerate"))
+    host: params.get('host'),
+    stream1: params.get('stream1') || params.get('streamName'),
+    stream2: params.get('stream2'),
+    app: params.get('app'),
+    streamMode: params.get('streamMode'),
+    preferWhipWhep: params.get('preferWhipWhep'),
+    useAudio: params.get('useAudio'),
+    useVideo: params.get('useVideo'),
+    cameraWidth: params.get('cameraWidth'),
+    cameraHeight: params.get('cameraHeight'),
+    streamManagerUsername:
+      params.get('smUsername') || params.get('streamManagerUsername'),
+    streamManagerPassword:
+      params.get('smPassword') || params.get('streamManagerPassword'),
+    streamManagerNodeGroup:
+      params.get('smNodeGroup') || params.get('streamManagerNodeGroup'),
+    streamManagerRegion:
+      params.get('smRegion') || params.get('streamManagerRegion'),
+    keyFramerate: params.get('keyFramerate')
+      ? parseInt(params.get('keyFramerate'))
       : undefined,
     authentication: auth,
     bandwidth: bandwidth.audio || bandwidth.video ? bandwidth : undefined,
-    protocol: params.get("protocol"),
-    port: params.get("port") ? parseInt(params.get("port")) : undefined,
-  };
+    protocol: params.get('protocol'),
+    port: params.get('port') ? parseInt(params.get('port')) : undefined
+  }
 
   // equals config, but with undefined values removed
   const queryParamConfig = Object.fromEntries(
     Object.entries(config).filter(
-      ([_, v]) => v !== undefined && v !== "" && v !== null
+      ([_, v]) => v !== undefined && v !== '' && v !== null
     )
-  );
-  window.queryParamConfig = queryParamConfig;
-})(window);
+  )
+  window.queryParamConfig = queryParamConfig
+})(window)
