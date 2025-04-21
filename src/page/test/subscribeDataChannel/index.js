@@ -106,7 +106,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var defaultConfiguration = (function (useVideo, useAudio) {
     var c = {
       protocol: getSocketLocationFromProtocol().protocol,
-      port: getSocketLocationFromProtocol().port,
+      port: getSocketLocationFromProtocol().port
     }
     if (!useVideo) {
       c.videoEncoding = red5prosdk.PlaybackVideoEncoder.NONE
@@ -203,7 +203,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   function createAudioPlaybackContent(arrayBuffer) {
     closePreviousModal()
     var style = 'padding: 10px; text-align: center'
-    var blob = new Blob([arrayBuffer])
+    var blob = new Blob([arrayBuffer], { type: 'audio/mp3' })
     var audioURL = window.URL.createObjectURL(blob)
     var content = document.createElement('div')
     var p = document.createElement('p')
@@ -213,6 +213,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     var holder = document.createElement('p')
     holder.style = style
     var audio = document.createElement('audio')
+    audio.mimeType = 'audio/mp3'
     audio.controls = true
     audio.src = audioURL
     audio.controlsList = 'nodownload'
@@ -289,8 +290,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           connectionParams: {
             username: auth.username,
             password: auth.password,
-            token: auth.token,
-          },
+            token: auth.token
+          }
         }
       : {}
   }
@@ -329,7 +330,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
       protocol: getSocketLocationFromProtocol().protocol,
       port: getSocketLocationFromProtocol().port,
-      subscriptionId: 'subscriber-' + instanceId,
+      subscriptionId: 'subscriber-' + instanceId
     }
   )
 
