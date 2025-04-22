@@ -4,10 +4,10 @@
 
 <head>
   {{> meta title='Red5 Pro HTML SDK Testbed'}}
+  {{> header-scripts}}
   <link rel="stylesheet" href="css/reset.css">
   <link rel="stylesheet" href="lib/bootstrap/css/bootstrap.min.css">
   <link rel="stylesheet" href="css/testbed.css">
-  <script src="script/testbed-config.js"></script>
   <link rel='stylesheet'
     href='//fonts.googleapis.com/css?family=Lato%3A100%2C200%2C300%2C400%2C500%2C600%2C700%2C800%2C900%2C100i%2C200i%2C300i%2C400i%2C500i%2C600i%2C700i%2C800i%2C900i&#038;subset=latin&#038;ver=5.2.3'
     type='text/css' media='all' />
@@ -149,6 +149,10 @@
         <label class="settings-label">Switch to Data Channel After Connection:</label>
         <input type="checkbox" id="rtc-signal-socket-field" style="vertical-align: middle;">
       </p>
+      <p class="settings-field settings-collapsable  settings-field-row">
+        <label class="settings-label">Include Resolution in Offer:</label>
+        <input type="checkbox" id="include-resolution-offer-field" style="vertical-align: middle;">
+      </p>
       <hr class="paddedHR" />
       <h2 class="centered">Stream Manager Specific</h2>
       <p class="settings-field settings-collapsable">
@@ -260,6 +264,7 @@
       var rtcTransportPolicySelect = document.getElementById('rtc-transport-policy');
       var rtcpMuxPolicySelect = document.getElementById('rtc-mux-policy');
       var rtcSignalSocketField = document.getElementById('rtc-signal-socket-field');
+      var includeResolutionOfferField = document.getElementById('include-resolution-offer-field');
       var whipWhepField = document.getElementById('whipwhep-field');
       var sessionHostField = document.getElementById('session-host-field');
       var trickleField = document.getElementById('trickle-field');
@@ -379,6 +384,10 @@
       rtcSignalSocketField.addEventListener('change', function () {
         configuration.signalingSocketOnly = rtcSignalSocketField.checked;
         configuration.enableChannelSignaling = rtcSignalSocketField.checked;
+        seal(configuration);
+      });
+      includeResolutionOfferField.addEventListener('change', function () {
+        configuration.offerSDPResolution = includeResolutionOfferField.checked;
         seal(configuration);
       });
       whipWhepField.addEventListener('change', () => {
@@ -506,6 +515,7 @@
         iceCredential.value = config.rtcConfiguration.iceServers[0].credential || '';
         rtcCandidatePoolSize.value = config.rtcConfiguration.iceCandidatePoolSize || 0;
         rtcSignalSocketField.checked = config.signalingSocketOnly;
+        includeResolutionOfferField.checked = config.offerSDPResolution;
         whipWhepField.checked = config.preferWhipWhep || false;
         sessionHostField.checked = config.disableProxy || false;
         trickleField.checked = config.trickleIce || false;

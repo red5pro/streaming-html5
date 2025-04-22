@@ -6,7 +6,7 @@ This example demonstrates integrating with a 3rd Party library provided from `ca
 
 # Requirements
 
-This example uses the 3rd Party library provided from `castlabs`: [rtc-drm-transform](../../../../static/lib/castlabs/rtc-drm-transform/rtc-drm-transform.min.js). The library provides transform functions to be used in decrypting live stream that have been encrypted using `merchant` keys.
+This example uses the 3rd Party library provided from `castLabs`: [rtc-drm-transform](../../../../static/lib/castlabs/rtc-drm-transform/rtc-drm-transform.min.js). The library provides transform functions to be used in decrypting live stream that have been encrypted using `merchant` keys.
 
 ## Transforms
 
