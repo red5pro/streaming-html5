@@ -23,7 +23,7 @@ The 3 audio tracks are considered the "loudest talkers" minus the current audio 
 
 The 1 video track is a video composite of the video streams of all the `RTCConferenceParticipant`s in the group conference. Because of this, integrating a `RTCConferenceParticipant` into your application will most likely require a Mixer Node.
 
-> Read more about the [Red5 Pro Mixer](https://www.red5pro.com/docs/special/mixer/using-mixer/#gatsby-focus-wrapper).
+> Read more about the [Red5 Pro Mixer](https://www.red5.net/docs/special/mixer/using-mixer/#gatsby-focus-wrapper).
 
 * [Requirements](#requirements)
 * [Configuration Parameters](#configuration-parameters)
@@ -34,7 +34,7 @@ The 1 video track is a video composite of the video streams of all the `RTCConfe
 
 ## Mixer Node
 
-Because the video delivered to each `RTCConferenceParticipant` is a composite of all participants in the conference group, you will most likely need to deploy a [Red5 Pro Mixer] (https://www.red5pro.com/docs/special/mixer/using-mixer/#gatsby-focus-wrapper) as part of your solution.
+Because the video delivered to each `RTCConferenceParticipant` is a composite of all participants in the conference group, you will most likely need to deploy a [Red5 Pro Mixer] (https://www.red5.net/docs/special/mixer/using-mixer/#gatsby-focus-wrapper) as part of your solution.
 
 ## Group Provision
 
@@ -51,7 +51,7 @@ Here is an example of a provision to POST to the server:
   isRestricted: false,
   parameters: {
     group: 'webrtc',
-    audiotracks: 3, 
+    audiotracks: 3,
     videotracks: 1
   },
   restrictions: [],
