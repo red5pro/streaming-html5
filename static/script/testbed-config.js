@@ -202,7 +202,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   if (config) {
     try {
-      json = { ...JSON.parse(config), ...queryParamConfig }
+      json = JSON.parse(config)
       if (json.version && json.version !== build_version) {
         console.log(
           'We have replaced your stale session version: ' +
@@ -226,12 +226,18 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       assignStorage()
     } finally {
       defineIceServers()
-      sessionStorage.setItem('r5proTestBed', JSON.stringify(json))
+      sessionStorage.setItem(
+        'r5proTestBed',
+        JSON.stringify({ ...json, ...queryParamConfig })
+      )
     }
   } else {
     assignStorage()
     defineIceServers()
-    sessionStorage.setItem('r5proTestBed', JSON.stringify(json))
+    sessionStorage.setItem(
+      'r5proTestBed',
+      JSON.stringify({ ...json, ...queryParamConfig })
+    )
   }
 
   sessionStorage.setItem('r5proServerSettings', JSON.stringify(serverSettings))
