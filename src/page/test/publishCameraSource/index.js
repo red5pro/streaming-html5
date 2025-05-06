@@ -103,16 +103,14 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var defaultConfiguration = {
     protocol: getSocketLocationFromProtocol().protocol,
     port: getSocketLocationFromProtocol().port,
-    streamMode: configuration.recordBroadcast ? 'record' : 'live',
+    streamMode: configuration.recordBroadcast ? 'record' : 'live'
   }
 
   var mediaConstraints = {
     audio: configuration.useAudio
       ? configuration.mediaConstraints.audio
       : false,
-    video: configuration.useVideo
-      ? configuration.mediaConstraints.video
-      : false,
+    video: configuration.useVideo ? configuration.mediaConstraints.video : false
   }
 
   function onPublisherEvent(event) {
@@ -162,8 +160,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           connectionParams: {
             username: auth.username,
             password: auth.password,
-            token: auth.token,
-          },
+            token: auth.token
+          }
         }
       : {}
   }
@@ -178,7 +176,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       delete mediaConstraints.video.frameRate
     } else {
       mediaConstraints.video = {
-        deviceId: { exact: selection },
+        deviceId: { exact: selection }
       }
     }
     updateStatistics(0, 0, 0, 0)
@@ -270,7 +268,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
                 reject(error)
               })
           })
-        },
+        }
       }
     )
     const publisher = preferWhipWhep ? new WHIPClient() : new RTCPublisher()
@@ -312,10 +310,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       })
   }
 
-  navigator.mediaDevices
-    .enumerateDevices()
-    .then(listDevices)
-    .catch(onDeviceError)
+  navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then(() => {
+    navigator.mediaDevices
+      .enumerateDevices()
+      .then(listDevices)
+      .catch(onDeviceError)
+  })
   restart()
 
   cameraSelect.addEventListener('change', function () {
