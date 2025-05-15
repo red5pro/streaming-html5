@@ -192,7 +192,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       getUserMediaConfiguration(),
       defaultConfiguration,
       {
-        streamName: config.stream1,
+        streamName: configuration.stream1,
       }
     )
 
