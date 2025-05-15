@@ -32,9 +32,9 @@ This document describes how to use the Red5 Pro WebRTC SDK to subscribe to a bro
 
 # Requirements
 
-The **Red5 Pro WebRTC SDK** is intended to communicate with a [Red5 Pro Server](https://www.red5pro.com/), which allows for broadcasting and consuming live streams utilizing [WebRTC](https://developer.mozilla.org/en-US/docs/Web/Guide/API/WebRTC) and other protocols, [HLS](https://en.wikipedia.org/wiki/HTTP_Live_Streaming).
+The **Red5 Pro WebRTC SDK** is intended to communicate with a [Red5 Pro Server](https://www.red5.net/), which allows for broadcasting and consuming live streams utilizing [WebRTC](https://developer.mozilla.org/en-US/docs/Web/Guide/API/WebRTC) and other protocols, [HLS](https://en.wikipedia.org/wiki/HTTP_Live_Streaming).
 
-As such, you will need a distribution of the [Red5 Pro Server](https://www.red5pro.com/) running locally or accessible from the web, such as [Amazon Web Services](https://www.red5pro.com/docs/server/awsinstall/).
+As such, you will need a distribution of the [Red5 Pro Server](https://www.red5.net) running locally or accessible from the web, such as [Amazon Web Services](https://www.red5.net/docs/server/awsinstall/).
 
 > **[Click here to start using the Red5 Pro Server today!](https://account.red5.net/login)**
 
@@ -190,7 +190,7 @@ Provide an optional `options` configuration that will be assigned untouched to t
 
 Flag to use the default playback controls of the SDK to play, pause, live scrub, and additional actions. If setting this to `false`, you will need to create and manage your own controls to interact with the live and VOD content.
 
-> You can also provide your own custom controls and/or class declarations easily following this [guideline](https://www.red5pro.com/docs/development/playbackcontrols/overview/).
+> You can also provide your own custom controls and/or class declarations easily following this [guideline](https://www.red5.net/docs/development/playbackcontrols/overview/).
 
 #### Video Encoding Configuration
 
@@ -437,7 +437,7 @@ As such, specific failover targets - such as HLS - require native browser suppor
 
 It is entirely possible to playback streams in HLS using a 3rd-Party library (such as [VideoJS](https://videojs.com/)), but you will not be able to do so while utilizing the Red5 Pro WebRTC SDK.
 
-> For more information on how to playback HLS in browsers without native support, please refer to the *Using VideoJS for Playback* section of the [Migration Guide](https://www.red5pro.com/docs/streaming/migrationguide.html#migrating-from-350-to-400).
+> For more information on how to playback HLS in browsers without native support, please refer to the *Using VideoJS for Playback* section of the [Migration Guide](https://www.red5.net/docs/streaming/migrationguide.html#migrating-from-350-to-400).
 
 ## Initialization
 
@@ -656,7 +656,7 @@ The `4.0.0` release of the SDK introduces Playback API and Default Controls for 
 
 ## Autoplay Restrictions
 
-In an attempt to provide a more pleasing user experience and reduce data consumption on mobile devices, browsers are continuing to evolve their `autoplay` policies. While generally and attempt to keep websites (read: *ads*) from playing back unwanted and/or unsolicited video and audio, these policies also affect those sites in which the sole intent _is to_ playback video and/or audio - such as from a conference web application built utilizing [Red5 Pro](https://red5pro.com).
+In an attempt to provide a more pleasing user experience and reduce data consumption on mobile devices, browsers are continuing to evolve their `autoplay` policies. While generally and attempt to keep websites (read: *ads*) from playing back unwanted and/or unsolicited video and audio, these policies also affect those sites in which the sole intent _is to_ playback video and/or audio - such as from a conference web application built utilizing [Red5 Pro](https://red5.net).
 
 Naturally, this can cause some confusion and frustration as `autoplay` may have worked as expected prior to latest browser updates. Thankfully, you do have options when using the *Red5 Pro WebRTC SDK* to provide a better user experience.
 

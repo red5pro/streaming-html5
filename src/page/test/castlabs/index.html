@@ -5,11 +5,14 @@
     {{> meta title='castLabs DRM Encrypted Playback'}}
     {{> header-scripts}}
     {{> header-stylesheets}}
+    <!-- Polyfills for non-standard APIs -->
+    <script src="https://jan-ivar.github.io/polyfills/mediastreamtrackprocessor.js"></script>
+    <script src="https://jan-ivar.github.io/polyfills/mediastreamtrackgenerator.js"></script>
     <style>
       .section {
         max-width: unset!important;
       }
-      .container {
+      .playback-container {
         display: flex;
         justify-content: center;
         column-gap: 20px;
@@ -57,7 +60,7 @@
       {{> settings-link}}
       {{> test-info testTitle='castLabs DRM Encrypted Playback'}}
       <div class="stream-section section">
-        <div class="centered container">
+        <div class="centered playback-container">
           <div class="encrypted-playback">
             <div class="centered status-field">
               <p id="encrypted-status-field" class="status-field_status">On hold.</p>
