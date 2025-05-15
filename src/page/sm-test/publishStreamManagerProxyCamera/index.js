@@ -61,63 +61,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var streamTitle = document.getElementById('stream-title')
   var statisticsField = document.getElementById('statistics-field')
   var addressField = document.getElementById('address-field')
+  var cameraSelect = document.getElementById('camera-select')
+  var publishButton = document.getElementById('publish-button')
   var bitrateField = document.getElementById('bitrate-field')
   var packetsField = document.getElementById('packets-field')
   var resolutionField = document.getElementById('resolution-field')
-  var cameraSelect = document.getElementById('camera-select')
-  var publishButton = document.getElementById('publish-button')
-
-  var protocol = serverSettings.protocol
-  var isSecure = protocol == 'https'
-  function getSocketLocationFromProtocol() {
-    return !isSecure
-      ? { protocol: 'ws', port: serverSettings.wsport }
-      : { protocol: 'wss', port: serverSettings.wssport }
-  }
-
-  function getAuthenticationParams() {
-    var auth = configuration.authentication
-    return auth && auth.enabled
-      ? {
-          connectionParams: {
-            username: auth.username,
-            password: auth.password,
-            token: auth.token,
-          },
-        }
-      : {}
-  }
-
-  streamTitle.innerText = configuration.stream1
-  var defaultConfiguration = {
-    protocol: getSocketLocationFromProtocol().protocol,
-    port: getSocketLocationFromProtocol().port,
-    streamMode: configuration.recordBroadcast ? 'record' : 'live',
-    bandwidth: {
-      video: 750,
-    },
-  }
-
-  var mediaConstraints = {
-    video: {
-      width: {
-        exact: 640,
-      },
-      height: {
-        exact: 360,
-      },
-      frameRate: {
-        exact: 24,
-      },
-    },
-    audio: true,
-  }
-
-  const displayServerAddress = (serverAddress, proxyAddress) => {
-    addressField.classList.remove('hidden')
-    proxyAddress = typeof proxyAddress === 'undefined' ? 'N/A' : proxyAddress
-    addressField.innerText = `Proxy Address: ${proxyAddress} | Origin Address: ${serverAddress}`
-  }
 
   var bitrate = 0
   var packetsSent = 0
@@ -142,15 +90,52 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     frameHeight = h
     updateStatistics(bitrate, packetsSent, frameWidth, frameHeight)
   }
+
+  const displayServerAddress = (serverAddress, proxyAddress) => {
+    addressField.classList.remove('hidden')
+    proxyAddress = typeof proxyAddress === 'undefined' ? 'N/A' : proxyAddress
+    addressField.innerText = `Proxy Address: ${proxyAddress} | Origin Address: ${serverAddress}`
+  }
+
+  streamTitle.innerText = configuration.stream1
+
+  var protocol = serverSettings.protocol
+  var isSecure = protocol == 'https'
+  function getSocketLocationFromProtocol() {
+    return !isSecure
+      ? { protocol: 'ws', port: serverSettings.wsport }
+      : { protocol: 'wss', port: serverSettings.wssport }
+  }
+
+  var defaultConfiguration = {
+    protocol: getSocketLocationFromProtocol().protocol,
+    port: getSocketLocationFromProtocol().port,
+    streamMode: configuration.recordBroadcast ? 'record' : 'live'
+  }
+
+  var mediaConstraints = {
+    audio: configuration.useAudio
+      ? configuration.mediaConstraints.audio
+      : false,
+    video: configuration.useVideo ? configuration.mediaConstraints.video : false
+  }
+
   function onPublisherEvent(event) {
-    const { type } = event
-    console.log('[Red5ProPublisher] ' + type + '.')
+    console.log('[Red5ProPublisher] ' + event.type + '.')
     updateStatusFromEvent(event)
-    if (type === 'WebRTC.Endpoint.Changed') {
+    if (event.type === 'WebRTC.Endpoint.Changed') {
       const { host } = configuration
       const { data } = event
       const { endpoint } = data
       displayServerAddress(endpoint, host)
+    } else if (event.type === 'WebRTC.MediaStream.Available') {
+      navigator.mediaDevices.enumerateDevices().then(function (devices) {
+        listDevices(devices)
+        var stream = targetPublisher.getMediaStream()
+        stream.getVideoTracks().forEach(function (track) {
+          cameraSelect.value = track.getSettings().deviceId
+        })
+      })
     }
   }
   function onPublishFail(message) {
@@ -180,6 +165,43 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     publishButton.disabled = false
   }
 
+  function getAuthenticationParams() {
+    var auth = configuration.authentication
+    return auth && auth.enabled
+      ? {
+          connectionParams: {
+            username: auth.username,
+            password: auth.password,
+            token: auth.token
+          }
+        }
+      : {}
+  }
+
+  function onCameraSelect() {
+    if (!configuration.useVideo) {
+      return
+    }
+    var selection = cameraSelect.value
+    if (mediaConstraints.video && typeof mediaConstraints.video !== 'boolean') {
+      mediaConstraints.video.deviceId = { exact: selection }
+      delete mediaConstraints.video.frameRate
+    } else {
+      mediaConstraints.video = {
+        deviceId: { exact: selection }
+      }
+    }
+    updateStatistics(0, 0, 0, 0)
+    statisticsField.classList.add('hidden')
+    unpublish()
+      .then(restart)
+      .catch(function (error) {
+        console.error('[Red5ProPublisher] :: Error in unpublishing - ' + error)
+        restart()
+      })
+    publishButton.disabled = false
+  }
+
   function onDeviceError(error) {
     console.error('Could not access devices: ' + error)
   }
@@ -198,7 +220,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       )
     })
     cameraSelect.innerHTML = options.join(' ')
-    return devices.length > 0 ? cameras[0].deviceId : undefined
   }
 
   function getRegionIfDefined() {
@@ -213,92 +234,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     return undefined
   }
 
-  function establishCameraSelection(selection) {
-    var pubElement = document.getElementById('red5pro-publisher')
-    if (mediaConstraints.video && typeof mediaConstraints.video !== 'boolean') {
-      mediaConstraints.video.deviceId = { exact: selection }
-      delete mediaConstraints.video.frameRate
-    } else {
-      mediaConstraints.video = {
-        deviceId: { exact: selection },
-      }
-    }
-    navigator.mediaDevices
-      .getUserMedia(mediaConstraints)
-      .then(function (mediastream) {
-        pubElement.srcObject = mediastream
-      })
-      .catch(function (error) {
-        console.error(
-          '[Red5ProPublisher] :: Error in media selection - ' + error
-        )
-      })
-    publishButton.disabled = false
-  }
-
-  async function swapCameraSelection(selection) {
-    const connection = targetPublisher.getPeerConnection()
-    if (mediaConstraints.video && typeof mediaConstraints.video !== 'boolean') {
-      mediaConstraints.video.deviceId = { exact: selection }
-      delete mediaConstraints.video.frameRate
-    } else {
-      mediaConstraints.video = {
-        deviceId: { exact: selection },
-      }
-    }
-    mediaConstraints.audio = configuration.useAudio
-      ? configuration.mediaConstraints.audio
-      : false
-    // In the below flag, we originally equated it to being an older Chrome version,
-    //  however, it turns out it was not necessarily just the browser but could also be the Android OS...
-    //  As a result, we stop all tracks for all browsers now before requesting `getUserMedia` again.
-    let requiresTrackStopBeforeGUM = true // Add any other criteria here.
-    const senders = connection.getSenders()
-    if (requiresTrackStopBeforeGUM) {
-      // Note: In some older mobile browsers, it is required to stop all current tracks before requesting
-      // media through `getUserMedia` again.
-      // This has the unfortunate side affect of the video going "black" until new media is accessed.
-      senders.forEach(function (sender) {
-        sender.track.stop()
-      })
-    }
-    // 1. Grab new MediaStream from updated constraints.
-    const stream = await navigator.mediaDevices.getUserMedia(mediaConstraints)
-    // 2. Update the media tracks on senders through connection.
-    let i = senders.length
-    while (--i > -1) {
-      // 3. Replace the currently sending streams based on track kind
-      if (!requiresTrackStopBeforeGUM) {
-        senders[i].track.stop()
-      }
-      if (senders[i].track.kind === 'video') {
-        senders[i].replaceTrack(stream.getVideoTracks()[0])
-      } else {
-        senders[i].replaceTrack(stream.getAudioTracks()[0])
-      }
-    }
-    // 4. Update the video display with new stream.
-    document.getElementById('red5pro-publisher').srcObject = stream
-  }
-
-  function onCameraSelect(selection) {
-    if (!configuration.useVideo) {
-      return
-    }
-
-    if (targetPublisher && targetPublisher.getPeerConnection()) {
-      // Already established broadcast. Swap camera live.
-      try {
-        swapCameraSelection(selection)
-      } catch (e) {
-        console.error(`Could not replace camera: ${e.message}`)
-      }
-    } else {
-      // Else we just need to replace selection prior to broadcast.
-      establishCameraSelection(selection)
-    }
-  }
-
   const getConfiguration = () => {
     const {
       host,
@@ -306,7 +241,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       stream1,
       streamManagerAPI,
       preferWhipWhep,
-      streamManagerNodeGroup: nodeGroup,
+      streamManagerNodeGroup: nodeGroup
     } = configuration
     const { protocol, port } = getSocketLocationFromProtocol()
 
@@ -314,7 +249,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     const params = region
       ? {
           region,
-          strict: true,
+          strict: true
         }
       : undefined
 
@@ -335,78 +270,132 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       streamName: stream1,
       connectionParams: {
         ...connectionParams,
-        nodeGroup,
-      },
+        nodeGroup
+      }
     }
     return rtcConfig
   }
 
-  const startPublish = async () => {
-    try {
-      const pubElement = document.getElementById('red5pro-publisher')
-      const { RTCPublisher, WHIPClient } = red5prosdk
-      const { preferWhipWhep, stream1 } = configuration
-      const config = getConfiguration()
-      const publisher = preferWhipWhep ? new WHIPClient() : new RTCPublisher()
-      publisher.on('*', onPublisherEvent)
-      await publisher.initWithStream(config, pubElement.srcObject)
-      await publisher.publish()
-      onPublishSuccess(publisher)
-      streamTitle.innerText = stream1
-      targetPublisher = publisher
-    } catch (error) {
-      var jsonError =
-        typeof error === 'string' ? error : JSON.stringify(error, null, 2)
-      console.error(
-        '[Red5ProPublisher] :: Error in access of Origin IP: ' + jsonError
-      )
-      updateStatusFromEvent({
-        type: red5prosdk.PublisherEventTypes.CONNECT_FAILURE,
+  function startPublishSession() {
+    targetPublisher
+      .publish()
+      .then(function () {
+        onPublishSuccess(targetPublisher)
       })
-      onPublishFail(jsonError)
-    }
+      .catch(function (error) {
+        var jsonError =
+          typeof error === 'string' ? error : JSON.stringify(error, null, 2)
+        console.error(
+          '[Red5ProPublisher] :: Error in publishing - ' + jsonError
+        )
+        onPublishFail(jsonError)
+      })
+    return true
   }
 
-  const unpublish = async () => {
-    try {
-      const publisher = targetPublisher
-      await publisher.unpublish()
-      onUnpublishSuccess()
-    } catch (error) {
-      var jsonError =
-        typeof error === 'string' ? error : JSON.stringify(error, 2, null)
-      onUnpublishFail('Unmount Error ' + jsonError)
-      throw error
+  function determinePublisher() {
+    const { preferWhipWhep } = configuration
+    const { WHIPClient, RTCPublisher } = red5prosdk
+    var rtcConfig = {
+      ...getConfiguration(),
+      ...{
+        onGetUserMedia: function () {
+          return new Promise(function (resolve, reject) {
+            if (targetPublisher && targetPublisher.getMediaStream()) {
+              targetPublisher
+                .getMediaStream()
+                .getTracks()
+                .forEach(function (track) {
+                  track.stop()
+                })
+            }
+            var stream
+            var constraints = mediaConstraints
+            navigator.mediaDevices
+              .getUserMedia(constraints)
+              .then(function (mediastream) {
+                stream = mediastream
+                return navigator.mediaDevices.enumerateDevices()
+              })
+              .then(function (devices) {
+                listDevices(devices)
+                stream.getVideoTracks().forEach(function (track) {
+                  cameraSelect.value = track.getSettings().deviceId
+                })
+                resolve(stream)
+              })
+              .catch(function (error) {
+                reject(error)
+              })
+          })
+        }
+      }
     }
+    const publisher = preferWhipWhep ? new WHIPClient() : new RTCPublisher()
+    return publisher.init(rtcConfig)
   }
 
-  let shuttingDown = false
-  const shutdown = async () => {
+  function unpublish() {
+    return new Promise(function (resolve, reject) {
+      if (targetPublisher) {
+        targetPublisher.off('*', onPublisherEvent)
+        targetPublisher
+          .unpublish()
+          .then(function () {
+            onUnpublishSuccess()
+            resolve()
+          })
+          .catch(function (error) {
+            var jsonError =
+              typeof error === 'string' ? error : JSON.stringify(error, 2, null)
+            onUnpublishFail('Unmount Error ' + jsonError)
+            reject(error)
+          })
+      } else {
+        resolve()
+      }
+    })
+  }
+
+  function restart() {
+    determinePublisher()
+      .then(function (publisher) {
+        targetPublisher = publisher
+        targetPublisher.on('*', onPublisherEvent)
+        streamTitle.innerText = configuration.stream1
+        publishButton.disabled = false
+      })
+      .catch(function (error) {
+        console.error('Could not access devices: ' + error.message)
+      })
+  }
+
+  navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then(() => {
+    navigator.mediaDevices
+      .enumerateDevices()
+      .then(listDevices)
+      .catch(onDeviceError)
+  })
+  restart()
+
+  cameraSelect.addEventListener('change', function () {
+    onCameraSelect(cameraSelect.value)
+  })
+  publishButton.addEventListener('click', startPublishSession)
+
+  var shuttingDown = false
+  function shutdown() {
     if (shuttingDown) return
     shuttingDown = true
-    try {
-      await unpublish()
-    } catch (e) {
-      console.error(e)
-    } finally {
+    function clearRefs() {
       if (targetPublisher) {
         targetPublisher.off('*', onPublisherEvent)
       }
       targetPublisher = undefined
     }
+    unpublish().then(clearRefs).catch(clearRefs)
     window.untrackBitrate()
   }
   window.addEventListener('pagehide', shutdown)
   window.addEventListener('beforeunload', shutdown)
-
-  navigator.mediaDevices
-    .enumerateDevices()
-    .then(listDevices)
-    .then(onCameraSelect)
-    .catch(onDeviceError)
-
-  cameraSelect.addEventListener('change', function () {
-    onCameraSelect(cameraSelect.value)
-  })
-  publishButton.addEventListener('click', startPublish)
 })(this, document, window.red5prosdk)

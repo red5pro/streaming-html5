@@ -28,7 +28,7 @@ import {
   rtcDrmGetVersion,
   rtcDrmEnvironments,
   rtcDrmConfigure,
-  rtcDrmOnTrack,
+  rtcDrmOnTrack
 } from '../../lib/castlabs/rtc-drm-transform/rtc-drm-transform.min.js'
 
 var configuration = (function () {
@@ -43,6 +43,14 @@ var configuration = (function () {
   return {}
 })()
 
+const urlParams = new URLSearchParams(window.location.search)
+if (urlParams.get('host')) {
+  configuration.host = urlParams.get('host')
+}
+if (urlParams.get('streamName')) {
+  configuration.stream1 = urlParams.get('streamName')
+}
+
 red5prosdk.setLogLevel(
   configuration.verboseLogging
     ? red5prosdk.LOG_LEVELS.TRACE
@@ -52,18 +60,18 @@ red5prosdk.setLogLevel(
 const DecryptMode = Object.freeze({
   InPlace: 0,
   ClearKey: 1,
-  ProdDrm: 2,
+  ProdDrm: 2
 })
 
-const toggleProdDrmFields = (show) => {
+const toggleProdDrmFields = show => {
   const prodDrmFields = document.querySelectorAll('.prod-drm-field')
-  prodDrmFields.forEach((field) => {
+  prodDrmFields.forEach(field => {
     field.classList.toggle('hidden', !show)
   })
 }
 
 const decryptionModeSelect = document.querySelector('#decrypt-select')
-decryptionModeSelect.addEventListener('change', (e) => {
+decryptionModeSelect.addEventListener('change', e => {
   const { value } = e.target
   toggleProdDrmFields(parseInt(value, 10) === DecryptMode.ProdDrm)
 })
@@ -71,7 +79,7 @@ toggleProdDrmFields(
   1 + decryptionModeSelect.selectedIndex === DecryptMode.ProdDrm
 )
 
-const getPortAndProtocol = (host) => {
+const getPortAndProtocol = host => {
   let ipReg = /^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/
   let localhostReg = /^localhost.*/
   let isIPOrLocalhost = ipReg.exec(host) || localhostReg.exec(host)
@@ -80,7 +88,7 @@ const getPortAndProtocol = (host) => {
   return { port, protocol }
 }
 
-const getValueFromId = (id) => {
+const getValueFromId = id => {
   try {
     const el = document.querySelector(`#${id}`)
     return el ? el.value : undefined
@@ -90,13 +98,13 @@ const getValueFromId = (id) => {
   return undefined
 }
 
-const Uint8ArrayFromHex = (hex) => {
+const Uint8ArrayFromHex = hex => {
   if (!hex) return null
   if (hex.length % 2 !== 0) {
     console.error(`Malformed hex string (${hex}), odd length`)
     return null
   }
-  return Uint8Array.from(hex.match(/.{1,2}/g).map((byte) => parseInt(byte, 16)))
+  return Uint8Array.from(hex.match(/.{1,2}/g).map(byte => parseInt(byte, 16)))
 }
 
 const getPlatform = () => {
@@ -116,8 +124,8 @@ const getAuthenticationParams = () => {
         connectionParams: {
           username: auth.username,
           password: auth.password,
-          token: auth.token,
-        },
+          token: auth.token
+        }
       }
     : {}
 }
@@ -159,13 +167,13 @@ const baseConfig = {
     // difference at all atm: https://bugs.chromium.org/p/chromium/issues/detail?id=904764
     // https://source.chromium.org/chromium/chromium/src/+/main:third_party/blink/renderer/modules/peerconnection/rtc_configuration.idl;l=51
     rtcAudioJitterBufferMaxPackets: 10,
-    rtcAudioJitterBufferFastAccelerate: true,
-  },
+    rtcAudioJitterBufferFastAccelerate: true
+  }
 }
 document.querySelector('#stream-title').innerText = baseConfig.streamName
 
 const monitorBitrate = (pc, bitrateField, packetsField, resolutionField) => {
-  return trackBitrate(
+  return window.trackBitrate(
     pc,
     (b, p) => {
       bitrateField.innerText = b === 0 ? 'N/A' : Math.floor(b)
@@ -194,7 +202,7 @@ const monitor = (sub, typePrefix) => {
 const eventExclusions = [
   'Subscribe.Time.Update',
   'Subscribe.Playback.Change',
-  'Subscribe.Volume.Change',
+  'Subscribe.Volume.Change'
 ]
 const statusExclusions = [
   ...eventExclusions,
@@ -203,9 +211,9 @@ const statusExclusions = [
   'WebRTC.DataChannel.Available',
   'MessageTransport.Change',
   'Subscribe.VideoDimensions.Change',
-  'Subscribe.Autoplay.Muted',
+  'Subscribe.Autoplay.Muted'
 ]
-const onEncryptedSubscriberEvent = (event) => {
+const onEncryptedSubscriberEvent = event => {
   const { type } = event
   if (eventExclusions.indexOf(type) > -1) return
   console.log(`[Subscriber::Encrypted] ${type}`)
@@ -221,7 +229,7 @@ const onEncryptedSubscriberEvent = (event) => {
   }
 }
 
-const onDecryptedSubscriberEvent = (event) => {
+const onDecryptedSubscriberEvent = event => {
   const { type } = event
   if (eventExclusions.indexOf(type) > -1) return
   console.log(`[Subscriber::Decrypted] ${type}`)
@@ -248,14 +256,14 @@ const getConfiguration = (
     stream1,
     streamManagerAPI,
     preferWhipWhep,
-    streamManagerNodeGroup: nodeGroup,
+    streamManagerNodeGroup: nodeGroup
   } = baseConfig
 
   const region = getRegionIfDefined()
   const params = region
     ? {
         region,
-        strict: true,
+        strict: true
       }
     : undefined
   const preferSocket = forceSocketClient || !preferWhipWhep
@@ -283,19 +291,19 @@ const getConfiguration = (
     mediaElementId,
     rtcConfiguration: {
       ...baseConfig.rtcConfiguration,
-      encodedInsertableStreams: insertableStream,
+      encodedInsertableStreams: insertableStream
     },
     connectionParams: preferWhipWhep
       ? {
           ...connectionParams,
-          nodeGroup,
+          nodeGroup
         }
       : {
           ...connectionParams,
           nodeGroup,
           host,
-          app,
-        },
+          app
+        }
   }
   return rtcConfig
 }
@@ -309,7 +317,7 @@ const encryptedPlayback = async () => {
       ? new WHEPClient()
       : new RTCSubscriber()
     await encryptedSubscriber.init(config)
-    encryptedSubscriber.on('*', (event) => onEncryptedSubscriberEvent(event))
+    encryptedSubscriber.on('*', event => onEncryptedSubscriberEvent(event))
     await encryptedSubscriber.subscribe()
 
     // UI.
@@ -334,22 +342,34 @@ const decryptPlayback = async () => {
 
     let platform = getPlatform()
     const requestProdDRM =
-      decryptionModeSelect.selectedIndex === DecryptMode.ProdDrm
+      parseInt(decryptionModeSelect.value, 10) === DecryptMode.ProdDrm
     let video = {
       codec: 'H264',
       encryption: encryption.toUpperCase() === 'CTR' ? 'cenc' : 'cbcs',
       keyId: requestProdDRM ? keyId : undefined,
       iv: requestProdDRM ? iv : undefined,
-      robustness: platform === 'Android' ? 'HW' : undefined,
+      robustness: platform === 'Android' ? 'HW' : undefined
+    }
+    let crt = {
+      profile: {
+        purchase: {}
+      },
+      outputProtection: {
+        digital: true,
+        analogue: true,
+        enforce: false
+      }
     }
     let drmConfig = {
       environment: rtcDrmEnvironments.Staging,
       merchant: getValueFromId('merchant-input'),
       videoElement: element,
       video,
+      sessionId: `crtjson:${JSON.stringify(crt)}`,
+      logLevel: 4
     }
 
-    drmConfig.videoElement.addEventListener('rtcdrmerror', (event) => {
+    drmConfig.videoElement.addEventListener('rtcdrmerror', event => {
       alert(`DRM error: ${event.detail.message}`)
     })
     rtcDrmConfigure(drmConfig)
@@ -360,9 +380,9 @@ const decryptPlayback = async () => {
     subscriber.on('WebRTC.PeerConnection.Available', () => {
       // Listen for ontrack event to get the decrypted stream.
       const pc = subscriber.getPeerConnection()
-      pc.ontrack = (e) => rtcDrmOnTrack(e)
+      pc.ontrack = e => rtcDrmOnTrack(e, drmConfig)
     })
-    subscriber.on('*', (event) => onDecryptedSubscriberEvent(event))
+    subscriber.on('*', event => onDecryptedSubscriberEvent(event))
     await subscriber.subscribe()
 
     // UI.
