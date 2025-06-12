@@ -661,7 +661,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. -->
 
           let lastResult
           interval = setInterval(() => {
-            subscriber.getStats((stats) => {
               connection.getStats(null).then((res) => {
                 res.forEach((report) => {
                   let bytes
@@ -711,7 +710,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. -->
               }).catch(err => {
                 console.error(err)
               })
-            })
           }, 1000)
         }
 
