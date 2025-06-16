@@ -419,20 +419,72 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
    * Find the Origin IP address for a given stream
    */
   const getOriginForStream = async (host, version, nodeGroup, streamGuid) => {
-    // aggregate=true -- will return only one server, the publishing origin
-    let url = `https://${host}/as/${version}/streams/stream/${nodeGroup}/stream/${streamGuid}?aggregate=true`
-    console.log('getOriginForStream URL: ' + url)
-    const result = await fetch(url)
-    if (!result.ok) {
-      const text = await result.text()
-      throw new Error(text)
+    try {
+      // Validate input parameters
+      if (!host || !version || !nodeGroup || !streamGuid) {
+        const missingParams = []
+        if (!host) missingParams.push('host')
+        if (!version) missingParams.push('version')
+        if (!nodeGroup) missingParams.push('nodeGroup')
+        if (!streamGuid) missingParams.push('streamGuid')
+        console.error('getOriginForStream: Missing required parameters:', missingParams.join(', '))
+        return { errorMessage: `Missing required parameters: ${missingParams.join(', ')}` }
+      }
+
+      // aggregate=true -- will return only one server, the publishing origin
+      let url = `https://${host}/as/${version}/streams/stream/${nodeGroup}/stream/${streamGuid}?aggregate=true`
+      console.log('getOriginForStream URL: ' + url)
+      
+      const result = await fetch(url)
+      if (!result.ok) {
+        const text = await result.text()
+        console.error(`getOriginForStream: HTTP ${result.status} ${result.statusText}:`, text)
+        return { errorMessage: `HTTP ${result.status}: ${text || result.statusText}` }
+      }
+      
+      let json
+      try {
+        json = await result.json()
+      } catch (parseError) {
+        console.error('getOriginForStream: Failed to parse JSON response:', parseError.message)
+        return { errorMessage: `Failed to parse server response: ${parseError.message}` }
+      }
+      
+      if (!Array.isArray(json)) {
+        console.error('getOriginForStream: Invalid response format - expected array, got:', typeof json, json)
+        return { errorMessage: 'Invalid response format from server - expected array of nodes' }
+      }
+      
+      if (json.length === 0) {
+        console.error('getOriginForStream: No PUBLISH nodes found.')
+        return { errorMessage: 'No PUBLISH nodes found.' }
+      }
+      
+      let selectedNode
+      if (json.length === 1) {
+        // Edge case: if only one node, select it regardless of role
+        selectedNode = json[0]
+        console.log('getOriginForStream: Single node found, selecting regardless of role:', selectedNode.nodeRole)
+      } else {
+        // Multiple nodes: look for origin role
+        selectedNode = json.find((node) => node.nodeRole === 'origin')
+        if (!selectedNode) {
+          console.error('getOriginForStream: No origin node found.')
+          return { errorMessage: 'No origin node found.' }
+        }
+      }
+      
+      if (!selectedNode.serverAddress) {
+        console.error('getOriginForStream: Selected node missing serverAddress:', selectedNode)
+        return { errorMessage: 'Selected node missing serverAddress' }
+      }
+      
+      console.log('getOriginForStream() SUCCESS! result: ' + selectedNode.serverAddress)
+      return selectedNode.serverAddress
+    } catch (error) {
+      console.error('getOriginForStream: Unexpected error:', error.message, error)
+      return { errorMessage: `Unexpected error occurred: ${error.message}` }
     }
-    const json = await result.json()
-    const serverAddress = json.find(
-      (node) => node.nodeRole === 'origin'
-    ).serverAddress // it's always an array of one item (or an error)
-    console.log('getOriginForStream() SUCCESS! result: ' + serverAddress)
-    return serverAddress
   }
 
   /**
@@ -542,23 +594,73 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   const forwardPost = async (host, version, forwardURI, data) => {
-    let url = `https://${host}/as/${version}/proxy/forward/?target=${encodeURIComponent(
-      forwardURI
-    )}`
-    const result = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: typeof data === 'string' ? data : JSON.stringify(data),
-    })
+    try {
+      // Validate input parameters
+      if (!host || !version || !forwardURI) {
+        const missingParams = []
+        if (!host) missingParams.push('host')
+        if (!version) missingParams.push('version')
+        if (!forwardURI) missingParams.push('forwardURI')
+        console.error('forwardPost: Missing required parameters:', missingParams.join(', '))
+        return { errorMessage: `Missing required parameters: ${missingParams.join(', ')}` }
+      }
 
-    // note: the response may be empty string, or other non json response.
-    const json = await result.json()
-    if (json && json.errorMessage) {
-      throw new Error(json.errorMessage)
+      let url = `https://${host}/as/${version}/proxy/forward/?target=${encodeURIComponent(
+        forwardURI
+      )}`
+      console.log('forwardPost URL: ' + url)
+      
+      let body
+      try {
+        body = typeof data === 'string' ? data : JSON.stringify(data)
+      } catch (stringifyError) {
+        console.error('forwardPost: Failed to stringify data:', stringifyError.message)
+        return { errorMessage: `Failed to stringify request data: ${stringifyError.message}` }
+      }
+      
+      const result = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: body,
+      })
+
+      if (!result.ok) {
+        const text = await result.text()
+        console.error(`forwardPost: HTTP ${result.status} ${result.statusText}:`, text)
+        return { errorMessage: `HTTP ${result.status}: ${text || result.statusText}` }
+      }
+
+      // Check if there's content to parse
+      const contentType = result.headers.get('content-type')
+      if (!contentType || !contentType.includes('application/json')) {
+        // Handle non-JSON responses
+        const textResponse = await result.text()
+        console.log('forwardPost: Received non-JSON response, returning as text')
+        return textResponse
+      }
+
+      let json
+      try {
+        // note: the response may be empty string, or other non json response.
+        json = await result.json()
+      } catch (parseError) {
+        console.error('forwardPost: Failed to parse JSON response:', parseError.message)
+        return { errorMessage: `Failed to parse server response: ${parseError.message}` }
+      }
+      
+      if (json && json.errorMessage) {
+        console.error('forwardPost: Server returned error:', json.errorMessage)
+        return { errorMessage: json.errorMessage }
+      }
+      
+      console.log('forwardPost() SUCCESS!')
+      return json
+    } catch (error) {
+      console.error('forwardPost: Unexpected error:', error.message, error)
+      return { errorMessage: `Unexpected error occurred: ${error.message}` }
     }
-    return json
   }
 
   const forwardPostWithResult = async (host, version, forwardURI, data) => {
