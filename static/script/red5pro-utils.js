@@ -171,7 +171,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     if (withTicket) {
       var ticket = [
         'bitrateTicket',
-        Math.floor(Math.random() * 0x10000).toString(16),
+        Math.floor(Math.random() * 0x10000).toString(16)
       ].join('-')
       bitrateTickets[ticket] = t
       t.start()
@@ -238,11 +238,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       if (requiresStreamManager) {
         return (
           json.filter(
-            (stream) => stream.name === streamName && stream.type === 'edge'
+            stream => stream.name === streamName && stream.type === 'edge'
           ).length > 0
         )
       } else {
-        return json.filter((stream) => stream.name === streamName).length > 0
+        return json.filter(stream => stream.name === streamName).length > 0
       }
     } catch (e) {
       console.error(e)
@@ -253,7 +253,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   /**
    * Returns the stream listing on the server.
    */
-  const getCompleteStreamList = async (url) => {
+  const getCompleteStreamList = async url => {
     let payload
     let streamList
     const response = await fetch(url)
@@ -300,7 +300,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
    */
   const getStreamList = async (url, scope) => {
     const list = await getCompleteStreamList(url)
-    const filtered = list.filter((item) => {
+    const filtered = list.filter(item => {
       return item.scope === scope && item.type === 'edge'
     })
     return filtered
@@ -322,8 +322,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         credentials: 'include',
         headers: {
           Authorization: token,
-          'Content-Type': 'application/json',
-        },
+          'Content-Type': 'application/json'
+        }
       })
 
       console.log('Authenticate response: ' + response.status)
@@ -429,7 +429,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
     const json = await result.json()
     const serverAddress = json.find(
-      (node) => node.nodeRole === 'origin'
+      node => node.nodeRole === 'origin'
     ).serverAddress // it's always an array of one item (or an error)
     console.log('getOriginForStream() SUCCESS! result: ' + serverAddress)
     return serverAddress
@@ -458,9 +458,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       credentials: 'include',
       headers: {
         Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/json'
       },
-      body,
+      body
     })
     if (result.status >= 200 && result.status < 300) {
       try {
@@ -498,8 +498,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       credentials: 'include',
       headers: {
         Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
+        'Content-Type': 'application/json'
+      }
     })
     if (result.status >= 200 && result.status < 300) {
       try {
@@ -531,14 +531,22 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     const result = await fetch(url, {
       method,
       headers: {
-        'Content-Type': 'application/json',
-      },
+        'Content-Type': 'application/json'
+      }
     })
-    const json = await result.json()
-    if (json && json.errorMessage) {
-      throw new Error(json.errorMessage)
+
+    // note: the response may be empty string, or other non json response.
+    try {
+      const json = await result.json()
+      if (json && json.errorMessage) {
+        throw new Error(json.errorMessage)
+      }
+      return json
+    } catch (e) {
+      console.warn('Forward response JSON parse failed: ' + e.message)
+      // if the response is not JSON, return the text.
     }
-    return json
+    return true
   }
 
   const forwardPost = async (host, version, forwardURI, data) => {
@@ -548,17 +556,23 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     const result = await fetch(url, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/json'
       },
-      body: typeof data === 'string' ? data : JSON.stringify(data),
+      body: typeof data === 'string' ? data : JSON.stringify(data)
     })
 
     // note: the response may be empty string, or other non json response.
-    const json = await result.json()
-    if (json && json.errorMessage) {
-      throw new Error(json.errorMessage)
+    try {
+      const json = await result.json()
+      if (json && json.errorMessage) {
+        throw new Error(json.errorMessage)
+      }
+      return json
+    } catch (e) {
+      console.warn('Forward response JSON parse failed: ' + e.message)
+      // if the response is not JSON, return the text.
     }
-    return json
+    return true
   }
 
   const forwardPostWithResult = async (host, version, forwardURI, data) => {
@@ -568,9 +582,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     return await fetch(url, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/json'
       },
-      body: typeof data === 'string' ? data : JSON.stringify(data),
+      body: typeof data === 'string' ? data : JSON.stringify(data)
     })
   }
 
@@ -587,7 +601,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     forward,
     forwardPost,
     forwardPostWithResult,
-    getForwardRequestURL,
+    getForwardRequestURL
   }
 
   window.getStreamList = getCompleteStreamList
