@@ -35,6 +35,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   const auth =
     enableAuth === 'true'
       ? {
+          enabled: true,
           username: params.get('authUsername'),
           password: params.get('authPassword'),
           token: params.get('authToken')
