@@ -1,5 +1,15 @@
 # Changes
 
+## 14.3.0
+
+- fix: viewless subscriber/whep response to metadata (Todd Anderson)
+
+## 14.2.0
+
+- fix: viewless subscriber and websocket signaling. (Todd Anderson)
+- feat: sending publish resolution on SDP. (Todd Anderson)
+- fix: transport type query paramms on whip/whep (Todd Anderson)
+
 ## 14.0.0
 
 - fix: publish codec listings. (Todd Anderson)
