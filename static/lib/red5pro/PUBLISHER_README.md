@@ -95,7 +95,8 @@ _It is *highly* recommended to include [adapter.js](https://github.com/webrtcHac
 | forceVP8 | [-] | `false` | Flag to force VP8 as the encoder for the outgoing stream. _Marked for Deprecation._ |
 | videoEncoding | [-] | `undefined` | `PublishVideoEncoder` enum: `VP8` | `H264` | `H265` . _Replacement of `forceVP8`._ |
 | audioEncoding | [-] | `undefined` | `PublishAudioEncoder` enum. |
-| endpoint | [-] | `undefined` | The full URL of the endpoint to stream to. **This is primarily used in Stream Manager 2.0 integration for clients.** [Refer to the Stream Manager 2.0 Section](#stream-manager-20)
+| endpoint | [-] | `undefined` | The full URL of the endpoint to stream to. **This is primarily used in Stream Manager 2.0 integration for clients.** [Refer to the Stream Manager 2.0 Section](#stream-manager-20) |
+| offerSDPResolution | [-] | `false` | Request to send the initial resolution on the SDP offer in an attribute line with the following format: `a=framesize:${width}-${height}` |
 
 ## WebRTC Example
 
