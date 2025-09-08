@@ -131,6 +131,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   // Local lifecycle notifications.
   const onSubscriberEvent = (event) => {
     const { type, data } = event
+    if (type === 'Subscribe.Time.Update') {
+      return
+    }
     console.log(`[Red5ProSubscriber] ${type}.`)
     updateStatusFromEvent(event)
     if (type === 'Subscribe.VideoDimensions.Change') {

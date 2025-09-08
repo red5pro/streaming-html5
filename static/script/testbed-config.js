@@ -82,8 +82,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         audio: 56,
         video: 750,
       },
-      signalingSocketOnly: true,
-      enableChannelSignaling: true, // WHIP/WHEP specific
+      includeDataChannel: true, // Whether to include data channel when publishing
       disableProxy: true, // WHIP/WHEP specific
       trickleIce: true, // Flag to use trickle ice to send candidates
       keyFramerate: 3000,

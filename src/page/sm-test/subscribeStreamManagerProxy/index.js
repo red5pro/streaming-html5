@@ -77,8 +77,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   const resolutionField = document.getElementById('resolution-field')
   const addressField = document.getElementById('address-field')
   const protocol = proxyLocal ? 'https' : serverSettings.protocol
-  const isSecure =
-    protocol === 'https' || window.location.hostname === 'localhost'
+  const isSecure = true
+  // protocol === 'https' || window.location.hostname === 'localhost'
 
   let bitrate = 0
   let packetsReceived = 0

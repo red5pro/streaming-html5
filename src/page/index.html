@@ -68,7 +68,6 @@
         <label class="settings-label">Stream2 Name:</label>
         <input id="stream2-field" name="stream2-field" value="stream2">
       </p>
-      <hr class="paddedHR" />
       <p class="settings-field settings-collapsable">
         <label class="settings-label" for="level-input">Level:</label>
         <select id="level-input" name="level-input">
@@ -79,24 +78,8 @@
           <option value="ERROR">ERROR</option>
         </select>
       </p>
+      <hr class="paddedHR" />
       <h2 class="centered">WebRTC Specific</h2>
-      <div>
-        <p class="settings-field settings-collapsable settings-field-row">
-          <label class="settings-label">Use WHIP/WHEP Clients&ast;:</label>
-          <input type="checkbox" id="whipwhep-field" style="vertical-align: middle;" checked>
-        </p>
-        <p class="settings-field settings-collapsable settings-field-row">
-          <label class="settings-label">Force Session-Host:</label>
-          <input type="checkbox" id="session-host-field" style="vertical-align: middle;" checked>
-        </p>
-        <p class="settings-field settings-collapsable settings-field-row">
-          <label class="settings-label">Trickle ICE Candidates:</label>
-          <input type="checkbox" id="trickle-field" style="vertical-align: middle;" checked disabled>
-        </p>
-        <p class="settings-info">&ast;Enabling this will prefer the initial ICE negotiation to be done over HTTP/S.</p>
-        <p class="settings-info">More information about <a target="_blank" href="https://www.ietf.org/archive/id/draft-ietf-wish-whip-01.html">WHIP</a> and <a target="_blank" href="https://www.ietf.org/id/draft-murillo-whep-02.html">WHEP</a>.</a></p>
-      </div>
-      <br>
       <p class="settings-field settings-collapsable">
         <label class="settings-label">ICE server:</label>
         <input id="ice-field" name="ice-field" value="stun:stun2.l.google.com:19302">
@@ -146,8 +129,8 @@
         </select>
       </p>
       <p class="settings-field settings-collapsable  settings-field-row">
-        <label class="settings-label">Switch to Data Channel After Connection:</label>
-        <input type="checkbox" id="rtc-signal-socket-field" style="vertical-align: middle;">
+        <label class="settings-label">Enable Data Channel For Messaging:</label>
+        <input type="checkbox" id="rtc-signal-socket-field" style="vertical-align: middle;" checked>
       </p>
       <hr class="paddedHR" />
       <h2 class="centered">Stream Manager Specific</h2>
@@ -247,7 +230,21 @@
 
       console.log('Settings:\r\n' + JSON.stringify(configuration, null, 2));
 
+      const validIP =
+  /^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/
+      const localhost = /^localhost/
+      const isLocalhostOrIP = (address) => {
+        return address.match(validIP) || address.match(localhost)
+      }
       function seal(config) {
+        const { host } = config;
+        if (isLocalhostOrIP(host)) {
+          config.protocol = 'http'
+          config.port = 5080
+        } else {
+          config.protocol = 'https'
+          config.port = 443
+        }
         sessionStorage.setItem('r5proTestBed', JSON.stringify(config));
       }
 
@@ -265,9 +262,6 @@
       var rtcTransportPolicySelect = document.getElementById('rtc-transport-policy');
       var rtcpMuxPolicySelect = document.getElementById('rtc-mux-policy');
       var rtcSignalSocketField = document.getElementById('rtc-signal-socket-field');
-      var whipWhepField = document.getElementById('whipwhep-field');
-      var sessionHostField = document.getElementById('session-host-field');
-      var trickleField = document.getElementById('trickle-field');
       var loggingField = document.getElementById('logging-field');
       var recordField = document.getElementById('record-field');
       var videoField = document.getElementById('video-active-field');
@@ -385,22 +379,9 @@
         seal(configuration);
       });
       rtcSignalSocketField.addEventListener('change', function () {
-        configuration.signalingSocketOnly = rtcSignalSocketField.checked;
-        configuration.enableChannelSignaling = rtcSignalSocketField.checked;
+        configuration.includeDataChannel = rtcSignalSocketField.checked;
         seal(configuration);
       });
-      whipWhepField.addEventListener('change', () => {
-        configuration.preferWhipWhep = whipWhepField.checked;
-        seal(configuration);
-      })
-      sessionHostField.addEventListener('change', () => {
-        configuration.disableProxy = sessionHostField.checked;
-        seal(configuration);
-      })
-      trickleField.addEventListener('change', () => {
-        configuration.trickleIce = trickleField.checked;
-        seal(configuration);
-      })
 
       authEnabledField.addEventListener('change', function () {
         configuration.authentication.enabled = authEnabledField.checked;
@@ -528,10 +509,7 @@
         iceUsername.value = config.rtcConfiguration.iceServers[0].username || '';
         iceCredential.value = config.rtcConfiguration.iceServers[0].credential || '';
         rtcCandidatePoolSize.value = config.rtcConfiguration.iceCandidatePoolSize || 0;
-        rtcSignalSocketField.checked = config.signalingSocketOnly;
-        whipWhepField.checked = config.preferWhipWhep || false;
-        sessionHostField.checked = config.disableProxy || false;
-        trickleField.checked = config.trickleIce || false;
+        rtcSignalSocketField.checked = config.includeDataChannel ? true : false;
         loggingField.checked = config.verboseLogging ? true : false;
         recordField.checked = config.recordBroadcast ? true : false;
         videoField.checked = config.useVideo ? true : false;

@@ -66,8 +66,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   const resolutionField = document.getElementById('resolution-field')
 
   const protocol = serverSettings.protocol
-  const isSecure =
-    protocol == 'https' || window.location.hostname === 'localhost'
+  const isSecure = true
+  // protocol == 'https' || window.location.hostname === 'localhost'
   function getSocketLocationFromProtocol() {
     return !isSecure
       ? { protocol: 'ws', port: serverSettings.wsport }

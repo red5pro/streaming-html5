@@ -326,12 +326,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   function recieveList(listIn) {
     var found = false
     for (var i = listIn.length - 1; i >= 0; i--) {
-      found = listIn[i].name == configuration.stream2
+      found = listIn[i].name == configuration.stream1
       if (found) break
     }
 
     if (found) {
-      startSubscribing()
+      startSubscribing(configuration.stream1)
     } else {
       setWaitTime()
     }
@@ -346,11 +346,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     setTimeout(beginStreamListCall, 5000)
   }
 
-  function startSubscribing() {
+  function startSubscribing(streamName) {
     // Kick off.
-    determineSubscriber()
+    determineSubscriber(streamName)
       .then(function (subscriberImpl) {
-        subStreamTitle.innerText = configuration.stream2
+        subStreamTitle.innerText = streamName
         targetSubscriber = subscriberImpl
         // Subscribe to events.
         targetSubscriber.on('*', onSubscriberEvent)
@@ -369,7 +369,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       })
   }
 
-  function determineSubscriber() {
+  function determineSubscriber(streamName) {
     var rtcConfig = Object.assign(
       {},
       {},
@@ -380,7 +380,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         protocol: getSocketLocationFromProtocol().protocol,
         port: getSocketLocationFromProtocol().port,
         subscriptionId: 'subscriber-' + instanceId,
-        streamName: configuration.stream2,
+        streamName,
       }
     )
 

@@ -480,65 +480,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. -->
           red5prosdk.setLogLevel('error')
         }
 
-        // Request the origin server from Stream Manager.
-        function requestOrigin(
-          protocol,
-          port,
-          host,
-          app,
-          streamName,
-          isSecure
-        ) {
-          if (preferWhipWhep) {
-            return Promise.resolve(host)
-          }
-          var portURI = port.length > 0 ? ':' + port : ''
-          var baseUrl = isSecure
-            ? protocol + '://' + host
-            : protocol + '://' + host + portURI
-          var url =
-            baseUrl +
-            '/streammanager/api/4.0/event/' +
-            app +
-            '/' +
-            streamName +
-            '?action=broadcast'
-          return new Promise(function (resolve, reject) {
-            fetch(url)
-              .then(function (res) {
-                if (
-                  res.headers.get('content-type') &&
-                  res.headers
-                    .get('content-type')
-                    .toLowerCase()
-                    .indexOf('application/json') >= 0
-                ) {
-                  return res.json()
-                } else {
-                  throw new TypeError('Could not properly parse response.')
-                }
-              })
-              .then(function (json) {
-                if (json.errorMessage) {
-                  throw new Error(json.errorMessage)
-                } else {
-                  resolve(json.serverAddress)
-                }
-              })
-              .catch(function (error) {
-                var jsonError =
-                  typeof error === 'string'
-                    ? error
-                    : JSON.stringify(error, null, 2)
-                console.error(
-                  '[PublisherStreamManagerProxyTest] :: Error - Could not request Origin IP from Stream Manager. ' +
-                    jsonError
-                )
-                reject(error)
-              })
-          })
-        }
-
         // Configuration params.
         var protocol =
           getParameterByName('protocol') || window.location.protocol
@@ -584,29 +525,21 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. -->
         var cameraHeight = getParameterByName('cameraHeight')
           ? parseInt(getParameterByName('cameraHeight'), 10)
           : 480
-        var preferWhipWhep = true
-        if (getParameterByName('whipwhep')) {
-          var whipwhep = getParameterByName('whipwhep')
-          preferWhipWhep = whipwhep === '1' || whipwhep === 'true'
-        }
-        var switchToDC = true
+        var includeDataChannel = true
         if (getParameterByName('dc')) {
           var dc = getParameterByName('dc')
-          switchToDC = dc === '1' || dc === 'true'
+          includeDataChannel = dc === '1' || dc === 'true'
         }
         var switchDelay = getParameterByName('delay')
           ? parseInt(getParameterByName('delay'), 10)
           : NaN
 
         const httpProtocol = (protocol === 'wss' || protocol === 'https') ? 'https' : 'http'
-        const endpoint = !preferWhipWhep
-          ? `${protocol}://${host}:${port}/as/${streamManagerAPI}/proxy/ws/publish/${app}/${streamName}`
-          : `${httpProtocol}://${host}:${port}/as/${streamManagerAPI}/proxy/whip/${app}/${streamName}`
+        const endpoint = `${httpProtocol}://${host}:${port}/as/${streamManagerAPI}/proxy/whip/${app}/${streamName}`
         const rtcConfig = {
           endpoint,
           streamName,
-          signalingSocketOnly: switchToDC,
-          enableChannelSignaling: switchToDC,
+          includeDataChannel: includeDataChannel,
           bandwidth: {
             video: parseInt(bandwidthVideo, 10),
             audio: parseInt(bandwidthAudio, 10),
@@ -623,7 +556,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. -->
               frameRate: { exact: parseInt(frameRate, 10) },
             },
           },
-          socketSwitchDelay: !isNaN(switchDelay) || 1000,
           connectionParams: {
             nodeGroup,
           },
@@ -660,7 +592,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. -->
 
         const start = async () => {
           try {
-            const { WHIPClient, RTCPublisher } = red5prosdk
+            const { WHIPClient } = red5prosdk
             const stream = await navigator.mediaDevices.getDisplayMedia({
               audio: false,
               video: {
@@ -669,7 +601,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. -->
                 frameRate: parseInt(frameRate, 10),
               },
             })
-            publisher = preferWhipWhep ? new WHIPClient() : new RTCPublisher()
+            publisher = new WHIPClient()
             publisher.on('*', onPublisherEvent)
             await publisher.initWithStream(rtcConfig, stream)
             await publisher.publish()

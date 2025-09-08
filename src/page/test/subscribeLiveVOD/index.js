@@ -245,8 +245,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     optionalFullURL,
     useCustomControls
   ) => {
-    const { preferWhipWhep } = configuration
-    const { WHEPClient, RTCSubscriber } = red5prosdk
+    // const { preferWhipWhep } = configuration
+    const { LiveSeekClient } = red5prosdk
 
     subscribeButton.disabled = true
     urlInput.disabled = true
@@ -270,7 +270,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         },
       }
 
-      subscriber = preferWhipWhep ? new WHEPClient() : new RTCSubscriber()
+      subscriber = new LiveSeekClient()
       await subscriber.init(rtcConfig)
       subscriber.on('*', onSubscriberEvent)
       controls = new CustomControls(subscriber)

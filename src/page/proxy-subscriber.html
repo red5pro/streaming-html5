@@ -564,31 +564,22 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. -->
         var smPort = isSecure ? '' : '5080'
         var wsProtocol = isSecure ? 'wss' : 'ws'
         var wsPort = isSecure ? 443 : 5080
-        var preferWhipWhep = true
-        if (getParameterByName('whipwhep')) {
-          var whipwhep = getParameterByName('whipwhep')
-          preferWhipWhep = whipwhep === '1' || whipwhep === 'true'
-        }
-        var switchToDC = true
+        var includeDataChannel = true
         if (getParameterByName('dc')) {
           var dc = getParameterByName('dc')
-          switchToDC = dc === '1' || dc === 'true'
+          includeDataChannel = dc === '1' || dc === 'true'
         }
         var switchDelay = getParameterByName('delay')
           ? parseInt(getParameterByName('delay'), 10)
           : NaN
 
         const httpProtocol = (protocol === 'wss' || protocol === 'https') ? 'https' : 'http'
-        const endpoint = !preferWhipWhep
-          ? `${protocol}://${host}:${port}/as/${streamManagerAPI}/proxy/ws/subscribe/${app}/${streamName}`
-          : `${httpProtocol}://${host}:${port}/as/${streamManagerAPI}/proxy/whep/${app}/${streamName}`
+        const endpoint = `${httpProtocol}://${host}:${port}/as/${streamManagerAPI}/proxy/whep/${app}/${streamName}`
 
         const rtcConfig = {
           endpoint,
           streamName: streamName,
-          signalingSocketOnly: switchToDC,
-          enableChannelSignaling: switchToDC,
-          socketSwitchDelay: !isNaN(switchDelay) ? switchDelay : 5000,
+          includeDataChannel: includeDataChannel,
           connectionParams: {
             nodeGroup,
           },
@@ -765,8 +756,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. -->
 
         const start = async () => {
           try {
-            const { WHEPClient, RTCSubscriber } = red5prosdk
-            subscriber = preferWhipWhep ? new WHEPClient() : new RTCSubscriber()
+            const { WHEPClient } = red5prosdk
+            subscriber = new WHEPClient()
             subscriber.on('*', onSubscriberEvent)
             if (window.trackAutoplayRestrictions) {
               window.trackAutoplayRestrictions(subscriber)
