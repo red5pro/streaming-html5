@@ -26,18 +26,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ;(function (window, document, red5prosdk) {
   'use strict'
 
-  var serverSettings = (function () {
-    var settings = sessionStorage.getItem('r5proServerSettings')
-    try {
-      return JSON.parse(settings)
-    } catch (e) {
-      console.error(
-        'Could not read server settings from sessionstorage: ' + e.message
-      )
-    }
-    return {}
-  })()
-
   var configuration = (function () {
     var conf = sessionStorage.getItem('r5proTestBed')
     try {
@@ -180,9 +168,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   streamTitle.innerText = configuration.stream1
 
-  var protocol = serverSettings.protocol
-  var isSecure = protocol == 'https'
-
   var isPublishable = true
   function setPublishableState(isPublishableFlag) {
     isPublishable = isPublishableFlag
@@ -198,14 +183,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
   setPublishableState(true)
 
-  function getSocketLocationFromProtocol() {
-    return !isSecure
-      ? { protocol: 'ws', port: serverSettings.wsport }
-      : { protocol: 'wss', port: serverSettings.wssport }
-  }
   var defaultConfiguration = {
-    protocol: getSocketLocationFromProtocol().protocol,
-    port: getSocketLocationFromProtocol().port,
     streamMode: configuration.recordBroadcast ? 'record' : 'live',
   }
 
@@ -540,8 +518,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   function determinePublisher() {
-    const { preferWhipWhep } = configuration
-    const { WHIPClient, RTCPublisher } = red5prosdk
+    const { WHIPClient } = red5prosdk
 
     var resolution = getSelectedResolutionForBroadcast()
     var rtcConfig = Object.assign(
@@ -557,8 +534,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         },
         mediaConstraints: getUserMediaConstraints(resolution),
 
-        protocol: getSocketLocationFromProtocol().protocol,
-        port: getSocketLocationFromProtocol().port,
         streamName: configuration.stream1,
       }
     )
@@ -567,7 +542,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     console.log(JSON.stringify(rtcConfig, null, 2))
     console.log('-----')
 
-    var pub = preferWhipWhep ? new WHIPClient() : new RTCPublisher()
+    var pub = new WHIPClient()
     pub.on('*', onPublisherEvent)
     return pub.init(rtcConfig)
   }

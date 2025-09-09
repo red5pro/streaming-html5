@@ -111,10 +111,6 @@ If you decide to de-select the **WHIP/WHEP** option, all tests will revert to us
 | :-----
 | _Demonstrates using `replaceTrack` to swap in a different Camera source dynamically for WebRTC-based Publishers._
 
-| **[Image Capture](src/page/test/publishImageCapture)**
-| :-----
-| _Demonstrates capturing an image of a live video being published._
-
 | **[Mute](src/page/test/publishMute)**
 | :-----
 | _Muting and unmuting audio for a live video being published._
@@ -233,10 +229,6 @@ If you decide to de-select the **WHIP/WHEP** option, all tests will revert to us
 | :-----
 | _Demonstrates authentication with the Simple-Auth-Plugin for subscribing._
 
-| **[Image Capture](src/page/test/subscribeImageCapture)**
-| :-----
-| _Demonstrates capturing an image of a live video being consumed._
-
 | **[Cluster](src/page/test/subscribeCluster)**
 | :-----
 | _Demonstrates accessing an IP from the Red5 Pro Cluster API to subcribe to a live stream._
@@ -244,10 +236,6 @@ If you decide to de-select the **WHIP/WHEP** option, all tests will revert to us
 | **[HLS](src/page/test/subscribeHLS)**
 | :-----
 | _This is an example of subscribing to a stream using HLS Only._ In the event that HLS is not supported natively by the browser, the [hls.js](https://video-dev.github.io/hls.js/) 3rd-party library is utilized.
-
-| **[Image Capture](src/page/test/subscribeImageCapture)**
-| :-----
-| _This example demonstrates capturing a still of the playback by using the `drawImage` API of `CanvasRenderingContext2D`._
 
 | **[Reconnect](src/page/test/subscribeReconnect)**
 | :-----
