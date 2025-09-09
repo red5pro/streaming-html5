@@ -111,6 +111,15 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   function onPublisherEvent(event) {
     console.log('[Red5ProPublisher] ' + event.type + '.')
     updateStatusFromEvent(event)
+    if (event.type === 'WebRTC.MediaStream.Available') {
+      const stream = event.data
+      const videoTrack = stream.getVideoTracks()[0]
+      videoTrack.onended = async () => {
+        if (targetPublisher) {
+          unpublish(targetPublisher)
+        }
+      }
+    }
   }
 
   function onPublishFail(message) {
@@ -196,6 +205,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   function unpublish(publisher) {
     return new Promise(function (resolve, reject) {
+      const media = publisher.getMediaStream()
+      if (media) {
+        const tracks = media.getTracks()
+        tracks.forEach((t) => {
+          t.stop()
+        })
+      }
       publisher
         .unpublish()
         .then(function () {

@@ -12,19 +12,19 @@
 
 > The **Red5 Pro WebRTC SDK** allows you to integrate live streaming video into your desktop and mobile browser.
 
-* [Quickstart](#quickstart)
-  * [Installation](#installation)
-* [Requirements](#requirements)
-* [Usage](#usage)
-  * [Publisher](#publisher)
-    * [WebRTC](PUBLISHER_README.md#webrtc)
-    * [Lifecycle Events](PUBLISHER_README.md#lifecycle-events)
-  * [Subscriber](#subscriber)
-    * [WebRTC](SUBSCRIBER_README.md#webrtc)
-    * [HLS](SUBSCRIBER_README.md#hls)
-    * [Auto Failover](SUBSCRIBER_README.md#auto-failover-and-order)
-    * [Lifecycle Events](SUBSCRIBER_README.md#lifecycle-events)
-* [Contributing](#contributing)
+- [Quickstart](#quickstart)
+  - [Installation](#installation)
+- [Requirements](#requirements)
+- [Usage](#usage)
+  - [Publisher](#publisher)
+    - [WebRTC](PUBLISHER_README.md#webrtc)
+    - [Lifecycle Events](PUBLISHER_README.md#lifecycle-events)
+  - [Subscriber](#subscriber)
+    - [WebRTC](SUBSCRIBER_README.md#webrtc)
+    - [HLS](SUBSCRIBER_README.md#hls)
+    - [Auto Failover](SUBSCRIBER_README.md#auto-failover-and-order)
+    - [Lifecycle Events](SUBSCRIBER_README.md#lifecycle-events)
+- [Contributing](#contributing)
 
 # Quickstart
 
@@ -74,12 +74,12 @@ _index.js_
 import { WHIPClient, WHEPClient } from 'red5pro-webrtc-sdk'
 ```
 
-To begin working with the *Red5 Pro HTML5 SDK* in your project:
+To begin working with the _Red5 Pro HTML5 SDK_ in your project:
 
 ### Quick Start - Standalone Server Deployment
 
 ```html
-<!doctype html>
+<!DOCTYPE html>
 <html>
   <head>
     <!-- *Recommended WebRTC Shim -->
@@ -89,11 +89,23 @@ To begin working with the *Red5 Pro HTML5 SDK* in your project:
     <!-- video containers -->
     <!-- publisher -->
     <div>
-      <video id="red5pro-publisher" width="640" height="480" muted autoplay></video>
+      <video
+        id="red5pro-publisher"
+        width="640"
+        height="480"
+        muted
+        autoplay
+      ></video>
     </div>
     <!-- subscriber -->
     <div>
-      <video id="red5pro-subscriber" width="640" height="480" controls autoplay></video>
+      <video
+        id="red5pro-subscriber"
+        width="640"
+        height="480"
+        controls
+        autoplay
+      ></video>
     </div>
     <!-- Red5 Pro SDK -->
     <script src="https://unpkg.com/red5pro-webrtc-sdk@latest/red5pro-sdk.min.js"></script>
@@ -105,7 +117,7 @@ To begin working with the *Red5 Pro HTML5 SDK* in your project:
         const rtcPublisher = new red5prosdk.WHIPClient()
         const rtcSubscriber = new red5prosdk.WHEPClient()
         const config = {
-          protocol: 'ws',
+          protocol: 'http',
           host: 'localhost',
           port: 5080,
           app: 'live',
@@ -153,7 +165,7 @@ With the Stream Manager 2.0 Release, the `endpoint` init configuration property 
 > Note: You will need to know which Node Group you intend to target for publishing and subscribing.
 
 ```html
-<!doctype html>
+<!DOCTYPE html>
 <html>
   <head>
     <!-- *Recommended WebRTC Shim -->
@@ -163,11 +175,23 @@ With the Stream Manager 2.0 Release, the `endpoint` init configuration property 
     <!-- video containers -->
     <!-- publisher -->
     <div>
-      <video id="red5pro-publisher" width="640" height="480" muted autoplay></video>
+      <video
+        id="red5pro-publisher"
+        width="640"
+        height="480"
+        muted
+        autoplay
+      ></video>
     </div>
     <!-- subscriber -->
     <div>
-      <video id="red5pro-subscriber" width="640" height="480" controls autoplay></video>
+      <video
+        id="red5pro-subscriber"
+        width="640"
+        height="480"
+        controls
+        autoplay
+      ></video>
     </div>
     <!-- Red5 Pro SDK -->
     <script src="https://unpkg.com/red5pro-webrtc-sdk@latest/red5pro-sdk.min.js"></script>
@@ -232,7 +256,6 @@ With the Stream Manager 2.0 Release, the `endpoint` init configuration property 
 </html>
 ```
 
-
 # Requirements
 
 The **Red5 Pro WebRTC SDK** is intended to communicate with a [Red5 Pro Server](https://www.red5.net/red5-pro/low-latency-streaming-software/), which allows for broadcasting and consuming live streams utilizing [WebRTC](https://developer.mozilla.org/en-US/docs/Web/Guide/API/WebRTC) and other protocols, including [RTMP](https://en.wikipedia.org/wiki/Real_Time_Messaging_Protocol) and [HLS](https://en.wikipedia.org/wiki/HTTP_Live_Streaming).
@@ -242,16 +265,21 @@ As such, you will need a distribution of the [Red5 Pro Server](https://www.red5.
 > **[Click here to start using the Red5 Pro Server today!](https://account.red5.net/login)**
 
 # Usage
+
 This section describes using the **Red5 Pro WebRTC SDK** browser install to create sessions for a [Publisher](#publisher) and a [Subscriber](#subscriber).
 
 ## WHIP/WHEP
+
 Please refer to the [WHIP/WHEP Readme](WHIP_WHEP_README.md) for information about utilizing WHIP/WHEP clients for publishing and subscribing, respectively.
 
 ## Publisher
+
 Please refer to the [Publisher Readme](PUBLISHER_README.md) for information about setting up a broadcast session.
 
 ## Subscriber
+
 Please refer to the [Subscriber Readme](SUBSCRIBER_README.md) for information about setting up a subscriber session.
 
 # Contributing
+
 > Please refer to the [Contributing Documentation](CONTRIBUTING.md) to learn more about contributing to the development of the Red5 Pro WebRTC SDK.

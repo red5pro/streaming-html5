@@ -74,9 +74,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var packetsField = document.getElementById('packets-field')
   var resolutionField = document.getElementById('resolution-field')
 
-  var protocol = serverSettings.protocol
-  var isSecure = protocol == 'https'
-
   var bitrate = 0
   var packetsReceived = 0
   var frameWidth = 0
@@ -100,18 +97,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     updateStatistics(bitrate, packetsReceived, frameWidth, frameHeight)
   }
 
-  function getSocketLocationFromProtocol() {
-    return !isSecure
-      ? { protocol: 'ws', port: serverSettings.wsport }
-      : { protocol: 'wss', port: serverSettings.wssport }
-  }
-
   streamTitle.innerText = configuration.stream1
   var defaultConfiguration = (function (useVideo, useAudio) {
-    var c = {
-      protocol: getSocketLocationFromProtocol().protocol,
-      port: getSocketLocationFromProtocol().port,
-    }
+    var c = configuration
     if (!useVideo) {
       c.videoEncoding = red5prosdk.PlaybackVideoEncoder.NONE
     }
@@ -184,6 +172,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   function requestEdge(configuration) {
     var host = configuration.host
+    var protocol = configuration.protocol
+    var isSecure = protocol === 'https'
     var port = serverSettings.httpport
     var portURI = port.length > 0 ? ':' + port : ''
     var baseUrl = isSecure
@@ -220,8 +210,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   function determineSubscriber(host) {
-    const { preferWhipWhep } = configuration
-    const { WHEPClient, RTCSubscriber } = red5prosdk
+    const { WHEPClient } = red5prosdk
 
     displayServerAddress(host)
 
@@ -232,14 +221,14 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       getAuthenticationParams(),
       {
         host: host,
-        protocol: 'ws', // cluster is not over secure, at this time
-        port: serverSettings.wsport, // cluster is not over secure, at this time
+        protocol: 'http', // cluster is not over secure, at this time
+        port: serverSettings.httpport, // cluster is not over secure, at this time
         subscriptionId: 'subscriber-' + instanceId,
         streamName: configuration.stream1,
       }
     )
 
-    var subscriber = preferWhipWhep ? new WHEPClient() : new RTCSubscriber()
+    var subscriber = new WHEPClient()
     return subscriber.init(rtcConfig)
   }
 

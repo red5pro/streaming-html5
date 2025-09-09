@@ -39,7 +39,7 @@ var config = Object.assign(
 The `Retry` button element is disabled by default, and enabled on recognition of the `Subscribe.InvalidName` event.
 
 ```js
-var subscriber = new red5prosdk.RTCSubscriber()
+var subscriber = new red5prosdk.WHEPClient()
 subscriber.on(
   red5prosdk.SubscriberEventTypes.SUBSCRIBE_INVALID_NAME,
   function () {

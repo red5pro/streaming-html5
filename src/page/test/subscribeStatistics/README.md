@@ -13,7 +13,7 @@ This is an example of using the Statistics Monitoring feature of Red5 Pro Subscr
 
 # Statistics Monitoring
 
-Both the `RTCSubscriber` and `WHEPClient` subscriber clients support the ability to monitor and POST statistics report data based on the underlying `RTCPeerConnection` of the clients.
+The `WHEPClient` subscriber client supports the ability to monitor and POST statistics report data based on the underlying `RTCPeerConnection` of the clients.
 
 ## Stats Configuration
 

@@ -11,7 +11,7 @@ This example demonstrates sending AMF Metadata on a Publisher stream connection.
 
 ## Sending AMF Metadata
 
-The `RTCPublisher` and `WHIPClient` instances include a `send` method that allows sending AMF metadata with the `onMetaData` method name. This metadata is received by all subscribers watching the stream.
+The `WHIPClient` instance includes a `send` method that allows sending AMF metadata with the `onMetaData` method name. This metadata is received by all subscribers watching the stream.
 
 ```js
 submitButton.addEventListener('click', function () {

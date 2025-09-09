@@ -153,7 +153,7 @@ const baseConfig = {
 document.querySelector('#stream-title').innerText = baseConfig.streamName
 
 const monitorBitrate = (pc, bitrateField, packetsField, resolutionField) => {
-  return trackBitrate(
+  return window.trackBitrate(
     pc,
     (b, p) => {
       bitrateField.innerText = b === 0 ? 'N/A' : Math.floor(b)
@@ -212,8 +212,7 @@ const onDecryptedSubscriberEvent = (event) => {
 }
 
 const encryptedPlayback = async () => {
-  const { preferWhipWhep } = configuration
-  const { WHEPClient, RTCSubscriber } = red5prosdk
+  const { WHEPClient } = red5prosdk
   try {
     const { rtcConfiguration } = baseConfig
     const config = {
@@ -224,9 +223,7 @@ const encryptedPlayback = async () => {
         encodedInsertableStreams: false,
       },
     }
-    encryptedSubscriber = preferWhipWhep
-      ? new WHEPClient()
-      : new RTCSubscriber()
+    encryptedSubscriber = new WHEPClient()
     encryptedSubscriber = await encryptedSubscriber.init(config)
     encryptedSubscriber.on('*', (event) => onEncryptedSubscriberEvent(event))
     await encryptedSubscriber.subscribe()

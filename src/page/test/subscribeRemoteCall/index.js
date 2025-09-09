@@ -26,18 +26,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ;(function (window, document, red5prosdk) {
   'use strict'
 
-  var serverSettings = (function () {
-    var settings = sessionStorage.getItem('r5proServerSettings')
-    try {
-      return JSON.parse(settings)
-    } catch (e) {
-      console.error(
-        'Could not read server settings from sessionstorage: ' + e.message
-      )
-    }
-    return {}
-  })()
-
   var configuration = (function () {
     var conf = sessionStorage.getItem('r5proTestBed')
     try {
@@ -66,9 +54,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var packetsField = document.getElementById('packets-field')
   var resolutionField = document.getElementById('resolution-field')
 
-  var protocol = serverSettings.protocol
-  var isSecure = protocol === 'https'
-
   var bitrate = 0
   var packetsReceived = 0
   var frameWidth = 0
@@ -92,17 +77,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     updateStatistics(bitrate, packetsReceived, frameWidth, frameHeight)
   }
 
-  function getSocketLocationFromProtocol() {
-    return !isSecure
-      ? { protocol: 'ws', port: serverSettings.wsport }
-      : { protocol: 'wss', port: serverSettings.wssport }
-  }
-
   var defaultConfiguration = (function (useVideo, useAudio) {
-    var c = {
-      protocol: getSocketLocationFromProtocol().protocol,
-      port: getSocketLocationFromProtocol().port,
-    }
+    var c = configuration
     if (!useVideo) {
       c.videoEncoding = red5prosdk.PlaybackVideoEncoder.NONE
     }
@@ -185,23 +161,19 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     })
   }
 
-  const { preferWhipWhep } = configuration
-  const { WHEPClient, RTCSubscriber } = red5prosdk
-
+  const { WHEPClient } = red5prosdk
   var rtcConfig = Object.assign(
     {},
     configuration,
     defaultConfiguration,
     getAuthenticationParams(),
     {
-      protocol: getSocketLocationFromProtocol().protocol,
-      port: getSocketLocationFromProtocol().port,
       subscriptionId: 'subscriber-' + instanceId,
       streamName: configuration.stream1,
     }
   )
 
-  var subscriber = preferWhipWhep ? new WHEPClient() : new RTCSubscriber()
+  var subscriber = new WHEPClient()
   subscriber
     .init(rtcConfig)
     .then(function (subscriberImpl) {

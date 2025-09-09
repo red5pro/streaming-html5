@@ -27,7 +27,7 @@ proxy.enabled=false
 
 ## Setup
 
-In order to specify multiple origins in a request, you will need to either send additional query parameters to the Stream Manager API (when using `RTCPublisher`), or `params` object in initialization of a `WHIPClient`:
+In order to specify multiple origins in a request, you will need to either send additional query parameters to the Stream Manager API, or `params` object in initialization of a `WHIPClient`:
 
 ```js
 const requestOrigin = async (configuration) => {

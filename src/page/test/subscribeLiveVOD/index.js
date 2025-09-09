@@ -48,7 +48,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   )
 
   let subscriber
-  let controls
 
   let instanceId = Math.floor(Math.random() * 0x10000).toString(16)
   let protocol = serverSettings.protocol
@@ -271,10 +270,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       }
 
       subscriber = new LiveSeekClient()
-      await subscriber.init(rtcConfig)
       subscriber.on('*', onSubscriberEvent)
-      controls = new CustomControls(subscriber)
+      await subscriber.init(rtcConfig)
 
+      if (useCustomControls) {
+        new CustomControls(subscriber)
+      }
       streamTitle.innerText = configuration.stream1
       await subscriber.subscribe()
       onSubscribeSuccess(subscriber)

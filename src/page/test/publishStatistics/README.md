@@ -13,7 +13,7 @@ This is an example of using the Statistics Monitoring feature of Red5 Pro Publis
 
 # Statistics Monitoring
 
-Both the `RTCPublisher` and `WHIPClient` publisher clients support the ability to monitor and POST statistics report data based on the underlying `RTCPeerConnection` of the clients.
+The `WHIPClient` publisher client supports the ability to monitor and POST statistics report data based on the underlying `RTCPeerConnection` of the clients.
 
 ## Stats Configuration
 

@@ -64,12 +64,9 @@ The `setupPublisher` method accepts the returned `MediaStream` from the `getDisp
 
 ```js
 function setupPublisher(mediaStream) {
-  const { preferWhipWhep } = configuration
-  const { WHIPClient, RTCPublisher } = red5prosdk
+  const { WHIPClient } = red5prosdk
 
   var rtcConfig = Object.assign({}, configuration, getAuthenticationParams(), {
-    protocol: getSocketLocationFromProtocol().protocol,
-    port: getSocketLocationFromProtocol().port,
     streamName: configuration.stream1,
     bandwidth: {
       video: parseInt(bandwidthVideoField.value),
@@ -77,7 +74,7 @@ function setupPublisher(mediaStream) {
     keyFramerate: parseInt(keyFramerateField.value),
     streamMode: configuration.recordBroadcast ? 'record' : 'live',
   })
-  const publisher = preferWhipWhep ? new WHIPClient() : new RTCPublisher()
+  const publisher = new WHIPClient()
   publisher
     .initWithStream(rtcConfig, mediaStream)
     .then(function (publisherImpl) {

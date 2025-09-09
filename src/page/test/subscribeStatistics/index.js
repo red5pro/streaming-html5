@@ -26,18 +26,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ;((window, document, red5prosdk) => {
   'use strict'
 
-  const serverSettings = (() => {
-    const settings = sessionStorage.getItem('r5proServerSettings')
-    try {
-      return JSON.parse(settings)
-    } catch (e) {
-      console.error(
-        'Could not read server settings from sessionstorage: ' + e.message
-      )
-    }
-    return {}
-  })()
-
   const configuration = (() => {
     const conf = sessionStorage.getItem('r5proTestBed')
     try {
@@ -81,9 +69,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   intervalField.value = interval
   streamTitle.innerText = configuration.stream1
 
-  const protocol = serverSettings.protocol
-  const isSecure = protocol === 'https'
-
   let bitrate = 0
   let packetsReceived = 0
   let frameWidth = 0
@@ -108,17 +93,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     updateStatistics(bitrate, packetsReceived, frameWidth, frameHeight)
   }
 
-  const getSocketLocationFromProtocol = () => {
-    return !isSecure
-      ? { protocol: 'ws', port: serverSettings.wsport }
-      : { protocol: 'wss', port: serverSettings.wssport }
-  }
-
   const defaultConfiguration = ((useVideo, useAudio) => {
-    let c = {
-      protocol: getSocketLocationFromProtocol().protocol,
-      port: getSocketLocationFromProtocol().port,
-    }
+    let c = configuration
     if (!useVideo) {
       c.videoEncoding = red5prosdk.PlaybackVideoEncoder.NONE
     }
@@ -185,8 +161,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   const start = async (statsConfig) => {
-    const { preferWhipWhep } = configuration
-    const { WHEPClient, RTCSubscriber } = red5prosdk
+    const { WHEPClient } = red5prosdk
 
     // Kick off.
     statsForm.classList.add('hidden')
@@ -195,8 +170,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       ...configuration,
       ...defaultConfiguration,
       ...{
-        protocol: getSocketLocationFromProtocol().protocol,
-        port: getSocketLocationFromProtocol().port,
         subscriptionId: 'subscriber-' + instanceId,
         streamName: configuration.stream1,
         stats: statsConfig,
@@ -204,7 +177,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
 
     try {
-      const subscriber = preferWhipWhep ? new WHEPClient() : new RTCSubscriber()
+      const subscriber = new WHEPClient()
       await subscriber.init(rtcConfig)
       targetSubscriber = subscriber
       targetSubscriber.on('*', onSubscriberEvent)

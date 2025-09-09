@@ -31,18 +31,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     isMoz = window.adapter.browserDetails.browser.toLowerCase() === 'firefox'
   }
 
-  var serverSettings = (function () {
-    var settings = sessionStorage.getItem('r5proServerSettings')
-    try {
-      return JSON.parse(settings)
-    } catch (e) {
-      console.error(
-        'Could not read server settings from sessionstorage: ' + e.message
-      )
-    }
-    return {}
-  })()
-
   var configuration = (function () {
     var conf = sessionStorage.getItem('r5proTestBed')
     try {
@@ -60,8 +48,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       : red5prosdk.LOG_LEVELS.WARN
   )
 
-  const { preferWhipWhep } = configuration
-  const { WHEPClient, RTCSubscriber } = red5prosdk
+  const { WHEPClient } = red5prosdk
 
   var targetSubscriber
 
@@ -72,9 +59,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var bitrateField = document.getElementById('bitrate-field')
   var packetsField = document.getElementById('packets-field')
   var resolutionField = document.getElementById('resolution-field')
-
-  var protocol = serverSettings.protocol
-  var isSecure = protocol === 'https'
 
   var bitrate = 0
   var packetsReceived = 0
@@ -99,19 +83,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     updateStatistics(bitrate, packetsReceived, frameWidth, frameHeight)
   }
 
-  // Determines the ports and protocols based on being served over TLS.
-  function getSocketLocationFromProtocol() {
-    return !isSecure
-      ? { protocol: 'ws', port: serverSettings.wsport }
-      : { protocol: 'wss', port: serverSettings.wssport }
-  }
-
   // Base configuration to extend in providing specific tech failover configurations.
   var defaultConfiguration = (function (useVideo, useAudio) {
-    var c = {
-      protocol: getSocketLocationFromProtocol().protocol,
-      port: getSocketLocationFromProtocol().port,
-    }
+    var c = configuration
     if (!useVideo) {
       c.videoEncoding = red5prosdk.PlaybackVideoEncoder.NONE
     }
@@ -204,14 +178,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     getAuthenticationParams()
   )
   var rtcConfig = Object.assign({}, config, {
-    protocol: getSocketLocationFromProtocol().protocol,
-    port: getSocketLocationFromProtocol().port,
     subscriptionId: 'subscriber-' + instanceId,
     streamName: config.stream1,
   })
 
-  // Request to initialization and start subscribing through failover support.
-  var subscriber = preferWhipWhep ? new WHEPClient() : new RTCSubscriber()
+  var subscriber = new WHEPClient()
   subscriber
     .init(rtcConfig)
     .then(function (subscriberImpl) {
@@ -269,7 +240,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       subscriptionId:
         'subscriber-' + Math.floor(Math.random() * 0x10000).toString(16),
     }
-    const audioSub = preferWhipWhep ? new WHEPClient() : new RTCSubscriber()
+    const audioSub = new WHEPClient()
     audioSub
       .init(Object.assign(rtcConfig, extension))
       .then(function (aSubscriber) {
