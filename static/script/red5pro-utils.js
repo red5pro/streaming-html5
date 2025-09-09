@@ -50,104 +50,110 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     var isSubscriber = this.isSubscriber
     // Based on https://github.com/webrtc/samples/blob/gh-pages/src/content/peerconnection/bandwidth/js/main.js
     this.bitrateInterval = setInterval(function () {
-      if (!connection) {
-        window.untrackBitrate(ticket)
-        return
-      }
-      connection.getStats(null).then(function (res) {
-        res.forEach(function (report) {
-          var bytes
-          var packets
-          var now = report.timestamp
-          var bitrate
-          if (
-            !isSubscriber &&
-            (report.type === 'outboundrtp' ||
-              report.type === 'outbound-rtp' ||
-              (report.type === 'ssrc' && report.bytesSent))
-          ) {
-            bytes = report.bytesSent
-            packets = report.packetsSent
+      try {
+        if (!connection) {
+          ticket.stop.call(ticket)
+          window.untrackBitrate(ticket)
+          return
+        }
+        connection.getStats(null).then(function (res) {
+          res.forEach(function (report) {
+            var bytes
+            var packets
+            var now = report.timestamp
+            var bitrate
             if (
-              report.mediaType === 'video' ||
-              report.kind === 'video' ||
-              report.id.match(vRegex)
+              !isSubscriber &&
+              (report.type === 'outboundrtp' ||
+                report.type === 'outbound-rtp' ||
+                (report.type === 'ssrc' && report.bytesSent))
             ) {
-              if (lastResult && lastResult.get(report.id)) {
-                // calculate bitrate
-                bitrate =
-                  (8 * (bytes - lastResult.get(report.id).bytesSent)) /
-                  (now - lastResult.get(report.id).timestamp)
-                cb(bitrate, packets)
-              }
-            }
-          }
-          // playback.
-          else if (
-            isSubscriber &&
-            (report.type === 'inboundrtp' ||
-              report.type === 'inbound-rtp' ||
-              (report.type === 'ssrc' && report.bytesReceived))
-          ) {
-            bytes = report.bytesReceived
-            packets = report.packetsReceived
-            if (
-              ticket.audioOnly &&
-              (report.mediaType === 'audio' ||
-                report.kind === 'audio' ||
-                report.id.match(aRegex))
-            ) {
-              if (lastResult && lastResult.get(report.id)) {
-                // calculate bitrate
-                bitrate =
-                  (8 * (bytes - lastResult.get(report.id).bytesReceived)) /
-                  (now - lastResult.get(report.id).timestamp)
-                cb(bitrate, packets)
-              }
-            } else if (
-              !ticket.audioOnly &&
-              (report.mediaType === 'video' ||
+              bytes = report.bytesSent
+              packets = report.packetsSent
+              if (
+                report.mediaType === 'video' ||
                 report.kind === 'video' ||
-                report.id.match(vRegex))
-            ) {
-              if (lastResult && lastResult.get(report.id)) {
-                // calculate bitrate
-                bitrate =
-                  (8 * (bytes - lastResult.get(report.id).bytesReceived)) /
-                  (now - lastResult.get(report.id).timestamp)
-                cb(bitrate, packets)
-              }
-              if (report.frameWidth && report.frameHeight) {
-                const { frameWidth, frameHeight } = report
-                if (frameWidth > 0 || frameHeight > 0) {
-                  resolutionCb(report.frameWidth, report.frameHeight)
+                report.id.match(vRegex)
+              ) {
+                if (lastResult && lastResult.get(report.id)) {
+                  // calculate bitrate
+                  bitrate =
+                    (8 * (bytes - lastResult.get(report.id).bytesSent)) /
+                    (now - lastResult.get(report.id).timestamp)
+                  cb(bitrate, packets)
                 }
               }
             }
-          } else if (
-            resolutionCb &&
-            (report.type === 'track' || report.kind === 'video')
-          ) {
-            var fw = 0
-            var fh = 0
-            if (
-              report.kind === 'video' ||
-              report.frameWidth ||
-              report.frameHeight
+            // playback.
+            else if (
+              isSubscriber &&
+              (report.type === 'inboundrtp' ||
+                report.type === 'inbound-rtp' ||
+                (report.type === 'ssrc' && report.bytesReceived))
             ) {
-              fw = report.frameWidth
-              fh = report.frameHeight
-              if (fw > 0 || fh > 0) {
-                resolutionCb(fw, fh)
+              bytes = report.bytesReceived
+              packets = report.packetsReceived
+              if (
+                ticket.audioOnly &&
+                (report.mediaType === 'audio' ||
+                  report.kind === 'audio' ||
+                  report.id.match(aRegex))
+              ) {
+                if (lastResult && lastResult.get(report.id)) {
+                  // calculate bitrate
+                  bitrate =
+                    (8 * (bytes - lastResult.get(report.id).bytesReceived)) /
+                    (now - lastResult.get(report.id).timestamp)
+                  cb(bitrate, packets)
+                }
+              } else if (
+                !ticket.audioOnly &&
+                (report.mediaType === 'video' ||
+                  report.kind === 'video' ||
+                  report.id.match(vRegex))
+              ) {
+                if (lastResult && lastResult.get(report.id)) {
+                  // calculate bitrate
+                  bitrate =
+                    (8 * (bytes - lastResult.get(report.id).bytesReceived)) /
+                    (now - lastResult.get(report.id).timestamp)
+                  cb(bitrate, packets)
+                }
+                if (report.frameWidth && report.frameHeight) {
+                  const { frameWidth, frameHeight } = report
+                  if (frameWidth > 0 || frameHeight > 0) {
+                    resolutionCb(report.frameWidth, report.frameHeight)
+                  }
+                }
+              }
+            } else if (
+              resolutionCb &&
+              (report.type === 'track' || report.kind === 'video')
+            ) {
+              var fw = 0
+              var fh = 0
+              if (
+                report.kind === 'video' ||
+                report.frameWidth ||
+                report.frameHeight
+              ) {
+                fw = report.frameWidth
+                fh = report.frameHeight
+                if (fw > 0 || fh > 0) {
+                  resolutionCb(fw, fh)
+                }
               }
             }
-          }
+          })
+          lastResult = res
         })
-        lastResult = res
-      })
+      } catch (e) {
+        console.error('Error in trackBitrate: ' + e)
+      }
     }, 1000)
   }
   BitrateTicket.prototype.stop = function () {
+    this.connection = undefined
     clearInterval(this.bitrateInterval)
   }
   BitrateTicket.prototype.audioOnly = function () {
@@ -334,6 +340,52 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
   }
 
+  // more robust, synchronous version of authenticate
+  const authenticate2 = (smHost, smVersion = 'v1', smUser, smPassword) => {
+    console.log('Request Authentication')
+
+    const url = `https://${smHost}/as/${smVersion}/auth/login`
+    const token = 'Basic ' + btoa(smUser + ':' + smPassword)
+    const xhr = new XMLHttpRequest()
+
+    try {
+      // Open the request as PUT
+      xhr.open('PUT', url, false) // false makes it synchronous
+      xhr.withCredentials = true // Enable cookies
+      xhr.setRequestHeader('Authorization', token)
+      xhr.setRequestHeader('Content-Type', 'application/json')
+
+      // Send the request
+      xhr.send()
+
+      const contentType = xhr.getResponseHeader('Content-Type') || ''
+      let responseBody
+
+      // Try parsing the response
+      try {
+        responseBody = JSON.parse(xhr.responseText) // Safe JSON parsing
+      } catch (parseError) {
+        console.error('Error parsing JSON response:', parseError)
+        throw new Error(`HTTP ${xhr.status}: JSON parse error`)
+      }
+
+      // Handle HTTP errors
+      switch (xhr.status) {
+        case 200:
+          console.log('Authentication successful')
+          return responseBody.token // Return the authentication token
+        case 401:
+          throw new Error('HTTP 401: Unauthorized')
+        default:
+          throw new Error(`HTTP ${xhr.status}: Unexpected error`)
+      }
+    } catch (error) {
+      // Handle any unexpected network or processing errors
+      console.error('Error in authenticate:', error)
+      throw error // Re-throw for the caller to catch
+    }
+  }
+
   /**
    * Request to get Origin data to broadcast on stream manager proxy.
    */
@@ -367,18 +419,72 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
    * Find the Origin IP address for a given stream
    */
   const getOriginForStream = async (host, version, nodeGroup, streamGuid) => {
-    // aggregate=true -- will return only one server, the publishing origin
-    let url = `https://${host}/as/${version}/streams/stream/${nodeGroup}/stream/${streamGuid}?aggregate=true`
-    console.log('getOriginForStream URL: ' + url)
-    const result = await fetch(url)
-    if (!result.ok) {
-      const text = await result.text()
-      throw new Error(text)
+    try {
+      // Validate input parameters
+      if (!host || !version || !nodeGroup || !streamGuid) {
+        const missingParams = []
+        if (!host) missingParams.push('host')
+        if (!version) missingParams.push('version')
+        if (!nodeGroup) missingParams.push('nodeGroup')
+        if (!streamGuid) missingParams.push('streamGuid')
+        console.error('getOriginForStream: Missing required parameters:', missingParams.join(', '))
+        return { errorMessage: `Missing required parameters: ${missingParams.join(', ')}` }
+      }
+
+      // aggregate=true -- will return only one server, the publishing origin
+      let url = `https://${host}/as/${version}/streams/stream/${nodeGroup}/stream/${streamGuid}?aggregate=true`
+      console.log('getOriginForStream URL: ' + url)
+      
+      const result = await fetch(url)
+      if (!result.ok) {
+        const text = await result.text()
+        console.error(`getOriginForStream: HTTP ${result.status} ${result.statusText}:`, text)
+        return { errorMessage: `HTTP ${result.status}: ${text || result.statusText}` }
+      }
+      
+      let json
+      try {
+        json = await result.json()
+      } catch (parseError) {
+        console.error('getOriginForStream: Failed to parse JSON response:', parseError.message)
+        return { errorMessage: `Failed to parse server response: ${parseError.message}` }
+      }
+      
+      if (!Array.isArray(json)) {
+        console.error('getOriginForStream: Invalid response format - expected array, got:', typeof json, json)
+        return { errorMessage: 'Invalid response format from server - expected array of nodes' }
+      }
+      
+      if (json.length === 0) {
+        console.error('getOriginForStream: No PUBLISH nodes found.')
+        return { errorMessage: 'No PUBLISH nodes found.' }
+      }
+      
+      let selectedNode
+      if (json.length === 1) {
+        // Edge case: if only one node, select it regardless of role
+        selectedNode = json[0]
+        console.log('getOriginForStream: Single node found, selecting regardless of role:', selectedNode.nodeRole)
+      } else {
+        // Multiple nodes: look for origin role
+        selectedNode = json.find((node) => node.nodeRole === 'origin')
+        if (!selectedNode) {
+          console.error('getOriginForStream: No origin node found.')
+          return { errorMessage: 'No origin node found.' }
+        }
+      }
+      
+      if (!selectedNode.serverAddress) {
+        console.error('getOriginForStream: Selected node missing serverAddress:', selectedNode)
+        return { errorMessage: 'Selected node missing serverAddress' }
+      }
+      
+      console.log('getOriginForStream() SUCCESS! result: ' + selectedNode.serverAddress)
+      return selectedNode.serverAddress
+    } catch (error) {
+      console.error('getOriginForStream: Unexpected error:', error.message, error)
+      return { errorMessage: `Unexpected error occurred: ${error.message}` }
     }
-    const json = await result.json()
-    const serverAddress = json[0].serverAddress // it's always an array of one item (or an error)
-    console.log('getOriginForStream() SUCCESS! result: ' + serverAddress)
-    return serverAddress
   }
 
   /**
@@ -430,7 +536,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
   }
 
-  const getProvision = async (host, version, nodeGroup, provisionGuid, token) => {
+  const getProvision = async (
+    host,
+    version,
+    nodeGroup,
+    provisionGuid,
+    token
+  ) => {
     const url = `https://${host}/as/${version}/streams/provision/${nodeGroup}/${provisionGuid}`
     const result = await fetch(url, {
       method: 'GET',
@@ -482,23 +594,73 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   const forwardPost = async (host, version, forwardURI, data) => {
-    let url = `https://${host}/as/${version}/proxy/forward/?target=${encodeURIComponent(
-      forwardURI
-    )}`
-    const result = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: typeof data === 'string' ? data : JSON.stringify(data),
-    })
+    try {
+      // Validate input parameters
+      if (!host || !version || !forwardURI) {
+        const missingParams = []
+        if (!host) missingParams.push('host')
+        if (!version) missingParams.push('version')
+        if (!forwardURI) missingParams.push('forwardURI')
+        console.error('forwardPost: Missing required parameters:', missingParams.join(', '))
+        return { errorMessage: `Missing required parameters: ${missingParams.join(', ')}` }
+      }
 
-    // note: the response may be empty string, or other non json response.
-    const json = await result.json()
-    if (json && json.errorMessage) {
-      throw new Error(json.errorMessage)
+      let url = `https://${host}/as/${version}/proxy/forward/?target=${encodeURIComponent(
+        forwardURI
+      )}`
+      console.log('forwardPost URL: ' + url)
+      
+      let body
+      try {
+        body = typeof data === 'string' ? data : JSON.stringify(data)
+      } catch (stringifyError) {
+        console.error('forwardPost: Failed to stringify data:', stringifyError.message)
+        return { errorMessage: `Failed to stringify request data: ${stringifyError.message}` }
+      }
+      
+      const result = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: body,
+      })
+
+      if (!result.ok) {
+        const text = await result.text()
+        console.error(`forwardPost: HTTP ${result.status} ${result.statusText}:`, text)
+        return { errorMessage: `HTTP ${result.status}: ${text || result.statusText}` }
+      }
+
+      // Check if there's content to parse
+      const contentType = result.headers.get('content-type')
+      if (!contentType || !contentType.includes('application/json')) {
+        // Handle non-JSON responses
+        const textResponse = await result.text()
+        console.log('forwardPost: Received non-JSON response, returning as text')
+        return textResponse
+      }
+
+      let json
+      try {
+        // note: the response may be empty string, or other non json response.
+        json = await result.json()
+      } catch (parseError) {
+        console.error('forwardPost: Failed to parse JSON response:', parseError.message)
+        return { errorMessage: `Failed to parse server response: ${parseError.message}` }
+      }
+      
+      if (json && json.errorMessage) {
+        console.error('forwardPost: Server returned error:', json.errorMessage)
+        return { errorMessage: json.errorMessage }
+      }
+      
+      console.log('forwardPost() SUCCESS!')
+      return json
+    } catch (error) {
+      console.error('forwardPost: Unexpected error:', error.message, error)
+      return { errorMessage: `Unexpected error occurred: ${error.message}` }
     }
-    return json
   }
 
   const forwardPostWithResult = async (host, version, forwardURI, data) => {
@@ -521,6 +683,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     getOriginForStream: getOriginForStream,
     getEdge: getEdge,
     authenticate: authenticate,
+    authenticate2: authenticate2,
     postProvision: postProvision,
     getProvision,
     forward,

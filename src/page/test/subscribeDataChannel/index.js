@@ -178,7 +178,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   function createAudioPlaybackContent(arrayBuffer) {
     closePreviousModal()
     var style = 'padding: 10px; text-align: center'
-    var blob = new Blob([arrayBuffer])
+    var blob = new Blob([arrayBuffer], { type: 'audio/mp3' })
     var audioURL = window.URL.createObjectURL(blob)
     var content = document.createElement('div')
     var p = document.createElement('p')
@@ -188,6 +188,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     var holder = document.createElement('p')
     holder.style = style
     var audio = document.createElement('audio')
+    audio.mimeType = 'audio/mp3'
     audio.controls = true
     audio.src = audioURL
     audio.controlsList = 'nodownload'
@@ -264,8 +265,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           connectionParams: {
             username: auth.username,
             password: auth.password,
-            token: auth.token,
-          },
+            token: auth.token
+          }
         }
       : {}
   }
@@ -299,7 +300,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     getAuthenticationParams(),
     {
       streamName: configuration.stream1,
-      subscriptionId: 'subscriber-' + instanceId,
+      subscriptionId: 'subscriber-' + instanceId
     }
   )
 

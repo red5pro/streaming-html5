@@ -55,7 +55,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   streamTitle.innerText = configuration.stream1
   var defaultConfiguration = {
-    streamMode: configuration.recordBroadcast ? 'record' : 'live',
+    streamMode: configuration.recordBroadcast ? 'record' : 'live'
   }
 
   streamTitle.innerText = configuration.stream1
@@ -67,8 +67,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           connectionParams: {
             username: auth.username,
             password: auth.password,
-            token: auth.token,
-          },
+            token: auth.token
+          }
         }
       : {}
   }
@@ -88,44 +88,28 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var sendButton = document.getElementById('send-button')
   var destUri = document.getElementById('dest-URI')
   var streamKey = document.getElementById('stream-key')
-  var passwd = document.getElementById('passwd')
+  var proxyUser = document.getElementById('user')
+  var proxyPasswd = document.getElementById('passwd')
   var isForwarding = false
 
   let attempts = 0
   let attemptLimit = 10
 
-  // from https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/digest
-  async function digestMessage(message) {
-    const msgUint8 = new TextEncoder().encode(message) // encode as (utf-8) Uint8Array
-    const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8) // hash the message
-    const hashArray = Array.from(new Uint8Array(hashBuffer)) // convert buffer to byte array
-    const hashHex = hashArray
-      .map((b) => {
-        var result = b.toString(16).padStart(2, '0')
-        //console.log("b: " + b + " result: " + result);
-        return result
-      })
-      .join('') // convert bytes to hex string
-    return hashHex
+  function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms))
   }
 
-  function createSignature(timestamp) {
-    var action = isForwarding ? 'provision.delete' : 'provision.create'
-    var message = action + timestamp + passwd.value
-
-    return digestMessage(message)
-  }
-
-  async function pushItSocial() {
-    console.log('Begin pushItSocial()')
+  async function newPushIt() {
     sendButton.disabled = true
 
+    // gather info
+    let smApi = 'v1'
     const {
       host,
       app,
       stream1,
-      streamManagerAPI: version,
-      streamManagerNodeGroup: nodeGroup,
+      smApi: version,
+      streamManagerNodeGroup: nodeGroup
     } = configuration
     const data = JSON.stringify({
       provisions: [
@@ -135,59 +119,169 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           context: app,
           name: stream1,
           parameters: {
-            destURI: destUri.value + '/' + streamKey.value,
-          },
-        },
-      ],
+            destURI: destUri.value + '/' + streamKey.value
+          }
+        }
+      ]
     })
+
+    // first login for proxy JWT
+    let jwt
+    try {
+      jwt = await streamManagerUtil.authenticate2(
+        host,
+        version,
+        proxyUser.value,
+        proxyPasswd.value
+      )
+    } catch (e) {
+      console.error(
+        'Error authenticating with Stream Manager (failed to log in with Proxy User)',
+        e
+      )
+      alert(
+        `Error authenticating with Stream Manager  (failed to log in with Proxy User): ${
+          e.message ? e.message : 'error'
+        }. See console for details.`
+      )
+      throw e
+    }
+
+    // get the origin for the stream
     const origin = await streamManagerUtil.getOriginForStream(
       host,
-      version,
+      smApi,
       nodeGroup,
       app + '/' + stream1
     )
-    let url = `http://${origin}:5080/socialpusher/api?action=provision.${
-      isForwarding ? 'delete' : 'create'
-    }`
-    var timestamp = Date.now()
-    url += '&timestamp=' + timestamp
-    var signature = await createSignature(timestamp)
-    url += '&signature=' + signature
 
-    const result = await streamManagerUtil.forwardPostWithResult(
-      host,
-      version,
-      url,
-      data
-    )
-    if (result.status >= 200 && result.status < 300) {
-      isForwarding = !isForwarding
-      sendButton.disabled = false
-      sendButton.innerHTML = isForwarding
-        ? 'Stop Forwarding'
-        : 'Begin Forwarding'
-      console.log('isForwarding: ' + isForwarding)
-    } else if (result.status == 504) {
-      // The server response 504 when the stream forwarding attempt fails due to timeout.
-      // Other failures should not be retried.
-      if (++attempts < attemptLimit) {
-        console.log('Social media connection timed out. Retrying...')
-        var t = setTimeout(() => {
-          clearTimeout(t)
-          pushItSocial()
-        }, 10000) // 10000: 10s; The server may take up to 7 seconds (plus client-to-server roundtrip latency) to respond.
-      }
-    } else {
-      sendButton.disabled = false
-      console.log('error status: ' + this.status)
-    }
+    let digestAction = `provision.${isForwarding ? 'delete' : 'create'}`
+    let originUrl = `http://${origin}:5080/socialpusher/api`
+
+    let url = `https://${host}/as/${smApi}/proxy/forward/?nodegroup=${nodeGroup}&digestAction=${digestAction}&target=${encodeURIComponent(
+      originUrl
+    )}`
+
     console.log('POST to uri: ' + url)
     console.log('Send data: ' + data)
+
+    /* old async
+		const result = await fetch(url, {
+			method: 'POST',
+			withCredentials: true,
+			credentials: 'include',
+			headers: {
+				Authorization: `Bearer ${jwt}`,
+				'Content-Type': 'application/json',
+			},
+			body: typeof data === 'string' ? data : JSON.stringify(data),
+		})
+		
+		if (result.status >= 200 && result.status < 300) {
+			try {
+				const json = await result.json()
+				if (json && json.errorMessage) {
+					throw new Error(json.errorMessage)
+				} else {
+					return json
+				}
+			} catch (e) {
+				console.error('Provision response JSON parse failed: ' + e.message)
+			}
+			return { success: true }
+		} else if (result.status == 504) {
+			// The server response 504 when the stream forwarding attempt fails due to timeout.
+			// Other failures should not be retried.
+			if (++attempts < attemptLimit) {
+				console.log('Social media connection timed out. Retrying...')
+				var t = setTimeout(() => {
+					clearTimeout(t)
+					newPushIt()
+				}, 10000) // 10000: 10s; The server may take up to 7 seconds (plus client-to-server roundtrip latency) to respond.
+			} else {
+				alert("Social media connection timed out (after " + attempts + " attempts). Please try again.")
+			}
+		} else {
+			sendButton.disabled = false
+			console.log('Error: Failed to POST Social Pusher provision: ' + result.status)
+			alert("Error: Failed to POST Social Pusher provision" + result.status + " " + result.statusText);
+		}
+		*/
+
+    // new synchronous
+    while (attempts < attemptLimit) {
+      const xhr = new XMLHttpRequest()
+      try {
+        // Open the synchronous request
+        xhr.open('POST', url, false) // false makes it synchronous
+        xhr.withCredentials = true // Send credentials (cookies)
+        xhr.setRequestHeader('Authorization', `Bearer ${jwt}`)
+        xhr.setRequestHeader('Content-Type', 'application/json')
+
+        // Send the request body
+        xhr.send(typeof data === 'string' ? data : JSON.stringify(data))
+
+        let responseBody = xhr.responseText
+
+        // Always try to parse JSON, regardless of Content-Type
+        try {
+          responseBody = JSON.parse(responseBody)
+        } catch (parseError) {
+          console.warn('Response is not valid JSON:', parseError)
+          // Leave responseBody as text if parsing fails
+        }
+
+        // Handle successful response (status 2xx)
+        if (xhr.status >= 200 && xhr.status < 300) {
+          isForwarding = !isForwarding
+          sendButton.disabled = false
+          sendButton.innerHTML = isForwarding
+            ? 'Stop Forwarding'
+            : 'Begin Forwarding'
+          console.log('isForwarding: ' + isForwarding)
+
+          return
+        } else if (xhr.status === 504) {
+          // Handle 504 Gateway Timeout (this signals that Red5Pro server timed out while trying to forward the stream to the social media platform)
+          attempts++
+          console.log(
+            `Social media connection timed out. Retrying attempt ${attempts}/${attemptLimit}...`
+          )
+          if (attempts < attemptLimit) {
+            await sleep(10 * 1000) // Wait for 10 seconds before retrying
+            continue // Retry the request
+          } else {
+            // throw timeout exception
+            throw new Error(
+              `Social media connection timed out after ${attempts} attempts. Please try again.`
+            )
+          }
+        } else {
+          // Handle other HTTP errors (do not retry non-timeout failures)
+          throw new Error(`HTTP ${xhr.status}: ${xhr.statusText}`)
+        }
+      } catch (error) {
+        sendButton.disabled = false
+        let responseBody = xhr.responseText
+        console.error(
+          `Error in synchronousPost attempt ${attempts + 1}:`,
+          error,
+          responseBody
+        )
+        if (xhr.status !== 504) {
+          // For non-504 errors, stop retrying
+          alert(
+            `Error: Failed to POST Social Pusher provision. ${error.message} -- ${responseBody}`
+          )
+          throw error
+        } // else if it WAS 504, then maybe retry according to attemptLimit (implicitly handled by the loop)
+      }
+    }
   }
 
   sendButton.addEventListener('click', () => {
     attempts = 0
-    pushItSocial()
+    newPushIt()
   })
   // XXX /socialpusher
 
@@ -266,8 +360,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           : false,
         video: configuration.useVideo
           ? configuration.mediaConstraints.video
-          : false,
-      },
+          : false
+      }
     }
   }
 
@@ -279,14 +373,14 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       port,
       stream1,
       streamManagerAPI,
-      streamManagerNodeGroup: nodeGroup,
+      streamManagerNodeGroup: nodeGroup
     } = configuration
 
     const region = getRegionIfDefined()
     const params = region
       ? {
           region,
-          strict: true,
+          strict: true
         }
       : undefined
 
@@ -305,8 +399,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       streamName: stream1,
       connectionParams: {
         ...connectionParams,
-        nodeGroup,
-      },
+        nodeGroup
+      }
     }
 
     return rtcConfig
@@ -331,7 +425,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         '[Red5ProPublisher] :: Error in access of Origin IP: ' + jsonError
       )
       updateStatusFromEvent({
-        type: red5prosdk.PublisherEventTypes.CONNECT_FAILURE,
+        type: red5prosdk.PublisherEventTypes.CONNECT_FAILURE
       })
       onPublishFail(jsonError)
     }

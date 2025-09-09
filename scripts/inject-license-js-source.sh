@@ -20,6 +20,9 @@ while IFS= read -r -d '' file; do
         elif [ "$b" == "renderer-360.js" ]
         then
                 echo "Skipping... $b"
+        elif [ "$b" == "encrypt-worker.js" ] || [ "$b" == "decrypt-worker.js" ]
+        then
+                echo "Skipping... $b"
         else
                 cat "$LICENSE" "$file" > $$.tmp && mv $$.tmp "$file"
         fi

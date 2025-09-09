@@ -27,6 +27,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. -->
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
     <meta name="viewport" content="width=device-width" />
+    <meta name="robots" content="noindex, nofollow" />
     <script src="https://webrtchacks.github.io/adapter/adapter-latest.js"></script>
     <link rel="stylesheet" href="css/main.css" />
     <link rel="stylesheet" href="css/modal.css" />
@@ -652,7 +653,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. -->
 
           let lastResult
           interval = setInterval(() => {
-            subscriber.getStats((stats) => {
               connection.getStats(null).then((res) => {
                 res.forEach((report) => {
                   let bytes
@@ -702,7 +702,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. -->
               }).catch(err => {
                 console.error(err)
               })
-            })
           }, 1000)
         }
 

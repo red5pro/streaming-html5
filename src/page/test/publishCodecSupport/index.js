@@ -82,34 +82,32 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   streamTitle.innerText = configuration.stream1
 
   let defaultConfiguration = {
-    streamMode: configuration.recordBroadcast ? 'record' : 'live',
+    streamMode: configuration.recordBroadcast ? 'record' : 'live'
   }
 
   const mediaConstraints = {
     audio: configuration.useAudio
       ? configuration.mediaConstraints.audio
       : false,
-    video: configuration.useVideo
-      ? configuration.mediaConstraints.video
-      : false,
+    video: configuration.useVideo ? configuration.mediaConstraints.video : false
   }
 
-  const onPublisherEvent = (event) => {
+  const onPublisherEvent = event => {
     const { type } = event
     console.log('[Red5ProPublisher] ' + type + '.')
     updateStatusFromEvent(event)
   }
-  const onPublishFail = (message) => {
+  const onPublishFail = message => {
     console.error('[Red5ProPublisher] Publish Error :: ' + message)
   }
-  const onPublishSuccess = (publisher) => {
+  const onPublishSuccess = publisher => {
     console.log('[Red5ProPublisher] Publish Complete.')
     try {
       const pc = publisher.getPeerConnection()
       const stream = publisher.getMediaStream()
       window.trackBitrate(pc, onBitrateUpdate, onResolutionUpdate)
       statisticsField.classList.remove('hidden')
-      stream.getVideoTracks().forEach((track) => {
+      stream.getVideoTracks().forEach(track => {
         var settings = track.getSettings()
         onResolutionUpdate(settings.width, settings.height)
       })
@@ -118,7 +116,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       // no tracking for you!
     }
   }
-  const onUnpublishFail = (message) => {
+  const onUnpublishFail = message => {
     console.error('[Red5ProPublisher] Unpublish Error :: ' + message)
   }
   const onUnpublishSuccess = () => {
@@ -133,21 +131,21 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           connectionParams: {
             username: auth.username,
             password: auth.password,
-            token: auth.token,
-          },
+            token: auth.token
+          }
         }
       : {}
   }
 
-  const getUniqueCodecListing = (codecType) => {
+  const getUniqueCodecListing = codecType => {
     const { PublishVideoEncoder, PublishAudioEncoder } = red5prosdk
     const encoder =
       codecType === 'video' ? PublishVideoEncoder : PublishAudioEncoder
     let capabilities = RTCRtpSender.getCapabilities(codecType)
-    let codecs = capabilities.codecs.map((codec) =>
+    let codecs = capabilities.codecs.map(codec =>
       codec.mimeType.match(new RegExp(codecType + '/(.*)'))[1].toUpperCase()
     )
-    codecs = codecs.filter((codec) => {
+    codecs = codecs.filter(codec => {
       return encoder[codec]
     })
     codecs = codecs
@@ -161,10 +159,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   const listCodecs = () => {
     let videoCodecs = getUniqueCodecListing('video')
     let audioCodecs = getUniqueCodecListing('audio')
-    const videoOptions = videoCodecs.map((codec) => {
+    const videoOptions = videoCodecs.map(codec => {
       return `<option value="${codec}">${codec}</option>`
     })
-    const audioOptions = audioCodecs.map((codec) => {
+    const audioOptions = audioCodecs.map(codec => {
       return `<option value="${codec}">${codec}</option>`
     })
     videoOptions.unshift('<option value="default" selected>Default</option>')
@@ -174,7 +172,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     audioSelect.innerHTML = audioOptions.join(' ')
   }
 
-  const startPublishSession = async (mediaStream) => {
+  const startPublishSession = async mediaStream => {
     const { stream1: streamName } = configuration
     const { WHIPClient, PublishAudioEncoder, PublishVideoEncoder } = red5prosdk
     const rtcConfig = {
@@ -189,7 +187,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       audioEncoding:
         audioSelect.value === 'default'
           ? undefined
-          : PublishAudioEncoder[audioSelect.value.toUpperCase()],
+          : PublishAudioEncoder[audioSelect.value.toUpperCase()]
     }
     try {
       targetPublisher = new WHIPClient()

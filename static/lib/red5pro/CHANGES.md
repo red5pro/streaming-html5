@@ -1,14 +1,16 @@
 # Changes
 
+## 14.2.0
+
+- fix: viewless subscriber and websocket signaling. (Todd Anderson)
+- feat: sending publish resolution on SDP. (Todd Anderson)
+- fix: transport type query paramms on whip/whep (Todd Anderson)
+
 ## 14.0.0
 
 - fix: publish codec listings. (Todd Anderson)
 - fix: viewless subscriber for WHEPClient. (Todd Anderson)
 - feat: codec init param support for WHIP and RTC publishers. (Todd Anderson)
-
-## 13.3.0-beta.1
-
-- fix: viewless subscriber for WHEPClient. (Todd Anderson)
 
 ## 13.0.0
 

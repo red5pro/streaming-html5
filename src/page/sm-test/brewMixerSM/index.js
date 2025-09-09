@@ -55,6 +55,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       : red5prosdk.LOG_LEVELS.WARN
   )
 
+  const streamDetailsField = document.getElementById('stream-field')
+  const endpointField = document.getElementById('endpoint-field')
+
   let jwt
   let guids = []
   const GUID_COUNT = 25
@@ -64,14 +67,14 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     streamManagerUser,
     streamManagerPassword,
     streamManagerAPI: smVersion,
-    streamManagerNodeGroup: nodeGroupName,
+    streamManagerNodeGroup: nodeGroupName
   } = configuration
 
   let ipReg = /^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/
   let localhostReg = /^localhost.*/
-  let isIPOrLocalhost = (host) => ipReg.exec(host) || localhostReg.exec(host)
+  let isIPOrLocalhost = host => ipReg.exec(host) || localhostReg.exec(host)
 
-  const getSocketLocationFromProtocol = (host) => {
+  const getSocketLocationFromProtocol = host => {
     return isIPOrLocalhost(host)
       ? { protocol: 'ws', port: serverSettings.wsport }
       : { protocol: 'wss', port: serverSettings.wssport }
@@ -97,8 +100,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           connectionParams: {
             username,
             password,
-            token,
-          },
+            token
+          }
         }
       : {}
   }
@@ -108,7 +111,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     const {
       host,
       streamManagerAPI,
-      streamManagerNodeGroup: nodeGroup,
+      streamManagerNodeGroup: nodeGroup
     } = configuration
     const { protocol, port } = getSocketLocationFromProtocol(host)
 
@@ -116,7 +119,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     const params = region
       ? {
           region,
-          strict: true,
+          strict: true
         }
       : undefined
 
@@ -134,8 +137,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       streamName: name,
       connectionParams: {
         ...connectionParams,
-        nodeGroup,
-      },
+        nodeGroup
+      }
     }
     return rtcConfig
   }
@@ -148,7 +151,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     ZOOMED_IN: 3,
     SELECTED: 4,
     RESIZING: 5,
-    MOVING: 6,
+    MOVING: 6
   }
 
   const Direction = {
@@ -159,7 +162,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     WEST: 4,
     SOUTHWEST: 5,
     SOUTH: 6,
-    SOUTHEAST: 7,
+    SOUTHEAST: 7
   }
 
   // value is 8, because you can drag all diractions, plus drag handle.
@@ -197,7 +200,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             green: 0,
             blue: 0,
             alpha: 1,
-            node: 'SolidColorNode',
+            node: 'SolidColorNode'
           },
           {
             node: 'VideoSourceNode',
@@ -209,7 +212,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             destX: 0,
             destY: 0,
             destWidth: 960,
-            destHeight: 540,
+            destHeight: 540
           },
           {
             node: 'VideoSourceNode',
@@ -221,7 +224,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             destX: 960,
             destY: 0,
             destWidth: 960,
-            destHeight: 540,
+            destHeight: 540
           },
           {
             node: 'VideoSourceNode',
@@ -233,7 +236,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             destX: 0,
             destY: 540,
             destWidth: 960,
-            destHeight: 540,
+            destHeight: 540
           },
           {
             node: 'VideoSourceNode',
@@ -245,10 +248,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             destX: 960,
             destY: 540,
             destWidth: 960,
-            destHeight: 540,
-          },
+            destHeight: 540
+          }
         ],
-        node: 'CompositorNode',
+        node: 'CompositorNode'
       },
       rootAudioNode: {
         nodes: [
@@ -256,30 +259,30 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             streamGuid: 'live/stream1',
             pan: 0,
             gain: -6,
-            node: 'AudioSourceNode',
+            node: 'AudioSourceNode'
           },
           {
             streamGuid: 'live/stream2',
             pan: 0,
             gain: -100,
-            node: 'AudioSourceNode',
+            node: 'AudioSourceNode'
           },
           {
             streamGuid: 'live/stream3',
             pan: 0,
             gain: -100,
-            node: 'AudioSourceNode',
+            node: 'AudioSourceNode'
           },
           {
             streamGuid: 'live/stream4',
             pan: 0,
             gain: -100,
-            node: 'AudioSourceNode',
-          },
+            node: 'AudioSourceNode'
+          }
         ],
-        node: 'SumNode',
-      },
-    },
+        node: 'SumNode'
+      }
+    }
   ])
 
   const canvas = document.getElementById('videoOverlay')
@@ -296,8 +299,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   const activeTreeBox = document.getElementById('activeTreeBox')
   const renderTreeSubmit = document.getElementById('render-tree-submit')
   const radioButtons = document.querySelectorAll('input[name="layout"]')
-  radioButtons.forEach((radioButton) => {
-    radioButton.addEventListener('change', async (event) => {
+  radioButtons.forEach(radioButton => {
+    radioButton.addEventListener('change', async event => {
       const { checked, value } = event.target
       if (checked) {
         reGrid(parseInt(value, 10))
@@ -306,23 +309,23 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     })
   })
 
-  renderTreeToggle.addEventListener('click', (event) => {
+  renderTreeToggle.addEventListener('click', event => {
     event.preventDefault()
     toggleRenderTree()
   })
-  stopButton.addEventListener('click', (event) => {
+  stopButton.addEventListener('click', event => {
     event.preventDefault()
     stopMixer()
   })
-  mixerFormSubmit.addEventListener('click', (event) => {
+  mixerFormSubmit.addEventListener('click', event => {
     event.preventDefault()
     startNewMixer()
   })
-  toggleMuteButton.addEventListener('click', (event) => {
+  toggleMuteButton.addEventListener('click', event => {
     event.preventDefault()
     toggleMute()
   })
-  renderTreeSubmit.addEventListener('click', (event) => {
+  renderTreeSubmit.addEventListener('click', event => {
     event.preventDefault()
     setState(OverlayStates.IDLE)
     submitUserTree()
@@ -454,7 +457,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       quarterWidth,
       quarterHeight,
       height,
-      width,
+      width
     } = drawParams
     // =================================
     // lower right corner
@@ -508,7 +511,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
   // ============= DRAWING FUNCTIONS ===============
 
-  const setState = (newState) => {
+  const setState = newState => {
     currentState = newState
     drawCanvas()
   }
@@ -532,7 +535,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       xscale,
       yscale,
       widthPercentage,
-      heightPercentage,
+      heightPercentage
     } = coords
 
     const { destX, destY, destWidth, destHeight, sourceWidth, sourceHeight } =
@@ -566,10 +569,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       percWidth: destPercWidth,
       percHeight: destPercHeight,
       scaleWidth: xscale,
-      scaleHeight: yscale,
+      scaleHeight: yscale
     }
-
-    // console.log('SELECTED', JSON.stringify(selectedNode, null, 2))
     return drawParams
   }
 
@@ -756,7 +757,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     return result
   }
 
-  const videoNodeToTop = (node) => {
+  const videoNodeToTop = node => {
     const videoNodes = globalNodeGraph.rootVideoNode.nodes
     let nodeIndex = -1
     for (let i = videoNodes.length - 1; i >= 0; i--) {
@@ -799,7 +800,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   // EVENTS >>
 
-  const clickCanvas = (event) => {
+  const clickCanvas = event => {
     const coords = getCoords()
     const { offsetX, offsetY } = event
     const x = offsetX - coords.x
@@ -863,12 +864,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
   }
 
-  const doubleClickCanvas = (event) => {
+  const doubleClickCanvas = event => {
     const coords = getCoords()
     const { offsetX, offsetY } = event
     const x = offsetX - coords.x
     const y = offsetY - coords.y
-    console.log(`doubleClickCanvas at ${x}, ${y}, cur state ${currentState}`)
     if (
       currentState == OverlayStates.IDLE ||
       currentState == OverlayStates.SELECTED
@@ -903,7 +903,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
   }
 
-  const onMouseDown = (event) => {
+  const onMouseDown = event => {
     canvas.addEventListener('mousemove', onMouseMove)
     const coords = getCoords()
     const { widthPercentage, heightPercentage } = coords
@@ -1002,7 +1002,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
   }
 
-  const onMouseMove = (event) => {
+  const onMouseMove = event => {
     const coords = getCoords()
     const { offsetX, offsetY } = event
     const x = (offsetX - coords.x) / coords.widthPercentage
@@ -1116,7 +1116,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   // << CANVAS
 
-  const renderTreeManifestUpdate = (manifest) => {
+  const renderTreeManifestUpdate = manifest => {
     activeNodeGraph.value = JSON.stringify(manifest, null, 2)
     globalNodeGraph = manifest
   }
@@ -1129,37 +1129,42 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   const submitUserTree = () => {
     globalNodeGraph = JSON.parse(activeNodeGraph.value)
     brewmixer.updateRenderTrees(host, jwt, smVersion, nodeGroupName, eventId, [
-      globalNodeGraph,
+      globalNodeGraph
     ])
     // toggleRenderTree()
   }
 
   brewmixer.manifestDelegate = renderTreeManifestUpdate
 
-  const onSubscriberEvent = (event) => {
+  const onSubscriberEvent = event => {
     const { type } = event
     if (type !== 'Subscribe.Time.Update') {
       console.log('[Red5ProSubscriber] :: ' + type + '.')
+      if (type === 'WebRTC.Endpoint.Changed') {
+        const { data } = event
+        endpointField.innerHTML = `<p>Connected to:</p><p>${data.endpoint}</p>`
+      }
     }
   }
 
   const startSubscription = async () => {
     currentState = OverlayStates.IDLE
     try {
-      const { RTCSubscriber, WHEPClient } = window.red5prosdk
-      const { preferWhipWhep } = configuration
+      const { WHEPClient } = window.red5prosdk
       const config = getConfiguration()
-      const subscriber = preferWhipWhep ? new WHEPClient() : new RTCSubscriber()
+      const subscriber = new WHEPClient()
       subscriber.on('*', onSubscriberEvent)
       await subscriber.init(config)
       await subscriber.subscribe()
+      streamDetailsField.innerHTML = `<p>Stream Guid:</p><p>${config.app}/${config.streamName}</p>`
     } catch (error) {
       console.error(
-        '[Red5ProSubscriber] :: Error in access of Edge IP: ' +
-          error +
-          ' for stream ' +
-          getConfiguration().streamName
+        '[Red5ProSubscriber] :: Error: for stream ' +
+          getConfiguration().streamName,
+        error
       )
+      streamDetailsField.textContent = `Could not start subscription. See console for error.`
+      alert('Could not start subscription. See console for error.')
     }
   }
 
@@ -1170,7 +1175,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   // ============= SLOP ===============
-  const pathAndNameFromGuid = (guid) => {
+  const pathAndNameFromGuid = guid => {
     const index = !guid ? 0 : guid.lastIndexOf('/')
     const path = !guid ? '' : guid.substring(0, index)
     const name = !guid ? '' : guid.substring(index + 1)
@@ -1190,7 +1195,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   // ============= INITIALIZATION ===============
   const startNewMixer = async () => {
-    mixerFormSubmit.disabled = true
     mixerStreamGuid = mixerGuidField.value
     initStreamGuid()
 
@@ -1216,21 +1220,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       qpMax: qpmax,
       audioSampleRate: audiorate,
       audioChannels: 2,
-      subMixes: 1,
+      subMixes: 1
     }
 
-    const response = await brewmixer.createMixerEvent(
-      host,
-      jwt,
-      smVersion,
-      nodeGroupName,
-      request
-    )
-    if (response.ok) {
-      console.log('createMixerEvent response: ' + response.text)
-
+    try {
+      brewmixer.createMixerEvent(host, jwt, smVersion, nodeGroupName, request)
+      mixerFormSubmit.disabled = true
       // create the default nodegraph
-      globalNodeGraph = JSON.parse(defaultGraphValue)[0]
       brewmixer.updateRenderTrees(
         host,
         jwt,
@@ -1241,16 +1237,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       )
 
       // sleep before subscribe
-      await new Promise((r) => setTimeout(r, 1000))
+      await new Promise(r => setTimeout(r, 1000))
       // init / start subscription
       init(getConfiguration(), 'stream')
-    } else {
-      try {
-        const responseObj = JSON.parse(response)
-        console.log('Error:\n', JSON.stringify(responseObj, null, 4)) // pretty
-      } catch (e) {
-        console.log('Error:\n', response)
-      }
+    } catch (error) {
+      alert(`Error: ${error.message}`)
     }
   }
 
@@ -1271,7 +1262,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   // lay the videos out in a grid of sideLength x sideLength cells
   // we assume all input videos are streaming, and named stream1 through stream<N>
   // and that each input is the same aspect ratio as the single output
-  const reGrid = (sideLength) => {
+  const reGrid = sideLength => {
     const vid = document.getElementById('red5pro-subscriber')
     let cellSourceWidth = vid.videoWidth,
       cellSourceHeight = vid.videoHeight
@@ -1329,7 +1320,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
 
     brewmixer.updateRenderTrees(host, jwt, smVersion, nodeGroupName, eventId, [
-      globalNodeGraph,
+      globalNodeGraph
     ])
   }
 
@@ -1342,7 +1333,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
     // Listen on resize events to recalculate grid and canvas.
     window.addEventListener('resize', resizeOverlayCanvas)
-    const resizeObserver = new ResizeObserver((entries) => {
+    const resizeObserver = new ResizeObserver(entries => {
       for (const entry of entries) {
         if (entry.borderBoxSize?.length > 0) {
           sizeCanvas(
@@ -1359,30 +1350,50 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
     if (!jwt) {
       // This JWT will expire, but we cache it forever with no strategy to update
-      jwt = await streamManagerUtil.authenticate(
-        host,
-        smVersion,
-        streamManagerUser,
-        streamManagerPassword
-      )
+      try {
+        jwt = await streamManagerUtil.authenticate2(
+          host,
+          smVersion,
+          streamManagerUser,
+          streamManagerPassword
+        )
+      } catch (e) {
+        console.error('Error authenticating with Stream Manager', e)
+        alert(
+          `Error authenticating with Stream Manager: ${
+            e.message ? e.message : 'error'
+          }. See console for details.`
+        )
+        throw e
+      }
     }
 
     // first, use the query params and try to get the nodegraph for the specified stream (if any).
     // if it exists, start subscription, show controls etc
     // [if it doesn't exist, only show the Start New Mixer controls (default behavior for simplicity)]
-    const renderTrees = await brewmixer.getRenderTrees(
-      host,
-      jwt,
-      smVersion,
-      nodeGroupName,
-      eventId
-    )
+    let renderTrees = null
+
+    try {
+      renderTrees = brewmixer.getRenderTrees(
+        host,
+        jwt,
+        smVersion,
+        nodeGroupName,
+        eventId
+      )
+    } catch (error) {
+      // this probably just means that no mixer has been created yet
+      console.warn(
+        'Failed to init RenderTree for ' + eventId + ': ' + error.message
+      )
+    }
+
     if (renderTrees) {
       activeNodeGraph.value = JSON.stringify(renderTrees[0], null, 2)
       let nodeCount = 3
       try {
         nodeCount = renderTrees[0].rootVideoNode.nodes.filter(
-          (n) => n.node === 'VideoSourceNode'
+          n => n.node === 'VideoSourceNode'
         ).length
       } catch (e) {
         console.log('error parsing render tree')
@@ -1396,7 +1407,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
       const columns = Math.sqrt(nodeCount)
       const control = Array.from(radioButtons).find(
-        (control) => control.value === '' + columns
+        control => control.value === '' + columns
       )
       if (control) {
         control.checked = true
@@ -1408,6 +1419,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       // start subscription;
       startSubscription()
     } else {
+      globalNodeGraph = JSON.parse(defaultGraphValue)[0]
+      activeNodeGraph.value = defaultGraphValue
       mixerFormSubmit.disabled = false
     }
 

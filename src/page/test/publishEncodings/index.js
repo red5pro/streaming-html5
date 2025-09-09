@@ -82,7 +82,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   var defaultConfiguration = {
-    streamMode: configuration.recordBroadcast ? 'record' : 'live',
+    streamMode: configuration.recordBroadcast ? 'record' : 'live'
   }
 
   function getTrackSender(connection, kind) {
@@ -170,7 +170,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       } else {
         publisher.muteVideo()
         var stream = videoElement.srcObject
-        stream.getVideoTracks().forEach((track) => {
+        stream.getVideoTracks().forEach(track => {
           track.stop()
         })
       }
@@ -213,8 +213,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           connectionParams: {
             username: auth.username,
             password: auth.password,
-            token: auth.token,
-          },
+            token: auth.token
+          }
         }
       : {}
   }
@@ -229,20 +229,20 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             width: {
               min: 640,
               ideal: 1920,
-              max: 1920,
+              max: 1920
             },
             height: {
               min: 480,
               ideal: 1080,
-              max: 1080,
-            },
+              max: 1080
+            }
           }
         : false,
       frameRate: {
         min: 25,
         ideal: 60,
-        max: 60,
-      },
+        max: 60
+      }
     }
   }
 
@@ -256,12 +256,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       getAuthenticationParams(),
       {
         mediaConstraints: getUserMediaConfiguration(),
-
         streamName: configuration.stream1,
         bandwidth: {
           audio: 56,
-          video: 2500,
-        }, // to allow for scaling of bandwidth
+          video: 2500
+        } // to allow for scaling of bandwidth
       }
     )
     const publisher = new WHIPClient()

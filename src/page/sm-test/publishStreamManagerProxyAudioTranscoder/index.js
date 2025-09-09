@@ -93,7 +93,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   streamTitle.innerText = configuration.stream1
   var defaultConfiguration = {
-    streamMode: configuration.recordBroadcast ? 'record' : 'live',
+    streamMode: configuration.recordBroadcast ? 'record' : 'live'
   }
 
   var auth = configuration.authentication
@@ -109,10 +109,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       ? {
           username: authName,
           password: authPass,
-          token: authToken,
+          token: authToken
         }
       : undefined,
-    streams: [],
+    streams: []
   }
 
   function getAuthenticationParams() {
@@ -122,8 +122,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           connectionParams: {
             username: auth.username,
             password: auth.password,
-            token: auth.token,
-          },
+            token: auth.token
+          }
         }
       : {}
   }
@@ -305,15 +305,15 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             echoCancellation: echoCheck.checked,
             noiseSuppression: noiseCheck.checked,
             sampleRate: parseInt(sampleRateField.value, 10),
-            sampleSize: parseInt(sampleSizeField.value, 10),
+            sampleSize: parseInt(sampleSizeField.value, 10)
           }
         : false,
       video: configuration.useVideo
         ? {
             width: { exact: params.videoWidth },
-            height: { exact: params.videoHeight },
+            height: { exact: params.videoHeight }
           }
-        : false,
+        : false
     }
     if (
       configuration.useVideo &&
@@ -321,7 +321,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       cameraSelect.value.length > 0
     ) {
       var v = Object.assign(config.video, {
-        deviceId: { exact: cameraSelect.value },
+        deviceId: { exact: cameraSelect.value }
       })
       config.video = v
     }
@@ -331,13 +331,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     return config
   }
 
-  const getConfiguration = (variant) => {
+  const getConfiguration = variant => {
     const {
       host,
       protocol,
       port,
       streamManagerAPI,
-      streamManagerNodeGroup: nodeGroup,
+      streamManagerNodeGroup: nodeGroup
     } = configuration
 
     const { streamGuid, videoParams } = variant
@@ -348,7 +348,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     const params = region
       ? {
           region,
-          strict: true,
+          strict: true
         }
       : undefined
 
@@ -362,23 +362,23 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     const rtcConfig = {
       ...configuration,
       ...defaultConfiguration,
-      ...getUserMediaConfiguration(videoParams),
+      mediaConstraints: getUserMediaConfiguration(videoParams),
       endpoint,
       stream1,
       bandwidth: {
         audio: parseInt(bandwidthAudioField.value, 10),
-        video: videoParams.videoBitRate / 1000,
+        video: videoParams.videoBitRate / 1000
       },
       connectionParams: {
         ...connectionParams,
         nodeGroup,
-        transcode: true,
-      },
+        transcode: true
+      }
     }
     return rtcConfig
   }
 
-  const startPublish = async (variant) => {
+  const startPublish = async variant => {
     try {
       setPublishState(true)
       const { WHIPClient } = red5prosdk
@@ -398,7 +398,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         '[Red5ProPublisher] :: Error in access of Origin IP: ' + jsonError
       )
       updateStatusFromEvent({
-        type: red5prosdk.PublisherEventTypes.CONNECT_FAILURE,
+        type: red5prosdk.PublisherEventTypes.CONNECT_FAILURE
       })
       onPublishFail(jsonError)
     }
@@ -418,7 +418,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   function getHighestVariant() {
-    return transcoderPOST.streams.find((s) => s.abrLevel === 1)
+    return transcoderPOST.streams.find(s => s.abrLevel === 1)
   }
 
   function start(variant) {
@@ -455,8 +455,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         videoParams: {
           videoWidth: parseInt(widthField.value, 10),
           videoHeight: parseInt(heightField.value, 10),
-          videoBitRate: parseInt(bitrateField.value, 10),
-        },
+          videoBitRate: parseInt(bitrateField.value, 10)
+        }
       }
       streams.push(setting)
     }
@@ -471,7 +471,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         streamManagerUser,
         streamManagerPassword,
         streamManagerAPI: version,
-        streamManagerNodeGroup: nodeGroup,
+        streamManagerNodeGroup: nodeGroup
       } = configuration
       const streams = generateTranscoderPost(
         transcoderPOST.provisionGuid,
@@ -507,7 +507,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           message
       )
       updateStatusFromEvent({
-        type: red5prosdk.PublisherEventTypes.CONNECT_FAILURE,
+        type: red5prosdk.PublisherEventTypes.CONNECT_FAILURE
       })
       qualityContainer.classList.add('hidden')
       alert('Error in POST of transcode configuration: ' + message)

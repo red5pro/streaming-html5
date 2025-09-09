@@ -175,7 +175,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       onResolutionUpdate(event.data.width, event.data.height)
     } else if (
       event.type === 'Subscribe.Play.Unpublish' ||
-      event.type === 'Subscribe.Connection.Closed'
+      event.type === 'Subscribe.Connection.Closed' ||
+      event.type === 'Connect.Failure'
     ) {
       setConnected(false)
     } else if (event.type === 'WebRTC.DataChannel.Error') {

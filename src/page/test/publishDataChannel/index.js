@@ -131,7 +131,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       targetPublisher.send('incomingNotification', {
         message:
           rpcInput.value === '' ? 'What lovely weather today.' : rpcInput.value,
-        timestamp: new Date().getTime(),
+        timestamp: new Date().getTime()
       })
     }
   })
@@ -139,7 +139,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   sendMessageButton.addEventListener('click', () => {
     const message = JSON.stringify({
       message: messageInput.value,
-      timestamp: new Date().getTime(),
+      timestamp: new Date().getTime()
     })
     console.log(`Sending along message: ${message}`)
     targetPublisher.getDataChannel().send(message)
@@ -154,7 +154,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
     const recorder = new MediaRecorder(stream)
     let chunks = []
-    recorder.ondataavailable = (e) => {
+    recorder.ondataavailable = e => {
       chunks.push(e.data)
     }
 
@@ -170,7 +170,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           blobChunks.push(chunk)
         }
       }
-      const blob = new Blob(blobChunks)
+      const blob = new Blob(blobChunks, { type: 'audio/mp3' })
       const buffer = await new Response(blob).arrayBuffer()
       console.log('Sending bytes...', buffer.byteLength)
       console.log(buffer)
@@ -179,6 +179,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       var audioUrl = window.URL.createObjectURL(blob)
       var audio = document.querySelector('#snippet')
       audio.controls = true
+      audio.mimeType = 'audio/mp3'
       audio.src = audioUrl
     }
 
@@ -230,8 +231,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           connectionParams: {
             username: auth.username,
             password: auth.password,
-            token: auth.token,
-          },
+            token: auth.token
+          }
         }
       : {}
   }
@@ -244,8 +245,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           : false,
         video: configuration.useVideo
           ? configuration.mediaConstraints.video
-          : false,
-      },
+          : false
+      }
     }
   }
 
@@ -261,7 +262,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       {
         streamName: configuration.stream1,
         dataChannelConfiguration: { name: dcName },
-        streamMode: configuration.recordBroadcast ? 'record' : 'live',
+        streamMode: configuration.recordBroadcast ? 'record' : 'live'
       }
     )
 

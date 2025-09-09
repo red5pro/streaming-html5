@@ -24,7 +24,7 @@ WHETHER IN  AN  ACTION  OF  CONTRACT,  TORT  OR  OTHERWISE,  ARISING  FROM,  OUT
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 // Defining/accessing testbed configuration.
-;(function (window, adapter) {
+;(function (window, adapter, queryParamConfig, queryParamExcludes) {
   if (typeof adapter !== 'undefined') {
     console.log('Browser: ' + JSON.stringify(adapter.browserDetails, null, 2))
   }
@@ -46,14 +46,17 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   const validIP =
     /^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/
   const localhost = /^localhost/
-  const isLocalhostOrIP = (address) => {
+  const isLocalhostOrIP = address => {
     return address.match(validIP) || address.match(localhost)
   }
 
   var build_version = '$VERSION'
-  var protocol = window.location.protocol
-  var port = window.location.port
-  protocol = protocol.substring(0, protocol.lastIndexOf(':'))
+  var protocol = queryParamConfig.protocol || window.location.protocol
+  var port = queryParamConfig.port || window.location.port
+  var isLocationProtocol = protocol.indexOf(':') > -1
+  protocol = isLocationProtocol
+    ? protocol.substring(0, protocol.lastIndexOf(':'))
+    : protocol
 
   var isMoz = !!navigator.mozGetUserMedia
   var isEdge = window.navigator.userAgent.indexOf('Edge') > -1
@@ -68,8 +71,27 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     wsport: 5080,
     wssport: 443,
     rtmpport: 1935,
-    rtmpsport: 1936,
+    rtmpsport: 1936
   }
+
+  function appendQueryParams() {
+    Array.from(document.querySelectorAll('a[href]')).forEach(link => {
+      const url = new URL(link.href, window.location.origin)
+      const linkParams = new URLSearchParams(url.search)
+
+      // Merge query params from the current URL into the link
+      for (let key in queryParamConfig) {
+        const value = queryParamConfig[key]
+        if (queryParamExcludes.indexOf(key) < 0 && !linkParams.has(key)) {
+          linkParams.set(key, value)
+        }
+      }
+
+      url.search = linkParams.toString()
+      link.href = url.toString()
+    })
+  }
+
   function assignStorage() {
     const host = window.location.hostname
     const port = isLocalhostOrIP(host) ? 5080 : 443
@@ -91,7 +113,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       buffer: 0,
       bandwidth: {
         audio: 56,
-        video: 750,
+        video: 750
       },
       includeDataChannel: true, // Whether to include data channel when publishing
       disableProxy: true, // WHIP/WHEP specific
@@ -108,40 +130,40 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             : {
                 width: {
                   min: 320,
-                  max: 640,
+                  max: 640
                 },
                 height: {
                   min: 240,
-                  max: 360,
+                  max: 360
                 },
                 frameRate: {
                   min: 8,
-                  max: 30,
-                },
-              },
+                  max: 30
+                }
+              }
       },
       publisherFailoverOrder: 'rtc,rtmp',
       subscriberFailoverOrder: 'rtc,rtmp,hls',
       rtcConfiguration: {
         iceServers: [
           {
-            urls: 'stun:stun2.l.google.com:19302',
-          },
+            urls: 'stun:stun2.l.google.com:19302'
+          }
         ],
         bundlePolicy: 'max-bundle',
         iceCandidatePoolSize: 2,
         iceTransportPolicy: 'all',
-        rtcpMuxPolicy: 'require',
+        rtcpMuxPolicy: 'require'
       },
       googleIce: [
         {
-          urls: 'stun:stun2.l.google.com:19302',
-        },
+          urls: 'stun:stun2.l.google.com:19302'
+        }
       ],
       mozIce: [
         {
-          urls: 'stun:stun.services.mozilla.com:3478',
-        },
+          urls: 'stun:stun.services.mozilla.com:3478'
+        }
       ],
       iceTransport: 'udp',
       verboseLogging: true,
@@ -157,12 +179,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         enabled: false,
         username: 'user',
         password: 'pass',
-        token: 'token',
+        token: 'token'
       },
       mixerBackendSocketField: '',
       mixerAuthenticationEnabled: false,
       preferWhipWhep: true,
       stats: undefined,
+      offerSDPResolution: false
     }
 
     /**
@@ -214,14 +237,23 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       assignStorage()
     } finally {
       defineIceServers()
-      sessionStorage.setItem('r5proTestBed', JSON.stringify(json))
+      sessionStorage.setItem(
+        'r5proTestBed',
+        JSON.stringify({ ...json, ...queryParamConfig })
+      )
     }
   } else {
     assignStorage()
     defineIceServers()
-    sessionStorage.setItem('r5proTestBed', JSON.stringify(json))
+    sessionStorage.setItem(
+      'r5proTestBed',
+      JSON.stringify({ ...json, ...queryParamConfig })
+    )
   }
 
   sessionStorage.setItem('r5proServerSettings', JSON.stringify(serverSettings))
-  return json
-})(this, window.adapter)
+  document.addEventListener('DOMContentLoaded', function () {
+    appendQueryParams()
+  })
+  return { ...json, ...queryParamConfig }
+})(this, window.adapter, window.queryParamConfig, window.queryParamExcludes)
