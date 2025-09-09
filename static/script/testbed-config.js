@@ -112,7 +112,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
                 },
                 height: {
                   min: 240,
-                  max: 480,
+                  max: 360,
                 },
                 frameRate: {
                   min: 8,

@@ -51,8 +51,6 @@ function determinePublisher(serverAddress) {
     ...getUserMediaConfiguration()
   }
   var rtcConfig = {...config, {
-    protocol: getSocketLocationFromProtocol().protocol,
-    port: getSocketLocationFromProtocol().port,
     streamName: stream1,
     host: host
     app: app,

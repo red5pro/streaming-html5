@@ -26,18 +26,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ;(function (window, document, red5prosdk) {
   'use strict'
 
-  var serverSettings = (function () {
-    var settings = sessionStorage.getItem('r5proServerSettings')
-    try {
-      return JSON.parse(settings)
-    } catch (e) {
-      console.error(
-        'Could not read server settings from sessionstorage: ' + e.message
-      )
-    }
-    return {}
-  })()
-
   var configuration = (function () {
     var conf = sessionStorage.getItem('r5proTestBed')
     try {
@@ -92,18 +80,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     startup()
   })
 
-  var protocol = serverSettings.protocol
-  const isSecure =
-    protocol == 'https' || window.location.hostname === 'localhost'
-  function getSocketLocationFromProtocol() {
-    return !isSecure
-      ? { protocol: 'ws', port: serverSettings.wsport }
-      : { protocol: 'wss', port: serverSettings.wssport }
-  }
-
   const defaultConfiguration = {
-    protocol: getSocketLocationFromProtocol().protocol,
-    port: getSocketLocationFromProtocol().port,
     streamMode: configuration.recordBroadcast ? 'record' : 'live',
   }
 
@@ -240,12 +217,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     const {
       host,
       app,
+      protocol,
+      port,
       stream1,
       streamManagerAPI,
-      preferWhipWhep,
       streamManagerNodeGroup: nodeGroup,
     } = configuration
-    const { protocol, port } = getSocketLocationFromProtocol()
 
     const region = getRegionIfDefined()
     const params = region
@@ -255,10 +232,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         }
       : undefined
 
-    const httpProtocol = protocol === 'wss' ? 'https' : 'http'
-    const endpoint = !preferWhipWhep
-      ? `${protocol}://${host}:${port}/as/${streamManagerAPI}/proxy/ws/publish/${app}/${stream1}`
-      : `${httpProtocol}://${host}:${port}/as/${streamManagerAPI}/proxy/whip/${app}/${stream1}`
+    const httpProtocol = protocol === 'ws' ? 'http' : 'https'
+    const endpoint = `${httpProtocol}://${host}:${port}/as/${streamManagerAPI}/proxy/whip/${app}/${stream1}`
 
     const connectionParams = params
       ? { ...params, ...getAuthenticationParams().connectionParams }
@@ -283,10 +258,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   const setupPublisher = async (stream) => {
     try {
-      const { RTCPublisher, WHIPClient } = red5prosdk
-      const { preferWhipWhep, stream1 } = configuration
+      const { WHIPClient } = red5prosdk
+      const { stream1 } = configuration
       const config = getConfiguration()
-      const publisher = preferWhipWhep ? new WHIPClient() : new RTCPublisher()
+      const publisher = new WHIPClient()
       publisher.on('*', onPublisherEvent)
       await publisher.initWithStream(config, stream)
       await publisher.publish()

@@ -255,7 +255,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       app,
       stream1,
       streamManagerAPI,
-      preferWhipWhep,
       streamManagerNodeGroup: nodeGroup,
     } = configuration
     const { protocol, port } = getSocketLocationFromProtocol()
@@ -269,9 +268,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       : undefined
 
     const httpProtocol = protocol === 'wss' ? 'https' : 'http'
-    const endpoint = !preferWhipWhep
-      ? `${protocol}://${host}:${port}/as/${streamManagerAPI}/proxy/ws/publish/${app}/${stream1}`
-      : `${httpProtocol}://${host}:${port}/as/${streamManagerAPI}/proxy/whip/${app}/${stream1}`
+    const endpoint = `${httpProtocol}://${host}:${port}/as/${streamManagerAPI}/proxy/whip/${app}/${stream1}`
 
     var connectionParams = params
       ? {
@@ -300,10 +297,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   const startPublish = async () => {
     try {
-      const { RTCPublisher, WHIPClient } = red5prosdk
-      const { preferWhipWhep, stream1 } = configuration
+      const { WHIPClient } = red5prosdk
+      const { stream1 } = configuration
       const config = getConfiguration()
-      const publisher = preferWhipWhep ? new WHIPClient() : new RTCPublisher()
+      const publisher = new WHIPClient()
       publisher.on('*', onPublisherEvent)
       await publisher.init(config)
       await publisher.publish()

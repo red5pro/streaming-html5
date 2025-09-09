@@ -26,18 +26,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ;(function (window, document, red5prosdk, streamManagerUtil) {
   'use strict'
 
-  var serverSettings = (function () {
-    var settings = sessionStorage.getItem('r5proServerSettings')
-    try {
-      return JSON.parse(settings)
-    } catch (e) {
-      console.error(
-        'Could not read server settings from sessionstorage: ' + e.message
-      )
-    }
-    return {}
-  })()
-
   var configuration = (function () {
     var conf = sessionStorage.getItem('r5proTestBed')
     try {
@@ -65,18 +53,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var packetsField = document.getElementById('packets-field')
   var resolutionField = document.getElementById('resolution-field')
 
-  var protocol = serverSettings.protocol
-  var isSecure = protocol == 'https'
-  function getSocketLocationFromProtocol() {
-    return !isSecure
-      ? { protocol: 'ws', port: serverSettings.wsport }
-      : { protocol: 'wss', port: serverSettings.wssport }
-  }
-
   streamTitle.innerText = configuration.stream1
   var defaultConfiguration = {
-    protocol: getSocketLocationFromProtocol().protocol,
-    port: getSocketLocationFromProtocol().port,
     streamMode: 'record',
   }
 
@@ -189,13 +167,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   function determinePublisher(jsonResponse) {
-    var { app, proxy, preferWhipWhep } = configuration
-    var { WHIPClient, RTCPublisher } = red5prosdk
+    var { protocol, port, app } = configuration
+    var { WHIPClient } = red5prosdk
     var { params } = jsonResponse
-    var host = jsonResponse.serverAddress
-    var scope = jsonResponse.scope
     var name = jsonResponse.name
-    var { protocol, port } = getSocketLocationFromProtocol()
 
     var connectionParams = params
       ? { ...params, ...getAuthenticationParams().connectionParams }
@@ -209,23 +184,17 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         protocol,
         port,
         streamName: name,
-        app: preferWhipWhep ? app : proxy,
-        connectionParams: preferWhipWhep
-          ? connectionParams
-          : {
-              ...connectionParams,
-              host: host,
-              app: scope,
-            },
+        app,
+        connectionParams,
       }
     )
-    var publisher = preferWhipWhep ? new WHIPClient() : new RTCPublisher()
+    var publisher = new WHIPClient()
     return publisher.init(rtcConfig)
   }
 
   function showAddress(publisher) {
     var config = publisher.getOptions()
-    const { protocol, port, host, app, connectionParams } = config
+    const { host, app, connectionParams } = config
     console.log(`Host = ${host} | app = ${app}`)
     if (connectionParams && connectionParams.host && connectionParams.app) {
       displayServerAddress(config.connectionParams.host, host)

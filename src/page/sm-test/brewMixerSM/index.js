@@ -108,7 +108,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     const {
       host,
       streamManagerAPI,
-      preferWhipWhep,
       streamManagerNodeGroup: nodeGroup,
     } = configuration
     const { protocol, port } = getSocketLocationFromProtocol(host)
@@ -121,10 +120,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         }
       : undefined
 
-    const httpProtocol = protocol === 'wss' ? 'https' : 'http'
-    const endpoint = !preferWhipWhep
-      ? `${protocol}://${host}:${port}/as/${streamManagerAPI}/proxy/ws/subscribe/${path}/${name}`
-      : `${httpProtocol}://${host}:${port}/as/${streamManagerAPI}/proxy/whep/${path}/${name}`
+    const httpProtocol = protocol === 'ws' ? 'http' : 'https'
+    const endpoint = `${httpProtocol}://${host}:${port}/as/${streamManagerAPI}/proxy/whep/${path}/${name}`
 
     const connectionParams = params
       ? { ...params, ...getAuthenticationParams().connectionParams }
