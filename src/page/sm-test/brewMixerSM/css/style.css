@@ -1,0 +1,358 @@
+/*
+Copyright © 2015 Infrared5, Inc. All rights reserved.
+
+The accompanying code comprising examples for use solely in conjunction with Red5 Pro (the "Example Code")
+is  licensed  to  you  by  Infrared5  Inc.  in  consideration  of  your  agreement  to  the  following
+license terms  and  conditions.  Access,  use,  modification,  or  redistribution  of  the  accompanying
+code  constitutes your acceptance of the following license terms and conditions.
+
+Permission is hereby granted, free of charge, to you to use the Example Code and associated documentation
+files (collectively, the "Software") without restriction, including without limitation the rights to use,
+copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit
+persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The Software shall be used solely in conjunction with Red5 Pro. Red5 Pro is licensed under a separate end
+user  license  agreement  (the  "EULA"),  which  must  be  executed  with  Infrared5,  Inc.
+An  example  of  the EULA can be found on our website at: https://account.red5.net/assets/LICENSE.txt.
+
+The above copyright notice and this license shall be included in all copies or portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,  INCLUDING  BUT
+NOT  LIMITED  TO  THE  WARRANTIES  OF  MERCHANTABILITY, FITNESS  FOR  A  PARTICULAR  PURPOSE  AND
+NONINFRINGEMENT.   IN  NO  EVENT  SHALL INFRARED5, INC. BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+WHETHER IN  AN  ACTION  OF  CONTRACT,  TORT  OR  OTHERWISE,  ARISING  FROM,  OUT  OF  OR  IN CONNECTION
+WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
+/* GENERAL */
+:root {
+  --color-lightgray: #dadada;
+  --color-black: rgb(12, 12, 12);
+  --color-darkgray: rgb(27, 27, 27);
+  --color-midgray: rgb(55, 57, 57);
+}
+
+label,
+button,
+fieldset,
+input,
+legend,
+select,
+textarea {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-color: transparent;
+  font-size: 16px;
+  font-weight: 700;
+  border: 10;
+  padding: 10;
+  margin-bottom: 10px;
+  box-sizing: border-box;
+  display: block;
+}
+
+label {
+  font-size: 12px;
+}
+
+textarea:focus {
+  color: #ffffff;
+}
+
+input,
+select,
+textarea {
+  border: 1px solid #a6a6a6;
+  color: #a6a6a6;
+  border-radius: 0.2rem;
+  margin: 10;
+  background-color: #000000;
+}
+
+.mixer-section {
+  height: 720px;
+  background-color: #000;
+  display: flex;
+  flex-direction: column;
+}
+/* GENERAL */
+
+/* Modal ~~ */
+.mixer-modal {
+  position: fixed;
+  background-color: rgba(0, 0, 0, 0.3);
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 999;
+  pointer-events: all;
+  -webkit-transition: all 0.3s;
+  -moz-transition: all 0.3s;
+  transition: all 0.3s;
+}
+.mixer-modal > div {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 756px;
+  padding: 32px;
+  background: var(--color-black);
+  color: #fff;
+  width: 756px;
+  z-index: 100;
+}
+
+.mixer-form-container {
+  display: flex;
+  flex-direction: column;
+  row-gap: 32px;
+}
+
+.mixer-form-header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.mixer-close-button {
+  cursor: pointer;
+}
+
+.mixer-form-title {
+  font-size: 24px;
+}
+
+.mixer-form {
+  display: flex;
+  flex-direction: row;
+  column-gap: 48px;
+  align-items: center;
+  flex-wrap: wrap;
+  position: relative;
+}
+
+.mixer-form-item {
+  display: flex;
+  flex-direction: row;
+  column-gap: 16px;
+  align-items: center;
+  width: 321px;
+}
+
+.mixer-form-item > label {
+  width: 90px;
+  color: var(--color-lightgray);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 24px;
+  letter-spacing: 0.32px;
+}
+
+.mixer-form-item > input {
+  width: 215px;
+  height: 40px;
+  color: var(--color-lightgray);
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 24px;
+  letter-spacing: 0.32px;
+  border: unset;
+  background-color: var(--color-darkgray);
+  border-radius: 10px;
+  padding-left: 16px;
+}
+
+.mixer-form-controls {
+  width: 100%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  margin-top: 48px;
+}
+
+.mixer-form-submit,
+.render-tree-submit {
+  display: flex;
+  padding: 10px 20px;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  border-radius: 20px;
+  background: #fff;
+  color: #000;
+  border: unset;
+  font-weight: 500;
+  letter-spacing: 1.5px;
+  font-size: 14px;
+  cursor: pointer;
+}
+.mixer-form-submit:disabled,
+.render-tree-submit:disabled {
+  opacity: 0.5;
+  cursor: unset;
+}
+/* ~~ Modal */
+/* ~~ Video Controls */
+#topBarControls {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+}
+
+#videoControls {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  column-gap: 2px;
+  height: 35px;
+  z-index: 105;
+}
+
+.layout-controls {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  column-gap: 16px;
+  padding: 7px 16px 7px 16px;
+  background-color: var(--color-darkgray);
+  height: 100%;
+}
+
+.layout-controls > .layout-item > label {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+}
+
+#toggleMute {
+  padding: 7px 10px;
+  height: 100%;
+  background-color: var(--color-darkgray);
+  cursor: pointer;
+}
+
+.layout-spacer {
+  flex-grow: 2;
+  height: 100%;
+  background-color: var(--color-darkgray);
+  display: flex;
+  flex-direction: row;
+  column-gap: 8px;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 12px;
+  cursor: pointer;
+}
+
+/* HIDE RADIO */
+[type='radio'] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* IMAGE STYLES */
+[type='radio'] + img {
+  cursor: pointer;
+  opacity: 0.5;
+}
+
+/* CHECKED STYLES */
+[type='radio']:checked + img {
+  opacity: 1;
+}
+/* ~~ Video Controls */
+
+/* Mixer Controls ~~ */
+#mixerControls {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  column-gap: 4px;
+  height: 100%;
+}
+.mixer-controls-button {
+  height: 100%;
+  display: flex;
+  flex-direction: row;
+  column-gap: 8px;
+  padding: 0 16px;
+  align-items: center;
+  cursor: pointer;
+  font-size: 14px;
+  background-color: var(--color-darkgray);
+  color: var(--color-gray);
+}
+/* ~~ Mixer Controls */
+
+/* Player Container ~~ */
+#playerContainer {
+  background-color: rgb(57, 57, 57);
+  width: 100%;
+  height: 100%;
+  position: relative;
+  display: flex;
+}
+
+#videoOverlay,
+#red5pro-subscriber {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1;
+}
+
+#red5pro-subscriber {
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.centerContents {
+  justify-content: center;
+  text-align: center;
+}
+/* ~~ Player Container */
+
+/* Active Tree ~~ */
+#activeTreeBox {
+  position: absolute;
+  right: 0;
+  top: 0;
+  height: 100%;
+  background-color: #000;
+  padding: 12px;
+  width: 333px;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  align-items: center;
+  z-index: 104;
+  row-gap: 16px;
+  border: 1px solid var(--color-gray);
+}
+
+#activeNodeGraph {
+  width: 100%;
+  flex: 2;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 24px;
+  letter-spacing: 0.32px;
+  flex-grow: 2;
+  border: none;
+  background-color: var(--color-darkgray);
+}
+
+.active-tree-header {
+  font-size: 14px;
+  color: var(--color-gray);
+  text-align: center;
+  width: 100%;
+}
+/* ~~ Active Tree */

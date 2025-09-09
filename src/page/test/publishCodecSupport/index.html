@@ -1,0 +1,41 @@
+<!doctype html>
+{{> license}}
+<html>
+  <head>
+    {{> meta title='WebRTC Publish Codec Support'}}
+    {{> header-scripts}}
+    {{> header-stylesheets}}
+  </head>
+  <body>
+    {{> top-bar }}
+    <div id="app">
+      {{> settings-link}}
+      {{> test-info testTitle='Publish Codec Support'}}
+      <div class="stream-section">
+        <div class="instructions-block">
+          <p class="codec-select-field codec-select-form settings-field settings-collapsable">
+            <label for="video-select" class="label-style settings-label">Select a Video Codec:</label>
+            <select id="video-select" class="control"></select>
+          </p>
+          <p class="codec-select-field codec-select-form settings-field settings-collapsable">
+            <label for="audio-select" class="label-style settings-label">Select an Audio Codec:</label>
+            <select id="audio-select" class="control"></select>
+          </p>
+          <p>
+            <button id="publish-button" class="control ui-button" disabled>Publish</button>
+          </p>
+        </div>
+        {{> status-field-publisher}}
+        {{> statistics-field packets_field='Packets Sent'}}
+        <div class="centered">
+          <video id="red5pro-publisher" class="red5pro-publisher"
+                 controls autoplay playsinline muted>
+          </video>
+        </div>
+      </div>
+    </div>
+    {{> footer}}
+    {{> body-scripts}}
+    <script src="index.js"></script>
+  </body>
+</html>
