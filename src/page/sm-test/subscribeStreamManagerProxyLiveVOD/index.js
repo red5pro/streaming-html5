@@ -24,14 +24,6 @@ WHETHER IN  AN  ACTION  OF  CONTRACT,  TORT  OR  OTHERWISE,  ARISING  FROM,  OUT
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 ;(function (window, document, red5prosdk, CustomControls) {
-  const serverSettings = (() => {
-    const settings = sessionStorage.getItem('r5proServerSettings')
-    try {
-      return JSON.parse(settings)
-    } catch (e) {
-      return {}
-    }
-  })()
   const configuration = (() => {
     const conf = sessionStorage.getItem('r5proTestBed')
     try {
@@ -48,11 +40,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   )
 
   let subscriber
-  let controls
 
   let instanceId = Math.floor(Math.random() * 0x10000).toString(16)
-  let protocol = serverSettings.protocol
-  let isSecure = protocol === 'https'
 
   const subscribeButton = document.getElementById('subscribe-button')
   const baseCheck = document.getElementById('base-check')
@@ -93,17 +82,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     updateStatistics(bitrate, packetsReceived, frameWidth, frameHeight)
   }
 
-  // Determines the ports and protocols based on being served over TLS.
-  const getSocketLocationFromProtocol = () => {
-    return !isSecure
-      ? { protocol: 'ws', port: serverSettings.wsport }
-      : { protocol: 'wss', port: serverSettings.wssport }
-  }
-
   // Base configuration to extend in providing specific tech failover configurations.
   let defaultConfiguration = (function (useVideo, useAudio) {
-    const { protocol, port } = getSocketLocationFromProtocol()
-    let c = { protocol, port }
+    let c = configuration
     if (!useVideo) {
       c.videoEncoding = red5prosdk.PlaybackVideoEncoder.NONE
     }
@@ -114,7 +95,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   })(configuration.useVideo, configuration.useAudio)
 
   // Local lifecycle notifications.
-  const onSubscriberEvent = (event) => {
+  const onSubscriberEvent = event => {
     const { type, data } = event
     if (type !== 'Subscribe.Time.Update') {
       console.log('[Red5ProSubscriber] ' + type + '.')
@@ -131,10 +112,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       }
     }
   }
-  const onSubscribeFail = (message) => {
+  const onSubscribeFail = message => {
     console.error('[Red5ProSubsriber] Subscribe Error :: ' + message)
   }
-  const onSubscribeSuccess = (subscriber) => {
+  const onSubscribeSuccess = subscriber => {
     console.log('[Red5ProSubsriber] Subscribe Complete.')
     if (window.exposeSubscriberGlobally) {
       window.exposeSubscriberGlobally(subscriber)
@@ -152,7 +133,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       }
     }
   }
-  const onUnsubscribeFail = (message) => {
+  const onUnsubscribeFail = message => {
     console.error('[Red5ProSubsriber] Unsubscribe Error :: ' + message)
   }
   const onUnsubscribeSuccess = () => {
@@ -177,8 +158,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       ? {
           connectionParams: {
             username: auth.username,
-            password: auth.password,
-          },
+            password: auth.password
+          }
         }
       : {}
   }
@@ -198,7 +179,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     return content
   }
 
-  const showModal = (content) => {
+  const showModal = content => {
     var style = 'padding: 10px; line-height: 1.3em;'
     content.style = style
     const div = document.createElement('div')
@@ -213,7 +194,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     container.appendChild(content)
     div.appendChild(container)
     document.body.appendChild(div)
-    button.addEventListener('click', (event) => {
+    button.addEventListener('click', event => {
       event.preventDefault()
       document.body.removeChild(div)
       return false
@@ -241,25 +222,23 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     const {
       host,
       app,
+      protocol,
+      port,
       stream1,
       streamManagerAPI,
-      preferWhipWhep,
-      streamManagerNodeGroup: nodeGroup,
+      streamManagerNodeGroup: nodeGroup
     } = configuration
-    const { protocol, port } = getSocketLocationFromProtocol()
 
     const region = getRegionIfDefined()
     const params = region
       ? {
           region,
-          strict: true,
+          strict: true
         }
       : undefined
 
-    const httpProtocol = protocol === 'wss' ? 'https' : 'http'
-    const endpoint = !preferWhipWhep
-      ? `${protocol}://${host}:${port}/as/${streamManagerAPI}/proxy/ws/subscribe/${app}/${stream1}`
-      : `${httpProtocol}://${host}:${port}/as/${streamManagerAPI}/proxy/whep/${app}/${stream1}`
+    const httpProtocol = protocol === 'ws' ? 'http' : 'https'
+    const endpoint = `${httpProtocol}://${host}:${port}/as/${streamManagerAPI}/proxy/whep/${app}/${stream1}`
 
     var connectionParams = params
       ? { ...params, ...getAuthenticationParams().connectionParams }
@@ -273,15 +252,14 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       subscriptionId: 'subscriber-' + instanceId,
       connectionParams: {
         ...connectionParams,
-        nodeGroup,
-      },
+        nodeGroup
+      }
     }
     return rtcConfig
   }
 
   const subscribe = async (baseURL, fullURL, useCustomControls) => {
-    const { preferWhipWhep } = configuration
-    const { WHEPClient, RTCSubscriber } = red5prosdk
+    const { LiveSeekClient } = red5prosdk
 
     subscribeButton.disabled = true
     urlInput.disabled = true
@@ -301,14 +279,17 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             baseURL,
             fullURL,
             usePlaybackControlsUI: !useCustomControls,
-            options: { debug: true, backBufferLength: 0 },
-          },
-        },
+            options: { debug: true, backBufferLength: 0 }
+          }
+        }
       }
-      subscriber = preferWhipWhep ? new WHEPClient() : new RTCSubscriber()
-      await subscriber.init(rtcConfig)
+      subscriber = new LiveSeekClient()
       subscriber.on('*', onSubscriberEvent)
-      controls = new CustomControls(subscriber)
+
+      await subscriber.init(rtcConfig)
+      if (useCustomControls) {
+        new CustomControls(subscriber)
+      }
 
       streamTitle.innerText = configuration.stream1
       await subscriber.subscribe()

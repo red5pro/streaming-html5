@@ -293,10 +293,6 @@ To define the **Host** with the server instance's IP, click the _Host_ field f t
 | :-----
 | _Demonstrates utilizing the Red5 Pro Stream Manager API to access Provisions and an Edge server IP to subscribe to a live WebRTC-based stream with Adaptive Bitrate Control._
 
-| **[Stream Manager Proxy Transcoder (RTMP)](src/page/sm-test/subscribeStreamManagerProxyTranscoderRTMP)**
-| :-----
-| _Demonstrates utilizing the Red5 Pro Stream Manager API to access Provisions and an Edge server IP to subscribe to a live Flash-based stream with Adaptive Bitrate Control._
-
 | **[Stream Manager Proxy Transcoder (HLS)](src/page/sm-test/subscribeStreamManagerProxyTranscoderHLS)**
 | :-----
 | _Demonstrates utilizing the Red5 Pro Stream Manager API to access Provisions and an Edge server IP to subscribe to a live HLS-based stream with Adaptive Bitrate Control._
