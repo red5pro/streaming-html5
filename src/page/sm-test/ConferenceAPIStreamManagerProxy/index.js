@@ -75,7 +75,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var updateStatusFromEvent = window.red5proHandlePublisherEvent // defined in src/template/partial/status-field-publisher.hbs
 
   const {
-    location: { host, protocol },
+    location: { host, protocol }
   } = window
   let targetPublisher
   let publisherParticipant
@@ -156,8 +156,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           connectionParams: {
             username: auth.username,
             password: auth.password,
-            token: auth.token,
-          },
+            token: auth.token
+          }
         }
       : {}
   }
@@ -167,13 +167,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     tokenName = tokenField.value
   }
 
-  const findSender = (track) => {
+  const findSender = track => {
     const pc = targetPublisher.getPeerConnection()
     const senders = pc.getSenders()
-    return senders.find((s) => s.track.kind === track.kind)
+    return senders.find(s => s.track.kind === track.kind)
   }
 
-  const updateMutedAudioOnPublisher = (returnFromMute) => {
+  const updateMutedAudioOnPublisher = returnFromMute => {
     if (targetPublisher && isPublishing) {
       const sender = findSender(mediaStream.getAudioTracks()[0])
       let params = sender.getParameters()
@@ -203,7 +203,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     mediaStream.getAudioTracks()[0].enabled = returnFromMute
   }
 
-  const updateMutedVideoOnPublisher = (returnFromMute) => {
+  const updateMutedVideoOnPublisher = returnFromMute => {
     if (targetPublisher && isPublishing) {
       const sender = findSender(mediaStream.getVideoTracks()[0])
       let params = sender.getParameters()
@@ -233,7 +233,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     mediaStream.getVideoTracks()[0].enabled = returnFromMute
   }
 
-  const updateMuteState = (muteState) => {
+  const updateMuteState = muteState => {
     const { audioMuted, videoMuted } = muteState
     if (audioMuted) {
       audioOnButton.classList.add('hidden')
@@ -261,7 +261,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     publisherVideo.classList.remove('hidden')
   }
 
-  const onPublisherEvent = (event) => {
+  const onPublisherEvent = event => {
     const { type } = event
     console.log('[Red5ProPublisher] ' + type + '.')
     if (type === 'WebSocket.Message.Unhandled') {
@@ -278,12 +278,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     updateStatusFromEvent(event)
   }
 
-  const onPublishFail = (message) => {
+  const onPublishFail = message => {
     isPublishing = false
     console.error('[Red5ProPublisher] Publish Error :: ' + message)
   }
 
-  const onPublishSuccess = (publisher) => {
+  const onPublishSuccess = publisher => {
     isPublishing = true
     window.red5propublisher = publisher
     console.log('[Red5ProPublisher] Publish Complete.')
@@ -308,7 +308,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
   }
 
-  const onUnpublishFail = (message) => {
+  const onUnpublishFail = message => {
     isPublishing = false
     console.error('[Red5ProPublisher] Unpublish Error :: ' + message)
   }
@@ -318,7 +318,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     console.log('[Red5ProPublisher] Unpublish Complete.')
   }
 
-  const onConferenceSuccess = (participant) => {
+  const onConferenceSuccess = participant => {
     publisherParticipant = participant
   }
 
@@ -326,11 +326,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     console.log('[Red5ProPublisher] Conference closed.')
   }
 
-  const onConferenceError = (error) => {
+  const onConferenceError = error => {
     console.error('[Red5ProPublisher] Conference error.', error)
   }
 
-  const setPublishingUI = (streamName) => {
+  const setPublishingUI = streamName => {
     publisherNameField.innerText = streamName
     tokenField.setAttribute('disabled', true)
     publisherSession.classList.remove('hidden')
@@ -350,21 +350,21 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       onConferenceSuccess,
       onConferenceClose,
       onConferenceError,
-      onConferenceParticipantsUpdate: (participants) => {
+      onConferenceParticipantsUpdate: participants => {
         processStreams(participants, streamsList, publisherParticipant)
-      },
+      }
     })
     socketService.join(name, token, streamGuid)
   }
 
   const determinePublisher = async (mediaStream, name, bitrate = 256) => {
-    const { app, preferWhipWhep } = configuration
-    const { WHIPClient, RTCPublisher } = red5prosdk
+    const { app } = configuration
+    const { WHIPClient } = red5prosdk
     let config = Object.assign(
       {},
       configuration,
       {
-        streamMode: configuration.recordBroadcast ? 'record' : 'live',
+        streamMode: configuration.recordBroadcast ? 'record' : 'live'
       },
       getAuthenticationParams()
     )
@@ -373,38 +373,14 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       protocol: getSocketLocationFromProtocol().protocol,
       port: getSocketLocationFromProtocol().port,
       bandwidth: {
-        video: bitrate,
+        video: bitrate
       },
       app: app,
-      streamName: name,
+      streamName: name
     })
 
-    if (!preferWhipWhep) {
-      let connectionParams = rtcConfig.connectionParams
-        ? rtcConfig.connectionParams
-        : {}
-      const payload = await window.streamManagerUtil.getOrigin(
-        rtcConfig.host,
-        rtcConfig.app,
-        name
-      )
-      const { scope, serverAddress } = payload
-      rtcConfig = {
-        ...rtcConfig,
-        ...{
-          app: 'streammanager',
-          connectionParams: {
-            ...connectionParams,
-            ...{
-              host: serverAddress,
-              app: scope,
-            },
-          },
-        },
-      }
-    }
     console.log('PUBLISH', name, rtcConfig)
-    var publisher = preferWhipWhep ? new WHIPClient() : new RTCPublisher()
+    var publisher = new WHIPClient()
     return await publisher.initWithStream(rtcConfig, mediaStream)
   }
 
@@ -451,15 +427,15 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       audio: true,
       video: {
         width: {
-          exact: 640,
+          exact: 640
         },
         height: {
-          exact: 480,
+          exact: 480
         },
         frameRate: {
-          min: 15,
-        },
-      },
+          min: 15
+        }
+      }
     }
     try {
       mediaStream = await navigator.mediaDevices.getUserMedia(constraints)
@@ -480,15 +456,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             const videoTrack = mediaStream.getVideoTracks()[0]
             const audioTrack = mediaStream.getAudioTracks()[0]
             if (videoTrack) {
-              const video = senders.find(
-                (s) => s.track.kind === videoTrack.kind
-              )
+              const video = senders.find(s => s.track.kind === videoTrack.kind)
               video.replaceTrack(videoTrack)
             }
             if (audioTrack) {
-              const audio = senders.find(
-                (s) => s.track.kind === audioTrack.kind
-              )
+              const audio = senders.find(s => s.track.kind === audioTrack.kind)
               audio.replaceTrack(audioTrack)
             }
           }
@@ -501,22 +473,22 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   function processStreams(list, previousList, publisherParticipant) {
     const currentParticipant = list.find(
-      (participant) =>
+      participant =>
         participant.participantId === publisherParticipant.participantId
     )
-    const nonPublishers = list.filter((participant) => {
+    const nonPublishers = list.filter(participant => {
       return participant.participantId !== currentParticipant.participantId
     })
-    const toAdd = nonPublishers.filter((participant) => {
+    const toAdd = nonPublishers.filter(participant => {
       return (
         previousList.find(
-          (p) => p.participantId === participant.participantId
+          p => p.participantId === participant.participantId
         ) === undefined
       )
     })
-    const toRemove = previousList.filter((participant) => {
+    const toRemove = previousList.filter(participant => {
       return (
-        list.find((p) => p.participantId === participant.participantId) ===
+        list.find(p => p.participantId === participant.participantId) ===
         undefined
       )
     })
@@ -542,24 +514,22 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
     */
     if (subscribers.length > 0) {
-      const { app, preferWhipWhep } = configuration
+      const { app } = configuration
       var baseSubscriberConfig = Object.assign(
         {},
         configuration,
         {
           protocol: getSocketLocationFromProtocol().protocol,
           port: getSocketLocationFromProtocol().port,
-          app,
+          app
         },
         getAuthenticationParams()
       )
-      subscribers.forEach((s) =>
-        s.execute(baseSubscriberConfig, preferWhipWhep)
-      )
+      subscribers.forEach(s => s.execute(baseSubscriberConfig))
       // Below is to be used if using sequential subsciber logic explained above.
       //      subscribers[0].execute(baseSubscriberConfig);
     }
-    list.forEach((participant) =>
+    list.forEach(participant =>
       window.ConferenceSubscriberUtil.updateMuteState(participant)
     )
     updateMuteState(currentParticipant.muteState)

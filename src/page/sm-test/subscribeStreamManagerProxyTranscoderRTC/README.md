@@ -122,9 +122,7 @@ Subscribing to a stream variant is the same as subscribing to anyother stream fr
 
 ```javascript
 const streamName = streamGuid.split('/').pop()
-const endpoint = !preferWhipWhep
-  ? `wss://${host}/as/v1/proxy/ws/subscribe/${streamGuid}`
-  : `https://${host}/as/v1/proxy/whep/${streamGuid}`
+const endpoint = `https://${host}/as/v1/proxy/whep/${streamGuid}`
 
 var rtcConfig = {
   ...configuration,

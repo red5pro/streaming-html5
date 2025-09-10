@@ -13,7 +13,6 @@ The following is a list of recognized Query Parameter keys and their description
 | `port` | The port on which the Red5 server endpoint is served. | `443` |
 | `endpoint` | The entire URL of the Red5 server endpoint. (shortcut and will override `host`, `protocol` and `port`) | `https://mydeploy.red5.net:443` |
 | `app` | The webapp context (or scope) where the stream resides. | `live` |
-| `preferWhipWhep` | Flag to use WHIP/WHEP or WebSocket clients. | `true` |
 | `streamName` or `stream1` | The name of the stream to either publish or subscribe to. | `stream1` |
 | `stream2` | For tests that use two streams, this defines the second stream name. | `stream2` |
 | `streamMode` | The desired stream mode to set while publishing. | `live`, `record` or `append` |

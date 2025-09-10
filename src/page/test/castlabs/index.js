@@ -244,8 +244,7 @@ const encryptedPlayback = async () => {
 }
 
 const decryptPlayback = async () => {
-  const { preferWhipWhep } = configuration
-  const { WHEPClient, RTCSubscriber } = red5prosdk
+  const { WHEPClient } = red5prosdk
 
   console.info(`Using castLabs RTC DRM v${rtcDrmGetVersion()}`)
 
@@ -290,7 +289,7 @@ const decryptPlayback = async () => {
     })
     rtcDrmConfigure(drmConfig)
 
-    subscriber = preferWhipWhep ? new WHEPClient() : new RTCSubscriber()
+    subscriber = new WHEPClient()
     await subscriber.init(baseConfig)
     subscriber.on('WebRTC.PeerConnection.Available', () => {
       // Listen for ontrack event to get the decrypted stream.

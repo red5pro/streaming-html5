@@ -83,7 +83,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var baseConfig = {
     protocol: getSocketLocationFromProtocol().protocol,
     port: getSocketLocationFromProtocol().port,
-    autoLayoutOrientation: false,
+    autoLayoutOrientation: false
   }
 
   var inactive = true
@@ -93,7 +93,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     isActive: false,
     id: null,
     subscriber: null,
-    eventHandler: null,
+    eventHandler: null
   }
 
   streamManagerAddress.value = configuration.host
@@ -106,8 +106,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           connectionParams: {
             username: auth.username,
             password: auth.password,
-            token: auth.token,
-          },
+            token: auth.token
+          }
         }
       : {}
   }
@@ -229,7 +229,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         id: id,
         subscriber: subscriber,
         eventHandler: eventHandler,
-        isActive: inactive,
+        isActive: inactive
       }
     )
     if (inactive) {
@@ -256,10 +256,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   function generateSubscriber(config) {
-    const { preferWhipWhep } = configuration
-    const { WHEPClient, RTCSubscriber } = red5prosdk
+    const { WHEPClient } = red5prosdk
     return new Promise(function (resolve, reject) {
-      const subscriber = preferWhipWhep ? new WHEPClient() : new RTCSubscriber()
+      const subscriber = new WHEPClient()
       subscriber
         .init(config)
         .then(function (subscriber) {
@@ -285,13 +284,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   const getQueryParameters = () => {
-    const { preferWhipWhep } = configuration
     const region = getRegionIfDefined()
-    return preferWhipWhep ? (region ? { region } : undefined) : undefined
+    return region ? { region } : undefined
   }
 
   function setupSubscribers(edgeList) {
-    const { app, proxy, preferWhipWhep } = configuration
+    const { app } = configuration
     var i = 0,
       length = edgeList.length
     var id
@@ -309,15 +307,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       var subConfig = Object.assign({}, baseConfig, {
         mediaElementId: id,
         host: streamManagerAddress.value,
-        app: preferWhipWhep ? app : proxy,
+        app,
         streamName: edgeList[i].name,
-        connectionParams: preferWhipWhep
-          ? connectionParams
-          : {
-              ...connectionParams,
-              host: edgeList[i].serverAddres,
-              app: scope,
-            },
+        connectionParams
       })
 
       generateSubscriber(subConfig)

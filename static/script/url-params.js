@@ -124,11 +124,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     recordBroadcast: params.get('streamMode')
       ? params.get('streamMode') === 'record'
       : undefined,
-    preferWhipWhep: params.get('preferWhipWhep')
-      ? params.get('preferWhipWhep') !== 'false'
-        ? true
-        : false
-      : undefined,
+    preferWhipWhep: true,
     useAudio,
     useVideo,
     cameraWidth,

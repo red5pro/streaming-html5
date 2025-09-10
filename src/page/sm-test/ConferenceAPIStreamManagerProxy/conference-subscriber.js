@@ -53,7 +53,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   var subscriberMap = {}
   var ConferenceSubscriberItemMap = {}
-  var streamNameField = document.getElementById('streamname-field')
   var updateSuscriberStatusFromEvent = window.red5proHandleSubscriberEvent
   var subscriberTemplate =
     '' +
@@ -152,7 +151,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     var extension = {
       streamName: streamName,
       mediaElementId: elementId,
-      subscriptionId: ['subscriber-audio', uid].join('-'),
+      subscriptionId: ['subscriber-audio', uid].join('-')
     }
     console.log('[audio:decoy] Adding audio decoy for ' + streamName)
     new red5prosdk.RTCSubscriber()
@@ -192,7 +191,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     this.subscriptionId = [guid, 'sub'].join('-')
     this.streamName = participant.displayName
     this.subscriber = undefined
-    this.preferWhipWhep = true
     this.baseConfiguration = undefined
     this.streamingMode = undefined
     this.audioDecoy = undefined // Used when initial mode is `Audio`.
@@ -306,7 +304,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         new Date().getTime(),
         '[subscriber:' + this.streamName + '] next ->. ' + this.next.streamName
       )
-      this.next.execute(this.baseConfiguratio, this.preferWhipWhep)
+      this.next.execute(this.baseConfiguration)
       this.next = undefined
     }
   }
@@ -314,7 +312,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     console.error(event)
     removeLoadingIcon(this.card)
     if (this.next) {
-      this.next.execute(this.baseConfiguration, this.preferWhipWhep)
+      this.next.execute(this.baseConfiguration)
       this.next = undefined
     }
   }
@@ -326,7 +324,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     this.resetTimeout = setTimeout(() => {
       clearTimeout(this.resetTimeout)
       console.log('TEST', '[subscriber:' + this.streamName + '] retry.')
-      this.execute(this.baseConfiguration, this.preferWhipWhep)
+      this.execute(this.baseConfiguration)
     }, 2000)
   }
   SubscriberItem.prototype.dispose = function () {
@@ -370,49 +368,24 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       removeAudioSubscriberDecoy(this.streamName, this.audioDecoy)
     }
   }
-  SubscriberItem.prototype.execute = async function (
-    config,
-    preferWhipWhep = false
-  ) {
+  SubscriberItem.prototype.execute = async function (config) {
     clearTimeout(this.resetTimeout)
     addLoadingIcon(this.card)
     this.unexpectedClose = true
 
     this.baseConfiguration = config
-    this.preferWhipWhep = preferWhipWhep
     var self = this
     var name = this.streamName
     var uid = Math.floor(Math.random() * 0x10000).toString(16)
     var rtcConfig = Object.assign({}, config, {
       streamName: name,
       subscriptionId: [this.subscriptionId, uid].join('-'),
-      mediaElementId: getSubscriberElementId(this.streamName),
+      mediaElementId: getSubscriberElementId(this.streamName)
     })
 
     try {
-      if (!preferWhipWhep) {
-        const payload = await window.streamManagerUtil.getEdge(
-          rtcConfig.host,
-          rtcConfig.app,
-          name
-        )
-        const { scope, serverAddress } = payload
-        rtcConfig = {
-          ...rtcConfig,
-          ...{
-            app: 'streammanager',
-            connectionParams: {
-              host: serverAddress,
-              app: scope,
-            },
-          },
-        }
-      }
-
-      this.subscriber = preferWhipWhep
-        ? new red5prosdk.WHEPClient()
-        : new red5prosdk.RTCSubscriber()
-      this.subscriber.on('*', (e) => this.respond(e))
+      this.subscriber = new red5prosdk.WHEPClient()
+      this.subscriber.on('*', e => this.respond(e))
 
       await this.subscriber.init(rtcConfig)
       subscriberMap[this.participant.participantId] = this.subscriber
@@ -473,13 +446,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   window.getConferenceSubscriberElementId = getSubscriberElementId
   window.ConferenceSubscriberItem = SubscriberItem
   window.ConferenceSubscriberUtil = {
-    updateMuteState: (participant) => {
+    updateMuteState: participant => {
       let item = ConferenceSubscriberItemMap[participant.participantId]
       if (item) {
         item.setMuteState(participant.muteState)
       }
     },
-    removeAll: (participants) => {
+    removeAll: participants => {
       while (participants.length > 0) {
         let participant = participants.shift()
         let item = ConferenceSubscriberItemMap[participant.participantId]
@@ -487,6 +460,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           item.dispose()
         }
       }
-    },
+    }
   }
 })(window, document, window.red5prosdk)

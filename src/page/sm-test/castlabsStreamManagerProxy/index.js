@@ -251,7 +251,6 @@ const getConfiguration = (mediaElementId, insertableStream) => {
     app,
     stream1,
     streamManagerAPI,
-    preferWhipWhep,
     streamManagerNodeGroup: nodeGroup
   } = baseConfig
 
@@ -284,17 +283,10 @@ const getConfiguration = (mediaElementId, insertableStream) => {
       ...baseConfig.rtcConfiguration,
       encodedInsertableStreams: insertableStream
     },
-    connectionParams: preferWhipWhep
-      ? {
-          ...connectionParams,
-          nodeGroup
-        }
-      : {
-          ...connectionParams,
-          nodeGroup,
-          host,
-          app
-        }
+    connectionParams: {
+      ...connectionParams,
+      nodeGroup
+    }
   }
   return rtcConfig
 }

@@ -23,7 +23,7 @@ NONINFRINGEMENT.   IN  NO  EVENT  SHALL INFRARED5, INC. BE LIABLE FOR ANY CLAIM,
 WHETHER IN  AN  ACTION  OF  CONTRACT,  TORT  OR  OTHERWISE,  ARISING  FROM,  OUT  OF  OR  IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
-;(function (window, document, red5prosdk, streamManagerUtil) {
+;(function (window, document, red5prosdk) {
   'use strict'
 
   var configuration = (function () {
@@ -55,7 +55,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   streamTitle.innerText = configuration.stream1
   var defaultConfiguration = {
-    streamMode: 'record',
+    streamMode: 'record'
   }
 
   function getAuthenticationParams() {
@@ -65,8 +65,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           connectionParams: {
             username: auth.username,
             password: auth.password,
-            token: auth.token,
-          },
+            token: auth.token
+          }
         }
       : {}
   }
@@ -161,8 +161,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           : false,
         video: configuration.useVideo
           ? configuration.mediaConstraints.video
-          : false,
-      },
+          : false
+      }
     }
   }
 
@@ -185,7 +185,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         port,
         streamName: name,
         app,
-        connectionParams,
+        connectionParams
       }
     )
     var publisher = new WHIPClient()
@@ -242,7 +242,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           '[Red5ProPublisher] :: Error in access of Origin IP: ' + jsonError
         )
         updateStatusFromEvent({
-          type: red5prosdk.PublisherEventTypes.CONNECT_FAILURE,
+          type: red5prosdk.PublisherEventTypes.CONNECT_FAILURE
         })
         onPublishFail(jsonError)
       })
@@ -258,7 +258,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       var jsonError =
         typeof error === 'string' ? error : JSON.stringify(error, null, 2)
       updateStatusFromEvent({
-        type: red5prosdk.PublisherEventTypes.CONNECT_FAILURE,
+        type: red5prosdk.PublisherEventTypes.CONNECT_FAILURE
       })
       console.error(
         '[Red5ProPublisher] :: Retry timeout in publishing - ' + jsonError
@@ -266,23 +266,20 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
   }
 
-  const requestOrigin = async (configuration) => {
-    const { preferWhipWhep, host, app, stream1 } = configuration
+  const requestOrigin = async configuration => {
+    const { host, app, stream1 } = configuration
     var region = getRegionIfDefined()
-    if (!preferWhipWhep) {
-      return streamManagerUtil.getOrigin(host, app, stream1, region)
-    } else {
-      // WHIP/WHEP knows how to handle proxy requests.
-      return {
-        serverAddress: host,
-        scope: app,
-        name: stream1,
-        params: region
-          ? {
-              region,
-            }
-          : undefined,
-      }
+
+    // WHIP/WHEP knows how to handle proxy requests.
+    return {
+      serverAddress: host,
+      scope: app,
+      name: stream1,
+      params: region
+        ? {
+            region
+          }
+        : undefined
     }
   }
 
@@ -309,4 +306,4 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
   window.addEventListener('pagehide', shutdown)
   window.addEventListener('beforeunload', shutdown)
-})(this, document, window.red5prosdk, window.streamManagerUtil)
+})(this, document, window.red5prosdk, window)
