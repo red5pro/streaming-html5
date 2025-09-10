@@ -84,7 +84,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var defaultConfiguration = {
     protocol: getSocketLocationFromProtocol().protocol,
     port: getSocketLocationFromProtocol().port,
-    streamMode: configuration.recordBroadcast ? 'record' : 'live',
+    streamMode: configuration.recordBroadcast ? 'record' : 'live'
   }
 
   var validationParamCount = 1
@@ -230,8 +230,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           connectionParams: {
             username: auth.username,
             password: auth.password,
-            token: auth.token,
-          },
+            token: auth.token
+          }
         }
       : {}
   }
@@ -244,8 +244,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           : false,
         video: configuration.useVideo
           ? configuration.mediaConstraints.video
-          : false,
-      },
+          : false
+      }
     }
   }
 
@@ -253,32 +253,33 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     const {
       host,
       app,
+      protocol,
+      port,
       stream1,
       streamManagerAPI,
-      streamManagerNodeGroup: nodeGroup,
+      streamManagerNodeGroup: nodeGroup
     } = configuration
-    const { protocol, port } = getSocketLocationFromProtocol()
 
     const region = getRegionIfDefined()
     const params = region
       ? {
           region,
-          strict: true,
+          strict: true
         }
       : undefined
 
-    const httpProtocol = protocol === 'wss' ? 'https' : 'http'
+    const httpProtocol = protocol === 'ws' ? 'http' : 'https'
     const endpoint = `${httpProtocol}://${host}:${port}/as/${streamManagerAPI}/proxy/whip/${app}/${stream1}`
 
     var connectionParams = params
       ? {
           ...params,
           ...getAuthenticationParams().connectionParams,
-          ...getValidationParams(),
+          ...getValidationParams()
         }
       : {
           ...getAuthenticationParams().connectionParams,
-          ...getValidationParams(),
+          ...getValidationParams()
         }
 
     const rtcConfig = {
@@ -289,8 +290,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       streamName: stream1,
       connectionParams: {
         ...connectionParams,
-        nodeGroup,
-      },
+        nodeGroup
+      }
     }
     return rtcConfig
   }
@@ -316,7 +317,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         '[Red5ProPublisher] :: Error in access of Origin IP: ' + jsonError
       )
       updateStatusFromEvent({
-        type: red5prosdk.PublisherEventTypes.CONNECT_FAILURE,
+        type: red5prosdk.PublisherEventTypes.CONNECT_FAILURE
       })
       onPublishFail(jsonError)
     }

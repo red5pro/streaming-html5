@@ -141,6 +141,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   function onUnpublishSuccess() {
     console.log('[Red5ProPublisher] Unpublish Complete.')
     publishButton.disabled = false
+    updateStatusFromEvent({
+      type: red5prosdk.PublisherEventTypes.UNPUBLISH_SUCCESS
+    })
   }
 
   function getAuthenticationParams() {
@@ -313,10 +316,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   function unpublish() {
     return new Promise(function (resolve, reject) {
       if (targetPublisher) {
-        targetPublisher.off('*', onPublisherEvent)
         targetPublisher
           .unpublish()
           .then(function () {
+            targetPublisher.off('*', onPublisherEvent)
             onUnpublishSuccess()
             resolve()
           })
