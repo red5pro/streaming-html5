@@ -23,20 +23,8 @@ NONINFRINGEMENT.   IN  NO  EVENT  SHALL INFRARED5, INC. BE LIABLE FOR ANY CLAIM,
 WHETHER IN  AN  ACTION  OF  CONTRACT,  TORT  OR  OTHERWISE,  ARISING  FROM,  OUT  OF  OR  IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
-;(function (window, document, red5prosdk, streamManagerUtil) {
+;(function (window, document, red5prosdk) {
   'use strict'
-
-  var serverSettings = (function () {
-    var settings = sessionStorage.getItem('r5proServerSettings')
-    try {
-      return JSON.parse(settings)
-    } catch (e) {
-      console.error(
-        'Could not read server settings from sessionstorage: ' + e.message
-      )
-    }
-    return {}
-  })()
 
   var configuration = (function () {
     var conf = sessionStorage.getItem('r5proTestBed')
@@ -141,7 +129,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       targetPublisher.send('incomingNotification', {
         message:
           rpcInput.value === '' ? 'What lovely weather today.' : rpcInput.value,
-        timestamp: new Date().getTime(),
+        timestamp: new Date().getTime()
       })
     }
   })
@@ -149,7 +137,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   sendMessageButton.addEventListener('click', () => {
     const message = JSON.stringify({
       message: messageInput.value,
-      timestamp: new Date().getTime(),
+      timestamp: new Date().getTime()
     })
     console.log(`Sending along message: ${message}`)
     targetPublisher.getDataChannel().send(message)
@@ -164,7 +152,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
     const recorder = new MediaRecorder(stream)
     let chunks = []
-    recorder.ondataavailable = (e) => {
+    recorder.ondataavailable = e => {
       chunks.push(e.data)
     }
 
@@ -198,18 +186,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }, 5000)
   })
 
-  var protocol = serverSettings.protocol
-  var isSecure = protocol == 'https'
-  function getSocketLocationFromProtocol() {
-    return !isSecure
-      ? { protocol: 'ws', port: serverSettings.wsport }
-      : { protocol: 'wss', port: serverSettings.wssport }
-  }
-
   var defaultConfiguration = {
-    protocol: getSocketLocationFromProtocol().protocol,
-    port: getSocketLocationFromProtocol().port,
-    streamMode: configuration.recordBroadcast ? 'record' : 'live',
+    streamMode: configuration.recordBroadcast ? 'record' : 'live'
   }
   function onPublisherEvent(event) {
     const { type } = event
@@ -259,8 +237,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           connectionParams: {
             username: auth.username,
             password: auth.password,
-            token: auth.token,
-          },
+            token: auth.token
+          }
         }
       : {}
   }
@@ -273,8 +251,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           : false,
         video: configuration.useVideo
           ? configuration.mediaConstraints.video
-          : false,
-      },
+          : false
+      }
     }
   }
 
@@ -301,13 +279,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   function determinePublisher(jsonResponse) {
-    var { app, proxy, preferWhipWhep } = configuration
-    var { WHIPClient, RTCPublisher } = red5prosdk
+    var { protocol, port, app } = configuration
+    var { WHIPClient } = red5prosdk
     var { params } = jsonResponse
-    var host = jsonResponse.serverAddress
-    var scope = jsonResponse.scope
     var name = jsonResponse.name
-    var { protocol, port } = getSocketLocationFromProtocol()
 
     var connectionParams = params
       ? { ...params, ...getAuthenticationParams().connectionParams }
@@ -321,23 +296,17 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         protocol,
         port,
         streamName: name,
-        app: preferWhipWhep ? app : proxy,
-        connectionParams: preferWhipWhep
-          ? connectionParams
-          : {
-              ...connectionParams,
-              host: host,
-              app: scope,
-            },
+        app,
+        connectionParams
       }
     )
-    var publisher = preferWhipWhep ? new WHIPClient() : new RTCPublisher()
+    var publisher = new WHIPClient()
     return publisher.init(rtcConfig)
   }
 
   function showAddress(publisher) {
     var config = publisher.getOptions()
-    const { protocol, port, host, app, connectionParams } = config
+    const { host, app, connectionParams } = config
     console.log(`Host = ${host} | app = ${app}`)
     if (connectionParams && connectionParams.host && connectionParams.app) {
       displayServerAddress(config.connectionParams.host, host)
@@ -385,7 +354,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           '[Red5ProPublisher] :: Error in access of Origin IP: ' + jsonError
         )
         updateStatusFromEvent({
-          type: red5prosdk.PublisherEventTypes.CONNECT_FAILURE,
+          type: red5prosdk.PublisherEventTypes.CONNECT_FAILURE
         })
         onPublishFail(jsonError)
       })
@@ -401,7 +370,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       var jsonError =
         typeof error === 'string' ? error : JSON.stringify(error, null, 2)
       updateStatusFromEvent({
-        type: red5prosdk.PublisherEventTypes.CONNECT_FAILURE,
+        type: red5prosdk.PublisherEventTypes.CONNECT_FAILURE
       })
       console.error(
         '[Red5ProPublisher] :: Retry timeout in publishing - ' + jsonError
@@ -409,23 +378,20 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
   }
 
-  const requestOrigin = async (configuration) => {
-    const { preferWhipWhep, host, app, stream1 } = configuration
+  const requestOrigin = async configuration => {
+    const { host, app, stream1 } = configuration
     var region = getRegionIfDefined()
-    if (!preferWhipWhep) {
-      return streamManagerUtil.getOrigin(host, app, stream1, region)
-    } else {
-      // WHIP/WHEP knows how to handle proxy requests.
-      return {
-        serverAddress: host,
-        scope: app,
-        name: stream1,
-        params: region
-          ? {
-              region,
-            }
-          : undefined,
-      }
+
+    // WHIP/WHEP knows how to handle proxy requests.
+    return {
+      serverAddress: host,
+      scope: app,
+      name: stream1,
+      params: region
+        ? {
+            region
+          }
+        : undefined
     }
   }
 
@@ -452,4 +418,4 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
   window.addEventListener('pagehide', shutdown)
   window.addEventListener('beforeunload', shutdown)
-})(this, document, window.red5prosdk, window.streamManagerUtil)
+})(this, document, window.red5prosdk)

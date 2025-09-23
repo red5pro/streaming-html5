@@ -55,8 +55,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       : red5prosdk.LOG_LEVELS.WARN
   )
 
-  const { preferWhipWhep } = configuration
-  const { WHIPClient, WHEPClient, RTCPublisher, RTCSubscriber } = red5prosdk
+  const { WHIPClient, WHEPClient } = red5prosdk
 
   var targetPublisher
   var pubStatusField = document.getElementById('pub-status-field')
@@ -68,19 +67,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var statisticsFields = document.getElementsByClassName('statistics-field')
 
   var instanceId = Math.floor(Math.random() * 0x10000).toString(16)
-  var protocol = serverSettings.protocol
-  var isSecure = protocol === 'https'
-  function getSocketLocationFromProtocol() {
-    return !isSecure
-      ? { protocol: 'ws', port: serverSettings.wsport }
-      : { protocol: 'wss', port: serverSettings.wssport }
-  }
-
   var defaultSubscriberConfiguration = (function (useVideo, useAudio) {
-    var c = {
-      protocol: getSocketLocationFromProtocol().protocol,
-      port: getSocketLocationFromProtocol().port,
-    }
+    var c = configuration
     if (!useVideo) {
       c.videoEncoding = red5prosdk.PlaybackVideoEncoder.NONE
     }
@@ -249,14 +237,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       getAuthenticationParams(),
       getUserMediaConfiguration(),
       {
-        protocol: getSocketLocationFromProtocol().protocol,
-        port: getSocketLocationFromProtocol().port,
         streamName: configuration.stream1,
         streamMode: configuration.recordBroadcast ? 'record' : 'live',
       }
     )
 
-    var publisher = preferWhipWhep ? new WHIPClient() : new RTCPublisher()
+    var publisher = new WHIPClient()
     return publisher.init(rtcConfig)
   }
 
@@ -280,6 +266,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   function beginStreamListCall() {
     var host = configuration.host
+    var protocol = serverSettings.protocol
+    var isSecure = protocol === 'https'
     var port = serverSettings.hlsport.toString()
     var portURI = port.length > 0 ? ':' + port : ''
     var baseUrl = isSecure
@@ -326,12 +314,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   function recieveList(listIn) {
     var found = false
     for (var i = listIn.length - 1; i >= 0; i--) {
-      found = listIn[i].name == configuration.stream2
+      found = listIn[i].name == configuration.stream1
       if (found) break
     }
 
     if (found) {
-      startSubscribing()
+      startSubscribing(configuration.stream1)
     } else {
       setWaitTime()
     }
@@ -346,11 +334,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     setTimeout(beginStreamListCall, 5000)
   }
 
-  function startSubscribing() {
+  function startSubscribing(streamName) {
     // Kick off.
-    determineSubscriber()
+    determineSubscriber(streamName)
       .then(function (subscriberImpl) {
-        subStreamTitle.innerText = configuration.stream2
+        subStreamTitle.innerText = streamName
         targetSubscriber = subscriberImpl
         // Subscribe to events.
         targetSubscriber.on('*', onSubscriberEvent)
@@ -369,7 +357,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       })
   }
 
-  function determineSubscriber() {
+  function determineSubscriber(streamName) {
     var rtcConfig = Object.assign(
       {},
       {},
@@ -377,14 +365,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       defaultSubscriberConfiguration,
       getAuthenticationParams(),
       {
-        protocol: getSocketLocationFromProtocol().protocol,
-        port: getSocketLocationFromProtocol().port,
         subscriptionId: 'subscriber-' + instanceId,
-        streamName: configuration.stream2,
+        streamName,
       }
     )
 
-    var subscriber = preferWhipWhep ? new WHEPClient() : new RTCSubscriber()
+    var subscriber = new WHEPClient()
     return subscriber.init(rtcConfig)
   }
 

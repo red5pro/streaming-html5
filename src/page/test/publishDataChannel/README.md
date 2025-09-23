@@ -4,7 +4,7 @@ This example demonstrates utilizing the underlying `RTCDataChannel` of a Publish
 
 Though the Publisher example demonstrates sending the messages, while the Subscriber example demonstrates receiving the messages, either peer can act as the sender and receiver when utilizing the `RTCDataChannel`.
 
-To access the underlying `RTCDataChannel` instance of an `RTCPublisher` and `RTCSubscriber` use the access method: `getDataChannel()`.
+To access the underlying `RTCDataChannel` instance of an `WHIPClient` and `WHEPClient` use the access method: `getDataChannel()`.
 
 > This example requires the configuration attribute of `signalingSocketOnly` being set to the default value of `true`.
 
@@ -36,7 +36,7 @@ There are 3 types of messaging that can go through the `RTCDataChannel`:
 
 ## RPC Message
 
-Remote Procedural Call (RPC) Messages use the **Send API** of the `RTCPublisher` API:
+Remote Procedural Call (RPC) Messages use the **Send API** of the `WHIPClient` API:
 
 ```js
 send('incomingNotification', {

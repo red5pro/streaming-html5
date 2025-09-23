@@ -26,18 +26,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 /* global red5prosdk */
 import castLabsService from './castlabs-service.js'
 
-let serverSettings = (function () {
-  const settings = sessionStorage.getItem('r5proServerSettings')
-  try {
-    return JSON.parse(settings)
-  } catch (e) {
-    console.error(
-      'Could not read server settings from sessionstorage: ' + e.message
-    )
-  }
-  return {}
-})()
-
 let configuration = (function () {
   const conf = sessionStorage.getItem('r5proTestBed')
   try {
@@ -99,21 +87,7 @@ const onResolutionUpdate = (w, h) => {
 }
 streamTitle.innerText = configuration.stream1
 
-const protocol = serverSettings.protocol
-const isSecure = protocol == 'https'
-const getSocketLocationFromProtocol = () => {
-  return !isSecure
-    ? { protocol: 'ws', port: serverSettings.wsport }
-    : { protocol: 'wss', port: serverSettings.wssport }
-}
-
-let defaultConfiguration = {
-  protocol: getSocketLocationFromProtocol().protocol,
-  port: getSocketLocationFromProtocol().port,
-}
-
 const baseConfig = {
-  ...defaultConfiguration,
   streamName: configuration.stream1,
   mediaElementId: 'red5pro-subscriber',
   rtcConfiguration: {
@@ -125,11 +99,11 @@ const baseConfig = {
     // difference at all atm: https://bugs.chromium.org/p/chromium/issues/detail?id=904764
     // https://source.chromium.org/chromium/chromium/src/+/main:third_party/blink/renderer/modules/peerconnection/rtc_configuration.idl;l=51
     rtcAudioJitterBufferMaxPackets: 10,
-    rtcAudioJitterBufferFastAccelerate: true,
-  },
+    rtcAudioJitterBufferFastAccelerate: true
+  }
 }
 
-const onSubscribeEvent = (event) => {
+const onSubscribeEvent = event => {
   if (event.type !== 'Subscribe.Time.Update') {
     console.log('[Red5ProSubscriber] ' + event.type + '.')
     updateStatusFromEvent(event)
@@ -139,11 +113,11 @@ const onSubscribeEvent = (event) => {
   }
 }
 
-const onSubscribeFail = (message) => {
+const onSubscribeFail = message => {
   console.error('[Red5ProSubsriber] Subscribe Error :: ' + message)
 }
 
-const onSubscribeSuccess = (subscriber) => {
+const onSubscribeSuccess = subscriber => {
   console.log('[Red5ProSubsriber] Subscribe Complete.')
   if (window.exposeSubscriberGlobally) {
     window.exposeSubscriberGlobally(subscriber)
@@ -162,7 +136,7 @@ const onSubscribeSuccess = (subscriber) => {
   }
 }
 
-const onUnsubscribeFail = (message) => {
+const onUnsubscribeFail = message => {
   console.error('[Red5ProSubsriber] Unsubscribe Error :: ' + message)
 }
 
@@ -177,8 +151,8 @@ const getAuthenticationParams = () => {
         connectionParams: {
           username: auth.username,
           password: auth.password,
-          token: auth.token,
-        },
+          token: auth.token
+        }
       }
     : {}
 }
@@ -195,33 +169,28 @@ const getRegionIfDefined = () => {
   return undefined
 }
 
-const getConfiguration = (forceSocketClient, mediaElementId) => {
+const getConfiguration = mediaElementId => {
   const {
     host,
     app,
+    protocol,
+    port,
     stream1: streamName,
     streamManagerAPI,
-    preferWhipWhep,
-    streamManagerNodeGroup: nodeGroup,
+    streamManagerNodeGroup: nodeGroup
   } = baseConfig
 
-  const { protocol, port } = getSocketLocationFromProtocol()
   const region = getRegionIfDefined()
   const params = region
     ? {
         region,
-        strict: true,
+        strict: true
       }
     : undefined
-  const preferSocket = forceSocketClient || !preferWhipWhep
-  const appContext = !preferSocket
-    ? `as/${streamManagerAPI}/proxy/${app}`
-    : `as/${streamManagerAPI}/proxy/ws/subscribe/${app}/${streamName}`
+  const appContext = `as/${streamManagerAPI}/proxy/${app}`
 
-  const httpProtocol = protocol === 'wss' ? 'https' : 'http'
-  const endpoint = !preferSocket
-    ? `${httpProtocol}://${host}:${port}/as/${streamManagerAPI}/proxy/whep/${app}/${streamName}`
-    : `${protocol}://${host}:${port}/as/${streamManagerAPI}/proxy/ws/subscribe/${app}/${streamName}`
+  const httpProtocol = protocol === 'ws' ? 'http' : 'https'
+  const endpoint = `${httpProtocol}://${host}:${port}/as/${streamManagerAPI}/proxy/whep/${app}/${streamName}`
 
   var connectionParams = params
     ? { ...params, ...getAuthenticationParams().connectionParams }
@@ -236,28 +205,21 @@ const getConfiguration = (forceSocketClient, mediaElementId) => {
     streamName,
     app: appContext,
     mediaElementId,
-    connectionParams: preferWhipWhep
-      ? {
-          ...connectionParams,
-          nodeGroup,
-        }
-      : {
-          ...connectionParams,
-          nodeGroup,
-          host,
-          app,
-        },
+    connectionParams: {
+      ...connectionParams,
+      nodeGroup
+    }
   }
   return rtcConfig
 }
 
-const enableForm = (enabled) => {
+const enableForm = enabled => {
   const fields = document.querySelectorAll('.prod-drm-field')
-  fields.forEach((field) => (field.disabled = !enabled))
+  fields.forEach(field => (field.disabled = !enabled))
   startButton.disabled = !enabled
 }
 
-const saveSettings = (settings) => {
+const saveSettings = settings => {
   localStorage.setItem('castlabsWatermarkSettings', JSON.stringify(settings))
 }
 
@@ -271,7 +233,7 @@ const fillSettings = () => {
       organizationUrn,
       userUrn,
       watermarkId,
-      numOverlays,
+      numOverlays
     } = settingsJSON
     accessKeyInput.value = accessKey
     secretKeyInput.value = secretKey
@@ -289,11 +251,11 @@ const getSettings = () => {
     organizationUrn: organizationUrnInput.value,
     userUrn: userUrnInput.value,
     watermarkId: watermarkIdInput.value,
-    numOverlays: numOverlaysInput.value,
+    numOverlays: numOverlaysInput.value
   }
 }
 
-const addOverlay = (pngData) => {
+const addOverlay = pngData => {
   const overlay = document.createElement('img')
   overlay.className = 'demo-img watermark-overlay'
   overlay.src = URL.createObjectURL(new Blob([pngData], { type: 'image/png' }))
@@ -328,11 +290,10 @@ const requestOverlays = async () => {
 }
 
 const startSubscriber = async () => {
-  const { preferWhipWhep } = configuration
   try {
-    const { WHEPClient, RTCSubscriber } = red5prosdk
-    const config = getConfiguration(!preferWhipWhep, 'red5pro-subscriber')
-    targetSubscriber = preferWhipWhep ? new WHEPClient() : new RTCSubscriber()
+    const { WHEPClient } = red5prosdk
+    const config = getConfiguration('red5pro-subscriber')
+    targetSubscriber = new WHEPClient()
     targetSubscriber.on('*', onSubscribeEvent)
     await targetSubscriber.init(config)
     await targetSubscriber.subscribe()

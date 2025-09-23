@@ -26,18 +26,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ;(function (window, document, red5prosdk, streamManagerUtil) {
   'use strict'
 
-  var serverSettings = (function () {
-    var settings = sessionStorage.getItem('r5proServerSettings')
-    try {
-      return JSON.parse(settings)
-    } catch (e) {
-      console.error(
-        'Could not read server settings from sessionstorage: ' + e.message
-      )
-    }
-    return {}
-  })()
-
   var configuration = (function () {
     var conf = sessionStorage.getItem('r5proTestBed')
     try {
@@ -105,7 +93,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       const result = await streamManagerUtil.getOrigin(
         host,
         app,
-        stream1 + "_1",
+        stream1 + '_1',
         version,
         nodeGroup,
         transcoder
@@ -129,7 +117,14 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     let originResponse
     originResponse = await getOrigin(host, app, stream1, version, nodeGroup)
     if (!originResponse) {
-      originResponse = await getOrigin(host, app, stream1, version, nodeGroup, false)
+      originResponse = await getOrigin(
+        host,
+        app,
+        stream1,
+        version,
+        nodeGroup,
+        false
+      )
     }
 
     if (originResponse) {
@@ -185,7 +180,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         streamManagerAPI: version,
         streamManagerNodeGroup: nodeGroup,
       } = configuration
-      const streams = generateTranscoderPost(transcoderPOST.provisionGuid, transcoderForms)
+      const streams = generateTranscoderPost(
+        transcoderPOST.provisionGuid,
+        transcoderForms
+      )
       transcoderPOST.streams = streams
       const token = await streamManagerUtil.authenticate(
         host,

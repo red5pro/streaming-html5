@@ -25,22 +25,18 @@ The Red5 Pro WebRTC SDK aims to utilize WebRTC for its streaming solution (both 
 
 #### Publisher
 
-The term **Publisher** in the context of Red5 Pro refers to a client that produces a broadcast stream. There are two types of instances from the SDK that can be utilized to start a **Publisher**:
+The term **Publisher** in the context of Red5 Pro refers to a client that produces a broadcast stream.
 
 1. `WHIPClient` - The `WHIPClient` relies on the [WebRTC-HTTP ingestion](https://www.ietf.org/archive/id/draft-ietf-wish-whip-01.html) protocl to establish a connection through series of HTTP/S requests.
-2. `RTCPublisher` - The `RTCPublisher` relies on a `WebSocket` connection to establish a broadcast session.
-
-The `WHEPClient` connection sequence is very fast - ~1 second - whereas the `RTCPublisher`, due to its reliance on a `WebSocket` can take roughly 3 - 5 seconds for a connection to stream.
 
 #### Subscriber
 
 The term **Subscriber** in the context of Red5 Pro refers to a client that consumes and plays back an already live broadcast stream. There are three types of instances from the SDK that can be utilized to start a **Subscriber**:
 
 1. `WHEPClient` - The `WHEPClient` relies on the [WebRTC-HTTP egress](https://www.ietf.org/archive/id/draft-murillo-whep-00.html) protocol to establish a connection through series of HTTP/S requests.
-2. `RTCSubscriber` - The `RTCSubscriber` relies on a `WebSocket` connection to establish a broadcast session.
-3. `HLSSubscriber` - The `HLSSubscriber` relies on the native ability to playback `HLS` streams (e.g., Mobile and Desktop Safari).
+2. `HLSSubscriber` - The `HLSSubscriber` relies on the native ability to playback `HLS` streams (e.g., Mobile and Desktop Safari).
 
-The `WHEPClient` connection sequence is very fast - ~1 second - whereas the `RTCPublisher`, due to its reliance on a `WebSocket` can take roughly 3 - 5 seconds for a connection to stream
+The `WHEPClient` connection sequence is very fast - ~1 second.
 
 The `HLSSubscriber` does not go through a connection sequence and streams the HLS directly from the server, however it does have an up to 6 second latency due to the length of its live segments.
 
@@ -64,12 +60,6 @@ To define the server instance's IP address, open the testbed webapp in a browser
 To define the **Host** with the server instance's IP, click the _Host_ field f the form and enter in the local or remote IP address - e.g., `10.0.0.5`, `76.199.199.199`.
 
 > Hint: You can also open the landing page of your server instance at port `5080` (i.e., `http://localhost:5080` if launched locally) and the page will display its IP in the upper-right corner.
-
-### WHIP/WHEP Settings Option
-
-You can select to prefer **WHIP/WHEP** from the _Settings_ page. By selecting this option, all tests will utilize the `WHEPClient` and `WHIPClient` for publishing and subscribing, respectively.
-
-If you decide to de-select the **WHIP/WHEP** option, all tests will revert to using the `RTCPublisher` and `RTCSubscriber` for publishing and subscibing, respectively. These instances require WebSocket support in the browser during their negotiation stage. Once the connection is made, the messaging transport system is switching to `RTCDataChannel` and the WebSocket is closed.
 
 ## Examples
 
@@ -110,10 +100,6 @@ If you decide to de-select the **WHIP/WHEP** option, all tests will revert to us
 | **[MediaStream Swap](src/page/test/publishMediaStreamCamera)**
 | :-----
 | _Demonstrates using `replaceTrack` to swap in a different Camera source dynamically for WebRTC-based Publishers._
-
-| **[Image Capture](src/page/test/publishImageCapture)**
-| :-----
-| _Demonstrates capturing an image of a live video being published._
 
 | **[Mute](src/page/test/publishMute)**
 | :-----
@@ -233,10 +219,6 @@ If you decide to de-select the **WHIP/WHEP** option, all tests will revert to us
 | :-----
 | _Demonstrates authentication with the Simple-Auth-Plugin for subscribing._
 
-| **[Image Capture](src/page/test/subscribeImageCapture)**
-| :-----
-| _Demonstrates capturing an image of a live video being consumed._
-
 | **[Cluster](src/page/test/subscribeCluster)**
 | :-----
 | _Demonstrates accessing an IP from the Red5 Pro Cluster API to subcribe to a live stream._
@@ -244,10 +226,6 @@ If you decide to de-select the **WHIP/WHEP** option, all tests will revert to us
 | **[HLS](src/page/test/subscribeHLS)**
 | :-----
 | _This is an example of subscribing to a stream using HLS Only._ In the event that HLS is not supported natively by the browser, the [hls.js](https://video-dev.github.io/hls.js/) 3rd-party library is utilized.
-
-| **[Image Capture](src/page/test/subscribeImageCapture)**
-| :-----
-| _This example demonstrates capturing a still of the playback by using the `drawImage` API of `CanvasRenderingContext2D`._
 
 | **[Reconnect](src/page/test/subscribeReconnect)**
 | :-----
@@ -315,10 +293,6 @@ If you decide to de-select the **WHIP/WHEP** option, all tests will revert to us
 | :-----
 | _Demonstrates utilizing the Red5 Pro Stream Manager API to access Provisions and an Edge server IP to subscribe to a live WebRTC-based stream with Adaptive Bitrate Control._
 
-| **[Stream Manager Proxy Transcoder (RTMP)](src/page/sm-test/subscribeStreamManagerProxyTranscoderRTMP)**
-| :-----
-| _Demonstrates utilizing the Red5 Pro Stream Manager API to access Provisions and an Edge server IP to subscribe to a live Flash-based stream with Adaptive Bitrate Control._
-
 | **[Stream Manager Proxy Transcoder (HLS)](src/page/sm-test/subscribeStreamManagerProxyTranscoderHLS)**
 | :-----
 | _Demonstrates utilizing the Red5 Pro Stream Manager API to access Provisions and an Edge server IP to subscribe to a live HLS-based stream with Adaptive Bitrate Control._
@@ -326,36 +300,6 @@ If you decide to de-select the **WHIP/WHEP** option, all tests will revert to us
 | **[Stream Manager Proxy Screen Share](src/page/sm-test/subscribeStreamManagerProxyScreenShare)**
 | :-----
 | _An example of utilizing the screen sharing capabilities of_ **Chrome** _and_ **Firefox**. _For use with Publish Screen Share example._
-
-### Mixer - Stream Manager Examples
-
-| **[Stream Manager Proxy Conference Participant](src/page/sm-mixer/conferenceParticipantStreamManagerProxy)**
-| :-----
-| _Demonstrates utilizing the Red5 Pro Stream Manager API to join a video conference with a single return stream._
-
-| **[Stream Manager Proxy Conference Host](src/page/sm-mixer/conferenceHostStreamManagerProxy)**
-| :-----
-| _Demonstrates utilizing the Red5 Pro Stream Manager API to host and manage a video conference with a single return stream._
-
-| **[Stream Manager Grid Composition Host](src/page/sm-mixer/gridMixerCompositionStreamManagerProxy)**
-| :-----
-| _Demonstrates utilizing the Red5 Pro Stream Manager API to create and manage a composition of several live streams into a single stream._
-
-| **[Stream Manager 2x2 Grid Layout Example](src/page/sample-mixer-pages/2x2)**
-| :-----
-| _Demonstrates composing a set of live streams into a 2x2 grid that can be loaded into a Red5 Pro Mixer to create a composition with up to 4 streams._
-
-| **[Stream Manager 3x3 Grid Layout Example](src/page/sample-mixer-pages/3x3)**
-| :-----
-| _Demonstrates composing a set of live streams into a 3x3 grid that can be loaded into a Red5 Pro Mixer to create a composition with up to 9 streams._
-
-| **[Stream Manager NxN Grid Layout Example](src/page/sample-mixer-pages/nxn)**
-| :-----
-| _Demonstrates composing a set of live streams into a NxN grid that can automatically resize as new streams are added to it. The page can be loaded into a Red5 Pro Mixer to create a composition with many streams._
-
-| **[Stream Manager Conference Layout](src/page/sample-mixer-pages/conference)**
-| :-----
-| _Demonstrates composing a set of live streams into a focused layout for a video conference where the presenter is highlighted. The page can be loaded into a Red5 Pro Mixer to create a video conference with a single return stream._
 
 ## Notes
 

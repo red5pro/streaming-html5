@@ -13,7 +13,7 @@ This example demonstrates how to update the encoding parameters of an audio/vide
 
 # RTCRtspSender Parameters
 
-The underlying `RTCPeerConnection` of a Red5 Pro `WHIPClient` and `RTCPublisher` from the HTML SDK contains [RTCRtspSender](https://developer.mozilla.org/en-US/docs/Web/API/RTCRtpSender) instances related to the audio and video tracks of the stream.
+The underlying `RTCPeerConnection` of a Red5 Pro `WHIPClient` from the HTML SDK contains [RTCRtspSender](https://developer.mozilla.org/en-US/docs/Web/API/RTCRtpSender) instances related to the audio and video tracks of the stream.
 
 While broadcasting a live stream, the encoding parameters of a `RTCRtspSender` can be modified and affect how the stream is encoded and delivered to subscribers.
 

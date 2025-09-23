@@ -26,18 +26,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ;(function (window, document, red5prosdk) {
   'use strict'
 
-  var serverSettings = (function () {
-    var settings = sessionStorage.getItem('r5proServerSettings')
-    try {
-      return JSON.parse(settings)
-    } catch (e) {
-      console.error(
-        'Could not read server settings from sessionstorage: ' + e.message
-      )
-    }
-    return {}
-  })()
-
   var configuration = (function () {
     var conf = sessionStorage.getItem('r5proTestBed')
     try {
@@ -64,9 +52,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var bitrateField = document.getElementById('bitrate-field')
   var packetsField = document.getElementById('packets-field')
   var resolutionField = document.getElementById('resolution-field')
-
-  var protocol = serverSettings.protocol
-  var isSecure = protocol === 'https'
 
   var dryStreamTimer = 0
   var dryStreamTimerDelay = 5 * 1000 // 5 seconds
@@ -109,18 +94,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     updateStatistics(bitrate, packetsReceived, frameWidth, frameHeight)
   }
 
-  function getSocketLocationFromProtocol() {
-    return !isSecure
-      ? { protocol: 'ws', port: serverSettings.wsport }
-      : { protocol: 'wss', port: serverSettings.wssport }
-  }
-
   streamTitle.innerText = configuration.stream1
   var defaultConfiguration = (function (useVideo, useAudio) {
-    var c = {
-      protocol: getSocketLocationFromProtocol().protocol,
-      port: getSocketLocationFromProtocol().port,
-    }
+    var c = configuration
     if (!useVideo) {
       c.videoEncoding = red5prosdk.PlaybackVideoEncoder.NONE
     }
@@ -213,17 +189,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     })
   }
 
-  const { preferWhipWhep } = configuration
-  const { WHEPClient, RTCSubscriber } = red5prosdk
-
+  const { WHEPClient } = red5prosdk
   var rtcConfig = Object.assign(
     {},
     configuration,
     defaultConfiguration,
     getAuthenticationParams(),
     {
-      protocol: getSocketLocationFromProtocol().protocol,
-      port: getSocketLocationFromProtocol().port,
       subscriptionId: 'subscriber-' + instanceId,
       streamName: configuration.stream1,
     }
@@ -253,7 +225,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     // Subscribers will be cleaned up, but if we try to immediately re-subscribe, we may get rejected.
     rtcConfig.subscriptionId = Math.floor(Math.random() * 0x10000).toString(16)
 
-    var subscriber = preferWhipWhep ? new WHEPClient() : new RTCSubscriber()
+    var subscriber = new WHEPClient()
     subscriber.on(red5prosdk.SubscriberEventTypes.CONNECT_FAILURE, function () {
       setConnected(false)
     })

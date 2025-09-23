@@ -288,8 +288,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           connectionParams: {
             username: auth.username,
             password: auth.password,
-            token: auth.token,
-          },
+            token: auth.token
+          }
         }
       : {}
   }
@@ -302,8 +302,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           : false,
         video: configuration.useVideo
           ? configuration.mediaConstraints.video
-          : false,
-      },
+          : false
+      }
     }
   }
 
@@ -346,13 +346,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   const determinePublisher = async (mediaStream, room, name, bitrate = 256) => {
-    const { app, preferWhipWhep } = configuration
-    const { WHIPClient, RTCPublisher } = red5prosdk
+    const { app } = configuration
+    const { WHIPClient } = red5prosdk
     let config = Object.assign(
       {},
       configuration,
       {
-        streamMode: configuration.recordBroadcast ? 'record' : 'live',
+        streamMode: configuration.recordBroadcast ? 'record' : 'live'
       },
       getAuthenticationParams(),
       getUserMediaConfiguration()
@@ -362,13 +362,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       protocol: getSocketLocationFromProtocol().protocol,
       port: getSocketLocationFromProtocol().port,
       bandwidth: {
-        video: bitrate,
+        video: bitrate
       },
       app: `${app}/${room}`,
-      streamName: name,
+      streamName: name
     })
 
-    var publisher = preferWhipWhep ? new WHIPClient() : new RTCPublisher()
+    var publisher = new WHIPClient()
     return await publisher.initWithStream(rtcConfig, mediaStream)
   }
 
@@ -430,15 +430,15 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       audio: true,
       video: {
         width: {
-          exact: 640,
+          exact: 640
         },
         height: {
-          exact: 480,
+          exact: 480
         },
         frameRate: {
-          min: 15,
-        },
-      },
+          min: 15
+        }
+      }
     }
     try {
       mediaStream = await navigator.mediaDevices.getUserMedia(constraints)
@@ -459,15 +459,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             const videoTrack = mediaStream.getVideoTracks()[0]
             const audioTrack = mediaStream.getAudioTracks()[0]
             if (videoTrack) {
-              const video = senders.find(
-                (s) => s.track.kind === videoTrack.kind
-              )
+              const video = senders.find(s => s.track.kind === videoTrack.kind)
               video.replaceTrack(videoTrack)
             }
             if (audioTrack) {
-              const audio = senders.find(
-                (s) => s.track.kind === audioTrack.kind
-              )
+              const audio = senders.find(s => s.track.kind === audioTrack.kind)
               audio.replaceTrack(audioTrack)
             }
           }
@@ -537,17 +533,14 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         configuration,
         {
           protocol: getSocketLocationFromProtocol().protocol,
-          port: getSocketLocationFromProtocol().port,
+          port: getSocketLocationFromProtocol().port
         },
         getAuthenticationParams(),
         {
-          app: `${configuration.app}/${roomName}`,
+          app: `${configuration.app}/${roomName}`
         }
       )
-      subscribers.forEach(
-        (s) => s.execute(baseSubscriberConfig),
-        configuration.preferWhipWhep
-      )
+      subscribers.forEach(s => s.execute(baseSubscriberConfig))
       // Below is to be used if using sequential subsciber logic explained above.
       //      subscribers[0].execute(baseSubscriberConfig);
     }

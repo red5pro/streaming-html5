@@ -245,17 +245,12 @@ const onDecryptedSubscriberEvent = event => {
   }
 }
 
-const getConfiguration = (
-  forceSocketClient,
-  mediaElementId,
-  insertableStream
-) => {
+const getConfiguration = (mediaElementId, insertableStream) => {
   const {
     host,
     app,
     stream1,
     streamManagerAPI,
-    preferWhipWhep,
     streamManagerNodeGroup: nodeGroup
   } = baseConfig
 
@@ -266,15 +261,10 @@ const getConfiguration = (
         strict: true
       }
     : undefined
-  const preferSocket = forceSocketClient || !preferWhipWhep
-  const appContext = !preferSocket
-    ? `as/${streamManagerAPI}/proxy/${app}`
-    : `as/${streamManagerAPI}/proxy/ws/subscribe/${app}/${stream1}`
+  const appContext = `as/${streamManagerAPI}/proxy/whep/${app}`
 
-  const httpProtocol = protocol === 'wss' ? 'https' : 'http'
-  const endpoint = !preferSocket
-    ? `${httpProtocol}://${host}:${port}/as/${streamManagerAPI}/proxy/whep/${app}/${stream1}`
-    : `${protocol}://${host}:${port}/as/${streamManagerAPI}/proxy/ws/subscribe/${app}/${stream1}`
+  const httpProtocol = protocol === 'ws' ? 'http' : 'https'
+  const endpoint = `${httpProtocol}://${host}:${port}/as/${streamManagerAPI}/proxy/whep/${app}/${stream1}`
 
   var connectionParams = params
     ? { ...params, ...getAuthenticationParams().connectionParams }
@@ -293,29 +283,19 @@ const getConfiguration = (
       ...baseConfig.rtcConfiguration,
       encodedInsertableStreams: insertableStream
     },
-    connectionParams: preferWhipWhep
-      ? {
-          ...connectionParams,
-          nodeGroup
-        }
-      : {
-          ...connectionParams,
-          nodeGroup,
-          host,
-          app
-        }
+    connectionParams: {
+      ...connectionParams,
+      nodeGroup
+    }
   }
   return rtcConfig
 }
 
 const encryptedPlayback = async () => {
-  const { preferWhipWhep } = configuration
-  const { WHEPClient, RTCSubscriber } = red5prosdk
+  const { WHEPClient } = red5prosdk
   try {
-    const config = getConfiguration(!preferWhipWhep, 'red5pro-encrypted', false)
-    encryptedSubscriber = preferWhipWhep
-      ? new WHEPClient()
-      : new RTCSubscriber()
+    const config = getConfiguration('red5pro-encrypted', false)
+    encryptedSubscriber = new WHEPClient()
     await encryptedSubscriber.init(config)
     encryptedSubscriber.on('*', event => onEncryptedSubscriberEvent(event))
     await encryptedSubscriber.subscribe()
@@ -329,8 +309,7 @@ const encryptedPlayback = async () => {
 }
 
 const decryptPlayback = async () => {
-  const { preferWhipWhep } = configuration
-  const { WHEPClient, RTCSubscriber } = red5prosdk
+  const { WHEPClient } = red5prosdk
   decryptButton.disabled = true
 
   console.info(`Using castLabs RTC DRM v${rtcDrmGetVersion()}`)
@@ -374,8 +353,8 @@ const decryptPlayback = async () => {
     })
     rtcDrmConfigure(drmConfig)
 
-    const config = getConfiguration(!preferWhipWhep, 'red5pro-subscriber', true)
-    subscriber = preferWhipWhep ? new WHEPClient() : new RTCSubscriber()
+    const config = getConfiguration('red5pro-subscriber', true)
+    subscriber = new WHEPClient()
     await subscriber.init(config)
     subscriber.on('WebRTC.PeerConnection.Available', () => {
       // Listen for ontrack event to get the decrypted stream.

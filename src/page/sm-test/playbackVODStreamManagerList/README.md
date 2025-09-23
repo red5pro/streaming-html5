@@ -23,33 +23,12 @@ The playback format - either Flash or HLS - will be determined based on the exte
 
 | Extension | Format     |
 | --------- | ---------- |
-| `flv`     | Flash/RTMP |
-| `mp4`     | Flash/RTMP |
+| `mp4`     | MP4        |
 | `m3u8`    | HLS        |
 
 ## Specifying a file as playback in a Subscriber
 
 Playing back a VOD file using the Red5 Pro Subscriber is similar to streaming a live video. Some configuration attributes will be different depending on the playback target.
-
-### Flash/RTMP
-
-To playback a VOD in the RTMP-based Subscriber:
-
-- Set the `streamName` in the configuration to the filename, with the extension.
-
-With a configuration provided for the RTMP Subscriber:
-
-```js
-{
-  protocol: 'rtmp',
-  host: 'localhost',
-  port: 1935,
-  app: 'live',
-  streamName: 'thefiletoplay.flv'
-}
-```
-
-The Playback engine will connect to the server at `rtmp://localhost:1935/` and attempt to play back the `thefiletoplay.flv` file located in `<red5proserver>/webapps/live/streams`.
 
 ### HLS
 

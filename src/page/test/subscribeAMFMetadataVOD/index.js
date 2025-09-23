@@ -81,19 +81,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     [window.location.origin, configuration.app, 'playlists'].join('/')
   )
 
-  var protocol = serverSettings.protocol
-  var isSecure = protocol === 'https'
-  function getSocketLocationFromProtocol() {
-    return !isSecure
-      ? { protocol: 'ws', port: serverSettings.wsport }
-      : { protocol: 'wss', port: serverSettings.wssport }
-  }
-
   var defaultConfiguration = (function (useVideo, useAudio) {
-    var c = {
-      protocol: getSocketLocationFromProtocol().protocol,
-      port: getSocketLocationFromProtocol().port,
-    }
+    var c = configuration
     if (!useVideo) {
       c.videoEncoding = red5prosdk.PlaybackVideoEncoder.NONE
     }
@@ -139,6 +128,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   function getFileURL(filename) {
+    const { protocol } = configuration
+    const isSecure = protocol === 'https'
     var baseURL =
       protocol +
       '://' +
@@ -270,6 +261,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   function determineSubscriber(streamName) {
     var config = Object.assign({}, configuration, defaultConfiguration)
+    const { protocol } = configuration
+    const isSecure = protocol === 'https'
     var hlsConfig = Object.assign({}, config, {
       protocol: protocol,
       port: isSecure ? serverSettings.hlssport : serverSettings.hlsport,

@@ -1,5 +1,13 @@
 # Changes
 
+## 15.0.0
+
+**ALERT: Breaking Changes**
+
+- feat: Removal of WebSocket based clients, `RTCPublisher`, `RTCSubscriber` and `RTCConferenceParticipant`
+- feat: WHIP/WHEP clients become main players: `WHIPClient` and `WHEPClient`
+- feat: Complete rewrite of SDK in `TypeScript` - allowing for types available in module installation.
+
 ## 14.3.0
 
 - fix: viewless subscriber/whep response to metadata (Todd Anderson)

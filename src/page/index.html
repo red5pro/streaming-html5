@@ -69,7 +69,6 @@
         <label class="settings-label">Stream2 Name:</label>
         <input id="stream2-field" name="stream2-field" value="stream2">
       </p>
-      <hr class="paddedHR" />
       <p class="settings-field settings-collapsable">
         <label class="settings-label" for="level-input">Level:</label>
         <select id="level-input" name="level-input">
@@ -80,24 +79,8 @@
           <option value="ERROR">ERROR</option>
         </select>
       </p>
+      <hr class="paddedHR" />
       <h2 class="centered">WebRTC Specific</h2>
-      <div>
-        <p class="settings-field settings-collapsable settings-field-row">
-          <label class="settings-label">Use WHIP/WHEP Clients&ast;:</label>
-          <input type="checkbox" id="whipwhep-field" style="vertical-align: middle;" checked>
-        </p>
-        <p class="settings-field settings-collapsable settings-field-row">
-          <label class="settings-label">Force Session-Host:</label>
-          <input type="checkbox" id="session-host-field" style="vertical-align: middle;" checked>
-        </p>
-        <p class="settings-field settings-collapsable settings-field-row">
-          <label class="settings-label">Trickle ICE Candidates:</label>
-          <input type="checkbox" id="trickle-field" style="vertical-align: middle;" checked disabled>
-        </p>
-        <p class="settings-info">&ast;Enabling this will prefer the initial ICE negotiation to be done over HTTP/S.</p>
-        <p class="settings-info">More information about <a target="_blank" href="https://www.ietf.org/archive/id/draft-ietf-wish-whip-01.html">WHIP</a> and <a target="_blank" href="https://www.ietf.org/id/draft-murillo-whep-02.html">WHEP</a>.</a></p>
-      </div>
-      <br>
       <p class="settings-field settings-collapsable">
         <label class="settings-label">ICE server:</label>
         <input id="ice-field" name="ice-field" value="stun:stun2.l.google.com:19302">
@@ -147,8 +130,8 @@
         </select>
       </p>
       <p class="settings-field settings-collapsable  settings-field-row">
-        <label class="settings-label">Switch to Data Channel After Connection:</label>
-        <input type="checkbox" id="rtc-signal-socket-field" style="vertical-align: middle;">
+        <label class="settings-label">Enable Data Channel For Messaging:</label>
+        <input type="checkbox" id="rtc-signal-socket-field" style="vertical-align: middle;" checked>
       </p>
       <p class="settings-field settings-collapsable  settings-field-row">
         <label class="settings-label">Include Resolution in Offer:</label>
@@ -178,7 +161,7 @@
       </p>
       <hr class="paddedHR" />
       <h2 class="centered">Authentication</h2>
-      <p class="settings-field settings-field-row">
+      <p class="settings-field settings-collapsable settings-field-row">
         <label class="settings-label">Authentication Enabled:</label>
         <input type="checkbox" id="auth-enabled-field" name="auth-enabled-field" style="vertical-align: middle;">
       </p>
@@ -195,17 +178,22 @@
         <input id="auth-token-field" name="auth-token-field" disabled>
       </p>
       <hr class="paddedHR" />
-      <h2 class="centered">Mixer Specific</h2>
-      <p class="settings-field settings-collapsable">
-        <label class="settings-label">Backend WebSocket For Compositions:</label>
-        <input id="backend-composition-field" name="backend-composition-field" value="<mixer-mock-url>"
-          placeholder="e.g., mydomain.com">
-      </p>
+      <h2 class="centered">Statistics Reporting</h2>
       <p class="settings-field settings-collapsable settings-field-row">
-        <label class="settings-label">Enable Round Trip Authentication:</label>
-        <input type="checkbox" id="enable-mixer-authentication-field" name="enable-mixer-authentication-field"
+        <label class="settings-label">Enable Statistics Reporting:</label>
+        <input type="checkbox" id="enable-statistics-field" name="enable-statistics-field"
           unchecked>
       </p>
+      <p class="settings-field settings-collapsable">
+        <label class="settings-label">Statistics Reporting Interval (in seconds):</label>
+        <input type="number" id="statistics-interval-field" name="statistics-interval-field" min="1" value="5" style="min-width: 120px">
+      </p>
+      <p class="settings-field settings-collapsable">
+        <label class="settings-label">Statistics Reporting Endpoint&ast;:</label>
+        <input id="statistics-endpoint-field" name="statistics-endpoint-field" placeholder="e.g., https://mydomain.com/stats">
+        <span></span>
+      </p>
+      <p class="settings-info" style="max-width: 620px; margin: auto;">&ast;Note that leaving the endpoint field blank will default to sending statistics over the DataChannel or respond to server-side settings related to client statistics.</p>
       <hr class="paddedHR" />
       <p class="settings-field settings-collapsable settings-field-row">
         <label class="settings-label">Verbose R5 Logging:</label>
@@ -247,7 +235,21 @@
 
       console.log('Settings:\r\n' + JSON.stringify(configuration, null, 2));
 
+      const validIP =
+  /^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/
+      const localhost = /^localhost/
+      const isLocalhostOrIP = (address) => {
+        return address.match(validIP) || address.match(localhost)
+      }
       function seal(config) {
+        const { host } = config;
+        if (isLocalhostOrIP(host)) {
+          config.protocol = 'http'
+          config.port = 5080
+        } else {
+          config.protocol = 'https'
+          config.port = 443
+        }
         sessionStorage.setItem('r5proTestBed', JSON.stringify(config));
       }
 
@@ -265,10 +267,6 @@
       var rtcTransportPolicySelect = document.getElementById('rtc-transport-policy');
       var rtcpMuxPolicySelect = document.getElementById('rtc-mux-policy');
       var rtcSignalSocketField = document.getElementById('rtc-signal-socket-field');
-      var includeResolutionOfferField = document.getElementById('include-resolution-offer-field');
-      var whipWhepField = document.getElementById('whipwhep-field');
-      var sessionHostField = document.getElementById('session-host-field');
-      var trickleField = document.getElementById('trickle-field');
       var loggingField = document.getElementById('logging-field');
       var recordField = document.getElementById('record-field');
       var videoField = document.getElementById('video-active-field');
@@ -281,6 +279,9 @@
       var smNodeGroupField = document.getElementById('sm-nodegroup-field');
       var mixerBackendSocketField = document.getElementById('backend-composition-field');
       var mixerAuthenticationEnabledField = document.getElementById('enable-mixer-authentication-field');
+      var enableStatisticsField = document.getElementById('enable-statistics-field');
+      var statisticsIntervalField = document.getElementById('statistics-interval-field');
+      var statisticsEndpointField = document.getElementById('statistics-endpoint-field');
       var smAPIField = document.getElementById('sm-api-field');
       var authEnabledField = document.getElementById('auth-enabled-field');
       var authUsernameField = document.getElementById('auth-username-field');
@@ -383,26 +384,9 @@
         seal(configuration);
       });
       rtcSignalSocketField.addEventListener('change', function () {
-        configuration.signalingSocketOnly = rtcSignalSocketField.checked;
-        configuration.enableChannelSignaling = rtcSignalSocketField.checked;
+        configuration.includeDataChannel = rtcSignalSocketField.checked;
         seal(configuration);
       });
-      includeResolutionOfferField.addEventListener('change', function () {
-        configuration.offerSDPResolution = includeResolutionOfferField.checked;
-        seal(configuration);
-      });
-      whipWhepField.addEventListener('change', () => {
-        configuration.preferWhipWhep = whipWhepField.checked;
-        seal(configuration);
-      })
-      sessionHostField.addEventListener('change', () => {
-        configuration.disableProxy = sessionHostField.checked;
-        seal(configuration);
-      })
-      trickleField.addEventListener('change', () => {
-        configuration.trickleIce = trickleField.checked;
-        seal(configuration);
-      })
 
       authEnabledField.addEventListener('change', function () {
         configuration.authentication.enabled = authEnabledField.checked;
@@ -472,16 +456,6 @@
         seal(configuration);
       });
 
-      mixerBackendSocketField.addEventListener('blur', function () {
-        configuration.mixerBackendSocketField = mixerBackendSocketField.value;
-        seal(configuration);
-      });
-
-      mixerAuthenticationEnabledField.addEventListener('change', function () {
-        configuration.mixerAuthenticationEnabled = mixerAuthenticationEnabledField.checked;
-        seal(configuration);
-      });
-
       smRegionField.addEventListener('blur', function () {
         configuration.streamManagerRegion = smRegionField.value;
         seal(configuration);
@@ -494,6 +468,31 @@
 
       smAPIField.addEventListener('blur', function () {
         configuration.streamManagerAPI = smAPIField.value;
+        seal(configuration);
+      });
+
+      enableStatisticsField.addEventListener('change', function () {
+        configuration.stats = enableStatisticsField.checked ? {
+          endpoint: statisticsEndpointField.value,
+          interval: parseInt(statisticsIntervalField.value, 10) * 1000,
+          include: [],
+        } : undefined
+        seal(configuration);
+      });
+
+      statisticsIntervalField.addEventListener('blur', function () {
+        if (configuration.stats) {
+          configuration.stats.interval = parseInt(statisticsIntervalField.value, 10) * 1000;
+        }
+        seal(configuration);
+      });
+
+      statisticsEndpointField.addEventListener('blur', function () {
+        if (configuration.stats) {
+          let value = statisticsEndpointField.value;
+          value = value && value.length > 0 ? value : undefined;
+          configuration.stats.endpoint = value;
+        }
         seal(configuration);
       });
 
@@ -515,11 +514,7 @@
         iceUsername.value = config.rtcConfiguration.iceServers[0].username || '';
         iceCredential.value = config.rtcConfiguration.iceServers[0].credential || '';
         rtcCandidatePoolSize.value = config.rtcConfiguration.iceCandidatePoolSize || 0;
-        rtcSignalSocketField.checked = config.signalingSocketOnly;
-        includeResolutionOfferField.checked = config.offerSDPResolution;
-        whipWhepField.checked = config.preferWhipWhep || false;
-        sessionHostField.checked = config.disableProxy || false;
-        trickleField.checked = config.trickleIce || false;
+        rtcSignalSocketField.checked = config.includeDataChannel ? true : false;
         loggingField.checked = config.verboseLogging ? true : false;
         recordField.checked = config.recordBroadcast ? true : false;
         videoField.checked = config.useVideo ? true : false;
@@ -537,8 +532,9 @@
         authPasswordField.value = config.authentication.password;
         authTokenField.value = config.authentication.token;
         authUsernameField.disabled = authPasswordField.disabled = !authEnabledField.checked;
-        mixerBackendSocketField.value = config.mixerBackendSocketField;
-        mixerAuthenticationEnabledField.checked = config.mixerAuthenticationEnabled ? config.mixerAuthenticationEnabled : false
+        enableStatisticsField.checked = config.stats ? true : false;
+        statisticsIntervalField.value = config.stats ? Math.floor(parseInt(config.stats.interval, 10) / 1000) : 5;
+        statisticsEndpointField.value = config.stats ? config.stats.endpoint : '';
 
         function selectFieldFromConfiguration(value, selectElem) {
           var i = selectElem.childNodes.length;

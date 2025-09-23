@@ -1,10 +1,10 @@
 <h3 align="center">
-  <img src="assets/red5pro_logo.png" alt="Red5 Pro Logo" />
+  <img src="assets/Red5_Truetime_black.png" alt="Red5 Pro Logo" height="65" />
 </h3>
 <p align="center">
-  <a href="WHIP_WHEP_README.md">WHIP/WHEP</a> &bull;
-  <a href="PUBLISHER_README.md">publisher</a> &bull;
-  <a href="SUBSCRIBER_README.md">subscriber</a> &bull;
+  <a href="README.md">Quick Start</a> &bull;
+  <a href="docs/whip-client.md">Publishing</a> &bull;
+  <a href="docs/whep-client.md">Subscribing</a>
 </p>
 
 ---
@@ -13,6 +13,8 @@
 
 This documentation serves as a guide in migrating client-side code where a breaking change to the API has been made in a distribution.
 
+- [14.x to 15.0.0](#migrating-from-14x-to-1500)
+- [13.x to 14.0.0](#migrating-from-13x-to-1400)
 - [12.x to 13.0.0](#migrating-from-12x-to-1300)
 - [10.x to 11.0.0](#migrating-from-10x-to-1100)
 - [8.0.0 to 9.1.0](#migrating-from-800-to-910)
@@ -22,6 +24,54 @@ This documentation serves as a guide in migrating client-side code where a break
 - [4.0.0 to 5.0.0](#migrating-from-400-to-500)
 - [3.5.0 to 4.0.0](#migrating-from-350-to-400)
 
+# Migrating from `14.x` to `15.0.0`
+
+**ALERT: Breaking Changes**
+
+The `15.0.0` release of the Red5 Pro WebRTC SDK is a complete rewrite of the SDK! Developed in TypeScript from the ground-up, we eliminated a lot of cruft and APIs that had become obsolete and deprecated over the years.
+
+With the slimming-down approach to the SDK also came the major breaking change of removing the WebSocket based clients: `RTCPublisher` and `RTCSubscriber`. As such, the clients introduced in the `11.0.0` release of the SDK are now the main actors and should be exclusively used: `WHIPClient` and `WHEPClient`.
+
+The [WebRTC-HTTP ingestion](https://www.ietf.org/archive/id/draft-ietf-wish-whip-01.html)(WHIP) and [WebRTC-HTTP egress](https://www.ietf.org/archive/id/draft-murillo-whep-00.html)(WHEP) protocols provide the ability to negotation and establish a connection using HTTP/S requests. This removes the requirement for a WebSocket, which historically has been used for the role of negotiation and connection.
+
+> Not only that, but their connection times are blazingly fast!
+
+If you have already been using the `WHIPClient` and `WHEPClient` from the Red5 Pro WebRTC SDK, you shouldn't find any hiccups and will not need to update anything - simply enjoy the benefits of a slimmer SDK and the inclusion of types!
+
+If you have been using the WebSocket-based `RTCPublisher` and `RTCSubscriber` clients, we have hopefully made it painless enough to simply swap out that instantiation with their corresponding WHIP/WHEP client - the initialization and API is all the same.
+
+For example, if you were previously establishing a publisher as such:
+
+```js
+const config = {
+  host: 'myred5.cloud',
+  streamName: 'mystream'
+}
+const publisher = new RTCPublisher()
+publisher.on('*', event => console.log(event))
+await publisher.init(config)
+await publisher.publish()
+```
+
+You can simply swap over to using the `WHEPClient` like so:
+
+```js
+const config = {
+  host: 'myred5.cloud',
+  streamName: 'mystream'
+}
+const publisher = new WHIPClient()
+publisher.on('*', event => console.log(event))
+await publisher.init(config)
+await publisher.publish()
+```
+
+> The same is true for moving from `RTCSubscriber` to `WHEPClient`!
+
+# Migrating from `13.x` to `14.0.0`
+
+Though the version number shows a major change, it was more to be in line with the semver of the Red5 Pro Server release. _No breaking changes._
+
 # Migrating from `12.x` to `13.0.0`
 
 The SDK release of `13.0.0` has additional configuration requirements when integrating with Stream Manager 2.0 deployments. This release sees the introduction of the `endpoint` initialization configuration on which you provide the full URL path to the Stream Manager 2.0 proxy. The proxy will handle directing the clients to the target Origin and Edge nodes.
@@ -30,9 +80,8 @@ The `endpoint` init config param is to be used in tandem with a `nodeGroup` conn
 
 More Information related to this configuration is detailed in the following documents:
 
-* [WHIP/WHEP] (./WHIP_WHEP_README.md#stream-manager-20)
-* [RTCPublisher] (./SUBSCRIBER_README.md#stream-manager-20)
-* [RTCSubscriber] (./PUBLISHER_README.md#stream-manager-20)
+* [WHIPClient](docs/whip-client.md#stream-manager-20)
+* [WHEPClient](docs/whep-client.md#stream-manager-20)
 
 > [NOTE] SharedObject support has been removed in 13.0.0
 
@@ -42,7 +91,7 @@ The SDK release of `11.0.0` provides the capability of utilizing the [WHIP](http
 
 The [WebRTC-HTTP ingestion](https://www.ietf.org/archive/id/draft-ietf-wish-whip-01.html)(WHIP) and [WebRTC-HTTP egress](https://www.ietf.org/archive/id/draft-murillo-whep-00.html)(WHEP) protocols provide the ability to negotation and establish a connection using HTTP/S requests. This removes the requirement for a WebSocket, which historically has been used for the role of negotiation and connection.
 
-> Read more [in the WHIP/WHEP documentation](WHIP_WHEP_README.md)!
+> Read more about [WHIPClient](docs/whip-client.md) and [WHEPClient](docs/whep-client.md).
 
 # Migrating from `8.0.0` to `9.1.0`
 
