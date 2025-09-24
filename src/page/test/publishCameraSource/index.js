@@ -80,12 +80,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   streamTitle.innerText = configuration.stream1
 
-  var defaultConfiguration = {
-    protocol: getSocketLocationFromProtocol().protocol,
-    port: getSocketLocationFromProtocol().port,
-    streamMode: configuration.recordBroadcast ? 'record' : 'live'
-  }
-
   var mediaConstraints = {
     audio: configuration.useAudio
       ? configuration.mediaConstraints.audio
@@ -212,7 +206,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     var rtcConfig = Object.assign(
       {},
       configuration,
-      defaultConfiguration,
       getAuthenticationParams(),
       {
         streamName: configuration.stream1,
