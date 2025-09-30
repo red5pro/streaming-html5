@@ -183,10 +183,15 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             packets = p
             updateStatisticsField(bitrate, packets, frameWidth, frameHeight)
           }
+          var onResolutionUpdate = function (w, h) {
+            frameWidth = w
+            frameHeight = h
+            updateStatisticsField(bitrate, packets, frameWidth, frameHeight)
+          }
           window.trackBitrate(
             sub.getPeerConnection(),
             onBitrateUpdate,
-            null,
+            onResolutionUpdate,
             true,
             true
           )
@@ -210,8 +215,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           connectionParams: {
             username: auth.username,
             password: auth.password,
-            token: auth.token,
-          },
+            token: auth.token
+          }
         }
       : {}
   }
@@ -225,8 +230,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         video: configuration.useVideo
           ? configuration.mediaConstraints.video
           : false,
-        frameRate: configuration.frameRate,
-      },
+        frameRate: configuration.frameRate
+      }
     }
   }
 
@@ -238,7 +243,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       getUserMediaConfiguration(),
       {
         streamName: configuration.stream1,
-        streamMode: configuration.recordBroadcast ? 'record' : 'live',
+        streamMode: configuration.recordBroadcast ? 'record' : 'live'
       }
     )
 
@@ -314,12 +319,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   function recieveList(listIn) {
     var found = false
     for (var i = listIn.length - 1; i >= 0; i--) {
-      found = listIn[i].name == configuration.stream1
+      found = listIn[i].name == configuration.stream2
       if (found) break
     }
 
     if (found) {
-      startSubscribing(configuration.stream1)
+      startSubscribing(configuration.stream2)
     } else {
       setWaitTime()
     }
@@ -366,7 +371,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       getAuthenticationParams(),
       {
         subscriptionId: 'subscriber-' + instanceId,
-        streamName,
+        streamName
       }
     )
 
