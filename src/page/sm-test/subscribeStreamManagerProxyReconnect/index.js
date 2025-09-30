@@ -23,7 +23,7 @@ NONINFRINGEMENT.   IN  NO  EVENT  SHALL INFRARED5, INC. BE LIABLE FOR ANY CLAIM,
 WHETHER IN  AN  ACTION  OF  CONTRACT,  TORT  OR  OTHERWISE,  ARISING  FROM,  OUT  OF  OR  IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
-;(function (window, document, red5prosdk) {
+;(function (window, document, red5prosdk, streamManagerUtil) {
   'use strict'
 
   var configuration = (function () {
@@ -150,9 +150,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     if (event.type === 'Subscribe.VideoDimensions.Change') {
       onResolutionUpdate(event.data.width, event.data.height)
     } else if (
-      event.type === 'Subscribe.Play.Unpublish' ||
-      event.type === 'Subscribe.Connection.Closed' ||
-      event.type === 'Connect.Failure'
+      event.type === red5prosdk.SubscriberEventTypes.SUBSCRIBE_FAIL ||
+      event.type === red5prosdk.SubscriberEventTypes.CONNECTION_CLOSED ||
+      event.type === red5prosdk.SubscriberEventTypes.CONNECT_FAILURE ||
+      event.type === red5prosdk.SubscriberEventTypes.PLAY_UNPUBLISH
     ) {
       setConnected(false)
     } else if (event.type === 'WebRTC.DataChannel.Error') {
@@ -255,8 +256,27 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   const startSubscriber = async () => {
     try {
+      const {
+        host,
+        app,
+        stream1,
+        streamManagerAPI: version,
+        streamManagerNodeGroup: nodeGroup
+      } = configuration
+      // Checking to ensure there is an edge available is reliable way to determine if we should subscribe.
+      const edge = await streamManagerUtil.getEdge(
+        host,
+        app,
+        stream1,
+        version,
+        nodeGroup
+      )
+      if (!edge || edge?.error) {
+        setConnected(false)
+        return
+      }
+
       const { WHEPClient } = red5prosdk
-      const { stream1 } = configuration
       const config = getConfiguration()
       const subscriber = new WHEPClient()
       subscriber.on('*', onSubscriberEvent)
@@ -265,6 +285,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       onSubscribeSuccess(subscriber)
       streamTitle.innerText = stream1
       targetSubscriber = subscriber
+      setConnected(true)
     } catch (error) {
       var jsonError =
         typeof error === 'string' ? error : JSON.stringify(error, null, 2)
@@ -275,6 +296,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         type: red5prosdk.SubscriberEventTypes.CONNECT_FAILURE
       })
       onSubscribeFail(jsonError)
+      setConnected(false)
     }
   }
 
@@ -341,4 +363,4 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
   window.addEventListener('pagehide', shutdown)
   window.addEventListener('beforeunload', shutdown)
-})(this, document, window.red5prosdk)
+})(this, document, window.red5prosdk, window.streamManagerUtil)
