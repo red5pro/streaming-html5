@@ -290,11 +290,20 @@ const decryptPlayback = async () => {
     rtcDrmConfigure(drmConfig)
 
     subscriber = new WHEPClient()
-    await subscriber.init(baseConfig)
     subscriber.on('WebRTC.PeerConnection.Available', () => {
       // Listen for ontrack event to get the decrypted stream.
+      console.log('RTCDRM:: Attaching ontrack handler for decrypted stream.')
       const pc = subscriber.getPeerConnection()
+      // pc.addEventListener('track', e => {
+      //   console.log('RTCDRM:: ontrack event.')
+      //   rtcDrmOnTrack(e, drmConfig)
+      // })
       pc.ontrack = e => rtcDrmOnTrack(e, drmConfig)
+    })
+    await subscriber.init({
+      ...baseConfig,
+      // We are allowing castLabs descryption to handle decrypt and mediaStream assignment.
+      mediaElementId: undefined
     })
     subscriber.on('*', event => onDecryptedSubscriberEvent(event))
 

@@ -355,11 +355,15 @@ const decryptPlayback = async () => {
 
     const config = getConfiguration('red5pro-subscriber', true)
     subscriber = new WHEPClient()
-    await subscriber.init(config)
     subscriber.on('WebRTC.PeerConnection.Available', () => {
       // Listen for ontrack event to get the decrypted stream.
       const pc = subscriber.getPeerConnection()
       pc.ontrack = e => rtcDrmOnTrack(e, drmConfig)
+    })
+    await subscriber.init({
+      ...config,
+      // We are allowing castLabs descryption to handle decrypt and mediaStream assignment.
+      mediaElementId: undefined
     })
     subscriber.on('*', event => onDecryptedSubscriberEvent(event))
     await subscriber.subscribe()
