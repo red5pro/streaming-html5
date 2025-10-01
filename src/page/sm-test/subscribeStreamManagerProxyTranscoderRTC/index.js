@@ -234,7 +234,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         }
       : undefined
 
-    const httpProtocol = protocol === 'wss' ? 'https' : 'http'
+    const httpProtocol = protocol === 'ws' ? 'http' : 'https'
     const endpoint = `${httpProtocol}://${host}:${port}/as/${streamManagerAPI}/proxy/whep/${streamGuid}`
 
     var connectionParams = params
