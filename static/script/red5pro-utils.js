@@ -705,4 +705,24 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   window.exposeSubscriberGlobally = function (subscriber) {
     window.r5pro_subscriber = subscriber
   }
+
+  window.showModal = (content) => {
+    const div = document.createElement('div');
+    div.classList.add('modal');
+    const container = document.createElement('div');
+    const button = document.createElement('a');
+    const close = document.createTextNode('close');
+    button.href = "#";
+    button.appendChild(close);
+    button.classList.add('modal-close');
+    container.appendChild(button);
+    container.appendChild(content);
+    div.appendChild(container);
+    document.body.appendChild(div);
+    button.addEventListener('click', (event) => {
+      event.preventDefault();
+      document.body.removeChild(div);
+      return false;
+    });
+  }
 })(this)

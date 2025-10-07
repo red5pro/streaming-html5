@@ -23,7 +23,7 @@ NONINFRINGEMENT.   IN  NO  EVENT  SHALL INFRARED5, INC. BE LIABLE FOR ANY CLAIM,
 WHETHER IN  AN  ACTION  OF  CONTRACT,  TORT  OR  OTHERWISE,  ARISING  FROM,  OUT  OF  OR  IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
-;(function (window, document, red5prosdk) {
+;(function (window, document, red5prosdk, showModal) {
   'use strict'
 
   var configuration = (function () {
@@ -211,6 +211,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         data: error.message,
       })
     }
+    return null
   }
 
   const getConfiguration = () => {
@@ -265,6 +266,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       publisher.on('*', onPublisherEvent)
       await publisher.initWithStream(config, stream)
       await publisher.publish()
+      const [videoTrack] = stream.getVideoTracks()
+      videoTrack.onended = async () => {
+        if (targetPublisher) {
+          unpublish(targetPublisher)
+        }
+      }
       onPublishSuccess(publisher)
       streamTitle.innerText = stream1
       targetPublisher = publisher
@@ -301,6 +308,17 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   const startup = async () => {
     // Kick off.
     const stream = await capture()
+    if (!stream) {
+      var content = document.createElement('div')
+      content.style = 'text-align: center;'
+      content.innerHTML = `
+        <p>Failed to capture screen share.</p>
+        <br/>
+        <p>If on a Mobile browser, this capability is not available.</p>
+      `
+      showModal(content)
+      return
+    }
     await setupPublisher(stream)
   }
 
@@ -322,4 +340,4 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
   window.addEventListener('pagehide', shutdown)
   window.addEventListener('beforeunload', shutdown)
-})(this, document, window.red5prosdk)
+})(this, document, window.red5prosdk, window.showModal)
