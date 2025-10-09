@@ -53,13 +53,26 @@
         border-bottom: 1px solid #999;
       }
 
-      .settings-field {
-        justify-content: center;
+      .settings-area {
+        box-sizing: border-box;
+        background: aliceblue;
+        max-width: 640px;
         width: 100%;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        padding: 20px;
+      }
+      .settings-field {
+        margin: unset!important;
+      }
+      .settings-field.disabled {
+        opacity: 0.5;
+        pointer-events: none;
       }
     </style>
-    <link href="//unpkg.com/video.js@7.0.0/dist/video-js.css" rel="stylesheet">
-    <script src="//unpkg.com/video.js@7.0.0/dist/video.min.js"></script>
+    <script src="//cdn.jsdelivr.net/npm/hls.js@latest"></script>
   </head>
   <body>
     {{> top-bar }}
@@ -73,14 +86,19 @@
         </div>
       </div>
       {{> test-title title='Stream Manager Playback VOD Listing Test'}}
-      <div class="centered" style="margin-bottom:10px;"><em>This example requires the use of cloud storage to access the VOD files.</em></div>
+      <div class="centered settings-container settings-area">
+        <p>This example requires the use of remote storage to access the VOD files. It is assumed that the storage is cloud-based, but can be configured to use an NFS mount.</p>
+        <hr />
+        <p class="settings-field settings-collapsable">
+          <label for="nfs-checkbox" class="settings-label">Is From NFS Mount:</label>
+          <input type="checkbox" id="nfs-checkbox" name="nfs-checkbox" unchecked>
+        </p>
+        <p id="nfs-path-field" class="settings-field settings-collapsable disabled">
+          <label for="nfs-path" class="settings-label">NFS BasePath:</label>
+          <input disabled type="text" id="nfs-path" name="nfs-path" placeholder="e.g., https://mynfs-mount.cloud.com">
+        </p>
+      </div>
       <div class="stream-section">
-        <div class="centered file-listing-section">
-          <p class="settings-field hidden">
-            <label for="param-name1" class="settings-label">Retrieve From Cloud Storage:</label>
-            <input type="checkbox" id="use-cloudstorage-checkbox" name="use_cloud_storage" unchecked>
-          </p>
-        </div>
         <div class="centered file-listing-section">
           <div class="file-listing-container">
             <p class="file-listing-title"><span class="strong">Media Files (FLV &amp; MP4)</span></p>

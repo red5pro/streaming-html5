@@ -332,6 +332,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
   function setConnected(value) {
     connected = value
+    clearTimeout(dryStreamTimer)
+    clearTimeout(retryTimeout)
     if (!connected) {
       if (targetSubscriber) {
         targetSubscriber.off('*', onSubscriberEvent)
