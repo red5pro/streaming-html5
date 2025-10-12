@@ -24,7 +24,7 @@ WHETHER IN  AN  ACTION  OF  CONTRACT,  TORT  OR  OTHERWISE,  ARISING  FROM,  OUT
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 // Chrome & Firefox
-;(function (window, document, red5prosdk) {
+;(function (window, document, red5prosdk, showModal) {
   'use strict'
 
   var configuration = (function () {
@@ -75,6 +75,17 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   captureButton.addEventListener('click', async () => {
     const stream = await capture()
+    if (!stream) {
+      var content = document.createElement('div')
+      content.style = 'text-align: center;'
+      content.innerHTML = `
+        <p>Failed to capture screen share.</p>
+        <br/>
+        <p>If on a Mobile browser, this capability is not available.</p>
+      `
+      showModal(content)
+      return
+    }
     setupPublisher(stream)
   })
 
@@ -201,6 +212,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         data: error.message,
       })
     }
+    return null
   }
 
   function unpublish(publisher) {
@@ -253,6 +265,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         return targetPublisher.publish()
       })
       .then(function () {
+        const [videoTrack] = mediaStream.getVideoTracks()
+        videoTrack.onended = async () => {
+          if (targetPublisher) {
+            unpublish(targetPublisher)
+          }
+        }
         onPublishSuccess(targetPublisher)
       })
       .catch(function (error) {
@@ -285,4 +303,4 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
   window.addEventListener('pagehide', shutdown)
   window.addEventListener('beforeunload', shutdown)
-})(this, document, window.red5prosdk)
+})(this, document, window.red5prosdk, window.showModal)
