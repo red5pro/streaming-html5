@@ -55,14 +55,23 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       : red5prosdk.LOG_LEVELS.WARN
   )
 
+  let useNFSMount = false
+  let hlsPlayer = null
   var videoContainer = document.getElementById('video-container')
   var errorNotification = document.getElementById('error-notification')
   var mediaListing = document.getElementById('media-file-listing')
   var playlistListing = document.getElementById('playlist-listing')
-  var useCloudStorageCheckbox = document.getElementById(
-    'use-cloudstorage-checkbox'
+  var nfsCheckbox = document.getElementById(
+    'nfs-checkbox'
   )
-  useCloudStorageCheckbox.addEventListener('change', refreshList)
+  var nfsPathField = document.getElementById('nfs-path-field')
+  var nfsPathInput = document.getElementById('nfs-path')
+  nfsCheckbox.addEventListener('change', function () {
+    useNFSMount = nfsCheckbox.checked
+    nfsPathField.classList.toggle('disabled', !useNFSMount)
+    nfsPathInput.disabled = !useNFSMount
+    refreshList()
+  })
 
   var subscriberNode =
     '<video id="red5pro-subscriber" controls autoplay playsinline class="red5pro-subscriber red5pro-media red5pro-media-background" width="640" height="480"></video>'
@@ -83,7 +92,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     element.appendChild(source)
   }
 
-  function useVideoJSFallback(url) {
+  function useHLSFallback(url) {
     if (configuration.authentication.enabled) {
       url += `?${getAuthQueryParams()}`
     }
@@ -94,16 +103,18 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     source.type = 'application/x-mpegURL'
     source.src = url
     videoElement.appendChild(source)
-    var v = new window.videojs(
-      'red5pro-subscriber',
-      {
-        techOrder: ['html5'],
-      },
-      function () {
-        // success.
-      }
-    )
-    v.play()
+    if (hlsPlayer) {
+      hlsPlayer.destroy()
+      hlsPlayer = null
+    }
+    if (window.Hls.isSupported()) {
+      hlsPlayer = new window.Hls()
+      hlsPlayer.loadSource(url)
+      hlsPlayer.attachMedia(videoElement)
+      hlsPlayer.on(window.Hls.Events.MANIFEST_PARSED, function () {
+        videoElement.play()
+      })
+    }
   }
 
   function showErrorNotification(message) {
@@ -134,7 +145,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     vodType /* mediafiles | playlists */
   ) {
     try {
-	  const useCloudStorage = true
+	  const useCloudStorage = !useNFSMount
       const {
         host,
         app,
@@ -190,12 +201,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     var index = parseInt(el.dataset.index, 10)
     if (!isNaN(index) && mediafiles.length > index) {
       var f = mediafiles[index]
-      var url = f.url
+      let url = f.url
       var location = url.split('/')
       mediafiles[index] = Object.assign({}, f, {
         serverAddress: location[2],
         scope: [location[3], location[4]].join('/'),
         name: location[5],
+        url: useNFSMount ? nfsPathInput.value + '/' + url : url,
       })
       var mediafile = mediafiles[index]
       if (isMP4File(mediafile.url)) {
@@ -237,9 +249,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   function displayMediaFiles(list) {
-    mediafiles = list
+    mediafiles = list.filter((item) => !item.url.endsWith('.mp4') && item.url.indexOf('_init.mp4') === -1)
     var i,
-      length = list.length
+      length = mediafiles.length
     var element
     var textNode
     while (mediaListing.firstChild) {
@@ -248,7 +260,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     if (length > 0) {
       for (i = 0; i < length; i++) {
         element = document.createElement('p')
-        textNode = document.createTextNode(list[i].name)
+        textNode = document.createTextNode(mediafiles[i].name)
         element.dataset.index = i
         element.appendChild(textNode)
         mediaListing.appendChild(element)
@@ -268,12 +280,24 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   async function respondToPlaylist(response) {
     try {
-      const { url } = response
+      let { url } = response
+      if (useNFSMount) {
+        url = nfsPathInput.value + '/' + url
+      }
       if (isHlsSupported()) {
-        const source = `<source src="${url}" type="application/x-mpegURL">`
-        document.getElementById('red5pro-subscriber').appendChild(source)
+        const source = document.createElement('source')
+        source.src = url
+        source.type = 'application/x-mpegURL'
+        const subscriber = document.getElementById('red5pro-subscriber')
+        subscriber.pause()
+        subscriber.innerHTML = ''
+        subscriber.autoplay = true
+        subscriber.controls = true
+        subscriber.playsinline = true
+        subscriber.appendChild(source)
+        subscriber.load()
       } else {
-        useVideoJSFallback(url)
+        useHLSFallback(url)
       }
     } catch (error) {
       console.error(`Could not playback: ${error.message}`)
@@ -286,7 +310,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       navigator.clipboard
         .writeText(response.url)
         .then(function () {
-          alert(response.url + ' add to clipboard!')
+          alert(response.url + ' added to clipboard!')
         })
         .catch(function (e) {
           console.error(e)

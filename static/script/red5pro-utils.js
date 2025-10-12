@@ -403,8 +403,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
     const result = await fetch(url)
     const json = await result.json()
-    if (json.errorMessage) {
-      throw new Error(json.errorMessage)
+    if (json.errorMessage || json.error) {
+      throw new Error(json.errorMessage || json.error)
     }
     const origin = Array.isArray(json) && json.length > 0 ? json[0] : json
     const { streamGuid } = origin
