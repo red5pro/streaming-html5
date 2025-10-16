@@ -1,10 +1,14 @@
+**Red5 Pro WebRTC SDK vNEW-15.0.0.11-release.b189**
+
+***
+
 <h3 align="center">
-  <img src="assets/Red5_Truetime_black.png" alt="Red5 Pro Logo" height="65" />
+  <img src="_media/Red5_Truetime_black.png" alt="Red5 Pro Logo" height="65" />
 </h3>
 <p align="center">
   <a href="#">Quick Start</a> &bull;
-  <a href="docs/whip-client.md">Publishing</a> &bull;
-  <a href="docs/whep-client.md">Subscribing</a>
+  <a href="_media/whip-client.md">Publishing</a> &bull;
+  <a href="_media/whep-client.md">Subscribing</a>
 </p>
 
 ---
@@ -212,10 +216,10 @@ The Red5 Cloud deployment utilizes a Stream Manager for autoscaling. With the St
 
 # Usage
 
-The [WHIPClient](docs/whip-client.md) and [WHEPClient](docs/whep-client.md) - along with the [Native HLSSubscriber](docs/hls-subscriber.md) - each take an initialization configuration in order to perform the signaling and negotiation process with the Red5 Server to start publishing or subscribing to a stream, respectively.
+The [WHIPClient](_media/whip-client.md) and [WHEPClient](_media/whep-client.md) - along with the [Native HLSSubscriber](_media/hls-subscriber.md) - each take an initialization configuration in order to perform the signaling and negotiation process with the Red5 Server to start publishing or subscribing to a stream, respectively.
 
 The initialization configurations and relevant APIs available for each client can be found in their respective documentation found in this repo:
 
-* [WHIPClient](docs/whip-client.md)
-* [WHEPClient](docs/whep-client.md)
-* [HLSSubscriber](docs/hls-subscriber.md)
+* [WHIPClient](_media/whip-client.md)
+* [WHEPClient](_media/whep-client.md)
+* [HLSSubscriber](_media/hls-subscriber.md)
