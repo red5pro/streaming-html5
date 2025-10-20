@@ -24,20 +24,8 @@ WHETHER IN  AN  ACTION  OF  CONTRACT,  TORT  OR  OTHERWISE,  ARISING  FROM,  OUT
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 // Chrome & Firefox
-;(function (window, document, red5prosdk) {
+;(function (window, document, red5prosdk, showModal) {
   'use strict'
-
-  var serverSettings = (function () {
-    var settings = sessionStorage.getItem('r5proServerSettings')
-    try {
-      return JSON.parse(settings)
-    } catch (e) {
-      console.error(
-        'Could not read server settings from sessionstorage: ' + e.message
-      )
-    }
-    return {}
-  })()
 
   var configuration = (function () {
     var conf = sessionStorage.getItem('r5proTestBed')
@@ -87,6 +75,17 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   captureButton.addEventListener('click', async () => {
     const stream = await capture()
+    if (!stream) {
+      var content = document.createElement('div')
+      content.style = 'text-align: center;'
+      content.innerHTML = `
+        <p>Failed to capture screen share.</p>
+        <br/>
+        <p>If on a Mobile browser, this capability is not available.</p>
+      `
+      showModal(content)
+      return
+    }
     setupPublisher(stream)
   })
 
@@ -120,17 +119,18 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   streamTitle.innerText = configuration.stream1
 
-  var protocol = serverSettings.protocol
-  var isSecure = protocol == 'https'
-  function getSocketLocationFromProtocol() {
-    return !isSecure
-      ? { protocol: 'ws', port: serverSettings.wsport }
-      : { protocol: 'wss', port: serverSettings.wssport }
-  }
-
   function onPublisherEvent(event) {
     console.log('[Red5ProPublisher] ' + event.type + '.')
     updateStatusFromEvent(event)
+    if (event.type === 'WebRTC.MediaStream.Available') {
+      const stream = event.data
+      const videoTrack = stream.getVideoTracks()[0]
+      videoTrack.onended = async () => {
+        if (targetPublisher) {
+          unpublish(targetPublisher)
+        }
+      }
+    }
   }
 
   function onPublishFail(message) {
@@ -212,10 +212,18 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         data: error.message,
       })
     }
+    return null
   }
 
   function unpublish(publisher) {
     return new Promise(function (resolve, reject) {
+      const media = publisher.getMediaStream()
+      if (media) {
+        const tracks = media.getTracks()
+        tracks.forEach((t) => {
+          t.stop()
+        })
+      }
       publisher
         .unpublish()
         .then(function () {
@@ -232,16 +240,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   function setupPublisher(mediaStream) {
-    const { preferWhipWhep } = configuration
-    const { WHIPClient, RTCPublisher } = red5prosdk
+    const { WHIPClient } = red5prosdk
 
     var rtcConfig = Object.assign(
       {},
       configuration,
       getAuthenticationParams(),
       {
-        protocol: getSocketLocationFromProtocol().protocol,
-        port: getSocketLocationFromProtocol().port,
         streamName: configuration.stream1,
         bandwidth: {
           video: parseInt(bandwidthVideoField.value),
@@ -250,7 +255,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         streamMode: configuration.recordBroadcast ? 'record' : 'live',
       }
     )
-    const publisher = preferWhipWhep ? new WHIPClient() : new RTCPublisher()
+    const publisher = new WHIPClient()
     publisher
       .initWithStream(rtcConfig, mediaStream)
       .then(function (publisherImpl) {
@@ -260,6 +265,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         return targetPublisher.publish()
       })
       .then(function () {
+        const [videoTrack] = mediaStream.getVideoTracks()
+        videoTrack.onended = async () => {
+          if (targetPublisher) {
+            unpublish(targetPublisher)
+          }
+        }
         onPublishSuccess(targetPublisher)
       })
       .catch(function (error) {
@@ -292,4 +303,4 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
   window.addEventListener('pagehide', shutdown)
   window.addEventListener('beforeunload', shutdown)
-})(this, document, window.red5prosdk)
+})(this, document, window.red5prosdk, window.showModal)

@@ -26,18 +26,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ;(function (window, document, red5prosdk) {
   'use strict'
 
-  const serverSettings = (function () {
-    let settings = sessionStorage.getItem('r5proServerSettings')
-    try {
-      return JSON.parse(settings)
-    } catch (e) {
-      console.error(
-        'Could not read server settings from sessionstorage: ' + e.message
-      )
-    }
-    return {}
-  })()
-
   const configuration = (function () {
     let conf = sessionStorage.getItem('r5proTestBed')
     try {
@@ -69,9 +57,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   const packetsField = document.getElementById('packets-field')
   const resolutionField = document.getElementById('resolution-field')
 
-  const protocol = serverSettings.protocol
-  const isSecure = protocol === 'https'
-
   let bitrate = 0
   let packetsReceived = 0
   let frameWidth = 0
@@ -96,19 +81,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     updateStatistics(bitrate, packetsReceived, frameWidth, frameHeight)
   }
 
-  // Determines the ports and protocols based on being served over TLS.
-  const getSocketLocationFromProtocol = () => {
-    return !isSecure
-      ? { protocol: 'ws', port: serverSettings.wsport }
-      : { protocol: 'wss', port: serverSettings.wssport }
-  }
-
   // Base configuration to extend in providing specific tech failover configurations.
   let defaultConfiguration = ((useVideo, useAudio) => {
-    let c = {
-      protocol: getSocketLocationFromProtocol().protocol,
-      port: getSocketLocationFromProtocol().port,
-    }
+    let c = configuration
     if (!useVideo) {
       c.videoEncoding = red5prosdk.PlaybackVideoEncoder.NONE
     }
@@ -222,21 +197,14 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   const start = async () => {
     subscribeButton.disabled = true
-    const { stream1: streamName, preferWhipWhep } = configuration
-    const {
-      WHEPClient,
-      RTCSubscriber,
-      PlaybackVideoEncoder,
-      PlaybackAudioEncoder,
-    } = red5prosdk
-    const { protocol, port } = getSocketLocationFromProtocol()
+    const { stream1: streamName } = configuration
+    const { WHEPClient, PlaybackVideoEncoder, PlaybackAudioEncoder } =
+      red5prosdk
     let rtcConfig = {
       ...configuration,
       ...defaultConfiguration,
       ...getAuthenticationParams(),
       streamName,
-      protocol,
-      port,
       subscriptionId: 'subscriber-' + instanceId,
       videoEncoding:
         videoSelect.value === 'default'
@@ -251,7 +219,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     try {
       streamTitle.innerText = streamName
 
-      targetSubscriber = preferWhipWhep ? new WHEPClient() : new RTCSubscriber()
+      targetSubscriber = new WHEPClient()
       targetSubscriber.on('*', onSubscriberEvent)
       await targetSubscriber.init(rtcConfig)
       await targetSubscriber.subscribe()

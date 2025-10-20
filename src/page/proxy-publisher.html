@@ -582,29 +582,21 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. -->
         var cameraHeight = getParameterByName('cameraHeight')
           ? parseInt(getParameterByName('cameraHeight'), 10)
           : 480
-        var preferWhipWhep = true
-        if (getParameterByName('whipwhep')) {
-          var whipwhep = getParameterByName('whipwhep')
-          preferWhipWhep = whipwhep === '1' || whipwhep === 'true'
-        }
-        var switchToDC = true
+        var includeDataChannel = true
         if (getParameterByName('dc')) {
           var dc = getParameterByName('dc')
-          switchToDC = dc === '1' || dc === 'true'
+          includeDataChannel = dc === '1' || dc === 'true'
         }
         var switchDelay = getParameterByName('delay')
           ? parseInt(getParameterByName('delay'), 10)
           : NaN
 
         const httpProtocol = (protocol === 'wss' || protocol === 'https') ? 'https' : 'http'
-        const endpoint = !preferWhipWhep
-          ? `${protocol}://${host}:${port}/as/${streamManagerAPI}/proxy/ws/publish/${app}/${streamName}`
-          : `${httpProtocol}://${host}:${port}/as/${streamManagerAPI}/proxy/whip/${app}/${streamName}`
+        const endpoint = `${httpProtocol}://${host}:${port}/as/${streamManagerAPI}/proxy/whip/${app}/${streamName}`
         const rtcConfig = {
           endpoint,
           streamName,
-          signalingSocketOnly: switchToDC,
-          enableChannelSignaling: switchToDC,
+          includeDataChannel: includeDataChannel,
           bandwidth: {
             video: parseInt(bandwidthVideo, 10),
             audio: parseInt(bandwidthAudio, 10),
@@ -621,7 +613,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. -->
               frameRate: { exact: parseInt(frameRate, 10) },
             },
           },
-          socketSwitchDelay: !isNaN(switchDelay) || 1000,
           connectionParams: {
             nodeGroup,
           },
@@ -756,8 +747,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. -->
             console.log('[rtc] : ' + JSON.stringify(rtcConfig, null, 2))
 
             // Establish a broadcast session.
-            const { WHIPClient, RTCPublisher } = red5prosdk
-            publisher = preferWhipWhep ? new WHIPClient() : new RTCPublisher()
+            const { WHIPClient } = red5prosdk
+            publisher = new WHIPClient()
             publisher.on('*', onPublisherEvent)
             await publisher.init(rtcConfig)
             await publisher.publish()

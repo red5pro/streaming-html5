@@ -26,18 +26,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ;(function (window, document, red5prosdk, streamManagerUtil) {
   'use strict'
 
-  var serverSettings = (function () {
-    var settings = sessionStorage.getItem('r5proServerSettings')
-    try {
-      return JSON.parse(settings)
-    } catch (e) {
-      console.error(
-        'Could not read server settings from sessionstorage: ' + e.message
-      )
-    }
-    return {}
-  })()
-
   var configuration = (function () {
     var conf = sessionStorage.getItem('r5proTestBed')
     try {
@@ -69,22 +57,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   const instanceId = Math.floor(Math.random() * 0x10000).toString(16)
-  var streamTitle = document.getElementById('stream-title')
   var addressField = document.getElementById('address-field')
-  var protocol = serverSettings.protocol
-  var isSecure = protocol === 'https'
-
-  function getSocketLocationFromProtocol() {
-    return !isSecure
-      ? { protocol: 'ws', port: serverSettings.wsport }
-      : { protocol: 'wss', port: serverSettings.wssport }
-  }
 
   var defaultConfiguration = (function (useVideo, useAudio) {
-    var c = {
-      protocol: getSocketLocationFromProtocol().protocol,
-      port: getSocketLocationFromProtocol().port,
-    }
+    var c = configuration
     if (!useVideo) {
       c.videoEncoding = red5prosdk.PlaybackVideoEncoder.NONE
     }
@@ -118,8 +94,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         connectionParams: {
           username: auth.username,
           password: auth.password,
-          token: auth.token,
-        },
+          token: auth.token
+        }
       }
       if (authToken) {
         params.connectionParams.token = authToken
@@ -138,9 +114,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       const { endpoint } = data
       displayServerAddress(endpoint, host)
     }
-  }
-  function onSubscribeFail(message) {
-    console.error('[Red5ProSubsriber] Subscribe Error :: ' + message)
   }
   function onSubscribeSuccess(subscriber) {
     console.log('[Red5ProSubsriber] Subscribe Complete.')
@@ -167,14 +140,14 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     return undefined
   }
 
-  const requestABRSettings = async (streamName) => {
+  const requestABRSettings = async streamName => {
     const {
       host,
       app,
       streamManagerAPI: version,
       streamManagerUser: username,
       streamManagerPassword: password,
-      streamManagerNodeGroup: nodeGroup,
+      streamManagerNodeGroup: nodeGroup
     } = configuration
     const token = await streamManagerUtil.authenticate(
       host,
@@ -193,32 +166,27 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     return provision
   }
 
-  const getConfiguration = (streamGuid) => {
+  const getConfiguration = streamGuid => {
     const {
       host,
       app,
+      protocol,
+      port,
       streamManagerAPI,
-      preferWhipWhep,
-      streamManagerNodeGroup: nodeGroup,
+      streamManagerNodeGroup: nodeGroup
     } = configuration
-    const { protocol, port } = getSocketLocationFromProtocol()
     const streamName = streamGuid.split('/').pop()
 
     const region = getRegionIfDefined()
     const params = region
       ? {
           region,
-          strict: true,
+          strict: true
         }
       : undefined
-    const appContext = preferWhipWhep
-      ? `as/${streamManagerAPI}/proxy/${app}`
-      : `as/${streamManagerAPI}/proxy/ws/subscribe/${app}`
 
-    const httpProtocol = protocol === 'wss' ? 'https' : 'http'
-    const endpoint = !preferWhipWhep
-      ? `${protocol}://${host}:${port}/as/${streamManagerAPI}/proxy/ws/subscribe/${streamGuid}`
-      : `${httpProtocol}://${host}:${port}/as/${streamManagerAPI}/proxy/whep/${streamGuid}`
+    const httpProtocol = protocol === 'ws' ? 'http' : 'https'
+    const endpoint = `${httpProtocol}://${host}:${port}/as/${streamManagerAPI}/proxy/whep/${streamGuid}`
 
     var connectionParams = params
       ? { ...params, ...getAuthenticationParams().connectionParams }
@@ -232,24 +200,17 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       port,
       host,
       streamName,
-      app: appContext,
+      app,
       subscriptionId: 'subscriber-' + instanceId,
-      connectionParams: preferWhipWhep
-        ? {
-            ...connectionParams,
-            nodeGroup,
-          }
-        : {
-            ...connectionParams,
-            nodeGroup,
-            host,
-            app,
-          },
+      connectionParams: {
+        ...connectionParams,
+        nodeGroup
+      }
     }
     return rtcConfig
   }
 
-  const startSubscriber = async (streamGuid) => {
+  const startSubscriber = async streamGuid => {
     const config = getConfiguration(streamGuid)
     const url = `${config.endpoint}.m3u8`
     var video = document.getElementById('red5pro-subscriber')
@@ -268,6 +229,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             'manifest loaded, found ' + data.levels.length + ' quality level'
           )
         })
+        onSubscribeSuccess('Playback via HLS.js')
       })
     } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
       video.src = videoSrc
@@ -287,7 +249,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
   }
 
-  const startup = async (streamGuid) => {
+  const startup = async streamGuid => {
     try {
       await unsubscribe()
     } catch (e) {
@@ -297,7 +259,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
   }
 
-  requestABRSettings(configuration.stream1).then((settings) => {
+  requestABRSettings(configuration.stream1).then(settings => {
     try {
       const { streams } = settings
       // Try to find the middle one

@@ -26,18 +26,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 /* global red5prosdk */
 import castLabsService from './castlabs-service.js'
 
-let serverSettings = (function () {
-  const settings = sessionStorage.getItem('r5proServerSettings')
-  try {
-    return JSON.parse(settings)
-  } catch (e) {
-    console.error(
-      'Could not read server settings from sessionstorage: ' + e.message
-    )
-  }
-  return {}
-})()
-
 let configuration = (function () {
   const conf = sessionStorage.getItem('r5proTestBed')
   try {
@@ -99,20 +87,7 @@ const onResolutionUpdate = (w, h) => {
 }
 streamTitle.innerText = configuration.stream1
 
-const protocol = serverSettings.protocol
-const isSecure = protocol == 'https'
-const getSocketLocationFromProtocol = () => {
-  return !isSecure
-    ? { protocol: 'ws', port: serverSettings.wsport }
-    : { protocol: 'wss', port: serverSettings.wssport }
-}
-
-let defaultConfiguration = {
-  protocol: getSocketLocationFromProtocol().protocol,
-  port: getSocketLocationFromProtocol().port,
-}
-
-const onSubscribeEvent = (event) => {
+const onSubscribeEvent = event => {
   if (event.type !== 'Subscribe.Time.Update') {
     console.log('[Red5ProSubscriber] ' + event.type + '.')
     updateStatusFromEvent(event)
@@ -122,11 +97,11 @@ const onSubscribeEvent = (event) => {
   }
 }
 
-const onSubscribeFail = (message) => {
+const onSubscribeFail = message => {
   console.error('[Red5ProSubsriber] Subscribe Error :: ' + message)
 }
 
-const onSubscribeSuccess = (subscriber) => {
+const onSubscribeSuccess = subscriber => {
   console.log('[Red5ProSubsriber] Subscribe Complete.')
   if (window.exposeSubscriberGlobally) {
     window.exposeSubscriberGlobally(subscriber)
@@ -145,7 +120,7 @@ const onSubscribeSuccess = (subscriber) => {
   }
 }
 
-const onUnsubscribeFail = (message) => {
+const onUnsubscribeFail = message => {
   console.error('[Red5ProSubsriber] Unsubscribe Error :: ' + message)
 }
 
@@ -160,19 +135,19 @@ const getAuthenticationParams = () => {
         connectionParams: {
           username: auth.username,
           password: auth.password,
-          token: auth.token,
-        },
+          token: auth.token
+        }
       }
     : {}
 }
 
-const enableForm = (enabled) => {
+const enableForm = enabled => {
   const fields = document.querySelectorAll('.prod-drm-field')
-  fields.forEach((field) => (field.disabled = !enabled))
+  fields.forEach(field => (field.disabled = !enabled))
   startButton.disabled = !enabled
 }
 
-const saveSettings = (settings) => {
+const saveSettings = settings => {
   localStorage.setItem('castlabsWatermarkSettings', JSON.stringify(settings))
 }
 
@@ -186,7 +161,7 @@ const fillSettings = () => {
       organizationUrn,
       userUrn,
       watermarkId,
-      numOverlays,
+      numOverlays
     } = settingsJSON
     accessKeyInput.value = accessKey
     secretKeyInput.value = secretKey
@@ -204,11 +179,11 @@ const getSettings = () => {
     organizationUrn: organizationUrnInput.value,
     userUrn: userUrnInput.value,
     watermarkId: watermarkIdInput.value,
-    numOverlays: numOverlaysInput.value,
+    numOverlays: numOverlaysInput.value
   }
 }
 
-const addOverlay = (pngData) => {
+const addOverlay = pngData => {
   const overlay = document.createElement('img')
   overlay.className = 'demo-img watermark-overlay'
   overlay.src = URL.createObjectURL(new Blob([pngData], { type: 'image/png' }))
@@ -243,19 +218,15 @@ const requestOverlays = async () => {
 }
 
 const startSubscriber = async () => {
-  const { stream1: streamName, preferWhipWhep } = configuration
+  const { stream1: streamName } = configuration
   try {
-    const { WHEPClient, RTCSubscriber } = red5prosdk
-    const { protocol, port } = getSocketLocationFromProtocol()
+    const { WHEPClient } = red5prosdk
     const rtcConfig = {
       ...configuration,
-      ...defaultConfiguration,
       ...getAuthenticationParams(),
-      protocol,
-      port,
-      streamName,
+      streamName
     }
-    targetSubscriber = preferWhipWhep ? new WHEPClient() : new RTCSubscriber()
+    targetSubscriber = new WHEPClient()
     targetSubscriber.on('*', onSubscribeEvent)
     await targetSubscriber.init(rtcConfig)
     await targetSubscriber.subscribe()

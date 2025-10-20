@@ -26,18 +26,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ;(function (window, document, red5prosdk) {
   'use strict'
 
-  var serverSettings = (function () {
-    var settings = sessionStorage.getItem('r5proServerSettings')
-    try {
-      return JSON.parse(settings)
-    } catch (e) {
-      console.error(
-        'Could not read server settings from sessionstorage: ' + e.message
-      )
-    }
-    return {}
-  })()
-
   var configuration = (function () {
     var conf = sessionStorage.getItem('r5proTestBed')
     try {
@@ -99,17 +87,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   streamTitle.innerText = configuration.stream1
 
-  var protocol = serverSettings.protocol
-  var isSecure = protocol == 'https'
-  function getSocketLocationFromProtocol() {
-    return !isSecure
-      ? { protocol: 'ws', port: serverSettings.wsport }
-      : { protocol: 'wss', port: serverSettings.wssport }
-  }
-
   var defaultConfiguration = {
-    protocol: getSocketLocationFromProtocol().protocol,
-    port: getSocketLocationFromProtocol().port,
     streamMode: configuration.recordBroadcast ? 'record' : 'live'
   }
 
@@ -163,6 +141,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   function onUnpublishSuccess() {
     console.log('[Red5ProPublisher] Unpublish Complete.')
     publishButton.disabled = false
+    updateStatusFromEvent({
+      type: red5prosdk.PublisherEventTypes.UNPUBLISH_SUCCESS
+    })
   }
 
   function getAuthenticationParams() {
@@ -238,12 +219,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     const {
       host,
       app,
+      protocol,
+      port,
       stream1,
       streamManagerAPI,
-      preferWhipWhep,
       streamManagerNodeGroup: nodeGroup
     } = configuration
-    const { protocol, port } = getSocketLocationFromProtocol()
 
     const region = getRegionIfDefined()
     const params = region
@@ -253,10 +234,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         }
       : undefined
 
-    const httpProtocol = protocol === 'wss' ? 'https' : 'http'
-    const endpoint = !preferWhipWhep
-      ? `${protocol}://${host}:${port}/as/${streamManagerAPI}/proxy/ws/publish/${app}/${stream1}`
-      : `${httpProtocol}://${host}:${port}/as/${streamManagerAPI}/proxy/whip/${app}/${stream1}`
+    const httpProtocol = protocol === 'ws' ? 'http' : 'https'
+    const endpoint = `${httpProtocol}://${host}:${port}/as/${streamManagerAPI}/proxy/whip/${app}/${stream1}`
 
     const connectionParams = params
       ? { ...params, ...getAuthenticationParams().connectionParams }
@@ -294,8 +273,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   function determinePublisher() {
-    const { preferWhipWhep } = configuration
-    const { WHIPClient, RTCPublisher } = red5prosdk
+    const { WHIPClient } = red5prosdk
     var rtcConfig = {
       ...getConfiguration(),
       ...{
@@ -331,17 +309,17 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         }
       }
     }
-    const publisher = preferWhipWhep ? new WHIPClient() : new RTCPublisher()
+    const publisher = new WHIPClient()
     return publisher.init(rtcConfig)
   }
 
   function unpublish() {
     return new Promise(function (resolve, reject) {
       if (targetPublisher) {
-        targetPublisher.off('*', onPublisherEvent)
         targetPublisher
           .unpublish()
           .then(function () {
+            targetPublisher.off('*', onPublisherEvent)
             onUnpublishSuccess()
             resolve()
           })

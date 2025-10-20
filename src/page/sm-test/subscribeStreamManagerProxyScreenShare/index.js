@@ -26,18 +26,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ;(function (window, document, red5prosdk) {
   'use strict'
 
-  var serverSettings = (function () {
-    var settings = sessionStorage.getItem('r5proServerSettings')
-    try {
-      return JSON.parse(settings)
-    } catch (e) {
-      console.error(
-        'Could not read server settings from sessionstorage: ' + e.message
-      )
-    }
-    return {}
-  })()
-
   var configuration = (function () {
     var conf = sessionStorage.getItem('r5proTestBed')
     try {
@@ -58,7 +46,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var targetSubscriber
 
   var updateStatusFromEvent = window.red5proHandleSubscriberEvent // defined in src/template/partial/status-field-subscriber.hbs
-  var proxyLocal = window.query('local')
   var instanceId = Math.floor(Math.random() * 0x10000).toString(16)
   var streamTitle = document.getElementById('stream-title')
   var statisticsField = document.getElementById('statistics-field')
@@ -67,9 +54,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var resolutionField = document.getElementById('resolution-field')
 
   var addressField = document.getElementById('address-field')
-
-  var protocol = proxyLocal ? 'https' : serverSettings.protocol
-  var isSecure = protocol === 'https'
 
   var bitrate = 0
   var packetsReceived = 0
@@ -106,17 +90,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     return undefined
   }
 
-  function getSocketLocationFromProtocol() {
-    return !isSecure
-      ? { protocol: 'ws', port: serverSettings.wsport }
-      : { protocol: 'wss', port: serverSettings.wssport }
-  }
-
   var defaultConfiguration = (function (useVideo, useAudio) {
-    var c = {
-      protocol: getSocketLocationFromProtocol().protocol,
-      port: getSocketLocationFromProtocol().port,
-    }
+    var c = configuration
     if (!useVideo) {
       c.videoEncoding = red5prosdk.PlaybackVideoEncoder.NONE
     }
@@ -183,8 +158,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           connectionParams: {
             username: auth.username,
             password: auth.password,
-            token: auth.token,
-          },
+            token: auth.token
+          }
         }
       : {}
   }
@@ -193,25 +168,23 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     const {
       host,
       app,
+      protocol,
+      port,
       stream1,
       streamManagerAPI,
-      preferWhipWhep,
-      streamManagerNodeGroup: nodeGroup,
+      streamManagerNodeGroup: nodeGroup
     } = configuration
-    const { protocol, port } = getSocketLocationFromProtocol()
 
     const region = getRegionIfDefined()
     const params = region
       ? {
           region,
-          strict: true,
+          strict: true
         }
       : undefined
 
-    const httpProtocol = protocol === 'wss' ? 'https' : 'http'
-    const endpoint = !preferWhipWhep
-      ? `${protocol}://${host}:${port}/as/${streamManagerAPI}/proxy/ws/subscribe/${app}/${stream1}`
-      : `${httpProtocol}://${host}:${port}/as/${streamManagerAPI}/proxy/whep/${app}/${stream1}`
+    const httpProtocol = protocol === 'ws' ? 'http' : 'https'
+    const endpoint = `${httpProtocol}://${host}:${port}/as/${streamManagerAPI}/proxy/whep/${app}/${stream1}`
 
     var connectionParams = params
       ? { ...params, ...getAuthenticationParams().connectionParams }
@@ -225,18 +198,18 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       subscriptionId: 'subscriber-' + instanceId,
       connectionParams: {
         ...connectionParams,
-        nodeGroup,
-      },
+        nodeGroup
+      }
     }
     return rtcConfig
   }
 
   const startSubscriber = async () => {
     try {
-      const { RTCSubscriber, WHEPClient } = red5prosdk
-      const { preferWhipWhep, stream1 } = configuration
+      const { WHEPClient } = red5prosdk
+      const { stream1 } = configuration
       const config = getConfiguration()
-      const subscriber = preferWhipWhep ? new WHEPClient() : new RTCSubscriber()
+      const subscriber = new WHEPClient()
       subscriber.on('*', onSubscriberEvent)
       await subscriber.init(config)
       await subscriber.subscribe()
@@ -250,7 +223,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         '[Red5ProSubscriber] :: Error in access of Edge IP: ' + jsonError
       )
       updateStatusFromEvent({
-        type: red5prosdk.SubscriberEventTypes.CONNECT_FAILURE,
+        type: red5prosdk.SubscriberEventTypes.CONNECT_FAILURE
       })
       onSubscribeFail(jsonError)
     }

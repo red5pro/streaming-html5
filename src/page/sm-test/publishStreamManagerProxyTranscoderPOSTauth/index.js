@@ -26,18 +26,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ;(function (window, document, red5prosdk, streamManagerUtil) {
   'use strict'
 
-  var serverSettings = (function () {
-    var settings = sessionStorage.getItem('r5proServerSettings')
-    try {
-      return JSON.parse(settings)
-    } catch (e) {
-      console.error(
-        'Could not read server settings from sessionstorage: ' + e.message
-      )
-    }
-    return {}
-  })()
-
   var configuration = (function () {
     var conf = sessionStorage.getItem('r5proTestBed')
     try {
@@ -93,18 +81,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
   qualitySubmit.addEventListener('click', setQualityAndPublish, false)
 
-  var protocol = serverSettings.protocol
-  var isSecure = protocol == 'https'
-  function getSocketLocationFromProtocol() {
-    return !isSecure
-      ? { protocol: 'ws', port: serverSettings.wsport }
-      : { protocol: 'wss', port: serverSettings.wssport }
-  }
-
   streamTitle.innerText = configuration.stream1
   var defaultConfiguration = {
-    protocol: getSocketLocationFromProtocol().protocol,
-    port: getSocketLocationFromProtocol().port,
     streamMode: configuration.recordBroadcast ? 'record' : 'live',
     bandwidth: {
       video: 1000,
@@ -249,11 +227,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   const getConfiguration = (variant) => {
     const {
       host,
+      protocol,
+      port,
       streamManagerAPI,
-      preferWhipWhep,
       streamManagerNodeGroup: nodeGroup,
     } = configuration
-    const { protocol, port } = getSocketLocationFromProtocol()
 
     const { streamGuid, videoParams } = variant
     const streamName = streamGuid.split('/').pop()
@@ -266,10 +244,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         }
       : undefined
 
-    const httpProtocol = protocol === 'wss' ? 'https' : 'http'
-    const endpoint = !preferWhipWhep
-      ? `${protocol}://${host}:${port}/as/${streamManagerAPI}/proxy/ws/publish/${streamGuid}`
-      : `${httpProtocol}://${host}:${port}/as/${streamManagerAPI}/proxy/whip/${streamGuid}`
+    const httpProtocol = protocol === 'ws' ? 'http' : 'https'
+    const endpoint = `${httpProtocol}://${host}:${port}/as/${streamManagerAPI}/proxy/whip/${streamGuid}`
 
     const connectionParams = params
       ? { ...params, ...getAuthenticationParams().connectionParams }
@@ -296,10 +272,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   const startPublish = async (variant) => {
     try {
       setPublishState(true)
-      const { RTCPublisher, WHIPClient } = red5prosdk
-      const { preferWhipWhep, stream1 } = configuration
+      const { WHIPClient } = red5prosdk
+      const { stream1 } = configuration
       const config = getConfiguration(variant)
-      const publisher = preferWhipWhep ? new WHIPClient() : new RTCPublisher()
+      const publisher = new WHIPClient()
       publisher.on('*', onPublisherEvent)
       await publisher.init(config)
       await publisher.publish()
@@ -387,7 +363,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         streamManagerAPI: version,
         streamManagerNodeGroup: nodeGroup,
       } = configuration
-      const streams = generateTranscoderPost(transcoderPOST.provisionGuid, transcoderForms)
+      const streams = generateTranscoderPost(
+        transcoderPOST.provisionGuid,
+        transcoderForms
+      )
       transcoderPOST.streams = streams
       const token = await streamManagerUtil.authenticate(
         host,

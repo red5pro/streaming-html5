@@ -26,18 +26,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ;(function (window, document, red5prosdk) {
   'use strict'
 
-  const serverSettings = (function () {
-    const settings = sessionStorage.getItem('r5proServerSettings')
-    try {
-      return JSON.parse(settings)
-    } catch (e) {
-      console.error(
-        'Could not read server settings from sessionstorage: ' + e.message
-      )
-    }
-    return {}
-  })()
-
   const configuration = (function () {
     const conf = sessionStorage.getItem('r5proTestBed')
     try {
@@ -57,7 +45,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   var targetSubscriber
 
-  const updateStatusFromEvent = (event) => {
+  const updateStatusFromEvent = event => {
     const subTypes = red5prosdk.SubscriberEventTypes
     switch (event.type) {
       case subTypes.CONNECT_FAILURE:
@@ -68,7 +56,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     window.red5proHandleSubscriberEvent(event) // defined in src/template/partial/status-field-subscriber.hbs
   }
 
-  const proxyLocal = window.query('local')
   const instanceId = Math.floor(Math.random() * 0x10000).toString(16)
   const streamTitle = document.getElementById('stream-title')
   const statisticsField = document.getElementById('statistics-field')
@@ -76,9 +63,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   const packetsField = document.getElementById('packets-field')
   const resolutionField = document.getElementById('resolution-field')
   const addressField = document.getElementById('address-field')
-  const protocol = proxyLocal ? 'https' : serverSettings.protocol
-  const isSecure =
-    protocol === 'https' || window.location.hostname === 'localhost'
 
   let bitrate = 0
   let packetsReceived = 0
@@ -104,17 +88,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     updateStatistics(bitrate, packetsReceived, frameWidth, frameHeight)
   }
 
-  const getSocketLocationFromProtocol = () => {
-    return !isSecure
-      ? { protocol: 'ws', port: serverSettings.wsport }
-      : { protocol: 'wss', port: serverSettings.wssport }
-  }
-
   const defaultConfiguration = ((useVideo, useAudio) => {
-    let c = {
-      protocol: getSocketLocationFromProtocol().protocol,
-      port: getSocketLocationFromProtocol().port,
-    }
+    let c = configuration
     if (!useVideo) {
       c.videoEncoding = red5prosdk.PlaybackVideoEncoder.NONE
     }
@@ -140,8 +115,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           connectionParams: {
             username,
             password,
-            token,
-          },
+            token
+          }
         }
       : {}
   }
@@ -153,7 +128,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   // Local lifecycle notifications.
-  const onSubscriberEvent = (event) => {
+  const onSubscriberEvent = event => {
     const { type } = event
     console.log('[Red5ProSubsriber] ' + type + '.')
     updateStatusFromEvent(event)
@@ -166,10 +141,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       displayServerAddress(endpoint, host)
     }
   }
-  const onSubscribeFail = (message) => {
+  const onSubscribeFail = message => {
     console.error('[Red5ProSubsriber] Subscribe Error :: ' + message)
   }
-  const onSubscribeSuccess = (subscriber) => {
+  const onSubscribeSuccess = subscriber => {
     console.log('[Red5ProSubsriber] Subscribe Complete.')
     if (window.exposeSubscriberGlobally) {
       window.exposeSubscriberGlobally(subscriber)
@@ -187,7 +162,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       }
     }
   }
-  const onUnsubscribeFail = (message) => {
+  const onUnsubscribeFail = message => {
     console.error('[Red5ProSubsriber] Unsubscribe Error :: ' + message)
   }
   const onUnsubscribeSuccess = () => {
@@ -210,25 +185,23 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     const {
       host,
       app,
+      protocol,
+      port,
       stream1,
       streamManagerAPI,
-      preferWhipWhep,
-      streamManagerNodeGroup: nodeGroup,
+      streamManagerNodeGroup: nodeGroup
     } = configuration
-    const { protocol, port } = getSocketLocationFromProtocol()
 
     const region = getRegionIfDefined()
     const params = region
       ? {
           region,
-          strict: true,
+          strict: true
         }
       : undefined
 
-    const httpProtocol = protocol === 'wss' ? 'https' : 'http'
-    const endpoint = !preferWhipWhep
-      ? `${protocol}://${host}:${port}/as/${streamManagerAPI}/proxy/ws/subscribe/${app}/${stream1}`
-      : `${httpProtocol}://${host}:${port}/as/${streamManagerAPI}/proxy/whep/${app}/${stream1}`
+    const httpProtocol = protocol === 'ws' ? 'http' : 'https'
+    const endpoint = `${httpProtocol}://${host}:${port}/as/${streamManagerAPI}/proxy/whep/${app}/${stream1}`
 
     var connectionParams = params
       ? { ...params, ...getAuthenticationParams().connectionParams }
@@ -242,18 +215,18 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       subscriptionId: 'subscriber-' + instanceId,
       connectionParams: {
         ...connectionParams,
-        nodeGroup,
-      },
+        nodeGroup
+      }
     }
     return rtcConfig
   }
 
   const startSubscriber = async () => {
     try {
-      const { RTCSubscriber, WHEPClient } = red5prosdk
-      const { preferWhipWhep, stream1 } = configuration
+      const { WHEPClient } = red5prosdk
+      const { stream1 } = configuration
       const config = getConfiguration()
-      const subscriber = preferWhipWhep ? new WHEPClient() : new RTCSubscriber()
+      const subscriber = new WHEPClient()
       subscriber.on('*', onSubscriberEvent)
       await subscriber.init(config)
       await subscriber.subscribe()
@@ -267,7 +240,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         '[Red5ProSubscriber] :: Error in access of Edge IP: ' + jsonError
       )
       updateStatusFromEvent({
-        type: red5prosdk.SubscriberEventTypes.CONNECT_FAILURE,
+        type: red5prosdk.SubscriberEventTypes.CONNECT_FAILURE
       })
       onSubscribeFail(jsonError)
     }
