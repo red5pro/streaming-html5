@@ -26,18 +26,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ;(function (window, document, red5prosdk) {
   'use strict'
 
-  const serverSettings = (() => {
-    const settings = sessionStorage.getItem('r5proServerSettings')
-    try {
-      return JSON.parse(settings)
-    } catch (e) {
-      console.error(
-        'Could not read server settings from sessionstorage: ' + e.message
-      )
-    }
-    return {}
-  })()
-
   const configuration = (() => {
     const conf = sessionStorage.getItem('r5proTestBed')
     try {
@@ -68,7 +56,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   const packetsField = document.getElementById('packets-field')
   const resolutionField = document.getElementById('resolution-field')
 
-  const getPortAndProtocol = (host) => {
+  const getPortAndProtocol = host => {
     let ipReg = /^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/
     let localhostReg = /^localhost.*/
     let isIPOrLocalhost = ipReg.exec(host) || localhostReg.exec(host)
@@ -101,7 +89,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     updateStatistics(bitrate, packetsSent, frameWidth, frameHeight)
   }
 
-  const onPublisherEvent = (event) => {
+  const onPublisherEvent = event => {
     console.log('[Red5ProPublisher] ' + event.type + '.')
     if (event.type === 'WebRTC.PeerConnection.Open') {
       try {
@@ -119,15 +107,15 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
     updateStatusFromEvent(event)
   }
-  const onPublishFail = (message) => {
+  const onPublishFail = message => {
     console.error('[Red5ProPublisher] Publish Error :: ' + message)
   }
-  const onPublishSuccess = (publisher) => {
+  const onPublishSuccess = () => {
     console.log('[Red5ProPublisher] Publish Complete.')
     publishButton.classList.toggle('hidden')
     openButton.classList.toggle('hidden')
   }
-  const onUnpublishFail = (message) => {
+  const onUnpublishFail = message => {
     console.error('[Red5ProPublisher] Unpublish Error :: ' + message)
   }
   const onUnpublishSuccess = () => {
@@ -141,8 +129,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           connectionParams: {
             username: auth.username,
             password: auth.password,
-            token: auth.token,
-          },
+            token: auth.token
+          }
         }
       : {}
   }
@@ -153,12 +141,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         audio: false,
         video: configuration.useVideo
           ? configuration.mediaConstraints.video
-          : false,
-      },
+          : false
+      }
     }
   }
 
-  const getValueFromId = (id) => {
+  const getValueFromId = id => {
     try {
       const el = document.querySelector(`#${id}`)
       return el ? el.value : undefined
@@ -168,19 +156,17 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     return undefined
   }
 
-  const Uint8ArrayFromHex = (hex) => {
+  const Uint8ArrayFromHex = hex => {
     if (!hex) return null
     if (hex.length % 2 !== 0) {
       console.error(`Malformed hex string (${hex}), odd length`)
       return null
     }
-    return Uint8Array.from(
-      hex.match(/.{1,2}/g).map((byte) => parseInt(byte, 16))
-    )
+    return Uint8Array.from(hex.match(/.{1,2}/g).map(byte => parseInt(byte, 16)))
   }
 
   const encryptWorker = new Worker('./encrypt-worker.js', {
-    name: 'encrypt worker',
+    name: 'encrypt worker'
   })
 
   const initCrypto = async (videoCodec, aesMode, key, iv) => {
@@ -189,21 +175,21 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       videoCodec,
       aesMode,
       key,
-      iv,
+      iv
     })
     const encryptInit = await Promise.race([
-      new Promise((resolve) => {
-        encryptWorker.onmessage = (event) => resolve(event.data === 'init-done')
+      new Promise(resolve => {
+        encryptWorker.onmessage = event => resolve(event.data === 'init-done')
       }),
-      new Promise((resolve) => setTimeout(resolve, 15000, false)),
+      new Promise(resolve => setTimeout(resolve, 15000, false))
     ])
     return encryptInit
   }
 
-  const setupSenderTransform = (sender) => {
+  const setupSenderTransform = sender => {
     if (window.RTCRtpScriptTransform) {
       sender.transform = new window.RTCRtpScriptTransform(encryptWorker, {
-        operation: `encrypt-${sender.track.kind}`,
+        operation: `encrypt-${sender.track.kind}`
       })
       return
     }
@@ -213,7 +199,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       {
         operation: `encrypt-${sender.track.kind}`,
         readable,
-        writable,
+        writable
       },
       [readable, writable]
     )
@@ -240,7 +226,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     ...configuration,
     ...authParams,
     ...mediaConfig,
-    streamMode: configuration.recordBroadcast ? 'record' : 'live',
+    streamMode: configuration.recordBroadcast ? 'record' : 'live'
   }
 
   const getRegionIfDefined = () => {
@@ -261,8 +247,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       app,
       stream1,
       streamManagerAPI,
-      preferWhipWhep,
-      streamManagerNodeGroup: nodeGroup,
+      streamManagerNodeGroup: nodeGroup
     } = config
     const { protocol, port } = getPortAndProtocol(host)
 
@@ -270,14 +255,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     const params = region
       ? {
           region,
-          strict: true,
+          strict: true
         }
       : undefined
 
-    const httpProtocol = protocol === 'wss' ? 'https' : 'http'
-    const endpoint = !preferWhipWhep
-      ? `${protocol}://${host}:${port}/as/${streamManagerAPI}/proxy/ws/publish/${app}/${stream1}`
-      : `${httpProtocol}://${host}:${port}/as/${streamManagerAPI}/proxy/whip/${app}/${stream1}`
+    const httpProtocol = protocol === 'ws' ? 'http' : 'https'
+    const endpoint = `${httpProtocol}://${host}:${port}/as/${streamManagerAPI}/proxy/whip/${app}/${stream1}`
 
     const connectionParams = params
       ? { ...params, ...getAuthenticationParams().connectionParams }
@@ -290,16 +273,15 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       streamName: stream1,
       connectionParams: {
         ...connectionParams,
-        nodeGroup,
-      },
+        nodeGroup
+      }
     }
     return rtcConfig
   }
 
   const start = async () => {
     publishButton.disabled = true
-    const { preferWhipWhep } = configuration
-    const { RTCPublisher, WHIPClient } = red5prosdk
+    const { WHIPClient } = red5prosdk
     try {
       const rtcConfig = {
         ...getConfiguration(),
@@ -312,8 +294,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           // difference at all atm: https://bugs.chromium.org/p/chromium/issues/detail?id=904764
           // https://source.chromium.org/chromium/chromium/src/+/main:third_party/blink/renderer/modules/peerconnection/rtc_configuration.idl;l=51
           rtcAudioJitterBufferMaxPackets: 10,
-          rtcAudioJitterBufferFastAccelerate: true,
-        },
+          rtcAudioJitterBufferFastAccelerate: true
+        }
       }
 
       const encryption =
@@ -325,7 +307,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       const iv = Uint8ArrayFromHex(getValueFromId('iv-input'))
       await initCrypto('H264', encryption, key, iv)
 
-      targetPublisher = preferWhipWhep ? new WHIPClient() : new RTCPublisher()
+      targetPublisher = new WHIPClient()
       targetPublisher.on('*', onPublisherEvent)
       await targetPublisher.init(rtcConfig)
       await targetPublisher.publish()

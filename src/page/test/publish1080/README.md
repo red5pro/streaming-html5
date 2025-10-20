@@ -40,7 +40,7 @@ const rtcConfig = {
   },
 }
 
-const publisher = new window.red5prosdk.RTCPublisher()
+const publisher = new window.red5prosdk.WHIPClient()
 publisher
   .init(rtcConfig)
   .then(() => {

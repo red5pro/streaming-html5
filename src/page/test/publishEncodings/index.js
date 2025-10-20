@@ -26,18 +26,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ;(function (window, document, red5prosdk) {
   'use strict'
 
-  var serverSettings = (function () {
-    var settings = sessionStorage.getItem('r5proServerSettings')
-    try {
-      return JSON.parse(settings)
-    } catch (e) {
-      console.error(
-        'Could not read server settings from sessionstorage: ' + e.message
-      )
-    }
-    return {}
-  })()
-
   var configuration = (function () {
     var conf = sessionStorage.getItem('r5proTestBed')
     try {
@@ -93,18 +81,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     updateStatistics(bitrate, packetsSent, frameWidth, frameHeight)
   }
 
-  var protocol = serverSettings.protocol
-  var isSecure = protocol == 'https'
-  function getSocketLocationFromProtocol() {
-    return !isSecure
-      ? { protocol: 'ws', port: serverSettings.wsport }
-      : { protocol: 'wss', port: serverSettings.wssport }
-  }
-
   var defaultConfiguration = {
-    protocol: getSocketLocationFromProtocol().protocol,
-    port: getSocketLocationFromProtocol().port,
-    streamMode: configuration.recordBroadcast ? 'record' : 'live',
+    streamMode: configuration.recordBroadcast ? 'record' : 'live'
   }
 
   function getTrackSender(connection, kind) {
@@ -192,7 +170,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       } else {
         publisher.muteVideo()
         var stream = videoElement.srcObject
-        stream.getVideoTracks().forEach((track) => {
+        stream.getVideoTracks().forEach(track => {
           track.stop()
         })
       }
@@ -235,8 +213,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           connectionParams: {
             username: auth.username,
             password: auth.password,
-            token: auth.token,
-          },
+            token: auth.token
+          }
         }
       : {}
   }
@@ -251,26 +229,25 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             width: {
               min: 640,
               ideal: 1920,
-              max: 1920,
+              max: 1920
             },
             height: {
               min: 480,
               ideal: 1080,
-              max: 1080,
-            },
+              max: 1080
+            }
           }
         : false,
       frameRate: {
         min: 25,
         ideal: 60,
-        max: 60,
-      },
+        max: 60
+      }
     }
   }
 
   function determinePublisher() {
-    const { preferWhipWhep } = configuration
-    const { WHIPClient, RTCPublisher } = red5prosdk
+    const { WHIPClient } = red5prosdk
 
     var rtcConfig = Object.assign(
       {},
@@ -279,17 +256,14 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       getAuthenticationParams(),
       {
         mediaConstraints: getUserMediaConfiguration(),
-
-        protocol: getSocketLocationFromProtocol().protocol,
-        port: getSocketLocationFromProtocol().port,
         streamName: configuration.stream1,
         bandwidth: {
           audio: 56,
-          video: 2500,
-        }, // to allow for scaling of bandwidth
+          video: 2500
+        } // to allow for scaling of bandwidth
       }
     )
-    const publisher = preferWhipWhep ? new WHIPClient() : new RTCPublisher()
+    const publisher = new WHIPClient()
     return publisher.init(rtcConfig)
   }
 

@@ -145,26 +145,37 @@ input[type=range][orient=vertical] {
 }
 
 .red5pro-media-play-button {
-  background-image: url(icons/play.png);
+  background-image: url('data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'100\' height=\'100\' viewBox=\'0 0 100 100\'%3E%3Cpolygon points=\'30,15 30,85 80,50\' fill=\'%23595959\'/%3E%3C/svg%3E');
+  background-size: contain;
+  background-repeat: no-repeat;
 }
 
 .red5pro-media-pause-button {
-  background-image: url(icons/pause.png);
+  background-image: url('data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'100\' height=\'100\' viewBox=\'0 0 100 100\'%3E%3Crect x=\'20\' y=\'15\' width=\'20\' height=\'70\' fill=\'%23595959\'/%3E%3Crect x=\'60\' y=\'15\' width=\'20\' height=\'70\' fill=\'%23595959\'/%3E%3C/svg%3E');
+  background-size: contain;
+  background-repeat: no-repeat;
 }
 
 .red5pro-media-unmute-button {
-  background-image: url(icons/volume-2.png);
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\' fill=\'none\' stroke=\'%23595959\' stroke-width=\'8\' stroke-linecap=\'butt\' stroke-linejoin=\'miter\'><path d=\'M46 20L28 36H16a4 4 0 0 0-4 4v16a4 4 0 0 0 4 4h12l18 16V20z\'/><path d=\'M50 36a14 14 0 0 1 0 28\'/><path d=\'M70 28a24 24 0 0 1 0 48\'/></svg>');
+  background-size: contain;
+  background-repeat: no-repeat;
 }
 
 .red5pro-media-mute-button {
-  background-image: url(icons/volume-x.png);
+  background-image: url('data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'100\' height=\'100\' viewBox=\'0 0 100 100\' fill=\'%23595959\'%3E%3Cpath d=\'M46 20L28 36H16a4 4 0 0 0-4 4v16a4 4 0 0 0 4 4h12l18 16V20z\' stroke=\'%23595959\' stroke-width=\'8\'/%3E%3Cline x1=\'70\' y1=\'40\' x2=\'90\' y2=\'60\' stroke=\'%23595959\' stroke-width=\'8\'/%3E%3Cline x1=\'90\' y1=\'40\' x2=\'70\' y2=\'60\' stroke=\'%23595959\' stroke-width=\'8\'/%3E%3C/svg%3E');
+  background-size: contain;
+  background-repeat: no-repeat;
 }
 
 .red5pro-media-fullscreen-button {
-  background-image: url(icons/maximize.png);
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\' fill=\'%23595959\' stroke=\'%23595959\' stroke-width=\'5\' stroke-linecap=\'butt\' stroke-linejoin=\'miter\'><path d=\'M20 20h20v-8H12v28h8V20z\'/><path d=\'M80 20h-20v-8h28v28h-8V20z\'/><path d=\'M20 80h20v8H12V60h8v20z\'/><path d=\'M80 80h-20v8h28V60h-8v20z\'/></svg>');
+  background-size: contain;
+  background-repeat: no-repeat;
 }
 
 .red5pro-media-exit-fullscreen-button {
-  background-image: url(icons/minimize.png);
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\' fill=\'%23595959\' stroke=\'%23595959\' stroke-width=\'5\' stroke-linecap=\'butt\' stroke-linejoin=\'miter\'><path d=\'M32 12v20H12\'/><path d=\'M68 12v20h20\'/><path d=\'M32 88V68H12\'/><path d=\'M68 88V68h20\'/></svg>');
+  background-size: contain;
+  background-repeat: no-repeat;
 }
-

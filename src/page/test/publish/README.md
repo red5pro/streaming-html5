@@ -64,7 +64,7 @@ import { WHIPClient } from 'red5pro-webrtc-sdk'
 
 var rtcPublisher = new WHIPClient()
 var config = {
-  protocol: 'ws',
+  protocol: 'http',
   host: 'localhost',
   port: 5080,
   app: 'live',
@@ -123,7 +123,7 @@ start()
 
         var rtcPublisher = new WHIPClient()
         var config = {
-          protocol: 'ws',
+          protocol: 'http',
           host: 'localhost',
           port: 5080,
           app: 'live',
@@ -164,14 +164,11 @@ As such, you will need a distribution of the [Red5 Pro Server](https://www.red5.
 
 ## Publisher Selection & Initialization
 
-A Publisher instance is required to attach a stream and request publishing. The SDK provides to ways to start a Publisher:
+A Publisher instance is required to attach a stream and request publishing.
 
 - `WHIPClient` - utilizes [WebRTC-HTTP ingestion](https://www.ietf.org/archive/id/draft-ietf-wish-whip-01.html) to establish a connection through series of HTTP/S requests.
-- `RTCPublisher` - utilizes `WebSocket` to establish a connection.
 
 The [WebRTC-HTTP ingestion](https://www.ietf.org/archive/id/draft-ietf-wish-whip-01.html)(`WHIP`) and [WebRTC-HTTP egress](https://www.ietf.org/archive/id/draft-murillo-whep-00.html)(`WHEP`) protocols provide the ability to negotation and establish a connection using HTTP/S requests. This removes the requirement for a WebSocket, which historically has been used for the role of negotiation and connection.
-
-The use of a WebSocket is still available in `RTCPublisher` and `RTCSubscriber` and the ability to utilize WHIP/WHEP is provided from the `WHIPClient` and `WHEPClient` classes in the SDK. As is evident by their acronyms, the `WHIPClient` is used for publishing and the `WHEPClient` is used for subscribing.
 
 _NOTE_: Aside from the recommendation to utilize the [adapter.js](https://github.com/webrtc/adapter) library to "shim" similar functionality across WebRTC-supported browesers, the Red5 Pro SDK itself does not provide any polyfills for support. As such, the SDK checks the inherent support of the browser in its failover process.
 
@@ -180,11 +177,11 @@ _NOTE_: Aside from the recommendation to utilize the [adapter.js](https://github
 ### Publishing
 
 ```js
-const { WHIPClient, RTCPublisher } = red5prosdk
+const { WHIPClient } = red5prosdk
 
-var rtcPublisher = new WHIPClient() // Or, alternatively, use: new RTCPublisher()
+var rtcPublisher = new WHIPClient()
 var config = {
-  protocol: 'ws',
+  protocol: 'http',
   host: 'localhost',
   port: 5080,
   app: 'live',

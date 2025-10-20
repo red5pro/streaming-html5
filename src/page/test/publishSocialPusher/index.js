@@ -65,14 +65,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var packetsField = document.getElementById('packets-field')
   var resolutionField = document.getElementById('resolution-field')
 
-  var protocol = serverSettings.protocol
-  var isSecure = protocol == 'https'
-  function getSocketLocationFromProtocol() {
-    return !isSecure
-      ? { protocol: 'ws', port: serverSettings.wsport }
-      : { protocol: 'wss', port: serverSettings.wssport }
-  }
-
   var bitrate = 0
   var packetsSent = 0
   var frameWidth = 0
@@ -277,8 +269,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     })
   }
 
-  const { preferWhipWhep } = configuration
-  const { WHIPClient, RTCPublisher } = red5prosdk
+  const { WHIPClient } = red5prosdk
 
   var rtcConfig = Object.assign(
     {},
@@ -287,14 +278,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     getAuthenticationParams(),
     getUserMediaConfiguration(),
     {
-      protocol: getSocketLocationFromProtocol().protocol,
-      port: getSocketLocationFromProtocol().port,
       streamName: configuration.stream1,
       streamMode: configuration.recordBroadcast ? 'record' : 'live',
     }
   )
 
-  var publisher = preferWhipWhep ? new WHIPClient() : new RTCPublisher()
+  var publisher = new WHIPClient()
   publisher
     .init(rtcConfig)
     .then(function (publisherImpl) {

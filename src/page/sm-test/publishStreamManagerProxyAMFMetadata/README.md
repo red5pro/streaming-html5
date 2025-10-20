@@ -27,7 +27,7 @@ proxy.enabled=false
 
 ## Sending AMF Metadata
 
-The `RTCPublisher` includes a `send` method that allows sending AMF metadata with the `onMetaData` method name. This metadata is received by all subscribers watching the stream.
+The `WHEPClient` includes a `send` method that allows sending AMF metadata with the `onMetaData` method name. This metadata is received by all subscribers watching the stream.
 
 ```js
 submitButton.addEventListener('click', function () {

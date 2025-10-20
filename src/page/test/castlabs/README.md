@@ -22,7 +22,7 @@ import {
 } from '../../lib/castlabs/rtc-drm-transform/rtc-drm-transform.min.js'
 ```
 
-And then provided to a Red5Pro `RTCSubscriber` during initialization:
+And then provided to a Red5Pro `WHEPClient` during initialization:
 
 ```js
 const transforms = {
@@ -30,7 +30,7 @@ const transforms = {
   audio: audioTransformFunction,
   worker: worker,
 }
-subscriber = await new red5prosdk.RTCSubscriber().init(config, transforms)
+subscriber = await new red5prosdk.WHEPClient().init(config, transforms)
 ```
 
 This will inform the Red5Pro WebRTC SDK to use the transform functions for decryption.
@@ -56,7 +56,7 @@ In particular, you will need to know the following that is provided as User Inpu
 
 ## Code Example
 
-After providing the transforms and/or web worker to the `RTCSubscriber` and started a subscribe session, you provide the settings defined in the previous section along with a reference to the `video` element to the `setDRM` function from the `rtc-drm-transform` library:
+After providing the transforms and/or web worker to the `WHEPClient` and started a subscribe session, you provide the settings defined in the previous section along with a reference to the `video` element to the `setDRM` function from the `rtc-drm-transform` library:
 
 ```js
 const transforms = {
@@ -65,7 +65,7 @@ const transforms = {
   worker: worker,
 }
 
-subscriber = await new red5prosdk.RTCSubscriber().init(config, transforms)
+subscriber = await new red5prosdk.WHEPClient().init(config, transforms)
 await subscriber.subscribe()
 
 const element = document.querySelector(`#${baseConfig.mediaElementId}`)

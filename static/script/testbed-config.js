@@ -43,6 +43,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     return decodeURIComponent(results[2].replace(/\+/g, ' '))
   }
 
+  const validIP =
+    /^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/
+  const localhost = /^localhost/
+  const isLocalhostOrIP = address => {
+    return address.match(validIP) || address.match(localhost)
+  }
+
   var build_version = '$VERSION'
   var protocol = queryParamConfig.protocol || window.location.protocol
   var port = queryParamConfig.port || window.location.port
@@ -86,10 +93,14 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   function assignStorage() {
+    const host = window.location.hostname
+    const port = isLocalhostOrIP(host) ? 5080 : 443
+    const protocol = isLocalhostOrIP(host) ? 'http' : 'https'
     json = {
       version: build_version,
-      host: window.location.hostname,
-      port: 5080,
+      host,
+      protocol,
+      port,
       stream1: 'stream1',
       stream2: 'stream2',
       app: 'live',
@@ -104,8 +115,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         audio: 56,
         video: 750
       },
-      signalingSocketOnly: true,
-      enableChannelSignaling: true, // WHIP/WHEP specific
+      includeDataChannel: true, // Whether to include data channel when publishing
       disableProxy: true, // WHIP/WHEP specific
       trickleIce: true, // Flag to use trickle ice to send candidates
       keyFramerate: 3000,
@@ -124,7 +134,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
                 },
                 height: {
                   min: 240,
-                  max: 480
+                  max: 360
                 },
                 frameRate: {
                   min: 8,
@@ -174,6 +184,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       mixerBackendSocketField: '',
       mixerAuthenticationEnabled: false,
       preferWhipWhep: true,
+      stats: undefined,
       offerSDPResolution: false
     }
 

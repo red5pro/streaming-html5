@@ -219,8 +219,7 @@ const onDecryptedSubscriberEvent = event => {
 }
 
 const encryptedPlayback = async () => {
-  const { preferWhipWhep } = configuration
-  const { WHEPClient, RTCSubscriber } = red5prosdk
+  const { WHEPClient } = red5prosdk
   try {
     const { rtcConfiguration } = baseConfig
     const config = {
@@ -231,9 +230,7 @@ const encryptedPlayback = async () => {
         encodedInsertableStreams: false
       }
     }
-    encryptedSubscriber = preferWhipWhep
-      ? new WHEPClient()
-      : new RTCSubscriber()
+    encryptedSubscriber = new WHEPClient()
     encryptedSubscriber = await encryptedSubscriber.init(config)
     encryptedSubscriber.on('*', event => onEncryptedSubscriberEvent(event))
     await encryptedSubscriber.subscribe()
@@ -247,8 +244,7 @@ const encryptedPlayback = async () => {
 }
 
 const decryptPlayback = async () => {
-  const { preferWhipWhep } = configuration
-  const { WHEPClient, RTCSubscriber } = red5prosdk
+  const { WHEPClient } = red5prosdk
 
   console.info(`Using castLabs RTC DRM v${rtcDrmGetVersion()}`)
 
@@ -293,12 +289,21 @@ const decryptPlayback = async () => {
     })
     rtcDrmConfigure(drmConfig)
 
-    subscriber = preferWhipWhep ? new WHEPClient() : new RTCSubscriber()
-    await subscriber.init(baseConfig)
+    subscriber = new WHEPClient()
     subscriber.on('WebRTC.PeerConnection.Available', () => {
       // Listen for ontrack event to get the decrypted stream.
+      console.log('RTCDRM:: Attaching ontrack handler for decrypted stream.')
       const pc = subscriber.getPeerConnection()
+      // pc.addEventListener('track', e => {
+      //   console.log('RTCDRM:: ontrack event.')
+      //   rtcDrmOnTrack(e, drmConfig)
+      // })
       pc.ontrack = e => rtcDrmOnTrack(e, drmConfig)
+    })
+    await subscriber.init({
+      ...baseConfig,
+      // We are allowing castLabs descryption to handle decrypt and mediaStream assignment.
+      mediaElementId: undefined
     })
     subscriber.on('*', event => onDecryptedSubscriberEvent(event))
 

@@ -26,18 +26,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ;(function (window, document, red5prosdk) {
   'use strict'
 
-  var serverSettings = (function () {
-    var settings = sessionStorage.getItem('r5proServerSettings')
-    try {
-      return JSON.parse(settings)
-    } catch (e) {
-      console.error(
-        'Could not read server settings from sessionstorage: ' + e.message
-      )
-    }
-    return {}
-  })()
-
   var configuration = (function () {
     var conf = sessionStorage.getItem('r5proTestBed')
     try {
@@ -68,9 +56,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var validationSubmit = document.getElementById('validation-submit-btn')
   var validationAddButton = document.getElementById('add-param-btn')
 
-  var protocol = serverSettings.protocol
-  var isSecure = protocol === 'https'
-
   var bitrate = 0
   var packetsReceived = 0
   var frameWidth = 0
@@ -95,19 +80,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     updateStatistics(bitrate, packetsReceived, frameWidth, frameHeight)
   }
 
-  // Determines the ports and protocols based on being served over TLS.
-  function getSocketLocationFromProtocol() {
-    return !isSecure
-      ? { protocol: 'ws', port: serverSettings.wsport }
-      : { protocol: 'wss', port: serverSettings.wssport }
-  }
-
   // Base configuration to extend in providing specific tech failover configurations.
   var defaultConfiguration = (function (useVideo, useAudio) {
-    var c = {
-      protocol: getSocketLocationFromProtocol().protocol,
-      port: getSocketLocationFromProtocol().port,
-    }
+    var c = configuration
     if (!useVideo) {
       c.videoEncoding = red5prosdk.PlaybackVideoEncoder.NONE
     }
@@ -244,14 +219,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   function startup() {
-    const { preferWhipWhep } = configuration
-    const { WHEPClient, RTCSubscriber } = red5prosdk
+    validationSubmit.disabled = true
 
+    const { WHEPClient } = red5prosdk
     var rtcConfig = Object.assign({}, configuration, defaultConfiguration, {
       streamName: configuration.stream1,
 
-      protocol: getSocketLocationFromProtocol().protocol,
-      port: getSocketLocationFromProtocol().port,
       subscriptionId: 'subscriber-' + instanceId,
       connectionParams: {
         ...getAuthenticationParams().connectionParams,
@@ -259,7 +232,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       },
     })
 
-    var subscriber = preferWhipWhep ? new WHEPClient() : new RTCSubscriber()
+    var subscriber = new WHEPClient()
     subscriber
       .init(rtcConfig)
       .then(function (subscriberImpl) {
@@ -279,6 +252,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           '[Red5ProSubscriber] :: Error in subscribing - ' + jsonError
         )
         onSubscribeFail(jsonError)
+        validationSubmit.disabled = false
       })
   }
 

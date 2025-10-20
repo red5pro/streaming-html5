@@ -48,7 +48,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   )
 
   let subscriber
-  let controls
 
   let instanceId = Math.floor(Math.random() * 0x10000).toString(16)
   let protocol = serverSettings.protocol
@@ -114,7 +113,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   })(configuration.useVideo, configuration.useAudio)
 
   // Local lifecycle notifications.
-  const onSubscriberEvent = (event) => {
+  const onSubscriberEvent = event => {
     const { type, data } = event
     if (type !== 'Subscribe.Time.Update') {
       console.log('[Red5ProSubscriber] ' + type + '.', data)
@@ -134,11 +133,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
   }
 
-  const onSubscribeFail = (message) => {
+  const onSubscribeFail = message => {
     console.error('[Red5ProSubsriber] Subscribe Error :: ' + message)
   }
 
-  const onSubscribeSuccess = (subscriber) => {
+  const onSubscribeSuccess = subscriber => {
     console.log('[Red5ProSubsriber] Subscribe Complete.')
     if (window.exposeSubscriberGlobally) {
       window.exposeSubscriberGlobally(subscriber)
@@ -156,7 +155,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       }
     }
   }
-  const onUnsubscribeFail = (message) => {
+  const onUnsubscribeFail = message => {
     console.error('[Red5ProSubsriber] Unsubscribe Error :: ' + message)
   }
   const onUnsubscribeSuccess = () => {
@@ -169,8 +168,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       ? {
           connectionParams: {
             username: auth.username,
-            password: auth.password,
-          },
+            password: auth.password
+          }
         }
       : {}
   }
@@ -190,7 +189,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     return content
   }
 
-  const showModal = (content) => {
+  const showModal = content => {
     var style = 'padding: 10px; line-height: 1.3em;'
     content.style = style
     const div = document.createElement('div')
@@ -205,7 +204,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     container.appendChild(content)
     div.appendChild(container)
     document.body.appendChild(div)
-    button.addEventListener('click', (event) => {
+    button.addEventListener('click', event => {
       event.preventDefault()
       document.body.removeChild(div)
       return false
@@ -236,8 +235,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     ...defaultConfiguration,
     ...getAuthenticationParams(),
     ...{
-      streamName: configuration.stream1,
-    },
+      streamName: configuration.stream1
+    }
   }
 
   const subscribe = async (
@@ -245,8 +244,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     optionalFullURL,
     useCustomControls
   ) => {
-    const { preferWhipWhep } = configuration
-    const { WHEPClient, RTCSubscriber } = red5prosdk
+    const { LiveSeekClient } = red5prosdk
 
     subscribeButton.disabled = true
     urlInput.disabled = true
@@ -265,16 +263,18 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             baseURL: optionalBaseURL,
             fullURL: optionalFullURL,
             usePlaybackControlsUI: !useCustomControls,
-            options: { debug: true, backBufferLength: 0 },
-          },
-        },
+            options: { debug: true, backBufferLength: 0 }
+          }
+        }
       }
 
-      subscriber = preferWhipWhep ? new WHEPClient() : new RTCSubscriber()
-      await subscriber.init(rtcConfig)
+      subscriber = new LiveSeekClient()
       subscriber.on('*', onSubscriberEvent)
-      controls = new CustomControls(subscriber)
+      await subscriber.init(rtcConfig)
 
+      if (useCustomControls) {
+        new CustomControls(subscriber)
+      }
       streamTitle.innerText = configuration.stream1
       await subscriber.subscribe()
       onSubscribeSuccess(subscriber)

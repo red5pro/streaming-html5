@@ -46,7 +46,7 @@ import Hls from 'hls.js'
 
 ## liveSeek
 
-You can enable live seek capabilities for a live playback by providing a `liveSeek` configuration in the initialization configuration for `RTCSubscriber`.
+You can enable live seek capabilities for a live playback by providing a `liveSeek` configuration in the initialization configuration for `LiveSeekClient`.
 
 The schema for the `liveSeek` configuration is as follows:
 

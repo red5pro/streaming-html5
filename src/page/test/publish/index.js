@@ -26,18 +26,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ;(function (window, document, red5prosdk) {
   'use strict'
 
-  var serverSettings = (function () {
-    var settings = sessionStorage.getItem('r5proServerSettings')
-    try {
-      return JSON.parse(settings)
-    } catch (e) {
-      console.error(
-        'Could not read server settings from sessionstorage: ' + e.message
-      )
-    }
-    return {}
-  })()
-
   var configuration = (function () {
     var conf = sessionStorage.getItem('r5proTestBed')
     try {
@@ -64,14 +52,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   var bitrateField = document.getElementById('bitrate-field')
   var packetsField = document.getElementById('packets-field')
   var resolutionField = document.getElementById('resolution-field')
-
-  var protocol = serverSettings.protocol
-  var isSecure = protocol == 'https'
-  function getSocketLocationFromProtocol() {
-    return !isSecure
-      ? { protocol: 'ws', port: serverSettings.wsport }
-      : { protocol: 'wss', port: serverSettings.wssport }
-  }
 
   var bitrate = 0
   var packetsSent = 0
@@ -152,22 +132,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
   }
 
-  function getRTMPMediaConfiguration() {
-    return {
-      mediaConstraints: {
-        audio: configuration.useAudio
-          ? configuration.mediaConstraints.audio
-          : false,
-        video: configuration.useVideo
-          ? {
-              width: configuration.cameraWidth,
-              height: configuration.cameraHeight,
-            }
-          : false,
-      },
-    }
-  }
-
   function unpublish() {
     return new Promise(function (resolve, reject) {
       var publisher = targetPublisher
@@ -187,22 +151,19 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   // Setup.
-  var { preferWhipWhep } = configuration
-  var { RTCPublisher, WHIPClient } = red5prosdk
+  var { WHIPClient } = red5prosdk
   var rtcConfig = Object.assign(
     {},
     configuration,
     getAuthenticationParams(),
     getUserMediaConfiguration(),
     {
-      protocol: getSocketLocationFromProtocol().protocol,
-      port: getSocketLocationFromProtocol().port,
       streamName: configuration.stream1,
       streamMode: configuration.recordBroadcast ? 'record' : 'live',
     }
   )
 
-  var publisher = preferWhipWhep ? new WHIPClient() : new RTCPublisher()
+  var publisher = new WHIPClient()
   publisher
     .init(rtcConfig)
     .then(function (publisherImpl) {
