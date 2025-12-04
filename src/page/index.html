@@ -533,7 +533,7 @@
         authUsernameField.value = config.authentication.username;
         authPasswordField.value = config.authentication.password;
         authTokenField.value = config.authentication.token;
-        authUsernameField.disabled = authPasswordField.disabled = !authEnabledField.checked;
+        authUsernameField.disabled = authPasswordField.disabled = authTokenField.disabled = !authEnabledField.checked;
         enableStatisticsField.checked = config.stats ? true : false;
         statisticsIntervalField.value = config.stats ? Math.floor(parseInt(config.stats.interval, 10) / 1000) : 5;
         statisticsEndpointField.value = config.stats ? config.stats.endpoint : '';
