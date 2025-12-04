@@ -472,8 +472,10 @@
       });
 
       enableStatisticsField.addEventListener('change', function () {
+        let value = statisticsEndpointField.value;
+        value = value && value.length > 0 ? value : undefined;
         configuration.stats = enableStatisticsField.checked ? {
-          endpoint: statisticsEndpointField.value,
+          endpoint: value === 'null' ? null : value,
           interval: parseInt(statisticsIntervalField.value, 10) * 1000,
           include: [],
         } : undefined
@@ -491,7 +493,7 @@
         if (configuration.stats) {
           let value = statisticsEndpointField.value;
           value = value && value.length > 0 ? value : undefined;
-          configuration.stats.endpoint = value;
+          configuration.stats.endpoint = value === 'null' ? null : value;
         }
         seal(configuration);
       });

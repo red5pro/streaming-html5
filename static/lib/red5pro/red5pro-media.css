@@ -47,8 +47,8 @@
 }
 
 input[type=range][orient=vertical] {
-    writing-mode: bt-lr; /* IE */
-    -webkit-appearance: slider-vertical; /* WebKit */
+    writing-mode: vertical-lr;
+    direction: rtl;
     width: 8px;
     height: 175px;
     padding: 0 5px;

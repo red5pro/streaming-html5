@@ -1,4 +1,4 @@
-[**Red5 Pro WebRTC SDK vNEW-15.0.0.11-release.b189**](../README.md)
+[**Red5 Pro WebRTC SDK v15.2.0**](../README.md)
 
 ***
 
@@ -58,13 +58,13 @@ Optional additional options to override defaults.
 
 #### Get Signature
 
-> **get** **options**(): [`RTCWhipPublisherConfigType`](../type-aliases/RTCWhipPublisherConfigType.md) \| `undefined`
+> **get** **options**(): `undefined` \| [`RTCWhipPublisherConfigType`](../type-aliases/RTCWhipPublisherConfigType.md)
 
 Get the options for the WHIPClient.
 
 ##### Returns
 
-[`RTCWhipPublisherConfigType`](../type-aliases/RTCWhipPublisherConfigType.md) \| `undefined`
+`undefined` \| [`RTCWhipPublisherConfigType`](../type-aliases/RTCWhipPublisherConfigType.md)
 
 ## Methods
 
@@ -94,63 +94,89 @@ The arguments to call the method with.
 
 ***
 
+### emit()
+
+> **emit**(`type`, `data`): `void`
+
+Emit an event on the WHIPClient.
+
+#### Parameters
+
+##### type
+
+`string`
+
+The type of event to emit.
+
+##### data
+
+`any`
+
+The data to emit.
+
+#### Returns
+
+`void`
+
+***
+
 ### getDataChannel()
 
-> **getDataChannel**(): `RTCDataChannel` \| `undefined`
+> **getDataChannel**(): `undefined` \| `RTCDataChannel`
 
 Get the DataChannel for the WHIPClient.
 
 #### Returns
 
-`RTCDataChannel` \| `undefined`
+`undefined` \| `RTCDataChannel`
 
 ***
 
 ### getMediaStream()
 
-> **getMediaStream**(): `MediaStream` \| `undefined`
+> **getMediaStream**(): `undefined` \| `MediaStream`
 
 Get the MediaStream generated for the WHIPClient.
 
 #### Returns
 
-`MediaStream` \| `undefined`
+`undefined` \| `MediaStream`
 
 ***
 
 ### getMessageTransport()
 
-> **getMessageTransport**(): `MessageTransport` \| `undefined`
+> **getMessageTransport**(): `undefined` \| `MessageTransport`
 
 Get the MessageTransport for the WHIPClient.
 
 #### Returns
 
-`MessageTransport` \| `undefined`
+`undefined` \| `MessageTransport`
 
 ***
 
 ### getOptions()
 
-> **getOptions**(): [`RTCWhipPublisherConfigType`](../type-aliases/RTCWhipPublisherConfigType.md) \| `undefined`
+> **getOptions**(): `undefined` \| [`RTCWhipPublisherConfigType`](../type-aliases/RTCWhipPublisherConfigType.md)
 
 Get the options for the WHIPClient.
 
 #### Returns
 
-[`RTCWhipPublisherConfigType`](../type-aliases/RTCWhipPublisherConfigType.md) \| `undefined`
+`undefined` \| [`RTCWhipPublisherConfigType`](../type-aliases/RTCWhipPublisherConfigType.md)
 
 ***
 
 ### getPeerConnection()
 
-> **getPeerConnection**(): `RTCPeerConnection` \| `undefined`
+> **getPeerConnection**(): `undefined` \| `RTCPeerConnection`
 
 Get the PeerConnection for the WHIPClient.
 
 #### Returns
 
-`RTCPeerConnection` \| `undefined`
+`undefined` \| `RTCPeerConnection`
 
 ***
 
@@ -338,7 +364,7 @@ The name of the stream to publish.
 
 ### send()
 
-> **send**(`methodName`, `data`): `Promise`\<`boolean`\> \| `undefined`
+> **send**(`methodName`, `data`): `undefined` \| `Promise`\<`boolean`\>
 
 Send a message to the server.
 
@@ -358,7 +384,7 @@ The data to send.
 
 #### Returns
 
-`Promise`\<`boolean`\> \| `undefined`
+`undefined` \| `Promise`\<`boolean`\>
 
 ***
 

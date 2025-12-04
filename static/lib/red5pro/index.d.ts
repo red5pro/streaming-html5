@@ -19,6 +19,7 @@ import WhipWhepSignalingHelper from 'helper/wish-signal-helper';
 import { PlaybackView } from 'view/playback';
 import RTCPeerConnectionSubscriber from 'helper/peer-connection-sub';
 import RTCSubscriberStats from 'stats/subscriber-stats';
+import { RenegotiationPolicyType } from 'configuration';
 import { LiveSeekConfigType } from 'configuration/liveseek';
 export { LiveSeekConfigType, LiveSeekOptions, defaultLiveSeekConfig } from 'configuration/liveseek';
 import { PublisherEventTypes, SubscriberEventTypes, RTCPublisherEventTypes, RTCSubscriberEventTypes, MessageTransportStateEventTypes } from 'event/event-types';
@@ -256,6 +257,13 @@ declare class WHIPClient extends EventEmitter$1 {
      * @param {Event} event - The event to trigger.
      */
     trigger(event: Event$1): void;
+    /**
+     * Emit an event on the WHIPClient.
+     *
+     * @param {string} type - The type of event to emit.
+     * @param {any} data - The data to emit.
+     */
+    emit(type: string, data: any): void;
     /**
      * Get the type of the WHIPClient (RTC).
      *
@@ -539,6 +547,8 @@ declare class WHEPClient extends PlaybackController {
     private requestAnswer;
     private sendAnswer;
     private postCandidateFragments;
+    private _evaluateRenegotiationPolicy;
+    private _reconnect;
     /**
      * Initialize the WHEP-based Subscriber.
      *
@@ -724,9 +734,10 @@ declare class WHEPClient extends PlaybackController {
      * Monitor the statistics of the media being delivered to the subscriber over the underlying RTCPeerConnection.
      *
      * @param {StatsConfig | undefined} stats - The statistics configuration.
+     * @param {RenegotiationPolicyType | undefined} renegotiationPolicy - The renegotiation policy configuration.
      * @returns {WHEPClient}
      */
-    monitorStats(stats?: StatsConfig | undefined): WHEPClient;
+    monitorStats(stats?: StatsConfig | undefined, renegotiationPolicy?: RenegotiationPolicyType | undefined): WHEPClient;
     /**
      * Unmonitor the statistics of the media being delivered to the subscriber over the underlying RTCPeerConnection.
      *
@@ -773,6 +784,13 @@ declare class WHEPClient extends PlaybackController {
      * @param {Event} event - The event to trigger.
      */
     trigger(event: Event$1): void;
+    /**
+     * Emit an event on the WHEP-based Subscriber.
+     *
+     * @param {string} type - The type of event to emit.
+     * @param {any} data - The data to emit.
+     */
+    emit(type: string, data: any): void;
     /**
      * Get the type of the WHEP-based Subscriber (RTC).
      *
