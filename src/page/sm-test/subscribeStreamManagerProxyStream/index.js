@@ -127,11 +127,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     addressField.innerText = `Proxy Address: ${proxyAddress} | Edge Address: ${serverAddress}`
   }
 
-  // Assume these are declared outside of the event handler?
-  // const remoteVideo = document.getElementById('red5pro-subscriber')
-  // const remoteStream = new MediaStream()
-  // remoteVideo.srcObject = remoteStream
-
   // Local lifecycle notifications.
   const onSubscriberEvent = event => {
     const { type } = event
@@ -140,7 +135,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       videoTrack: null,
       audioTrack: null
     }
-    const remoteVideo = document.getElementById('red5pro-subscriber')
+    const remoteVideo = document.getElementById('videoEl')
     const remoteStream = new MediaStream()
 
     console.log('[Red5ProSubsriber] ' + type + '.')
@@ -156,10 +151,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
     const attachMediaStream = (element, stream) => {
       console.log('[OF] ATTACH')
-      // if (element.srcObject) {
-      //   console.log('[OF] SRC OBJECT', element.srcObject)
-      //   return
-      // }
       try {
         element.srcObject = stream
       } catch (e) {
@@ -181,10 +172,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     if (type === 'WebRTC.PeerConnection.OnTrack') {
       const mediaType = data.track.kind
       console.log('[OF] ON TRACK', mediaType)
-      // const { streams } = data
-      // streams.forEach(stream => {
-      //   attachMediaStream(remoteVideo, stream)
-      // })
       if (mediaType === 'video') {
         remoteTracks.videoTrack = data.track
 
@@ -274,6 +261,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       endpoint,
       streamName: stream1,
       subscriptionId: 'subscriber-' + instanceId,
+      // Define mediaElementId to undefined to not attach the stream to a video element within the SDK logic.
       mediaElementId: undefined,
       connectionParams: {
         ...connectionParams,
