@@ -26,6 +26,18 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ;(function (window, document, red5prosdk) {
   'use strict'
 
+  var serverSettings = (function () {
+    var settings = sessionStorage.getItem('r5proServerSettings')
+    try {
+      return JSON.parse(settings)
+    } catch (e) {
+      console.error(
+        'Could not read server settings from sessionstorage: ' + e.message
+      )
+    }
+    return {}
+  })()
+
   const configuration = (function () {
     const conf = sessionStorage.getItem('r5proTestBed')
     try {
@@ -229,16 +241,23 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     return undefined
   }
 
+  var isSecure = true // protocol == 'https'
+  const getSocketLocationFromProtocol = () => {
+    return !isSecure
+      ? { protocol: 'ws', port: serverSettings.wsport }
+      : { protocol: 'wss', port: serverSettings.wssport }
+  }
+
   const getConfiguration = () => {
     const {
       host,
       app,
-      protocol,
-      port,
       stream1,
       streamManagerAPI,
       streamManagerNodeGroup: nodeGroup
     } = configuration
+
+    const { protocol, port } = getSocketLocationFromProtocol()
 
     const region = getRegionIfDefined()
     const params = region
