@@ -1,4 +1,4 @@
-[**Red5 Pro WebRTC SDK vNEW-15.0.0.11-release.b189**](../README.md)
+[**Red5 Pro WebRTC SDK v15.3.0**](../README.md)
 
 ***
 
@@ -131,6 +131,12 @@
 #### version
 
 > **version**: `string`
+
+***
+
+### pubnub?
+
+> `optional` **pubnub**: `PubnubConfigType`
 
 ***
 

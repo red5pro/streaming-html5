@@ -1,4 +1,4 @@
-[**Red5 Pro WebRTC SDK vNEW-15.0.0.11-release.b189**](../README.md)
+[**Red5 Pro WebRTC SDK v15.3.0**](../README.md)
 
 ***
 
@@ -67,13 +67,13 @@ Disconnect the media element.
 
 ### getControls()
 
-> `abstract` **getControls**(): [`PlaybackControls`](PlaybackControls.md) \| `undefined`
+> `abstract` **getControls**(): `undefined` \| [`PlaybackControls`](PlaybackControls.md)
 
 Get the controls for the media element.
 
 #### Returns
 
-[`PlaybackControls`](PlaybackControls.md) \| `undefined`
+`undefined` \| [`PlaybackControls`](PlaybackControls.md)
 
 ***
 

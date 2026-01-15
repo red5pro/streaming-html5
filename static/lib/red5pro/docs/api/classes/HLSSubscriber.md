@@ -1,4 +1,4 @@
-[**Red5 Pro WebRTC SDK vNEW-15.0.0.11-release.b189**](../README.md)
+[**Red5 Pro WebRTC SDK v15.3.0**](../README.md)
 
 ***
 
@@ -32,13 +32,13 @@ HLS Subscriber. Supports playback of HLS streams using the native HLS player in 
 
 #### Get Signature
 
-> **get** **fileURL**(): `string` \| `undefined`
+> **get** **fileURL**(): `undefined` \| `string`
 
 Get the file URL of the HLS stream.
 
 ##### Returns
 
-`string` \| `undefined`
+`undefined` \| `string`
 
 ***
 
@@ -46,49 +46,49 @@ Get the file URL of the HLS stream.
 
 #### Get Signature
 
-> **get** **options**(): [`HLSSubscriberConfigType`](../type-aliases/HLSSubscriberConfigType.md) \| `undefined`
+> **get** **options**(): `undefined` \| [`HLSSubscriberConfigType`](../type-aliases/HLSSubscriberConfigType.md)
 
 Get the options of the HLS stream.
 
 ##### Returns
 
-[`HLSSubscriberConfigType`](../type-aliases/HLSSubscriberConfigType.md) \| `undefined`
+`undefined` \| [`HLSSubscriberConfigType`](../type-aliases/HLSSubscriberConfigType.md)
 
 ## Methods
 
 ### getFileURL()
 
-> **getFileURL**(): `string` \| `undefined`
+> **getFileURL**(): `undefined` \| `string`
 
 Get the file URL of the HLS stream.
 
 #### Returns
 
-`string` \| `undefined`
+`undefined` \| `string`
 
 ***
 
 ### getOptions()
 
-> **getOptions**(): [`HLSSubscriberConfigType`](../type-aliases/HLSSubscriberConfigType.md) \| `undefined`
+> **getOptions**(): `undefined` \| [`HLSSubscriberConfigType`](../type-aliases/HLSSubscriberConfigType.md)
 
 Get the options of the HLS stream.
 
 #### Returns
 
-[`HLSSubscriberConfigType`](../type-aliases/HLSSubscriberConfigType.md) \| `undefined`
+`undefined` \| [`HLSSubscriberConfigType`](../type-aliases/HLSSubscriberConfigType.md)
 
 ***
 
 ### getPlayer()
 
-> **getPlayer**(): `HTMLMediaElement` \| `undefined`
+> **getPlayer**(): `undefined` \| `HTMLMediaElement`
 
 Get the playback element of the HLS stream.
 
 #### Returns
 
-`HTMLMediaElement` \| `undefined`
+`undefined` \| `HTMLMediaElement`
 
 ***
 

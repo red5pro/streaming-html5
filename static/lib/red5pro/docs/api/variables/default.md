@@ -1,4 +1,4 @@
-[**Red5 Pro WebRTC SDK vNEW-15.0.0.11-release.b189**](../README.md)
+[**Red5 Pro WebRTC SDK v15.3.0**](../README.md)
 
 ***
 
@@ -135,6 +135,18 @@ Get the version of the SDK.
 ### PublishVideoEncoder
 
 > **PublishVideoEncoder**: *typeof* [`PublishVideoEncoder`](../enumerations/PublishVideoEncoder.md)
+
+### PubNubClient
+
+> **PubNubClient**: *typeof* [`PubNubClient`](../classes/PubNubClient.md)
+
+### PubNubEvent
+
+> **PubNubEvent**: *typeof* `PubNubEvent`
+
+### PubNubEventTypes
+
+> **PubNubEventTypes**: *typeof* `PubNubEventTypes`
 
 ### RTCPublisherEventTypes
 

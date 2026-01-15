@@ -1,4 +1,4 @@
-[**Red5 Pro WebRTC SDK vNEW-15.0.0.11-release.b189**](../README.md)
+[**Red5 Pro WebRTC SDK v15.3.0**](../README.md)
 
 ***
 
@@ -54,13 +54,13 @@ Optional LiveSeekConfigType to use for configuration.
 
 #### Get Signature
 
-> **get** **options**(): [`RTCWhepSubscriberConfigType`](../type-aliases/RTCWhepSubscriberConfigType.md) \| `undefined`
+> **get** **options**(): `undefined` \| [`RTCWhepSubscriberConfigType`](../type-aliases/RTCWhepSubscriberConfigType.md)
 
 Get the options for the WHEP-based Subscriber.
 
 ##### Returns
 
-[`RTCWhepSubscriberConfigType`](../type-aliases/RTCWhepSubscriberConfigType.md) \| `undefined`
+`undefined` \| [`RTCWhepSubscriberConfigType`](../type-aliases/RTCWhepSubscriberConfigType.md)
 
 #### Inherited from
 
@@ -114,6 +114,36 @@ Disable standby mode for the WHEP-based Subscriber. This will signal to the serv
 
 ***
 
+### emit()
+
+> **emit**(`type`, `data`): `void`
+
+Emit an event on the WHEP-based Subscriber.
+
+#### Parameters
+
+##### type
+
+`string`
+
+The type of event to emit.
+
+##### data
+
+`any`
+
+The data to emit.
+
+#### Returns
+
+`void`
+
+#### Inherited from
+
+[`WHEPClient`](WHEPClient.md).[`emit`](WHEPClient.md#emit)
+
+***
+
 ### enableStandby()
 
 > **enableStandby**(): `void`
@@ -132,13 +162,13 @@ Enable standby mode for the WHEP-based Subscriber. This will signal to the serve
 
 ### getDataChannel()
 
-> **getDataChannel**(): `RTCDataChannel` \| `undefined`
+> **getDataChannel**(): `undefined` \| `RTCDataChannel`
 
 Get the data channel for the WHEP-based Subscriber.
 
 #### Returns
 
-`RTCDataChannel` \| `undefined`
+`undefined` \| `RTCDataChannel`
 
 #### Inherited from
 
@@ -148,13 +178,13 @@ Get the data channel for the WHEP-based Subscriber.
 
 ### getMediaStream()
 
-> **getMediaStream**(): `MediaStream` \| `undefined`
+> **getMediaStream**(): `undefined` \| `MediaStream`
 
 Get the media stream being played back by the subscriber.
 
 #### Returns
 
-`MediaStream` \| `undefined`
+`undefined` \| `MediaStream`
 
 #### Inherited from
 
@@ -164,13 +194,13 @@ Get the media stream being played back by the subscriber.
 
 ### getMessageTransport()
 
-> **getMessageTransport**(): `MessageTransport` \| `undefined`
+> **getMessageTransport**(): `undefined` \| `MessageTransport`
 
 Get the message transport for the WHEP-based Subscriber.
 
 #### Returns
 
-`MessageTransport` \| `undefined`
+`undefined` \| `MessageTransport`
 
 #### Inherited from
 
@@ -180,13 +210,13 @@ Get the message transport for the WHEP-based Subscriber.
 
 ### getOptions()
 
-> **getOptions**(): [`RTCWhepSubscriberConfigType`](../type-aliases/RTCWhepSubscriberConfigType.md) \| `undefined`
+> **getOptions**(): `undefined` \| [`RTCWhepSubscriberConfigType`](../type-aliases/RTCWhepSubscriberConfigType.md)
 
 Get the options for the WHEP-based Subscriber.
 
 #### Returns
 
-[`RTCWhepSubscriberConfigType`](../type-aliases/RTCWhepSubscriberConfigType.md) \| `undefined`
+`undefined` \| [`RTCWhepSubscriberConfigType`](../type-aliases/RTCWhepSubscriberConfigType.md)
 
 #### Inherited from
 
@@ -196,13 +226,13 @@ Get the options for the WHEP-based Subscriber.
 
 ### getPeerConnection()
 
-> **getPeerConnection**(): `RTCPeerConnection` \| `undefined`
+> **getPeerConnection**(): `undefined` \| `RTCPeerConnection`
 
 Get the peer connection for the WHEP-based Subscriber.
 
 #### Returns
 
-`RTCPeerConnection` \| `undefined`
+`undefined` \| `RTCPeerConnection`
 
 #### Inherited from
 
@@ -212,17 +242,33 @@ Get the peer connection for the WHEP-based Subscriber.
 
 ### getPlayer()
 
-> **getPlayer**(): `HTMLMediaElement` \| `undefined`
+> **getPlayer**(): `undefined` \| `HTMLMediaElement`
 
 Get the media element for the WHEP-based Subscriber.
 
 #### Returns
 
-`HTMLMediaElement` \| `undefined`
+`undefined` \| `HTMLMediaElement`
 
 #### Inherited from
 
 [`WHEPClient`](WHEPClient.md).[`getPlayer`](WHEPClient.md#getplayer)
+
+***
+
+### getPubNubClient()
+
+> **getPubNubClient**(): `undefined` \| [`PubNubClient`](PubNubClient.md)
+
+Get the PubNub client for the WHEP-based Subscriber.
+
+#### Returns
+
+`undefined` \| [`PubNubClient`](PubNubClient.md)
+
+#### Inherited from
+
+[`WHEPClient`](WHEPClient.md).[`getPubNubClient`](WHEPClient.md#getpubnubclient)
 
 ***
 
@@ -284,7 +330,7 @@ LiveSeekConfigType to use for configuration.
 
 ### monitorStats()
 
-> **monitorStats**(`stats?`): [`WHEPClient`](WHEPClient.md)
+> **monitorStats**(`stats?`, `renegotiationPolicy?`): [`WHEPClient`](WHEPClient.md)
 
 Monitor the statistics of the media being delivered to the subscriber over the underlying RTCPeerConnection.
 
@@ -295,6 +341,12 @@ Monitor the statistics of the media being delivered to the subscriber over the u
 [`StatsConfig`](../type-aliases/StatsConfig.md)
 
 The statistics configuration.
+
+##### renegotiationPolicy?
+
+`RenegotiationPolicyType`
+
+The renegotiation policy configuration.
 
 #### Returns
 
@@ -488,7 +540,7 @@ The time to seek to.
 
 ### send()
 
-> **send**(`methodName`, `data`): `Promise`\<`boolean`\> \| `undefined`
+> **send**(`methodName`, `data`): `undefined` \| `Promise`\<`boolean`\>
 
 Send a message to the Red5 Pro Server over the message transport (DataChannel).
 
@@ -508,7 +560,7 @@ The data to send.
 
 #### Returns
 
-`Promise`\<`boolean`\> \| `undefined`
+`undefined` \| `Promise`\<`boolean`\>
 
 #### Inherited from
 
@@ -543,6 +595,36 @@ The message to send.
 #### Inherited from
 
 [`WHEPClient`](WHEPClient.md).[`sendLog`](WHEPClient.md#sendlog)
+
+***
+
+### sendPubNub()
+
+> **sendPubNub**(`channel`, `message`): `Promise`\<`boolean`\>
+
+Send a message to the PubNub channel.
+
+#### Parameters
+
+##### channel
+
+`string`
+
+The channel to send the message to.
+
+##### message
+
+`any`
+
+The message to send.
+
+#### Returns
+
+`Promise`\<`boolean`\>
+
+#### Inherited from
+
+[`WHEPClient`](WHEPClient.md).[`sendPubNub`](WHEPClient.md#sendpubnub)
 
 ***
 
@@ -599,6 +681,36 @@ Subscribe to the WHEP-based Subscriber.
 #### Inherited from
 
 [`WHEPClient`](WHEPClient.md).[`subscribe`](WHEPClient.md#subscribe)
+
+***
+
+### subscribePubNub()
+
+> **subscribePubNub**(`channel`, `options`): `Promise`\<`boolean`\>
+
+Subscribe to a PubNub channel.
+
+#### Parameters
+
+##### channel
+
+`string`
+
+The channel to subscribe to.
+
+##### options
+
+`any`
+
+The options to use for subscription.
+
+#### Returns
+
+`Promise`\<`boolean`\>
+
+#### Inherited from
+
+[`WHEPClient`](WHEPClient.md).[`subscribePubNub`](WHEPClient.md#subscribepubnub)
 
 ***
 
@@ -727,3 +839,27 @@ Optional boolean to indicate if the unsubscribe is internal.
 #### Inherited from
 
 [`WHEPClient`](WHEPClient.md).[`unsubscribe`](WHEPClient.md#unsubscribe)
+
+***
+
+### unsubscribePubNub()
+
+> **unsubscribePubNub**(`channel`): `Promise`\<`boolean`\>
+
+Unsubscribe from a PubNub channel.
+
+#### Parameters
+
+##### channel
+
+`string`
+
+The channel to unsubscribe from.
+
+#### Returns
+
+`Promise`\<`boolean`\>
+
+#### Inherited from
+
+[`WHEPClient`](WHEPClient.md).[`unsubscribePubNub`](WHEPClient.md#unsubscribepubnub)

@@ -145,37 +145,37 @@ input[type=range][orient=vertical] {
 }
 
 .red5pro-media-play-button {
-  background-image: url('data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'100\' height=\'100\' viewBox=\'0 0 100 100\'%3E%3Cpolygon points=\'30,15 30,85 80,50\' fill=\'%23595959\'/%3E%3C/svg%3E');
+  background-image: url('data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22100%22%20height%3D%22100%22%20viewBox%3D%220%200%20100%20100%22%3E%3Cpolygon%20points%3D%2230%2C15%2030%2C85%2080%2C50%22%20fill%3D%22%23595959%22%2F%3E%3C%2Fsvg%3E');
   background-size: contain;
   background-repeat: no-repeat;
 }
 
 .red5pro-media-pause-button {
-  background-image: url('data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'100\' height=\'100\' viewBox=\'0 0 100 100\'%3E%3Crect x=\'20\' y=\'15\' width=\'20\' height=\'70\' fill=\'%23595959\'/%3E%3Crect x=\'60\' y=\'15\' width=\'20\' height=\'70\' fill=\'%23595959\'/%3E%3C/svg%3E');
+  background-image: url('data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22100%22%20height%3D%22100%22%20viewBox%3D%220%200%20100%20100%22%3E%3Crect%20x%3D%2220%22%20y%3D%2215%22%20width%3D%2220%22%20height%3D%2270%22%20fill%3D%22%23595959%22%2F%3E%3Crect%20x%3D%2260%22%20y%3D%2215%22%20width%3D%2220%22%20height%3D%2270%22%20fill%3D%22%23595959%22%2F%3E%3C%2Fsvg%3E');
   background-size: contain;
   background-repeat: no-repeat;
 }
 
 .red5pro-media-unmute-button {
-  background-image: url('data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\' fill=\'none\' stroke=\'%23595959\' stroke-width=\'8\' stroke-linecap=\'butt\' stroke-linejoin=\'miter\'><path d=\'M46 20L28 36H16a4 4 0 0 0-4 4v16a4 4 0 0 0 4 4h12l18 16V20z\'/><path d=\'M50 36a14 14 0 0 1 0 28\'/><path d=\'M70 28a24 24 0 0 1 0 48\'/></svg>');
+  background-image: url('data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20100%20100%22%20fill%3D%22none%22%20stroke%3D%22%23595959%22%20stroke-width%3D%228%22%20stroke-linecap%3D%22butt%22%20stroke-linejoin%3D%22miter%22%3E%3Cpath%20d%3D%22M46%2020L28%2036H16a4%204%200%200%200-4%204v16a4%204%200%200%200%204%204h12l18%2016V20z%22%2F%3E%3Cpath%20d%3D%22M50%2036a14%2014%200%200%201%200%2028%22%2F%3E%3Cpath%20d%3D%22M70%2028a24%2024%200%200%201%200%2048%22%2F%3E%3C%2Fsvg%3E');
   background-size: contain;
   background-repeat: no-repeat;
 }
 
 .red5pro-media-mute-button {
-  background-image: url('data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'100\' height=\'100\' viewBox=\'0 0 100 100\' fill=\'%23595959\'%3E%3Cpath d=\'M46 20L28 36H16a4 4 0 0 0-4 4v16a4 4 0 0 0 4 4h12l18 16V20z\' stroke=\'%23595959\' stroke-width=\'8\'/%3E%3Cline x1=\'70\' y1=\'40\' x2=\'90\' y2=\'60\' stroke=\'%23595959\' stroke-width=\'8\'/%3E%3Cline x1=\'90\' y1=\'40\' x2=\'70\' y2=\'60\' stroke=\'%23595959\' stroke-width=\'8\'/%3E%3C/svg%3E');
+  background-image: url('data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22100%22%20height%3D%22100%22%20viewBox%3D%220%200%20100%20100%22%20fill%3D%22%23595959%22%3E%3Cpath%20d%3D%22M46%2020L28%2036H16a4%204%200%200%200-4%204v16a4%204%200%200%200%204%204h12l18%2016V20z%22%20stroke%3D%22%23595959%22%20stroke-width%3D%228%22%2F%3E%3Cline%20x1%3D%2270%22%20y1%3D%2240%22%20x2%3D%2290%22%20y2%3D%2260%22%20stroke%3D%22%23595959%22%20stroke-width%3D%228%22%2F%3E%3Cline%20x1%3D%2290%22%20y1%3D%2240%22%20x2%3D%2270%22%20y2%3D%2260%22%20stroke%3D%22%23595959%22%20stroke-width%3D%228%22%2F%3E%3C%2Fsvg%3E');
   background-size: contain;
   background-repeat: no-repeat;
 }
 
 .red5pro-media-fullscreen-button {
-  background-image: url('data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\' fill=\'%23595959\' stroke=\'%23595959\' stroke-width=\'5\' stroke-linecap=\'butt\' stroke-linejoin=\'miter\'><path d=\'M20 20h20v-8H12v28h8V20z\'/><path d=\'M80 20h-20v-8h28v28h-8V20z\'/><path d=\'M20 80h20v8H12V60h8v20z\'/><path d=\'M80 80h-20v8h28V60h-8v20z\'/></svg>');
+  background-image: url('data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20100%20100%22%20fill%3D%22%23595959%22%20stroke%3D%22%23595959%22%20stroke-width%3D%225%22%20stroke-linecap%3D%22butt%22%20stroke-linejoin%3D%22miter%22%3E%3Cpath%20d%3D%22M20%2020h20v-8H12v28h8V20z%22%2F%3E%3Cpath%20d%3D%22M80%2020h-20v-8h28v28h-8V20z%22%2F%3E%3Cpath%20d%3D%22M20%2080h20v8H12V60h8v20z%22%2F%3E%3Cpath%20d%3D%22M80%2080h-20v8h28V60h-8v20z%22%2F%3E%3C%2Fsvg%3E');
   background-size: contain;
   background-repeat: no-repeat;
 }
 
 .red5pro-media-exit-fullscreen-button {
-  background-image: url('data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\' fill=\'%23595959\' stroke=\'%23595959\' stroke-width=\'5\' stroke-linecap=\'butt\' stroke-linejoin=\'miter\'><path d=\'M32 12v20H12\'/><path d=\'M68 12v20h20\'/><path d=\'M32 88V68H12\'/><path d=\'M68 88V68h20\'/></svg>');
+  background-image: url('data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20100%20100%22%20fill%3D%22%23595959%22%20stroke%3D%22%23595959%22%20stroke-width%3D%225%22%20stroke-linecap%3D%22butt%22%20stroke-linejoin%3D%22miter%22%3E%3Cpath%20d%3D%22M32%2012v20H12%22%2F%3E%3Cpath%20d%3D%22M68%2012v20h20%22%2F%3E%3Cpath%20d%3D%22M32%2088V68H12%22%2F%3E%3Cpath%20d%3D%22M68%2088V68h20%22%2F%3E%3C%2Fsvg%3E');
   background-size: contain;
   background-repeat: no-repeat;
 }

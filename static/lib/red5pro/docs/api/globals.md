@@ -1,8 +1,8 @@
-[**Red5 Pro WebRTC SDK vNEW-15.0.0.11-release.b189**](README.md)
+[**Red5 Pro WebRTC SDK v15.3.0**](README.md)
 
 ***
 
-# Red5 Pro WebRTC SDK vNEW-15.0.0.11-release.b189
+# Red5 Pro WebRTC SDK v15.3.0
 
 Red5 Pro WebRTC SDK
 
@@ -29,6 +29,7 @@ Red5 Pro WebRTC SDK
 - [PlaybackController](classes/PlaybackController.md)
 - [PlaybackControls](classes/PlaybackControls.md)
 - [PublisherEvent](classes/PublisherEvent.md)
+- [PubNubClient](classes/PubNubClient.md)
 - [SourceHandler](classes/SourceHandler.md)
 - [SourceHandlerImpl](classes/SourceHandlerImpl.md)
 - [SubscriberEvent](classes/SubscriberEvent.md)
