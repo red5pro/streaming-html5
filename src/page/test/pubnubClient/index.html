@@ -1,0 +1,99 @@
+<!doctype html>
+{{> license}}
+<html>
+  <head>
+    {{> meta title='PubNub Client Test'}}
+    {{> header-scripts}}
+    {{> header-stylesheets}}
+    <style>
+      .radio-group {
+          display: flex;
+          flex-direction: column;
+          margin: 20px;
+      }
+
+      .input-field {
+          margin-left: 10px;
+      }
+
+      .settings-field {
+        margin: 0.5rem !important;
+      }
+
+    </style>
+    <script src="https://cdn.pubnub.com/sdk/javascript/pubnub.10.2.5.min.js"></script>
+  </head>
+  <body>
+    {{> top-bar }}
+    <div id="app">
+      {{> settings-link}}
+      <div class="ice-background">
+        <div class="test-notification">
+          <p>The PubNub Client requires a valid authentication token to connect to the PubNub system. If you know the authentication token, you can enter it below. Otherwise, you can select an authentication service option to test.</p>
+        </div>
+      </div>
+      <div class="test-info">
+        <h1 class="centered test-title red-text">PubNub Client Test</h1>
+      </div>
+      <div class="stream-section">
+        <div class="centered">
+          <div class="instructions-block radio-group">
+            <p style="margin-bottom: 12px !important;">Select an authentication option to test:</p>
+            <p class="settings-field settings-collapsable">
+                <label class="settings-label">
+                  Cloud Endpoint:&nbsp;
+                  <input type="radio" name="options" value="cloudEndpoint">
+                </label>
+                <input id="cloudEndpoint" type="text" class="auth-option input-field" disabled placeholder="userid-1234-abcd.cloud.red5.net">
+            </p>
+            <p class="settings-field settings-collapsable">
+                <label class="settings-label">
+                  Backend Service URL:&nbsp;
+                  <input type="radio" name="options" value="backendURL">
+                </label>
+                <input id="backendURL" type="text" class="auth-option input-field" disabled placeholder="https://your-backend-service.com/api/get-chat-token">
+            </p>
+            <p class="settings-field settings-collapsable">
+                <label class="settings-label">
+                  Auth Token:&nbsp;
+                  <input type="radio" name="options" value="authToken">
+                </label>
+                <input id="authToken" type="text" class="auth-option input-field" disabled placeholder="XXXX=" value="qEF2AkF0GmlqrmFDdHRsGHhDcmVzpURjaGFuomVyb29tMQNscm9vbTEtcG5wcmVzA0NncnCgQ3NwY6BDdXNyoER1dWlkoENwYXSlRGNoYW6gQ2dycKBDc3BjoEN1c3KgRHV1aWSgRG1ldGGgRHV1aWRvc3Vic2NyaWJlci01MGEwQ3NpZ1gg-9igt1ZQ3aXEPR4wwdDtrIObBkFyOAnOmZWk9b-mA8w=">
+            </p>
+            <hr class="paddedHR">
+            <p class="settings-field settings-collapsable">
+              <label class="settings-label">
+                Channel ID:&nbsp;
+              </label>
+              <input id="channel-id-input" type="text" class="input-field" placeholder="Channel ID">
+            </p>
+            <p class="settings-field settings-collapsable">
+              <label class="settings-label">
+                User ID:&nbsp;
+              </label>
+              <input id="user-id-input" type="text" class="input-field" placeholder="User ID">
+            </p>
+            <p class="settings-field settings-collapsable">
+              <label class="settings-label">
+                Publish Key:&nbsp;
+              </label>
+              <input id="publish-key-input" type="text" class="input-field" placeholder="Publish Key">
+            </p>
+            <p class="settings-field settings-collapsable">
+              <label class="settings-label">
+                Subscribe Key:&nbsp;
+              </label>
+              <input id="subscribe-key-input" type="text" class="input-field" placeholder="Subscribe Key">
+            </p>
+            <hr class="paddedHR">
+            <p class="settings-controls">
+              <button id="connect-button" class="control ui-button" disabled>Connect</button>
+            </p>
+        </div>
+      </div>
+    </div>
+    {{> footer}}
+    {{> body-scripts}}
+    <script src="index.js"></script>
+  </body>
+</html>
