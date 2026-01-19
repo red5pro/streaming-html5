@@ -27,18 +27,22 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   red5prosdk.setLogLevel('debug')
 
   const { PubNubClient } = red5prosdk
-  const pubnubClient = new PubNubClient()
+  let pubnubClient
+  let defaultChannelId = 'red5'
+  let defaultPublishKey = 'pub-c-xxx'
+  let defaultSubscribeKey = 'sub-c-xxx'
+  let defaultUserId = `user-${Math.floor(Math.random() * 0x10000).toString(16)}`
 
+  const settingsHeader = document.querySelector('.settings-header')
+  const formSection = document.querySelector('.form-section')
   const radios = document.querySelectorAll('input[type="radio"]')
   const inputFields = document.querySelectorAll('.auth-option')
+  const optionFields = document.querySelectorAll('.option-field')
   const connectButton = document.getElementById('connect-button')
-  const defaultChannelId = 'room1' // 'red5'
-  const defaultPublishKey = 'pub-c-50a08250-5a2b-4162-b19d-13381203ddaa'
-  const defaultSubscribeKey = 'sub-c-cc708362-3d7b-4df9-a2e5-44f6a7ae60f6'
-  const defaultUserId = 'subscriber-50a0'
-  // const defaultUserId = `user-${Math.floor(Math.random() * 0x10000).toString(
-  //   16
-  // )}`
+  const statusField = document.getElementById('status-field')
+
+  const messageInput = document.getElementById('message-input')
+  const sendButton = document.getElementById('send-button')
 
   const authOptions = {
     cloudEndpoint: undefined,
@@ -52,7 +56,39 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     if (type === 'PubNub.AuthToken.Generation.Error') {
       alert('Error generating authentication token.')
       enableForm()
+      hideLoadingIndicator()
+    } else if (type === 'PubNub.Connected') {
+      connectButton.disabled = true
+      connectButton.innerText = `Connected`
+      connectButton.classList.remove('loading-indicator')
+      hideLoadingIndicator()
+      collapseSettings()
+    } else if (type === 'PubNub.Disconnected') {
+      connectButton.disabled = false
+      connectButton.innerText = `Connect`
+      connectButton.classList.remove('loading-indicator')
+      expandSettings()
+    } else if (type === 'PubNub.Status') {
+      if (data.error) {
+        alert(`Error: ${data.errorData?.message || data.error}`)
+        enableForm()
+        hideLoadingIndicator()
+      }
+    } else if (type === 'PubNub.Message.Received') {
+      const { publisher, message } = data
+      const isUserMessage = publisher === defaultUserId
+      const messageList = document.getElementById('received-messages')
+      const messageItem = document.createElement('li')
+      messageItem.className = 'message-item'
+      messageItem.innerText = `${isUserMessage ? 'You' : publisher}: ${message}`
+      if (isUserMessage) {
+        messageItem.classList.add('user-message')
+      } else {
+        messageItem.classList.add('other-message')
+      }
+      messageList.appendChild(messageItem)
     }
+    statusField.innerText = `STATUS: ${type}`
   }
 
   const toggleInputs = selectedRadio => {
@@ -113,11 +149,38 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
   }
 
+  const collapseSettings = () => {
+    settingsHeader.classList.add('collapsed')
+    formSection.classList.add('connected')
+    window.scrollTo({ top: settingsHeader.offsetTop, behavior: 'smooth' })
+  }
+
+  const expandSettings = () => {
+    settingsHeader.classList.remove('collapsed')
+    formSection.classList.remove('connected')
+    window.scrollTo({ top: settingsHeader.offsetTop, behavior: 'smooth' })
+  }
+
+  const showLoadingIndicator = () => {
+    statusField.innerText = `STATUS: Connecting...`
+    connectButton.innerText = `Connecting...`
+    connectButton.classList.add('loading-indicator')
+  }
+
+  const hideLoadingIndicator = () => {
+    statusField.innerText = `STATUS: Idle.`
+    connectButton.innerText = `Connect`
+    connectButton.classList.remove('loading-indicator')
+  }
+
   const disableForm = () => {
     Array.from(radios).forEach(radio => {
       radio.disabled = true
     })
     Array.from(inputFields).forEach(input => {
+      input.disabled = true
+    })
+    Array.from(optionFields).forEach(input => {
       input.disabled = true
     })
     connectButton.disabled = true
@@ -130,17 +193,30 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     Array.from(inputFields).forEach(input => {
       input.disabled = false
     })
+    Array.from(optionFields).forEach(input => {
+      input.disabled = false
+    })
     connectButton.disabled = false
   }
 
   const start = async () => {
+    if (pubnubClient) {
+      pubnubClient.off('*', onPubNubEvent)
+      pubnubClient.destroy()
+    }
+    pubnubClient = new PubNubClient()
     try {
       const { channelId, publishKey, subscribeKey, userId } =
         getConfigurationOptions()
+      defaultUserId = userId
+      defaultChannelId = channelId
+      defaultPublishKey = publishKey
+      defaultSubscribeKey = subscribeKey
       if (!channelId || !publishKey || !subscribeKey || !userId) {
         throw new Error('Invalid configuration options.')
       }
       disableForm()
+      showLoadingIndicator()
       const authOptions = getAuthOptions()
       if (!authOptions) {
         throw new Error('Invalid authentication options.')
@@ -158,6 +234,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       console.error(error)
       alert(error.message)
       enableForm()
+      hideLoadingIndicator()
     }
   }
 
@@ -169,13 +246,35 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   })
 
   connectButton.addEventListener('click', start)
+  settingsHeader.addEventListener('click', () => {
+    if (settingsHeader.classList.contains('collapsed')) {
+      expandSettings()
+    } else {
+      collapseSettings()
+    }
+  })
+  sendButton.addEventListener('click', () => {
+    if (!messageInput.value || messageInput.value === '') {
+      alert('Please enter a message to send.')
+      return
+    }
+    if (pubnubClient) {
+      pubnubClient.publishMessage(defaultChannelId, messageInput.value)
+      messageInput.value = ''
+    } else {
+      alert('Please connect to the PubNub client first.')
+    }
+  })
   document.getElementById('user-id-input').value = defaultUserId
   document.getElementById('channel-id-input').value = defaultChannelId
   document.getElementById('publish-key-input').value = defaultPublishKey
   document.getElementById('subscribe-key-input').value = defaultSubscribeKey
 
   const shutdown = () => {
-    pubnubClient.destroy()
+    if (pubnubClient) {
+      pubnubClient.off('*', onPubNubEvent)
+      pubnubClient.destroy()
+    }
   }
   window.addEventListener('pagehide', shutdown)
   window.addEventListener('beforeunload', shutdown)

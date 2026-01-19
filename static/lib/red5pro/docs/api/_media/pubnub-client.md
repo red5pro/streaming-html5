@@ -79,7 +79,7 @@ When using the `init()` call of a `PubNubClient`, the following initialization p
 | `expiryMinutes` | [-] | `120` | Default expiration of issued token associated with client. |
 | `authToken` | [-] | _None_ | Optional authentication token issues from PubNub - if known. |
 | `cloudEndpoint` | [-] | _None_ | Optional endpoint of Red5 Cloud deployment to attempt access of `authToken` from PubNub system. |
-| `backendURL` | [-] | _None_ | Optional full URL of service endpoint to access `authToken` from PubNub system. [See documentation on deploying your own service.](https://www.red5.net/docs/red5-cloud/development/sdks/backend-sdk/) |
+| `backendUrl` | [-] | _None_ | Optional full URL of service endpoint to access `authToken` from PubNub system. [See documentation on deploying your own service.](https://www.red5.net/docs/red5-cloud/development/sdks/backend-sdk/) |
 | `logLevel` | [-] | `trace` | The default log level of the PubNub client. |
 
 ## Authentication
@@ -92,7 +92,7 @@ If the `authToken` is not known prior to initialization, there are two ways that
 
 If you have a [Red5 Cloud](https://cloud.red5.net) account and deployment, you can provide the `cloudEndpoint` attribute pointing to your deployment (e.g., `userid-1234-abcd.cloud.red5.net`). The SDK will attempt to generate the authentication token using a service that may be available from your deployment.
 
-### backendURL
+### backendUrl
 
 If the `authToken` is not known or your [Red5 Cloud](https://cloud.red5.net) deployment does not provide an means for retrieving the authentication token, we have released open sourced Backend SDKs which can be used to provide your own custom service in generating a authentication token to be used.
 
@@ -118,4 +118,5 @@ The following events are dispatched by the `PubNubClient` and enumerated on the 
 | `MESSAGE_SEND_FAILURE` | 'PubNub.Message.Send.Failure' | Dispatched when a message publish request has failed. The `data` property contains error information. |
 | `AUTH_TOKEN_GENERATED` | 'PubNub.AuthToken.Generated' | Dispatched when an authentication token has been successfully generated. The `data` property contains the token information. |
 | `AUTH_TOKEN_GENERATION_ERROR` | 'PubNub.AuthToken.Generation.Error' | Dispatched when authentication token generation has failed. The `data` property contains error information. |
+| `STATUS` | 'PubNub.Status' | Dispatched on general status notification. The `data` property contains the status. |
 | `ERROR` | 'PubNub.Error' | Dispatched when a general error occurs in the PubNub client. The `data` property contains error details. |

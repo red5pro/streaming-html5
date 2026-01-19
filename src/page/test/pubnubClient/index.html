@@ -9,15 +9,112 @@
       .radio-group {
           display: flex;
           flex-direction: column;
-          margin: 20px;
       }
 
       .input-field {
           margin-left: 10px;
       }
 
+      .input-field:disabled {
+        cursor: not-allowed;
+        opacity: 0.5;
+      }
+
       .settings-field {
         margin: 0.5rem !important;
+      }
+
+      .loading-indicator {
+        cursor: progress;
+        opacity: 0.5;
+        animation: pulse 1s infinite;
+      }
+
+      .form-section.connected {
+        display: none;
+      }
+
+      .settings-header {
+        font-size: 1.2em;
+        text-align: left;
+        padding: 10px;
+        background-color: aliceblue;
+        cursor: pointer;
+      }
+
+      .settings-header::before {
+        content: '▼';
+        margin-right: 10px;
+        color: #666;
+      }
+
+      .settings-header.collapsed::before {
+        content: '▶';
+        margin-right: 10px;
+        color: #666;
+      }
+
+      .message-container {
+        padding: 20px;
+        background-color: #eeee;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+
+      .message-input {
+        margin: 0;
+        display: block;
+        height: calc(1.5em + 0.75rem + 2px);
+        padding: 0.375rem 0.75rem;
+        font-size: 1rem;
+        font-weight: 400;
+        line-height: 1.5;
+        color: #495057;
+        background-color: #fff;
+        background-clip: padding-box;
+        border: 1px solid #ced4da;
+        border-radius: 0.25rem;
+        transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+      }
+
+      .message-list {
+        list-style: none;
+        padding: 0;
+        padding: 16px;
+        border: 1px solid #ced4da;
+        border-radius: 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .message-item {
+        background-color: white;
+        border-radius: 10px;
+        padding: 16px;
+      }
+
+      .message-item.user-message {
+        text-align: right;
+        color: #000;
+      }
+
+      .message-item.other-message {
+        text-align: left;
+        color: #666;
+      }
+
+      @keyframes pulse {
+        0% {
+          opacity: 0.5;
+        }
+        50% {
+          opacity: 1;
+        }
+        100% {
+          opacity: 0.5;
+        }
       }
 
     </style>
@@ -36,7 +133,8 @@
         <h1 class="centered test-title red-text">PubNub Client Test</h1>
       </div>
       <div class="stream-section">
-        <div class="centered">
+        <p class="settings-header">PubNub Client Settings:</p>
+        <div class="form-section centered">
           <div class="instructions-block radio-group">
             <p style="margin-bottom: 12px !important;">Select an authentication option to test:</p>
             <p class="settings-field settings-collapsable">
@@ -58,37 +156,48 @@
                   Auth Token:&nbsp;
                   <input type="radio" name="options" value="authToken">
                 </label>
-                <input id="authToken" type="text" class="auth-option input-field" disabled placeholder="XXXX=" value="qEF2AkF0GmlqrmFDdHRsGHhDcmVzpURjaGFuomVyb29tMQNscm9vbTEtcG5wcmVzA0NncnCgQ3NwY6BDdXNyoER1dWlkoENwYXSlRGNoYW6gQ2dycKBDc3BjoEN1c3KgRHV1aWSgRG1ldGGgRHV1aWRvc3Vic2NyaWJlci01MGEwQ3NpZ1gg-9igt1ZQ3aXEPR4wwdDtrIObBkFyOAnOmZWk9b-mA8w=">
+                <input id="authToken" type="text" class="auth-option input-field" disabled placeholder="XXXX=">
             </p>
             <hr class="paddedHR">
             <p class="settings-field settings-collapsable">
               <label class="settings-label">
                 Channel ID:&nbsp;
               </label>
-              <input id="channel-id-input" type="text" class="input-field" placeholder="Channel ID">
+              <input id="channel-id-input" type="text" class="option-field input-field" placeholder="Channel ID">
             </p>
             <p class="settings-field settings-collapsable">
               <label class="settings-label">
                 User ID:&nbsp;
               </label>
-              <input id="user-id-input" type="text" class="input-field" placeholder="User ID">
+              <input id="user-id-input" type="text" class="option-field input-field" placeholder="User ID">
             </p>
             <p class="settings-field settings-collapsable">
               <label class="settings-label">
                 Publish Key:&nbsp;
               </label>
-              <input id="publish-key-input" type="text" class="input-field" placeholder="Publish Key">
+              <input id="publish-key-input" type="text" class="option-field input-field" placeholder="Publish Key">
             </p>
             <p class="settings-field settings-collapsable">
               <label class="settings-label">
                 Subscribe Key:&nbsp;
               </label>
-              <input id="subscribe-key-input" type="text" class="input-field" placeholder="Subscribe Key">
+              <input id="subscribe-key-input" type="text" class="option-field input-field" placeholder="Subscribe Key">
             </p>
             <hr class="paddedHR">
             <p class="settings-controls">
               <button id="connect-button" class="control ui-button" disabled>Connect</button>
             </p>
+        </div>
+      </div>
+      <div class="pubnub-section stream-section">
+        <p id="status-field" class="centered status-field">STATUS: Idle.</p>
+        <div class="message-container">
+          <p>Send Message:</p>
+          <input id="message-input" type="text" class="message-input input-field" placeholder="Message">
+          <button id="send-button" class="control ui-button">Send</button>
+          <hr class="paddedHR">
+          <p>Received Messages:</p>
+          <ul id="received-messages" class="message-list"></ul>
         </div>
       </div>
     </div>

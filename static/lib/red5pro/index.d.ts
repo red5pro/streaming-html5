@@ -1034,6 +1034,7 @@ declare class PubNubClient extends EventEmitter$1 {
     subscribe(channel: string, options: any | undefined): Promise<boolean>;
     unsubscribe(channel: string): Promise<boolean>;
     destroy(): Promise<boolean>;
+    getOptions(): PubnubConfigType | undefined;
     get config(): PubnubConfigType | undefined;
     get pubnub(): any;
 }

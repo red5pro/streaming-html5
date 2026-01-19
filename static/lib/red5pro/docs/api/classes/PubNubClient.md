@@ -1,4 +1,4 @@
-[**Red5 Pro WebRTC SDK v15.3.0**](../README.md)
+[**Red5 Pro WebRTC SDK v15.2.0**](../README.md)
 
 ***
 
@@ -59,6 +59,16 @@ Base class for an Event Emitter.
 #### Returns
 
 `Promise`\<`boolean`\>
+
+***
+
+### getOptions()
+
+> **getOptions**(): `undefined` \| `PubnubConfigType`
+
+#### Returns
+
+`undefined` \| `PubnubConfigType`
 
 ***
 
