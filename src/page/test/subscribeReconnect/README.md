@@ -1,4 +1,4 @@
-# Subscribe Failover & Reconnection using Red5 Pro
+# Subscribe Reconnection using Red5 Pro
 
 This is an example of utilizing the failover mechanism of the Red5 Pro HTML SDK to select a subscriber based on browser support and to reconnect on close of broadcast or loss of connection.
 
@@ -33,7 +33,7 @@ In the occurance of a lost stream from the publisher - either from a network iss
 There are 2 important events that relate to the loss of a publisher:
 
 - `CONNECTION_CLOSED`
-- `NET_STATUS` with message of `NetStream.Play.UnpublishNotify`
+- `PLAY_UNPUBLISH`
 
 In this example, we rely on the `CONNECTION_CLOSED` event to start that reconnect cycle again, waiting for the publisher to come back:
 
