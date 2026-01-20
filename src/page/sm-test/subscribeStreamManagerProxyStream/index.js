@@ -163,6 +163,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
     const attachMediaStream = (element, stream) => {
       console.log('[OF] ATTACH')
+      if (element.srcObject === stream) {
+        return
+      }
       try {
         element.srcObject = stream
       } catch (e) {
@@ -184,21 +187,22 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     if (type === 'WebRTC.PeerConnection.OnTrack') {
       const mediaType = data.track.kind
       console.log('[OF] ON TRACK', mediaType)
-      if (mediaType === 'video') {
-        remoteTracks.videoTrack = data.track
-
-        if (remoteTracks.videoTrack) {
-          remoteStream.addTrack(remoteTracks.videoTrack)
-        }
-        attachMediaStream(remoteVideo, remoteStream)
-      }
-      if (mediaType === 'audio') {
-        remoteTracks.audioTrack = data.track
-
-        if (remoteTracks.audioTrack) {
-          remoteStream.addTrack(remoteTracks.audioTrack)
-        }
-      }
+      const stream = data.streams && data.streams.length > 0 ? data.streams[0] : remoteStream
+      attachMediaStream(remoteVideo, stream)
+//      if (mediaType === 'video') {
+//        remoteTracks.videoTrack = data.track
+//        if (remoteTracks.videoTrack) {
+//          stream.addTrack(remoteTracks.videoTrack)
+//        }
+//        attachMediaStream(remoteVideo, stream)
+//      }
+//      if (mediaType === 'audio') {
+//        remoteTracks.audioTrack = data.track
+//        if (remoteTracks.audioTrack) {
+//          stream.addTrack(remoteTracks.audioTrack)
+//        }
+//        attachMediaStream(remoteVideo, remoteStream)
+//      }
     }
   }
   const onSubscribeFail = message => {
