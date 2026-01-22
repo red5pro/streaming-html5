@@ -1,0 +1,64 @@
+<!doctype html>
+{{> license}}
+<html>
+  <head>
+    {{> meta title='Subscriber Stream Manager Proxy WebSocket Test'}}
+    {{> header-scripts}}
+    {{> header-stylesheets}}
+  </head>
+  <body>
+    {{> top-bar }}
+    <div id="app">
+      {{> settings-link}}
+      {{> test-info testTitle='Subscriber Stream Manager Proxy WebSocket Test'}}
+      <div class="stream-section">
+        {{> status-field-subscriber}}
+        {{> statistics-field packets_field='Packets Received'}}
+        <div class="centered"><p id="address-field" class="address-field hidden">Edge Address: N/A</p></div>
+        <div class="centered">
+          <video id="red5pro-subscriber"
+                  controls="controls" autoplay="" playsinline
+                  class="red5pro-subscriber red5pro-media-background"
+                  width="640" height="480">
+          </video>
+        </div>
+      </div>
+    </div>
+    {{> footer}}
+    <script>
+      (function(window) {
+        var configuration = (function () {
+          var conf = sessionStorage.getItem('r5proTestBed');
+          try {
+            return JSON.parse(conf);
+          }
+          catch (e) {
+            console.error('Could not read testbed configuration from sessionstorage: ' + e.message);
+          }
+          return {}
+        })();
+
+        var backLink = document.getElementById('back-link-container')
+        if (backLink && configuration.authentication.enabled) {
+          var node = document.createElement('div');
+          node.classList.add('hint-block', 'auth-alert');
+          var note = document.createElement('span');
+          note.classList.add('strong');
+          note.innerHTML = '*Authentication is Enabled*';
+          var link = document.createElement('a');
+          link.innerText = 'Click here to disable.';
+          link.href= '../../index.html';
+          link.classList.add('auth-link');
+          node.appendChild(note);
+          node.appendChild(link);
+          var testBody = backLink.nextElementSibling;
+          testBody.parentNode.insertBefore(node, testBody);
+        }
+
+      })(this);
+    </script>
+    <script src="lib/red5pro_14_3_0/red5pro-sdk.min.js"></script>
+    {{> mobile-subscriber-util}}
+    <script src="index.js"></script>
+  </body>
+</html>
