@@ -55,7 +55,14 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       : red5prosdk.LOG_LEVELS.WARN
   )
 
-  var targetSubscriber
+  let targetSubscriber
+  let useKeyframeRecognition = false
+  let useAutoplay = false
+  let mediaStream = null
+  let bitrateInterval = 0
+  const keyframeRecognitionCheckbox = document.getElementById('keyframe-recognition-checkbox')
+  const autoplayRadio = Array.from(document.querySelectorAll('input[name="autoplay"]'))
+  const subscribeButton = document.getElementById('subscribe-button')
 
   const updateStatusFromEvent = event => {
     const subTypes = red5prosdk.SubscriberEventTypes
@@ -159,50 +166,19 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       const { data } = event
       const { endpoint } = data
       displayServerAddress(endpoint, host)
-    }
-
-    const attachMediaStream = (element, stream) => {
-      console.log('[OF] ATTACH')
-      if (element.srcObject === stream) {
-        return
-      }
-      try {
-        element.srcObject = stream
-      } catch (e) {
-        try {
-          element.src = URL.createObjectURL(stream)
-        } catch (e) {
-          console.log('[OF] Error attaching stream to element', e, [
-            'RED5',
-            'ERROR'
-          ])
-        }
-      }
-      try {
-        element.play()
-      } catch (e) {
-        console.log('[OF] Error playing element', e, ['RED5', 'ERROR'])
-      }
-    }
-    if (type === 'WebRTC.PeerConnection.OnTrack') {
+    } else if (type === 'WebRTC.PeerConnection.OnTrack') {
       const mediaType = data.track.kind
-      console.log('[OF] ON TRACK', mediaType)
+      console.log('[R5-MANUAL] ON TRACK', mediaType)
       const stream = data.streams && data.streams.length > 0 ? data.streams[0] : remoteStream
-      attachMediaStream(remoteVideo, stream)
-//      if (mediaType === 'video') {
-//        remoteTracks.videoTrack = data.track
-//        if (remoteTracks.videoTrack) {
-//          stream.addTrack(remoteTracks.videoTrack)
-//        }
-//        attachMediaStream(remoteVideo, stream)
-//      }
-//      if (mediaType === 'audio') {
-//        remoteTracks.audioTrack = data.track
-//        if (remoteTracks.audioTrack) {
-//          stream.addTrack(remoteTracks.audioTrack)
-//        }
-//        attachMediaStream(remoteVideo, remoteStream)
-//      }
+      mediaStream = stream
+      if (!useKeyframeRecognition) {
+        attachMediaStream(remoteVideo, mediaStream)
+      }
+    } else if (type === 'WebRTC.PeerConnection.Available') {
+      if (useKeyframeRecognition) {
+        const pc = data
+        trackKeyframeRecognition(pc)
+      }
     }
   }
   const onSubscribeFail = message => {
@@ -252,6 +228,82 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       : { protocol: 'wss', port: serverSettings.wssport }
   }
 
+  const attachMediaStream = (element, stream) => {
+    console.log('[R5-MANUAL] ATTACH')
+    if (element.srcObject === stream) {
+      return
+    }
+    try {
+      element.srcObject = stream
+    } catch (e) {
+      try {
+        element.src = URL.createObjectURL(stream)
+      } catch (e) {
+        console.log('[R5-MANUAL] Error attaching stream to element', e, [
+          'RED5',
+          'ERROR'
+        ])
+      }
+    }
+    if (!useAutoplay) {
+      try {
+        element.play()
+      } catch (e) {
+        console.log('[R5-MANUAL] Error playing element', e)
+      }
+    }
+  }
+
+  const trackKeyframeRecognition = (pc) => {
+    bitrateInterval = setInterval(() => {
+      if (!pc) {
+        clearInterval(bitrateInterval)
+      }
+      pc.getStats(null).then(stats => {
+        stats.forEach(stat => {
+          if (stat.type === 'inbound-rtp' || stat.type === 'inboundrtp') {
+            if (
+              stat.mediaType === 'video' ||
+              stat.kind === 'video'
+             ) {
+              console.log('[R5-MANUAL] KEYFRAME', stat.keyFramesDecoded)
+              if (stat.keyFramesDecoded > 0) {
+                const remoteVideo = document.getElementById('videoEl')
+                attachMediaStream(remoteVideo, mediaStream)
+                clearInterval(bitrateInterval)
+              }
+            }
+          }
+        })
+      })
+    }, 1000)
+  }
+
+  const configureKeyframeRecognition = () => {
+    useKeyframeRecognition = keyframeRecognitionCheckbox.checked
+    useAutoplay = autoplayRadio.find(radio => radio.checked).value === 'autoplay'
+    const videoElement = document.getElementById('videoEl')
+    if (useKeyframeRecognition) {
+      if (useAutoplay) {
+        videoElement.setAttribute('autoplay', true)
+      } else {
+        videoElement.removeAttribute('autoplay')
+      }
+    } else {
+      videoElement.setAttribute('autoplay', true)
+    }
+
+    console.log('[R5-MANUAL] KEYFRAME RECOGNITION', useKeyframeRecognition)
+    console.log('[R5-MANUAL] AUTO PLAY', useAutoplay)
+    console.log('[R5-MANUAL] VIDEO ELEMENT', videoElement)
+    console.log('[R5-MANUAL] VIDEO ELEMENT ATTRIBUTES', videoElement.attributes)
+  }
+
+  const setSubscribeButtonState = (isSubscribed, enabled = true) => {
+    subscribeButton.innerHTML = isSubscribed ? 'Unsubscribe' : 'Subscribe'
+    subscribeButton.disabled = !enabled
+  }
+
   const getConfiguration = () => {
     const {
       host,
@@ -295,6 +347,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   const startSubscriber = async () => {
+    setSubscribeButtonState(true, false)
+    configureKeyframeRecognition()
     try {
       const { WHEPClient } = red5prosdk
       const { stream1 } = configuration
@@ -306,6 +360,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       onSubscribeSuccess(subscriber)
       streamTitle.innerText = stream1
       targetSubscriber = subscriber
+      setSubscribeButtonState(true)
     } catch (error) {
       var jsonError =
         typeof error === 'string' ? error : JSON.stringify(error, null, 2)
@@ -316,6 +371,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         type: red5prosdk.SubscriberEventTypes.CONNECT_FAILURE
       })
       onSubscribeFail(jsonError)
+      unsubscribe()
+      setSubscribeButtonState(false, true)
     }
   }
 
@@ -331,6 +388,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       onUnsubscribeFail('Unmount Error ' + jsonError)
       throw error
     }
+    targetSubscriber = undefined
+    mediaStream = null
+    useKeyframeRecognition = false
+    useAutoplay = false
+    bitrateInterval = 0
+    clearInterval(bitrateInterval)
+    setSubscribeButtonState(false, true)
   }
 
   // Clean up
@@ -349,9 +413,22 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       targetSubscriber = undefined
     }
     window.untrackBitrate()
+    clearInterval(bitrateInterval)
   }
   window.addEventListener('pagehide', shutdown)
   window.addEventListener('beforeunload', shutdown)
 
-  startSubscriber()
+  subscribeButton.addEventListener('click', () => {
+    if (targetSubscriber) {
+      unsubscribe()
+    } else {
+      startSubscriber()
+    }
+  })
+  keyframeRecognitionCheckbox.addEventListener('change', () => {
+    autoplayRadio.forEach(radio => {
+      radio.disabled = !keyframeRecognitionCheckbox.checked
+    })
+  })
+
 })(this, document, window.red5prosdk)
