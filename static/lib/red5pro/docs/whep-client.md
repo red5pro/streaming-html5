@@ -225,8 +225,8 @@ The configuration used for statistics monitoring has the following structure:
 {
   // Optional.
   // If provided, it will POST stats to this endpoint.
-  // If undefined, it will post stats to message transport.
-  // If null, it will only emit status events.
+  // If undefined or `data-channel`, it will post stats to message transport.
+  // If null or `event-transport`, it will only emit status events.
   endpoint: undefined,
   additionalHeaders: undefined,
   interval: 5000, // Interval to poll stats, in milliseconds.
