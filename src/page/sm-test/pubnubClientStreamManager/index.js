@@ -53,7 +53,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   const onPubNubEvent = event => {
     const { type, data } = event
     console.log(`[PubNub]:: ${type}`, data)
-    if (type === 'PubNub.AuthToken.Generation.Error') {
+    if (type === 'PubNub.AuthToken.Generated') {
+      console.log('[PubNub]:: AuthToken Generated', JSON.stringify(data, null, 2))
+    } else if (type === 'PubNub.AuthToken.Generation.Error') {
       alert('Error generating authentication token.')
       enableForm()
       hideLoadingIndicator()
