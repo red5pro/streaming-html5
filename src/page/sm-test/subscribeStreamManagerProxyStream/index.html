@@ -29,6 +29,9 @@
         align-items: center;
         gap: 20px;
       }
+      .blurred-video {
+        filter: blur(4px); /* Adjust the value to increase or decrease the blur */
+      }
     </style>
   </head>
   <body>
@@ -43,8 +46,9 @@
         <div class="centered"><p id="address-field" class="address-field hidden">Edge Address: N/A</p></div>
         <div class="centered">
           <video id="videoEl"
-                  controls autoplay playsinline
-                  class="red5pro-subscriber red5pro-media red5pro-media-background"
+                  controls playsinline
+                  poster="./bbb.png"
+                  class="red5pro-subscriber red5pro-media red5pro-media-background blurred-video"
                   width="640" height="480">
           </video>
         </div>
@@ -53,7 +57,7 @@
             <label>Enable Client-Side First Keyframe Recognition:&nbsp;&nbsp;</label>
             <input id="keyframe-recognition-checkbox" type="checkbox" checked />
           </p>
-          <div class="autoplay-controls">
+          <div class="autoplay-controls hidden">
             <p>
               <label for="autoplay">Autoplay:&nbsp;</label>
               <input type="radio" name="autoplay" value="autoplay" checked />

@@ -21,6 +21,7 @@ This provides a standardized - and _blazingly fast_ - way to establish and playb
 * [Init Configuration](#init-configuration)
 * [Events](#events)
 * [Statistics](#statistics)
+* [Renegotiation Policy](#renegotiation-policy)
 * [Live Seek](#live-seek)
 * [Stream Manager 2.0](#stream-manager-20)
 
@@ -118,6 +119,7 @@ When using the `init()` call of a `WHEPClient` - or, alternatively, when using a
 | `maintainStreamVariant` | [-] | `false` | Flag to instruct the server - when utilizing transcoding - to not switch subscriber stream variants when network conditions change. By setting this to `true`, when you request to playback a stream that is transcoded, the server will not deliver a variant of higher or lower quality dependending on current network conditions. |
 | `stats` | [-] | *None* | Configuration object to enable stats reporting. See [Stats Reporting](#statistics) for more information. |
 | `liveSeek` | [-] | *None* | Configuration object to enable live seek capability. See [Live Seek](#live-seek) for more information. |
+| `renegotiationPolicy` | [-] | *None* | Configuration object for renegotiation of ICE. See [Renegotiation Policy](#renegotiation-policy) for more information. |
 
 # Events
 
@@ -155,6 +157,8 @@ You can also listen to events individually. The following describe the various e
 | :--- | :--- | :--- |
 | `CONNECT_SUCCESS` | 'Connect.Success' | When the subscriber has established a required remote connection, such as to a WebSocket server. |
 | `CONNECT_FAILURE` | 'Connect.Failure' | When the subscriber has failed to establish a required remote connection for consuming a stream. |
+| `RECONNECT_START` | 'Reconnect.Start' | Signal when attempt on reconnect has begun. This is used in conjunction with the `renegotiationPolicy` of the `init()` configuration. |
+| `RECONNECT_FAILURE` | 'Reconnect.Failure' | Signal when attempt on reconnect has failed. |
 | `SUBSCRIBE_START` | 'Subscribe.Start' | When the subscriber has started a subscribing to a stream. |
 | `SUBSCRIBE_STOP` | 'Subscribe.Stop' | When the subscriber has successfully closed an active subscription to a stream. |
 | `SUBSCRIBE_METADATA` | 'Subscribe.Metadata' | When metadata is received on the client from the server. |
@@ -196,7 +200,15 @@ In addition to the above events, the following events are also dispatched from a
 | `LIVE_SEEK_ERROR` | 'WebRTC.LiveSeek.Error' | When `liveSeek` is used to playback Live VOD and HLS video and an error in playback has occurred. Inspect the `error` attribute on the event for more details. |
 | `LIVE_SEEK_LOADING` | 'WebRTC.LiveSeek.FragmentLoading' | When `liveSeek` is used to playback Live VOD and HLS video in currently loading a fragment during seeking. |
 | `LIVE_SEEK_LOADED` | 'WebRTC.LiveSeek.FragmentLoaded' | When `liveSeek` is used to playback Live VOD and HLS video has completed loading a fragment during seeking. |
-| `LIVE_SEEK_CHANGE` | 'WebRTC.LiveSeek.Change | When `liveSeek` is used, this event notifies on a change of state going from "live" to "vod" and vice versa.
+| `LIVE_SEEK_CHANGE` | 'WebRTC.LiveSeek.Change' | When `liveSeek` is used, this event notifies on a change of state going from "live" to "vod" and vice versa. |
+
+Additionally, the following events are related to ICE connection monitoring when integrating with Statistics:
+| Access | Event Type | Meaning |
+| :--- | :--- | :--- |
+| `CONNECTION_HEALTH_STALE_STATS` | 'WebRTC.Connection.StaleStats' | When monitored statistics for ice connection do not seem to be changing through intervals. |
+| `CONNECTION_HEALTH_STATE_REGRESSION` | 'WebRTC.Connection.StateRegression' | When monitored statistics for ice connection and the status reverts from previously being `success`. |
+| `CONNECTION_HEALTH_EXCESSIVE_RTT` | 'WebRTC.Connection.ExcessiveRTT' | When monitored statistics for ice connection and the Round-Trip-Time being report does not change or rises between intervals. |
+| `CONNECTION_HEALTH_ICE_TIMEOUT` | 'WebRTC.Connection.IceTimeout' | When monitored statistics for ice connection and the timeout of ICE Connection has been reached. Can be defined in the `renegotiationPolicy` attribute of the `init()` configuration. |
 
 # Statistics
 
@@ -313,6 +325,33 @@ The following is an example of a statistics metadata that is emitted in a `WebRT
   }
 }
 ```
+
+# Renegotiation Policy
+
+The `renegotiationPolicy` attribute of the `init()` configuration object is used during monitoring - in conjunction with (Statistics)(#statistics), to determine the health lifecycle of the ICE negotiation process and act accodingly.
+
+The policy has the following type structure:
+
+```typescript
+type RenegotiationPolicyType = {
+  type: 'regression' | 'timeout' | 'disconnect'
+  iceTimeoutInterval: number
+}
+```
+
+The following `type` values are:
+
+| Name | Meaning |
+| :--- | :--- |
+| `regression` | When the ICE status has changed from a previously designated `success`. This will not always occur during ICE negotiation failures. |
+| `timeout` | When it has been determined (in conjunction with the `iceTimeoutInterval`), that too much time has elapsed since the start of the negotiation process in order for it to conclude successfully. |
+| `disconnect` | When the peer connection has decided to disconnect after a failure of ICE negotiation. |
+
+Typically, these will be executed in the order defined in the table above, however it should be noted that sometimes a `regression` may not occur in poor connection scenarios. If the process were to fail, both `timeout` and `disconnect` will occur.
+
+The `iceTimeoutInterval` value will be used in conjunction with the `timeout` policy type to take reconnect action. _The default is 5 seconds._
+
+> By default, the `renegotiationPolicy` is not set and will not take action unless defined in the `init()` configuration.
 
 # Live Seek
 

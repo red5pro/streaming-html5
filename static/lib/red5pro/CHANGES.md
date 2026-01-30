@@ -1,5 +1,12 @@
 # Changes
 
+## 15.2.0
+
+- fix: ICE configuration order preference (Todd Anderson).
+- feat: Connection health monitoring for WebRTC publishers and subscribers with automatic detection of stale stats, ICE state regression, excessive RTT, and ICE negotiation timeouts (Todd Anderson)
+- feat: Added new WebRTC connection health events: `WebRTC.Connection.StaleStats`, `WebRTC.Connection.StateRegression`, `WebRTC.Connection.ExcessiveRTT`, `WebRTC.Connection.IceTimeout` (Todd Anderson)
+- feat: `renegotiationPolicy` init configuration property for defining monitor and handling of ICE negotiation failures.
+
 ## 15.0.0
 
 **ALERT: Breaking Changes**

@@ -161,6 +161,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     updateStatusFromEvent(event)
     if (type === 'Subscribe.VideoDimensions.Change') {
       onResolutionUpdate(event.data.width, event.data.height)
+    } else if (type ==='Subscribe.Metadata') {
+      const { data } = event
+      console.log('[R5-MANUAL] METADATA', JSON.stringify(data, null, 2))
     } else if (type === 'WebRTC.Endpoint.Changed') {
       const { host } = configuration
       const { data } = event
@@ -172,8 +175,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       const stream = data.streams && data.streams.length > 0 ? data.streams[0] : remoteStream
       mediaStream = stream
       if (!useKeyframeRecognition) {
-        attachMediaStream(remoteVideo, mediaStream)
+        remoteVideo.setAttribute('autoplay', true)
+      } else {
+        remoteVideo.removeAttribute('autoplay')
+        elementPlaybackState(remoteVideo, false)
       }
+      attachMediaStream(remoteVideo, mediaStream)
     } else if (type === 'WebRTC.PeerConnection.Available') {
       if (useKeyframeRecognition) {
         const pc = data
@@ -245,12 +252,20 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         ])
       }
     }
-    if (!useAutoplay) {
-      try {
-        element.play()
-      } catch (e) {
-        console.log('[R5-MANUAL] Error playing element', e)
-      }
+    // if (!useAutoplay) {
+    //   try {
+    //     element.play()
+    //   } catch (e) {
+    //     console.log('[R5-MANUAL] Error playing element', e)
+    //   }
+    // }
+  }
+
+  const elementPlaybackState = (element, available) => {
+    if (available) {
+      element.classList.remove('blurred-video')
+    } else {
+      element.classList.add('blurred-video')
     }
   }
 
@@ -268,9 +283,18 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
              ) {
               console.log('[R5-MANUAL] KEYFRAME', stat.keyFramesDecoded)
               if (stat.keyFramesDecoded > 0) {
-                const remoteVideo = document.getElementById('videoEl')
-                attachMediaStream(remoteVideo, mediaStream)
                 clearInterval(bitrateInterval)
+                const remoteVideo = document.getElementById('videoEl')
+                // attachMediaStream(remoteVideo, mediaStream)
+                console.log('[R5-MANUAL] KEYFRAME DETECTED', stat.keyFramesDecoded)
+                try {
+                  console.log('[R5-MANUAL] PLAYING ELEMENT')
+                  remoteVideo.play()
+                } catch (e) {
+                  console.log('[R5-MANUAL] Error playing element', e)
+                } finally {
+                  elementPlaybackState(remoteVideo, true)
+                }
               }
             }
           }
