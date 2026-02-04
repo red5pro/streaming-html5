@@ -5,14 +5,15 @@ import * as browser_bunyan_lib from 'browser-bunyan/lib';
 import { PublishVideoEncoder, PublishAudioEncoder } from 'types/publisher';
 export { PublishAudioEncoder, PublishVideoEncoder } from 'types/publisher';
 import { Logger } from 'browser-bunyan';
-import { Event as Event$1, SubscriberEvent, PublisherEvent, MessageTransportStateEvent } from 'event';
-export { Event, MessageTransportStateEvent, PublisherEvent, SubscriberEvent } from 'event';
 import EventEmitter$1 from 'core/event-emitter';
 import { RTCWhipPublisherConfigType } from 'configuration/publisher';
 export { BandwidthConfig, MediaConstraintRange, MediaConstraints, RTCPublisherConfigType, RTCWhipPublisherConfigType, VideoConstraints, defaultWhipPublisherConfig } from 'configuration/publisher';
+import { Event as Event$1, SubscriberEvent, PublisherEvent, MessageTransportStateEvent, PubNubEvent } from 'event';
+export { Event, MessageTransportStateEvent, PublisherEvent, SubscriberEvent } from 'event';
 import { MessageTransport } from 'types/message-transport';
 import StatsConfig from 'configuration/stats';
 export { default as StatsConfig, defaultStatsConfig } from 'configuration/stats';
+import PubNubClient$1 from 'pubnub';
 import { RTCWhepSubscriberConfigType, HLSSubscriberConfigType } from 'configuration/subscriber';
 export { HLSSubscriberConfigType, RTCSubscriberConfigType, RTCWhepSubscriberConfigType, defaultHLSSubscriberConfig, defaultWhepSubscriberConfig } from 'configuration/subscriber';
 import WhipWhepSignalingHelper from 'helper/wish-signal-helper';
@@ -22,8 +23,10 @@ import RTCSubscriberStats from 'stats/subscriber-stats';
 import { RenegotiationPolicyType } from 'configuration';
 import { LiveSeekConfigType } from 'configuration/liveseek';
 export { LiveSeekConfigType, LiveSeekOptions, defaultLiveSeekConfig } from 'configuration/liveseek';
+import { PubnubConfigType } from 'configuration/pubnub';
 import { PublisherEventTypes, SubscriberEventTypes, RTCPublisherEventTypes, RTCSubscriberEventTypes, MessageTransportStateEventTypes } from 'event/event-types';
 export { MessageTransportStateEventTypes, PublisherEventTypes, RTCPublisherEventTypes, RTCSubscriberEventTypes, SubscriberEventTypes } from 'event/event-types';
+import { PubNubEventTypes } from 'event/pubnub';
 
 declare const LEVELS: {
     readonly TRACE: "trace";
@@ -63,6 +66,7 @@ declare class WHIPClient extends EventEmitter$1 {
     private _publishView;
     private _statisticsConfiguration;
     private _statsMonitor;
+    private _pubnubClient;
     /**
      * Constructor. Providing arguments will automatically kick of connection sequence.
      * Leaving arguments unset allows for more control and follows same pattern of init.
@@ -77,6 +81,8 @@ declare class WHIPClient extends EventEmitter$1 {
     private reorderCodecPreferences;
     private postOffer;
     private postCandidateFragments;
+    private initPubNub;
+    private deinitPubNub;
     /**
      * Initialize the WHIPClient.
      *
@@ -165,6 +171,29 @@ declare class WHIPClient extends EventEmitter$1 {
      */
     send(methodName: string, data: any): Promise<boolean> | undefined;
     /**
+     * Send a message to the PubNub channel.
+     *
+     * @param {string} channel - The channel to send the message to.
+     * @param {any} message - The message to send.
+     * @returns {Promise<boolean>}
+     */
+    sendPubNub(channel: string, message: any): Promise<boolean>;
+    /**
+     * Subscribe to a PubNub channel.
+     *
+     * @param {string} channel - The channel to subscribe to.
+     * @param {any} options - The options to use for subscription.
+     * @returns {Promise<boolean>}
+     */
+    subscribePubNub(channel: string, options: any | undefined): Promise<boolean>;
+    /**
+     * Unsubscribe from a PubNub channel.
+     *
+     * @param {string} channel - The channel to unsubscribe from.
+     * @returns {Promise<boolean>}
+     */
+    unsubscribePubNub(channel: string): Promise<boolean>;
+    /**
      * Call a method on the server.
      *
      * @param {string} methodName - The name of the method to call.
@@ -215,6 +244,12 @@ declare class WHIPClient extends EventEmitter$1 {
      * @returns {MessageTransport | undefined}
      */
     getMessageTransport(): MessageTransport | undefined;
+    /**
+     * Get the PubNub client for the WHIPClient.
+     *
+     * @returns {PubNubClient | undefined}
+     */
+    getPubNubClient(): PubNubClient$1 | undefined;
     private _onDataChannelError;
     private _onSendReceived;
     private _onMetaData;
@@ -520,6 +555,7 @@ declare class WHEPClient extends PlaybackController {
     protected _sourceHandler: SourceHandler | undefined;
     protected _statisticsConfiguration: StatsConfig | undefined;
     protected _statsMonitor: RTCSubscriberStats | undefined;
+    protected _pubnubClient: PubNubClient$1 | undefined;
     protected _orientation: number | undefined;
     protected _streamingMode: string | undefined;
     protected _requestedStreamSwitch: string | undefined;
@@ -547,6 +583,8 @@ declare class WHEPClient extends PlaybackController {
     private requestAnswer;
     private sendAnswer;
     private postCandidateFragments;
+    private initPubNub;
+    private deinitPubNub;
     private _evaluateRenegotiationPolicy;
     private _reconnect;
     /**
@@ -576,6 +614,29 @@ declare class WHEPClient extends PlaybackController {
      * @param {any} data - The data to send.
      */
     send(methodName: string, data: any): Promise<boolean> | undefined;
+    /**
+     * Send a message to the PubNub channel.
+     *
+     * @param {string} channel - The channel to send the message to.
+     * @param {any} message - The message to send.
+     * @returns {Promise<boolean>}
+     */
+    sendPubNub(channel: string, message: any): Promise<boolean>;
+    /**
+     * Subscribe to a PubNub channel.
+     *
+     * @param {string} channel - The channel to subscribe to.
+     * @param {any} options - The options to use for subscription.
+     * @returns {Promise<boolean>}
+     */
+    subscribePubNub(channel: string, options: any | undefined): Promise<boolean>;
+    /**
+     * Unsubscribe from a PubNub channel.
+     *
+     * @param {string} channel - The channel to unsubscribe from.
+     * @returns {Promise<boolean>}
+     */
+    unsubscribePubNub(channel: string): Promise<boolean>;
     /**
      * Call a method on the Red5 Pro Server over the message transport (DataChannel).
      *
@@ -662,6 +723,12 @@ declare class WHEPClient extends PlaybackController {
      * @returns {MessageTransport | undefined}
      */
     getMessageTransport(): MessageTransport | undefined;
+    /**
+     * Get the PubNub client for the WHEP-based Subscriber.
+     *
+     * @returns {PubNubClient | undefined}
+     */
+    getPubNubClient(): PubNubClient$1 | undefined;
     /**
      * Get the media element for the WHEP-based Subscriber.
      *
@@ -955,6 +1022,23 @@ declare class LiveSeekClient extends WHEPClient {
     protected _onStreamSwitchComplete(): void;
 }
 
+declare class PubNubClient extends EventEmitter$1 {
+    private _config;
+    private _pubnub;
+    private _subscriptions;
+    constructor();
+    private _getAuthFromCloud;
+    private _getAuthFromBackend;
+    init(config: PubnubConfigType | any): Promise<this>;
+    publishMessage(channel: string, message: any): Promise<boolean>;
+    subscribe(channel: string, options: any | undefined): Promise<boolean>;
+    unsubscribe(channel: string): Promise<boolean>;
+    destroy(): Promise<boolean>;
+    getOptions(): PubnubConfigType | undefined;
+    get config(): PubnubConfigType | undefined;
+    get pubnub(): any;
+}
+
 /**
  * A base implementation of the SourceHandler class.
  */
@@ -1121,18 +1205,21 @@ declare const _default: {
     SubscriberEvent: typeof SubscriberEvent;
     PublisherEvent: typeof PublisherEvent;
     MessageTransportStateEvent: typeof MessageTransportStateEvent;
+    PubNubEvent: typeof PubNubEvent;
     PublisherEventTypes: typeof PublisherEventTypes;
     SubscriberEventTypes: typeof SubscriberEventTypes;
     RTCPublisherEventTypes: typeof RTCPublisherEventTypes;
     RTCSubscriberEventTypes: typeof RTCSubscriberEventTypes;
     MessageTransportStateEventTypes: typeof MessageTransportStateEventTypes;
+    PubNubEventTypes: typeof PubNubEventTypes;
     WHIPClient: typeof WHIPClient;
     WHEPClient: typeof WHEPClient;
     HLSSubscriber: typeof HLSSubscriber;
     LiveSeekClient: typeof LiveSeekClient;
+    PubNubClient: typeof PubNubClient;
     defaultWhepSubscriberConfig: RTCWhepSubscriberConfigType;
     defaultWhipPublisherConfig: RTCWhipPublisherConfigType;
 };
 
-export { EventEmitter, HLSSubscriber, LEVELS as LOG_LEVELS, LiveSeekClient, PlaybackController, PlaybackControls, SourceHandler, SourceHandlerImpl, WHEPClient, WHIPClient, _default as default, getLogger, getRecordedLogs, getVersion, setLogLevel };
+export { EventEmitter, HLSSubscriber, LEVELS as LOG_LEVELS, LiveSeekClient, PlaybackController, PlaybackControls, PubNubClient, SourceHandler, SourceHandlerImpl, WHEPClient, WHIPClient, _default as default, getLogger, getRecordedLogs, getVersion, setLogLevel };
 export type { EventEmitterInterface };

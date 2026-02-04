@@ -29,6 +29,7 @@ Red5 Pro WebRTC SDK
 - [PlaybackController](classes/PlaybackController.md)
 - [PlaybackControls](classes/PlaybackControls.md)
 - [PublisherEvent](classes/PublisherEvent.md)
+- [PubNubClient](classes/PubNubClient.md)
 - [SourceHandler](classes/SourceHandler.md)
 - [SourceHandlerImpl](classes/SourceHandlerImpl.md)
 - [SubscriberEvent](classes/SubscriberEvent.md)

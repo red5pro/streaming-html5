@@ -13,6 +13,7 @@ Base class for an Event Emitter.
 - [`WHIPClient`](WHIPClient.md)
 - [`PlaybackControls`](PlaybackControls.md)
 - [`PlaybackController`](PlaybackController.md)
+- [`PubNubClient`](PubNubClient.md)
 
 ## Implements
 

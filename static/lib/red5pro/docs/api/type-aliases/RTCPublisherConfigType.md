@@ -134,6 +134,12 @@
 
 ***
 
+### pubnub?
+
+> `optional` **pubnub**: `PubnubConfigType`
+
+***
+
 ### rtcConfiguration
 
 > **rtcConfiguration**: `RTCConfiguration`

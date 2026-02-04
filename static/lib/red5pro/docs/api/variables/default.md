@@ -136,6 +136,18 @@ Get the version of the SDK.
 
 > **PublishVideoEncoder**: *typeof* [`PublishVideoEncoder`](../enumerations/PublishVideoEncoder.md)
 
+### PubNubClient
+
+> **PubNubClient**: *typeof* [`PubNubClient`](../classes/PubNubClient.md)
+
+### PubNubEvent
+
+> **PubNubEvent**: *typeof* `PubNubEvent`
+
+### PubNubEventTypes
+
+> **PubNubEventTypes**: *typeof* `PubNubEventTypes`
+
 ### RTCPublisherEventTypes
 
 > **RTCPublisherEventTypes**: *typeof* [`RTCPublisherEventTypes`](../enumerations/RTCPublisherEventTypes.md)

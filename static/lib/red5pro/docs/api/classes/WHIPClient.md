@@ -180,6 +180,18 @@ Get the PeerConnection for the WHIPClient.
 
 ***
 
+### getPubNubClient()
+
+> **getPubNubClient**(): `undefined` \| [`PubNubClient`](PubNubClient.md)
+
+Get the PubNub client for the WHIPClient.
+
+#### Returns
+
+`undefined` \| [`PubNubClient`](PubNubClient.md)
+
+***
+
 ### getType()
 
 > **getType**(): `string`
@@ -414,6 +426,58 @@ The message to send.
 
 ***
 
+### sendPubNub()
+
+> **sendPubNub**(`channel`, `message`): `Promise`\<`boolean`\>
+
+Send a message to the PubNub channel.
+
+#### Parameters
+
+##### channel
+
+`string`
+
+The channel to send the message to.
+
+##### message
+
+`any`
+
+The message to send.
+
+#### Returns
+
+`Promise`\<`boolean`\>
+
+***
+
+### subscribePubNub()
+
+> **subscribePubNub**(`channel`, `options`): `Promise`\<`boolean`\>
+
+Subscribe to a PubNub channel.
+
+#### Parameters
+
+##### channel
+
+`string`
+
+The channel to subscribe to.
+
+##### options
+
+`any`
+
+The options to use for subscription.
+
+#### Returns
+
+`Promise`\<`boolean`\>
+
+***
+
 ### trigger()
 
 > **trigger**(`event`): `void`
@@ -491,3 +555,23 @@ Whether the unpublish is internal (i.e. not triggered by the user).
 #### Returns
 
 `Promise`\<`void`\>
+
+***
+
+### unsubscribePubNub()
+
+> **unsubscribePubNub**(`channel`): `Promise`\<`boolean`\>
+
+Unsubscribe from a PubNub channel.
+
+#### Parameters
+
+##### channel
+
+`string`
+
+The channel to unsubscribe from.
+
+#### Returns
+
+`Promise`\<`boolean`\>

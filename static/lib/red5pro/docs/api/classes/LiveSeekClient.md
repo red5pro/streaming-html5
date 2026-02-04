@@ -256,6 +256,22 @@ Get the media element for the WHEP-based Subscriber.
 
 ***
 
+### getPubNubClient()
+
+> **getPubNubClient**(): `undefined` \| [`PubNubClient`](PubNubClient.md)
+
+Get the PubNub client for the WHEP-based Subscriber.
+
+#### Returns
+
+`undefined` \| [`PubNubClient`](PubNubClient.md)
+
+#### Inherited from
+
+[`WHEPClient`](WHEPClient.md).[`getPubNubClient`](WHEPClient.md#getpubnubclient)
+
+***
+
 ### getType()
 
 > **getType**(): `string`
@@ -582,6 +598,36 @@ The message to send.
 
 ***
 
+### sendPubNub()
+
+> **sendPubNub**(`channel`, `message`): `Promise`\<`boolean`\>
+
+Send a message to the PubNub channel.
+
+#### Parameters
+
+##### channel
+
+`string`
+
+The channel to send the message to.
+
+##### message
+
+`any`
+
+The message to send.
+
+#### Returns
+
+`Promise`\<`boolean`\>
+
+#### Inherited from
+
+[`WHEPClient`](WHEPClient.md).[`sendPubNub`](WHEPClient.md#sendpubnub)
+
+***
+
 ### setVolume()
 
 > **setVolume**(`value`): `void`
@@ -635,6 +681,36 @@ Subscribe to the WHEP-based Subscriber.
 #### Inherited from
 
 [`WHEPClient`](WHEPClient.md).[`subscribe`](WHEPClient.md#subscribe)
+
+***
+
+### subscribePubNub()
+
+> **subscribePubNub**(`channel`, `options`): `Promise`\<`boolean`\>
+
+Subscribe to a PubNub channel.
+
+#### Parameters
+
+##### channel
+
+`string`
+
+The channel to subscribe to.
+
+##### options
+
+`any`
+
+The options to use for subscription.
+
+#### Returns
+
+`Promise`\<`boolean`\>
+
+#### Inherited from
+
+[`WHEPClient`](WHEPClient.md).[`subscribePubNub`](WHEPClient.md#subscribepubnub)
 
 ***
 
@@ -763,3 +839,27 @@ Optional boolean to indicate if the unsubscribe is internal.
 #### Inherited from
 
 [`WHEPClient`](WHEPClient.md).[`unsubscribe`](WHEPClient.md#unsubscribe)
+
+***
+
+### unsubscribePubNub()
+
+> **unsubscribePubNub**(`channel`): `Promise`\<`boolean`\>
+
+Unsubscribe from a PubNub channel.
+
+#### Parameters
+
+##### channel
+
+`string`
+
+The channel to unsubscribe from.
+
+#### Returns
+
+`Promise`\<`boolean`\>
+
+#### Inherited from
+
+[`WHEPClient`](WHEPClient.md).[`unsubscribePubNub`](WHEPClient.md#unsubscribepubnub)

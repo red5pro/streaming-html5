@@ -4,7 +4,8 @@
 <p align="center">
   <a href="#">Quick Start</a> &bull;
   <a href="docs/whip-client.md">Publishing</a> &bull;
-  <a href="docs/whep-client.md">Subscribing</a>
+  <a href="docs/whep-client.md">Subscribing</a> &bull;
+  <a href="docs/pubnub-client.md">PubNub Client</a>
 </p>
 
 ---
@@ -92,7 +93,7 @@ You can sign up and download the Red5 Server to manage your own deployment at [h
 
         const publisher = new WHIPClient()
         const subscriber = new WHEPClient()
-        
+
         const config = {
           host: 'mydeploy.red5.net',
           streamName: 'mystream'

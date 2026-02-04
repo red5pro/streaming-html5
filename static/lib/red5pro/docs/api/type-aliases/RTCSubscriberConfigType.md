@@ -124,6 +124,12 @@
 
 ***
 
+### pubnub?
+
+> `optional` **pubnub**: `PubnubConfigType`
+
+***
+
 ### renegotiationPolicy?
 
 > `optional` **renegotiationPolicy**: `RenegotiationPolicyType`
