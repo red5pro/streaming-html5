@@ -227,7 +227,7 @@ The configuration used for statistics monitoring has the following structure:
   // If provided, it will POST stats to this endpoint.
   // If undefined or `data-channel`, it will post stats to message transport.
   // If null or `event-transport`, it will only emit status events.
-  endpoint: undefined,
+  endpoint: red5prosdk.StatsEndpointType.DATA_CHANNEL,
   additionalHeaders: undefined,
   interval: 5000, // Interval to poll stats, in milliseconds.
   include: [], // Empty array allows SDK to be judicious about what stats to include.
@@ -236,9 +236,9 @@ The configuration used for statistics monitoring has the following structure:
 
 ### endpoint
 
-* If the `endpoint` is defined, the SDK will attempt to make `POST` requests with a JSON body representing each individual report.
-* If the `endpoint` is left `undefined`, the SDK will post metadata with type `stats-report` on the underlying message transport (DataChannel) if available.
-* If the `endpoint` is set to `null`, the SDK will only emit events with the metadata on the `WebRTC.StatsReport` event.
+* If the `endpoint` is defined with a URL, the SDK will attempt to make `POST` requests with a JSON body representing each individual report.
+* If the `endpoint` is set to `data-channel` or `undefined`, the SDK will post metadata with type `stats-report` on the underlying message transport (DataChannel) if available.
+* If the `endpoint` is set to `event-transport` or `null`, the SDK will only emit events with the metadata on the `WebRTC.StatsReport` event.
 
 ### additionalHeaders
 

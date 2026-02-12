@@ -11,8 +11,8 @@ export { BandwidthConfig, MediaConstraintRange, MediaConstraints, RTCPublisherCo
 import { Event as Event$1, SubscriberEvent, PublisherEvent, MessageTransportStateEvent, PubNubEvent } from 'event';
 export { Event, MessageTransportStateEvent, PublisherEvent, SubscriberEvent } from 'event';
 import { MessageTransport } from 'types/message-transport';
-import StatsConfig from 'configuration/stats';
-export { default as StatsConfig, defaultStatsConfig } from 'configuration/stats';
+import StatsConfig, { EndpointType } from 'configuration/stats';
+export { default as StatsConfig, EndpointType as StatsEndpointType, defaultStatsConfig } from 'configuration/stats';
 import PubNubClient$1 from 'pubnub';
 import { RTCWhepSubscriberConfigType, HLSSubscriberConfigType } from 'configuration/subscriber';
 export { HLSSubscriberConfigType, RTCSubscriberConfigType, RTCWhepSubscriberConfigType, defaultHLSSubscriberConfig, defaultWhepSubscriberConfig } from 'configuration/subscriber';
@@ -1219,6 +1219,8 @@ declare const _default: {
     PubNubClient: typeof PubNubClient;
     defaultWhepSubscriberConfig: RTCWhepSubscriberConfigType;
     defaultWhipPublisherConfig: RTCWhipPublisherConfigType;
+    defaultStatsConfig: StatsConfig;
+    StatsEndpointType: typeof EndpointType;
 };
 
 export { EventEmitter, HLSSubscriber, LEVELS as LOG_LEVELS, LiveSeekClient, PlaybackController, PlaybackControls, PubNubClient, SourceHandler, SourceHandlerImpl, WHEPClient, WHIPClient, _default as default, getLogger, getRecordedLogs, getVersion, setLogLevel };
