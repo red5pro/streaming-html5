@@ -17,6 +17,7 @@ Red5 Pro WebRTC SDK
 - [PublishVideoEncoder](enumerations/PublishVideoEncoder.md)
 - [RTCPublisherEventTypes](enumerations/RTCPublisherEventTypes.md)
 - [RTCSubscriberEventTypes](enumerations/RTCSubscriberEventTypes.md)
+- [StatsEndpointType](enumerations/StatsEndpointType.md)
 - [SubscriberEventTypes](enumerations/SubscriberEventTypes.md)
 
 ## Classes

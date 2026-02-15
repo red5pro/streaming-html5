@@ -10,6 +10,10 @@
 
 ## Type Declaration
 
+### defaultStatsConfig
+
+> **defaultStatsConfig**: [`StatsConfig`](../type-aliases/StatsConfig.md)
+
 ### defaultWhepSubscriberConfig
 
 > **defaultWhepSubscriberConfig**: [`RTCWhepSubscriberConfigType`](../type-aliases/RTCWhepSubscriberConfigType.md)
@@ -173,6 +177,10 @@ Get the version of the SDK.
 #### Returns
 
 `void`
+
+### StatsEndpointType
+
+> **StatsEndpointType**: *typeof* [`StatsEndpointType`](../enumerations/StatsEndpointType.md)
 
 ### SubscriberEvent
 
