@@ -5,6 +5,7 @@ i<h3 align="center">
   <a href="../README.md">Quick Start</a> &bull;
   <a href="#">Publishing</a> &bull;
   <a href="whep-client.md">Subscribing</a> &bull;
+  <a href="message-channel.md">Message Channel</a> &bull;
   <a href="pubnub-client.md">PubNub Client</a>
 </p>
 
@@ -287,7 +288,7 @@ The configuration used for statistics monitoring has the following structure:
   // If provided, it will POST stats to this endpoint.
   // If undefined or `data-channel`, it will post stats to message transport.
   // If null or `event-transport`, it will only emit status events.
-  red5prosdk.StatsEndpointType.DATA_CHANNEL,
+  endpoint: red5prosdk.StatsEndpointType.DATA_CHANNEL,
   additionalHeaders: undefined,
   interval: 5000, // Interval to poll stats, in milliseconds.
   include: [], // Empty array allows SDK to be judicious about what stats to include.
@@ -313,6 +314,7 @@ The polling interval (in milliseconds) to access the `RTCStatsReport` from the u
 An array of static type strings. These directly map to the listing of type available for `RTCStatsReport` objects. If left empty or undefined, the SDK will report the statistics it deems suitable for tracking proper broadcast conditions.
 
 e.g.,
+
 ```js
 include: ['outbound-rtp', 'transport']
 ```

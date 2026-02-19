@@ -2,11 +2,11 @@
 
 ***
 
-[Red5 Pro WebRTC SDK](../globals.md) / PublisherEvent
+[Red5 Pro WebRTC SDK](../globals.md) / PubNubEvent
 
-# Class: PublisherEvent
+# Class: PubNubEvent
 
-Event for a Publisher within the Red5 Pro WebRTC SDK.
+Event for a PubNub within the Red5 Pro WebRTC SDK.
 
 ## Extends
 
@@ -16,9 +16,9 @@ Event for a Publisher within the Red5 Pro WebRTC SDK.
 
 ### Constructor
 
-> **new PublisherEvent**(`type`, `publisher`, `data?`): `PublisherEvent`
+> **new PubNubEvent**(`type`, `pubnub`, `data?`): `PubNubEvent`
 
-Constructor for a PublisherEvent.
+Constructor for a PubNubEvent.
 
 #### Parameters
 
@@ -28,11 +28,11 @@ Constructor for a PublisherEvent.
 
 The type of event.
 
-##### publisher
+##### pubnub
 
 `any`
 
-The publisher (WHIPClient) that triggered the event.
+The pubnub (PubNubClient) that triggered the event.
 
 ##### data?
 
@@ -42,7 +42,7 @@ The data associated with the event.
 
 #### Returns
 
-`PublisherEvent`
+`PubNubEvent`
 
 #### Overrides
 
@@ -68,13 +68,13 @@ Get the data associated with the event.
 
 ***
 
-### publisher
+### pubnub
 
 #### Get Signature
 
-> **get** **publisher**(): `any`
+> **get** **pubnub**(): `any`
 
-Get the publisher (WHIPClient) that triggered the event.
+Get the pubnub (PubNubClient) that triggered the event.
 
 ##### Returns
 

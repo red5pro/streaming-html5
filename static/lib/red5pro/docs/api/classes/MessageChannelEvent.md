@@ -2,11 +2,11 @@
 
 ***
 
-[Red5 Pro WebRTC SDK](../globals.md) / PublisherEvent
+[Red5 Pro WebRTC SDK](../globals.md) / MessageChannelEvent
 
-# Class: PublisherEvent
+# Class: MessageChannelEvent
 
-Event for a Publisher within the Red5 Pro WebRTC SDK.
+Event for a MessageChannel within the Red5 Pro WebRTC SDK.
 
 ## Extends
 
@@ -16,9 +16,9 @@ Event for a Publisher within the Red5 Pro WebRTC SDK.
 
 ### Constructor
 
-> **new PublisherEvent**(`type`, `publisher`, `data?`): `PublisherEvent`
+> **new MessageChannelEvent**(`type`, `messageChannel`, `data?`): `MessageChannelEvent`
 
-Constructor for a PublisherEvent.
+Constructor for a MessageChannelEvent.
 
 #### Parameters
 
@@ -28,11 +28,11 @@ Constructor for a PublisherEvent.
 
 The type of event.
 
-##### publisher
+##### messageChannel
 
 `any`
 
-The publisher (WHIPClient) that triggered the event.
+The message channel (MessageChannel) that triggered the event.
 
 ##### data?
 
@@ -42,7 +42,7 @@ The data associated with the event.
 
 #### Returns
 
-`PublisherEvent`
+`MessageChannelEvent`
 
 #### Overrides
 
@@ -68,13 +68,13 @@ Get the data associated with the event.
 
 ***
 
-### publisher
+### messageChannel
 
 #### Get Signature
 
-> **get** **publisher**(): `any`
+> **get** **messageChannel**(): `any`
 
-Get the publisher (WHIPClient) that triggered the event.
+Get the message channel (MessageChannel) that triggered the event.
 
 ##### Returns
 

@@ -1,5 +1,9 @@
 # Changes
 
+## 15.3.0
+
+- feat: Introduction of `MessageChannel` for message communication over a data-channel enabled client (Todd Anderson). _There is no underlying media streaming logic in this client._
+
 ## 15.2.0
 
 - fix: ICE configuration order preference (Todd Anderson).

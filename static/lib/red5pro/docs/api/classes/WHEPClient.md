@@ -1,4 +1,4 @@
-[**Red5 Pro WebRTC SDK v15.2.0**](../README.md)
+[**Red5 Pro WebRTC SDK v15.3.0**](../README.md)
 
 ***
 
@@ -479,7 +479,7 @@ The time to seek to.
 
 ### send()
 
-> **send**(`methodName`, `data`): `undefined` \| `Promise`\<`boolean`\>
+> **send**(`methodName`, `data`): `Promise`\<`undefined` \| `boolean`\>
 
 Send a message to the Red5 Pro Server over the message transport (DataChannel).
 
@@ -499,7 +499,7 @@ The data to send.
 
 #### Returns
 
-`undefined` \| `Promise`\<`boolean`\>
+`Promise`\<`undefined` \| `boolean`\>
 
 ***
 

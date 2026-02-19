@@ -5,6 +5,7 @@
   <a href="#">Quick Start</a> &bull;
   <a href="docs/whip-client.md">Publishing</a> &bull;
   <a href="docs/whep-client.md">Subscribing</a> &bull;
+  <a href="docs/message-channel.md">Message Channel</a> &bull;
   <a href="docs/pubnub-client.md">PubNub Client</a>
 </p>
 

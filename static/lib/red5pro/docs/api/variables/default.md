@@ -1,4 +1,4 @@
-[**Red5 Pro WebRTC SDK v15.2.0**](../README.md)
+[**Red5 Pro WebRTC SDK v15.3.0**](../README.md)
 
 ***
 
@@ -9,6 +9,18 @@
 > **default**: `object`
 
 ## Type Declaration
+
+### Capability
+
+> **Capability**: `object`
+
+#### Capability.datachannel
+
+> `readonly` **datachannel**: `4` = `4`
+
+#### Capability.stream
+
+> `readonly` **stream**: `3` = `3`
 
 ### defaultStatsConfig
 
@@ -80,6 +92,18 @@ Get the version of the SDK.
 
 > `readonly` **WARN**: `"warn"` = `'warn'`
 
+### MessageChannel
+
+> **MessageChannel**: *typeof* [`MessageChannel`](../classes/MessageChannel.md)
+
+### MessageChannelEvent
+
+> **MessageChannelEvent**: *typeof* [`MessageChannelEvent`](../classes/MessageChannelEvent.md)
+
+### MessageChannelEventTypes
+
+> **MessageChannelEventTypes**: *typeof* [`MessageChannelEventTypes`](../enumerations/MessageChannelEventTypes.md)
+
 ### MessageTransportStateEvent
 
 > **MessageTransportStateEvent**: *typeof* [`MessageTransportStateEvent`](../classes/MessageTransportStateEvent.md)
@@ -146,7 +170,7 @@ Get the version of the SDK.
 
 ### PubNubEvent
 
-> **PubNubEvent**: *typeof* `PubNubEvent`
+> **PubNubEvent**: *typeof* [`PubNubEvent`](../classes/PubNubEvent.md)
 
 ### PubNubEventTypes
 
