@@ -59,7 +59,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   const sendDataButton = document.getElementById('send-data-button')
   const messageInput = document.getElementById('message-input')
 
-  const getAuthenticationParams = () => {
+  function getAuthenticationParams() {
     var auth = configuration.authentication
     return auth && auth.enabled
       ? {

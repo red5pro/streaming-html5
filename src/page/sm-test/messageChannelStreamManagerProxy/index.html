@@ -2,7 +2,7 @@
 {{> license}}
 <html>
   <head>
-    {{> meta title='Message Channel Client'}}
+    {{> meta title='Message Channel Stream Manager Proxy'}}
     {{> header-scripts}}
     {{> header-stylesheets}}
     <style>
@@ -14,6 +14,10 @@
       }
       .settings-field, .settings-field > input {
         font-size: 1em;
+      }
+      #address-field {
+        padding: 6px;
+        background-color: #ccc;
       }
     </style>
     <link rel="stylesheet" href="../../css/modal.css" />
@@ -27,7 +31,8 @@
     {{> top-bar }}
     <div id="app">
       {{> settings-link}}
-      {{> test-info testTitle='Message Channel Client'}}
+      {{> sm-proxy-notification}}
+      {{> test-info testTitle='Message Channel Stream Manager Proxy'}}
       <div class="stream-section">
         <div class="instructions-block">
           <p class="settings-field settings-collapsable">
@@ -39,6 +44,9 @@
           </p>
         </div>
         {{> status-field-message-channel}}
+        <div class="centered">
+          <p id="address-field" class="address-field hidden">Origin Address: N/A</p>
+        </div>
         <div class="settings-area">
           <p class="settings-field settings-collapsable">
             <label class="settings-label" for="message-input">Message:</label>
