@@ -48,6 +48,7 @@ gulp.task(
     gulp
       .src([
         path.join(sourceDirectory, 'page', '**', '*.js'),
+        path.join(sourceDirectory, 'page', '**', '*.wasm'),
         path.join(sourceDirectory, 'page', '**', '*.css'),
         path.join(sourceDirectory, 'page', '**', '*.svg'),
         path.join(sourceDirectory, 'page', '**', '*.png'),

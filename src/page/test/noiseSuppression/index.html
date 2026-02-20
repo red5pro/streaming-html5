@@ -1,0 +1,35 @@
+<!doctype html>
+{{> license}}
+<html>
+  <head>
+    {{> meta title='Noise Suppression'}}
+    {{> header-scripts}}
+    {{> header-stylesheets}}
+    <script type="module">
+      import { loadRnnoise, RnnoiseWorkletNode }  from 'https://cdn.jsdelivr.net/npm/@sapphi-red/web-noise-suppressor'
+      window.noiseSuppressor = {
+        loadRnnoise,
+        RnnoiseWorkletNode
+      }
+    </script>
+  </head>
+  <body>
+    {{> top-bar }}
+    <div id="app">
+      {{> settings-link}}
+      {{> test-info testTitle='Noise Suppression'}}
+      <div class="stream-section">
+        {{> status-field-publisher}}
+        {{> statistics-field packets_field='Packets Sent'}}
+        <div class="centered">
+          <video id="red5pro-publisher" class="red5pro-publisher"
+                 controls autoplay playsinline muted>
+          </video>
+        </div>
+      </div>
+    </div>
+    {{> footer}}
+    {{> body-scripts}}
+    <script src="index.js"></script>
+  </body>
+</html>
