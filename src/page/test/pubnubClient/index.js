@@ -277,6 +277,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       pubnubClient.off('*', onPubNubEvent)
       pubnubClient.destroy()
     }
+    pubnubClient = null
   }
   window.addEventListener('pagehide', shutdown)
   window.addEventListener('beforeunload', shutdown)

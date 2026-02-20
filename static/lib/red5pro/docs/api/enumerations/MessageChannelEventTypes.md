@@ -29,3 +29,15 @@
 ### OPEN
 
 > **OPEN**: `"MessageChannel.Open"`
+
+***
+
+### RECEIVE
+
+> **RECEIVE**: `"MessageChannel.Receive"`
+
+***
+
+### SEND
+
+> **SEND**: `"MessageChannel.Send"`

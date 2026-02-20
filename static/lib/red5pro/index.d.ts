@@ -82,6 +82,7 @@ declare class WHIPClient extends EventEmitter$1 {
     private generateMediaStream;
     protected getAndPreviewStreamIfAvailable(): Promise<MediaStream | undefined>;
     protected establishStatsMonitor(statisticsConfiguration: StatsConfig): RTCStatsMonitor;
+    protected postStatsMonitorEvent(eventType: string, data?: any): void;
     private reorderCodecPreferences;
     private postOffer;
     private postCandidateFragments;
@@ -928,6 +929,8 @@ declare class MessageChannel extends WHIPClient$1 {
      * Close the MessageChannel.
      */
     close(): Promise<void>;
+    publish(): Promise<this>;
+    unpublish(): Promise<void>;
     /**
      * Send a JSON message to the server over the data channel.
      * @override - Overrides the send method in the WHIPClient class to properly wrap the data in a message object with methodName.
@@ -954,6 +957,13 @@ declare class MessageChannel extends WHIPClient$1 {
      * @private
      */
     protected _onDataChannelOpen(dataChannel: RTCDataChannel): void;
+    /**
+     * Handle an incoming data channel message.
+     * @param dataChannel - The data channel that received the message.
+     * @param message - The message event.
+     * @private
+     */
+    protected _onDataChannelMessage(dataChannel: RTCDataChannel | undefined, message: MessageEvent): void;
     /**
      * Stop the inactive ping when the data channel is closed.
      * @private

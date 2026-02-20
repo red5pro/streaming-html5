@@ -435,23 +435,15 @@ The interval in milliseconds to send an inactive ping.
 
 ### publish()
 
-> **publish**(`streamName?`): `Promise`\<`MessageChannel`\>
+> **publish**(): `Promise`\<`MessageChannel`\>
 
 Publish the MediaStream to the server.
-
-#### Parameters
-
-##### streamName?
-
-`string`
-
-The name of the stream to publish.
 
 #### Returns
 
 `Promise`\<`MessageChannel`\>
 
-#### Inherited from
+#### Overrides
 
 [`WHIPClient`](WHIPClient.md).[`publish`](WHIPClient.md#publish)
 
@@ -697,23 +689,15 @@ Unmute the video being published to the server.
 
 ### unpublish()
 
-> **unpublish**(`internal`): `Promise`\<`void`\>
+> **unpublish**(): `Promise`\<`void`\>
 
 Unpublish the MediaStream from the server.
-
-#### Parameters
-
-##### internal
-
-`boolean` = `false`
-
-Whether the unpublish is internal (i.e. not triggered by the user).
 
 #### Returns
 
 `Promise`\<`void`\>
 
-#### Inherited from
+#### Overrides
 
 [`WHIPClient`](WHIPClient.md).[`unpublish`](WHIPClient.md#unpublish)
 

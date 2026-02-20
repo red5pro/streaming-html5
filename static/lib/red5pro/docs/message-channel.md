@@ -143,6 +143,8 @@ There are a few that are specific to `MessageChannel` that are available and enu
 | Access | Event Type | Meaning |
 | :--- | :--- | :--- |
 | `OPEN` | 'MessageChannel.Open' | When the message channel has successfully opened and available to send and receive messages. |
+| `SEND` | 'MessageChannel.Send' | When the message channel has sent a message along the message channel. _Note: This is not confirmation that the server received the actual message._ |
+| `RECEIVE` | 'MessageChannel.Receive' | When the message channel has received a message. |
 | `CLOSE` | 'MessageChannel.Close' | When the message channel has been closed. |
 | `FAIL` | 'MessageChannel.Fail' | When the message channel has failed to open properly. |
 | `ERROR` | 'MessageChannel.Error' | When an error has occurred in opening or during a message channel session. |
