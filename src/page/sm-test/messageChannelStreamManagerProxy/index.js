@@ -51,6 +51,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   let defaultUserId = `dc-${Math.floor(Math.random() * 0x10000).toString(16)}`
 
   const streamTitle = document.getElementById('stream-title')
+  const addressField = document.getElementById('address-field')
   const updateStatusFromEvent = window.red5proHandleMessageChannelEvent // defined in src/template/partial/status-field-message-channel.hbs
 
   const startButton = document.getElementById('start-button')
@@ -59,7 +60,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   const sendDataButton = document.getElementById('send-data-button')
   const messageInput = document.getElementById('message-input')
 
-  function getAuthenticationParams() {
+  const getAuthenticationParams = () => {
     var auth = configuration.authentication
     return auth && auth.enabled
       ? {
@@ -70,6 +71,24 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           }
         }
       : {}
+  }
+
+  const getRegionIfDefined = () => {
+    const region = configuration.streamManagerRegion
+    if (
+      typeof region === 'string' &&
+      region.length > 0 &&
+      region !== 'undefined'
+    ) {
+      return region
+    }
+    return undefined
+  }
+
+  const displayServerAddress = (serverAddress, proxyAddress) => {
+    addressField.classList.remove('hidden')
+    proxyAddress = typeof proxyAddress === 'undefined' ? 'N/A' : proxyAddress
+    addressField.innerText = `Proxy Address: ${proxyAddress} | Origin Address: ${serverAddress}`
   }
 
   const showModal = (content) => {
@@ -179,6 +198,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     console.log(`[MessageChannel] ${type}.`)
     if (type === 'WebRTC.Stats.Report') {
       console.log(JSON.stringify(event.data, null, 2))
+    } else if (type === 'WebRTC.Endpoint.Changed') {
+      const { host } = configuration
+      const { data } = event
+      const { endpoint } = data
+      displayServerAddress(endpoint, host)
     } else if (type === 'WebRTC.DataChannel.Message' || type === 'MessageChannel.Receive') {
       console.log(data)
       // Non-descript data coming in to handle.
@@ -267,12 +291,36 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
       defaultChannelId = dcInput.value
       defaultUserId = `dc-${Math.floor(Math.random() * 0x10000).toString(16)}`
+
+      const {
+        protocol,
+        host,
+        port,
+        app,
+        streamManagerAPI,
+        streamManagerNodeGroup: nodeGroup,
+      } = configuration
+      const region = getRegionIfDefined()
+      const params = region
+      ? {
+          region,
+          strict: true,
+        }
+      : undefined
+      const connectionParams = params
+      ? { ...params, ...getAuthenticationParams().connectionParams }
+      : getAuthenticationParams().connectionParams
       const streamName = `${defaultChannelId}-${defaultUserId}`
+      const endpoint = `${protocol}://${host}:${port}/as/${streamManagerAPI}/proxy/whip/${app}/${streamName}`
       const config = {
         ...configuration,
-        ...getAuthenticationParams(),
         streamName,
-        dataChannelConfiguration: { name: defaultChannelId }
+        endpoint,
+        dataChannelConfiguration: { name: defaultChannelId },
+        connectionParams: {
+          ...connectionParams,
+          nodeGroup,
+        }
       }
       messageChannel = new MessageChannel()
       messageChannel.on('*', onMessageChannelEvent)
