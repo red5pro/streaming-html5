@@ -1,4 +1,4 @@
-[**Red5 Pro WebRTC SDK vNEW-15.0.0.11-release.b189**](../README.md)
+[**Red5 Pro WebRTC SDK v15.2.0**](../README.md)
 
 ***
 
@@ -9,6 +9,10 @@
 > **default**: `object`
 
 ## Type Declaration
+
+### defaultStatsConfig
+
+> **defaultStatsConfig**: [`StatsConfig`](../type-aliases/StatsConfig.md)
 
 ### defaultWhepSubscriberConfig
 
@@ -136,6 +140,18 @@ Get the version of the SDK.
 
 > **PublishVideoEncoder**: *typeof* [`PublishVideoEncoder`](../enumerations/PublishVideoEncoder.md)
 
+### PubNubClient
+
+> **PubNubClient**: *typeof* [`PubNubClient`](../classes/PubNubClient.md)
+
+### PubNubEvent
+
+> **PubNubEvent**: *typeof* `PubNubEvent`
+
+### PubNubEventTypes
+
+> **PubNubEventTypes**: *typeof* `PubNubEventTypes`
+
 ### RTCPublisherEventTypes
 
 > **RTCPublisherEventTypes**: *typeof* [`RTCPublisherEventTypes`](../enumerations/RTCPublisherEventTypes.md)
@@ -161,6 +177,10 @@ Get the version of the SDK.
 #### Returns
 
 `void`
+
+### StatsEndpointType
+
+> **StatsEndpointType**: *typeof* [`StatsEndpointType`](../enumerations/StatsEndpointType.md)
 
 ### SubscriberEvent
 

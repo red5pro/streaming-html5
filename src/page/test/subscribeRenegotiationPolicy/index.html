@@ -1,0 +1,85 @@
+<!doctype html>
+{{> license}}
+<html>
+  <head>
+    {{> meta title='Subscriber Renegotiation Policy Test'}}
+    {{> header-scripts}}
+    {{> header-stylesheets}}
+    <style>
+      .info-block {
+        padding: 10px 20px;
+      }
+      ol {
+        text-align: left;
+        font-size: 0.75em;
+        padding: 20px 0 0 0;
+        width: fit-content;
+        margin: auto;
+        list-style: decimal;
+      }
+    </style>
+  </head>
+  <body>
+    {{> top-bar }}
+    <div id="app">
+      {{> settings-link}}
+      {{> test-info testTitle='Subscriber Renegotiation Policy Test'}}
+      <div class="stream-section">
+        <div class="instructions-block">
+          <div class="info-block">
+            <p>Use network throttling to simulate a slow network connection.</p>
+            <ol>
+              <li>Open the Chrome DevTools</li>
+              <li>Navigate to the Network tab</li>
+              <li>Click the gear icon and select "Throttling"</li>
+              <li>Select "Slow 3G" from the dropdown</li>
+              <li>Select the Policy Type and Timeout Interval</li>
+              <li>Click the "Subscribe" button</li>
+              <li>Observe the renegotiation attempts and the status of the subscription</li>
+              <li>Reset the network throttling to unlimited after a few reconnection attempts</li>
+            </ol>
+          </div>
+          <hr />
+          <p class="settings-field settings-collapsable">
+            <label for="type-select" class="label-style settings-label">Select a Renegotiation Policy Type:</label>
+            <select id="type-select" class="control">
+              <option value="TIMEOUT" selected>Timeout</option>
+              <option value="DISCONNECT">Disconnect</option>
+              <option value="REGRESSION">Regression</option>
+            </select>
+          </p>
+          <p class="settings-field settings-collapsable">
+            <label for="timeout-interval-select" class="label-style settings-label">Select a Timeout Interval (milliseconds):</label>
+            <select id="timeout-interval-select" class="control" disabled>
+              <option value="1000">1000</option>
+              <option value="2000">2000</option>
+              <option value="3000" selected>3000</option>
+              <option value="4000">4000</option>
+              <option value="5000">5000</option>
+            </select>
+          </p>
+          <p>
+            <button id="subscribe-button" class="control ui-button">Subscribe</button>
+          </p>
+          <hr/>
+          <p>
+            <span>Reconnection Attempts:</span>&nbsp;<span id="reconnection-attempts">0</span>
+          </p>
+        </div>
+        {{> status-field-subscriber}}
+        {{> statistics-field packets_field='Packets Received'}}
+        <div class="centered">
+          <video id="red5pro-subscriber"
+                  controls="controls" autoplay="autoplay" playsinline
+                  class="red5pro-subscriber red5pro-media red5pro-media-background"
+                  width="640" height="480">
+          </video>
+        </div>
+      </div>
+    </div>
+    {{> footer}}
+    {{> body-scripts}}
+    {{> mobile-subscriber-util}}
+    <script src="index.js"></script>
+  </body>
+</html>

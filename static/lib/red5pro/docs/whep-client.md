@@ -4,7 +4,8 @@
 <p align="center">
   <a href="../README.md">Quick Start</a> &bull;
   <a href="whip-client.md">Publishing</a> &bull;
-  <a href="#">Subscribing</a>
+  <a href="#">Subscribing</a> &bull;
+  <a href="pubnub-client.md">PubNub Client</a>
 </p>
 
 ---
@@ -21,8 +22,10 @@ This provides a standardized - and _blazingly fast_ - way to establish and playb
 * [Init Configuration](#init-configuration)
 * [Events](#events)
 * [Statistics](#statistics)
+* [Renegotiation Policy](#renegotiation-policy)
 * [Live Seek](#live-seek)
 * [Stream Manager 2.0](#stream-manager-20)
+* [PubNub Integration](#pubnub-integration)
 
 # Usage
 
@@ -118,6 +121,8 @@ When using the `init()` call of a `WHEPClient` - or, alternatively, when using a
 | `maintainStreamVariant` | [-] | `false` | Flag to instruct the server - when utilizing transcoding - to not switch subscriber stream variants when network conditions change. By setting this to `true`, when you request to playback a stream that is transcoded, the server will not deliver a variant of higher or lower quality dependending on current network conditions. |
 | `stats` | [-] | *None* | Configuration object to enable stats reporting. See [Stats Reporting](#statistics) for more information. |
 | `liveSeek` | [-] | *None* | Configuration object to enable live seek capability. See [Live Seek](#live-seek) for more information. |
+| `renegotiationPolicy` | [-] | *None* | Configuration object for renegotiation of ICE. See [Renegotiation Policy](#renegotiation-policy) for more information. |
+| `pubnub` | [-] | *None* | Configuration object for PubNub integration. See [PubNub Integration](#pubnub-integration) for more information. |
 
 # Events
 
@@ -155,6 +160,8 @@ You can also listen to events individually. The following describe the various e
 | :--- | :--- | :--- |
 | `CONNECT_SUCCESS` | 'Connect.Success' | When the subscriber has established a required remote connection, such as to a WebSocket server. |
 | `CONNECT_FAILURE` | 'Connect.Failure' | When the subscriber has failed to establish a required remote connection for consuming a stream. |
+| `RECONNECT_START` | 'Reconnect.Start' | Signal when attempt on reconnect has begun. This is used in conjunction with the `renegotiationPolicy` of the `init()` configuration. |
+| `RECONNECT_FAILURE` | 'Reconnect.Failure' | Signal when attempt on reconnect has failed. |
 | `SUBSCRIBE_START` | 'Subscribe.Start' | When the subscriber has started a subscribing to a stream. |
 | `SUBSCRIBE_STOP` | 'Subscribe.Stop' | When the subscriber has successfully closed an active subscription to a stream. |
 | `SUBSCRIBE_METADATA` | 'Subscribe.Metadata' | When metadata is received on the client from the server. |
@@ -196,7 +203,15 @@ In addition to the above events, the following events are also dispatched from a
 | `LIVE_SEEK_ERROR` | 'WebRTC.LiveSeek.Error' | When `liveSeek` is used to playback Live VOD and HLS video and an error in playback has occurred. Inspect the `error` attribute on the event for more details. |
 | `LIVE_SEEK_LOADING` | 'WebRTC.LiveSeek.FragmentLoading' | When `liveSeek` is used to playback Live VOD and HLS video in currently loading a fragment during seeking. |
 | `LIVE_SEEK_LOADED` | 'WebRTC.LiveSeek.FragmentLoaded' | When `liveSeek` is used to playback Live VOD and HLS video has completed loading a fragment during seeking. |
-| `LIVE_SEEK_CHANGE` | 'WebRTC.LiveSeek.Change | When `liveSeek` is used, this event notifies on a change of state going from "live" to "vod" and vice versa.
+| `LIVE_SEEK_CHANGE` | 'WebRTC.LiveSeek.Change' | When `liveSeek` is used, this event notifies on a change of state going from "live" to "vod" and vice versa. |
+
+Additionally, the following events are related to ICE connection monitoring when integrating with Statistics:
+| Access | Event Type | Meaning |
+| :--- | :--- | :--- |
+| `CONNECTION_HEALTH_STALE_STATS` | 'WebRTC.Connection.StaleStats' | When monitored statistics for ice connection do not seem to be changing through intervals. |
+| `CONNECTION_HEALTH_STATE_REGRESSION` | 'WebRTC.Connection.StateRegression' | When monitored statistics for ice connection and the status reverts from previously being `success`. |
+| `CONNECTION_HEALTH_EXCESSIVE_RTT` | 'WebRTC.Connection.ExcessiveRTT' | When monitored statistics for ice connection and the Round-Trip-Time being report does not change or rises between intervals. |
+| `CONNECTION_HEALTH_ICE_TIMEOUT` | 'WebRTC.Connection.IceTimeout' | When monitored statistics for ice connection and the timeout of ICE Connection has been reached. Can be defined in the `renegotiationPolicy` attribute of the `init()` configuration. |
 
 # Statistics
 
@@ -210,9 +225,9 @@ The configuration used for statistics monitoring has the following structure:
 {
   // Optional.
   // If provided, it will POST stats to this endpoint.
-  // If undefined, it will post stats to message transport.
-  // If null, it will only emit status events.
-  endpoint: undefined,
+  // If undefined or `data-channel`, it will post stats to message transport.
+  // If null or `event-transport`, it will only emit status events.
+  endpoint: red5prosdk.StatsEndpointType.DATA_CHANNEL,
   additionalHeaders: undefined,
   interval: 5000, // Interval to poll stats, in milliseconds.
   include: [], // Empty array allows SDK to be judicious about what stats to include.
@@ -221,9 +236,9 @@ The configuration used for statistics monitoring has the following structure:
 
 ### endpoint
 
-* If the `endpoint` is defined, the SDK will attempt to make `POST` requests with a JSON body representing each individual report.
-* If the `endpoint` is left `undefined`, the SDK will post metadata with type `stats-report` on the underlying message transport (DataChannel) if available.
-* If the `endpoint` is set to `null`, the SDK will only emit events with the metadata on the `WebRTC.StatsReport` event.
+* If the `endpoint` is defined with a URL, the SDK will attempt to make `POST` requests with a JSON body representing each individual report.
+* If the `endpoint` is set to `data-channel` or `undefined`, the SDK will post metadata with type `stats-report` on the underlying message transport (DataChannel) if available.
+* If the `endpoint` is set to `event-transport` or `null`, the SDK will only emit events with the metadata on the `WebRTC.StatsReport` event.
 
 ### additionalHeaders
 
@@ -313,6 +328,33 @@ The following is an example of a statistics metadata that is emitted in a `WebRT
   }
 }
 ```
+
+# Renegotiation Policy
+
+The `renegotiationPolicy` attribute of the `init()` configuration object is used during monitoring - in conjunction with (Statistics)(#statistics), to determine the health lifecycle of the ICE negotiation process and act accodingly.
+
+The policy has the following type structure:
+
+```typescript
+type RenegotiationPolicyType = {
+  type: 'regression' | 'timeout' | 'disconnect'
+  iceTimeoutInterval: number
+}
+```
+
+The following `type` values are:
+
+| Name | Meaning |
+| :--- | :--- |
+| `regression` | When the ICE status has changed from a previously designated `success`. This will not always occur during ICE negotiation failures. |
+| `timeout` | When it has been determined (in conjunction with the `iceTimeoutInterval`), that too much time has elapsed since the start of the negotiation process in order for it to conclude successfully. |
+| `disconnect` | When the peer connection has decided to disconnect after a failure of ICE negotiation. |
+
+Typically, these will be executed in the order defined in the table above, however it should be noted that sometimes a `regression` may not occur in poor connection scenarios. If the process were to fail, both `timeout` and `disconnect` will occur.
+
+The `iceTimeoutInterval` value will be used in conjunction with the `timeout` policy type to take reconnect action. _The default is 5 seconds._
+
+> By default, the `renegotiationPolicy` is not set and will not take action unless defined in the `init()` configuration.
 
 # Live Seek
 
@@ -447,3 +489,78 @@ There are a few things to note here:
 
 * The difference of `/whip` and `/whep` in the URI for the endpoint calls between `WHIPClient` and `WHEPClient`, respecively.
 * The requirement of a `nodeGroup` connection parameter that is the target nodegroup within your Stream Manager deployment on which you want to proxy the WHIP/WHEP client(s).
+
+# PubNub Integration
+
+While the SDK provides a way to [utilize PubNub integration](./pubnub-client.md) outside of its media streaming capabilities, when utilizing the `WHEPClient` for broadcasting, the SDK also affords the ability to integrate PubNub messaging for your application.
+
+> For more information about the standalone `PubNubClient` that can be used outside of `WHEPClient`, please visit the [PubNubClient Documentation](./pubnub-client.md).
+
+## pubnub - Initialization Attribute
+
+Exposed on the [init configuration](#init-configuration) is the `pubnub` attribute. The following `pubnub` object configuration attributes are supported:
+
+| Property | Required | Default | Description |
+| :--- | :---: | :---: | :--- |
+| `pubnub` | [x] | `window.PubNub` | Reference to the [PubNub](https://www.npmjs.com/package/pubnub) library to utilize. |
+| `publishKey` | [x] | _None_ | The registered publish key from PubNub. This can be found in your [Red5 Cloud](https://cloud.red5.net) deployment. |
+| `subscribeKey` | [x] | _None_ | The registered subscribe key from PubNub. This can be found in your [Red5 Cloud](https://cloud.red5.net) deployment. |
+| `userId` | [x] | Auto-generated if not provided. | The associated User ID for PubNub. |
+| `channelId` | [x] | `red5` | Default Channel ID to subscribe to in PubNub messaging. |
+| `expiryMinutes` | [-] | `120` | Default expiration of issued token associated with client. |
+| `authToken` | [-] | _None_ | Optional authentication token issues from PubNub - if known. |
+| `cloudEndpoint` | [-] | _None_ | Optional endpoint of Red5 Cloud deployment to attempt access of `authToken` from PubNub system. |
+| `backendUrl` | [-] | _None_ | Optional full URL of service endpoint to access `authToken` from PubNub system. [See documentation on deploying your own service.](https://www.red5.net/docs/red5-cloud/development/sdks/backend-sdk/) |
+| `logLevel` | [-] | `trace` | The default log level of the PubNub client. |
+
+## Authentication
+
+The `PubNubClient` requires an authentication token to connect to the PubNub system for messaging. If a valid token is generated by a means outside of the SDK, you can define the token on the `authToken` attribute of the ini configuration.
+
+If the `authToken` is not known prior to initialization, there are two ways that can be used through the SDK to access and utilize the token for connection:
+
+### cloudEndpoint
+
+If you have a [Red5 Cloud](https://cloud.red5.net) account and deployment, you can provide the `cloudEndpoint` attribute pointing to your deployment (e.g., `userid-1234-abcd.cloud.red5.net`). The SDK will attempt to generate the authentication token using a service that may be available from your deployment.
+
+### backendUrl
+
+If the `authToken` is not known or your [Red5 Cloud](https://cloud.red5.net) deployment does not provide an means for retrieving the authentication token, we have released open sourced Backend SDKs which can be used to provide your own custom service in generating a authentication token to be used.
+
+To learn more about the Backend SDKs and authentication token generation, [please refer to the documentation](https://www.red5.net/docs/red5-cloud/development/sdks/backend-sdk/).
+
+## PubNub Message API
+
+Once PubNub authentication and connection has been established through initialization, the following API can be used to as it relates to sending and receiving messages:
+
+### subscribePubNub(channelId: string, options: any | undefined)
+
+Request to subscribe to target channel with optional `options`.
+
+### sendPubNub(channelId: string, message: any)
+
+Request to publish a message on the target channel.
+
+> Any `PubNub` client connected and subscribed to channels will be cleaned up upon call to `unsubscribe` of the `WHEPClient`.
+
+## PubNub Events
+
+# Events
+
+The following events are dispatched by the underlying pubnub integration and bubbled out through the `WHEPClient` and enumerated on the `PubNubEventTypes` object:
+
+| Access | Event Type | Meaning |
+| :--- | :--- | :--- |
+| `CONNECTED` | 'PubNub.Connected' | Dispatched when the PubNub client has successfully connected to the PubNub service. |
+| `DISCONNECTED` | 'PubNub.Disconnected' | Dispatched when the PubNub client has disconnected from the PubNub service. |
+| `SUBSCRIBE_SUCCESS` | 'PubNub.Subscribe.Success' | Dispatched when a channel subscription request has completed successfully. The `data` property contains details about the subscription. |
+| `SUBSCRIBE_FAILURE` | 'PubNub.Subscribe.Failure' | Dispatched when a channel subscription request has failed. The `data` property contains error information. |
+| `UNSUBSCRIBE_SUCCESS` | 'PubNub.Unsubscribe.Success' | Dispatched when a channel unsubscribe request has completed successfully. The `data` property contains details about the unsubscription. |
+| `UNSUBSCRIBE_FAILURE` | 'PubNub.Unsubscribe.Failure' | Dispatched when a channel unsubscribe request has failed. The `data` property contains error information. |
+| `MESSAGE_RECEIVED` | 'PubNub.Message.Received' | Dispatched when a message is received on a subscribed channel. The `data` property contains the message payload. |
+| `MESSAGE_SEND_SUCCESS` | 'PubNub.Message.Send.Success' | Dispatched when a message has been successfully published to a channel. The `data` property contains confirmation details. |
+| `MESSAGE_SEND_FAILURE` | 'PubNub.Message.Send.Failure' | Dispatched when a message publish request has failed. The `data` property contains error information. |
+| `AUTH_TOKEN_GENERATED` | 'PubNub.AuthToken.Generated' | Dispatched when an authentication token has been successfully generated. The `data` property contains the token information. |
+| `AUTH_TOKEN_GENERATION_ERROR` | 'PubNub.AuthToken.Generation.Error' | Dispatched when authentication token generation has failed. The `data` property contains error information. |
+| `STATUS` | 'PubNub.Status' | Dispatched on general status notification. The `data` property contains the status. |
+| `ERROR` | 'PubNub.Error' | Dispatched when a general error occurs in the PubNub client. The `data` property contains error details. |
