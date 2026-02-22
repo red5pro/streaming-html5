@@ -4,7 +4,8 @@
 <p align="center">
   <a href="../README.md">Quick Start</a> &bull;
   <a href="whip-client.md">Publishing</a> &bull;
-  <a href="whip-client.md">Subscribing</a>
+  <a href="whip-client.md">Subscribing</a> &bull;
+  <a href="pubnub-client.md">PubNub Client</a>
 </p>
 
 ---
@@ -50,7 +51,7 @@ const startHLSSubscriber = async () => {
     const subscriber = new HLSSubscriber()
     await subscriber.init({
        endpoint: 'https://nfs.myred5-deployment.cloud.red5.net/live/mystream.m3u8',
-       streamName: 'mystream' 
+       streamName: 'mystream'
     })
     await subscriber.subscribe()
   } catch (error) {
@@ -87,7 +88,7 @@ const startHLSSubscriber = async () => {
        protocol: 'https',
        port: 443,
        host: 'my-red5-server.com',
-       streamName: 'mystream' 
+       streamName: 'mystream'
     })
     await subscriber.subscribe()
   } catch (error) {

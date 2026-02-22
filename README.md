@@ -231,6 +231,10 @@ To define the **Host** with the server instance's IP, click the _Host_ field f t
 | :-----
 | _Demonstrates the failover mechanism of the Red5 Pro HTML SDK to select a subscriber based on browser support and to auto-reconnect on close of broadcast or loss of connection._
 
+| **[Renegotiation Policy](src/page/test/subscribeRenegotiationPolicy/)**
+| :-----
+| _Demonstrates ICE renegotiation stategies of the SDK during poor network conditions._
+
 | **[Remote Call](src/page/test/subscribeRemoteCall)**
 | :-----
 | _Demonstrates receiving a remote message from broadcaster._
@@ -281,9 +285,10 @@ To define the **Host** with the server instance's IP, click the _Host_ field f t
 | :-----
 | _Demonstrates the failover mechanism of the Red5 Pro HTML SDK to select a subscriber based on browser support and to auto-reconnect on close of broadcast or loss of connection._
 
-| **[Stream Manager Proxy Region](src/page/sm-test/subscribeStreamManagerProxyRegionRequest)**
+| **[Stream Manager Proxy Renegotiation Policy](src/page/sm-test/subscribeStreamManagerProxyRenegotiationPolicy/)**
 | :-----
-| _Demonstrates utilizing the Red5 Pro Stream Manager API to access an Edge server IP to subscribe to a live stream._
+| _Demonstrates ICE renegotiation stategies of the SDK during poor network conditions._
+
 
 | **[Stream Manager Proxy Round Trip Authentication](src/page/sm-test/subscribeStreamManagerProxyRoundTripAuth)**
 | :-----
@@ -292,10 +297,6 @@ To define the **Host** with the server instance's IP, click the _Host_ field f t
 | **[Stream Manager Proxy Transcoder (RTC)](src/page/sm-test/subscribeStreamManagerProxyTranscoderRTC)**
 | :-----
 | _Demonstrates utilizing the Red5 Pro Stream Manager API to access Provisions and an Edge server IP to subscribe to a live WebRTC-based stream with Adaptive Bitrate Control._
-
-| **[Stream Manager Proxy Transcoder (HLS)](src/page/sm-test/subscribeStreamManagerProxyTranscoderHLS)**
-| :-----
-| _Demonstrates utilizing the Red5 Pro Stream Manager API to access Provisions and an Edge server IP to subscribe to a live HLS-based stream with Adaptive Bitrate Control._
 
 | **[Stream Manager Proxy Screen Share](src/page/sm-test/subscribeStreamManagerProxyScreenShare)**
 | :-----
