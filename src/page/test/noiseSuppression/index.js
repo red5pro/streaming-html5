@@ -132,7 +132,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       : {}
   }
 
-
   const startPublishSession = async mediaStream => {
     const { stream1: streamName } = configuration
     const { WHIPClient } = red5prosdk

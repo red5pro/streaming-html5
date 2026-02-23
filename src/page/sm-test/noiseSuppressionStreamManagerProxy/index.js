@@ -132,15 +132,49 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       : {}
   }
 
+  const getRegionIfDefined = () => {
+    const region = configuration.streamManagerRegion
+    if (
+      typeof region === 'string' &&
+      region.length > 0 &&
+      region !== 'undefined'
+    ) {
+      return region
+    }
+    return undefined
+  }
 
   const startPublishSession = async mediaStream => {
     const { stream1: streamName } = configuration
     const { WHIPClient } = red5prosdk
+    const {
+      protocol,
+      host,
+      port,
+      app,
+      streamManagerAPI,
+      streamManagerNodeGroup: nodeGroup,
+    } = configuration
+    const region = getRegionIfDefined()
+    const params = region
+    ? {
+        region,
+        strict: true,
+      }
+    : undefined
+    const connectionParams = params
+    ? { ...params, ...getAuthenticationParams().connectionParams }
+    : getAuthenticationParams().connectionParams
+    const endpoint = `${protocol}://${host}:${port}/as/${streamManagerAPI}/proxy/whip/${app}/${streamName}`
     const rtcConfig = {
       ...configuration,
       ...defaultConfiguration,
-      ...getAuthenticationParams(),
-      streamName
+      endpoint,
+      streamName,
+      connectionParams: {
+        ...connectionParams,
+        nodeGroup,
+      },
     }
     try {
       targetPublisher = new WHIPClient()
