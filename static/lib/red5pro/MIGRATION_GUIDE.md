@@ -9,7 +9,7 @@
 
 ---
 
-# Red5 Pro WebRTC SDK Migration Guide
+# Red5 HTML SDK Migration Guide
 
 This documentation serves as a guide in migrating client-side code where a breaking change to the API has been made in a distribution.
 
@@ -28,7 +28,7 @@ This documentation serves as a guide in migrating client-side code where a break
 
 **ALERT: Breaking Changes**
 
-The `15.0.0` release of the Red5 Pro WebRTC SDK is a complete rewrite of the SDK! Developed in TypeScript from the ground-up, we eliminated a lot of cruft and APIs that had become obsolete and deprecated over the years.
+The `15.0.0` release of the Red5 HTML SDK is a complete rewrite of the SDK! Developed in TypeScript from the ground-up, we eliminated a lot of cruft and APIs that had become obsolete and deprecated over the years.
 
 With the slimming-down approach to the SDK also came the major breaking change of removing the WebSocket based clients: `RTCPublisher` and `RTCSubscriber`. As such, the clients introduced in the `11.0.0` release of the SDK are now the main actors and should be exclusively used: `WHIPClient` and `WHEPClient`.
 
@@ -36,7 +36,7 @@ The [WebRTC-HTTP ingestion](https://www.ietf.org/archive/id/draft-ietf-wish-whip
 
 > Not only that, but their connection times are blazingly fast!
 
-If you have already been using the `WHIPClient` and `WHEPClient` from the Red5 Pro WebRTC SDK, you shouldn't find any hiccups and will not need to update anything - simply enjoy the benefits of a slimmer SDK and the inclusion of types!
+If you have already been using the `WHIPClient` and `WHEPClient` from the Red5 HTML SDK, you shouldn't find any hiccups and will not need to update anything - simply enjoy the benefits of a slimmer SDK and the inclusion of types!
 
 If you have been using the WebSocket-based `RTCPublisher` and `RTCSubscriber` clients, we have hopefully made it painless enough to simply swap out that instantiation with their corresponding WHIP/WHEP client - the initialization and API is all the same.
 
@@ -127,7 +127,7 @@ rtcPublisher.sendLog('INFO', JSON.stringify({ hello: 'world' }))
 
 # Important Note About `8.0.0` Release
 
-**Red5 Pro SDK has been published on NPM!**
+**Red5 HTML SDK has been published on NPM!**
 
 While currently not open source, the SDK build has been published to NPM to allow you to integrate into your projects with greater ease and dependency management.
 

@@ -125,7 +125,7 @@ When using the `init()` call of a `WHIPClient` - or, alternatively, when using a
 
 ## Using MediaConstraints and onGetUserMedia
 
-The Red5 Pro WebRTC SDK will handle the `getUserMedia` requirements internally to set up your Camera and/or Microphone for a broadcast. As such, you can provide the [Media Constraint](https://developer.mozilla.org/en-US/docs/Web/API/MediaStreamConstraints) object to be used on the `init` configuration:
+The Red5 HTML SDK will handle the `getUserMedia` requirements internally to set up your Camera and/or Microphone for a broadcast. As such, you can provide the [Media Constraint](https://developer.mozilla.org/en-US/docs/Web/API/MediaStreamConstraints) object to be used on the `init` configuration:
 
 ```js
 const config = {
@@ -155,7 +155,7 @@ await publisher.init(config)
 await publisher.publish()
 ```
 
-Internally, the Red5 Pro WebRTC SDK will use the provided *Media Constraint* to test if the resolutions requested are supported by the browser. If not, it will find the nearest supported lower neighbor based on the originally provided area dimension(s) of the resolutions.
+Internally, the Red5 HTML SDK will use the provided *Media Constraint* to test if the resolutions requested are supported by the browser. If not, it will find the nearest supported lower neighbor based on the originally provided area dimension(s) of the resolutions.
 
 > If you would like to bypass the internal determination of resolution, you can use the `onGetUserMedia` override of the configuration properties.
 
@@ -191,7 +191,7 @@ await publisher.init(config)
 await publisher.publish()
 ```
 
-The `onGetUserMedia` method - when defined on the configuration provide to a WebRTC-based Publisher - will override the internal call to `getUserMedia` in the Red5 Pro WebRTC SDK.
+The `onGetUserMedia` method - when defined on the configuration provide to a WebRTC-based Publisher - will override the internal call to `getUserMedia` in the Red5 HTML SDK.
 
 You can provide your own logic on how `getUserMedia` is invoked and a [Media Stream](https://developer.mozilla.org/en-US/docs/Web/API/MediaStream) attained by setting the `onGetUserMedia` attribute to a method that conforms to the following guidelines:
 
@@ -200,7 +200,7 @@ You can provide your own logic on how `getUserMedia` is invoked and a [Media Str
 * A `MediaStream` object must be provided in the resolve of the `Promise`.
 * The error provided in the reject of the `Promise` is optional, but recommended as a `String`.
 
-Be aware that overriding `onGetUserMedia` you are losing the logic from the Red5 Pro WebRTC SDK that attempts to pick the optimal resolution supported by your browser. **Use with descretion.**
+Be aware that overriding `onGetUserMedia` you are losing the logic from the Red5 HTML SDK that attempts to pick the optimal resolution supported by your browser. **Use with descretion.**
 
 > To read more about `getUserMedia` please read the following document from Mozilla Developer Network: [https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia](https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia)
 
