@@ -5,6 +5,7 @@ i<h3 align="center">
   <a href="../README.md">Quick Start</a> &bull;
   <a href="#">Publishing</a> &bull;
   <a href="whep-client.md">Subscribing</a> &bull;
+  <a href="message-channel.md">Message Channel</a> &bull;
   <a href="pubnub-client.md">PubNub Client</a>
 </p>
 
@@ -124,7 +125,7 @@ When using the `init()` call of a `WHIPClient` - or, alternatively, when using a
 
 ## Using MediaConstraints and onGetUserMedia
 
-The Red5 Pro WebRTC SDK will handle the `getUserMedia` requirements internally to set up your Camera and/or Microphone for a broadcast. As such, you can provide the [Media Constraint](https://developer.mozilla.org/en-US/docs/Web/API/MediaStreamConstraints) object to be used on the `init` configuration:
+The Red5 HTML SDK will handle the `getUserMedia` requirements internally to set up your Camera and/or Microphone for a broadcast. As such, you can provide the [Media Constraint](https://developer.mozilla.org/en-US/docs/Web/API/MediaStreamConstraints) object to be used on the `init` configuration:
 
 ```js
 const config = {
@@ -154,7 +155,7 @@ await publisher.init(config)
 await publisher.publish()
 ```
 
-Internally, the Red5 Pro WebRTC SDK will use the provided *Media Constraint* to test if the resolutions requested are supported by the browser. If not, it will find the nearest supported lower neighbor based on the originally provided area dimension(s) of the resolutions.
+Internally, the Red5 HTML SDK will use the provided *Media Constraint* to test if the resolutions requested are supported by the browser. If not, it will find the nearest supported lower neighbor based on the originally provided area dimension(s) of the resolutions.
 
 > If you would like to bypass the internal determination of resolution, you can use the `onGetUserMedia` override of the configuration properties.
 
@@ -190,7 +191,7 @@ await publisher.init(config)
 await publisher.publish()
 ```
 
-The `onGetUserMedia` method - when defined on the configuration provide to a WebRTC-based Publisher - will override the internal call to `getUserMedia` in the Red5 Pro WebRTC SDK.
+The `onGetUserMedia` method - when defined on the configuration provide to a WebRTC-based Publisher - will override the internal call to `getUserMedia` in the Red5 HTML SDK.
 
 You can provide your own logic on how `getUserMedia` is invoked and a [Media Stream](https://developer.mozilla.org/en-US/docs/Web/API/MediaStream) attained by setting the `onGetUserMedia` attribute to a method that conforms to the following guidelines:
 
@@ -199,7 +200,7 @@ You can provide your own logic on how `getUserMedia` is invoked and a [Media Str
 * A `MediaStream` object must be provided in the resolve of the `Promise`.
 * The error provided in the reject of the `Promise` is optional, but recommended as a `String`.
 
-Be aware that overriding `onGetUserMedia` you are losing the logic from the Red5 Pro WebRTC SDK that attempts to pick the optimal resolution supported by your browser. **Use with descretion.**
+Be aware that overriding `onGetUserMedia` you are losing the logic from the Red5 HTML SDK that attempts to pick the optimal resolution supported by your browser. **Use with descretion.**
 
 > To read more about `getUserMedia` please read the following document from Mozilla Developer Network: [https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia](https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia)
 
@@ -287,7 +288,7 @@ The configuration used for statistics monitoring has the following structure:
   // If provided, it will POST stats to this endpoint.
   // If undefined or `data-channel`, it will post stats to message transport.
   // If null or `event-transport`, it will only emit status events.
-  red5prosdk.StatsEndpointType.DATA_CHANNEL,
+  endpoint: red5prosdk.StatsEndpointType.DATA_CHANNEL,
   additionalHeaders: undefined,
   interval: 5000, // Interval to poll stats, in milliseconds.
   include: [], // Empty array allows SDK to be judicious about what stats to include.
@@ -313,6 +314,7 @@ The polling interval (in milliseconds) to access the `RTCStatsReport` from the u
 An array of static type strings. These directly map to the listing of type available for `RTCStatsReport` objects. If left empty or undefined, the SDK will report the statistics it deems suitable for tracking proper broadcast conditions.
 
 e.g.,
+
 ```js
 include: ['outbound-rtp', 'transport']
 ```

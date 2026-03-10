@@ -1,13 +1,14 @@
-[**Red5 Pro WebRTC SDK v15.2.0**](README.md)
+[**Red5 Pro WebRTC SDK v15.4.0**](README.md)
 
 ***
 
-# Red5 Pro WebRTC SDK v15.2.0
+# Red5 Pro WebRTC SDK v15.4.0
 
 Red5 Pro WebRTC SDK
 
 ## Enumerations
 
+- [MessageChannelEventTypes](enumerations/MessageChannelEventTypes.md)
 - [MessageTransportStateEventTypes](enumerations/MessageTransportStateEventTypes.md)
 - [PlaybackAudioEncoder](enumerations/PlaybackAudioEncoder.md)
 - [PlaybackState](enumerations/PlaybackState.md)
@@ -26,11 +27,14 @@ Red5 Pro WebRTC SDK
 - [EventEmitter](classes/EventEmitter.md)
 - [HLSSubscriber](classes/HLSSubscriber.md)
 - [LiveSeekClient](classes/LiveSeekClient.md)
+- [MessageChannel](classes/MessageChannel.md)
+- [MessageChannelEvent](classes/MessageChannelEvent.md)
 - [MessageTransportStateEvent](classes/MessageTransportStateEvent.md)
 - [PlaybackController](classes/PlaybackController.md)
 - [PlaybackControls](classes/PlaybackControls.md)
 - [PublisherEvent](classes/PublisherEvent.md)
 - [PubNubClient](classes/PubNubClient.md)
+- [PubNubEvent](classes/PubNubEvent.md)
 - [SourceHandler](classes/SourceHandler.md)
 - [SourceHandlerImpl](classes/SourceHandlerImpl.md)
 - [SubscriberEvent](classes/SubscriberEvent.md)
@@ -58,6 +62,7 @@ Red5 Pro WebRTC SDK
 
 ## Variables
 
+- [Capability](variables/Capability.md)
 - [default](variables/default.md)
 - [defaultHLSSubscriberConfig](variables/defaultHLSSubscriberConfig.md)
 - [defaultLiveSeekConfig](variables/defaultLiveSeekConfig.md)

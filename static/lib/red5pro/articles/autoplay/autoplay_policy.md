@@ -50,7 +50,7 @@ The *downside* to this approach: Stream playback on any browser that _does not_ 
 
 Though we see the policy enforced on the majority of mobile-based browsers, desktop-based browsers of the same version from the same vendor may not enforce the same autoplay restriction (refer to the [Media Engagement Index section of this article](https://developers.google.com/web/updates/2017/09/autoplay-policy-changes#mei)). Using this option means, regardless of the browser and its autoplay policy restriction, all users will have muted playback.
 
-## Option 3. Allow the Red5 Pro SDK to handle it!
+## Option 3. Allow the Red5 HTML SDK to handle it!
 
 The Red5 Pro HTML SDK - as of version `5.5.0` and later - is equipped to handle exceptions in playback requests internally, take appropriate action and provide event notifications for results when attempting to autoplay media elements.
 
