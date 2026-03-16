@@ -7,9 +7,9 @@
   <a href="#subscribing">subscribing</a>
 </p>
 
-# Red5 Pro HTML Streaming Testbed
+# Red5 HTML Streaming Testbed
 
-This repository contains a simple project with a number of examples that can be used for testing and reference for the Red5 Pro WebRTC SDK.
+This repository contains a simple project with a number of examples that can be used for testing and reference for the Red5 HTML SDK.
 
 ## Requirements
 
@@ -19,7 +19,7 @@ For more information visit [https://www.red5.net/](https://www.red5.net/).
 
 ### Browser Compability
 
-The Red5 Pro WebRTC SDK aims to utilize WebRTC for its streaming solution (both publishing and subscribing), but also provides HLS support for browsers that support it natively (e.g., Mobile and Desktop Safari).
+The Red5 HTML SDK aims to utilize WebRTC for its streaming solution (both publishing and subscribing), but also provides HLS support for browsers that support it natively (e.g., Mobile and Desktop Safari).
 
 > More information about browser compability can be viewed at the [WebRTC Peer Connnection information on caniuse.com](http://caniuse.com/#feat=rtcpeerconnection).
 
@@ -40,7 +40,7 @@ The `WHEPClient` connection sequence is very fast - ~1 second.
 
 The `HLSSubscriber` does not go through a connection sequence and streams the HLS directly from the server, however it does have an up to 6 second latency due to the length of its live segments.
 
-> **NOTE**: The `WHIPClient` and `WHEPClient` were introduced in the `11.0.0` release of the Red5 Pro WebRTC SDK.
+> **NOTE**: The `WHIPClient` and `WHEPClient` were introduced in the `11.0.0` release of the Red5 HTML SDK.
 
 ## Setup
 
@@ -229,7 +229,7 @@ To define the **Host** with the server instance's IP, click the _Host_ field f t
 
 | **[Reconnect](src/page/test/subscribeReconnect)**
 | :-----
-| _Demonstrates the failover mechanism of the Red5 Pro HTML SDK to select a subscriber based on browser support and to auto-reconnect on close of broadcast or loss of connection._
+| _Demonstrates the failover mechanism of the Red5 HTML SDK to select a subscriber based on browser support and to auto-reconnect on close of broadcast or loss of connection._
 
 | **[Renegotiation Policy](src/page/test/subscribeRenegotiationPolicy/)**
 | :-----
@@ -283,7 +283,7 @@ To define the **Host** with the server instance's IP, click the _Host_ field f t
 
 | **[Stream Manager Proxy Reconnect](src/page/sm-test/subscribeStreamManagerProxyReconnect)**
 | :-----
-| _Demonstrates the failover mechanism of the Red5 Pro HTML SDK to select a subscriber based on browser support and to auto-reconnect on close of broadcast or loss of connection._
+| _Demonstrates the failover mechanism of the Red5 HTML SDK to select a subscriber based on browser support and to auto-reconnect on close of broadcast or loss of connection._
 
 | **[Stream Manager Proxy Renegotiation Policy](src/page/sm-test/subscribeStreamManagerProxyRenegotiationPolicy/)**
 | :-----
