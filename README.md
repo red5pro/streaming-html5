@@ -9,7 +9,7 @@
 
 # Red5 HTML Streaming Testbed
 
-This repository contains a simple project with a number of examples that can be used for testing and reference for the Red5 HTML SDK.
+This repository contains a simple project with a number of examples that can be used for testing and reference for the Red5 HTML SDK with Red5 Pro and Red5 Cloud live streaming.
 
 ## Requirements
 
@@ -308,5 +308,3 @@ To define the **Host** with the server instance's IP, click the _Host_ field f t
 2. You can see a list of active streams by navigating to [http://your_red5_pro_server_ip:5080/live/subscribe.jsp](http://your_red5_pro_server_ip:5080/live/subscribe.jsp) (will need to refresh this page after you have started publishing).
 3. You can access the server IP of your Red5 Pro Server install - to be used in the _Host_ field of the _Settings_ - by opening [http://your_red5_pro_server_ip:5080/](http://your_red5_pro_server_ip:5080/) and finding the IP printed in the upper-right of the page.
 4. Unless you are running the server locally, WebRTC publishing requires a valid SSL certificate.
-
-[![Analytics](https://ga-beacon.appspot.com/UA-59819838-3/red5pro/streaming-html?pixel)](https://github.com/igrigorik/ga-beacon)
