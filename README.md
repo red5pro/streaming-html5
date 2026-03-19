@@ -17,11 +17,11 @@ You will need a functional, running Red5 Pro server web- (or locally-) accessibl
 
 For more information visit [https://www.red5.net/](https://www.red5.net/).
 
-### Browser Compability
+### Browser Compatibility
 
 The Red5 HTML SDK aims to utilize WebRTC for its streaming solution (both publishing and subscribing), but also provides HLS support for browsers that support it natively (e.g., Mobile and Desktop Safari).
 
-> More information about browser compability can be viewed at the [WebRTC Peer Connnection information on caniuse.com](http://caniuse.com/#feat=rtcpeerconnection).
+> More information about browser Compatibility can be viewed at the [WebRTC Peer Connnection information on caniuse.com](http://caniuse.com/#feat=rtcpeerconnection).
 
 #### Publisher
 
@@ -50,7 +50,7 @@ You will need to modify the **Host** field from the _Settings_ page to point to 
 
 It is important to note that some of these examples - specifically those that involve publishing using WebRTC - require being run on TLS and, thusly, served over HTTPS. If running the examples on `localhost` you should not see an issues, but if your server is deployed remotely you will need to be sure that these examples are served over HTTPS and the proper Cross Origin Resource Sharing (CORS) settings are defined for the server.
 
-- [Read More about Red5 Pro and SSL](https://www.red5.net/docs/installation/ssl/overview/).
+- [Read More about Red5 Pro and SSL](https://www.red5.net/docs/red5-pro/users-guide/installation/ssl/).
 - [More information on CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS).
 
 ### Instructions
