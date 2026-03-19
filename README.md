@@ -15,7 +15,7 @@ This repository contains a simple project with a number of examples that can be 
 
 You will need a functional, running Red5 Pro server web- (or locally-) accessible for the client browser (mobile & desktop) to connect to.
 
-For more information visit [https://www.red5.net/](https://www.red5.net/).
+For more information visit [https://www.red5.net/docs/red5-pro/development/sdks/red5-webrtc-sdk/](https://www.red5.net/docs/red5-pro/development/sdks/red5-webrtc-sdk/).
 
 ### Browser Compatibility
 
