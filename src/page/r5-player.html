@@ -86,6 +86,27 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. -->
       video {
         object-fit: contain;
       }
+
+      .toast {
+        position: fixed;
+        bottom: 24px;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: var(--color-red5);
+        color: var(--color-offwhite);
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        z-index: 1000;
+        opacity: 0;
+        transition: opacity 0.3s ease-in-out;
+        pointer-events: none;
+      }
+
+      .toast.show {
+        opacity: 1;
+        pointer-events: auto;
+      }
     </style>
     <script>
         ;(function () {
@@ -173,6 +194,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. -->
             <video id="red5pro-subscriber" class="red5pro-subscriber" autoplay playsinline controls></video>
         </div>
     </div>
+    <div id="toast" class="toast"></div>
     <script>
       ;((window, red5) => {
         const MODE_SUB = 'sub'
@@ -202,6 +224,15 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. -->
         let publisher
         let subscriber
         const { WHIPClient, WHEPClient } = red5
+        const toastElement = document.getElementById('toast')
+
+        const showToast = (message, duration = 5000) => {
+          toastElement.textContent = message
+          toastElement.classList.add('show')
+          setTimeout(() => {
+            toastElement.classList.remove('show')
+          }, duration)
+        }
 
         const configureAuth = params => {
           if (rtaUser && rtaPass) {
@@ -242,6 +273,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. -->
           const { type } = event
           if (type === 'Subscribe.Time.Update') {
             return
+          }
+          if (type === 'Subscribe.Autoplay.Failure') {
+            showToast('Autoplay blocked. Click the play button to start playback.')
+          } else if (type === 'Subscribe.Autoplay.Muted') {
+            showToast('Autoplay muted. Click the mute button to unmute the audio.')
           }
           console.log('[Subscriber]', type)
         }
