@@ -1,8 +1,15 @@
 # Changes
 
+## 15.4.0-alpha.1
+
+- feat: Introduction of `MessageChannel` for message communication over a data-channel enabled client (Todd Anderson). _There is no underlying media streaming logic in this client._
+- fix: null pointer on lost ref for setRemoteDescription during SDP exchange (Todd Anderson).
+- fix: additional stats reporting (Todd Anderson).
+
 ## 15.2.0
 
 - fix: ICE configuration order preference (Todd Anderson).
+- feat: PubNub Integration and introduction of `PubNubClient` (Todd Anderson).
 - feat: Connection health monitoring for WebRTC publishers and subscribers with automatic detection of stale stats, ICE state regression, excessive RTT, and ICE negotiation timeouts (Todd Anderson)
 - feat: Added new WebRTC connection health events: `WebRTC.Connection.StaleStats`, `WebRTC.Connection.StateRegression`, `WebRTC.Connection.ExcessiveRTT`, `WebRTC.Connection.IceTimeout` (Todd Anderson)
 - feat: `renegotiationPolicy` init configuration property for defining monitor and handling of ICE negotiation failures.

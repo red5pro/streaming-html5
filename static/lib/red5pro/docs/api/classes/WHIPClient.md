@@ -1,4 +1,4 @@
-[**Red5 Pro WebRTC SDK v15.2.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v15.4.0**](../README.md)
 
 ***
 
@@ -14,6 +14,10 @@ This provides a standardized - and _blazingly fast_ - way to establish and publi
 ## Extends
 
 - [`EventEmitter`](EventEmitter.md)
+
+## Extended by
+
+- [`MessageChannel`](MessageChannel.md)
 
 ## Constructors
 
@@ -177,6 +181,18 @@ Get the PeerConnection for the WHIPClient.
 #### Returns
 
 `undefined` \| `RTCPeerConnection`
+
+***
+
+### getPubNubClient()
+
+> **getPubNubClient**(): `undefined` \| [`PubNubClient`](PubNubClient.md)
+
+Get the PubNub client for the WHIPClient.
+
+#### Returns
+
+`undefined` \| [`PubNubClient`](PubNubClient.md)
 
 ***
 
@@ -364,7 +380,7 @@ The name of the stream to publish.
 
 ### send()
 
-> **send**(`methodName`, `data`): `undefined` \| `Promise`\<`boolean`\>
+> **send**(`methodName`, `data`): `Promise`\<`undefined` \| `boolean`\>
 
 Send a message to the server.
 
@@ -384,7 +400,7 @@ The data to send.
 
 #### Returns
 
-`undefined` \| `Promise`\<`boolean`\>
+`Promise`\<`undefined` \| `boolean`\>
 
 ***
 
@@ -411,6 +427,58 @@ The message to send.
 #### Returns
 
 `void`
+
+***
+
+### sendPubNub()
+
+> **sendPubNub**(`channel`, `message`): `Promise`\<`boolean`\>
+
+Send a message to the PubNub channel.
+
+#### Parameters
+
+##### channel
+
+`string`
+
+The channel to send the message to.
+
+##### message
+
+`any`
+
+The message to send.
+
+#### Returns
+
+`Promise`\<`boolean`\>
+
+***
+
+### subscribePubNub()
+
+> **subscribePubNub**(`channel`, `options`): `Promise`\<`boolean`\>
+
+Subscribe to a PubNub channel.
+
+#### Parameters
+
+##### channel
+
+`string`
+
+The channel to subscribe to.
+
+##### options
+
+`any`
+
+The options to use for subscription.
+
+#### Returns
+
+`Promise`\<`boolean`\>
 
 ***
 
@@ -491,3 +559,23 @@ Whether the unpublish is internal (i.e. not triggered by the user).
 #### Returns
 
 `Promise`\<`void`\>
+
+***
+
+### unsubscribePubNub()
+
+> **unsubscribePubNub**(`channel`): `Promise`\<`boolean`\>
+
+Unsubscribe from a PubNub channel.
+
+#### Parameters
+
+##### channel
+
+`string`
+
+The channel to unsubscribe from.
+
+#### Returns
+
+`Promise`\<`boolean`\>

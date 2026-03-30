@@ -266,6 +266,12 @@ p {
   flex-direction: row !important;
 }
 
+.settings-field-inset {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
 .settings-info {
   margin: 0 2rem 1rem 2rem;
   font-size: 0.8rem;
@@ -280,7 +286,9 @@ p {
 }
 
 .settings-field > input,
-.settings-field > select {
+.settings-field > select,
+.settings-field-inset > input,
+.settings-field-inset > select {
   display: block;
   height: calc(1.5em + 0.75rem + 2px);
   padding: 0.375rem 0.75rem;

@@ -1,4 +1,4 @@
-[**Red5 Pro WebRTC SDK v15.2.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v15.4.0**](../README.md)
 
 ***
 
@@ -9,6 +9,22 @@
 > **default**: `object`
 
 ## Type Declaration
+
+### Capability
+
+> **Capability**: `object`
+
+#### Capability.datachannel
+
+> `readonly` **datachannel**: `4` = `4`
+
+#### Capability.stream
+
+> `readonly` **stream**: `3` = `3`
+
+### defaultStatsConfig
+
+> **defaultStatsConfig**: [`StatsConfig`](../type-aliases/StatsConfig.md)
 
 ### defaultWhepSubscriberConfig
 
@@ -76,6 +92,18 @@ Get the version of the SDK.
 
 > `readonly` **WARN**: `"warn"` = `'warn'`
 
+### MessageChannel
+
+> **MessageChannel**: *typeof* [`MessageChannel`](../classes/MessageChannel.md)
+
+### MessageChannelEvent
+
+> **MessageChannelEvent**: *typeof* [`MessageChannelEvent`](../classes/MessageChannelEvent.md)
+
+### MessageChannelEventTypes
+
+> **MessageChannelEventTypes**: *typeof* [`MessageChannelEventTypes`](../enumerations/MessageChannelEventTypes.md)
+
 ### MessageTransportStateEvent
 
 > **MessageTransportStateEvent**: *typeof* [`MessageTransportStateEvent`](../classes/MessageTransportStateEvent.md)
@@ -136,6 +164,18 @@ Get the version of the SDK.
 
 > **PublishVideoEncoder**: *typeof* [`PublishVideoEncoder`](../enumerations/PublishVideoEncoder.md)
 
+### PubNubClient
+
+> **PubNubClient**: *typeof* [`PubNubClient`](../classes/PubNubClient.md)
+
+### PubNubEvent
+
+> **PubNubEvent**: *typeof* [`PubNubEvent`](../classes/PubNubEvent.md)
+
+### PubNubEventTypes
+
+> **PubNubEventTypes**: *typeof* `PubNubEventTypes`
+
 ### RTCPublisherEventTypes
 
 > **RTCPublisherEventTypes**: *typeof* [`RTCPublisherEventTypes`](../enumerations/RTCPublisherEventTypes.md)
@@ -161,6 +201,10 @@ Get the version of the SDK.
 #### Returns
 
 `void`
+
+### StatsEndpointType
+
+> **StatsEndpointType**: *typeof* [`StatsEndpointType`](../enumerations/StatsEndpointType.md)
 
 ### SubscriberEvent
 

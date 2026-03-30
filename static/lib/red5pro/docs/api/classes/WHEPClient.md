@@ -1,4 +1,4 @@
-[**Red5 Pro WebRTC SDK v15.2.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v15.4.0**](../README.md)
 
 ***
 
@@ -216,6 +216,18 @@ Get the media element for the WHEP-based Subscriber.
 #### Returns
 
 `undefined` \| `HTMLMediaElement`
+
+***
+
+### getPubNubClient()
+
+> **getPubNubClient**(): `undefined` \| [`PubNubClient`](PubNubClient.md)
+
+Get the PubNub client for the WHEP-based Subscriber.
+
+#### Returns
+
+`undefined` \| [`PubNubClient`](PubNubClient.md)
 
 ***
 
@@ -467,7 +479,7 @@ The time to seek to.
 
 ### send()
 
-> **send**(`methodName`, `data`): `undefined` \| `Promise`\<`boolean`\>
+> **send**(`methodName`, `data`): `Promise`\<`undefined` \| `boolean`\>
 
 Send a message to the Red5 Pro Server over the message transport (DataChannel).
 
@@ -487,7 +499,7 @@ The data to send.
 
 #### Returns
 
-`undefined` \| `Promise`\<`boolean`\>
+`Promise`\<`undefined` \| `boolean`\>
 
 ***
 
@@ -514,6 +526,32 @@ The message to send.
 #### Returns
 
 `void`
+
+***
+
+### sendPubNub()
+
+> **sendPubNub**(`channel`, `message`): `Promise`\<`boolean`\>
+
+Send a message to the PubNub channel.
+
+#### Parameters
+
+##### channel
+
+`string`
+
+The channel to send the message to.
+
+##### message
+
+`any`
+
+The message to send.
+
+#### Returns
+
+`Promise`\<`boolean`\>
 
 ***
 
@@ -566,6 +604,32 @@ Subscribe to the WHEP-based Subscriber.
 #### Returns
 
 `Promise`\<`WHEPClient`\>
+
+***
+
+### subscribePubNub()
+
+> **subscribePubNub**(`channel`, `options`): `Promise`\<`boolean`\>
+
+Subscribe to a PubNub channel.
+
+#### Parameters
+
+##### channel
+
+`string`
+
+The channel to subscribe to.
+
+##### options
+
+`any`
+
+The options to use for subscription.
+
+#### Returns
+
+`Promise`\<`boolean`\>
 
 ***
 
@@ -678,3 +742,23 @@ Optional boolean to indicate if the unsubscribe is internal.
 #### Returns
 
 `Promise`\<`void`\>
+
+***
+
+### unsubscribePubNub()
+
+> **unsubscribePubNub**(`channel`): `Promise`\<`boolean`\>
+
+Unsubscribe from a PubNub channel.
+
+#### Parameters
+
+##### channel
+
+`string`
+
+The channel to unsubscribe from.
+
+#### Returns
+
+`Promise`\<`boolean`\>

@@ -5,14 +5,16 @@ import * as browser_bunyan_lib from 'browser-bunyan/lib';
 import { PublishVideoEncoder, PublishAudioEncoder } from 'types/publisher';
 export { PublishAudioEncoder, PublishVideoEncoder } from 'types/publisher';
 import { Logger } from 'browser-bunyan';
-import { Event as Event$1, SubscriberEvent, PublisherEvent, MessageTransportStateEvent } from 'event';
-export { Event, MessageTransportStateEvent, PublisherEvent, SubscriberEvent } from 'event';
 import EventEmitter$1 from 'core/event-emitter';
 import { RTCWhipPublisherConfigType } from 'configuration/publisher';
 export { BandwidthConfig, MediaConstraintRange, MediaConstraints, RTCPublisherConfigType, RTCWhipPublisherConfigType, VideoConstraints, defaultWhipPublisherConfig } from 'configuration/publisher';
+import { Event as Event$1, SubscriberEvent, PublisherEvent, MessageTransportStateEvent, PubNubEvent, MessageChannelEvent } from 'event';
+export { Event, MessageChannelEvent, MessageTransportStateEvent, PubNubEvent, PublisherEvent, SubscriberEvent } from 'event';
 import { MessageTransport } from 'types/message-transport';
-import StatsConfig from 'configuration/stats';
-export { default as StatsConfig, defaultStatsConfig } from 'configuration/stats';
+import StatsConfig, { EndpointType } from 'configuration/stats';
+export { default as StatsConfig, EndpointType as StatsEndpointType, defaultStatsConfig } from 'configuration/stats';
+import PubNubClient$1 from 'pubnub';
+import RTCStatsMonitor from 'stats';
 import { RTCWhepSubscriberConfigType, HLSSubscriberConfigType } from 'configuration/subscriber';
 export { HLSSubscriberConfigType, RTCSubscriberConfigType, RTCWhepSubscriberConfigType, defaultHLSSubscriberConfig, defaultWhepSubscriberConfig } from 'configuration/subscriber';
 import WhipWhepSignalingHelper from 'helper/wish-signal-helper';
@@ -20,10 +22,14 @@ import { PlaybackView } from 'view/playback';
 import RTCPeerConnectionSubscriber from 'helper/peer-connection-sub';
 import RTCSubscriberStats from 'stats/subscriber-stats';
 import { RenegotiationPolicyType } from 'configuration';
+import WHIPClient$1 from 'publisher/whip';
 import { LiveSeekConfigType } from 'configuration/liveseek';
 export { LiveSeekConfigType, LiveSeekOptions, defaultLiveSeekConfig } from 'configuration/liveseek';
-import { PublisherEventTypes, SubscriberEventTypes, RTCPublisherEventTypes, RTCSubscriberEventTypes, MessageTransportStateEventTypes } from 'event/event-types';
-export { MessageTransportStateEventTypes, PublisherEventTypes, RTCPublisherEventTypes, RTCSubscriberEventTypes, SubscriberEventTypes } from 'event/event-types';
+import { PubnubConfigType } from 'configuration/pubnub';
+import { PublisherEventTypes, SubscriberEventTypes, RTCPublisherEventTypes, RTCSubscriberEventTypes, MessageTransportStateEventTypes, MessageChannelEventTypes } from 'event/event-types';
+export { MessageChannelEventTypes, MessageTransportStateEventTypes, PublisherEventTypes, RTCPublisherEventTypes, RTCSubscriberEventTypes, SubscriberEventTypes } from 'event/event-types';
+export { default as Capability } from 'types/capabilities';
+import { PubNubEventTypes } from 'event/pubnub';
 
 declare const LEVELS: {
     readonly TRACE: "trace";
@@ -63,6 +69,7 @@ declare class WHIPClient extends EventEmitter$1 {
     private _publishView;
     private _statisticsConfiguration;
     private _statsMonitor;
+    private _pubnubClient;
     /**
      * Constructor. Providing arguments will automatically kick of connection sequence.
      * Leaving arguments unset allows for more control and follows same pattern of init.
@@ -71,12 +78,16 @@ declare class WHIPClient extends EventEmitter$1 {
      * @param {RTCWhipPublisherConfigType} additionalOptions Optional additional options to override defaults.
      */
     constructor(url?: string | undefined, element?: HTMLMediaElement | undefined, additionalOptions?: RTCWhipPublisherConfigType | undefined);
-    private internalInit;
+    protected internalInit(options: RTCWhipPublisherConfigType): Promise<void>;
     private generateMediaStream;
-    private getAndPreviewStreamIfAvailable;
+    protected getAndPreviewStreamIfAvailable(): Promise<MediaStream | undefined>;
+    protected establishStatsMonitor(statisticsConfiguration: StatsConfig): RTCStatsMonitor;
+    protected postStatsMonitorEvent(eventType: string, data?: any): void;
     private reorderCodecPreferences;
     private postOffer;
     private postCandidateFragments;
+    private initPubNub;
+    private deinitPubNub;
     /**
      * Initialize the WHIPClient.
      *
@@ -161,9 +172,32 @@ declare class WHIPClient extends EventEmitter$1 {
      *
      * @param {string} methodName - The name of the method to send.
      * @param {any} data - The data to send.
-     * @returns {void}
+     * @returns {Promise<boolean | undefined>}
      */
-    send(methodName: string, data: any): Promise<boolean> | undefined;
+    send(methodName: string, data: any): Promise<boolean | undefined>;
+    /**
+     * Send a message to the PubNub channel.
+     *
+     * @param {string} channel - The channel to send the message to.
+     * @param {any} message - The message to send.
+     * @returns {Promise<boolean>}
+     */
+    sendPubNub(channel: string, message: any): Promise<boolean>;
+    /**
+     * Subscribe to a PubNub channel.
+     *
+     * @param {string} channel - The channel to subscribe to.
+     * @param {any} options - The options to use for subscription.
+     * @returns {Promise<boolean>}
+     */
+    subscribePubNub(channel: string, options: any | undefined): Promise<boolean>;
+    /**
+     * Unsubscribe from a PubNub channel.
+     *
+     * @param {string} channel - The channel to unsubscribe from.
+     * @returns {Promise<boolean>}
+     */
+    unsubscribePubNub(channel: string): Promise<boolean>;
     /**
      * Call a method on the server.
      *
@@ -215,16 +249,22 @@ declare class WHIPClient extends EventEmitter$1 {
      * @returns {MessageTransport | undefined}
      */
     getMessageTransport(): MessageTransport | undefined;
+    /**
+     * Get the PubNub client for the WHIPClient.
+     *
+     * @returns {PubNubClient | undefined}
+     */
+    getPubNubClient(): PubNubClient$1 | undefined;
     private _onDataChannelError;
     private _onSendReceived;
     private _onMetaData;
     private _onConnectionClosed;
-    private _onDataChannelOpen;
-    private _onDataChannelClose;
-    private _onDataChannelMessage;
+    protected _onDataChannelOpen(dataChannel: RTCDataChannel): void;
+    protected _onDataChannelClose(dataChannel: RTCDataChannel): void;
+    protected _onDataChannelMessage(dataChannel: RTCDataChannel | undefined, message: MessageEvent): void;
     private _onPeerConnectionTrackAdd;
     private _onPeerConnectionOpen;
-    private _onPeerConnectionFail;
+    protected _onPeerConnectionFail(): void;
     private _onPeerConnectionClose;
     private _onIceCandidate;
     private _onUnpublish;
@@ -232,11 +272,11 @@ declare class WHIPClient extends EventEmitter$1 {
     private _onInsufficientBandwidth;
     private _onSufficientBandwidth;
     private _onRecoveringBandwidth;
-    private _onSDPSuccess;
-    private _onSDPError;
+    protected _onSDPSuccess(receipt?: any | undefined): void;
+    protected _onSDPError(receipt?: any | undefined): void;
     private _onOrientationChange;
-    private _onStatisticsEndpointChange;
-    private _onStatsReport;
+    protected _onStatisticsEndpointChange(statisticsEndpoint: string): void;
+    protected _onStatsReport(connection: RTCPeerConnection, report: any): void;
     /**
      * Add an event listener to the WHIPClient.
      *
@@ -520,6 +560,7 @@ declare class WHEPClient extends PlaybackController {
     protected _sourceHandler: SourceHandler | undefined;
     protected _statisticsConfiguration: StatsConfig | undefined;
     protected _statsMonitor: RTCSubscriberStats | undefined;
+    protected _pubnubClient: PubNubClient$1 | undefined;
     protected _orientation: number | undefined;
     protected _streamingMode: string | undefined;
     protected _requestedStreamSwitch: string | undefined;
@@ -547,6 +588,8 @@ declare class WHEPClient extends PlaybackController {
     private requestAnswer;
     private sendAnswer;
     private postCandidateFragments;
+    private initPubNub;
+    private deinitPubNub;
     private _evaluateRenegotiationPolicy;
     private _reconnect;
     /**
@@ -574,8 +617,32 @@ declare class WHEPClient extends PlaybackController {
      *
      * @param {string} methodName - The method name to send.
      * @param {any} data - The data to send.
+     * @returns {Promise<boolean | undefined>}
      */
-    send(methodName: string, data: any): Promise<boolean> | undefined;
+    send(methodName: string, data: any): Promise<boolean | undefined>;
+    /**
+     * Send a message to the PubNub channel.
+     *
+     * @param {string} channel - The channel to send the message to.
+     * @param {any} message - The message to send.
+     * @returns {Promise<boolean>}
+     */
+    sendPubNub(channel: string, message: any): Promise<boolean>;
+    /**
+     * Subscribe to a PubNub channel.
+     *
+     * @param {string} channel - The channel to subscribe to.
+     * @param {any} options - The options to use for subscription.
+     * @returns {Promise<boolean>}
+     */
+    subscribePubNub(channel: string, options: any | undefined): Promise<boolean>;
+    /**
+     * Unsubscribe from a PubNub channel.
+     *
+     * @param {string} channel - The channel to unsubscribe from.
+     * @returns {Promise<boolean>}
+     */
+    unsubscribePubNub(channel: string): Promise<boolean>;
     /**
      * Call a method on the Red5 Pro Server over the message transport (DataChannel).
      *
@@ -662,6 +729,12 @@ declare class WHEPClient extends PlaybackController {
      * @returns {MessageTransport | undefined}
      */
     getMessageTransport(): MessageTransport | undefined;
+    /**
+     * Get the PubNub client for the WHEP-based Subscriber.
+     *
+     * @returns {PubNubClient | undefined}
+     */
+    getPubNubClient(): PubNubClient$1 | undefined;
     /**
      * Get the media element for the WHEP-based Subscriber.
      *
@@ -794,6 +867,126 @@ declare class WHEPClient extends PlaybackController {
     /**
      * Get the type of the WHEP-based Subscriber (RTC).
      *
+     * @returns {string}
+     */
+    getType(): string;
+}
+
+/**
+ * MessageChannel is a subclass of WHIPClient that provides a data channel for sending and receiving messages only.
+ * _There is no underlying media streaming logic in this client._
+ *
+ * This ingest-based client is useful for sending and receiving messages to and from the server over a designated data channel.
+ */
+declare class MessageChannel extends WHIPClient$1 {
+    private _inactivePingIntervalMS;
+    private _inactivePingTimeout;
+    constructor(url: string | undefined, additionalOptions?: RTCWhipPublisherConfigType | undefined);
+    /**
+     * Internally initialize the MessageChannel.
+     * @param {RTCWhipPublisherConfigType} options - The options to initialize the MessageChannel with. See {@link RTCWhipPublisherConfigType} for more details.
+     * @returns {Promise<void>}
+     * @override - Overrides the internalInit method in the WHIPClient class to properly initialize and open the MessageChannel.
+     * @private
+     */
+    protected internalInit(options: RTCWhipPublisherConfigType): Promise<void>;
+    /**
+     * Establish the stats monitor for the MessageChannel.
+     * @param {StatsConfig} statisticsConfiguration - The statistics configuration.
+     * @returns {RTCStatsMonitor}
+     * @override - Overrides the establishStatsMonitor method in the WHIPClient class to properly establish the stats monitor for the MessageChannel.
+     * @private
+     */
+    protected establishStatsMonitor(statisticsConfiguration: StatsConfig): RTCStatsMonitor;
+    /**
+     * Initialize the MessageChannel.
+     * @param {RTCWhipPublisherConfigType} options - The options to initialize the MessageChannel with. See {@link RTCWhipPublisherConfigType} for more details.
+     * @returns {Promise<MessageChannel>}
+     */
+    init(options: RTCWhipPublisherConfigType): Promise<this>;
+    /**
+     * Disallow MediaStream generation for this client.
+     * @private
+     */
+    protected getAndPreviewStreamIfAvailable(): Promise<MediaStream | undefined>;
+    /**
+     * Start the inactive ping to keep the data channel open during inactivity (no messages sent).
+     * @private
+     */
+    private _startInactivePing;
+    /**
+     * Stop the inactive ping.
+     * @private
+     */
+    private _stopInactivePing;
+    /**
+     * Open the MessageChannel.
+     * @param {number} inactivePingIntervalMS - The interval in milliseconds to send an inactive ping.
+     * @returns {Promise<MessageChannel>}
+     */
+    open(inactivePingIntervalMS?: number): Promise<this>;
+    /**
+     * Close the MessageChannel.
+     */
+    close(): Promise<void>;
+    publish(): Promise<this>;
+    unpublish(): Promise<void>;
+    /**
+     * Send a JSON message to the server over the data channel.
+     * @override - Overrides the send method in the WHIPClient class to properly wrap the data in a message object with methodName.
+     * @param {string} methodName - The name of the method to send.
+     * @param {any} data - The data to send.
+     * @returns {Promise<boolean | undefined>}
+     */
+    send(methodName: string, data: any): Promise<boolean | undefined>;
+    /**
+     * Send a message to the server over the data channel. This will attempt to wrap and send the message as a JSON payload.
+     * @param {any} message - The message to send.
+     * @returns {Promise<boolean>}
+     * @see {@link sendData} for sending raw data to the server over the data channel.
+     */
+    sendMessage(message: any): Promise<boolean>;
+    /**
+     * Send data to the server over the data channel.
+     * @param {any} data - The data to send. Can be of any type, such as an arraybuffer.
+     * @returns {Promise<boolean>}
+     */
+    sendData(data: any): Promise<boolean>;
+    /**
+     * Start the inactive ping when the data channel is opened.
+     * @private
+     */
+    protected _onDataChannelOpen(dataChannel: RTCDataChannel): void;
+    /**
+     * Handle an incoming data channel message.
+     * @param dataChannel - The data channel that received the message.
+     * @param message - The message event.
+     * @private
+     */
+    protected _onDataChannelMessage(dataChannel: RTCDataChannel | undefined, message: MessageEvent): void;
+    /**
+     * Stop the inactive ping when the data channel is closed.
+     * @private
+     */
+    protected _onDataChannelClose(dataChannel: RTCDataChannel): void;
+    /**
+     * Handle a peer connection failure.
+     * @private
+     */
+    protected _onPeerConnectionFail(): void;
+    /**
+     * Handle an error on the data channel.
+     * @private
+     */
+    protected _onSDPError(receipt?: any | undefined): void;
+    /**
+     * Trigger an event on the MessageChannel.
+     * @param {Event} event - The event to trigger.
+     * @override - Overrides the trigger method in the WHIPClient class to properly trigger the event on the MessageChannel.
+     */
+    trigger(event: Event$1): void;
+    /**
+     * Get the type of the MessageChannel.
      * @returns {string}
      */
     getType(): string;
@@ -953,6 +1146,23 @@ declare class LiveSeekClient extends WHEPClient {
     private _startSeekableIfSeekableEnabled;
     protected _onUnpublish(): void;
     protected _onStreamSwitchComplete(): void;
+}
+
+declare class PubNubClient extends EventEmitter$1 {
+    private _config;
+    private _pubnub;
+    private _subscriptions;
+    constructor();
+    private _getAuthFromCloud;
+    private _getAuthFromBackend;
+    init(config: PubnubConfigType | any): Promise<this>;
+    publishMessage(channel: string, message: any): Promise<boolean>;
+    subscribe(channel: string, options: any | undefined): Promise<boolean>;
+    unsubscribe(channel: string): Promise<boolean>;
+    destroy(): Promise<boolean>;
+    getOptions(): PubnubConfigType | undefined;
+    get config(): PubnubConfigType | undefined;
+    get pubnub(): any;
 }
 
 /**
@@ -1121,18 +1331,30 @@ declare const _default: {
     SubscriberEvent: typeof SubscriberEvent;
     PublisherEvent: typeof PublisherEvent;
     MessageTransportStateEvent: typeof MessageTransportStateEvent;
+    PubNubEvent: typeof PubNubEvent;
+    MessageChannelEvent: typeof MessageChannelEvent;
     PublisherEventTypes: typeof PublisherEventTypes;
     SubscriberEventTypes: typeof SubscriberEventTypes;
     RTCPublisherEventTypes: typeof RTCPublisherEventTypes;
     RTCSubscriberEventTypes: typeof RTCSubscriberEventTypes;
     MessageTransportStateEventTypes: typeof MessageTransportStateEventTypes;
+    MessageChannelEventTypes: typeof MessageChannelEventTypes;
+    PubNubEventTypes: typeof PubNubEventTypes;
     WHIPClient: typeof WHIPClient;
     WHEPClient: typeof WHEPClient;
     HLSSubscriber: typeof HLSSubscriber;
     LiveSeekClient: typeof LiveSeekClient;
+    PubNubClient: typeof PubNubClient;
+    MessageChannel: typeof MessageChannel;
+    Capability: {
+        readonly stream: 3;
+        readonly datachannel: 4;
+    };
     defaultWhepSubscriberConfig: RTCWhepSubscriberConfigType;
     defaultWhipPublisherConfig: RTCWhipPublisherConfigType;
+    defaultStatsConfig: StatsConfig;
+    StatsEndpointType: typeof EndpointType;
 };
 
-export { EventEmitter, HLSSubscriber, LEVELS as LOG_LEVELS, LiveSeekClient, PlaybackController, PlaybackControls, SourceHandler, SourceHandlerImpl, WHEPClient, WHIPClient, _default as default, getLogger, getRecordedLogs, getVersion, setLogLevel };
+export { EventEmitter, HLSSubscriber, LEVELS as LOG_LEVELS, LiveSeekClient, MessageChannel, PlaybackController, PlaybackControls, PubNubClient, SourceHandler, SourceHandlerImpl, WHEPClient, WHIPClient, _default as default, getLogger, getRecordedLogs, getVersion, setLogLevel };
 export type { EventEmitterInterface };

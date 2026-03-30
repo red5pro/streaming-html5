@@ -1,4 +1,4 @@
-[**Red5 Pro WebRTC SDK v15.2.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v15.4.0**](../README.md)
 
 ***
 
@@ -13,6 +13,7 @@ Base class for an Event Emitter.
 - [`WHIPClient`](WHIPClient.md)
 - [`PlaybackControls`](PlaybackControls.md)
 - [`PlaybackController`](PlaybackController.md)
+- [`PubNubClient`](PubNubClient.md)
 
 ## Implements
 

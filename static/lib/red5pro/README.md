@@ -4,14 +4,16 @@
 <p align="center">
   <a href="#">Quick Start</a> &bull;
   <a href="docs/whip-client.md">Publishing</a> &bull;
-  <a href="docs/whep-client.md">Subscribing</a>
+  <a href="docs/whep-client.md">Subscribing</a> &bull;
+  <a href="docs/message-channel.md">Message Channel</a> &bull;
+  <a href="docs/pubnub-client.md">PubNub Client</a>
 </p>
 
 ---
 
-# Red5 Pro WebRTC SDK
+# Red5 HTML SDK
 
-> The **Red5 Pro WebRTC SDK** allows you to integrate live streaming video into your desktop and mobile browser.
+> The **Red5 HTML SDK** allows you to integrate live streaming video into your desktop and mobile browser.
 
 * [Important Notices](#important-notices)
 * [Installation](#installation)
@@ -20,7 +22,7 @@
 
 # Important Notices
 
-With the `15.0.0` release of the **Red5 Pro WebRTC SDK**, we have complete overhaul of its development and focus. We have decided to focus solely on **WISH** (WebRTC Ingest Signaling over HTTPS) and dropped WebSocket support previously used for signaling phase.
+With the `15.0.0` release of the **Red5 HTML SDK**, we have complete overhaul of its development and focus. We have decided to focus solely on **WISH** (WebRTC Ingest Signaling over HTTPS) and dropped WebSocket support previously used for signaling phase.
 
 As such, the publishing and subscribing logic within the SDK are provided from the `WHIPClient` and `WHEPClient`, respectively.
 
@@ -81,7 +83,7 @@ You can sign up and download the Red5 Server to manage your own deployment at [h
     <div>
       <video id="red5pro-subscriber" width="640" height="480" controls autoplay playsinline></video>
     </div>
-    <!-- Red5 Pro SDK -->
+    <!-- Red5 HTML SDK -->
     <script src="https://cdn.jsdelivr.net/npm/red5pro-webrtc-sdk@latest/red5pro-sdk.min.js"></script>
     <!-- Create Pub/Sub -->
     <script>
@@ -152,7 +154,7 @@ The Red5 Cloud deployment utilizes a Stream Manager for autoscaling. With the St
     <div>
       <video id="red5pro-subscriber" width="640" height="480" controls autoplay playsinline></video>
     </div>
-    <!-- Red5 Pro SDK -->
+    <!-- Red5 HTML SDK -->
     <script src="https://cdn.jsdelivr.net/npm/red5pro-webrtc-sdk@latest/red5pro-sdk.min.js"></script>
     <!-- Create Pub/Sub -->
     <script>
