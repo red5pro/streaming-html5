@@ -544,17 +544,19 @@ Unmute the video being published to the server.
 
 ### unpublish()
 
-> **unpublish**(`internal`): `Promise`\<`void`\>
+> **unpublish**(`_internal`, `_isReconnect`): `Promise`\<`void`\>
 
 Unpublish the MediaStream from the server.
 
 #### Parameters
 
-##### internal
+##### \_internal
 
 `boolean` = `false`
 
-Whether the unpublish is internal (i.e. not triggered by the user).
+##### \_isReconnect
+
+`boolean` = `false`
 
 #### Returns
 

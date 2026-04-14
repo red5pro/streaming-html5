@@ -140,6 +140,12 @@
 
 ***
 
+### reconnect?
+
+> `optional` **reconnect**: `ReconnectConfig`
+
+***
+
 ### rtcConfiguration
 
 > **rtcConfiguration**: `RTCConfiguration`

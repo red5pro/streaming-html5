@@ -92,6 +92,24 @@
 
 ***
 
+### RECONNECT\_FAILURE
+
+> **RECONNECT\_FAILURE**: `"Reconnect.Failure"`
+
+***
+
+### RECONNECT\_START
+
+> **RECONNECT\_START**: `"Reconnect.Start"`
+
+***
+
+### RECONNECT\_SUCCESS
+
+> **RECONNECT\_SUCCESS**: `"Reconnect.Success"`
+
+***
+
 ### STATISTICS\_ENDPOINT\_CHANGE
 
 > **STATISTICS\_ENDPOINT\_CHANGE**: `"Publisher.StatisticsEndpoint.Change"`
