@@ -156,6 +156,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         // no tracking for you!
       }
     }
+    // const log = document.createElement('p')
+    // log.innerText = '[Red5ProPublisher] ' + type + '.'
+    // document.querySelector('.logs-container').appendChild(log)
   }
   const onPublishFail = message => {
     console.error('[Red5ProPublisher] Publish Error :: ' + message)
