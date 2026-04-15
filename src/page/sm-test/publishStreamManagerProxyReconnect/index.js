@@ -154,6 +154,19 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       const { data } = event
       const { endpoint } = data
       displayServerAddress(endpoint, host)
+    } else if (event.type === 'WebRTC.PeerConnection.Open') {
+      try {
+        const pc = targetPublisher.getPeerConnection()
+        const stream = targetPublisher.getMediaStream()
+        window.trackBitrate(pc, onBitrateUpdate, onResolutionUpdate)
+        statisticsField.classList.remove('hidden')
+        stream.getVideoTracks().forEach(track => {
+          var settings = track.getSettings()
+          onResolutionUpdate(settings.width, settings.height)
+        })
+      } catch (e) {
+        // no tracking for you!
+      }
     }
   }
   const onPublishFail = message => {
@@ -161,18 +174,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
   const onPublishSuccess = publisher => {
     console.log('[Red5ProPublisher] Publish Complete.')
-    try {
-      const pc = publisher.getPeerConnection()
-      const stream = publisher.getMediaStream()
-      window.trackBitrate(pc, onBitrateUpdate, onResolutionUpdate)
-      statisticsField.classList.remove('hidden')
-      stream.getVideoTracks().forEach(track => {
-        var settings = track.getSettings()
-        onResolutionUpdate(settings.width, settings.height)
-      })
-    } catch (e) {
-      // no tracking for you!
-    }
   }
   const onUnpublishFail = message => {
     console.error('[Red5ProPublisher] Unpublish Error :: ' + message)
