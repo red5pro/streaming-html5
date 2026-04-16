@@ -1,8 +1,16 @@
 # Changes
 
-## 15.3.0
+## 15.4.0-beta.1
+
+- feat: Introduction of `reconnect` configuration parameter for `WHIPClient` (Todd Anderson).
+    * This feature allows for graceful reconnect on network loss for publishers.
+    * NOTE: Requires `15.4.0` release of Red5 Server.
+
+## 15.4.0-alpha.1
 
 - feat: Introduction of `MessageChannel` for message communication over a data-channel enabled client (Todd Anderson). _There is no underlying media streaming logic in this client._
+- fix: null pointer on lost ref for setRemoteDescription during SDP exchange (Todd Anderson).
+- fix: additional stats reporting (Todd Anderson).
 
 ## 15.2.0
 

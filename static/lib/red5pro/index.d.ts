@@ -70,6 +70,8 @@ declare class WHIPClient extends EventEmitter$1 {
     private _statisticsConfiguration;
     private _statsMonitor;
     private _pubnubClient;
+    private _reconnectAttempts;
+    private _reconnectTimeout;
     /**
      * Constructor. Providing arguments will automatically kick of connection sequence.
      * Leaving arguments unset allows for more control and follows same pattern of init.
@@ -113,10 +115,21 @@ declare class WHIPClient extends EventEmitter$1 {
     /**
      * Unpublish the MediaStream from the server.
      *
-     * @param {boolean} internal - Whether the unpublish is internal (i.e. not triggered by the user).
      * @returns {Promise<void>}
      */
-    unpublish(internal?: boolean): Promise<void>;
+    unpublish(_internal?: boolean, _isReconnect?: boolean): Promise<void>;
+    /**
+     * Pre-emptively attempt to reconnect to the server. Checks if reconnect is enabled and if the maximum number of attempts has been reached.
+     * @param reconnectConfig - The reconnect configuration.
+     * @returns {Promise<WHIPClient>}
+     */
+    private attemptReconnect;
+    /**
+     * Attempt to reconnect to the server.
+     *
+     * @returns {Promise<WHIPClient>}
+     */
+    private reconnect;
     /**
      * Preview the MediaStream in a HTML media element.
      *
