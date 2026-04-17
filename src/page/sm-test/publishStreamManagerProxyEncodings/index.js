@@ -159,7 +159,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         publisher.unmuteVideo()
         var connection = publisher.getPeerConnection()
         navigator.mediaDevices
-          .getUserMedia(getUserMediaConfiguration())
+          .getUserMedia(getUserMediaConfiguration().mediaConstraints)
           .then(function (stream) {
             var senders = connection.getSenders()
             var tracks = stream.getTracks()
