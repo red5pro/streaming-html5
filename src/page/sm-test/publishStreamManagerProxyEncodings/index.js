@@ -246,27 +246,29 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   function getUserMediaConfiguration() {
     return {
-      audio: configuration.useAudio
-        ? configuration.mediaConstraints.audio
-        : false,
-      video: configuration.useVideo
-        ? {
-            width: {
-              min: 640,
-              ideal: 1920,
-              max: 1920
-            },
-            height: {
-              min: 480,
-              ideal: 1080,
-              max: 1080
+      mediaConstraints: {
+        audio: configuration.useAudio
+          ? configuration.mediaConstraints.audio
+          : false,
+        video: configuration.useVideo
+          ? {
+              width: {
+                min: 1280,
+                ideal: 1280,
+                max: 1920
+              },
+              height: {
+                min: 720,
+                ideal: 720,
+                max: 1080
+              }
             }
-          }
-        : false,
-      frameRate: {
-        min: 25,
-        ideal: 60,
-        max: 60
+          : false,
+        frameRate: {
+          min: 25,
+          ideal: 60,
+          max: 60
+        }
       }
     }
   }
