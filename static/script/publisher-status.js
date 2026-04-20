@@ -89,6 +89,15 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       case pubTypes.UNPUBLISH_SUCCESS:
         status = 'Unpublished.'
         break
+      case pubTypes.RECONNECT_START:
+        status = 'Reconnect started...'
+        break
+      case pubTypes.RECONNECT_FAILURE:
+        status = 'Reconnect failed...'
+        break
+      case pubTypes.RECONNECT_SUCCESS:
+        status = 'Reconnect successful...'
+        break
     }
     if (status && status.length > 0) {
       statusField.innerText = ['STATUS', status].join(': ')

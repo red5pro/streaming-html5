@@ -5,6 +5,7 @@
   <a href="../README.md">Quick Start</a> &bull;
   <a href="whip-client.md">Publishing</a> &bull;
   <a href="whip-client.md">Subscribing</a> &bull;
+  <a href="message-channel.md">Message Channel</a> &bull;
   <a href="pubnub-client.md">PubNub Client</a>
 </p>
 

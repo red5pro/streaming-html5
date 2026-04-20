@@ -5,6 +5,7 @@
   <a href="../README.md">Quick Start</a> &bull;
   <a href="whip-client.md">Publishing</a> &bull;
   <a href="#">Subscribing</a> &bull;
+  <a href="message-channel.md">Message Channel</a> &bull;
   <a href="pubnub-client.md">PubNub Client</a>
 </p>
 
@@ -253,6 +254,7 @@ The polling interval (in milliseconds) to access the `RTCStatsReport` from the u
 An array of static type strings. These directly map to the listing of type available for `RTCStatsReport` objects. If left empty or undefined, the SDK will report the statistics it deems suitable for tracking proper broadcast conditions.
 
 e.g.,
+
 ```js
 include: ['inbound-rtp', 'transport']
 ```

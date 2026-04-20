@@ -1,0 +1,70 @@
+<!doctype html>
+{{> license}}
+<html>
+  <head>
+    {{> meta title='Publish Reconnect Test'}}
+    {{> header-scripts}}
+    {{> header-stylesheets}}
+    <style>
+      .enabled-field {
+        padding: 1rem 0;
+        background-color: #dbdbdb;
+        line-height: 1.5em;
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    {{> top-bar }}
+    <div id="app">
+      {{> settings-link}}
+      {{> test-info testTitle='Publish Reconnect Test'}}
+      <div class="stream-section">
+        <div class="enabled-field">
+          <span>Reconnect Enabled:</span>&nbsp;<span id="reconnect-enabled">Pending</span>
+        </div>
+        {{> status-field-publisher}}
+        {{> statistics-field packets_field='Packets Sent'}}
+        <div class="centered">
+          <video id="red5pro-publisher" class="red5pro-publisher"
+                 controls autoplay playsinline muted>
+          </video>
+        </div>
+        <div class="instructions-block">
+          <p class="codec-select-field codec-select-form settings-field settings-collapsable">
+            <label for="video-select" class="label-style settings-label">Enable Reconnect:</label>
+            <input type="checkbox" id="reconnect-enabled-checkbox" class="control" checked>
+          </p>
+          <p class="codec-select-field codec-select-form settings-field settings-collapsable">
+            <label for="video-select" class="label-style settings-label">Select a Timeout Delay (milliseconds):</label>
+            <select id="timeout-delay-select" class="control">
+              <option value="1000">1000</option>
+              <option value="2000">2000</option>
+              <option value="3000" selected>3000</option>
+              <option value="4000">4000</option>
+              <option value="5000">5000</option>
+            </select>
+          </p>
+          <p class="codec-select-field codec-select-form settings-field settings-collapsable">
+            <label for="video-select" class="label-style settings-label">Select Maximum Reconnect Attempts:</label>
+            <select id="maximum-reconnect-attempts-select" class="control">
+              <option value="1">1</option>
+              <option value="5">5</option>
+              <option value="10" selected>10</option>
+              <option value="100">100</option>
+            </select>
+          </p>
+          <p>
+            <button id="publish-button" class="control ui-button" disabled>Publish</button>
+          </p>
+        </div>
+        <!-- <div class="logs-container">
+          <h3>Logs</h3>
+        </div> -->
+      </div>
+    </div>
+    {{> footer}}
+    {{> body-scripts}}
+    <script src="index.js"></script>
+  </body>
+</html>
