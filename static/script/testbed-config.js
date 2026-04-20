@@ -184,7 +184,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       mixerBackendSocketField: '',
       mixerAuthenticationEnabled: false,
       preferWhipWhep: true,
-      stats: undefined,
+      stats: {
+        endpoint: 'data-channel',
+        interval: 5000
+      },
       offerSDPResolution: false
     }
 

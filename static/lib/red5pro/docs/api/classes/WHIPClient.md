@@ -1,4 +1,4 @@
-[**Red5 Pro WebRTC SDK v15.2.0**](../README.md)
+[**Red5 Pro WebRTC SDK v15.4.0-beta.1**](../README.md)
 
 ***
 
@@ -14,6 +14,10 @@ This provides a standardized - and _blazingly fast_ - way to establish and publi
 ## Extends
 
 - [`EventEmitter`](EventEmitter.md)
+
+## Extended by
+
+- [`MessageChannel`](MessageChannel.md)
 
 ## Constructors
 
@@ -376,7 +380,7 @@ The name of the stream to publish.
 
 ### send()
 
-> **send**(`methodName`, `data`): `undefined` \| `Promise`\<`boolean`\>
+> **send**(`methodName`, `data`): `Promise`\<`undefined` \| `boolean`\>
 
 Send a message to the server.
 
@@ -396,7 +400,7 @@ The data to send.
 
 #### Returns
 
-`undefined` \| `Promise`\<`boolean`\>
+`Promise`\<`undefined` \| `boolean`\>
 
 ***
 
@@ -540,17 +544,19 @@ Unmute the video being published to the server.
 
 ### unpublish()
 
-> **unpublish**(`internal`): `Promise`\<`void`\>
+> **unpublish**(`_internal`, `_isReconnect`): `Promise`\<`void`\>
 
 Unpublish the MediaStream from the server.
 
 #### Parameters
 
-##### internal
+##### \_internal
 
 `boolean` = `false`
 
-Whether the unpublish is internal (i.e. not triggered by the user).
+##### \_isReconnect
+
+`boolean` = `false`
 
 #### Returns
 

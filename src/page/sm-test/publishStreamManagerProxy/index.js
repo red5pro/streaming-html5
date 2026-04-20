@@ -54,7 +54,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   const resolutionField = document.getElementById('resolution-field')
 
   const defaultConfiguration = {
-    streamMode: configuration.recordBroadcast ? 'record' : 'live',
+    streamMode: configuration.recordBroadcast ? 'record' : 'live'
   }
 
   streamTitle.innerText = configuration.stream1
@@ -67,8 +67,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           connectionParams: {
             username,
             password,
-            token,
-          },
+            token
+          }
         }
       : {}
   }
@@ -103,7 +103,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     updateStatistics(bitrate, packetsSent, frameWidth, frameHeight)
   }
 
-  const onPublisherEvent = (event) => {
+  const onPublisherEvent = event => {
     const { type } = event
     console.log('[Red5ProPublisher] ' + type + '.')
     updateStatusFromEvent(event)
@@ -114,10 +114,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       displayServerAddress(endpoint, host)
     }
   }
-  const onPublishFail = (message) => {
+  const onPublishFail = message => {
     console.error('[Red5ProPublisher] Publish Error :: ' + message)
   }
-  const onPublishSuccess = (publisher) => {
+  const onPublishSuccess = publisher => {
     console.log('[Red5ProPublisher] Publish Complete.')
     try {
       const pc = publisher.getPeerConnection()
@@ -133,7 +133,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       // no tracking for you!
     }
   }
-  const onUnpublishFail = (message) => {
+  const onUnpublishFail = message => {
     console.error('[Red5ProPublisher] Unpublish Error :: ' + message)
   }
   const onUnpublishSuccess = () => {
@@ -158,8 +158,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     return {
       mediaConstraints: {
         audio: useAudio ? audio : false,
-        video: useVideo ? video : false,
-      },
+        video: useVideo ? video : false
+      }
     }
   }
 
@@ -171,14 +171,14 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       app,
       stream1,
       streamManagerAPI,
-      streamManagerNodeGroup: nodeGroup,
+      streamManagerNodeGroup: nodeGroup
     } = configuration
 
     const region = getRegionIfDefined()
     const params = region
       ? {
           region,
-          strict: true,
+          strict: true
         }
       : undefined
 
@@ -197,8 +197,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       streamName: stream1,
       connectionParams: {
         ...connectionParams,
-        nodeGroup,
-      },
+        nodeGroup
+      }
     }
     return rtcConfig
   }
@@ -222,7 +222,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         '[Red5ProPublisher] :: Error in access of Origin IP: ' + jsonError
       )
       updateStatusFromEvent({
-        type: red5prosdk.PublisherEventTypes.CONNECT_FAILURE,
+        type: red5prosdk.PublisherEventTypes.CONNECT_FAILURE
       })
       onPublishFail(jsonError)
     }

@@ -1,0 +1,75 @@
+<!doctype html>
+{{> license}}
+<html>
+  <head>
+    {{> meta title='Message Channel Stream Manager Proxy'}}
+    {{> header-scripts}}
+    {{> header-stylesheets}}
+    <style>
+      .settings-area {
+        padding: 20px;
+        background-color: #eeee;
+        text-align: center;
+        border-bottom: 1px solid var(--color-gray);
+      }
+      .settings-field, .settings-field > input {
+        font-size: 1em;
+      }
+      #address-field {
+        padding: 6px;
+        background-color: #ccc;
+      }
+    </style>
+    <link rel="stylesheet" href="../../css/modal.css" />
+    <style>
+      .modal {
+        display: unset!important;
+      }
+    </style>
+  </head>
+  <body>
+    {{> top-bar }}
+    <div id="app">
+      {{> settings-link}}
+      {{> sm-proxy-notification}}
+      {{> test-info testTitle='Message Channel Stream Manager Proxy'}}
+      <div class="stream-section">
+        <div class="instructions-block">
+          <p class="settings-field settings-collapsable">
+            <label for="dc-input" class="label-style settings-label">Data Channel Name:</label>
+            <input name="dc-input" id="dc-input" value="red5pro" />
+          </p>
+          <p>
+            <button id="start-button" class="control ui-button" disabled>Open Message Channel</button>
+          </p>
+        </div>
+        {{> status-field-message-channel}}
+        <div class="centered">
+          <p id="address-field" class="address-field hidden">Origin Address: N/A</p>
+        </div>
+        <div class="settings-area">
+          <p class="settings-field settings-collapsable">
+            <label class="settings-label" for="message-input">Message:</label>
+            <input id="message-input" name="message-input" type="text">
+          </p>
+          <p class="settings-field settings-collapsable">
+            Clicking the button below a message will be sent to all other connected Message Channel clients.
+          </p>
+          <p><button class="ui-button" id="send-message-button" disabled>Click to send message.</button></p>
+        </div>
+        <div class="settings-area">
+          <p class="settings-field settings-collapsable">
+            Clicking the button below will grab a snippet of the audio of the stream and send as an ArrayBuffer over the Message Channel.
+          </p>
+          <p><button class="ui-button" id="send-data-button" disabled>Click to send Audio Snippet.</button></p>
+          <p style="text-align: center; margin-top: 10px">
+            <audio id="snippet" controlsList="nodownload"></audio>
+          </p>
+        </div>
+      </div>
+    </div>
+    {{> footer}}
+    {{> body-scripts}}
+    <script src="index.js"></script>
+  </body>
+</html>
