@@ -66,6 +66,216 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   const packetsField = document.getElementById('packets-field')
   const resolutionField = document.getElementById('resolution-field')
 
+  // Health tracking elements
+  const healthPanel = document.getElementById('health-panel')
+  const healthStatusBadge = document.getElementById('health-status-badge')
+  const metricStale = document.getElementById('metric-stale')
+  const metricRegression = document.getElementById('metric-regression')
+  const metricRtt = document.getElementById('metric-rtt')
+  const metricRttSeverity = document.getElementById('metric-rtt-severity')
+  const metricRttValue = document.getElementById('metric-rtt-value')
+  const metricTimeout = document.getElementById('metric-timeout')
+  const healthEventsList = document.getElementById('health-events-list')
+
+  // Health tracking state
+  const healthMetrics = {
+    staleStats: 0,
+    stateRegression: 0,
+    excessiveRtt: 0,
+    iceTimeout: 0,
+    currentRttSeverity: null,
+    currentRttMs: null
+  }
+
+  const HEALTH_EVENT_TYPES = {
+    STALE_STATS: 'WebRTC.Connection.StaleStats',
+    STATE_REGRESSION: 'WebRTC.Connection.StateRegression',
+    EXCESSIVE_RTT: 'WebRTC.Connection.ExcessiveRTT',
+    ICE_TIMEOUT: 'WebRTC.Connection.IceTimeout'
+  }
+
+  const RTT_SEVERITY_ORDER = ['healthy', 'degrading', 'poor', 'severe', 'critical']
+  const RTT_SEVERITY_LABELS = {
+    healthy: 'Healthy',
+    degrading: 'Degrading',
+    poor: 'Poor',
+    severe: 'Severe',
+    critical: 'Critical'
+  }
+
+  const formatTime = date => {
+    return date.toLocaleTimeString('en-US', {
+      hour12: false,
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    })
+  }
+
+  const getEventConfig = (type, data = {}) => {
+    switch (type) {
+      case HEALTH_EVENT_TYPES.STALE_STATS:
+        return { icon: 'stale', label: 'Stale Stats', symbol: '⏸' }
+      case HEALTH_EVENT_TYPES.STATE_REGRESSION:
+        return { icon: 'regression', label: 'State Regression', symbol: '↓' }
+      case HEALTH_EVENT_TYPES.EXCESSIVE_RTT: {
+        const severity = data.severity || 'degrading'
+        return {
+          icon: `rtt-${severity}`,
+          label: `RTT ${RTT_SEVERITY_LABELS[severity] || severity}`,
+          symbol: '⏱'
+        }
+      }
+      case HEALTH_EVENT_TYPES.ICE_TIMEOUT:
+        return { icon: 'timeout', label: 'ICE Timeout', symbol: '⌛' }
+      default:
+        return { icon: 'stale', label: 'Unknown', symbol: '?' }
+    }
+  }
+
+  const updateHealthStatus = () => {
+    let status = 'healthy'
+    let label = 'Healthy'
+
+    const rttSeverity = healthMetrics.currentRttSeverity
+    const rttSeverityIndex = rttSeverity ? RTT_SEVERITY_ORDER.indexOf(rttSeverity) : 0
+
+    if (
+      healthMetrics.stateRegression > 0 ||
+      healthMetrics.iceTimeout > 0 ||
+      rttSeverityIndex >= RTT_SEVERITY_ORDER.indexOf('critical')
+    ) {
+      status = 'critical'
+      label = 'Critical'
+    } else if (
+      healthMetrics.staleStats > 0 ||
+      rttSeverityIndex >= RTT_SEVERITY_ORDER.indexOf('poor')
+    ) {
+      status = 'warning'
+      label = 'Warning'
+    } else if (rttSeverityIndex >= RTT_SEVERITY_ORDER.indexOf('degrading')) {
+      status = 'warning'
+      label = 'Degraded'
+    }
+
+    healthStatusBadge.className = `health-status-badge ${status}`
+    healthStatusBadge.textContent = label
+  }
+
+  const updateMetricDisplay = (element, value, warningThreshold = 1, criticalThreshold = 3) => {
+    element.textContent = value
+    element.className = 'health-metric-value'
+    if (value >= criticalThreshold) {
+      element.classList.add('critical')
+    } else if (value >= warningThreshold) {
+      element.classList.add('warning')
+    }
+  }
+
+  const updateRttSeverityDisplay = (severity, rttMs) => {
+    healthMetrics.currentRttSeverity = severity
+    healthMetrics.currentRttMs = rttMs
+
+    metricRttSeverity.className = `health-metric-sublabel ${severity || 'healthy'}`
+    metricRttSeverity.textContent = RTT_SEVERITY_LABELS[severity] || 'Healthy'
+
+    if (rttMs !== null && rttMs !== undefined) {
+      metricRttValue.textContent = `${Math.round(rttMs * 1000)}ms`
+    } else {
+      metricRttValue.textContent = '--'
+    }
+  }
+
+  const addHealthEvent = (type, data) => {
+    const config = getEventConfig(type, data)
+    const now = new Date()
+
+    // Remove empty state message if present
+    const emptyMsg = healthEventsList.querySelector('.health-events-empty')
+    if (emptyMsg) {
+      emptyMsg.remove()
+    }
+
+    const eventItem = document.createElement('div')
+    eventItem.className = 'health-event-item'
+    eventItem.innerHTML = `
+      <div class="health-event-icon ${config.icon}">${config.symbol}</div>
+      <div class="health-event-content">
+        <div class="health-event-type">${config.label}</div>
+        <div class="health-event-message">${data.message || 'No details available'}</div>
+      </div>
+      <div class="health-event-time">${formatTime(now)}</div>
+    `
+
+    // Insert at the top of the list (after header)
+    healthEventsList.insertBefore(eventItem, healthEventsList.firstChild)
+
+    // Limit to 50 events
+    const events = healthEventsList.querySelectorAll('.health-event-item')
+    if (events.length > 50) {
+      events[events.length - 1].remove()
+    }
+  }
+
+  const handleHealthEvent = (type, data) => {
+    switch (type) {
+      case HEALTH_EVENT_TYPES.STALE_STATS:
+        healthMetrics.staleStats++
+        updateMetricDisplay(metricStale, healthMetrics.staleStats)
+        break
+      case HEALTH_EVENT_TYPES.STATE_REGRESSION:
+        healthMetrics.stateRegression++
+        updateMetricDisplay(metricRegression, healthMetrics.stateRegression, 1, 2)
+        break
+      case HEALTH_EVENT_TYPES.EXCESSIVE_RTT: {
+        healthMetrics.excessiveRtt++
+        const severity = data.severity || 'degrading'
+        const currentRtt = data.currentRTT
+        updateMetricDisplay(metricRtt, healthMetrics.excessiveRtt)
+        updateRttSeverityDisplay(severity, currentRtt)
+        break
+      }
+      case HEALTH_EVENT_TYPES.ICE_TIMEOUT:
+        healthMetrics.iceTimeout++
+        updateMetricDisplay(metricTimeout, healthMetrics.iceTimeout, 1, 2)
+        break
+    }
+
+    addHealthEvent(type, data)
+    updateHealthStatus()
+  }
+
+  const resetHealthTracking = () => {
+    healthMetrics.staleStats = 0
+    healthMetrics.stateRegression = 0
+    healthMetrics.excessiveRtt = 0
+    healthMetrics.iceTimeout = 0
+    healthMetrics.currentRttSeverity = null
+    healthMetrics.currentRttMs = null
+
+    metricStale.textContent = '0'
+    metricStale.className = 'health-metric-value'
+    metricRegression.textContent = '0'
+    metricRegression.className = 'health-metric-value'
+    metricRtt.textContent = '0'
+    metricRtt.className = 'health-metric-value'
+    metricRttSeverity.className = 'health-metric-sublabel healthy'
+    metricRttSeverity.textContent = 'Healthy'
+    metricRttValue.textContent = '--'
+    metricTimeout.textContent = '0'
+    metricTimeout.className = 'health-metric-value'
+
+    healthStatusBadge.className = 'health-status-badge healthy'
+    healthStatusBadge.textContent = 'Healthy'
+
+    healthEventsList.innerHTML = '<div class="health-events-empty">No health events recorded</div>'
+  }
+
+  const showHealthPanel = () => {
+    healthPanel.classList.remove('hidden')
+    resetHealthTracking()
+  }
+
   let bitrate = 0
   let packetsReceived = 0
   let frameWidth = 0
@@ -105,15 +315,23 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   // Local lifecycle notifications.
   const onSubscriberEvent = event => {
     const { type, target, data } = event
+
+    // Handle health events
+    if (Object.values(HEALTH_EVENT_TYPES).includes(type)) {
+      console.log('[Red5ProSubscriber:Health] ' + type, data)
+      handleHealthEvent(type, data)
+      return
+    }
+
     if (type !== 'Subscribe.Time.Update') {
       console.log('[Red5ProSubscriber] ' + type + '.')
       updateStatusFromEvent(event)
-      if (event.type === 'Subscribe.VideoDimensions.Change') {
+      if (type === 'Subscribe.VideoDimensions.Change') {
         onResolutionUpdate(data.width, data.height)
-      } else if (event.type === 'Reconnect.Start') {
+      } else if (type === 'Reconnect.Start') {
         reconnectionAttempts++
         reconnectionAttemptsField.innerText = reconnectionAttempts
-      } else if (event.type === 'Subscribe.Start') {
+      } else if (type === 'Subscribe.Start') {
         onSubscribeSuccess(target ?? targetSubscriber)
       }
     }
@@ -188,6 +406,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
   const start = async () => {
     subscribeButton.disabled = true
+    showHealthPanel()
+
     const { stream1: streamName } = configuration
     const { WHEPClient } = red5prosdk
 

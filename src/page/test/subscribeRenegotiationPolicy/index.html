@@ -17,6 +17,185 @@
         margin: auto;
         list-style: decimal;
       }
+
+      .health-panel {
+        margin: 20px auto;
+        max-width: 640px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        overflow: hidden;
+        background: #fafafa;
+      }
+      .health-panel-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 16px;
+        background: #333;
+        color: #fff;
+      }
+      .health-panel-header h3 {
+        margin: 0;
+        font-size: 1rem;
+      }
+      .health-status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 12px;
+        border-radius: 16px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+      }
+      .health-status-badge::before {
+        content: '';
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: currentColor;
+      }
+      .health-status-badge.healthy {
+        background: rgba(76, 175, 80, 0.2);
+        color: #2e7d32;
+      }
+      .health-status-badge.warning {
+        background: rgba(255, 152, 0, 0.2);
+        color: #e65100;
+      }
+      .health-status-badge.critical {
+        background: rgba(244, 67, 54, 0.2);
+        color: #c62828;
+      }
+      .health-status-badge.idle {
+        background: rgba(158, 158, 158, 0.2);
+        color: #616161;
+      }
+      .health-metrics {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1px;
+        background: #e0e0e0;
+      }
+      .health-metric {
+        padding: 12px;
+        background: #fff;
+        text-align: center;
+      }
+      .health-metric-label {
+        font-size: 0.7rem;
+        color: #666;
+        text-transform: uppercase;
+        margin-bottom: 4px;
+      }
+      .health-metric-value {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #333;
+      }
+      .health-metric-value.warning {
+        color: #e65100;
+      }
+      .health-metric-value.critical {
+        color: #c62828;
+      }
+      .health-metric-sublabel {
+        font-size: 0.65rem;
+        margin-top: 2px;
+        text-transform: uppercase;
+        font-weight: 600;
+      }
+      .health-metric-sublabel.healthy {
+        color: #2e7d32;
+      }
+      .health-metric-sublabel.degrading {
+        color: #7cb342;
+      }
+      .health-metric-sublabel.poor {
+        color: #ffa000;
+      }
+      .health-metric-sublabel.severe {
+        color: #e65100;
+      }
+      .health-metric-sublabel.critical {
+        color: #c62828;
+      }
+      .rtt-value {
+        font-size: 0.75rem;
+        color: #666;
+        margin-top: 4px;
+      }
+      .health-events-log {
+        max-height: 200px;
+        overflow-y: auto;
+        border-top: 1px solid #e0e0e0;
+      }
+      .health-events-log-header {
+        padding: 8px 16px;
+        background: #f5f5f5;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: #666;
+        text-transform: uppercase;
+        position: sticky;
+        top: 0;
+      }
+      .health-event-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 10px 16px;
+        border-bottom: 1px solid #eee;
+        font-size: 0.8rem;
+      }
+      .health-event-item:last-child {
+        border-bottom: none;
+      }
+      .health-event-icon {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        font-size: 0.7rem;
+      }
+      .health-event-icon.stale { background: #fff3e0; color: #e65100; }
+      .health-event-icon.regression { background: #ffebee; color: #c62828; }
+      .health-event-icon.rtt { background: #fff8e1; color: #f57f17; }
+      .health-event-icon.rtt-degrading { background: #f1f8e9; color: #7cb342; }
+      .health-event-icon.rtt-poor { background: #fff8e1; color: #ffa000; }
+      .health-event-icon.rtt-severe { background: #fff3e0; color: #e65100; }
+      .health-event-icon.rtt-critical { background: #ffebee; color: #c62828; }
+      .health-event-icon.timeout { background: #fce4ec; color: #ad1457; }
+      .health-event-content {
+        flex: 1;
+        min-width: 0;
+      }
+      .health-event-type {
+        font-weight: 600;
+        color: #333;
+      }
+      .health-event-message {
+        color: #666;
+        margin-top: 2px;
+        word-break: break-word;
+      }
+      .health-event-time {
+        font-size: 0.7rem;
+        color: #999;
+        flex-shrink: 0;
+      }
+      .health-events-empty {
+        padding: 24px 16px;
+        text-align: center;
+        color: #999;
+        font-size: 0.85rem;
+      }
+      .health-panel.hidden {
+        display: none;
+      }
     </style>
   </head>
   <body>
@@ -43,9 +222,10 @@
           <p class="settings-field settings-collapsable">
             <label for="type-select" class="label-style settings-label">Select a Renegotiation Policy Type:</label>
             <select id="type-select" class="control">
-              <option value="TIMEOUT" selected>Timeout</option>
+              <option value="EXCESSIVE-RTT">Excessive RTT</option>
+              <option value="TIMEOUT">Timeout</option>
               <option value="DISCONNECT">Disconnect</option>
-              <option value="REGRESSION">Regression</option>
+              <option value="REGRESSION" selected>Regression</option>
             </select>
           </p>
           <p class="settings-field settings-collapsable">
@@ -65,6 +245,38 @@
           <p>
             <span>Reconnection Attempts:</span>&nbsp;<span id="reconnection-attempts">0</span>
           </p>
+        </div>
+        <div id="health-panel" class="health-panel hidden">
+          <div class="health-panel-header">
+            <h3>Connection Health</h3>
+            <span id="health-status-badge" class="health-status-badge idle">Idle</span>
+          </div>
+          <div class="health-metrics">
+            <div class="health-metric">
+              <div class="health-metric-label">Stale Stats</div>
+              <div id="metric-stale" class="health-metric-value">0</div>
+            </div>
+            <div class="health-metric">
+              <div class="health-metric-label">State Regressions</div>
+              <div id="metric-regression" class="health-metric-value">0</div>
+            </div>
+            <div class="health-metric">
+              <div class="health-metric-label">RTT Issues</div>
+              <div id="metric-rtt" class="health-metric-value">0</div>
+              <div id="metric-rtt-severity" class="health-metric-sublabel healthy">Healthy</div>
+              <div id="metric-rtt-value" class="rtt-value">--</div>
+            </div>
+            <div class="health-metric">
+              <div class="health-metric-label">ICE Timeouts</div>
+              <div id="metric-timeout" class="health-metric-value">0</div>
+            </div>
+          </div>
+          <div class="health-events-log">
+            <div class="health-events-log-header">Event Log</div>
+            <div id="health-events-list">
+              <div class="health-events-empty">No health events recorded</div>
+            </div>
+          </div>
         </div>
         {{> status-field-subscriber}}
         {{> statistics-field packets_field='Packets Received'}}

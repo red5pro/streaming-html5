@@ -33,7 +33,7 @@ let rtcConfig = {
   streamName,
   subscriptionId: 'subscriber-' + instanceId,
   renegotiationPolicy: {
-    type: typeSelect.value,  // 'timeout' | 'disconnect' | 'regression'
+    type: typeSelect.value,  // 'timeout' | 'disconnect' | 'regression' | 'excessive-rtt'
     timeoutInterval: parseInt(timeoutIntervalSelect.value, 10)  // Only used for TIMEOUT policy
   }
 }
@@ -70,6 +70,7 @@ if (event.type === 'Reconnect.Start') {
      - `TIMEOUT` - Enables timeout interval selection
      - `DISCONNECT` - Immediately disconnects on network issues
      - `REGRESSION` - Uses regression-based adaptation
+     - `EXCESSIVE-RTT` - Recognizes excessive round-trip times
    - If using `TIMEOUT`, select a **Timeout Interval** (1000-5000 milliseconds)
 
 5. **Start the Subscription**:
