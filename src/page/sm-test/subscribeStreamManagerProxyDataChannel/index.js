@@ -45,6 +45,57 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   var targetSubscriber
 
+  var subscribeButton = document.querySelector('#subscribe-button')
+  var dcInput = document.querySelector('#dc-input')
+  var modeSelect = document.querySelector('#mode-select')
+  var orderedCheckbox = document.querySelector('#ordered-checkbox')
+  var maxRetransmitsInput = document.querySelector('#max-retransmits-input')
+  var maxLifetimeInput = document.querySelector('#max-lifetime-input')
+
+  var maxSettingsFields = document.querySelectorAll('.max-settings-field')
+  var maxTransmitsFields = document.querySelectorAll('.max-transmits-field')
+  var maxLifetimeFields = document.querySelectorAll('.max-lifetime-field')
+
+  modeSelect.addEventListener('change', function () {
+    if (modeSelect.value === 'max-retransmits') {
+      maxRetransmitsInput.classList.remove('hidden')
+      maxLifetimeInput.classList.add('hidden')
+      maxSettingsFields.forEach(function (field) {
+        field.classList.remove('hidden')
+      })
+      maxTransmitsFields.forEach(function (field) {
+        field.classList.remove('hidden')
+      })
+      maxLifetimeFields.forEach(function (field) {
+        field.classList.add('hidden')
+      })
+    } else if (modeSelect.value === 'max-lifetime') {
+      maxRetransmitsInput.classList.add('hidden')
+      maxLifetimeInput.classList.remove('hidden')
+      maxSettingsFields.forEach(function (field) {
+        field.classList.remove('hidden')
+      })
+      maxTransmitsFields.forEach(function (field) {
+        field.classList.add('hidden')
+      })
+      maxLifetimeFields.forEach(function (field) {
+        field.classList.remove('hidden')
+      })
+    } else {
+      maxRetransmitsInput.classList.add('hidden')
+      maxLifetimeInput.classList.add('hidden')
+      maxSettingsFields.forEach(function (field) {
+        field.classList.add('hidden')
+      })
+      maxTransmitsFields.forEach(function (field) {
+        field.classList.add('hidden')
+      })
+      maxLifetimeFields.forEach(function (field) {
+        field.classList.add('hidden')
+      })
+    }
+  })
+
   var updateStatusFromEvent = window.red5proHandleSubscriberEvent // defined in src/template/partial/status-field-subscriber.hbs
   var instanceId = Math.floor(Math.random() * 0x10000).toString(16)
   var streamTitle = document.getElementById('stream-title')
@@ -316,6 +367,28 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     return undefined
   }
 
+  function getDataChannelConfiguration() {
+    var config = {
+      name: dcInput.value
+    }
+    if (modeSelect.value === 'max-retransmits') {
+      config.ordered = orderedCheckbox.checked
+      config.maxRetransmits = Math.max(
+        parseInt(maxRetransmitsInput.value, 10),
+        0
+      )
+    } else if (modeSelect.value === 'max-lifetime') {
+      config.ordered = orderedCheckbox.checked
+      config.maxPacketLifeTime = Math.max(
+        parseInt(maxLifetimeInput.value, 10),
+        0
+      )
+    } else {
+      config.ordered = modeSelect.value === 'reliable-ordered'
+    }
+    return config
+  }
+
   const getConfiguration = () => {
     const {
       host,
@@ -348,6 +421,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       endpoint,
       streamName: stream1,
       subscriptionId: 'subscriber-' + instanceId,
+      dataChannelConfiguration: getDataChannelConfiguration(),
       connectionParams: {
         ...connectionParams,
         nodeGroup
@@ -357,6 +431,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   const startSubscriber = async () => {
+    subscribeButton.disabled = true
     try {
       const { WHEPClient } = red5prosdk
       const { stream1 } = configuration
@@ -378,9 +453,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         type: red5prosdk.SubscriberEventTypes.CONNECT_FAILURE
       })
       onSubscribeFail(jsonError)
+      subscribeButton.disabled = false
     }
   }
-  startSubscriber()
+
+  subscribeButton.disabled = false
+  subscribeButton.addEventListener('click', startSubscriber)
 
   // Clean up.
   var shuttingDown = false
