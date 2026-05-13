@@ -108,6 +108,12 @@
 
 ***
 
+### optimizationParams?
+
+> `optional` **optimizationParams**: `OptimizationParams`
+
+***
+
 ### port
 
 > **port**: `number`

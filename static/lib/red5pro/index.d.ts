@@ -6,7 +6,7 @@ import { PublishVideoEncoder, PublishAudioEncoder } from 'types/publisher';
 export { PublishAudioEncoder, PublishVideoEncoder } from 'types/publisher';
 import { Logger } from 'browser-bunyan';
 import EventEmitter$1 from 'core/event-emitter';
-import { RTCWhipPublisherConfigType } from 'configuration/publisher';
+import { RTCWhipPublisherConfigType, OptimizationParams } from 'configuration/publisher';
 export { BandwidthConfig, MediaConstraintRange, MediaConstraints, RTCPublisherConfigType, RTCWhipPublisherConfigType, VideoConstraints, defaultWhipPublisherConfig } from 'configuration/publisher';
 import { Event as Event$1, SubscriberEvent, PublisherEvent, MessageTransportStateEvent, PubNubEvent, MessageChannelEvent } from 'event';
 export { Event, MessageChannelEvent, MessageTransportStateEvent, PubNubEvent, PublisherEvent, SubscriberEvent } from 'event';
@@ -180,6 +180,13 @@ declare class WHIPClient extends EventEmitter$1 {
      * @returns {void}
      */
     unmuteVideo(): void;
+    /**
+     * Update the optimization parameters for the published stream.
+     *
+     * @param optimizationParams - The optimization parameters to update.
+     * @returns {void}
+     */
+    updateOptimizationParams(optimizationParams: OptimizationParams): void;
     /**
      * Send a message to the server.
      *

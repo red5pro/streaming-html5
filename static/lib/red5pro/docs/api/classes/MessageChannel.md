@@ -724,3 +724,27 @@ The channel to unsubscribe from.
 #### Inherited from
 
 [`WHIPClient`](WHIPClient.md).[`unsubscribePubNub`](WHIPClient.md#unsubscribepubnub)
+
+***
+
+### updateOptimizationParams()
+
+> **updateOptimizationParams**(`optimizationParams`): `void`
+
+Update the optimization parameters for the published stream.
+
+#### Parameters
+
+##### optimizationParams
+
+`OptimizationParams`
+
+The optimization parameters to update.
+
+#### Returns
+
+`void`
+
+#### Inherited from
+
+[`WHIPClient`](WHIPClient.md).[`updateOptimizationParams`](WHIPClient.md#updateoptimizationparams)

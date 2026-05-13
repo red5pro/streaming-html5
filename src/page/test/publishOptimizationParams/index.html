@@ -1,0 +1,88 @@
+<!doctype html>
+{{> license}}
+<html>
+  <head>
+    {{> meta title='WebRTC Publish Optimization Params Test'}}
+    {{> header-scripts}}
+    {{> header-stylesheets}}
+    <style>
+      code {
+        padding: 0 0.5rem;
+        background-color: #fff;
+      }
+      .settings-area {
+        padding-top: 10px;
+        background-color: #eeee;
+      }
+      .settings-field {
+        display: flex;
+        align-items: center;
+      }
+      .control-container {
+        display: flex;
+        flex-direction: row;
+        background-color: #dbdbdb;
+        padding: 20px;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 12px;
+      }
+      @media (max-width: 510px) {
+        .control-container {
+          flex-direction: column;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    {{> top-bar }}
+    <div id="app">
+      {{> settings-link}}
+      {{> test-info testTitle='Publish Optimization Params Test (WebRTC)'}}
+      <div class="stream-section">
+        {{> status-field-publisher}}
+        {{> statistics-field packets_field='Packets Sent'}}
+        <div class="centered">
+          <video id="red5pro-publisher" class="red5pro-publisher"
+                 controls autoplay playsinline muted>
+          </video>
+        </div>
+        <div class="settings-area">
+          <p class="settings-field settings-collapsable">
+            <label class="settings-label" for="content-hint-select">contentHint:</label>
+            <select id="content-hint-select" class="control settings-control">
+              <option value="">(not set)</option>
+              <option value="speech">speech</option>
+              <option value="speech-recognition">speech-recognition</option>
+              <option value="text">text</option>
+              <option value="music">music</option>
+              <option value="detail">detail</option>
+              <option value="motion" selected>motion</option>
+            </select>
+          </p>
+          <p class="settings-field settings-collapsable">
+            <label class="settings-label" for="degradation-preference-select">degradationPreference:</label>
+            <select id="degradation-preference-select" class="control settings-control">
+              <option value="">(not set)</option>
+              <option value="balanced" selected>balanced</option>
+              <option value="maintain-framerate">maintain-framerate</option>
+              <option value="maintain-resolution">maintain-resolution</option>
+              <option value="maintain-framerate-and-resolution">maintain-framerate-and-resolution</option>
+            </select>
+          </p>
+          <p class="control-container">
+            <button id="publish-button" type="button" class="ui-button">Start Publish</button>
+            <button id="apply-optimization-button" type="button" class="ui-button" disabled>Apply optimization params</button>
+          </p>
+          <div class="test-notification">
+            <p>Click <strong>Start Publish</strong> to begin. After the stream is live, change the selects and use <strong>Apply optimization params</strong> to call <code>WHIPClient.updateOptimizationParams</code> without reconnecting.</p>
+            <p>For the Stream Manager proxy variant, see <a href="../../sm-test/publishStreamManagerProxyOptimizationParams/">Publish - Stream Manager Proxy Optimization Params</a>.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    {{> footer}}
+    {{> body-scripts}}
+    <script src="index.js"></script>
+  </body>
+</html>

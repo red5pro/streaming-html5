@@ -339,7 +339,7 @@ The policy has the following type structure:
 
 ```typescript
 type RenegotiationPolicyType = {
-  type: 'regression' | 'timeout' | 'disconnect'
+  type: 'regression' | 'timeout' | 'disconnect' | 'excessive-rtt'
   iceTimeoutInterval: number
 }
 ```
@@ -351,6 +351,7 @@ The following `type` values are:
 | `regression` | When the ICE status has changed from a previously designated `success`. This will not always occur during ICE negotiation failures. |
 | `timeout` | When it has been determined (in conjunction with the `iceTimeoutInterval`), that too much time has elapsed since the start of the negotiation process in order for it to conclude successfully. |
 | `disconnect` | When the peer connection has decided to disconnect after a failure of ICE negotiation. |
+| `excessive-rtt` | Then the round-trip time determined through statistics is considered excessive (anything over `600ms` is considered severe.)
 
 Typically, these will be executed in the order defined in the table above, however it should be noted that sometimes a `regression` may not occur in poor connection scenarios. If the process were to fail, both `timeout` and `disconnect` will occur.
 
