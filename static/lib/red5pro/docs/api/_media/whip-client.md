@@ -283,6 +283,8 @@ In addition to the above events, the following events are also dispatched from a
 
 With the `15.4.0` release of the SDK, we introduced the possibility to auto re-connect a `WHIPClient` upon disconnection for such situations as network loss.
 
+> NOTE: This feature requires a server-side configuration for the `resilient-stream` plugin to work.
+
 ## Reconnect Configuration
 
 The configuration used for statistics monitoring has the following structure (and their defaults):
