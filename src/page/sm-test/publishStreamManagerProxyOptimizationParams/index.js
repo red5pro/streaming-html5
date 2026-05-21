@@ -194,7 +194,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             }
           : false,
         frameRate: {
-          min: 25,
+          min: 20,
           ideal: 60,
           max: 60
         }
@@ -236,6 +236,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       ...defaultConfiguration,
       ...getUserMediaConfiguration(),
       endpoint,
+      keyFramerate: 2000,
       streamName: stream1,
       bandwidth: {
         audio: 56,

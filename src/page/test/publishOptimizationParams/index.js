@@ -155,19 +155,19 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       video: configuration.useVideo
         ? {
             width: {
-              min: 640,
-              ideal: 1920,
+              min: 1280,
+              ideal: 1280,
               max: 1920
             },
             height: {
-              min: 480,
-              ideal: 1080,
+              min: 720,
+              ideal: 720,
               max: 1080
             }
           }
         : false,
       frameRate: {
-        min: 25,
+        min: 20,
         ideal: 60,
         max: 60
       }
@@ -188,6 +188,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       {
         mediaConstraints: getUserMediaConfiguration(),
         streamName: configuration.stream1,
+        keyFramerate: 2000,
         bandwidth: {
           audio: 56,
           video: 2500
