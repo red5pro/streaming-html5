@@ -1,7 +1,13 @@
 # Changes
 
+## 15.6.0
+
+- feat: Optimization Params for `WHIPClient` (Todd Anderson).
+- fix: DataChannel Configuration supports all properties (Todd Anderson).
+
 ## 15.5.0
 
+- fix: DataChannel Configuration supports all properties.
 - [See 15.4.0-beta.1](#1540-beta1)
 - [See 15.4.0-alpha.1](#1540-alpha1)
 
