@@ -57,18 +57,32 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   const streamDetailsField = document.getElementById('stream-field')
   const endpointField = document.getElementById('endpoint-field')
+  const subscribeStatus = document.getElementById('subscribeStatus')
+  const subscribeStatusMessage = document.getElementById('subscribeStatusMessage')
+  const subscribeStatusDetail = document.getElementById('subscribeStatusDetail')
+  const subscribeStatusCancel = document.getElementById('subscribeStatusCancel')
 
   let jwt
+  // RTA credentials supplied by the start-mixer form. When set, these flow into
+  // both the createMixerEvent body (for the mixer's outbound publish to origin)
+  // and the WHEP subscribe connectionParams. Per the testing convention, we
+  // assume publisher creds are sufficient to subscribe; in production an origin
+  // may distinguish them, but for this testbed they're the same.
+  let mixerRtaCredentials = null
   let guids = []
   const GUID_COUNT = 25
   const ZOOM_DELAY = 30
-  const {
-    host,
-    streamManagerUser,
-    streamManagerPassword,
-    streamManagerAPI: smVersion,
-    streamManagerNodeGroup: nodeGroupName
-  } = configuration
+  // Stream-Manager-specific config defaults from sessionStorage. These are
+  // populated into the form on page load so the user can see and override them
+  // per-run. After the user clicks START, these vars are reassigned from the
+  // form values and used for SM auth, AS-Streams calls, and WHEP endpoint
+  // construction.
+  let host = configuration.host
+  let streamManagerUser = configuration.streamManagerUser
+  let streamManagerPassword = configuration.streamManagerPassword
+  let smVersion = configuration.streamManagerAPI
+  let nodeGroupName = configuration.streamManagerNodeGroup
+  let smRegion = configuration.streamManagerRegion
 
   let ipReg = /^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/
   let localhostReg = /^localhost.*/
@@ -81,7 +95,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   const getRegionIfDefined = () => {
-    const region = configuration.streamManagerRegion
+    const region = smRegion
     if (
       typeof region === 'string' &&
       region.length > 0 &&
@@ -93,6 +107,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   const getAuthenticationParams = () => {
+    // mixer-form RTA creds win over the testbed-wide authentication settings
+    // when both are present. The testbed setting is a global default; the mixer
+    // form is per-mixer and reflects the publisher creds for this run.
+    if (mixerRtaCredentials) {
+      const { username, password, token } = mixerRtaCredentials
+      return { connectionParams: { username, password, token } }
+    }
     const { authentication } = configuration
     const { enabled, username, password, token } = authentication
     return enabled
@@ -108,11 +129,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   const getConfiguration = () => {
     const { path, name } = pathAndNameFromGuid(mixerStreamGuid)
-    const {
-      host,
-      streamManagerAPI,
-      streamManagerNodeGroup: nodeGroup
-    } = configuration
+    // Read SM-specific fields from the mutable module vars rather than
+    // re-destructuring `configuration`, so form-supplied overrides take effect.
     const { protocol, port } = getSocketLocationFromProtocol(host)
 
     const region = getRegionIfDefined()
@@ -124,7 +142,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       : undefined
 
     const httpProtocol = protocol === 'ws' ? 'http' : 'https'
-    const endpoint = `${httpProtocol}://${host}:${port}/as/${streamManagerAPI}/proxy/whep/${path}/${name}`
+    const endpoint = `${httpProtocol}://${host}:${port}/as/${smVersion}/proxy/whep/${path}/${name}`
 
     const connectionParams = params
       ? { ...params, ...getAuthenticationParams().connectionParams }
@@ -137,7 +155,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       streamName: name,
       connectionParams: {
         ...connectionParams,
-        nodeGroup
+        nodeGroup: nodeGroupName
       }
     }
     return rtcConfig
@@ -298,6 +316,102 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   const mixerFormSubmit = document.getElementById('mixer-form-submit')
   const activeTreeBox = document.getElementById('activeTreeBox')
   const renderTreeSubmit = document.getElementById('render-tree-submit')
+  const mixerCloseButton = document.getElementById('mixerCloseButton')
+  const mixerPicker = document.getElementById('mixerPicker')
+  const mixerPickerList = document.getElementById('mixerPickerList')
+  const smHostField = document.getElementById('smHost')
+  const smApiVersionField = document.getElementById('smApiVersion')
+  const smAdminUsernameField = document.getElementById('smAdminUsername')
+  const smAdminPasswordField = document.getElementById('smAdminPassword')
+  const smNodeGroupField = document.getElementById('smNodeGroup')
+  const smRegionField = document.getElementById('smRegion')
+  const formValidationMessage = document.getElementById('formValidationMessage')
+
+  // Dismiss the Start New Mixer modal without creating a mixer. Used by the
+  // close button and the Escape key. The form can't be reopened without a page
+  // reload — that's fine, the user is exiting the flow.
+  const closeMixerForm = () => {
+    startComp.classList.add('hidden')
+    startComp.classList.add('offscreen')
+  }
+  mixerCloseButton.addEventListener('click', event => {
+    event.preventDefault()
+    closeMixerForm()
+  })
+
+  // Per-field password show/hide toggle. Each .toggle-password button has a
+  // data-target attribute naming the input id to toggle.
+  document.querySelectorAll('.toggle-password').forEach(btn => {
+    btn.addEventListener('click', event => {
+      event.preventDefault()
+      const targetId = btn.dataset.target
+      const input = document.getElementById(targetId)
+      if (!input) {
+        return
+      }
+      input.type = input.type === 'password' ? 'text' : 'password'
+      // Eye → eye-in-speech-bubble when revealed (matches debug-ui).
+      btn.textContent = input.type === 'password' ? '👁️' : '👁️‍🗨️'
+    })
+  })
+  document.addEventListener('keydown', event => {
+    if (
+      event.key === 'Escape' &&
+      !startComp.classList.contains('hidden')
+    ) {
+      closeMixerForm()
+    }
+  })
+
+  const populateSmFormFromSettings = () => {
+    smHostField.value = host || ''
+    smApiVersionField.value = smVersion || ''
+    smAdminUsernameField.value = streamManagerUser || ''
+    smAdminPasswordField.value = streamManagerPassword || ''
+    smNodeGroupField.value = nodeGroupName || ''
+    smRegionField.value = smRegion || ''
+  }
+
+  // Validate required form fields. Returns the first invalid field element
+  // and a message, or null if everything is valid. On invalid: highlights the
+  // field, scrolls to it, focuses it, and shows a message above the submit
+  // button.
+  const clearFieldErrors = () => {
+    document
+      .querySelectorAll('.mixer-field-error')
+      .forEach(el => el.classList.remove('mixer-field-error'))
+    formValidationMessage.classList.add('hidden')
+    formValidationMessage.textContent = ''
+  }
+
+  const flagFieldInvalid = (field, message) => {
+    field.classList.add('mixer-field-error')
+    formValidationMessage.textContent = message
+    formValidationMessage.classList.remove('hidden')
+    field.focus()
+    field.scrollIntoView({ block: 'center', behavior: 'smooth' })
+  }
+
+  const validateMixerForm = () => {
+    clearFieldErrors()
+    // (field, message) — checked in order; first failure wins.
+    const required = [
+      [smHostField, 'SM Host is required.'],
+      [smApiVersionField, 'SM API Version is required.'],
+      [smAdminUsernameField, 'SM Admin Username is required.'],
+      [smAdminPasswordField, 'SM Admin Password is required.'],
+      [smNodeGroupField, 'Node Group is required.'],
+      [eventIdField, 'Event ID is required.'],
+      [mixerGuidField, 'Output GUID is required.']
+    ]
+    for (const [field, message] of required) {
+      if (!field.value || !field.value.trim()) {
+        flagFieldInvalid(field, message)
+        return false
+      }
+    }
+    return true
+  }
   const radioButtons = document.querySelectorAll('input[name="layout"]')
   radioButtons.forEach(radioButton => {
     radioButton.addEventListener('change', async event => {
@@ -1147,26 +1261,174 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
   }
 
+  // Single subscribe attempt. Throws on failure so callers can implement retry.
+  // Caller is responsible for user-facing error messaging.
   const startSubscription = async () => {
     currentState = OverlayStates.IDLE
-    try {
-      const { WHEPClient } = window.red5prosdk
-      const config = getConfiguration()
-      const subscriber = new WHEPClient()
-      subscriber.on('*', onSubscriberEvent)
-      await subscriber.init(config)
-      await subscriber.subscribe()
-      streamDetailsField.innerHTML = `<p>Stream Guid:</p><p>${config.app}/${config.streamName}</p>`
-    } catch (error) {
-      console.error(
-        '[Red5ProSubscriber] :: Error: for stream ' +
-          getConfiguration().streamName,
-        error
+    const { WHEPClient } = window.red5prosdk
+    const config = getConfiguration()
+    const subscriber = new WHEPClient()
+    subscriber.on('*', onSubscriberEvent)
+    await subscriber.init(config)
+    await subscriber.subscribe()
+    streamDetailsField.innerHTML = `<p>Stream Guid:</p><p>${config.app}/${config.streamName}</p>`
+  }
+
+  // ============= SUBSCRIBE RETRY ===============
+  // After a mixer is created, the SM and origin take a moment to register the
+  // stream and have it ready for WHEP. We try several times, briefly silently,
+  // then surface a status panel with a Cancel button. Each failed attempt also
+  // probes the AS-Streams "subscribe" endpoint to disambiguate "SM doesn't have
+  // the stream yet" from "SM has it but WebRTC negotiation failed".
+  const SUBSCRIBE_INITIAL_DELAY_MS = 2000
+  const SUBSCRIBE_RETRY_DELAY_MS = 1500
+  const SUBSCRIBE_SILENT_ATTEMPTS = 3
+  const SUBSCRIBE_MAX_ATTEMPTS = 15
+
+  let subscribeCancelled = false
+  // Set true after a successful createMixerEvent so the cancel button knows
+  // there is a real mixer to (offer to) clean up.
+  let mixerWasCreated = false
+  // Last eventId used for createMixerEvent — needed by the cancel handler so
+  // it can call stopMixerEvent without having to thread the value back from
+  // startNewMixer.
+  let lastCreateEventId = null
+
+  const showSubscribeStatus = (message, detail) => {
+    subscribeStatusMessage.textContent = message
+    subscribeStatusDetail.textContent = detail || ''
+    subscribeStatus.classList.remove('hidden')
+  }
+
+  const hideSubscribeStatus = () => {
+    subscribeStatus.classList.add('hidden')
+  }
+
+  // Re-show the start mixer modal. Used after cancel, so the user can adjust
+  // settings and retry without reloading.
+  const reopenMixerForm = () => {
+    startComp.classList.remove('hidden')
+    startComp.classList.remove('offscreen')
+    mixerFormSubmit.disabled = false
+  }
+
+  subscribeStatusCancel.addEventListener('click', () => {
+    subscribeCancelled = true
+    let stoppedMixer = false
+    if (mixerWasCreated && jwt && lastCreateEventId) {
+      if (window.confirm('Stop the mixer?')) {
+        try {
+          brewmixer.stopMixerEvent(
+            host,
+            jwt,
+            smVersion,
+            nodeGroupName,
+            lastCreateEventId
+          )
+          stoppedMixer = true
+          mixerWasCreated = false
+          console.log('Mixer stopped on cancel:', lastCreateEventId)
+        } catch (e) {
+          console.warn('Failed to stop mixer on cancel:', e)
+        }
+      }
+    }
+    hideSubscribeStatus()
+    streamDetailsField.textContent = stoppedMixer
+      ? 'Cancelled. Mixer stopped.'
+      : mixerWasCreated
+        ? 'Subscription cancelled. Mixer is still running.'
+        : 'Cancelled.'
+    // Bring the form back so the user can adjust and retry.
+    reopenMixerForm()
+  })
+
+  const formatProbeDetail = probe => {
+    if (probe.ok) {
+      return `Stream Manager has the stream registered (HTTP ${probe.status}). WebRTC negotiation failed — see console.`
+    }
+    if (probe.status === 0) {
+      return `Stream Manager probe network error: ${probe.body}.`
+    }
+    if (probe.status === 404) {
+      return `Stream Manager doesn't have the stream registered yet (HTTP 404).`
+    }
+    return `Stream Manager probe returned HTTP ${probe.status}.`
+  }
+
+  // freshlyCreated: when true, the mixer was just created and needs a moment
+  // to settle on origin/SM before WHEP can succeed — so we wait
+  // SUBSCRIBE_INITIAL_DELAY_MS before the first attempt. When false (existing
+  // mixer chosen from the picker or via URL deeplink), the mixer is already
+  // running and we go straight to subscribing.
+  const startSubscriptionWithRetry = async (freshlyCreated = false) => {
+    // Don't reset subscribeCancelled here — startNewMixer set it false at the
+    // top of its flow, and we need to honor a click that happened during the
+    // sync XHRs before us. (For the page-load existing-mixer path the value is
+    // already false, so this is a no-op.)
+    if (freshlyCreated) {
+      showSubscribeStatus(
+        'Waiting briefly for the mixer to settle…',
+        ''
       )
-      streamDetailsField.textContent = `Could not start subscription. See console for error.`
-      alert('Could not start subscription. See console for error.')
+      // initial wait for the freshly-created mixer to settle on origin/SM
+      await new Promise(r => setTimeout(r, SUBSCRIBE_INITIAL_DELAY_MS))
+      if (subscribeCancelled) {
+        hideSubscribeStatus()
+        return
+      }
+    }
+    showSubscribeStatus('Subscribing…', '')
+
+    let attempt = 0
+    while (attempt < SUBSCRIBE_MAX_ATTEMPTS) {
+      if (subscribeCancelled) {
+        console.log('[Red5ProSubscriber] subscription cancelled by user')
+        return
+      }
+      attempt++
+      try {
+        await startSubscription()
+        hideSubscribeStatus()
+        return
+      } catch (error) {
+        console.warn(
+          `[Red5ProSubscriber] subscribe attempt ${attempt}/${SUBSCRIBE_MAX_ATTEMPTS} failed:`,
+          error
+        )
+        // probe SM for diagnostic — never throws
+        const probe = await brewmixer.probeServerForSubscribe(
+          host,
+          jwt,
+          smVersion,
+          nodeGroupName,
+          mixerStreamGuid
+        )
+        const probeDetail = formatProbeDetail(probe)
+        console.log('[Red5ProSubscriber] SM probe:', probe)
+
+        if (attempt >= SUBSCRIBE_SILENT_ATTEMPTS) {
+          showSubscribeStatus(
+            `Retrying subscribe (attempt ${attempt}/${SUBSCRIBE_MAX_ATTEMPTS})…`,
+            probeDetail
+          )
+        }
+        if (attempt < SUBSCRIBE_MAX_ATTEMPTS) {
+          await new Promise(r => setTimeout(r, SUBSCRIBE_RETRY_DELAY_MS))
+        }
+      }
+    }
+
+    // exhausted retries
+    if (!subscribeCancelled) {
+      hideSubscribeStatus()
+      streamDetailsField.textContent = `Could not start subscription after ${SUBSCRIBE_MAX_ATTEMPTS} attempts. See console for details.`
+      alert(
+        `Could not start subscription after ${SUBSCRIBE_MAX_ATTEMPTS} attempts. See console for details.`
+      )
     }
   }
+  // ============= /SUBSCRIBE RETRY ===============
 
   const toggleMute = () => {
     video.muted = !video.muted
@@ -1193,12 +1455,199 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
   initStreamGuid()
 
+  // ============= AUTH ===============
+  // Local SM admin auth that mirrors `curl -X PUT https://user:pass@host/auth/login`
+  // exactly: just an `Authorization: Basic …` header, nothing else. The shared
+  // `streamManagerUtil.authenticate2` adds Content-Type: application/json with
+  // an empty body, withCredentials (cookies), and uses synchronous XHR — any of
+  // which can elicit a 403 from a strict reverse proxy / security filter
+  // depending on environment. Keeping our own copy here so we don't have to
+  // touch the shared utility (other testbed pages depend on it).
+  const authenticateMinimal = async (smHost, smVersion, smUser, smPassword) => {
+    const url = `https://${smHost}/as/${smVersion}/auth/login`
+    const resp = await fetch(url, {
+      method: 'PUT',
+      headers: {
+        Authorization: 'Basic ' + btoa(smUser + ':' + smPassword)
+      }
+    })
+    if (!resp.ok) {
+      // Read the body if any for diagnostics, but don't fail on JSON parse —
+      // SMs sometimes return HTML on auth-layer rejections.
+      let body = ''
+      try {
+        body = await resp.text()
+      } catch (_) {
+        /* ignore */
+      }
+      throw new Error(`HTTP ${resp.status}` + (body ? `: ${body.slice(0, 200)}` : ''))
+    }
+    const data = await resp.json()
+    if (data.errorMessage) {
+      throw new Error(data.errorMessage)
+    }
+    return data.token
+  }
+  // ============= /AUTH ===============
+
+  // ============= DIAGNOSTICS ===============
+  // After a createMixerEvent failure, query AS-Admin to produce a more useful
+  // error message. Two common causes we can detect:
+  //   1. user said "default" but multiple nodegroups exist (the alias only
+  //      resolves when there's exactly one)
+  //   2. the chosen nodegroup has no role with Capability.MIX, or no such node
+  //      is currently INSERVICE.
+  // Each check is best-effort; if any underlying call itself errors, we note
+  // that and fall through with what we have.
+  const diagnoseCreateMixerFailure = async (originalError, requestedNodeGroup) => {
+    const lines = [`Failed to create mixer: ${originalError.message}`, '']
+    let resolvedNg = requestedNodeGroup
+    try {
+      // 1. "default" alias check
+      if (requestedNodeGroup === 'default') {
+        const groups = await brewmixer.listNodeGroups(host, jwt, smVersion)
+        if (!groups || groups.length === 0) {
+          lines.push('No nodegroups are defined on this Stream Manager.')
+          return lines.join('\n')
+        }
+        if (groups.length > 1) {
+          lines.push(
+            `The "default" alias resolves only when there is exactly one nodegroup. This Stream Manager has ${groups.length}: ${groups.join(', ')}.`
+          )
+          lines.push('Set the Node Group field to one of those names.')
+          return lines.join('\n')
+        }
+        // exactly one — proceed using its real name
+        resolvedNg = groups[0]
+        lines.push(`(Using sole nodegroup "${resolvedNg}".)`)
+      }
+
+      // 2. nodegroup exists?
+      const config = await brewmixer.getNodeGroupConfig(
+        host,
+        jwt,
+        smVersion,
+        resolvedNg
+      )
+      if (config === null) {
+        lines.push(`Nodegroup "${resolvedNg}" was not found.`)
+        try {
+          const groups = await brewmixer.listNodeGroups(host, jwt, smVersion)
+          if (groups && groups.length > 0) {
+            lines.push(`Available nodegroups: ${groups.join(', ')}.`)
+          }
+        } catch (_) {
+          /* ignore secondary error */
+        }
+        return lines.join('\n')
+      }
+
+      // 3. find roles with MIX capability (role name is arbitrary, capability is fixed)
+      const mixRoles = []
+      if (config.roles) {
+        for (const [roleName, role] of Object.entries(config.roles)) {
+          if (role && role.capabilities && role.capabilities.indexOf('MIX') >= 0) {
+            mixRoles.push(roleName)
+          }
+        }
+      }
+      if (mixRoles.length === 0) {
+        lines.push(
+          `Nodegroup "${resolvedNg}" has no role with Capability.MIX. Add a role with that capability to the nodegroup config.`
+        )
+        return lines.join('\n')
+      }
+
+      // 4. any of those roles INSERVICE?
+      const nodes = await brewmixer.getNodeGroupStatus(
+        host,
+        jwt,
+        smVersion,
+        resolvedNg
+      )
+      if (!nodes) {
+        lines.push(`Could not read status for nodegroup "${resolvedNg}".`)
+        return lines.join('\n')
+      }
+      const matchingMixerNodes = nodes.filter(
+        n => n.nodeEvent && mixRoles.indexOf(n.nodeEvent.nodeRoleName) >= 0
+      )
+      const inServiceMixerNodes = matchingMixerNodes.filter(
+        n => n.scalingEvent && n.scalingEvent.state === 'INSERVICE'
+      )
+      if (inServiceMixerNodes.length === 0) {
+        lines.push(
+          `Nodegroup "${resolvedNg}" defines MIX-capable role(s): ${mixRoles.join(', ')}.`
+        )
+        if (matchingMixerNodes.length === 0) {
+          lines.push(
+            'But no node with one of those roles exists in the group. Wait for a mixer node to spin up, or check your nodegroup config.'
+          )
+        } else {
+          const states = matchingMixerNodes.map(
+            n =>
+              `${n.nodeEvent.nodeRoleName}=${
+                n.scalingEvent ? n.scalingEvent.state : 'unknown'
+              }`
+          )
+          lines.push(
+            `Nodes with mixer roles exist but none are INSERVICE — current states: ${states.join(', ')}.`
+          )
+        }
+        return lines.join('\n')
+      }
+
+      // 5. mixer nodes are available — original error is something else
+      lines.push(
+        `Nodegroup "${resolvedNg}" has ${inServiceMixerNodes.length} INSERVICE mixer node(s) (role(s): ${mixRoles.join(', ')}).`
+      )
+      lines.push(
+        'Mixer creation failed for some other reason. See the browser console for the original response body.'
+      )
+    } catch (e) {
+      lines.push(`(Diagnostic queries failed: ${e.message})`)
+      console.warn('diagnoseCreateMixerFailure error', e)
+    }
+    return lines.join('\n')
+  }
+  // ============= /DIAGNOSTICS ===============
+
   // ============= INITIALIZATION ===============
   const startNewMixer = async () => {
+    if (!validateMixerForm()) {
+      return
+    }
+
+    // Apply Stream-Manager-specific overrides from the form. If admin creds,
+    // host, or API version changed, drop the cached JWT so we re-authenticate.
+    const newHost = smHostField.value.trim()
+    const newSmVersion = smApiVersionField.value.trim()
+    const newSmUser = smAdminUsernameField.value.trim()
+    const newSmPassword = smAdminPasswordField.value
+    const newNodeGroup = smNodeGroupField.value.trim()
+    const newRegion = smRegionField.value.trim()
+    const smIdentityChanged =
+      newHost !== host ||
+      newSmVersion !== smVersion ||
+      newSmUser !== streamManagerUser ||
+      newSmPassword !== streamManagerPassword
+    host = newHost
+    smVersion = newSmVersion
+    streamManagerUser = newSmUser
+    streamManagerPassword = newSmPassword
+    nodeGroupName = newNodeGroup
+    smRegion = newRegion
+    if (smIdentityChanged) {
+      jwt = null
+    }
+
     mixerStreamGuid = mixerGuidField.value
     initStreamGuid()
 
-    const eventId = document.getElementById('eventIdField').value
+    // Assign to the module-level `let eventId` (was a `const` shadow before),
+    // so subsequent calls to init() / updateRenderTrees / stopMixer all see
+    // the eventId the user actually entered in the form.
+    eventId = document.getElementById('eventIdField').value
     const outputWidth = document.getElementById('outputWidth').value
     const outputHeight = document.getElementById('outputHeight').value
     const bitrate = document.getElementById('bitrate').value
@@ -1207,6 +1656,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     const maxbitrate = document.getElementById('maxbitrate').value
     const framerate = document.getElementById('framerate').value
     const audiorate = document.getElementById('audiorate').value
+    const rtaUsername = document.getElementById('rtaUsername').value
+    const rtaPassword = document.getElementById('rtaPassword').value
+    const rtaToken = document.getElementById('rtaToken').value
 
     const request = {
       eventId: eventId,
@@ -1222,11 +1674,75 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       audioChannels: 2,
       subMixes: 1
     }
+    if (rtaUsername || rtaPassword || rtaToken) {
+      request.credentials = {
+        username: rtaUsername || null,
+        password: rtaPassword || null,
+        token: rtaToken || null
+      }
+      // remember for reuse on subscribe
+      mixerRtaCredentials = {
+        username: rtaUsername || undefined,
+        password: rtaPassword || undefined,
+        token: rtaToken || undefined
+      }
+    } else {
+      mixerRtaCredentials = null
+    }
+
+    // Reset cancel/created state for this new run, hide the form, and surface
+    // a status panel that updates between each phase. yieldUI() forces a paint
+    // before the next synchronous XHR blocks the UI thread, so messages like
+    // "Creating mixer…" actually become visible.
+    subscribeCancelled = false
+    mixerWasCreated = false
+    lastCreateEventId = eventId
+    closeMixerForm()
+    const yieldUI = () => new Promise(r => setTimeout(r, 0))
+
+    // If the user changed SM admin/host/version, jwt was cleared above; re-auth
+    // before calling createMixerEvent so we don't send `Bearer null`.
+    if (!jwt) {
+      showSubscribeStatus('Authenticating with Stream Manager…', '')
+      await yieldUI()
+      try {
+        jwt = await authenticateMinimal(
+          host,
+          smVersion,
+          streamManagerUser,
+          streamManagerPassword
+        )
+      } catch (e) {
+        console.error('Error authenticating with Stream Manager', e)
+        hideSubscribeStatus()
+        reopenMixerForm()
+        alert(
+          `Error authenticating with Stream Manager: ${
+            e.message ? e.message : 'error'
+          }. See console for details.`
+        )
+        return
+      }
+    }
+    if (subscribeCancelled) {
+      hideSubscribeStatus()
+      return
+    }
 
     try {
+      showSubscribeStatus('Creating mixer…', `Event ID: ${eventId}`)
+      await yieldUI()
       brewmixer.createMixerEvent(host, jwt, smVersion, nodeGroupName, request)
+      mixerWasCreated = true
       mixerFormSubmit.disabled = true
+      if (subscribeCancelled) {
+        // The cancel handler already prompted/handled stopMixerEvent if needed.
+        return
+      }
+
       // create the default nodegraph
+      showSubscribeStatus('Setting up render tree…', '')
+      await yieldUI()
       brewmixer.updateRenderTrees(
         host,
         jwt,
@@ -1235,13 +1751,24 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         eventId,
         [globalNodeGraph]
       )
+      if (subscribeCancelled) {
+        return
+      }
 
-      // sleep before subscribe
-      await new Promise(r => setTimeout(r, 1000))
-      // init / start subscription
-      init(getConfiguration(), 'stream')
+      // We already PUT the default render tree as `globalNodeGraph`, and we
+      // know which mixer we just created. Subscribe directly rather than going
+      // back through init() (which would show the picker for the freshly-
+      // created event since URL params don't match it).
+      showSubscribeStatus('Initializing subscription…', '')
+      subscribeToRenderTrees([globalNodeGraph], true /* freshlyCreated */)
     } catch (error) {
-      alert(`Error: ${error.message}`)
+      console.error('createMixerEvent failed:', error)
+      hideSubscribeStatus()
+      if (!mixerWasCreated) {
+        reopenMixerForm()
+      }
+      const message = await diagnoseCreateMixerFailure(error, nodeGroupName)
+      alert(message)
     }
   }
 
@@ -1325,7 +1852,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   const init = async (configuration, prefix = 'stream') => {
-    const { app, host } = configuration
+    // `app` is the input-stream context (e.g. `live` -> `live/stream1`); the SM
+    // host comes from the module-level mutable `host` so that form overrides
+    // apply.
+    const { app } = configuration
 
     for (let i = 0; i < GUID_COUNT; i++) {
       guids[i] = `${app}/${prefix}${i + 1}`
@@ -1348,31 +1878,138 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     resizeObserver.observe(video)
     initCanvasEvents()
 
+    // Always sync ALL SM-specific module vars from the form. The form was
+    // populated by populateSmFormFromSettings() at window.onload (or filled
+    // in by browser autofill / the user). Use those values as the source of
+    // truth so module vars don't go stale relative to the form.
+    {
+      const formHost = smHostField.value.trim()
+      const formSmVersion = smApiVersionField.value.trim()
+      const formUser = smAdminUsernameField.value.trim()
+      const formPassword = smAdminPasswordField.value
+      const formNodeGroup = smNodeGroupField.value.trim()
+      const formRegion = smRegionField.value.trim()
+      if (formHost) host = formHost
+      if (formSmVersion) smVersion = formSmVersion
+      if (formUser) streamManagerUser = formUser
+      if (formPassword) streamManagerPassword = formPassword
+      if (formNodeGroup) nodeGroupName = formNodeGroup
+      smRegion = formRegion // region is allowed to be cleared
+    }
+
     if (!jwt) {
-      // This JWT will expire, but we cache it forever with no strategy to update
+      if (
+        !host ||
+        !smVersion ||
+        !streamManagerUser ||
+        !streamManagerPassword
+      ) {
+        console.log(
+          'SM admin credentials not configured; skipping auth on load. The form is shown so the user can enter them and click Start.'
+        )
+        return
+      }
       try {
-        jwt = await streamManagerUtil.authenticate2(
+        jwt = await authenticateMinimal(
           host,
           smVersion,
           streamManagerUser,
           streamManagerPassword
         )
       } catch (e) {
-        console.error('Error authenticating with Stream Manager', e)
-        alert(
-          `Error authenticating with Stream Manager: ${
-            e.message ? e.message : 'error'
-          }. See console for details.`
-        )
-        throw e
+        console.error('Error authenticating with Stream Manager:', e)
+        // intentionally no alert here — load-time auth failures are quiet so
+        // the user can correct the form and retry via Start.
+        return
       }
     }
 
-    // first, use the query params and try to get the nodegraph for the specified stream (if any).
-    // if it exists, start subscription, show controls etc
-    // [if it doesn't exist, only show the Start New Mixer controls (default behavior for simplicity)]
-    let renderTrees = null
+    // Default the create-form node graph regardless of which path runs below;
+    // subscribeToRenderTrees overwrites globalNodeGraph if it auto-connects.
+    globalNodeGraph = JSON.parse(defaultGraphValue)[0]
+    activeNodeGraph.value = defaultGraphValue
+    mixerFormSubmit.disabled = false
 
+    // Query existing mixer events. Empty/error → just leave the create form.
+    let mixerEvents = {}
+    try {
+      console.log(
+        `[picker] listing mixer events: host=${host} smVersion=${smVersion} nodeGroup=${nodeGroupName}`
+      )
+      mixerEvents = await brewmixer.getMixerEvents(
+        host,
+        jwt,
+        smVersion,
+        nodeGroupName
+      )
+      console.log(
+        `[picker] got ${
+          mixerEvents ? Object.keys(mixerEvents).length : 0
+        } event(s):`,
+        mixerEvents
+      )
+    } catch (error) {
+      console.warn('[picker] Failed to list mixer events:', error)
+    }
+
+    // Honor an explicit URL `?event=` if it matches an existing event — this
+    // preserves the deep-link-to-a-specific-mixer behavior that previously
+    // worked for `?event=event1`.
+    const urlExplicitEvent = urlParams.get('event')
+    if (urlExplicitEvent && mixerEvents && mixerEvents[urlExplicitEvent]) {
+      const loc = mixerEvents[urlExplicitEvent]
+      connectToExistingMixer(urlExplicitEvent, loc.streamGuid || mixerStreamGuid)
+      return
+    }
+
+    // No explicit deep-link. If there are existing events, surface them in the
+    // picker. The create form stays visible below, so the user can choose to
+    // create a new one with a different eventId instead.
+    const eventEntries = mixerEvents ? Object.entries(mixerEvents) : []
+    if (eventEntries.length > 0) {
+      populateMixerPicker(eventEntries)
+      mixerPicker.classList.remove('hidden')
+    } else {
+      mixerPicker.classList.add('hidden')
+    }
+
+    // if they stop the mixer, hide the other controls and revert to only New Mixer controls.
+    // rely on the subscriber client to stop on its own.
+  }
+
+  // Build a Connect button for each existing mixer event. Clicking it sets
+  // the module-level eventId/mixerStreamGuid and runs the subscribe path.
+  const populateMixerPicker = entries => {
+    mixerPickerList.innerHTML = ''
+    for (const [pickedEventId, location] of entries) {
+      const li = document.createElement('li')
+      const button = document.createElement('button')
+      button.type = 'button'
+      button.className = 'mixer-picker-connect'
+      const guid = (location && location.streamGuid) || ''
+      button.innerHTML = `<span class="picker-event-id">${pickedEventId}</span> <span class="picker-stream-guid">— ${guid || 'no streamGuid'}</span>`
+      button.addEventListener('click', () => {
+        connectToExistingMixer(pickedEventId, guid)
+      })
+      li.appendChild(button)
+      mixerPickerList.appendChild(li)
+    }
+  }
+
+  // Fetch the chosen mixer's render tree(s) and start a subscription.
+  const connectToExistingMixer = (chosenEventId, chosenStreamGuid) => {
+    // Promote the chosen event into the module-level identity so subsequent
+    // calls (updateRenderTrees, stopMixer, subscribe URL construction) all
+    // refer to it.
+    eventId = chosenEventId
+    if (chosenStreamGuid) {
+      mixerStreamGuid = chosenStreamGuid
+    }
+    initStreamGuid()
+    eventIdField.value = chosenEventId
+    mixerGuidField.value = mixerStreamGuid
+
+    let renderTrees = null
     try {
       renderTrees = brewmixer.getRenderTrees(
         host,
@@ -1382,56 +2019,70 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         eventId
       )
     } catch (error) {
-      // this probably just means that no mixer has been created yet
       console.warn(
-        'Failed to init RenderTree for ' + eventId + ': ' + error.message
+        'Failed to load RenderTree for ' + eventId + ': ' + error.message
       )
     }
 
     if (renderTrees) {
-      activeNodeGraph.value = JSON.stringify(renderTrees[0], null, 2)
-      let nodeCount = 3
-      try {
-        nodeCount = renderTrees[0].rootVideoNode.nodes.filter(
-          n => n.node === 'VideoSourceNode'
-        ).length
-      } catch (e) {
-        console.log('error parsing render tree')
-      }
-
-      // show controls
-      startComp.classList.toggle('hidden', true)
-      startComp.classList.toggle('offscreen', true)
-      activeTreeBox.classList.toggle('hidden', true)
-      activeTreeBox.classList.toggle('offscreen', true)
-
-      const columns = Math.sqrt(nodeCount)
-      const control = Array.from(radioButtons).find(
-        control => control.value === '' + columns
-      )
-      if (control) {
-        control.checked = true
-      }
-
-      // assign the global ref
-      globalNodeGraph = renderTrees[0]
-
-      // start subscription;
-      startSubscription()
+      subscribeToRenderTrees(renderTrees)
     } else {
-      globalNodeGraph = JSON.parse(defaultGraphValue)[0]
-      activeNodeGraph.value = defaultGraphValue
-      mixerFormSubmit.disabled = false
+      alert(
+        `Could not load render tree for event "${chosenEventId}". The mixer may have just stopped — see console.`
+      )
+    }
+  }
+
+  // Hide the start form, prime the controls from a renderTrees array, and
+  // start the WHEP subscription with retries. Pass freshlyCreated=true when
+  // the mixer was just created so the retry wrapper waits a moment for it to
+  // settle; for an existing mixer (picker / URL deeplink) leave it false to
+  // skip the wait.
+  const subscribeToRenderTrees = (renderTrees, freshlyCreated = false) => {
+    activeNodeGraph.value = JSON.stringify(renderTrees[0], null, 2)
+    let nodeCount = 3
+    try {
+      nodeCount = renderTrees[0].rootVideoNode.nodes.filter(
+        n => n.node === 'VideoSourceNode'
+      ).length
+    } catch (e) {
+      console.log('error parsing render tree')
     }
 
-    // if they stop the mixer, hide the other controls and revert to only New Mixer controls.
-    // rely on the subscriber client to stop on its own.
+    startComp.classList.toggle('hidden', true)
+    startComp.classList.toggle('offscreen', true)
+    activeTreeBox.classList.toggle('hidden', true)
+    activeTreeBox.classList.toggle('offscreen', true)
+
+    const columns = Math.sqrt(nodeCount)
+    const control = Array.from(radioButtons).find(
+      c => c.value === '' + columns
+    )
+    if (control) {
+      control.checked = true
+    }
+
+    globalNodeGraph = renderTrees[0]
+    startSubscriptionWithRetry(freshlyCreated)
   }
 
   window.onload = () => {
     eventIdField.value = eventId
     mixerGuidField.value = mixerStreamGuid
-    mixerFormSubmit.disabled = true
+    populateSmFormFromSettings()
+    // The form is visible by default; enable submit immediately so the user
+    // can edit settings and try even if SM auth in init() ends up failing.
+    // init() will hide the form if it finds an existing mixer.
+    mixerFormSubmit.disabled = false
+    // clear any field-error highlight as soon as the user edits a flagged field
+    document.querySelectorAll('.mixer-form input').forEach(input => {
+      input.addEventListener('input', () => {
+        if (input.classList.contains('mixer-field-error')) {
+          input.classList.remove('mixer-field-error')
+          formValidationMessage.classList.add('hidden')
+        }
+      })
+    })
     init(getConfiguration(), 'stream')
   }
   // ============= INITIALIZATION ===============
