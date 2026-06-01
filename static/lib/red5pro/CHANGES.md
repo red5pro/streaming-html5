@@ -4,7 +4,7 @@
 
 - feat: Introduction of `reconnect` configuration parameter for `WHIPClient` (Todd Anderson).
     * This feature allows for graceful reconnect on network loss for publishers.
-    * NOTE: Requires `15.4.0` release of Red5 Server.
+    * NOTE: Requires `15.4.0` release of Red5 Server with the `resilient-stream` plugin enabled.
 
 ## 15.4.0-alpha.1
 
