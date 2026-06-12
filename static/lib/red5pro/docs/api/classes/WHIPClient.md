@@ -1,4 +1,4 @@
-[**Red5 Pro WebRTC SDK v15.5.0**](../README.md)
+[**Red5 Pro WebRTC SDK v15.6.0-beta.1**](../README.md)
 
 ***
 
@@ -581,3 +581,23 @@ The channel to unsubscribe from.
 #### Returns
 
 `Promise`\<`boolean`\>
+
+***
+
+### updateOptimizationParams()
+
+> **updateOptimizationParams**(`optimizationParams`): `void`
+
+Update the optimization parameters for the published stream.
+
+#### Parameters
+
+##### optimizationParams
+
+`OptimizationParams`
+
+The optimization parameters to update.
+
+#### Returns
+
+`void`

@@ -1,8 +1,8 @@
-[**Red5 Pro WebRTC SDK v15.5.0**](README.md)
+[**Red5 Pro WebRTC SDK v15.6.0-beta.1**](README.md)
 
 ***
 
-# Red5 Pro WebRTC SDK v15.5.0
+# Red5 Pro WebRTC SDK v15.6.0-beta.1
 
 Red5 Pro WebRTC SDK
 
@@ -20,6 +20,7 @@ Red5 Pro WebRTC SDK
 - [RTCSubscriberEventTypes](enumerations/RTCSubscriberEventTypes.md)
 - [StatsEndpointType](enumerations/StatsEndpointType.md)
 - [SubscriberEventTypes](enumerations/SubscriberEventTypes.md)
+- [WebRTCConnectionEventTypes](enumerations/WebRTCConnectionEventTypes.md)
 
 ## Classes
 
