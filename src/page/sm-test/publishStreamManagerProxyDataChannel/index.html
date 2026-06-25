@@ -30,6 +30,36 @@
       {{> settings-link}}
       {{> test-info testTitle='Publish SM DataChannel Messaging'}}
       <div class="stream-section">
+        <div class="instructions-block">
+          <p class="settings-field settings-collapsable">
+            <label for="dc-input" class="label-style settings-label">Data Channel Name:</label>
+            <input name="dc-input" id="dc-input" value="red5pro" />
+          </p>
+          <p class="settings-field settings-collapsable">
+            <label for="mode-select" class="label-style settings-label">Mode:</label>
+            <select name="mode-select" id="mode-select">
+              <option value="reliable-ordered">Reliable Ordered</option>
+              <option value="reliable-unordered">Reliable Unordered</option>
+              <option value="max-retransmits">Max Retransmits</option>
+              <option value="max-lifetime">Max Packet Lifetime</option>
+            </select>
+          </p>
+          <p class="settings-field settings-collapsable settings-field-row max-settings-field hidden">
+            <label for="ordered-checkbox" class="label-style settings-label">Ordered:</label>
+            <input type="checkbox" name="ordered-checkbox" id="ordered-checkbox" checked>
+          </p>
+          <p class="settings-field settings-collapsable settings-field-row max-transmits-field hidden">
+            <label for="max-retransmits-input" class="label-style settings-label">Max Retransmits:</label>
+            <input type="number" name="max-retransmits-input" id="max-retransmits-input" value="3">
+          </p>
+          <p class="settings-field settings-collapsable settings-field-row max-lifetime-field hidden">
+            <label for="max-lifetime-input" class="label-style settings-label">Max Packet Lifetime:</label>
+            <input type="number" name="max-lifetime-input" id="max-lifetime-input" value="1000">
+          </p>
+          <p>
+            <button id="publish-button" class="control ui-button" disabled>Publish</button>
+          </p>
+        </div>
         {{> status-field-publisher}}
         {{> statistics-field packets_field='Packets Sent'}}
         <div class="centered">

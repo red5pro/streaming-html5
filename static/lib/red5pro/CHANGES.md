@@ -3,7 +3,10 @@
 ## 15.6.0
 
 - feat: Optimization Params for `WHIPClient` (Todd Anderson).
+- feat: adding AV1 to codec listings (Todd Anderson).
 - fix: DataChannel Configuration supports all properties (Todd Anderson).
+- fix: expose PubNubEvents onindex (Todd Anderson).
+- fix: pubnub sub fail on channel (Todd Anderson).
 
 ## 15.5.0
 

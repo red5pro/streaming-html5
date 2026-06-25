@@ -47,6 +47,54 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   var subscribeButton = document.querySelector('#subscribe-button')
   var dcInput = document.querySelector('#dc-input')
+  var modeSelect = document.querySelector('#mode-select')
+  var orderedCheckbox = document.querySelector('#ordered-checkbox')
+  var maxRetransmitsInput = document.querySelector('#max-retransmits-input')
+  var maxLifetimeInput = document.querySelector('#max-lifetime-input')
+
+  var maxSettingsFields = document.querySelectorAll('.max-settings-field')
+  var maxTransmitsFields = document.querySelectorAll('.max-transmits-field')
+  var maxLifetimeFields = document.querySelectorAll('.max-lifetime-field')
+
+  modeSelect.addEventListener('change', function () {
+    if (modeSelect.value === 'max-retransmits') {
+      maxRetransmitsInput.classList.remove('hidden')
+      maxLifetimeInput.classList.add('hidden')
+      maxSettingsFields.forEach(function (field) {
+        field.classList.remove('hidden')
+      })
+      maxTransmitsFields.forEach(function (field) {
+        field.classList.remove('hidden')
+      })
+      maxLifetimeFields.forEach(function (field) {
+        field.classList.add('hidden')
+      })
+    } else if (modeSelect.value === 'max-lifetime') {
+      maxRetransmitsInput.classList.add('hidden')
+      maxLifetimeInput.classList.remove('hidden')
+      maxSettingsFields.forEach(function (field) {
+        field.classList.remove('hidden')
+      })
+      maxTransmitsFields.forEach(function (field) {
+        field.classList.add('hidden')
+      })
+      maxLifetimeFields.forEach(function (field) {
+        field.classList.remove('hidden')
+      })
+    } else {
+      maxRetransmitsInput.classList.add('hidden')
+      maxLifetimeInput.classList.add('hidden')
+      maxSettingsFields.forEach(function (field) {
+        field.classList.add('hidden')
+      })
+      maxTransmitsFields.forEach(function (field) {
+        field.classList.add('hidden')
+      })
+      maxLifetimeFields.forEach(function (field) {
+        field.classList.add('hidden')
+      })
+    }
+  })
 
   var updateStatusFromEvent = window.red5proHandleSubscriberEvent // defined in src/template/partial/status-field-subscriber.hbs
   var instanceId = Math.floor(Math.random() * 0x10000).toString(16)
@@ -117,6 +165,28 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     if (modal) {
       modal.parentNode.removeChild(modal)
     }
+  }
+
+  function getDataChannelConfiguration() {
+    var configuration = {
+      name: dcInput.value
+    }
+    if (modeSelect.value === 'max-retransmits') {
+      configuration.ordered = orderedCheckbox.checked
+      configuration.maxRetransmits = Math.max(
+        parseInt(maxRetransmitsInput.value, 10),
+        0
+      )
+    } else if (modeSelect.value === 'max-lifetime') {
+      configuration.ordered = orderedCheckbox.checked
+      configuration.maxPacketLifeTime = Math.max(
+        parseInt(maxLifetimeInput.value, 10),
+        0
+      )
+    } else {
+      configuration.ordered = modeSelect.value === 'reliable-ordered'
+    }
+    return configuration
   }
 
   function createRPCMessageContent(json) {
@@ -300,14 +370,15 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     getAuthenticationParams(),
     {
       streamName: configuration.stream1,
-      subscriptionId: 'subscriber-' + instanceId
+      subscriptionId: 'subscriber-' + instanceId,
+      dataChannelConfiguration: getDataChannelConfiguration()
     }
   )
 
   function start() {
     subscribeButton.disabled = true
     // Update datachannel name
-    rtcConfig.dataChannelConfiguration = { name: dcInput.value }
+    rtcConfig.dataChannelConfiguration = getDataChannelConfiguration()
 
     var subscriber = new WHEPClient()
     subscriber

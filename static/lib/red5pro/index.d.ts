@@ -30,6 +30,7 @@ import { PublisherEventTypes, SubscriberEventTypes, RTCPublisherEventTypes, RTCS
 export { MessageChannelEventTypes, MessageTransportStateEventTypes, PublisherEventTypes, RTCPublisherEventTypes, RTCSubscriberEventTypes, SubscriberEventTypes, WebRTCConnectionEventTypes } from 'event/event-types';
 export { default as Capability } from 'types/capabilities';
 import { PubNubEventTypes } from 'event/pubnub';
+export { PubNubEventTypes } from 'event/pubnub';
 
 declare const LEVELS: {
     readonly TRACE: "trace";
