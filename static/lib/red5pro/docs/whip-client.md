@@ -1,4 +1,4 @@
-i<h3 align="center">
+<h3 align="center">
   <img src="../assets/Red5_Truetime_black.png" alt="Red5 Pro Logo" height="65" />
 </h3>
 <p align="center">
@@ -118,7 +118,7 @@ When using the `init()` call of a `WHIPClient` - or, alternatively, when using a
 | `connectionParams` | [-] | `undefined` | An object of connection parameters to send to the server upon connection request. |
 | `mediaConstraints` | [x] | [see below](#using-mediaconstraints-and-ongetusermedia) | A object representative of the [Media Constraints](https://developer.mozilla.org/en-US/docs/Web/API/MediaStreamConstraints) to use while setting up the Media (via `getUserMedia` internally to the SDK). |
 | `onGetUserMedia` | [-] | [see below](#using-mediaconstraints-and-ongetusermedia) | An override method for performing your own `getUserMedia` request. Expected return is a `Promise` |
-| `videoEncoding` | [-] | `undefined` | `PublishVideoEncoder` enum: `VP8` | `H264` | `H265` . |
+| `videoEncoding` | [-] | `undefined` | `PublishVideoEncoder` enum: `VP8` | `H264` | `H265` | `AV1` . |
 | `audioEncoding` | [-] | `undefined` | `PublishAudioEncoder` enum. |
 | `offerSDPResolution` | [-] | `false` | Request to send the initial resolution on the SDP offer in an attribute line with the following format: `a=framesize:${width}-${height}` |
 | `stats` | [-] | *None* | Configuration object to enable stats reporting. See [Stats Reporting](#statistics) for more information. |

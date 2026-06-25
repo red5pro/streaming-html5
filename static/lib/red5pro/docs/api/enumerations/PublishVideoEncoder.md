@@ -1,4 +1,4 @@
-[**Red5 Pro WebRTC SDK v15.6.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v15.6.0**](../README.md)
 
 ***
 
@@ -9,6 +9,12 @@
 Enumeration of Video Encoder types to request for Broadcast.
 
 ## Enumeration Members
+
+### AV1
+
+> **AV1**: `"AV1"`
+
+***
 
 ### H264
 

@@ -1,4 +1,4 @@
-[**Red5 Pro WebRTC SDK v15.6.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v15.6.0**](../README.md)
 
 ***
 
@@ -174,7 +174,7 @@ Get the version of the SDK.
 
 ### PubNubEventTypes
 
-> **PubNubEventTypes**: *typeof* `PubNubEventTypes`
+> **PubNubEventTypes**: *typeof* [`PubNubEventTypes`](../enumerations/PubNubEventTypes.md)
 
 ### RTCPublisherEventTypes
 
@@ -217,6 +217,10 @@ Get the version of the SDK.
 ### version
 
 > **version**: `string`
+
+### WebRTCConnectionEventTypes
+
+> **WebRTCConnectionEventTypes**: *typeof* [`WebRTCConnectionEventTypes`](../enumerations/WebRTCConnectionEventTypes.md)
 
 ### WHEPClient
 

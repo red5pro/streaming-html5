@@ -26,10 +26,11 @@ import WHIPClient$1 from 'publisher/whip';
 import { LiveSeekConfigType } from 'configuration/liveseek';
 export { LiveSeekConfigType, LiveSeekOptions, defaultLiveSeekConfig } from 'configuration/liveseek';
 import { PubnubConfigType } from 'configuration/pubnub';
-import { PublisherEventTypes, SubscriberEventTypes, RTCPublisherEventTypes, RTCSubscriberEventTypes, MessageTransportStateEventTypes, MessageChannelEventTypes } from 'event/event-types';
-export { MessageChannelEventTypes, MessageTransportStateEventTypes, PublisherEventTypes, RTCPublisherEventTypes, RTCSubscriberEventTypes, SubscriberEventTypes } from 'event/event-types';
+import { PublisherEventTypes, SubscriberEventTypes, RTCPublisherEventTypes, RTCSubscriberEventTypes, MessageTransportStateEventTypes, MessageChannelEventTypes, WebRTCConnectionEventTypes } from 'event/event-types';
+export { MessageChannelEventTypes, MessageTransportStateEventTypes, PublisherEventTypes, RTCPublisherEventTypes, RTCSubscriberEventTypes, SubscriberEventTypes, WebRTCConnectionEventTypes } from 'event/event-types';
 export { default as Capability } from 'types/capabilities';
 import { PubNubEventTypes } from 'event/pubnub';
+export { PubNubEventTypes } from 'event/pubnub';
 
 declare const LEVELS: {
     readonly TRACE: "trace";
@@ -1359,6 +1360,7 @@ declare const _default: {
     RTCSubscriberEventTypes: typeof RTCSubscriberEventTypes;
     MessageTransportStateEventTypes: typeof MessageTransportStateEventTypes;
     MessageChannelEventTypes: typeof MessageChannelEventTypes;
+    WebRTCConnectionEventTypes: typeof WebRTCConnectionEventTypes;
     PubNubEventTypes: typeof PubNubEventTypes;
     WHIPClient: typeof WHIPClient;
     WHEPClient: typeof WHEPClient;
