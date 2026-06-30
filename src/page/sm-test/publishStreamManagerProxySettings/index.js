@@ -82,7 +82,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   streamTitle.innerText = configuration.stream1
   var defaultConfiguration = {
-    streamMode: configuration.recordBroadcast ? 'record' : 'live',
+    streamMode: configuration.recordBroadcast ? 'record' : 'live'
   }
 
   const displayServerAddress = (serverAddress, proxyAddress) => {
@@ -132,6 +132,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       }
       if (typeof dimObject.exact !== 'undefined') {
         return dimObject.exact
+      } else if (typeof dimObject.ideal !== 'undefined') {
+        return dimObject.ideal
       }
       return dimObject.min
     }
@@ -306,7 +308,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     var stream
     var constraints = {
       audio: false,
-      video: deviceId ? { deviceId: { exact: deviceId } } : true,
+      video: deviceId ? { deviceId: { exact: deviceId } } : true
     }
     var pubElement = document.getElementById('red5pro-publisher')
     var delay = clearEstablishedStream() ? 200 : 0
@@ -368,8 +370,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           connectionParams: {
             username: auth.username,
             password: auth.password,
-            token: auth.token,
-          },
+            token: auth.token
+          }
         }
       : {}
   }
@@ -386,15 +388,15 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             width: { min: 640, ideal: videoWidth },
             height: {
               min: 360,
-              ideal: videoHeight,
+              ideal: videoHeight
             },
-            frameRate: { min: parseInt(framerateField.value) },
+            frameRate: { min: parseInt(framerateField.value) }
           }
-        : false,
+        : false
     }
     if (cameraSelect.value && cameraSelect.value.length > 0) {
       var v = Object.assign(config.video, {
-        deviceId: { exact: cameraSelect.value },
+        deviceId: { exact: cameraSelect.value }
       })
       config.video = v
     }
@@ -409,14 +411,14 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       port,
       stream1,
       streamManagerAPI,
-      streamManagerNodeGroup: nodeGroup,
+      streamManagerNodeGroup: nodeGroup
     } = configuration
 
     const region = getRegionIfDefined()
     const params = region
       ? {
           region,
-          strict: true,
+          strict: true
         }
       : undefined
 
@@ -434,14 +436,14 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       keyFramerate: parseInt(keyFramerateField.value),
       bandwidth: {
         audio: parseInt(bandwidthAudioField.value),
-        video: parseInt(bandwidthVideoField.value),
+        video: parseInt(bandwidthVideoField.value)
       },
       endpoint,
       streamName: stream1,
       connectionParams: {
         ...connectionParams,
-        nodeGroup,
-      },
+        nodeGroup
+      }
     }
     return rtcConfig
   }
@@ -465,7 +467,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         '[Red5ProPublisher] :: Error in access of Origin IP: ' + jsonError
       )
       updateStatusFromEvent({
-        type: red5prosdk.PublisherEventTypes.CONNECT_FAILURE,
+        type: red5prosdk.PublisherEventTypes.CONNECT_FAILURE
       })
       onPublishFail(jsonError)
     }
@@ -508,7 +510,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   publishButton.addEventListener('click', startStopPublish)
 
   let shuttingDown = false
-  const shutdown = async (trackShutdown) => {
+  const shutdown = async trackShutdown => {
     if (shuttingDown) return
     shuttingDown = typeof trackShutdown === 'boolean' ? trackShutdown : true
     try {
