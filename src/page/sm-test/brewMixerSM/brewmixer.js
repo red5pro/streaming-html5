@@ -265,6 +265,89 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			}
 		},
 
+		// Probe AS-Streams "get server for subscribe" — returns
+		// { ok, status, locations?, body? }. Used to disambiguate "SM doesn't yet
+		// have the stream registered" from "SM has it but WebRTC negotiation failed".
+		// Async (XHR true). Resolves rather than throws on HTTP error so the caller
+		// can read status and message.
+		probeServerForSubscribe: function (host, jwt, smVersion, nodeGroupName, streamGuid) {
+			return new Promise(resolve => {
+				const url = `https://${host}/as/${smVersion}/streams/stream/${nodeGroupName}/subscribe/${streamGuid}`
+				const xhr = new XMLHttpRequest()
+				xhr.open('GET', url, true)
+				xhr.setRequestHeader('Authorization', `Bearer ${jwt}`)
+				xhr.onload = () => {
+					let parsed
+					try {
+						parsed = JSON.parse(xhr.responseText)
+					} catch (_) {
+						parsed = xhr.responseText
+					}
+					if (xhr.status >= 200 && xhr.status < 300) {
+						resolve({ ok: true, status: xhr.status, locations: parsed })
+					} else {
+						resolve({ ok: false, status: xhr.status, body: parsed })
+					}
+				}
+				xhr.onerror = () => {
+					resolve({ ok: false, status: 0, body: 'network error' })
+				}
+				try {
+					xhr.send()
+				} catch (e) {
+					resolve({ ok: false, status: 0, body: e.message })
+				}
+			})
+		},
+
+		// AS-Admin: list nodegroup names (Set<String>). Resolves with an array
+		// of strings on success, or rejects on HTTP error.
+		listNodeGroups: async function (host, jwt, smVersion) {
+			const url = `https://${host}/as/${smVersion}/admin/nodegroup`
+			const resp = await fetch(url, {
+				headers: { Authorization: `Bearer ${jwt}` }
+			})
+			if (!resp.ok) {
+				throw new Error(`HTTP ${resp.status} listing nodegroups`)
+			}
+			return await resp.json()
+		},
+
+		// AS-Admin: read a NodeGroupConfig. Returns null on 404, throws on other
+		// non-2xx. Used for finding which roles have Capability.MIX (since role
+		// names are arbitrary strings).
+		getNodeGroupConfig: async function (host, jwt, smVersion, nodeGroupName) {
+			const url = `https://${host}/as/${smVersion}/admin/nodegroup/${encodeURIComponent(
+				nodeGroupName
+			)}`
+			const resp = await fetch(url, {
+				headers: { Authorization: `Bearer ${jwt}` }
+			})
+			if (resp.status === 404) return null
+			if (!resp.ok) {
+				throw new Error(`HTTP ${resp.status} reading nodegroup config`)
+			}
+			return await resp.json()
+		},
+
+		// AS-Admin: read the list of NodeScalingStatus for a nodegroup, with
+		// metrics omitted for performance. Returns null on 404, throws on other
+		// non-2xx. Used to check whether any node with a MIX-capable role is
+		// currently INSERVICE.
+		getNodeGroupStatus: async function (host, jwt, smVersion, nodeGroupName) {
+			const url = `https://${host}/as/${smVersion}/admin/nodegroup/status/${encodeURIComponent(
+				nodeGroupName
+			)}?metrics=false`
+			const resp = await fetch(url, {
+				headers: { Authorization: `Bearer ${jwt}` }
+			})
+			if (resp.status === 404) return null
+			if (!resp.ok) {
+				throw new Error(`HTTP ${resp.status} reading nodegroup status`)
+			}
+			return await resp.json()
+		},
+
 		// Stop Mixer Event
 		stopMixerEvent: function (host, jwt, smVersion, nodeGroupName, eventId) {
 			const url = `https://${host}/as/${smVersion}/streams/mixer/${nodeGroupName}/${eventId}`;

@@ -6,7 +6,7 @@ import { PublishVideoEncoder, PublishAudioEncoder } from 'types/publisher';
 export { PublishAudioEncoder, PublishVideoEncoder } from 'types/publisher';
 import { Logger } from 'browser-bunyan';
 import EventEmitter$1 from 'core/event-emitter';
-import { RTCWhipPublisherConfigType } from 'configuration/publisher';
+import { RTCWhipPublisherConfigType, OptimizationParams } from 'configuration/publisher';
 export { BandwidthConfig, MediaConstraintRange, MediaConstraints, RTCPublisherConfigType, RTCWhipPublisherConfigType, VideoConstraints, defaultWhipPublisherConfig } from 'configuration/publisher';
 import { Event as Event$1, SubscriberEvent, PublisherEvent, MessageTransportStateEvent, PubNubEvent, MessageChannelEvent } from 'event';
 export { Event, MessageChannelEvent, MessageTransportStateEvent, PubNubEvent, PublisherEvent, SubscriberEvent } from 'event';
@@ -26,10 +26,11 @@ import WHIPClient$1 from 'publisher/whip';
 import { LiveSeekConfigType } from 'configuration/liveseek';
 export { LiveSeekConfigType, LiveSeekOptions, defaultLiveSeekConfig } from 'configuration/liveseek';
 import { PubnubConfigType } from 'configuration/pubnub';
-import { PublisherEventTypes, SubscriberEventTypes, RTCPublisherEventTypes, RTCSubscriberEventTypes, MessageTransportStateEventTypes, MessageChannelEventTypes } from 'event/event-types';
-export { MessageChannelEventTypes, MessageTransportStateEventTypes, PublisherEventTypes, RTCPublisherEventTypes, RTCSubscriberEventTypes, SubscriberEventTypes } from 'event/event-types';
+import { PublisherEventTypes, SubscriberEventTypes, RTCPublisherEventTypes, RTCSubscriberEventTypes, MessageTransportStateEventTypes, MessageChannelEventTypes, WebRTCConnectionEventTypes } from 'event/event-types';
+export { MessageChannelEventTypes, MessageTransportStateEventTypes, PublisherEventTypes, RTCPublisherEventTypes, RTCSubscriberEventTypes, SubscriberEventTypes, WebRTCConnectionEventTypes } from 'event/event-types';
 export { default as Capability } from 'types/capabilities';
 import { PubNubEventTypes } from 'event/pubnub';
+export { PubNubEventTypes } from 'event/pubnub';
 
 declare const LEVELS: {
     readonly TRACE: "trace";
@@ -180,6 +181,13 @@ declare class WHIPClient extends EventEmitter$1 {
      * @returns {void}
      */
     unmuteVideo(): void;
+    /**
+     * Update the optimization parameters for the published stream.
+     *
+     * @param optimizationParams - The optimization parameters to update.
+     * @returns {void}
+     */
+    updateOptimizationParams(optimizationParams: OptimizationParams): void;
     /**
      * Send a message to the server.
      *
@@ -1352,6 +1360,7 @@ declare const _default: {
     RTCSubscriberEventTypes: typeof RTCSubscriberEventTypes;
     MessageTransportStateEventTypes: typeof MessageTransportStateEventTypes;
     MessageChannelEventTypes: typeof MessageChannelEventTypes;
+    WebRTCConnectionEventTypes: typeof WebRTCConnectionEventTypes;
     PubNubEventTypes: typeof PubNubEventTypes;
     WHIPClient: typeof WHIPClient;
     WHEPClient: typeof WHEPClient;

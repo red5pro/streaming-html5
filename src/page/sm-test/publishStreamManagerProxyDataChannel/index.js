@@ -45,6 +45,57 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   var targetPublisher
 
+  var publishButton = document.querySelector('#publish-button')
+  var dcInput = document.querySelector('#dc-input')
+  var modeSelect = document.querySelector('#mode-select')
+  var orderedCheckbox = document.querySelector('#ordered-checkbox')
+  var maxRetransmitsInput = document.querySelector('#max-retransmits-input')
+  var maxLifetimeInput = document.querySelector('#max-lifetime-input')
+
+  var maxSettingsFields = document.querySelectorAll('.max-settings-field')
+  var maxTransmitsFields = document.querySelectorAll('.max-transmits-field')
+  var maxLifetimeFields = document.querySelectorAll('.max-lifetime-field')
+
+  modeSelect.addEventListener('change', function () {
+    if (modeSelect.value === 'max-retransmits') {
+      maxRetransmitsInput.classList.remove('hidden')
+      maxLifetimeInput.classList.add('hidden')
+      maxSettingsFields.forEach(function (field) {
+        field.classList.remove('hidden')
+      })
+      maxTransmitsFields.forEach(function (field) {
+        field.classList.remove('hidden')
+      })
+      maxLifetimeFields.forEach(function (field) {
+        field.classList.add('hidden')
+      })
+    } else if (modeSelect.value === 'max-lifetime') {
+      maxRetransmitsInput.classList.add('hidden')
+      maxLifetimeInput.classList.remove('hidden')
+      maxSettingsFields.forEach(function (field) {
+        field.classList.remove('hidden')
+      })
+      maxTransmitsFields.forEach(function (field) {
+        field.classList.add('hidden')
+      })
+      maxLifetimeFields.forEach(function (field) {
+        field.classList.remove('hidden')
+      })
+    } else {
+      maxRetransmitsInput.classList.add('hidden')
+      maxLifetimeInput.classList.add('hidden')
+      maxSettingsFields.forEach(function (field) {
+        field.classList.add('hidden')
+      })
+      maxTransmitsFields.forEach(function (field) {
+        field.classList.add('hidden')
+      })
+      maxLifetimeFields.forEach(function (field) {
+        field.classList.add('hidden')
+      })
+    }
+  })
+
   var updateStatusFromEvent = window.red5proHandlePublisherEvent // defined in src/template/partial/status-field-publisher.hbs
   var streamTitle = document.getElementById('stream-title')
   var sendRPCButton = document.getElementById('send-rpc-button')
@@ -278,6 +329,28 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       serverAddress
   }
 
+  function getDataChannelConfiguration() {
+    var config = {
+      name: dcInput.value
+    }
+    if (modeSelect.value === 'max-retransmits') {
+      config.ordered = orderedCheckbox.checked
+      config.maxRetransmits = Math.max(
+        parseInt(maxRetransmitsInput.value, 10),
+        0
+      )
+    } else if (modeSelect.value === 'max-lifetime') {
+      config.ordered = orderedCheckbox.checked
+      config.maxPacketLifeTime = Math.max(
+        parseInt(maxLifetimeInput.value, 10),
+        0
+      )
+    } else {
+      config.ordered = modeSelect.value === 'reliable-ordered'
+    }
+    return config
+  }
+
   function determinePublisher(jsonResponse) {
     var { protocol, port, app } = configuration
     var { WHIPClient } = red5prosdk
@@ -297,6 +370,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         port,
         streamName: name,
         app,
+        dataChannelConfiguration: getDataChannelConfiguration(),
         connectionParams
       }
     )
@@ -357,6 +431,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           type: red5prosdk.PublisherEventTypes.CONNECT_FAILURE
         })
         onPublishFail(jsonError)
+        publishButton.disabled = false
       })
   }
 
@@ -396,12 +471,14 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   function startup() {
-    // Kick off.
+    publishButton.disabled = true
     requestOrigin(configuration)
       .then(respondToOrigin)
       .catch(respondToOriginFailure)
   }
-  startup()
+
+  publishButton.disabled = false
+  publishButton.addEventListener('click', startup)
 
   var shuttingDown = false
   function shutdown() {

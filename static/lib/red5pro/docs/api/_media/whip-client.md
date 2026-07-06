@@ -1,4 +1,4 @@
-i<h3 align="center">
+<h3 align="center">
   <img src="../assets/Red5_Truetime_black.png" alt="Red5 Pro Logo" height="65" />
 </h3>
 <p align="center">
@@ -118,11 +118,12 @@ When using the `init()` call of a `WHIPClient` - or, alternatively, when using a
 | `connectionParams` | [-] | `undefined` | An object of connection parameters to send to the server upon connection request. |
 | `mediaConstraints` | [x] | [see below](#using-mediaconstraints-and-ongetusermedia) | A object representative of the [Media Constraints](https://developer.mozilla.org/en-US/docs/Web/API/MediaStreamConstraints) to use while setting up the Media (via `getUserMedia` internally to the SDK). |
 | `onGetUserMedia` | [-] | [see below](#using-mediaconstraints-and-ongetusermedia) | An override method for performing your own `getUserMedia` request. Expected return is a `Promise` |
-| `videoEncoding` | [-] | `undefined` | `PublishVideoEncoder` enum: `VP8` | `H264` | `H265` . |
+| `videoEncoding` | [-] | `undefined` | `PublishVideoEncoder` enum: `VP8` | `H264` | `H265` | `AV1` . |
 | `audioEncoding` | [-] | `undefined` | `PublishAudioEncoder` enum. |
 | `offerSDPResolution` | [-] | `false` | Request to send the initial resolution on the SDP offer in an attribute line with the following format: `a=framesize:${width}-${height}` |
 | `stats` | [-] | *None* | Configuration object to enable stats reporting. See [Stats Reporting](#statistics) for more information. |
 | `reconnect` | [-] | *None* | Configuration object to enable auto re-connect on lost connection, due to such things as change in network. See [Reconnect](#reconnect) for more information. |
+| `optimizationParams` | [-] | *None* | Properties that can be assign on encodings and delivery of the published stream. See [OptimizationParams](#optimization-params) for more information. |
 | `pubnub` | [-] | *None* | Configuration object for PubNub integration. See [PubNub Integration](#pubnub-integration) for more information. |
 
 ## Using MediaConstraints and onGetUserMedia
@@ -308,6 +309,29 @@ The amount of delay between attempts to re-connect.
 ### maxAttempts
 
 The total amount of attempts to make before considering the possiblity of reconnect unavailable.
+
+# Optimization Params
+
+The `optimizationParams` configuration has the following type definition:
+
+```typescript
+{
+  degradationPreference?:
+    | 'balanced'
+    | 'maintain-framerate'
+    | 'maintain-resolution'
+    | 'maintain-framerate-and-resolution'
+  contentHint?:
+    | 'speech'
+    | 'speech-recognition'
+    | 'text'
+    | 'music'
+    | 'detail'
+    | 'motion'
+}
+```
+
+The properties directly relate to the [contentHint](https://developer.mozilla.org/en-US/docs/Web/API/MediaStreamTrack/contentHint) and [degradationPreference](https://developer.mozilla.org/en-US/docs/Web/API/RTCRtpSender/setParameters#degradationpreference) properties on the `MediaStreamTrack` and `RTCRtpSender` entities of a WebRTC stream.
 
 # Statistics
 

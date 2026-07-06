@@ -1,8 +1,8 @@
-[**Red5 Pro WebRTC SDK v15.5.0**](README.md)
+[**Red5 Pro WebRTC SDK v15.6.0**](README.md)
 
 ***
 
-# Red5 Pro WebRTC SDK v15.5.0
+# Red5 Pro WebRTC SDK v15.6.0
 
 Red5 Pro WebRTC SDK
 
@@ -16,10 +16,12 @@ Red5 Pro WebRTC SDK
 - [PublishAudioEncoder](enumerations/PublishAudioEncoder.md)
 - [PublisherEventTypes](enumerations/PublisherEventTypes.md)
 - [PublishVideoEncoder](enumerations/PublishVideoEncoder.md)
+- [PubNubEventTypes](enumerations/PubNubEventTypes.md)
 - [RTCPublisherEventTypes](enumerations/RTCPublisherEventTypes.md)
 - [RTCSubscriberEventTypes](enumerations/RTCSubscriberEventTypes.md)
 - [StatsEndpointType](enumerations/StatsEndpointType.md)
 - [SubscriberEventTypes](enumerations/SubscriberEventTypes.md)
+- [WebRTCConnectionEventTypes](enumerations/WebRTCConnectionEventTypes.md)
 
 ## Classes
 

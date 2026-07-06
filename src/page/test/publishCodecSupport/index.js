@@ -191,6 +191,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
     try {
       targetPublisher = new WHIPClient()
+      targetPublisher.on('*', onPublisherEvent)
       await targetPublisher.initWithStream(rtcConfig, mediaStream)
       await targetPublisher.publish()
       onPublishSuccess(targetPublisher)
