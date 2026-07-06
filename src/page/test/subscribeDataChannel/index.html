@@ -18,7 +18,31 @@
             <label for="dc-input" class="label-style settings-label">Data Channel Name:</label>
             <input name="dc-input" id="dc-input" value="red5pro" />
           </p>
-          <p>
+          <p class="settings-field settings-collapsable">
+            <!-- TODO: Add a "mode" select with options: 'reliable-ordered', 'reliable-unordered', 'max-retransmits', 'max-lifetime' -->
+            <!-- IF `max-*` option selected, add a checkbox for ordered/unordered. -->
+            <!-- IF `max-*` option selected, add a numeric input for value. Default to 3 for max-retransmits. Default to 1000 for max-lifetime. -->
+            <label for="mode-select" class="label-style settings-label">Mode:</label>
+            <select name="mode-select" id="mode-select">
+              <option value="reliable-ordered">Reliable Ordered</option>
+              <option value="reliable-unordered">Reliable Unordered</option>
+              <option value="max-retransmits">Max Retransmits</option>
+              <option value="max-lifetime">Max Packet Lifetime</option>
+            </select>
+          </p>
+          <p class="settings-field settings-collapsable settings-field-row max-settings-field hidden">
+            <label for="ordered-checkbox" class="label-style settings-label">Ordered:</label>
+            <input type="checkbox" name="ordered-checkbox" id="ordered-checkbox" checked>
+          </p>
+          <p class="settings-field settings-collapsable settings-field-row max-transmits-field hidden">
+            <label for="max-retransmits-input" class="label-style settings-label">Max Retransmits:</label>
+            <input type="number" name="max-retransmits-input" id="max-retransmits-input" value="3">
+          </p>
+          <p class="settings-field settings-collapsable settings-field-row max-lifetime-field hidden">
+            <label for="max-lifetime-input" class="label-style settings-label">Max Packet Lifetime:</label>
+            <input type="number" name="max-lifetime-input" id="max-lifetime-input" value="1000">
+          </p>
+          <p style="margin-top: 32px;">
             <button id="subscribe-button" class="control ui-button" disabled>Subscribe</button>
           </p>
         </div>

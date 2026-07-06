@@ -33,6 +33,161 @@
         display: inline-block;
         width: 50%;
       }
+
+      /* Use the page's existing .stream-details gray-bar idiom so the start
+         flow status reads as part of the same visual family as the empty
+         "stream-field"/"endpoint-field" bar above it. */
+      #subscribeStatus {
+        align-items: center;
+      }
+      #subscribeStatus .subscribe-status-message {
+        margin: 0;
+        text-align: center;
+      }
+      #subscribeStatus .subscribe-status-detail {
+        margin: 0;
+        font-size: 0.85em;
+        color: #555;
+        text-align: center;
+      }
+      #subscribeStatus #subscribeStatusCancel {
+        margin-top: 4px;
+      }
+
+      /* Let clicks outside the form box pass through to the page below
+         (e.g. so the SETTINGS link stays clickable). The form box itself
+         re-enables pointer-events so its inputs and button still work. */
+      .mixer-modal {
+        pointer-events: none !important;
+      }
+      .mixer-modal > div {
+        pointer-events: auto;
+      }
+
+      /* `display: contents` makes the fieldset disappear as a layout box,
+         so its children (.mixer-form-item) remain direct flex children of
+         .mixer-form and the original two-column wrap layout is preserved.
+         The legend is then styled as a full-width section header. */
+      .mixer-form fieldset {
+        display: contents;
+        border: none;
+        padding: 0;
+        margin: 0;
+      }
+      .mixer-form fieldset legend {
+        display: block;
+        width: 100%;
+        padding: 12px 0 4px 0;
+        margin: 0 0 4px 0;
+        border-bottom: 1px solid #444;
+        font-weight: bold;
+        font-size: 14px;
+        color: var(--color-lightgray);
+        letter-spacing: 0.5px;
+      }
+
+      /* Per-field show/hide toggle for password inputs. Pattern mirrors the
+         debug-ui .password-container approach: wrap input + button, position
+         the button absolutely on the right edge, leave room with padding. */
+      .password-container {
+        position: relative;
+        display: inline-block;
+      }
+      .mixer-form-item > .password-container > input {
+        width: 215px;
+        height: 40px;
+        color: var(--color-lightgray);
+        font-size: 16px;
+        font-weight: 400;
+        line-height: 24px;
+        letter-spacing: 0.32px;
+        border: unset;
+        background-color: var(--color-darkgray);
+        border-radius: 10px;
+        padding-left: 16px;
+        padding-right: 36px;
+        box-sizing: border-box;
+      }
+      .toggle-password {
+        position: absolute;
+        right: 8px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 16px;
+        padding: 4px;
+        color: var(--color-lightgray);
+      }
+      .toggle-password:hover {
+        color: #fff;
+      }
+
+      /* Existing-mixer picker */
+      #mixerPicker {
+        margin-bottom: 16px;
+        color: #fff;
+      }
+      #mixerPicker .picker-intro {
+        margin: 0 0 8px 0;
+        font-weight: bold;
+        font-size: 14px;
+      }
+      #mixerPicker .picker-divider {
+        margin: 12px 0 4px 0;
+        font-size: 13px;
+        color: var(--color-lightgray);
+        text-align: center;
+        font-style: italic;
+      }
+      .mixer-picker-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        row-gap: 6px;
+      }
+      .mixer-picker-list li {
+        margin: 0;
+      }
+      .mixer-picker-connect {
+        display: block;
+        width: 100%;
+        padding: 8px 12px;
+        background-color: var(--color-darkgray);
+        color: #fff;
+        border: 1px solid #444;
+        border-radius: 6px;
+        text-align: left;
+        cursor: pointer;
+        font-size: 13px;
+      }
+      .mixer-picker-connect:hover {
+        background-color: var(--color-midgray);
+        border-color: #888;
+      }
+      .mixer-picker-connect .picker-event-id {
+        font-weight: bold;
+      }
+      .mixer-picker-connect .picker-stream-guid {
+        color: var(--color-lightgray);
+        font-weight: normal;
+      }
+
+      .mixer-field-error {
+        outline: 2px solid #c00 !important;
+        background-color: #ffe8e8 !important;
+      }
+
+      #formValidationMessage {
+        width: 100%;
+        color: #c00;
+        font-weight: bold;
+        text-align: center;
+        margin: 4px 0;
+      }
     </style>
   </head>
   <body>
@@ -44,6 +199,11 @@
         <div class="centered stream-details">
           <div id="stream-field" class="stream-detail-field"></div>
           <div id="endpoint-field" class="stream-detail-field"></div>
+        </div>
+        <div id="subscribeStatus" class="hidden stream-details">
+          <p class="subscribe-status-message" id="subscribeStatusMessage"></p>
+          <p class="subscribe-status-detail" id="subscribeStatusDetail"></p>
+          <button id="subscribeStatusCancel" type="button" class="ui-button">Cancel</button>
         </div>
       </div>
       <div class="mixer-section">
@@ -97,70 +257,134 @@
           <div class="mixer-form-container">
             <div class="mixer-form-header">
               <p class="mixer-form-title">Start New Mixer</p>
-              <p><img class="mixer-close-button hidden" src="assets/close_button.svg"/></p>
+              <p><img id="mixerCloseButton" class="mixer-close-button" src="assets/close_button.svg" alt="Close" title="Close (Esc)"/></p>
+            </div>
+            <div id="mixerPicker" class="hidden">
+              <p class="picker-intro">Connect to an existing mixer event:</p>
+              <ul id="mixerPickerList" class="mixer-picker-list"></ul>
+              <p class="picker-divider">— or create a new mixer below —</p>
             </div>
             <div>
               <form class="mixer-form">
-                <p class="mixer-form-item">
-                  <label>Event ID</label>
+                <fieldset>
+                  <legend>Stream Manager</legend>
+                  <p class="mixer-form-item">
+                    <label>SM Host</label>
+                    <input type="text" id="smHost" size="30" value="">
+                  </p>
+                  <p class="mixer-form-item">
+                    <label>SM API Version</label>
+                    <input type="text" id="smApiVersion" size="6" value="">
+                  </p>
+                  <p class="mixer-form-item">
+                    <label>SM Admin Username</label>
+                    <input type="text" id="smAdminUsername" size="20" value="">
+                  </p>
+                  <p class="mixer-form-item">
+                    <label>SM Admin Password</label>
+                    <span class="password-container">
+                      <input type="password" id="smAdminPassword" size="20" value="">
+                      <button type="button" class="toggle-password" data-target="smAdminPassword" aria-label="Show password" title="Show / hide">👁️</button>
+                    </span>
+                  </p>
+                  <p class="mixer-form-item">
+                    <label>Node Group</label>
+                    <input type="text" id="smNodeGroup" size="20" value="">
+                  </p>
+                  <p class="mixer-form-item">
+                    <label>Region (optional)</label>
+                    <input type="text" id="smRegion" size="20" value="">
+                  </p>
+                </fieldset>
+
+                <fieldset>
+                  <legend>Mixer</legend>
+                  <p class="mixer-form-item">
+                    <label>Event ID</label>
+                    <input type="text"
+                    id="eventIdField"
+                    name="eventIdField"
+                    size="30" value="event1">
+                  </p>
+                  <p class="mixer-form-item">
+                  <label>Output GUID</label>
                   <input type="text"
-                  id="eventIdField"
-                  name="eventIdField"
-                  size="30" value="event1">
-                </p>
-                <p class="mixer-form-item">
-                <label>Output GUID</label>
-                <input type="text"
-                  id="mixerGuidField"
-                  name="mixerGuidField"
-                  size="30" value="brewmixer/mix1">
-                </p>
-                <p class="mixer-form-item">
-                  <label>Width</label>
-                  <input type="text"
-                  id="outputWidth"
-                  size="4" value="1920">
-                </p>
-                <p class="mixer-form-item">
-                  <label>Height</label>
-                  <input type="text"
-                  id="outputHeight"
-                  size="4" value="1080">
-                </p>
-                <p class="mixer-form-item">
-                  <label>Bitrate</label>
-                  <input type="text"
-                  id="bitrate"
-                  size="10" value="7000000">
-                <p class="mixer-form-item">
-                  <label>Max Bitrate</label>
-                  <input type="text"
-                  id="maxbitrate"
-                  size="10" value="10000000">
-                </p>
-                <p class="mixer-form-item">
-                  <label>QP Min</label>
-                  <input type="text"
-                  id="qpmin"
-                  size="4" value="28">
-                </p>
-                <p class="mixer-form-item">
-                  <label>QP Max</label>
-                  <input type="text"
-                  id="qpmax"
-                  size="4" value="48">
-                <p class="mixer-form-item">
-                  <label>Framerate</label>
-                  <input type="text"
-                  id="framerate"
-                  size="3" value="30">
-                </p>
-                <p class="mixer-form-item">
-                  <label>Audiorate</label>
-                  <input type="text"
-                  id="audiorate"
-                  size="5" value="48000">
-                </p>
+                    id="mixerGuidField"
+                    name="mixerGuidField"
+                    size="30" value="brewmixer/mix1">
+                  </p>
+                  <p class="mixer-form-item">
+                    <label>Width</label>
+                    <input type="text"
+                    id="outputWidth"
+                    size="4" value="1920">
+                  </p>
+                  <p class="mixer-form-item">
+                    <label>Height</label>
+                    <input type="text"
+                    id="outputHeight"
+                    size="4" value="1080">
+                  </p>
+                  <p class="mixer-form-item">
+                    <label>Bitrate</label>
+                    <input type="text"
+                    id="bitrate"
+                    size="10" value="7000000">
+                  <p class="mixer-form-item">
+                    <label>Max Bitrate</label>
+                    <input type="text"
+                    id="maxbitrate"
+                    size="10" value="10000000">
+                  </p>
+                  <p class="mixer-form-item">
+                    <label>QP Min</label>
+                    <input type="text"
+                    id="qpmin"
+                    size="4" value="28">
+                  </p>
+                  <p class="mixer-form-item">
+                    <label>QP Max</label>
+                    <input type="text"
+                    id="qpmax"
+                    size="4" value="48">
+                  <p class="mixer-form-item">
+                    <label>Framerate</label>
+                    <input type="text"
+                    id="framerate"
+                    size="3" value="30">
+                  </p>
+                  <p class="mixer-form-item">
+                    <label>Audiorate</label>
+                    <input type="text"
+                    id="audiorate"
+                    size="5" value="48000">
+                  </p>
+                </fieldset>
+
+                <fieldset>
+                  <legend>RTA Credentials (optional)</legend>
+                  <p class="mixer-form-item">
+                    <label>RTA Username</label>
+                    <input type="text"
+                    id="rtaUsername"
+                    size="20" value="">
+                  </p>
+                  <p class="mixer-form-item">
+                    <label>RTA Password</label>
+                    <span class="password-container">
+                      <input type="password" id="rtaPassword" size="20" value="">
+                      <button type="button" class="toggle-password" data-target="rtaPassword" aria-label="Show password" title="Show / hide">👁️</button>
+                    </span>
+                  </p>
+                  <p class="mixer-form-item">
+                    <label>RTA Token</label>
+                    <input type="text"
+                    id="rtaToken"
+                    size="30" value="">
+                  </p>
+                </fieldset>
+
+                <p id="formValidationMessage" class="hidden"></p>
                 <p class="mixer-form-controls">
                   <input id="mixer-form-submit" type="button" class="mixer-form-submit" value="START" disabled>
                 </p>
