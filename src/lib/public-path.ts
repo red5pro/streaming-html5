@@ -28,6 +28,13 @@ export function publicAssetPrefix(): string {
   let pathname = window.location.pathname.replace(/\/index\.html$/i, '')
   if (pathname !== '/' && pathname.endsWith('/')) pathname = pathname.slice(0, -1)
   if (pathname === '' || pathname === '/') return './'
-  const depth = pathname.split('/').filter(Boolean).length
-  return '../'.repeat(depth)
+  const segments = pathname.split('/').filter(Boolean)
+  const srcIndex = segments.indexOf('src')
+  // Pages emitted under `dist/src/...` should resolve assets relative to
+  // the `src` subtree root, not climb above the deployment root.
+  if (srcIndex > -1) {
+    const depth = segments.length - srcIndex
+    return '../'.repeat(depth)
+  }
+  return './'
 }
