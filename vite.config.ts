@@ -36,7 +36,7 @@ function htmlDirPublicPrefix(htmlFileAbsolute: string): string {
   const rel = relative(projectRoot, htmlFileAbsolute).replace(/\\/g, '/')
   const dir = posix.dirname(rel)
   if (dir === '.' || dir === '') return './'
-  const depth = dir.split('/').filter(Boolean).length - 1
+  const depth = dir.split('/').filter(Boolean).length
   return '../'.repeat(depth)
 }
 
