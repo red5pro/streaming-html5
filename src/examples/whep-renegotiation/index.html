@@ -1,0 +1,167 @@
+<!-- Copyright © 2015 Infrared5, Inc. All rights reserved.
+
+The accompanying code comprising examples for use solely in conjunction with Red5 Pro (the "Example Code")
+is  licensed  to  you  by  Infrared5  Inc.  in  consideration  of  your  agreement  to  the  following
+license terms  and  conditions.  Access,  use,  modification,  or  redistribution  of  the  accompanying
+code  constitutes your acceptance of the following license terms and conditions.
+
+Permission is hereby granted, free of charge, to you to use the Example Code and associated documentation
+files (collectively, the "Software") without restriction, including without limitation the rights to use,
+copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit
+persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The Software shall be used solely in conjunction with Red5 Pro. Red5 Pro is licensed under a separate end
+user  license  agreement  (the  "EULA"),  which  must  be  executed  with  Infrared5,  Inc.
+An  example  of  the EULA can be found on our website at: https://account.red5.net/assets/LICENSE.txt.
+
+The above copyright notice and this license shall be included in all copies or portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,  INCLUDING  BUT
+NOT  LIMITED  TO  THE  WARRANTIES  OF  MERCHANTABILITY, FITNESS  FOR  A  PARTICULAR  PURPOSE  AND
+NONINFRINGEMENT.   IN  NO  EVENT  SHALL INFRARED5, INC. BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+WHETHER IN  AN  ACTION  OF  CONTRACT,  TORT  OR  OTHERWISE,  ARISING  FROM,  OUT  OF  OR  IN CONNECTION
+WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. -->
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WHEP Renegotiation — WebRTC Testbed</title>
+    <link rel="stylesheet" href="/style/main.css" />
+    <link rel="stylesheet" href="/style/pages/example.css" />
+    <link rel="stylesheet" href="/style/pages/whep-renegotiation.css" />
+    <script src="/libs/red5pro/red5pro-sdk.min.js"></script>
+  </head>
+  <body>
+    <r5-header></r5-header>
+
+    <main class="page">
+      <nav class="breadcrumb"><a href="/">WebRTC Testbed</a> &rsaquo; WHEP Renegotiation</nav>
+
+      <h1 class="page__heading">WHEP Renegotiation</h1>
+      <p class="page__description">
+        WHEPClient subscribe with configurable renegotiation policy based on network metrics and
+        statistics monitoring. Configure host and stream name in Settings.
+      </p>
+
+      <div class="page__layout">
+        <div class="whep-renegotiation-layout">
+
+          <section class="media-panel">
+            <div class="media-panel__header">
+              <h2 class="section-title">Subscriber</h2>
+              <span class="status status--idle" id="subscribe-status">Subscriber Idle</span>
+            </div>
+
+            <p class="connection-info" id="connection-info">Endpoint not configured</p>
+
+            <section class="testing-steps" aria-label="Testing instructions">
+              <h3 class="testing-steps__title">
+                Use network throttling to simulate a slow network connection.
+              </h3>
+              <ol class="testing-steps__list">
+                <li>Open the Chrome DevTools</li>
+                <li>Navigate to the Network tab</li>
+                <li>Click the gear icon and select &ldquo;Throttling&rdquo;</li>
+                <li>Select &ldquo;Slow 3G&rdquo; from the dropdown</li>
+                <li>Select the Policy Type and Timeout Interval</li>
+                <li>Click the &ldquo;Subscribe&rdquo; button</li>
+                <li>Observe the renegotiation attempts and the status of the subscription</li>
+                <li>Reset the network throttling to unlimited after a few reconnection attempts</li>
+              </ol>
+            </section>
+
+            <r5-subscriber-stats id="subscriber-stats"></r5-subscriber-stats>
+            <video id="subscriber-video" autoplay controlsinline controls></video>
+
+            <section class="renegotiation-config-section" id="renegotiation-config-section">
+              <form id="renegotiation-form" class="renegotiation-form">
+                <label class="renegotiation-form__field">
+                  <span class="renegotiation-form__label">Select a Renegotiation Policy Type:</span>
+                  <select id="policy-type-select" class="renegotiation-form__select">
+                    <option value="excessive-rtt">Excessive RTT</option>
+                    <option value="timeout">Timeout</option>
+                    <option value="disconnect">Disconnect</option>
+                    <option value="regression" selected>Regression</option>
+                  </select>
+                </label>
+
+                <label class="renegotiation-form__field">
+                  <span class="renegotiation-form__label"
+                    >Select a Timeout Interval (milliseconds):</span
+                  >
+                  <select id="timeout-interval-select" class="renegotiation-form__select">
+                    <option value="1000">1000</option>
+                    <option value="2000">2000</option>
+                    <option value="3000" selected>3000</option>
+                    <option value="4000">4000</option>
+                    <option value="5000">5000</option>
+                  </select>
+                </label>
+              </form>
+            </section>
+
+            <div class="controls">
+              <button class="btn btn--primary" id="subscribe-btn">Subscribe</button>
+              <button class="btn btn--danger" id="unsubscribe-btn" disabled>Stop Subscribe</button>
+            </div>
+
+            <p class="reconnection-info" id="reconnection-info">Reconnection Attempts: 0</p>
+          </section>
+
+          <!-- Connection Health Panel — shown once subscribed -->
+          <section class="connection-health is-hidden" id="connection-health" aria-label="Connection health">
+            <div class="connection-health__header">
+              <h3 class="connection-health__title">Connection Health</h3>
+              <span class="connection-health__badge connection-health__badge--ok" id="health-status-badge"
+                >&#9679; OK</span
+              >
+            </div>
+
+            <div class="connection-health__grid">
+              <div class="connection-health__cell">
+                <span class="connection-health__cell-label">Stale Stats</span>
+                <span class="connection-health__cell-count" id="health-stale-count">0</span>
+              </div>
+              <div class="connection-health__cell">
+                <span class="connection-health__cell-label">State Regressions</span>
+                <span class="connection-health__cell-count" id="health-regression-count">0</span>
+              </div>
+              <div class="connection-health__cell">
+                <span class="connection-health__cell-label">RTT Issues</span>
+                <span class="connection-health__cell-count" id="health-rtt-count">0</span>
+                <span class="connection-health__cell-severity is-hidden" id="health-rtt-severity"></span>
+                <span class="connection-health__cell-detail is-hidden" id="health-rtt-detail"></span>
+              </div>
+              <div class="connection-health__cell">
+                <span class="connection-health__cell-label">ICE Timeouts</span>
+                <span class="connection-health__cell-count" id="health-ice-count">0</span>
+              </div>
+            </div>
+
+            <div class="connection-health__log">
+              <div class="connection-health__log-header">Event Log</div>
+              <div class="connection-health__log-entries" id="health-log-entries">
+                <p class="connection-health__log-empty">No events yet.</p>
+              </div>
+            </div>
+          </section>
+
+        </div>
+
+        <div class="log-panel">
+          <div class="log-panel__header">
+            <h2 class="log-panel__title">Log</h2>
+            <button type="button" class="btn btn--ghost log-panel__clear" id="log-clear-btn">
+              Clear
+            </button>
+          </div>
+          <div class="log" id="log"></div>
+        </div>
+      </div>
+    </main>
+
+    <script type="module" src="./index.ts"></script>
+  </body>
+</html>

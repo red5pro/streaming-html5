@@ -1,0 +1,269 @@
+<!-- Copyright © 2015 Infrared5, Inc. All rights reserved.
+
+The accompanying code comprising examples for use solely in conjunction with Red5 Pro (the "Example Code")
+is  licensed  to  you  by  Infrared5  Inc.  in  consideration  of  your  agreement  to  the  following
+license terms  and  conditions.  Access,  use,  modification,  or  redistribution  of  the  accompanying
+code  constitutes your acceptance of the following license terms and conditions.
+
+Permission is hereby granted, free of charge, to you to use the Example Code and associated documentation
+files (collectively, the "Software") without restriction, including without limitation the rights to use,
+copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit
+persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The Software shall be used solely in conjunction with Red5 Pro. Red5 Pro is licensed under a separate end
+user  license  agreement  (the  "EULA"),  which  must  be  executed  with  Infrared5,  Inc.
+An  example  of  the EULA can be found on our website at: https://account.red5.net/assets/LICENSE.txt.
+
+The above copyright notice and this license shall be included in all copies or portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,  INCLUDING  BUT
+NOT  LIMITED  TO  THE  WARRANTIES  OF  MERCHANTABILITY, FITNESS  FOR  A  PARTICULAR  PURPOSE  AND
+NONINFRINGEMENT.   IN  NO  EVENT  SHALL INFRARED5, INC. BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+WHETHER IN  AN  ACTION  OF  CONTRACT,  TORT  OR  OTHERWISE,  ARISING  FROM,  OUT  OF  OR  IN CONNECTION
+WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. -->
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PubNub Client — WebRTC Testbed</title>
+    <link rel="stylesheet" href="/style/main.css" />
+    <link rel="stylesheet" href="/style/pages/example.css" />
+    <link rel="stylesheet" href="/style/pages/pubnub-client.css" />
+    <link rel="stylesheet" href="/style/pages/message-channel.css" />
+    <link rel="stylesheet" href="/style/pages/whip-data-channel.css" />
+    <script src="//cdn.pubnub.com/sdk/javascript/pubnub.10.2.5.min.js"></script>
+    <script src="/libs/red5pro/red5pro-sdk.min.js"></script>
+  </head>
+  <body>
+    <r5-header></r5-header>
+
+    <main class="page">
+      <nav class="breadcrumb"><a href="/">WebRTC Testbed</a> &rsaquo; PubNub Client</nav>
+
+      <h1 class="page__heading">PubNub Client</h1>
+      <p class="page__description">
+        Standalone PubNubClient for Red5 Cloud messaging integration. Configure authentication,
+        channel, and keys, then subscribe to connect. No media streaming.
+      </p>
+
+      <div class="page__layout">
+        <div class="pubnub-client-layout">
+          <section class="media-panel">
+            <div class="media-panel__header">
+              <h2 class="section-title">PubNub Client</h2>
+              <span class="status status--idle" id="pubnub-status">Client Idle</span>
+            </div>
+
+            <div class="pubnub-config-section" id="pubnub-config-section">
+              <section class="pubnub-settings-section">
+                <h3 class="pubnub-settings-section__title">PubNub Client Settings</h3>
+                <p class="pubnub-settings-section__intro">
+                  Select an authentication option to test:
+                </p>
+
+                <div class="pubnub-settings-section__grid">
+                  <div class="pubnub-settings-section__field">
+                    <label class="pubnub-settings-section__label" for="pubnub-cloud-endpoint-input">
+                      Cloud Endpoint:
+                    </label>
+                    <div class="pubnub-settings-section__auth-control">
+                      <input
+                        id="pubnub-cloud-endpoint-radio"
+                        class="pubnub-settings-section__radio"
+                        type="radio"
+                        name="pubnub-auth-option"
+                        value="cloud-endpoint"
+                        checked
+                      />
+                      <input
+                        id="pubnub-cloud-endpoint-input"
+                        class="pubnub-settings-section__input"
+                        type="text"
+                        placeholder="userid-1234-abcd.cloud.red5.net"
+                        autocomplete="off"
+                        spellcheck="false"
+                      />
+                    </div>
+                  </div>
+
+                  <div class="pubnub-settings-section__field">
+                    <label class="pubnub-settings-section__label" for="pubnub-backend-url-input">
+                      Backend Service URL:
+                    </label>
+                    <div class="pubnub-settings-section__auth-control">
+                      <input
+                        id="pubnub-backend-url-radio"
+                        class="pubnub-settings-section__radio"
+                        type="radio"
+                        name="pubnub-auth-option"
+                        value="backend-url"
+                      />
+                      <input
+                        id="pubnub-backend-url-input"
+                        class="pubnub-settings-section__input"
+                        type="text"
+                        placeholder="https://your-backend-service"
+                        autocomplete="off"
+                        spellcheck="false"
+                        disabled
+                      />
+                    </div>
+                  </div>
+
+                  <div class="pubnub-settings-section__field">
+                    <label class="pubnub-settings-section__label" for="pubnub-auth-token-input">
+                      Auth Token:
+                    </label>
+                    <div class="pubnub-settings-section__auth-control">
+                      <input
+                        id="pubnub-auth-token-radio"
+                        class="pubnub-settings-section__radio"
+                        type="radio"
+                        name="pubnub-auth-option"
+                        value="auth-token"
+                      />
+                      <input
+                        id="pubnub-auth-token-input"
+                        class="pubnub-settings-section__input"
+                        type="text"
+                        placeholder="XXXX="
+                        autocomplete="off"
+                        spellcheck="false"
+                        disabled
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <hr class="pubnub-settings-section__divider" />
+
+                <div class="pubnub-settings-section__grid">
+                  <div class="pubnub-settings-section__field">
+                    <label class="pubnub-settings-section__label" for="pubnub-channel-id-input">
+                      Channel ID:
+                    </label>
+                    <input
+                      id="pubnub-channel-id-input"
+                      class="pubnub-settings-section__input"
+                      type="text"
+                      value="red5"
+                      autocomplete="off"
+                      spellcheck="false"
+                    />
+                  </div>
+
+                  <div class="pubnub-settings-section__field">
+                    <label class="pubnub-settings-section__label" for="pubnub-user-id-input">
+                      User ID:
+                    </label>
+                    <input
+                      id="pubnub-user-id-input"
+                      class="pubnub-settings-section__input"
+                      type="text"
+                      autocomplete="off"
+                      spellcheck="false"
+                    />
+                  </div>
+
+                  <div class="pubnub-settings-section__field">
+                    <label class="pubnub-settings-section__label" for="pubnub-publish-key-input">
+                      Publish Key:
+                    </label>
+                    <input
+                      id="pubnub-publish-key-input"
+                      class="pubnub-settings-section__input"
+                      type="text"
+                      placeholder="pub-c-xxx"
+                      autocomplete="off"
+                      spellcheck="false"
+                    />
+                  </div>
+
+                  <div class="pubnub-settings-section__field">
+                    <label class="pubnub-settings-section__label" for="pubnub-subscribe-key-input">
+                      Subscribe Key:
+                    </label>
+                    <input
+                      id="pubnub-subscribe-key-input"
+                      class="pubnub-settings-section__input"
+                      type="text"
+                      placeholder="sub-c-xxx"
+                      autocomplete="off"
+                      spellcheck="false"
+                    />
+                  </div>
+                </div>
+              </section>
+            </div>
+
+            <div class="pubnub-messaging-section is-hidden" id="pubnub-messaging-section">
+              <section class="chat-section">
+                <div class="chat-section__header">
+                  <h3 class="chat-section__title">Chat Messages</h3>
+                  <button
+                    type="button"
+                    class="btn btn--ghost chat-section__clear"
+                    id="chat-messages-clear-btn"
+                  >
+                    Clear
+                  </button>
+                </div>
+                <p class="chat-section__description">
+                  Your messages appear on the right; messages from other publishers on the left.
+                </p>
+                <div
+                  class="chat-messages chat-messages--empty"
+                  id="chat-messages"
+                  aria-live="polite"
+                >
+                  <p class="chat-messages__placeholder">No messages yet...</p>
+                </div>
+
+                <form id="pubnub-message-form" class="messaging-form pubnub-message-form">
+                  <label class="messaging-form__field">
+                    <span class="messaging-form__label">Message</span>
+                    <input
+                      id="pubnub-message-input"
+                      class="messaging-form__input"
+                      type="text"
+                      placeholder="Enter message to send..."
+                      autocomplete="off"
+                      spellcheck="false"
+                      disabled
+                    />
+                  </label>
+                  <div class="messaging-form__actions">
+                    <button class="btn btn--primary" type="submit" id="pubnub-message-send-btn" disabled>
+                      Send
+                    </button>
+                  </div>
+                </form>
+              </section>
+            </div>
+
+            <div class="controls-tray">
+              <div class="controls-tray__actions">
+                <button class="btn btn--primary" id="subscribe-btn">Start Subscribe</button>
+                <button class="btn btn--danger" id="destroy-btn" disabled>Close Client</button>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <div class="log-panel">
+          <div class="log-panel__header">
+            <h2 class="log-panel__title">Log</h2>
+            <button type="button" class="btn btn--ghost log-panel__clear" id="log-clear-btn">
+              Clear
+            </button>
+          </div>
+          <div class="log" id="log"></div>
+        </div>
+      </div>
+    </main>
+
+    <script type="module" src="./index.ts"></script>
+  </body>
+</html>

@@ -1,0 +1,215 @@
+<!-- Copyright © 2015 Infrared5, Inc. All rights reserved.
+
+The accompanying code comprising examples for use solely in conjunction with Red5 Pro (the "Example Code")
+is  licensed  to  you  by  Infrared5  Inc.  in  consideration  of  your  agreement  to  the  following
+license terms  and  conditions.  Access,  use,  modification,  or  redistribution  of  the  accompanying
+code  constitutes your acceptance of the following license terms and conditions.
+
+Permission is hereby granted, free of charge, to you to use the Example Code and associated documentation
+files (collectively, the "Software") without restriction, including without limitation the rights to use,
+copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit
+persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The Software shall be used solely in conjunction with Red5 Pro. Red5 Pro is licensed under a separate end
+user  license  agreement  (the  "EULA"),  which  must  be  executed  with  Infrared5,  Inc.
+An  example  of  the EULA can be found on our website at: https://account.red5.net/assets/LICENSE.txt.
+
+The above copyright notice and this license shall be included in all copies or portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,  INCLUDING  BUT
+NOT  LIMITED  TO  THE  WARRANTIES  OF  MERCHANTABILITY, FITNESS  FOR  A  PARTICULAR  PURPOSE  AND
+NONINFRINGEMENT.   IN  NO  EVENT  SHALL INFRARED5, INC. BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+WHETHER IN  AN  ACTION  OF  CONTRACT,  TORT  OR  OTHERWISE,  ARISING  FROM,  OUT  OF  OR  IN CONNECTION
+WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. -->
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WHIP Remote Call — WebRTC Testbed</title>
+    <link rel="stylesheet" href="/style/main.css" />
+    <link rel="stylesheet" href="/style/pages/example.css" />
+    <link rel="stylesheet" href="/style/pages/whip-data-channel.css" />
+    <script src="/libs/red5pro/red5pro-sdk.min.js"></script>
+  </head>
+  <body>
+    <r5-header></r5-header>
+
+    <main class="page">
+      <nav class="breadcrumb">
+        <a href="/">WebRTC Testbed</a> &rsaquo; WHIP Remote Call
+      </nav>
+
+      <h1 class="page__heading">WHIP Remote Call</h1>
+      <p class="page__description">
+        WHIPClient publish with DataChannel settings and publish mode. After publishing, send RPC
+        messages to subscribers through server fan-out. Pair with WHEP Remote Call. Configure host
+        and stream name in Settings.
+      </p>
+
+      <div class="page__layout">
+        <div class="whip-data-channel-layout">
+          <section class="media-panel">
+            <div class="media-panel__header">
+              <h2 class="section-title">Publisher</h2>
+              <span class="status status--idle" id="publish-status">Publisher Idle</span>
+            </div>
+
+            <p class="connection-info" id="connection-info">Endpoint not configured</p>
+
+            <r5-publisher-stats id="publisher-stats"></r5-publisher-stats>
+            <video id="publisher-video" autoplay playsinline muted controls></video>
+
+            <div class="publish-config-section" id="publish-config-section">
+              <section class="data-channel-section">
+                <h3 class="data-channel-section__title">DataChannel Settings</h3>
+                <div class="data-channel-section__grid">
+                  <div class="data-channel-section__field">
+                    <label class="data-channel-section__label" for="dc-name-input">Name</label>
+                    <input
+                      id="dc-name-input"
+                      class="data-channel-section__input"
+                      type="text"
+                      value="red5pro"
+                      autocomplete="off"
+                      spellcheck="false"
+                    />
+                  </div>
+
+                  <div class="data-channel-section__field">
+                    <label class="data-channel-section__label" for="dc-mode-select">Mode</label>
+                    <select id="dc-mode-select" class="data-channel-section__select">
+                      <option value="reliable-ordered" selected>reliable-ordered</option>
+                      <option value="reliable-unordered">reliable-unordered</option>
+                      <option value="max-retransmits">max-retransmits</option>
+                      <option value="max-lifetime">max-lifetime</option>
+                    </select>
+                  </div>
+
+                  <div
+                    class="data-channel-section__mode-options is-hidden"
+                    id="dc-mode-advanced-options"
+                  >
+                    <label class="data-channel-section__checkbox-field">
+                      <input
+                        id="dc-ordered-input"
+                        class="data-channel-section__checkbox"
+                        type="checkbox"
+                        checked
+                      />
+                      <span class="data-channel-section__checkbox-label">Ordered</span>
+                    </label>
+
+                    <div
+                      class="data-channel-section__field is-hidden"
+                      id="dc-max-retransmits-field"
+                    >
+                      <label class="data-channel-section__label" for="dc-max-retransmits-input">
+                        Max Retransmits
+                      </label>
+                      <input
+                        id="dc-max-retransmits-input"
+                        class="data-channel-section__input"
+                        type="number"
+                        min="0"
+                        step="1"
+                        value="3"
+                        autocomplete="off"
+                        spellcheck="false"
+                      />
+                    </div>
+
+                    <div
+                      class="data-channel-section__field is-hidden"
+                      id="dc-max-packet-lifetime-field"
+                    >
+                      <label class="data-channel-section__label" for="dc-max-packet-lifetime-input">
+                        Max Packet Lifetime (ms)
+                      </label>
+                      <input
+                        id="dc-max-packet-lifetime-input"
+                        class="data-channel-section__input"
+                        type="number"
+                        min="0"
+                        step="1"
+                        value="1000"
+                        autocomplete="off"
+                        spellcheck="false"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <r5-publish-mode id="publish-mode"></r5-publish-mode>
+            </div>
+
+            <div class="publish-messaging-section is-hidden" id="publish-messaging-section">
+              <section class="messaging-section">
+                <h3 class="messaging-section__title">RPC Message</h3>
+                <p class="messaging-section__description">
+                  Sent to all stream subscribers through the server.
+                </p>
+                <form id="rpc-message-form" class="messaging-form">
+                  <label class="messaging-form__field">
+                    <span class="messaging-form__label">Method</span>
+                    <input
+                      id="rpc-method-input"
+                      class="messaging-form__input"
+                      type="text"
+                      value="incomingNotification"
+                      placeholder="RPC method name"
+                      autocomplete="off"
+                      spellcheck="false"
+                    />
+                  </label>
+                  <label class="messaging-form__field">
+                    <span class="messaging-form__label">Message</span>
+                    <input
+                      id="rpc-message-input"
+                      class="messaging-form__input"
+                      type="text"
+                      placeholder="Enter RPC message"
+                      autocomplete="off"
+                      spellcheck="false"
+                    />
+                  </label>
+                  <div class="messaging-form__actions">
+                    <button class="btn btn--primary" type="submit" id="rpc-message-send-btn">
+                      Send
+                    </button>
+                  </div>
+                </form>
+              </section>
+            </div>
+
+            <div class="controls-tray">
+              <div class="controls-tray__actions">
+                <button class="btn btn--primary" id="publish-btn">Start Publish</button>
+                <button class="btn btn--danger" id="unpublish-btn" disabled>Stop Publish</button>
+              </div>
+              <r5-subscriber-link
+                id="open-subscriber-link"
+                href="../whep-remote-call/index.html"
+                disabled
+              ></r5-subscriber-link>
+            </div>
+          </section>
+        </div>
+
+        <div class="log-panel">
+          <div class="log-panel__header">
+            <h2 class="log-panel__title">Log</h2>
+            <button type="button" class="btn btn--ghost log-panel__clear" id="log-clear-btn">
+              Clear
+            </button>
+          </div>
+          <div class="log" id="log"></div>
+        </div>
+      </div>
+    </main>
+
+    <script type="module" src="./index.ts"></script>
+  </body>
+</html>

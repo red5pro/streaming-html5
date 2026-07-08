@@ -1,0 +1,461 @@
+/*
+Copyright © 2015 Infrared5, Inc. All rights reserved.
+
+The accompanying code comprising examples for use solely in conjunction with Red5 Pro (the "Example Code")
+is  licensed  to  you  by  Infrared5  Inc.  in  consideration  of  your  agreement  to  the  following
+license terms  and  conditions.  Access,  use,  modification,  or  redistribution  of  the  accompanying
+code  constitutes your acceptance of the following license terms and conditions.
+
+Permission is hereby granted, free of charge, to you to use the Example Code and associated documentation
+files (collectively, the "Software") without restriction, including without limitation the rights to use,
+copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit
+persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The Software shall be used solely in conjunction with Red5 Pro. Red5 Pro is licensed under a separate end
+user  license  agreement  (the  "EULA"),  which  must  be  executed  with  Infrared5,  Inc.
+An  example  of  the EULA can be found on our website at: https://account.red5.net/assets/LICENSE.txt.
+
+The above copyright notice and this license shall be included in all copies or portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,  INCLUDING  BUT
+NOT  LIMITED  TO  THE  WARRANTIES  OF  MERCHANTABILITY, FITNESS  FOR  A  PARTICULAR  PURPOSE  AND
+NONINFRINGEMENT.   IN  NO  EVENT  SHALL INFRARED5, INC. BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+WHETHER IN  AN  ACTION  OF  CONTRACT,  TORT  OR  OTHERWISE,  ARISING  FROM,  OUT  OF  OR  IN CONNECTION
+WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
+
+.page {
+  max-width: 1280px !important;
+}
+
+.brew-mixer-panel {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg-card);
+  padding: 0.85rem;
+  margin: 0 auto;
+  max-width: 1280px;
+  width: 100%;
+}
+
+.brew-mixer-panel .media-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+  gap: 0.75rem;
+}
+
+.brew-mixer-panel .section-title {
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.brew-mixer-panel__actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.brew-mixer-panel__controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.connection-info {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  margin-bottom: 0.75rem;
+  word-break: break-all;
+}
+
+.brew-mixer-nodegraph {
+  margin: 0.75rem 0;
+  border: 1px solid #262626;
+  border-radius: 8px;
+  background: #101010;
+  padding: 0.75rem;
+}
+
+.brew-mixer-nodegraph.is-hidden {
+  display: none;
+}
+
+.brew-mixer-nodegraph__title {
+  margin: 0 0 0.5rem;
+  font-size: 0.8rem;
+  color: #d9d9d9;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.brew-mixer-nodegraph__input {
+  width: 100%;
+  min-height: 220px;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  line-height: 1.45;
+  border: 1px solid #262626;
+  border-radius: 6px;
+  background: #0b0b0b;
+  color: #f4f4f4;
+  padding: 0.75rem;
+  resize: vertical;
+}
+
+.brew-mixer-nodegraph__actions {
+  margin-top: 0.65rem;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.brew-mixer-video-controls {
+  margin-top: 0.75rem;
+  border-radius: 4px;
+  overflow: hidden;
+  background: #0f0f10;
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  padding: 0.3rem;
+}
+
+.brew-mixer-layout-controls {
+  display: inline-flex;
+  align-items: stretch;
+}
+
+.brew-mixer-icon-btn {
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-right: 1px solid #202124;
+  background: #1a1b1e;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.brew-mixer-icon-btn img {
+  width: 20px;
+  height: 20px;
+  opacity: 0.6;
+}
+
+.brew-mixer-icon-btn--active img {
+  opacity: 1;
+}
+
+.brew-mixer-icon-btn:hover img {
+  opacity: 0.85;
+}
+
+.brew-mixer-icon-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.brew-mixer-layout-controls .brew-mixer-icon-btn:last-child {
+  border-right: 1px solid #202124;
+}
+
+#mixer-audio-toggle-btn {
+  border-left: 1px solid #202124;
+  border-right: 0;
+}
+
+#mixer-container {
+  position: relative;
+  background: #000;
+  margin-top: 0.75rem;
+  width: 100%;
+  height: fit-content;
+  aspect-ratio: 16 / 9;
+}
+
+#mixer-video {
+  aspect-ratio: 16 / 9;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+}
+
+#mixer-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+.brew-mixer-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 99;
+  padding: 1rem;
+}
+
+.brew-mixer-modal-backdrop.is-open {
+  display: flex;
+}
+
+.brew-mixer-modal {
+  width: min(980px, 100%);
+  background: #050505;
+  border: 1px solid #252525;
+  border-radius: 6px;
+  padding: 2rem 2.25rem;
+  color: #f4f4f4;
+  display: flex;
+  flex-direction: column;
+}
+
+.brew-mixer-modal__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  flex-shrink: 0;
+}
+
+.brew-mixer-modal__title {
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 300;
+}
+
+.brew-mixer-modal__close {
+  flex-shrink: 0;
+  border: none;
+  background: transparent;
+  color: #a7a7a7;
+  font-size: 1.75rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+}
+
+.brew-mixer-modal__close:hover {
+  color: #f4f4f4;
+  background: #1a1a1a;
+}
+
+.brew-mixer-modal__tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.brew-mixer-modal__tabs.is-hidden {
+  display: none;
+}
+
+.brew-mixer-modal__tab {
+  border: 1px solid #2f2f2f;
+  border-radius: 999px;
+  background: #131313;
+  color: #cfcfcf;
+  padding: 0.45rem 0.9rem;
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+
+.brew-mixer-modal__tab--active {
+  background: #f4f4f4;
+  color: #111;
+}
+
+.brew-mixer-existing-events.is-hidden,
+.brew-mixer-modal__create-view.is-hidden {
+  display: none;
+}
+
+.brew-mixer-existing-events__subtitle {
+  color: #d6d6d6;
+  margin-bottom: 0.75rem;
+}
+
+.brew-mixer-existing-events__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border: 1px solid #252525;
+  border-radius: 8px;
+  background: #101010;
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.brew-mixer-existing-events__item + .brew-mixer-existing-events__item {
+  border-top: 1px solid #252525;
+}
+
+.brew-mixer-existing-events__label {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.75rem;
+  cursor: pointer;
+}
+
+.brew-mixer-existing-events__radio {
+  margin: 0;
+}
+
+.brew-mixer-existing-events__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.brew-mixer-existing-events__event-id {
+  font-size: 0.95rem;
+  color: #f2f2f2;
+}
+
+.brew-mixer-existing-events__stream-guid {
+  font-size: 0.8rem;
+  color: #a7a7a7;
+  font-family: var(--font-mono);
+}
+
+.brew-mixer-existing-events__actions {
+  margin-top: 0.9rem;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.brew-mixer-modal__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.9rem 2.5rem;
+}
+
+.brew-mixer-modal__field {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.brew-mixer-modal__label {
+  min-width: 8rem;
+  color: #d6d6d6;
+  font-size: 1.1rem;
+}
+
+.brew-mixer-modal__input {
+  width: 100%;
+  border: 1px solid #212121;
+  border-radius: 12px;
+  background: #1a1a1a;
+  color: #f4f4f4;
+  padding: 0.65rem 1rem;
+  font-size: 1.05rem;
+}
+
+.brew-mixer-modal__actions {
+  margin-top: 1.6rem;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.brew-mixer-modal__submit {
+  text-transform: uppercase;
+  border-radius: 999px;
+  padding: 0.65rem 1.8rem;
+  letter-spacing: 0.06em;
+}
+
+.brew-mixer-modal__submit.is-loading {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media (max-width: 900px) {
+  .brew-mixer-modal-backdrop {
+    align-items: center;
+    padding: 0.5rem;
+  }
+
+  .brew-mixer-modal {
+    width: 100%;
+    max-height: calc(100vh - 1rem);
+    padding: 1rem;
+    overflow: hidden;
+  }
+
+  .brew-mixer-modal__header {
+    margin-bottom: 0.75rem;
+  }
+
+  .brew-mixer-modal__title {
+    font-size: 1.5rem;
+  }
+
+  .brew-mixer-modal__grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    overflow-y: scroll;
+    max-height: 60vh;
+    min-height: 0;
+    padding-right: 0.25rem;
+  }
+
+  .brew-mixer-existing-events__list {
+    max-height: 40vh;
+  }
+
+  .brew-mixer-modal__field {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.6rem;
+    margin-bottom: 0.4rem;
+  }
+
+  .brew-mixer-modal__label {
+    min-width: 0;
+  }
+
+  .brew-mixer-modal__actions {
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid #252525;
+    flex-shrink: 0;
+  }
+
+  .brew-mixer-panel .media-panel__header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .brew-mixer-panel__actions {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .brew-mixer-panel__controls {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .brew-mixer-video-controls {
+    padding: 0.3rem;
+  }
+}

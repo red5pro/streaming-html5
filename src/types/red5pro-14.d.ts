@@ -1,0 +1,95 @@
+/*
+Copyright © 2015 Infrared5, Inc. All rights reserved.
+
+The accompanying code comprising examples for use solely in conjunction with Red5 Pro (the "Example Code")
+is  licensed  to  you  by  Infrared5  Inc.  in  consideration  of  your  agreement  to  the  following
+license terms  and  conditions.  Access,  use,  modification,  or  redistribution  of  the  accompanying
+code  constitutes your acceptance of the following license terms and conditions.
+
+Permission is hereby granted, free of charge, to you to use the Example Code and associated documentation
+files (collectively, the "Software") without restriction, including without limitation the rights to use,
+copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit
+persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The Software shall be used solely in conjunction with Red5 Pro. Red5 Pro is licensed under a separate end
+user  license  agreement  (the  "EULA"),  which  must  be  executed  with  Infrared5,  Inc.
+An  example  of  the EULA can be found on our website at: https://account.red5.net/assets/LICENSE.txt.
+
+The above copyright notice and this license shall be included in all copies or portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,  INCLUDING  BUT
+NOT  LIMITED  TO  THE  WARRANTIES  OF  MERCHANTABILITY, FITNESS  FOR  A  PARTICULAR  PURPOSE  AND
+NONINFRINGEMENT.   IN  NO  EVENT  SHALL INFRARED5, INC. BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+WHETHER IN  AN  ACTION  OF  CONTRACT,  TORT  OR  OTHERWISE,  ARISING  FROM,  OUT  OF  OR  IN CONNECTION
+WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
+
+interface RTCPublisherConfig {
+  endpoint?: string
+  host?: string
+  streamName?: string
+  app?: string
+  protocol?: 'https' | 'http'
+  port?: number
+  mediaElementId?: string
+  mediaConstraints?: MediaStreamConstraints
+  clearMediaOnUnpublish?: boolean
+  keyFramerate?: number
+  bandwidth?: { audio: number; video: number }
+  connectionParams?: Record<string, unknown>
+  stats?: StatsConfig
+  rtcConfiguration?: RTCConfiguration
+  streamMode?: 'live' | 'record' | 'append'
+  videoEncoding?: string
+  audioEncoding?: string
+  includeDataChannel?: boolean
+  dataChannelConfiguration?: DataChannelConfiguration
+  reconnect?: ReconnectConfig
+}
+
+declare class RTCPublisher {
+  on(event: string, handler: (event: Red5ProEvent) => void): void
+  off(event: string, handler: (event: Red5ProEvent) => void): void
+  init(config: RTCPublisherConfig): Promise<void>
+  initWithStream(config: RTCPublisherConfig, stream: MediaStream): Promise<void>
+  publish(): Promise<void>
+  unpublish(): Promise<void>
+  getPeerConnection(): RTCPeerConnection | undefined
+  getDataChannel(): RTCDataChannel | undefined
+  getMediaStream(): MediaStream | undefined
+  muteAudio(): void
+  unmuteAudio(): void
+  muteVideo(): void
+  unmuteVideo(): void
+  send(methodName: string, data?: Record<string, unknown>): Promise<boolean | undefined>
+}
+
+interface RTCSubscriberConfig {
+  endpoint?: string
+  host?: string
+  streamName?: string
+  app?: string
+  protocol?: 'https' | 'http'
+  port?: number
+  mediaElementId?: string
+  connectionParams?: Record<string, unknown>
+  stats?: StatsConfig
+  rtcConfiguration?: RTCConfiguration
+  includeDataChannel?: boolean
+  dataChannelConfiguration?: DataChannelConfiguration
+}
+
+declare class RTCSubscriber {
+  on(event: string, handler: (event: Red5ProEvent) => void): void
+  off(event: string, handler: (event: Red5ProEvent) => void): void
+  init(config: RTCSubscriberConfig): Promise<void>
+  subscribe(): Promise<void>
+  unsubscribe(): Promise<void>
+  getPeerConnection(): RTCPeerConnection | undefined
+  getDataChannel(): RTCDataChannel | undefined
+}
+
+interface Red5ProSDK {
+  RTCPublisher: typeof RTCPublisher
+  RTCSubscriber: typeof RTCSubscriber
+}

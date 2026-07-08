@@ -1,0 +1,275 @@
+/*
+Copyright © 2015 Infrared5, Inc. All rights reserved.
+
+The accompanying code comprising examples for use solely in conjunction with Red5 Pro (the "Example Code")
+is  licensed  to  you  by  Infrared5  Inc.  in  consideration  of  your  agreement  to  the  following
+license terms  and  conditions.  Access,  use,  modification,  or  redistribution  of  the  accompanying
+code  constitutes your acceptance of the following license terms and conditions.
+
+Permission is hereby granted, free of charge, to you to use the Example Code and associated documentation
+files (collectively, the "Software") without restriction, including without limitation the rights to use,
+copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit
+persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The Software shall be used solely in conjunction with Red5 Pro. Red5 Pro is licensed under a separate end
+user  license  agreement  (the  "EULA"),  which  must  be  executed  with  Infrared5,  Inc.
+An  example  of  the EULA can be found on our website at: https://account.red5.net/assets/LICENSE.txt.
+
+The above copyright notice and this license shall be included in all copies or portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,  INCLUDING  BUT
+NOT  LIMITED  TO  THE  WARRANTIES  OF  MERCHANTABILITY, FITNESS  FOR  A  PARTICULAR  PURPOSE  AND
+NONINFRINGEMENT.   IN  NO  EVENT  SHALL INFRARED5, INC. BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+WHETHER IN  AN  ACTION  OF  CONTRACT,  TORT  OR  OTHERWISE,  ARISING  FROM,  OUT  OF  OR  IN CONNECTION
+WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
+
+:host {
+  display: block;
+}
+
+.publish-settings {
+  margin-bottom: 0.75rem;
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg-secondary);
+}
+
+.publish-settings__title {
+  margin: 0 0 0.65rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.publish-settings__sections {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.publish-settings__section {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.65rem;
+  background: var(--bg-card);
+}
+
+.publish-settings__section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.65rem;
+}
+
+.publish-settings__section-title {
+  margin: 0;
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.publish-settings__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.65rem 0.85rem;
+}
+
+.publish-settings__audio-advanced {
+  margin-top: 0.65rem;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.publish-settings__checkbox-field {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-width: 0;
+  cursor: pointer;
+  user-select: none;
+}
+
+.publish-settings__checkbox {
+  width: 0.95rem;
+  height: 0.95rem;
+  margin: 0;
+  flex-shrink: 0;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.publish-settings__checkbox-label {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  line-height: 1.3;
+}
+
+.publish-settings__checkbox-field--unsupported {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.publish-settings__checkbox-field--unsupported .publish-settings__checkbox {
+  cursor: not-allowed;
+}
+
+@media (max-width: 640px) {
+  .publish-settings__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .publish-settings__audio-advanced {
+    grid-template-columns: 1fr;
+  }
+}
+
+.publish-settings__row {
+  display: flex;
+  gap: 0.85rem;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+
+.publish-settings__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 0;
+  flex: 1 1 0;
+}
+
+.publish-settings__field--grow {
+  flex: 1 1 100%;
+}
+
+.publish-settings__label {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.publish-settings__input,
+.publish-settings__select {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  font-size: 0.85rem;
+  font-family: 'IBM Plex Mono', ui-monospace, 'SF Mono', monospace;
+  padding: 0.5rem 0.75rem;
+  outline: none;
+  transition: border-color 0.15s;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.publish-settings__input:focus,
+.publish-settings__select:focus {
+  border-color: var(--accent);
+}
+
+.publish-settings__select-wrap {
+  position: relative;
+}
+
+.publish-settings__select-wrap::after {
+  content: '▾';
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  pointer-events: none;
+  font-size: 0.7rem;
+  line-height: 1;
+}
+
+.publish-settings__select {
+  appearance: none;
+  cursor: pointer;
+  padding-right: 2rem;
+}
+
+.publish-settings__toggle {
+  gap: 0.5rem;
+}
+
+.publish-settings__toggle-text {
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+  font-weight: 500;
+}
+
+.publish-settings__dependent-row.is-hidden {
+  display: none;
+}
+
+.publish-settings__section--audio.is-hidden {
+  display: none;
+}
+
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+}
+
+.theme-toggle__track {
+  position: relative;
+  width: 32px;
+  height: 18px;
+  background: var(--border);
+  border-radius: 999px;
+  transition: background 0.2s;
+  flex-shrink: 0;
+  border: 1px solid var(--border);
+}
+
+.theme-toggle__track.on {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.theme-toggle__thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 12px;
+  height: 12px;
+  background: #ffffff;
+  border-radius: 50%;
+  transition: transform 0.2s;
+}
+
+.theme-toggle__track.on .theme-toggle__thumb {
+  transform: translateX(14px);
+}
+
+.publish-settings__status {
+  margin: 0.55rem 0 0;
+  min-height: 1rem;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.publish-settings__status--error {
+  color: var(--status-error-text);
+}
+
+.publish-settings--disabled {
+  opacity: 0.65;
+}
+
+.publish-settings--disabled .publish-settings__input,
+.publish-settings--disabled .publish-settings__select {
+  cursor: not-allowed;
+}
