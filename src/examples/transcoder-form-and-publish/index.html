@@ -1,0 +1,241 @@
+<!-- Copyright © 2015 Infrared5, Inc. All rights reserved.
+
+The accompanying code comprising examples for use solely in conjunction with Red5 Pro (the "Example Code")
+is  licensed  to  you  by  Infrared5  Inc.  in  consideration  of  your  agreement  to  the  following
+license terms  and  conditions.  Access,  use,  modification,  or  redistribution  of  the  accompanying
+code  constitutes your acceptance of the following license terms and conditions.
+
+Permission is hereby granted, free of charge, to you to use the Example Code and associated documentation
+files (collectively, the "Software") without restriction, including without limitation the rights to use,
+copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit
+persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The Software shall be used solely in conjunction with Red5 Pro. Red5 Pro is licensed under a separate end
+user  license  agreement  (the  "EULA"),  which  must  be  executed  with  Infrared5,  Inc.
+An  example  of  the EULA can be found on our website at: https://account.red5.net/assets/LICENSE.txt.
+
+The above copyright notice and this license shall be included in all copies or portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,  INCLUDING  BUT
+NOT  LIMITED  TO  THE  WARRANTIES  OF  MERCHANTABILITY, FITNESS  FOR  A  PARTICULAR  PURPOSE  AND
+NONINFRINGEMENT.   IN  NO  EVENT  SHALL INFRARED5, INC. BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+WHETHER IN  AN  ACTION  OF  CONTRACT,  TORT  OR  OTHERWISE,  ARISING  FROM,  OUT  OF  OR  IN CONNECTION
+WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. -->
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Transcoder (Form and Publish) — WebRTC Testbed</title>
+    <link rel="stylesheet" href="/style/main.css" />
+    <link rel="stylesheet" href="/style/pages/example.css" />
+    <link rel="stylesheet" href="/style/pages/transcoder-form-only.css" />
+    <link rel="stylesheet" href="/style/pages/transcoder-form-and-publish.css" />
+    <script src="/libs/red5pro/red5pro-sdk.min.js"></script>
+  </head>
+  <body>
+    <r5-header></r5-header>
+
+    <main class="page">
+      <nav class="breadcrumb">
+        <a href="/">WebRTC Testbed</a> &rsaquo; Transcoder (Form and Publish)
+      </nav>
+
+      <h1 class="page__heading">Transcoder (Form and Publish)</h1>
+      <p class="page__description">
+        Post ABR provisions to Stream Manager, then publish. Enable Stream Manager and Admin
+        credentials in Settings.
+      </p>
+
+      <div class="page__layout">
+        <div class="transcoder-form-only-layout">
+          <section class="media-panel">
+            <p class="connection-info" id="connection-info">Settings not configured</p>
+            <p class="prompt" id="prompt"></p>
+
+            <form id="abr-provisions-form" class="abr-form" novalidate>
+              <p class="abr-form__intro">Use this form to post your ABR Provisions:</p>
+
+              <div class="abr-form__columns">
+                <fieldset class="abr-form__column">
+                  <legend class="abr-form__tier">HIGH</legend>
+                  <label class="abr-form__field">
+                    <span class="abr-form__label">Bitrate:</span>
+                    <input
+                      id="high-bitrate"
+                      name="high-bitrate"
+                      class="abr-form__input"
+                      type="number"
+                      min="1"
+                      step="1"
+                      value="2000000"
+                      required
+                    />
+                  </label>
+                  <label class="abr-form__field">
+                    <span class="abr-form__label">Width:</span>
+                    <input
+                      id="high-width"
+                      name="high-width"
+                      class="abr-form__input"
+                      type="number"
+                      min="1"
+                      step="1"
+                      value="1280"
+                      required
+                    />
+                  </label>
+                  <label class="abr-form__field">
+                    <span class="abr-form__label">Height:</span>
+                    <input
+                      id="high-height"
+                      name="high-height"
+                      class="abr-form__input"
+                      type="number"
+                      min="1"
+                      step="1"
+                      value="720"
+                      required
+                    />
+                  </label>
+                </fieldset>
+
+                <fieldset class="abr-form__column">
+                  <legend class="abr-form__tier">MID</legend>
+                  <label class="abr-form__field">
+                    <span class="abr-form__label">Bitrate:</span>
+                    <input
+                      id="mid-bitrate"
+                      name="mid-bitrate"
+                      class="abr-form__input"
+                      type="number"
+                      min="1"
+                      step="1"
+                      value="1000000"
+                      required
+                    />
+                  </label>
+                  <label class="abr-form__field">
+                    <span class="abr-form__label">Width:</span>
+                    <input
+                      id="mid-width"
+                      name="mid-width"
+                      class="abr-form__input"
+                      type="number"
+                      min="1"
+                      step="1"
+                      value="640"
+                      required
+                    />
+                  </label>
+                  <label class="abr-form__field">
+                    <span class="abr-form__label">Height:</span>
+                    <input
+                      id="mid-height"
+                      name="mid-height"
+                      class="abr-form__input"
+                      type="number"
+                      min="1"
+                      step="1"
+                      value="360"
+                      required
+                    />
+                  </label>
+                </fieldset>
+
+                <fieldset class="abr-form__column">
+                  <legend class="abr-form__tier">LOW</legend>
+                  <label class="abr-form__field">
+                    <span class="abr-form__label">Bitrate:</span>
+                    <input
+                      id="low-bitrate"
+                      name="low-bitrate"
+                      class="abr-form__input"
+                      type="number"
+                      min="1"
+                      step="1"
+                      value="500000"
+                      required
+                    />
+                  </label>
+                  <label class="abr-form__field">
+                    <span class="abr-form__label">Width:</span>
+                    <input
+                      id="low-width"
+                      name="low-width"
+                      class="abr-form__input"
+                      type="number"
+                      min="1"
+                      step="1"
+                      value="320"
+                      required
+                    />
+                  </label>
+                  <label class="abr-form__field">
+                    <span class="abr-form__label">Height:</span>
+                    <input
+                      id="low-height"
+                      name="low-height"
+                      class="abr-form__input"
+                      type="number"
+                      min="1"
+                      step="1"
+                      value="180"
+                      required
+                    />
+                  </label>
+                </fieldset>
+              </div>
+
+              <div class="abr-form__actions">
+                <button class="btn btn--primary" type="submit" id="submit-btn">Submit</button>
+              </div>
+            </form>
+
+            <section class="publisher-section is-hidden" id="publisher-section">
+              <div class="media-panel__header">
+                <h2 class="section-title">Publisher</h2>
+                <span class="status status--idle" id="publish-status">Preview Ready</span>
+              </div>
+
+              <p class="publish-endpoint" id="publish-endpoint"></p>
+              <p class="accepted-resolution" id="accepted-resolution">Camera preview not started</p>
+
+              <r5-publisher-stats id="publisher-stats"></r5-publisher-stats>
+              <video id="publisher-video" autoplay playsinline muted controls></video>
+
+              <div class="controls-tray">
+                <div class="controls-tray__actions">
+                  <button class="btn btn--primary" type="button" id="publish-btn">
+                    Start Publish
+                  </button>
+                  <button class="btn btn--danger" type="button" id="unpublish-btn" disabled>
+                    Stop Publish
+                  </button>
+                </div>
+                <r5-subscriber-link
+                  id="open-subscriber-link"
+                  href="../whep-basic/index.html"
+                  label="Open Subscriber"
+                  disabled
+                ></r5-subscriber-link>
+              </div>
+            </section>
+          </section>
+        </div>
+        <div class="log-panel">
+          <div class="log-panel__header">
+            <h2 class="log-panel__title">Log</h2>
+            <button type="button" class="btn btn--ghost log-panel__clear" id="log-clear-btn">
+              Clear
+            </button>
+          </div>
+          <div class="log" id="log"></div>
+        </div>
+      </div>
+    </main>
+
+    <script type="module" src="./index.ts"></script>
+  </body>
+</html>

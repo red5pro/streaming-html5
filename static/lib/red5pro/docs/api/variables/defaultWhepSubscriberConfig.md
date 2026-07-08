@@ -1,9 +1,0 @@
-[**Red5 Pro WebRTC SDK v15.6.0**](../README.md)
-
-***
-
-[Red5 Pro WebRTC SDK](../globals.md) / defaultWhepSubscriberConfig
-
-# Variable: defaultWhepSubscriberConfig
-
-> `const` **defaultWhepSubscriberConfig**: [`RTCWhepSubscriberConfigType`](../type-aliases/RTCWhepSubscriberConfigType.md)

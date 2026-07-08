@@ -1,0 +1,66 @@
+.red5-subscriber-canvas {
+  width: 100%;
+  height: 100%;
+  background-color: #000000;
+  object-fit: contain;
+  aspect-ratio: 16 / 9;
+}
+
+.red5-subscriber-video {
+  width: 100%;
+  height: 100%;
+  background-color: #000000;
+  object-fit: contain;
+  aspect-ratio: 16 / 9;
+}
+
+.moq-controls-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  display: flex;
+  align-items: flex-end;
+  z-index: 10;
+}
+.moq-controls-bar {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 10px;
+  background: linear-gradient(transparent, rgba(0,0,0,0.72));
+  pointer-events: all;
+  opacity: 0;
+  transition: opacity 0.18s ease;
+  box-sizing: border-box;
+}
+.moq-controls-bar.moq-bar-visible {
+  opacity: 1;
+}
+.moq-ctrl-btn {
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  padding: 4px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  flex-shrink: 0;
+  outline: none;
+}
+.moq-ctrl-btn:hover {
+  background: rgba(255,255,255,0.18);
+}
+.moq-ctrl-btn:focus-visible {
+  box-shadow: 0 0 0 2px rgba(255,255,255,0.7);
+}
+.moq-ctrl-btn svg {
+  width: 20px;
+  height: 20px;
+  display: block;
+}
+.moq-ctrl-spacer { flex: 1; }

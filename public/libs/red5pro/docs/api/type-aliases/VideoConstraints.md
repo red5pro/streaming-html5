@@ -1,0 +1,33 @@
+[**Red5 Pro WebRTC SDK v16.0.0-beta.1**](../README.md)
+
+***
+
+[Red5 Pro WebRTC SDK](../globals.md) / VideoConstraints
+
+# Type Alias: VideoConstraints
+
+> **VideoConstraints** = `object`
+
+## Properties
+
+### deviceId?
+
+> `optional` **deviceId?**: `string`
+
+***
+
+### frameRate?
+
+> `optional` **frameRate?**: [`MediaConstraintRange`](MediaConstraintRange.md) \| `number`
+
+***
+
+### height?
+
+> `optional` **height?**: [`MediaConstraintRange`](MediaConstraintRange.md) \| `number`
+
+***
+
+### width?
+
+> `optional` **width?**: [`MediaConstraintRange`](MediaConstraintRange.md) \| `number`

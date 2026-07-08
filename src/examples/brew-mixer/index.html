@@ -1,0 +1,308 @@
+<!-- Copyright © 2015 Infrared5, Inc. All rights reserved.
+
+The accompanying code comprising examples for use solely in conjunction with Red5 Pro (the "Example Code")
+is  licensed  to  you  by  Infrared5  Inc.  in  consideration  of  your  agreement  to  the  following
+license terms  and  conditions.  Access,  use,  modification,  or  redistribution  of  the  accompanying
+code  constitutes your acceptance of the following license terms and conditions.
+
+Permission is hereby granted, free of charge, to you to use the Example Code and associated documentation
+files (collectively, the "Software") without restriction, including without limitation the rights to use,
+copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit
+persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The Software shall be used solely in conjunction with Red5 Pro. Red5 Pro is licensed under a separate end
+user  license  agreement  (the  "EULA"),  which  must  be  executed  with  Infrared5,  Inc.
+An  example  of  the EULA can be found on our website at: https://account.red5.net/assets/LICENSE.txt.
+
+The above copyright notice and this license shall be included in all copies or portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,  INCLUDING  BUT
+NOT  LIMITED  TO  THE  WARRANTIES  OF  MERCHANTABILITY, FITNESS  FOR  A  PARTICULAR  PURPOSE  AND
+NONINFRINGEMENT.   IN  NO  EVENT  SHALL INFRARED5, INC. BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+WHETHER IN  AN  ACTION  OF  CONTRACT,  TORT  OR  OTHERWISE,  ARISING  FROM,  OUT  OF  OR  IN CONNECTION
+WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. -->
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Brew Mixer — WebRTC Testbed</title>
+    <link rel="stylesheet" href="/style/main.css" />
+    <link rel="stylesheet" href="/style/pages/example.css" />
+    <link rel="stylesheet" href="/style/pages/brew-mixer.css" />
+    <script src="/libs/red5pro/red5pro-sdk.min.js"></script>
+  </head>
+  <body>
+    <r5-header></r5-header>
+
+    <main class="page">
+      <nav class="breadcrumb"><a href="/">WebRTC Testbed</a> &rsaquo; Brew Mixer</nav>
+
+      <h1 class="page__heading">Brew Mixer</h1>
+      <p class="page__description">
+        Stream Manager mixer workflow using brew mixer service integration. Complete setup to
+        proceed.
+      </p>
+
+      <div class="page__layout">
+        <section class="media-panel brew-mixer-panel">
+          <div class="media-panel__header">
+            <h2 class="section-title">Mixer Session</h2>
+          </div>
+          <div class="brew-mixer-panel__controls">
+            <div class="brew-mixer-panel__actions">
+              <button
+                id="toggle-nodegraph-editor-btn"
+                class="btn btn--ghost"
+                type="button"
+                disabled
+              >
+                Open NodeGraph Editor
+              </button>
+              <button id="reopen-setup-btn" class="btn btn--ghost" type="button">Edit Setup</button>
+            </div>
+            <button id="stop-mixer-btn" class="btn btn--danger" type="button" disabled>
+              Stop Mixer
+            </button>
+          </div>
+          <p class="connection-info" id="connection-info">Settings not configured</p>
+          <p class="prompt" id="setup-status">Mixer setup required before continuing.</p>
+          <section id="nodegraph-editor-panel" class="brew-mixer-nodegraph is-hidden">
+            <h3 class="brew-mixer-nodegraph__title">NodeGraph JSON Editor</h3>
+            <textarea
+              id="nodegraph-editor-input"
+              class="brew-mixer-nodegraph__input"
+              spellcheck="false"
+            ></textarea>
+            <div class="brew-mixer-nodegraph__actions">
+              <button id="reset-nodegraph-btn" class="btn" type="button">Reset</button>
+              <button id="submit-nodegraph-btn" class="btn" type="button">
+                Submit Render Tree
+              </button>
+            </div>
+          </section>
+          <r5-subscriber-stats id="mixer-subscriber-stats"></r5-subscriber-stats>
+          <div class="brew-mixer-video-controls" aria-label="Mixer video controls">
+            <div class="brew-mixer-layout-controls" role="group" aria-label="Mixer layout presets">
+              <button
+                id="layout-2x2-btn"
+                class="brew-mixer-icon-btn brew-mixer-icon-btn--active"
+                type="button"
+                aria-label="Select 2 by 2 layout"
+                aria-pressed="true"
+                disabled
+              >
+                <img src="/assets/2x2.svg" alt="" />
+              </button>
+              <button
+                id="layout-3x3-btn"
+                class="brew-mixer-icon-btn"
+                type="button"
+                aria-label="Select 3 by 3 layout"
+                aria-pressed="false"
+                disabled
+              >
+                <img src="/assets/3x3.svg" alt="" />
+              </button>
+              <button
+                id="layout-4x4-btn"
+                class="brew-mixer-icon-btn"
+                type="button"
+                aria-label="Select 4 by 4 layout"
+                aria-pressed="false"
+                disabled
+              >
+                <img src="/assets/4x4.svg" alt="" />
+              </button>
+            </div>
+            <button
+              id="mixer-audio-toggle-btn"
+              class="brew-mixer-icon-btn"
+              type="button"
+              aria-label="Mute mixer audio"
+              aria-pressed="true"
+            >
+              <img id="mixer-audio-toggle-icon" src="/assets/volume_on.svg" alt="" />
+            </button>
+          </div>
+          <div id="mixer-container">
+            <video id="mixer-video" autoplay playsinline></video>
+            <canvas id="mixer-canvas"></canvas>
+          </div>
+        </section>
+
+        <div class="log-panel">
+          <div class="log-panel__header">
+            <h2 class="log-panel__title">Log</h2>
+            <button type="button" class="btn btn--ghost log-panel__clear" id="log-clear-btn">
+              Clear
+            </button>
+          </div>
+          <div class="log" id="log"></div>
+        </div>
+      </div>
+
+      <div
+        class="brew-mixer-modal-backdrop"
+        id="brew-mixer-modal-backdrop"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="brew-mixer-modal-title"
+      >
+        <form class="brew-mixer-modal" id="brew-mixer-modal-form" novalidate>
+          <div class="brew-mixer-modal__header">
+            <h2 class="brew-mixer-modal__title" id="brew-mixer-modal-title">
+              Open or Start New Mixer
+            </h2>
+            <button
+              id="brew-mixer-modal-close-btn"
+              class="brew-mixer-modal__close"
+              type="button"
+              aria-label="Close"
+            >
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+
+          <div id="brew-mixer-modal-tabs" class="brew-mixer-modal__tabs is-hidden">
+            <button
+              id="existing-events-tab-btn"
+              class="brew-mixer-modal__tab brew-mixer-modal__tab--active"
+              type="button"
+            >
+              Existing Events
+            </button>
+            <button id="create-event-tab-btn" class="brew-mixer-modal__tab" type="button">
+              Create New
+            </button>
+          </div>
+
+          <section id="existing-events-view" class="brew-mixer-existing-events is-hidden">
+            <p class="brew-mixer-existing-events__subtitle">Select an existing mixer event.</p>
+            <ul id="existing-events-list" class="brew-mixer-existing-events__list"></ul>
+            <div class="brew-mixer-existing-events__actions">
+              <button
+                id="use-existing-event-btn"
+                class="btn brew-mixer-modal__submit"
+                type="button"
+              >
+                Open Selected Mixer Event
+              </button>
+            </div>
+          </section>
+
+          <div id="create-event-view" class="brew-mixer-modal__create-view">
+            <div class="brew-mixer-modal__grid">
+              <label class="brew-mixer-modal__field">
+                <span class="brew-mixer-modal__label">Event ID</span>
+                <input id="event-id-input" class="brew-mixer-modal__input" type="text" required />
+              </label>
+              <label class="brew-mixer-modal__field">
+                <span class="brew-mixer-modal__label">Output GUID</span>
+                <input
+                  id="output-guid-input"
+                  class="brew-mixer-modal__input"
+                  type="text"
+                  required
+                />
+              </label>
+
+              <label class="brew-mixer-modal__field">
+                <span class="brew-mixer-modal__label">Width</span>
+                <input
+                  id="width-input"
+                  class="brew-mixer-modal__input"
+                  type="text"
+                  value="1920"
+                  required
+                />
+              </label>
+              <label class="brew-mixer-modal__field">
+                <span class="brew-mixer-modal__label">Height</span>
+                <input
+                  id="height-input"
+                  class="brew-mixer-modal__input"
+                  type="text"
+                  value="1080"
+                  required
+                />
+              </label>
+
+              <label class="brew-mixer-modal__field">
+                <span class="brew-mixer-modal__label">Bitrate</span>
+                <input
+                  id="bitrate-input"
+                  class="brew-mixer-modal__input"
+                  type="text"
+                  value="7000000"
+                  required
+                />
+              </label>
+              <label class="brew-mixer-modal__field">
+                <span class="brew-mixer-modal__label">Max Bitrate</span>
+                <input
+                  id="max-bitrate-input"
+                  class="brew-mixer-modal__input"
+                  type="text"
+                  value="10000000"
+                  required
+                />
+              </label>
+
+              <label class="brew-mixer-modal__field">
+                <span class="brew-mixer-modal__label">QP Min</span>
+                <input
+                  id="qp-min-input"
+                  class="brew-mixer-modal__input"
+                  type="text"
+                  value="28"
+                  required
+                />
+              </label>
+              <label class="brew-mixer-modal__field">
+                <span class="brew-mixer-modal__label">QP Max</span>
+                <input
+                  id="qp-max-input"
+                  class="brew-mixer-modal__input"
+                  type="text"
+                  value="48"
+                  required
+                />
+              </label>
+
+              <label class="brew-mixer-modal__field">
+                <span class="brew-mixer-modal__label">Framerate</span>
+                <input
+                  id="framerate-input"
+                  class="brew-mixer-modal__input"
+                  type="text"
+                  value="30"
+                  required
+                />
+              </label>
+              <label class="brew-mixer-modal__field">
+                <span class="brew-mixer-modal__label">Audiorate</span>
+                <input
+                  id="audiorate-input"
+                  class="brew-mixer-modal__input"
+                  type="text"
+                  value="48000"
+                  required
+                />
+              </label>
+            </div>
+
+            <div class="brew-mixer-modal__actions">
+              <button id="mixer-form-submit-btn" class="btn brew-mixer-modal__submit" type="submit">
+                Start
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </main>
+
+    <script type="module" src="./index.ts"></script>
+  </body>
+</html>

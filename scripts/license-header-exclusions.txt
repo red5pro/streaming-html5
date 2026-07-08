@@ -1,0 +1,12 @@
+# One glob per line.
+# Files matching these globs are ignored by scripts/check-license-headers.mjs.
+
+# Third-party/vendor assets
+public/libs/**
+
+# Third-party file checked into src (do not edit)
+src/examples/whip-castlabs/encrypt-worker.js
+
+# Project-specific exclusions
+eslint.config.js
+public/r5-player.html
