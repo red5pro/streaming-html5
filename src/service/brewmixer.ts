@@ -27,15 +27,44 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 import { Settings } from '@/settings'
 
 const DELAY = 100
-let timeout: NodeJS.Timeout | null = null
-// @ts-expect-error - args is unknown
-const debounce = (target: unknown, func: (...args) => unknown, delay: number) => {
-  // @ts-expect-error - args is unknown
-  return function (...args): void {
-    if (timeout) {
-      clearTimeout(timeout)
+
+function throttle<Args extends unknown[]>(
+  func: (...args: Args) => unknown,
+  delay: number
+): (...args: Args) => void {
+  let timeout: NodeJS.Timeout | null = null
+  let lastInvokeTime = 0
+  let pendingArgs: Args | null = null
+
+  const invoke = (args: Args): void => {
+    lastInvokeTime = Date.now()
+    void func(...args)
+  }
+
+  return (...args: Args): void => {
+    const elapsed = Date.now() - lastInvokeTime
+    if (elapsed >= delay) {
+      if (timeout) {
+        clearTimeout(timeout)
+        timeout = null
+        pendingArgs = null
+      }
+      invoke(args)
+      return
     }
-    timeout = setTimeout(() => func.apply(target, args), delay)
+
+    pendingArgs = args
+    if (!timeout) {
+      timeout = setTimeout(() => {
+        timeout = null
+        if (!pendingArgs) {
+          return
+        }
+        const nextArgs = pendingArgs
+        pendingArgs = null
+        invoke(nextArgs)
+      }, delay - elapsed)
+    }
   }
 }
 const mixerAlreadyExistsRegex = /mixer event(?: named)?\s+(.+?)\s+already exists/i
@@ -261,6 +290,8 @@ async function _updateRenderTrees(
   }
 }
 
+const throttledUpdateRenderTrees = throttle(_updateRenderTrees, DELAY)
+
 export async function createMixerEvent(
   settings: Settings,
   jwt: string,
@@ -420,11 +451,11 @@ export async function updateRenderTrees(
   jwt: string,
   eventId: string,
   renderTrees: unknown[],
-  useDebounce: boolean = true
+  useThrottle: boolean = true
 ): Promise<unknown> {
   // TODO: find unknown type
-  if (useDebounce) {
-    return debounce(null, _updateRenderTrees, DELAY)(settings, jwt, eventId, renderTrees)
+  if (useThrottle) {
+    return throttledUpdateRenderTrees(settings, jwt, eventId, renderTrees)
   } else {
     return _updateRenderTrees(settings, jwt, eventId, renderTrees)
   }
