@@ -482,7 +482,7 @@ function onMouseDown(event: MouseEvent): void {
   let offsety = 0
   isMouseDown = false // true only when dragging
 
-  if (currentOverlayState == OverlayStates.SELECTED) {
+  if (currentOverlayState == OverlayStates.SELECTED && selectedNode) {
     // if in state SELECTED, check if we clicked a drag handle inside the selected video
     const drawParams = calculateDrawParams(selectedNode, mixerVideoEl)
     if (!drawParams) {
@@ -492,19 +492,20 @@ function onMouseDown(event: MouseEvent): void {
     if (hitCircle(x, y, drawParams.centerX, drawParams.centerY, radius)) {
       dragTarget = Direction.MOVE_HANDLE
       isMouseDown = true
+      videoNodeToTop(selectedNode, true)
       setOverlayState(OverlayStates.MOVING)
     } else if (hitBox(x, y, drawParams.x, drawParams.y, radius, radius)) {
       dragTarget = Direction.NORTHWEST
       dragging = true
-      offsetx = magVideoDownX - node.destX
-      offsety = magVideoDownY - node.destY
+      offsetx = magVideoDownX - selectedNode.destX
+      offsety = magVideoDownY - selectedNode.destY
     } else if (
       hitBox(x, y, drawParams.x + drawParams.width - radius, drawParams.y, radius, radius)
     ) {
       dragTarget = Direction.NORTHEAST
       dragging = true
-      offsetx = node.destX + node.destWidth - magVideoDownX
-      offsety = magVideoDownY - node.destY
+      offsetx = selectedNode.destX + selectedNode.destWidth - magVideoDownX
+      offsety = magVideoDownY - selectedNode.destY
     } else if (
       hitBox(
         x,
@@ -517,15 +518,15 @@ function onMouseDown(event: MouseEvent): void {
     ) {
       dragTarget = Direction.SOUTHEAST
       dragging = true
-      offsetx = node.destX + node.destWidth - magVideoDownX
-      offsety = magVideoDownY - node.destY - node.destHeight
+      offsetx = selectedNode.destX + selectedNode.destWidth - magVideoDownX
+      offsety = magVideoDownY - selectedNode.destY - selectedNode.destHeight
     } else if (
       hitBox(x, y, drawParams.x, drawParams.y + drawParams.height - radius, radius, radius)
     ) {
       dragTarget = Direction.SOUTHWEST
       dragging = true
-      offsetx = magVideoDownX - node.destX
-      offsety = magVideoDownY - node.destY - node.destHeight
+      offsetx = magVideoDownX - selectedNode.destX
+      offsety = magVideoDownY - selectedNode.destY - selectedNode.destHeight
     }
 
     if (dragging) {
@@ -534,6 +535,7 @@ function onMouseDown(event: MouseEvent): void {
 
       zoomInitial = selectedNode ? structuredClone(selectedNode) : null
       isMouseDown = true
+      videoNodeToTop(selectedNode, true)
       setOverlayState(OverlayStates.RESIZING)
     } else {
       dragOffsetX = dragOffsetY = 0
@@ -655,26 +657,31 @@ function onMouseUp(): void {
 }
 // end event handlers
 
-function videoNodeToTop(node: VideoNodeGraphNode): void {
+function videoNodeToTop(node: VideoNodeGraphNode, updateMixer = false): boolean {
   if (!globalNodeGraph) {
-    return
+    return false
   }
   const videoNodes = globalNodeGraph.rootVideoNode.nodes
-  let nodeIndex = -1
-  for (let i = videoNodes.length - 1; i >= 0; i--) {
-    if (videoNodes[i] == node) {
-      nodeIndex = i
-      break
-    }
-  }
+  const nodeIndex = videoNodes.indexOf(node)
 
-  if (nodeIndex >= 0) {
-    // move the node from nodeIndex to (videoNodes.length - 1) [the end of the array]
-    videoNodes.splice(videoNodes.length - 1, 0, videoNodes.splice(nodeIndex, 1)[0])
-  } else {
-    // else : not found
+  if (nodeIndex < 0) {
     console.log('[brew-mixer] node not found')
+    return false
   }
+  if (nodeIndex === videoNodes.length - 1) {
+    return false
+  }
+  videoNodes.push(videoNodes.splice(nodeIndex, 1)[0])
+  if (updateMixer) {
+    updateRenderTrees(
+      settings,
+      jwt! as string,
+      mixerSettings?.eventId ?? '',
+      [globalNodeGraph],
+      false
+    )
+  }
+  return true
 }
 
 async function setGain(streamGuid: string, gain: number): Promise<void> {
@@ -943,7 +950,7 @@ function setSelectedLayoutPreset(preset: MixerLayoutPreset, disabled: boolean = 
 }
 
 function syncMixerAudioToggleUi(): void {
-  mixerAudioToggleIcon.src = isMixerAudioOn ? '/assets/volume_on.svg' : '/assets/volume_off.svg'
+  mixerAudioToggleIcon.src = isMixerAudioOn ? '/red5/assets/volume_on.svg' : '/red5/assets/volume_off.svg'
   mixerAudioToggleBtn.setAttribute('aria-pressed', String(isMixerAudioOn))
   mixerAudioToggleBtn.setAttribute(
     'aria-label',
