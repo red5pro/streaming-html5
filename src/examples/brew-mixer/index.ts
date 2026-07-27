@@ -67,6 +67,7 @@ import {
   clearCanvas,
   calculateDrawParams,
 } from './drawing-functions'
+import { publicAssetPrefix } from '@/lib/public-path'
 
 const sdk = window.red5prosdk
 sdk.setLogLevel('debug')
@@ -950,7 +951,9 @@ function setSelectedLayoutPreset(preset: MixerLayoutPreset, disabled: boolean = 
 }
 
 function syncMixerAudioToggleUi(): void {
-  mixerAudioToggleIcon.src = isMixerAudioOn ? '/red5/assets/volume_on.svg' : '/red5/assets/volume_off.svg'
+  mixerAudioToggleIcon.src = isMixerAudioOn
+    ? publicAssetPrefix() + 'assets/volume_on.svg'
+    : publicAssetPrefix() + 'assets/volume_off.svg'
   mixerAudioToggleBtn.setAttribute('aria-pressed', String(isMixerAudioOn))
   mixerAudioToggleBtn.setAttribute(
     'aria-label',
