@@ -121,6 +121,13 @@ export function setBinaryAudioPlayback(
   const url = URL.createObjectURL(blob)
   audioEl.src = url
   audioEl.classList.remove('is-hidden')
+
+  audioEl.addEventListener('ended', () => {
+    URL.revokeObjectURL(url)
+  })
+  audioEl.addEventListener('error', () => {
+    URL.revokeObjectURL(url)
+  })
   return url
 }
 
