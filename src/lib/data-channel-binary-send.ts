@@ -183,7 +183,8 @@ async function finalizeRecording(
       throw new Error('Data channel is not open')
     }
 
-    await publisher.sendData?.(buffer)
+    // await publisher.getMessageTransport()?.sendData?.(buffer)
+    await dataChannel.send(buffer)
     onLog(`Sent binary message (${buffer.byteLength} bytes).`, 'success')
 
     const audioUrl = URL.createObjectURL(blob)

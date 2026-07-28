@@ -80,9 +80,7 @@ const openSubscriberLinkEl = document.getElementById(
 ) as R5SubscriberLinkElement
 const amfMetadataFormEl = document.getElementById('amf-metadata-form') as HTMLFormElement
 const amfMetadataFieldEl = document.getElementById('amf-metadata-field') as HTMLInputElement
-const amfMetadataSubmitBtn = document.getElementById(
-  'amf-metadata-submit-btn'
-) as HTMLButtonElement
+const amfMetadataSubmitBtn = document.getElementById('amf-metadata-submit-btn') as HTMLButtonElement
 const { log } = wireExampleLog()
 
 const publisherFailureEvents = ['Publish.Fail', 'Connect.Failure', 'Publish.InvalidName']
@@ -263,7 +261,7 @@ async function setupPublisherPreview(highLevel: AbrProvisionLevel): Promise<void
     publishBtn.disabled = false
     unpublishBtn.disabled = true
     log(
-      `Publisher preview ready (${videoWidth}×${videoHeight}, ${Math.round(videoBitrate / 1000)} kbps target). WHIP: ${whipEndpoint}`,
+      `Publisher preview ready (${videoWidth}×${videoHeight}, ${Math.round(videoBitrate / 1000)} kbps target).`,
       'success'
     )
   } catch (error) {
@@ -486,6 +484,4 @@ window.addEventListener('beforeunload', () => {
 
 updateConnectionInfo()
 syncAmfMetadataControls(false)
-log(
-  'Transcoder (Form, Publish and AMF) loaded. Configure Settings, then submit ABR provisions.'
-)
+log('Transcoder (Form, Publish and AMF) loaded. Configure Settings, then submit ABR provisions.')

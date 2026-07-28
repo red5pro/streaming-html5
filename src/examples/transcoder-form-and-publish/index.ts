@@ -258,7 +258,7 @@ async function setupPublisherPreview(highLevel: AbrProvisionLevel): Promise<void
     publishBtn.disabled = false
     unpublishBtn.disabled = true
     log(
-      `Publisher preview ready (${videoWidth}×${videoHeight}, ${Math.round(videoBitrate / 1000)} kbps target). WHIP: ${whipEndpoint}`,
+      `Publisher preview ready (${videoWidth}×${videoHeight}, ${Math.round(videoBitrate / 1000)} kbps target).`,
       'success'
     )
   } catch (error) {

@@ -195,19 +195,36 @@ function handleDataChannelMessage(event: Red5ProEvent): void {
   void handleDataChannelMessageAsync(event)
 }
 
+function promptForBinaryPlayback(streamName: string): boolean {
+  return window.confirm(`Binary audio received from ${streamName}. Click OK to play.`)
+}
+
 async function handleDataChannelMessageAsync(event: Red5ProEvent): Promise<void> {
   let rawPayload = extractDataChannelMessagePayload(event)
-  if (rawPayload instanceof ArrayBuffer) {
-    revokeBinaryPlaybackObjectUrl()
-    binaryPlaybackObjectUrl = setBinaryAudioPlayback(binaryReceiptAudioEl, rawPayload, 'audio/mp3')
-    binaryReceiptPlaceholderEl.classList.add('is-hidden')
-    log(`Binary audio received (${rawPayload.byteLength} bytes).`, 'success')
-    return
-  }
-
   const parsed = parseIncomingDataChannelPayload(rawPayload)
   if (!parsed) {
     log('Data channel message received with unsupported payload.', 'info')
+    return
+  }
+
+  if (parsed.kind === 'binary') {
+    revokeBinaryPlaybackObjectUrl()
+    binaryPlaybackObjectUrl = setBinaryAudioPlayback(
+      binaryReceiptAudioEl,
+      parsed.buffer,
+      parsed.mimeType
+    )
+    binaryReceiptPlaceholderEl.classList.add('is-hidden')
+    log(`Binary audio received (${parsed.buffer.byteLength} bytes).`, 'success')
+    const streamName = settings.streamName || 'stream'
+    const shouldPlay = promptForBinaryPlayback(streamName)
+    if (shouldPlay) {
+      try {
+        await binaryReceiptAudioEl.play()
+      } catch (error) {
+        log(`Unable to start audio playback: ${String(error)}`, 'error')
+      }
+    }
     return
   }
 

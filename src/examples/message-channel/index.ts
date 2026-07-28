@@ -313,6 +313,10 @@ function formatPeerMessagePayload(raw: unknown): PeerMessagePayload {
   return { message: fallbackText, timestamp: Date.now() }
 }
 
+function promptForBinaryPlayback(streamName: string): boolean {
+  return window.confirm(`Binary audio received from ${streamName}. Click OK to play.`)
+}
+
 function handleMessageChannelReceive(event: Red5ProEvent): void {
   const rawPayload = extractDataChannelMessagePayload(event)
   const parsed = parseIncomingDataChannelPayload(rawPayload)
@@ -326,6 +330,13 @@ function handleMessageChannelReceive(event: Red5ProEvent): void {
     )
     binaryReceiptPlaceholderEl.classList.add('is-hidden')
     log(`Binary audio received (${parsed.buffer.byteLength} bytes).`, 'success')
+    const streamName = activeStreamName || settings.streamName || 'stream'
+    const shouldPlay = promptForBinaryPlayback(streamName)
+    if (shouldPlay) {
+      void binaryReceiptAudioEl.play().catch((error) => {
+        log(`Unable to start audio playback: ${String(error)}`, 'error')
+      })
+    }
     return
   }
 
