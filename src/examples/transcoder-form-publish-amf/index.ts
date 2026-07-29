@@ -60,7 +60,7 @@ applyTheme(settings.theme)
 
 let publisher: WHIPClient | null = null
 let previewStream: MediaStream | null = null
-let whipEndpoint: string | null = null
+// let whipEndpoint: string | null = null
 const SUBSCRIBER_EXAMPLE_PATH = '../whep-amf/index.html'
 
 const formEl = document.getElementById('abr-provisions-form') as HTMLFormElement
@@ -197,7 +197,7 @@ function stopPreviewStream(): void {
 function resetPublisherUi(): void {
   void stopPublish()
   stopPreviewStream()
-  whipEndpoint = null
+  // whipEndpoint = null
   publisherSectionEl.classList.add('is-hidden')
   publishEndpointEl.textContent = ''
   acceptedResolutionEl.textContent = 'Camera preview not started'
