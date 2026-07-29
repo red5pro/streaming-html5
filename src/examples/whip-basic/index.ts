@@ -46,6 +46,8 @@ import { updateSubscriberLink } from '@/lib/example-links'
 const sdk = window.red5prosdk
 sdk.setLogLevel('debug')
 
+const requestDefault = new URLSearchParams(window.location.search).get('default') === '1'
+
 let settings = loadSettings()
 applyTheme(settings.theme)
 
@@ -147,7 +149,7 @@ async function startPublish(): Promise<void> {
       onPublisherEvent(event)
     })
 
-    await publisher.init({
+    const configuration = {
       endpoint,
       streamName,
       mediaElementId: 'publisher-video',
@@ -155,7 +157,15 @@ async function startPublish(): Promise<void> {
       stats: stats ?? undefined,
       rtcConfiguration,
       streamMode,
-    })
+    } as Partial<WHIPConfig>
+    if (requestDefault) {
+      log('Requesting default media constraints', 'info')
+      configuration.mediaConstraints = {
+        video: true,
+        audio: true,
+      }
+    }
+    await publisher.init(configuration)
     await publisher.publish()
 
     const peerConnection = publisher.getPeerConnection()
