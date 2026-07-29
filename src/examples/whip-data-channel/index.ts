@@ -27,9 +27,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 import '@/components/r5-header'
 import '@/components/r5-publisher-stats'
 import '@/components/r5-publish-mode'
+import '@/components/r5-publish-settings'
 import '@/components/r5-subscriber-link'
 import type { R5PublisherStatsElement } from '@/components/r5-publisher-stats'
 import type { R5PublishModeElement, StreamMode } from '@/components/r5-publish-mode'
+import type { R5PublishSettingsElement } from '@/components/r5-publish-settings'
 import type { R5SubscriberLinkElement } from '@/components/r5-subscriber-link'
 import {
   applyTheme,
@@ -96,6 +98,7 @@ const publishStatusEl = document.getElementById('publish-status') as HTMLSpanEle
 const connectionInfoEl = document.getElementById('connection-info') as HTMLParagraphElement
 const publisherStatsEl = document.getElementById('publisher-stats') as R5PublisherStatsElement
 const publishModeEl = document.getElementById('publish-mode') as R5PublishModeElement
+const publishSettingsEl = document.getElementById('publish-settings') as R5PublishSettingsElement
 const publishConfigSectionEl = document.getElementById('publish-config-section') as HTMLElement
 const publishMessagingSectionEl = document.getElementById(
   'publish-messaging-section'
@@ -139,6 +142,7 @@ function updateConnectionInfo(): void {
 
 function syncPublishConfigSection(visible: boolean): void {
   publishModeEl.enabled = visible
+  publishSettingsEl.enabled = visible
   setDataChannelFormEnabled(dataChannelForm, visible)
   publishConfigSectionEl.classList.toggle('is-hidden', !visible)
 }
@@ -238,6 +242,8 @@ async function startPublish(): Promise<void> {
 
   publishBtn.disabled = true
   unpublishBtn.disabled = true
+  syncPublishConfigSection(false)
+  syncPublishMessagingSection(false)
   setPublisherStatus('Connecting...', 'connecting')
 
   const dataChannelConfiguration = readDataChannelForm(dataChannelForm)
@@ -249,6 +255,17 @@ async function startPublish(): Promise<void> {
     const stats = resolveStatisticsConfigurationFromSettings(settings)
     const rtcConfiguration = resolveRtcConfigurationFromSettings(settings)
     const streamMode = publishModeEl.streamMode as StreamMode
+    const mediaStream = await publishSettingsEl.refreshStream()
+    const { videoEnabled, audioEnabled } = publishSettingsEl.getMediaConfig()
+
+    if (!mediaStream) {
+      throw new Error('Unable to acquire media stream. Check Publish Settings.')
+    }
+    if (!videoEnabled && !audioEnabled) {
+      throw new Error('Enable video or audio in Publish Settings.')
+    }
+
+    const { bandwidth, keyFramerate } = publishSettingsEl.getPublisherOptions()
 
     publisher = new sdk.WHIPClient()
     publisher.on('*', (event) => {
@@ -267,17 +284,22 @@ async function startPublish(): Promise<void> {
 
     log(`Data channel config: ${JSON.stringify(dataChannelConfiguration)}`)
 
-    await publisher.init({
-      endpoint,
-      streamName,
-      mediaElementId: 'publisher-video',
-      connectionParams,
-      stats: stats ?? undefined,
-      rtcConfiguration,
-      streamMode,
-      includeDataChannel: true,
-      dataChannelConfiguration,
-    })
+    await publisher.initWithStream(
+      {
+        endpoint,
+        streamName,
+        mediaElementId: 'publisher-video',
+        connectionParams,
+        stats: stats ?? undefined,
+        rtcConfiguration,
+        bandwidth,
+        keyFramerate,
+        streamMode,
+        includeDataChannel: true,
+        dataChannelConfiguration,
+      },
+      mediaStream
+    )
     await publisher.publish()
 
     const peerConnection = publisher.getPeerConnection()
