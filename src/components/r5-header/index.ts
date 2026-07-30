@@ -281,6 +281,7 @@ export class R5Header extends HTMLElement {
         return
       }
       this.showNodeGroupSelect(normalized, true, this.resolveCurrentNodeGroupSetting())
+      this.applySettings(false)
     } catch {
       if (requestId !== this.nodeGroupSourceRequestId) return
       this.showNodeGroupInput(true)
@@ -370,6 +371,7 @@ export class R5Header extends HTMLElement {
       if (normalized.length === 0) return
       const preferredValue = this.resolveCurrentNodeGroupSetting()
       this.showNodeGroupSelect(normalized, true, preferredValue)
+      this.applySettings(false)
     } catch {
       // On refresh failure, preserve current select + options unchanged.
     }
@@ -435,7 +437,7 @@ export class R5Header extends HTMLElement {
     this.smAdminPasswordToggle.setAttribute('title', show ? 'Hide password' : 'Show password')
   }
 
-  private applySettings(): void {
+  private applySettings(andClose = true): void {
     const isDark = this.themeTrack.classList.contains('on')
     const useStreamManager = this.useStreamManagerTrack.classList.contains('on')
     const useAuthentication = this.useAuthenticationTrack.classList.contains('on')
@@ -478,7 +480,7 @@ export class R5Header extends HTMLElement {
     this.dispatchEvent(
       new CustomEvent('webrtc-settings-applied', { detail: settings, bubbles: true })
     )
-    this.togglePanel()
+    if (andClose) this.togglePanel()
   }
 
   private resetSettings(): void {
