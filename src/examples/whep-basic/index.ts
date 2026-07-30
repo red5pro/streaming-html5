@@ -102,6 +102,7 @@ function onSubscriberEvent(event: Red5ProEvent): void {
     setSubscriberStatus('Subscribed', 'connected')
     subscribeBtn.disabled = true
     unsubscribeBtn.disabled = false
+    subscriberStatsEl.startSubscriptionLength()
   } else if (subscriberFailureEvents.includes(type)) {
     setSubscriberStatus('Subscribe Error', 'error')
     subscribeBtn.disabled = false
@@ -110,6 +111,7 @@ function onSubscriberEvent(event: Red5ProEvent): void {
     setSubscriberStatus('Subscriber Idle', 'idle')
     subscribeBtn.disabled = false
     unsubscribeBtn.disabled = true
+    subscriberStatsEl.stopSubscriptionLength()
     subscriberStatsEl.stop()
   } else {
     setSubscriberStatus(type, 'unknown')
@@ -172,6 +174,7 @@ async function startSubscribe(): Promise<void> {
 async function stopSubscribe(): Promise<void> {
   if (!subscriber) return
   unsubscribeBtn.disabled = true
+  subscriberStatsEl.stopSubscriptionLength()
   try {
     await subscriber.unsubscribe()
     log('Subscribe stopped', 'success')

@@ -46,6 +46,7 @@ export class R5SubscriberStats extends HTMLElement {
   private endpointValueEl: HTMLSpanElement | null = null
   private broadcastStartedEl: HTMLSpanElement | null = null
   private broadcastLengthEl: HTMLSpanElement | null = null
+  private subscriptionLengthEl: HTMLSpanElement | null = null
   private broadcastTimeZoneToggleEl: HTMLButtonElement | null = null
   private resolutionEl!: HTMLSpanElement
   private videoBitrateEl!: HTMLSpanElement
@@ -53,6 +54,8 @@ export class R5SubscriberStats extends HTMLElement {
   private peerConnection: RTCPeerConnection | null = null
   private intervalId: number | null = null
   private broadcastStartTime: number | null = null
+  private subscriptionStartTime: number | null = null
+  private subscriptionStopTime: number | null = null
   private useUtcTime = false
   private controlsWired = false
   private videoBitrateTracker = new BitrateTracker()
@@ -66,7 +69,10 @@ export class R5SubscriberStats extends HTMLElement {
 
   connectedCallback(): void {
     if (!this.shadow.querySelector('.media-stats')) {
-      this.shadow.innerHTML = mediaStatsTemplate(publicAssetPrefix(), { showBroadcastInfo: true })
+      this.shadow.innerHTML = mediaStatsTemplate(publicAssetPrefix(), {
+        showBroadcastInfo: true,
+        showSubscriptionLength: true,
+      })
       this.controlsWired = false
     }
 
@@ -77,6 +83,9 @@ export class R5SubscriberStats extends HTMLElement {
     this.endpointValueEl = this.shadow.getElementById('endpoint-value') as HTMLSpanElement | null
     this.broadcastLengthEl = this.shadow.getElementById(
       'broadcast-length-value'
+    ) as HTMLSpanElement | null
+    this.subscriptionLengthEl = this.shadow.getElementById(
+      'subscription-length-value'
     ) as HTMLSpanElement | null
     this.broadcastTimeZoneToggleEl = this.shadow.getElementById(
       'broadcast-time-zone-toggle'
@@ -97,6 +106,7 @@ export class R5SubscriberStats extends HTMLElement {
     this.syncBroadcastTimeZoneToggle()
     this.syncEndpointDisplay()
     this.resetDisplay()
+    this.updateSubscriptionLengthDisplay()
   }
 
   disconnectedCallback(): void {
@@ -121,10 +131,26 @@ export class R5SubscriberStats extends HTMLElement {
     this.updateBroadcastDisplays()
   }
 
+  startSubscriptionLength(): void {
+    this.subscriptionStartTime = Date.now()
+    this.subscriptionStopTime = null
+    this.updateSubscriptionLengthDisplay()
+  }
+
+  stopSubscriptionLength(): void {
+    if (this.subscriptionStartTime === null) return
+    if (this.subscriptionStopTime === null) {
+      this.subscriptionStopTime = Date.now()
+    }
+    this.updateSubscriptionLengthDisplay()
+  }
+
   start(): void {
     if (!this.peerConnection) return
     this.stop()
     this.resetTrackers()
+    this.subscriptionStartTime = null
+    this.subscriptionStopTime = null
     this.resetDisplay()
     void this.pollStats()
     this.intervalId = window.setInterval(() => {
@@ -137,6 +163,7 @@ export class R5SubscriberStats extends HTMLElement {
       window.clearInterval(this.intervalId)
       this.intervalId = null
     }
+    this.stopSubscriptionLength()
     this.broadcastStartTime = null
     this.resetTrackers()
     this.resetDisplay()
@@ -147,6 +174,7 @@ export class R5SubscriberStats extends HTMLElement {
     if (!connection) return
 
     this.updateBroadcastDisplays()
+    this.updateSubscriptionLengthDisplay()
 
     try {
       const report = await connection.getStats()
@@ -198,6 +226,19 @@ export class R5SubscriberStats extends HTMLElement {
     this.broadcastLengthEl.textContent = formatBroadcastLength(this.broadcastStartTime)
   }
 
+  private updateSubscriptionLengthDisplay(): void {
+    if (!this.subscriptionLengthEl) return
+    if (this.subscriptionStartTime === null) {
+      this.subscriptionLengthEl.textContent = '—'
+      return
+    }
+    const endTime = this.subscriptionStopTime ?? Date.now()
+    this.subscriptionLengthEl.textContent = formatBroadcastLength(
+      this.subscriptionStartTime,
+      endTime
+    )
+  }
+
   private resetTrackers(): void {
     this.videoBitrateTracker.reset()
     this.audioBitrateTracker.reset()
@@ -221,6 +262,9 @@ export class R5SubscriberStats extends HTMLElement {
     }
     if (this.broadcastLengthEl) {
       this.broadcastLengthEl.textContent = '—'
+    }
+    if (this.subscriptionLengthEl && this.subscriptionStartTime === null) {
+      this.subscriptionLengthEl.textContent = '—'
     }
     this.resolutionEl.textContent = '—'
     this.videoBitrateEl.textContent = '—'
