@@ -257,6 +257,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   display: none;
 }
 
+.is-hidden {
+  display: none !important;
+}
+
 .settings-panel__select-wrap {
   position: relative;
 }

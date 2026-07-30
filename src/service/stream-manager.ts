@@ -285,6 +285,28 @@ export async function probeServerForSubscribe(
   }
 }
 
+export async function listUnsecureNodeGroups(settings: Settings): Promise<string[]> {
+  const { host, streamManagerApiVersion: smVersion } = settings
+  const url = `https://${host}/as/${smVersion}/streams/stream/node-groups`
+  const resp = await fetch(url)
+  if (!resp.ok) {
+    throw new Error(`HTTP ${resp.status} listing nodegroups`)
+  }
+  try {
+    const json = await resp.json()
+    return json
+  } catch {
+    try {
+      const text = await resp.text()
+      return JSON.parse(text)
+    } catch (error: unknown) {
+      throw new Error(
+        `Failed to parse nodegroups: ${error instanceof Error ? error.message : String(error)}`
+      )
+    }
+  }
+}
+
 export async function listNodeGroups(settings: Settings, jwt: string): Promise<unknown[]> {
   // TODO: find unknown type
   const { host, streamManagerApiVersion: smVersion } = settings

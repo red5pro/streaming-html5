@@ -181,7 +181,7 @@ export function headerTemplate(assetPrefix: string): string {
           />
         </div>
 
-        <div class="settings-panel__field settings-panel__field--grow">
+        <div class="settings-panel__field settings-panel__field--grow" id="node-group-input-field">
           <label class="settings-panel__label" for="node-group-input">Node Group Name</label>
           <input
             id="node-group-input"
@@ -191,6 +191,18 @@ export function headerTemplate(assetPrefix: string): string {
             autocomplete="off"
             spellcheck="false"
           />
+        </div>
+
+        <div
+          class="settings-panel__field settings-panel__field--grow is-hidden"
+          id="node-group-select-field"
+        >
+          <label class="settings-panel__label" for="node-group-select">Node Group Name</label>
+          <div class="settings-panel__select-wrap">
+            <select id="node-group-select" class="settings-panel__select" disabled>
+              <option value="default">default</option>
+            </select>
+          </div>
         </div>
 
         <div class="settings-panel__field settings-panel__field--grow">
