@@ -296,6 +296,7 @@ function onSubscriberEvent(event: Red5ProEvent): void {
   }
 
   if (type === 'Subscribe.Start') {
+    subscriberStatsEl.startSubscriptionLength()
     setSubscriberStatus('Subscribed', 'connected')
     subscribeBtn.disabled = true
     unsubscribeBtn.disabled = false

@@ -484,6 +484,7 @@ function onSubscriberEvent(event: Red5ProEvent): void {
     subscribeBtn.disabled = true
     unsubscribeBtn.disabled = false
     setRenegotiationFormEnabled(false)
+    subscriberStatsEl.startSubscriptionLength()
   } else if (subscriberFailureEvents.includes(type)) {
     setSubscriberStatus('Subscribe Error', 'error')
     subscribeBtn.disabled = false

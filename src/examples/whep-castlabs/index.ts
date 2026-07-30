@@ -174,6 +174,7 @@ function onBaselineSubscriberEvent(event: Red5ProEvent): void {
     return
   }
   if (type === 'Subscribe.Start') {
+    baselineSubscriberStatsEl.startSubscriptionLength()
     setSubscriberStatus(baselineSubscribeStatusEl, 'Subscribed', 'connected')
   } else if (subscriberFailureEvents.includes(type)) {
     setSubscriberStatus(baselineSubscribeStatusEl, 'Subscribe Error', 'error')
@@ -198,6 +199,7 @@ function onDrmSubscriberEvent(event: Red5ProEvent): void {
     return
   }
   if (type === 'Subscribe.Start') {
+    drmSubscriberStatsEl.startSubscriptionLength()
     setSubscriberStatus(drmSubscribeStatusEl, 'Subscribed', 'connected')
     drmSubscribeBtn.disabled = true
     drmUnsubscribeBtn.disabled = false
