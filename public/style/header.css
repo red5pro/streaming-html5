@@ -265,6 +265,16 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   position: relative;
 }
 
+.settings-panel__inline-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.settings-panel__inline-row .settings-panel__select-wrap {
+  flex: 1 1 auto;
+}
+
 .settings-panel__select-wrap::after {
   content: '▾';
   position: absolute;
@@ -299,6 +309,35 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 .settings-panel__select option {
   background: #1a1a1a;
   color: #f1f5f9;
+}
+
+.settings-panel__icon-btn {
+  width: 2rem;
+  height: 2rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  border: 1px solid #333333;
+  background: #1a1a1a;
+  color: #94a3b8;
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    border-color 0.15s,
+    color 0.15s,
+    background 0.15s;
+}
+
+.settings-panel__icon-btn:hover:not(:disabled) {
+  border-color: #666666;
+  color: #ffffff;
+}
+
+.settings-panel__icon-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
 }
 
 .theme-toggle {

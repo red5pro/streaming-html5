@@ -198,10 +198,22 @@ export function headerTemplate(assetPrefix: string): string {
           id="node-group-select-field"
         >
           <label class="settings-panel__label" for="node-group-select">Node Group Name</label>
-          <div class="settings-panel__select-wrap">
-            <select id="node-group-select" class="settings-panel__select" disabled>
-              <option value="default">default</option>
-            </select>
+          <div class="settings-panel__inline-row">
+            <div class="settings-panel__select-wrap">
+              <select id="node-group-select" class="settings-panel__select" disabled>
+                <option value="default">default</option>
+              </select>
+            </div>
+            <button
+              id="node-group-refresh-btn"
+              class="settings-panel__icon-btn"
+              type="button"
+              title="Refresh node groups"
+              aria-label="Refresh node groups"
+              disabled
+            >
+              ↻
+            </button>
           </div>
         </div>
 

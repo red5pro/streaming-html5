@@ -54,6 +54,7 @@ export class R5Header extends HTMLElement {
   private nodeGroupInput!: HTMLInputElement
   private nodeGroupSelectField!: HTMLDivElement
   private nodeGroupSelect!: HTMLSelectElement
+  private nodeGroupRefreshBtn!: HTMLButtonElement
   private smRegionInput!: HTMLInputElement
   private smApiVersionInput!: HTMLInputElement
   private smAdminUsernameInput!: HTMLInputElement
@@ -108,12 +109,17 @@ export class R5Header extends HTMLElement {
     this.hostInput = this.shadow.getElementById('host-input') as HTMLInputElement
     this.streamNameInput = this.shadow.getElementById('stream-name-input') as HTMLInputElement
     this.appInput = this.shadow.getElementById('app-input') as HTMLInputElement
-    this.nodeGroupInputField = this.shadow.getElementById('node-group-input-field') as HTMLDivElement
+    this.nodeGroupInputField = this.shadow.getElementById(
+      'node-group-input-field'
+    ) as HTMLDivElement
     this.nodeGroupInput = this.shadow.getElementById('node-group-input') as HTMLInputElement
     this.nodeGroupSelectField = this.shadow.getElementById(
       'node-group-select-field'
     ) as HTMLDivElement
     this.nodeGroupSelect = this.shadow.getElementById('node-group-select') as HTMLSelectElement
+    this.nodeGroupRefreshBtn = this.shadow.getElementById(
+      'node-group-refresh-btn'
+    ) as HTMLButtonElement
     this.smRegionInput = this.shadow.getElementById('sm-region-input') as HTMLInputElement
     this.smApiVersionInput = this.shadow.getElementById('sm-api-version-input') as HTMLInputElement
     this.smAdminUsernameInput = this.shadow.getElementById(
@@ -178,6 +184,9 @@ export class R5Header extends HTMLElement {
       this.smAdminPasswordToggle.addEventListener('click', () =>
         this.toggleSmAdminPasswordVisibility()
       )
+      this.nodeGroupRefreshBtn.addEventListener('click', () => {
+        void this.refreshNodeGroupOptions()
+      })
     }
 
     document.addEventListener('click', this.onDocClick)
@@ -257,16 +266,7 @@ export class R5Header extends HTMLElement {
     this.showNodeGroupInput(true)
 
     try {
-      const current = loadSettings()
-      const probeSettings: Settings = {
-        ...current,
-        host: sanitizeHost(this.hostInput.value) || window.location.hostname,
-        streamManagerApiVersion:
-          this.smApiVersionInput.value.trim() || DEFAULT_STREAM_MANAGER_API_VERSION,
-        useStreamManager: true,
-        nodeGroupName: this.nodeGroupInput.value.trim() || 'default',
-      }
-      const groups = await listUnsecureNodeGroups(probeSettings)
+      const groups = await listUnsecureNodeGroups(this.buildNodeGroupProbeSettings())
       if (requestId !== this.nodeGroupSourceRequestId) return
       const normalized = Array.from(
         new Set(
@@ -280,7 +280,7 @@ export class R5Header extends HTMLElement {
         this.showNodeGroupInput(true)
         return
       }
-      this.showNodeGroupSelect(normalized, true)
+      this.showNodeGroupSelect(normalized, true, this.resolveCurrentNodeGroupSetting())
     } catch {
       if (requestId !== this.nodeGroupSourceRequestId) return
       this.showNodeGroupInput(true)
@@ -293,15 +293,19 @@ export class R5Header extends HTMLElement {
     this.nodeGroupInput.disabled = !enabled
     this.nodeGroupInput.required = enabled
     this.nodeGroupSelect.disabled = true
+    this.nodeGroupRefreshBtn.disabled = true
     if (enabled && !this.nodeGroupInput.value.trim()) {
       this.nodeGroupInput.value = 'default'
     }
   }
 
-  private showNodeGroupSelect(options: string[], enabled: boolean): void {
-    const preferredValue =
-      this.nodeGroupSelect.value.trim() || this.nodeGroupInput.value.trim() || 'default'
-    const nextValues = Array.from(new Set([preferredValue, ...options]))
+  private showNodeGroupSelect(options: string[], enabled: boolean, preferredValue: string): void {
+    const nextValues = Array.from(new Set(options.map((value) => value.trim()).filter(Boolean)))
+    if (nextValues.length === 0) {
+      this.showNodeGroupInput(enabled)
+      return
+    }
+    const selectedValue = nextValues.includes(preferredValue) ? preferredValue : nextValues[0]
 
     this.nodeGroupSelect.innerHTML = ''
     for (const value of nextValues) {
@@ -310,7 +314,7 @@ export class R5Header extends HTMLElement {
       option.textContent = value
       this.nodeGroupSelect.appendChild(option)
     }
-    this.nodeGroupSelect.value = nextValues.includes(preferredValue) ? preferredValue : nextValues[0]
+    this.nodeGroupSelect.value = selectedValue
     this.nodeGroupInput.value = this.nodeGroupSelect.value
 
     this.nodeGroupInputField.classList.add('is-hidden')
@@ -318,6 +322,7 @@ export class R5Header extends HTMLElement {
     this.nodeGroupInput.disabled = true
     this.nodeGroupInput.required = false
     this.nodeGroupSelect.disabled = !enabled
+    this.nodeGroupRefreshBtn.disabled = !enabled
   }
 
   private resolveNodeGroupName(): string {
@@ -325,6 +330,49 @@ export class R5Header extends HTMLElement {
       return this.nodeGroupSelect.value.trim() || this.nodeGroupInput.value.trim() || 'default'
     }
     return this.nodeGroupInput.value.trim() || 'default'
+  }
+
+  private resolveCurrentNodeGroupSetting(): string {
+    const current = loadSettings().nodeGroupName.trim()
+    if (current) return current
+    const fromSelect = this.nodeGroupSelect.value.trim()
+    if (fromSelect) return fromSelect
+    return this.nodeGroupInput.value.trim() || 'default'
+  }
+
+  private buildNodeGroupProbeSettings(): Settings {
+    const current = loadSettings()
+    return {
+      ...current,
+      host: sanitizeHost(this.hostInput.value) || window.location.hostname,
+      streamManagerApiVersion:
+        this.smApiVersionInput.value.trim() || DEFAULT_STREAM_MANAGER_API_VERSION,
+    }
+  }
+
+  private async refreshNodeGroupOptions(): Promise<void> {
+    if (!this.useStreamManagerTrack.classList.contains('on')) return
+    if (this.nodeGroupSelectField.classList.contains('is-hidden')) return
+    if (this.nodeGroupRefreshBtn.disabled) return
+
+    const requestId = ++this.nodeGroupSourceRequestId
+    try {
+      const groups = await listUnsecureNodeGroups(this.buildNodeGroupProbeSettings())
+      if (requestId !== this.nodeGroupSourceRequestId) return
+      const normalized = Array.from(
+        new Set(
+          groups
+            .filter((value) => typeof value === 'string')
+            .map((value) => value.trim())
+            .filter(Boolean)
+        )
+      )
+      if (normalized.length === 0) return
+      const preferredValue = this.resolveCurrentNodeGroupSetting()
+      this.showNodeGroupSelect(normalized, true, preferredValue)
+    } catch {
+      // On refresh failure, preserve current select + options unchanged.
+    }
   }
 
   private toggleAuthentication(): void {
@@ -406,9 +454,7 @@ export class R5Header extends HTMLElement {
       streamManagerApiVersion: useStreamManager
         ? this.smApiVersionInput.value.trim() || DEFAULT_STREAM_MANAGER_API_VERSION
         : DEFAULT_STREAM_MANAGER_API_VERSION,
-      streamManagerAdminUsername: useStreamManager
-        ? this.smAdminUsernameInput.value.trim()
-        : '',
+      streamManagerAdminUsername: useStreamManager ? this.smAdminUsernameInput.value.trim() : '',
       streamManagerAdminPassword: useStreamManager ? this.smAdminPasswordInput.value : '',
       useAuthentication,
       username: useAuthentication ? this.authUsernameInput.value.trim() : '',
