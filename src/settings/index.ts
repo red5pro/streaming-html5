@@ -270,6 +270,17 @@ export function resolveConnectionParamsFromSettings(settings: Settings): Record<
     if (settings.username) params.username = settings.username
     if (settings.password) params.password = settings.password
     if (settings.token) params.token = settings.token
+
+    // [TA] Fixes RED5DEV-2355.
+    // If the token is provided but the username is not, set the username to 'undefined'.
+    // If the token is provided but the password is not, set the password to 'undefined'.
+    // Currently RTA requires all fields to be present - even if they are not used - when a token is provided.
+    if (params.token && !params.username) {
+      params.username = 'undefined'
+    }
+    if (params.token && !params.password) {
+      params.password = 'undefined'
+    }
   }
 
   return params
