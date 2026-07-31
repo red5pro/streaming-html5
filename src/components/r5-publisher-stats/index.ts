@@ -133,6 +133,7 @@ export class R5PublisherStats extends HTMLElement {
     this.broadcastStartTime = null
     this.resetTrackers()
     this.resetDisplay()
+    this.updateBroadcastDisplays()
   }
 
   private async pollStats(): Promise<void> {
