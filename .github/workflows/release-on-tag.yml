@@ -23,7 +23,7 @@ jobs:
 
       - run: npm run build
 
-      - name: Rename dist → moqexamples and package
+      - name: Rename dist → webrtcexamples and package
         env:
           TAG: ${{ github.ref_name }}
         run: |
