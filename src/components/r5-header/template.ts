@@ -243,7 +243,7 @@ export function headerTemplate(assetPrefix: string): string {
 
     <section class="settings-panel__section">
       <div class="settings-panel__section-header">
-        <h4 class="settings-panel__section-title">Authentication</h4>
+        <h4 class="settings-panel__section-title">Authentication (RTA)</h4>
         <label
           class="theme-toggle settings-panel__toggle"
           id="auth-toggle"
