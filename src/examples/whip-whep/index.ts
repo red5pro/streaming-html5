@@ -124,6 +124,7 @@ function onSubscriberEvent(event: Red5ProEvent): void {
     return
   }
   if (type === 'Subscribe.Start') {
+    subscriberStatsEl.startSubscriptionLength()
     setSubscriberStatus('Subscribed', 'connected')
   } else if (subscriberFailureEvents.includes(type)) {
     setSubscriberStatus('Subscribe Error', 'error')

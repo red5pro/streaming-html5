@@ -204,6 +204,7 @@ function onSubscriberEvent(event: Red5ProEvent): void {
   if (type === sdk.SubscriberEventTypes.SUBSCRIBE_START) {
     reconnectController.notifyConnected()
     updateReconnectInfo()
+    subscriberStatsEl.startSubscriptionLength()
     setSubscriberStatus('Subscribed', 'connected')
     subscribeBtn.disabled = true
     unsubscribeBtn.disabled = false

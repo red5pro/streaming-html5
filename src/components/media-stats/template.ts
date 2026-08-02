@@ -26,6 +26,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 export interface MediaStatsTemplateOptions {
   showBroadcastInfo?: boolean
+  showSubscriptionLength?: boolean
 }
 
 export function mediaStatsTemplate(
@@ -54,6 +55,13 @@ export function mediaStatsTemplate(
     <span class="media-stats__value" id="broadcast-length-value">—</span>
   </div>`
     : ''
+  const subscriptionLengthRow = options.showSubscriptionLength
+    ? /* html */ `
+  <div class="media-stats__row">
+    <span class="media-stats__label">Subscription Length</span>
+    <span class="media-stats__value" id="subscription-length-value">—</span>
+  </div>`
+    : ''
 
   return /* html */ `
 <link rel="stylesheet" href="${p}style/media-stats.css" />
@@ -64,6 +72,7 @@ export function mediaStatsTemplate(
     <span class="media-stats__value" id="endpoint-value">—</span>
   </div>
   ${broadcastInfoRows}
+  ${subscriptionLengthRow}
   <div class="media-stats__row">
     <span class="media-stats__label">Resolution</span>
     <span class="media-stats__value" id="resolution-value">—</span>

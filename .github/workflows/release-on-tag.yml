@@ -23,12 +23,12 @@ jobs:
 
       - run: npm run build
 
-      - name: Rename dist → moqexamples and package
+      - name: Rename dist → webrtcexamples and package
         env:
           TAG: ${{ github.ref_name }}
         run: |
           set -euxo pipefail
-          mv dist moqexamples
+          mv dist webrtcexamples
           tar -czvf "streaming-html-${TAG}.tar.gz" webrtcexamples
           zip -rq "streaming-html-${TAG}.zip" webrtcexamples
 

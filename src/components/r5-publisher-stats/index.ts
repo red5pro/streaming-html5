@@ -55,8 +55,11 @@ export class R5PublisherStats extends HTMLElement {
   private audioBitrateTracker = new BitrateTracker()
   private endpoint: string | null = null
 
-  constructor() {
+  private retainStartAndLength = true
+
+  constructor(retainStartAndLength: boolean = true) {
     super()
+    this.retainStartAndLength = retainStartAndLength
     this.shadow = this.attachShadow({ mode: 'open' })
   }
 
@@ -130,6 +133,7 @@ export class R5PublisherStats extends HTMLElement {
     this.broadcastStartTime = null
     this.resetTrackers()
     this.resetDisplay()
+    this.updateBroadcastDisplays()
   }
 
   private async pollStats(): Promise<void> {
@@ -206,10 +210,10 @@ export class R5PublisherStats extends HTMLElement {
 
   private resetDisplay(): void {
     if (!this.resolutionEl) return
-    if (this.broadcastStartedEl) {
+    if (this.broadcastStartedEl && !this.retainStartAndLength) {
       this.broadcastStartedEl.textContent = '—'
     }
-    if (this.broadcastLengthEl) {
+    if (this.broadcastLengthEl && !this.retainStartAndLength) {
       this.broadcastLengthEl.textContent = '—'
     }
     this.resolutionEl.textContent = '—'
