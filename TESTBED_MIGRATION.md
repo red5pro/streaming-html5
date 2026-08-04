@@ -68,6 +68,7 @@ Below is a table detailing where to find the current version of tests that were 
 | `Publish - Remote Call`                     | `WHIP Remote Call - Sender`  | `-`                                                                                                                                                                        |
 | `Publish - RoundTrip Authentication`        | _none_                       | Authentication is available for **all** WHIP/Publisher examples from the `Settings` panel                                                                                  |
 | `Publish - Screenshare`                     | `WHIP Screenshare`           | `-`                                                                                                                                                                        |
+| `Publish - Server Call` | _none_ | **Deprecated** |
 | `Publish - Validation`                      | `WHIP Connection Params`     | `-`                                                                                                                                                                        |
 | `Publish - VP8`                             | `WHIP Codec Support`         | Select `VP8` explicitly from this test                                                                                                                                     |
 | `Publish - WebSocket`                       | `RTC Publisher`              | This will use the legacy `14.3` SDK to utilize WebSockets for negotiation                                                                                                  |
@@ -89,7 +90,6 @@ Below is a table detailing where to find the current version of tests that were 
 | `Subscribe - Mute API`                  | `WHEP Mute API`            | `-`                                                                                        |
 | `Subscribe - Interstitial`              | `WHEP Interstitial`        | `-`                                                                                        |
 | `Subscribe - Round Trip Authentication` | _none_                     | Authentication is available for **all** WHEP/Subscriber examples from the `Settings` panel |
-
 | `Subscribe - Remote Call` | `WHEP Remote Call - Receiver` | `-` |
 | `Subscribe - Reconnect` | `WHEP Reconnect` | `-` |
 | `Subscribe - Renegotiation Policy` | `WHEP Renegotiation` | `-` |
