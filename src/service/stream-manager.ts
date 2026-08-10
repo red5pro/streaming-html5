@@ -403,6 +403,38 @@ export async function postAbrProvisions(
   }
 }
 
+function encodePathSegments(value: string): string {
+  return value
+    .split('/')
+    .filter((segment) => segment.length > 0)
+    .map((segment) => encodeURIComponent(segment))
+    .join('/')
+}
+
+export async function deleteAbrProvision(
+  username: string,
+  password: string,
+  settings: Settings,
+  provisionGuid: string
+): Promise<void> {
+  const { host, streamManagerApiVersion, nodeGroupName } = settings
+  const token = await authenticate(username, password, settings)
+  const url = `https://${host}/as/${streamManagerApiVersion}/streams/provision/${encodeURIComponent(nodeGroupName)}/${encodePathSegments(provisionGuid)}`
+  const result = await fetch(url, {
+    method: 'DELETE',
+    // @ts-expect-error - withCredentials is not supported in the types
+    withCredentials: true,
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+  })
+  if (result.status >= 200 && result.status < 300) {
+    return
+  }
+  throw new ProvisionRequestFailedError(`Provision delete failed: ${result.status}`)
+}
+
 export async function forwardPOSTRequest(
   settings: Settings,
   forwardURL: string,
