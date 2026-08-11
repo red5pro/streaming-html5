@@ -314,26 +314,26 @@ const examples: ExampleSection[] = [
       },
     ],
   },
-  {
-    title: 'Standalone',
-    description: 'Examples for standalone Red5 Pro server deployments',
-    examples: [
-      // {
-      //   title: 'HLS Subscriber',
-      //   description:
-      //     'HLSSubscriber playback with native HLS where supported, falling back to HLS.js when the SDK subscriber fails to start.',
-      //   tag: 'Subscribe, HLS',
-      //   href: './src/examples/hls-subscriber/index.html',
-      // },
-      {
-        title: 'WHEP Cluster',
-        description:
-          'WHEPClient subscribe that resolves the edge host from the /cluster endpoint before connecting over http on port 5080.',
-        tag: 'Subscribe, Cluster',
-        href: './src/examples/whep-cluster/index.html',
-      },
-    ],
-  },
+  // {
+  //   title: 'Standalone',
+  //   description: 'Examples for standalone Red5 Pro server deployments',
+  //   examples: [
+  //     // {
+  //     //   title: 'HLS Subscriber',
+  //     //   description:
+  //     //     'HLSSubscriber playback with native HLS where supported, falling back to HLS.js when the SDK subscriber fails to start.',
+  //     //   tag: 'Subscribe, HLS',
+  //     //   href: './src/examples/hls-subscriber/index.html',
+  //     // },
+  //     // {
+  //     //   title: 'WHEP Cluster',
+  //     //   description:
+  //     //     'WHEPClient subscribe that resolves the edge host from the /cluster endpoint before connecting over http on port 5080.',
+  //     //   tag: 'Subscribe, Cluster',
+  //     //   href: './src/examples/whep-cluster/index.html',
+  //     // },
+  //   ],
+  // },
   {
     title: 'Stream Manager',
     description: 'Examples that require Stream Manager',
