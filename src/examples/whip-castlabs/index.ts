@@ -94,7 +94,7 @@ const publisherFailureEvents = [
 ]
 const SUBSCRIBER_EXAMPLE_PATH = '../whep-castlabs/index.html'
 
-const encryptWorker = new Worker('./encrypt-worker-wrapper.js', {
+const encryptWorker = new Worker(new URL('./encrypt-worker-wrapper.js', window.location.href), {
   name: 'encrypt worker',
 })
 
