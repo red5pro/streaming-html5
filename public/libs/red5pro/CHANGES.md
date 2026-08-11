@@ -1,5 +1,9 @@
 # Changes
 
+## 15.6.1
+
+- fix: Firefox - stop subscriber reconnect loop from unpairable ICE candidates (davidengelmaier).
+
 ## 15.6.0
 
 - feat: Optimization Params for `WHIPClient` (Todd Anderson).
