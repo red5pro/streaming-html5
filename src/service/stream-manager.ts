@@ -72,6 +72,38 @@ export interface AbrProvision {
   streams: AbrProvisionLevel[]
 }
 
+/**
+ * Read a failed Stream Manager REST response and return a displayable message.
+ *
+ * The SM's GlobalExceptionHandler (as-common) serializes StreamManagerExceptions
+ * as ErrorResponse `{ "error": string }`. Prefer that `error` field; fall back to
+ * the legacy `errorMessage`, then the raw body, then the HTTP status.
+ *
+ * Consumes the response body — call only on a failure path, and do not read the
+ * body again afterward.
+ */
+export async function readStreamManagerError(response: Response): Promise<string> {
+  let text = ''
+  try {
+    text = await response.text()
+  } catch {
+    return `HTTP ${response.status}`
+  }
+  if (text) {
+    try {
+      const json = JSON.parse(text)
+      const message = json?.error ?? json?.errorMessage
+      if (typeof message === 'string' && message.length > 0) {
+        return message
+      }
+    } catch {
+      // body was not JSON — fall through to the raw text
+    }
+    return `HTTP ${response.status}: ${text.slice(0, 500)}`
+  }
+  return `HTTP ${response.status}`
+}
+
 export async function authenticate(
   username: string,
   password: string,
@@ -93,12 +125,12 @@ export async function authenticate(
     })
 
     console.log('[r5] Authenticate response: ' + response.status)
-    var json = await response.json()
-    if (json.errorMessage) {
-      throw new Error(json.errorMessage)
+    if (!response.ok) {
+      throw new Error(await readStreamManagerError(response))
     }
-    if (response.status === 401) {
-      throw new Error('HTTP 401: Unauthorized')
+    var json = await response.json()
+    if (json.error || json.errorMessage) {
+      throw new Error(json.error || json.errorMessage)
     }
     console.log('[r5] authenticate() success: ' + json.token)
     return json.token
@@ -218,9 +250,12 @@ export async function getOriginForPublish(
     url += `?region=${region}`
   }
   const result = await fetch(url)
+  if (!result.ok) {
+    throw new Error(await readStreamManagerError(result))
+  }
   const json = await result.json()
-  if (json.errorMessage || json.error) {
-    throw new Error(json.errorMessage || json.error)
+  if (json.error || json.errorMessage) {
+    throw new Error(json.error || json.errorMessage)
   }
   const origin = Array.isArray(json) && json.length > 0 ? json[0] : json
   const { streamGuid } = origin
@@ -399,7 +434,7 @@ export async function postAbrProvisions(
   } else if (result.status === 409) {
     throw new ProvisionAlreadyExistsError('Provision already exists')
   } else {
-    throw new ProvisionRequestFailedError(`Provision request failed: ${result.status}`)
+    throw new ProvisionRequestFailedError(await readStreamManagerError(result))
   }
 }
 
