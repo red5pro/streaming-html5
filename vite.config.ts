@@ -25,8 +25,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 import { defineConfig, Plugin } from 'vite'
-import { readFileSync } from 'fs'
-import { join, posix, relative, resolve } from 'path'
+import { copyFileSync, existsSync, mkdirSync, readFileSync } from 'fs'
+import { dirname, join, posix, relative, resolve } from 'path'
 
 const projectRoot = __dirname
 const pkg = JSON.parse(readFileSync(join(process.cwd(), 'package.json'), 'utf8'))
@@ -108,9 +108,33 @@ function defineVersion(): Plugin {
   }
 }
 
+function copyWhipCastlabsWorker(): Plugin {
+  let outDir = resolve(projectRoot, 'dist')
+  const scripts = [
+    'src/examples/whip-castlabs/encrypt-worker.js',
+    'src/examples/whip-castlabs/encrypt-worker-wrapper.js',
+  ]
+  return {
+    name: 'copy-whip-castlabs-worker',
+    apply: 'build',
+    configResolved(config) {
+      outDir = resolve(config.root, config.build.outDir)
+    },
+    closeBundle() {
+      for (const script of scripts) {
+        const source = resolve(projectRoot, script)
+        if (!existsSync(source)) return
+        const target = resolve(outDir, script)
+        mkdirSync(dirname(target), { recursive: true })
+        copyFileSync(source, target)
+      }
+    },
+  }
+}
+
 export default defineConfig(({ command }) => ({
   base: command === 'serve' ? '/' : './',
-  plugins: [wasmMimeType(), relativePublicHtmlAssets(), defineVersion()],
+  plugins: [wasmMimeType(), relativePublicHtmlAssets(), defineVersion(), copyWhipCastlabsWorker()],
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src'),
