@@ -161,19 +161,11 @@ export async function authenticateMinimal(
     },
   })
   if (!resp.ok) {
-    // Read the body if any for diagnostics, but don't fail on JSON parse —
-    // SMs sometimes return HTML on auth-layer rejections.
-    let body = ''
-    try {
-      body = await resp.text()
-    } catch (_) {
-      /* ignore */
-    }
-    throw new Error(`HTTP ${resp.status}` + (body ? `: ${body.slice(0, 200)}` : ''))
+    throw new Error(await readStreamManagerError(resp))
   }
   const data = await resp.json()
-  if (data.errorMessage) {
-    throw new Error(data.errorMessage)
+  if (data.error || data.errorMessage) {
+    throw new Error(data.error || data.errorMessage)
   }
   return data.token
 }
@@ -196,6 +188,9 @@ export async function getAllEdges(
       'Content-Type': 'application/json',
     },
   })
+  if (!result.ok) {
+    throw new Error(`Listing edges: ${await readStreamManagerError(result)}`)
+  }
   const json = await result.json()
   const edges = json
     .filter(({ nodeEvent, scalingEvent }: { nodeEvent: NodeEvent; scalingEvent: ScalingEvent }) => {
@@ -225,6 +220,9 @@ export async function getAllOrigins(
       'Content-Type': 'application/json',
     },
   })
+  if (!result.ok) {
+    throw new Error(`Listing origins: ${await readStreamManagerError(result)}`)
+  }
   const json = await result.json()
   const origins = json
     .filter(({ nodeEvent, scalingEvent }: { nodeEvent: NodeEvent; scalingEvent: ScalingEvent }) => {
@@ -325,7 +323,7 @@ export async function listUnsecureNodeGroups(settings: Settings): Promise<string
   const url = `https://${host}/as/${smVersion}/streams/stream/node-groups`
   const resp = await fetch(url)
   if (!resp.ok) {
-    throw new Error(`HTTP ${resp.status} listing nodegroups`)
+    throw new Error(`Listing node groups: ${await readStreamManagerError(resp)}`)
   }
   try {
     const json = await resp.json()
@@ -350,7 +348,7 @@ export async function listNodeGroups(settings: Settings, jwt: string): Promise<u
     headers: { Authorization: `Bearer ${jwt}` },
   })
   if (!resp.ok) {
-    throw new Error(`HTTP ${resp.status} listing nodegroups`)
+    throw new Error(`Listing node groups: ${await readStreamManagerError(resp)}`)
   }
   return await resp.json()
 }
@@ -368,7 +366,7 @@ export async function getNodeGroupConfig(
   })
   if (resp.status === 404) return null
   if (!resp.ok) {
-    throw new Error(`HTTP ${resp.status} reading nodegroup config`)
+    throw new Error(`Reading nodegroup config: ${await readStreamManagerError(resp)}`)
   }
   return await resp.json()
 }
@@ -386,7 +384,7 @@ export async function getNodeGroupStatus(
   })
   if (resp.status === 404) return null
   if (!resp.ok) {
-    throw new Error(`HTTP ${resp.status} reading nodegroup status`)
+    throw new Error(`Reading nodegroup status: ${await readStreamManagerError(resp)}`)
   }
   return await resp.json()
 }
@@ -467,7 +465,7 @@ export async function deleteAbrProvision(
   if (result.status >= 200 && result.status < 300) {
     return
   }
-  throw new ProvisionRequestFailedError(`Provision delete failed: ${result.status}`)
+  throw new ProvisionRequestFailedError(await readStreamManagerError(result))
 }
 
 export async function forwardPOSTRequest(
@@ -500,8 +498,7 @@ export async function forwardPOSTRequest(
     })
 
     if (!response.ok) {
-      const text = await response.text()
-      const message = `HTTP ${response.status}: ${text || response.statusText}`
+      const message = await readStreamManagerError(response)
       console.error('[forwardPost] ' + message)
       return { success: false, errorMessage: message }
     }
@@ -525,8 +522,8 @@ export async function forwardPOSTRequest(
       return { success: false, errorMessage: message }
     }
 
-    if (json && json.errorMessage) {
-      const message = `Server returned error: ${json.errorMessage}`
+    if (json && (json.error || json.errorMessage)) {
+      const message = `Server returned error: ${json.error || json.errorMessage}`
       console.error('[forwardPost] ' + message)
       return { success: false, errorMessage: message }
     }
