@@ -24,47 +24,20 @@ WHETHER IN  AN  ACTION  OF  CONTRACT,  TORT  OR  OTHERWISE,  ARISING  FROM,  OUT
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-.basic-whep-layout {
-  max-width: 720px;
-}
-
-.basic-whep-layout .media-panel {
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  background: var(--bg-card);
-  padding: 0.85rem;
-}
-
-.basic-whep-layout .media-panel__header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 0.75rem;
-}
-
-.basic-whep-layout .section-title {
-  font-size: 0.72rem;
-  color: var(--text-secondary);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.subscriber-video-shell {
-  position: relative;
-  margin-bottom: 0.75rem;
-}
-
-#subscriber-video {
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  border-radius: 8px;
-  background: #000;
-}
-
-.basic-whep-layout .connection-info {
-  font-size: 0.75rem;
-  color: var(--text-muted);
-  font-family: var(--font-mono);
-  margin-bottom: 0.75rem;
-  word-break: break-all;
+export function timeOverlayTemplate(assetPrefix: string): string {
+  const p = assetPrefix
+  return /* html */ `
+  <link rel="stylesheet" href="${p}style/time-overlay.css" />
+  <div class="time-overlay" id="time-overlay">
+    <span class="time-overlay__value" id="time-overlay-value">—</span>
+    <button
+      type="button"
+      class="time-overlay__toggle"
+      id="time-overlay-toggle"
+      title="Showing local time. Click for UTC."
+    >
+      Local
+    </button>
+  </div>
+  `
 }

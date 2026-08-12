@@ -26,7 +26,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import '@/components/r5-header'
 import '@/components/r5-subscriber-stats'
+import '@/components/r5-time-overlay'
 import type { R5SubscriberStatsElement } from '@/components/r5-subscriber-stats'
+import type { R5TimeOverlayElement } from '@/components/r5-time-overlay'
 import {
   applyTheme,
   loadSettings,
@@ -51,6 +53,9 @@ const unsubscribeBtn = document.getElementById('unsubscribe-btn') as HTMLButtonE
 const subscribeStatusEl = document.getElementById('subscribe-status') as HTMLSpanElement
 const connectionInfoEl = document.getElementById('connection-info') as HTMLParagraphElement
 const subscriberStatsEl = document.getElementById('subscriber-stats') as R5SubscriberStatsElement
+const subscriberTimeOverlayEl = document.getElementById(
+  'subscriber-time-overlay'
+) as R5TimeOverlayElement
 const { log } = wireExampleLog()
 
 function setSubscriberStatus(
@@ -83,6 +88,14 @@ function ensureCoreSettings(s: Settings): boolean {
   return true
 }
 
+function startOverlayClock(): void {
+  subscriberTimeOverlayEl.start()
+}
+
+function stopOverlayClock(): void {
+  subscriberTimeOverlayEl.stop()
+}
+
 const subscriberFailureEvents = ['Subscribe.Fail', 'Connect.Failure', 'Subscribe.InvalidName']
 const subscriberStopEvents = ['Subscribe.Stop', 'Subscribe.Play.Unpublish']
 
@@ -103,16 +116,19 @@ function onSubscriberEvent(event: Red5ProEvent): void {
     subscribeBtn.disabled = true
     unsubscribeBtn.disabled = false
     subscriberStatsEl.startSubscriptionLength()
+    startOverlayClock()
   } else if (subscriberFailureEvents.includes(type)) {
     setSubscriberStatus('Subscribe Error', 'error')
     subscribeBtn.disabled = false
     unsubscribeBtn.disabled = true
+    stopOverlayClock()
   } else if (subscriberStopEvents.includes(type)) {
     setSubscriberStatus('Subscriber Idle', 'idle')
     subscribeBtn.disabled = false
     unsubscribeBtn.disabled = true
     subscriberStatsEl.stopSubscriptionLength()
     subscriberStatsEl.stop()
+    stopOverlayClock()
   } else {
     setSubscriberStatus(type, 'unknown')
   }
@@ -167,6 +183,7 @@ async function startSubscribe(): Promise<void> {
     subscribeBtn.disabled = false
     unsubscribeBtn.disabled = true
     subscriber = null
+    stopOverlayClock()
     log(`Subscribe failed: ${String(error)}`, 'error')
   }
 }
@@ -184,6 +201,7 @@ async function stopSubscribe(): Promise<void> {
     subscriberStatsEl.stop()
     subscriberStatsEl.setPeerConnection(null)
     subscriber = null
+    stopOverlayClock()
     subscribeBtn.disabled = false
     unsubscribeBtn.disabled = true
     setSubscriberStatus('Subscriber Idle', 'idle')
@@ -213,5 +231,6 @@ window.addEventListener('beforeunload', () => {
 })
 
 updateConnectionInfo()
+stopOverlayClock()
 log('Basic WHEP example loaded. Auto-starting subscribe when settings are configured.')
 void startSubscribe()

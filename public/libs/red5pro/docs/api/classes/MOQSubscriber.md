@@ -1,4 +1,4 @@
-[**Red5 Pro WebRTC SDK v16.0.0-beta.3**](../README.md)
+[**Red5 Pro WebRTC SDK v16.0.0-beta.6**](../README.md)
 
 ***
 
@@ -315,6 +315,30 @@ Call from a click/tap/keydown handler when `MOQ.Audio.Blocked` fires.
 
 ***
 
+### startQlog()
+
+> **startQlog**(`identifier`): `object`
+
+#### Parameters
+
+##### identifier
+
+`string` \| `undefined`
+
+#### Returns
+
+`object`
+
+##### stop
+
+> **stop**: () => `void`
+
+###### Returns
+
+`void`
+
+***
+
 ### stop()
 
 > **stop**(): `Promise`\<`void`\>
@@ -322,6 +346,16 @@ Call from a click/tap/keydown handler when `MOQ.Audio.Blocked` fires.
 #### Returns
 
 `Promise`\<`void`\>
+
+***
+
+### stopQlog()
+
+> **stopQlog**(): `Promise`\<\{ `blob`: `Blob`; `json`: `string`; \} \| `undefined`\>
+
+#### Returns
+
+`Promise`\<\{ `blob`: `Blob`; `json`: `string`; \} \| `undefined`\>
 
 ***
 
@@ -379,11 +413,15 @@ Dispatch an event to be handled by any assigned callbacks.
 
 ### unsubscribe()
 
-> **unsubscribe**(`_internal?`): `Promise`\<`MOQSubscriber`\>
+> **unsubscribe**(`_internal?`, `clearCatalog?`): `Promise`\<`MOQSubscriber`\>
 
 #### Parameters
 
 ##### \_internal?
+
+`boolean` = `false`
+
+##### clearCatalog?
 
 `boolean` = `false`
 
