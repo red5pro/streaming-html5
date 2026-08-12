@@ -56,7 +56,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. -->
             <p class="connection-info" id="connection-info">Endpoint not configured</p>
 
             <r5-subscriber-stats id="subscriber-stats"></r5-subscriber-stats>
-            <video id="subscriber-video" autoplay playsinline controls></video>
+            <div class="subscriber-video-shell">
+              <video id="subscriber-video" autoplay playsinline controls></video>
+              <r5-time-overlay id="subscriber-time-overlay" hidden></r5-time-overlay>
+            </div>
 
             <div class="controls">
               <button class="btn btn--primary" id="subscribe-btn">Start Subscribe</button>

@@ -97,6 +97,7 @@ The `init()` call accepts `MOQSubscriberConfigType`.
 | `prefetchCatalog` | [-] | `false` | Attempt HTTP catalog prefetch before MOQ playback session starts. |
 | `connectionParams` | [-] | `undefined` | Additional connection parameters passed through options. |
 | `moqtLogLevel` | [-] | `none` | Log level passed to MOQ components. |
+| `mseMediaSourceOptions` | [-] | `undefined` | The desired `MseMediaSourceOptions` to apply when the video package format is received as `CMAF/CMSF`. |
 
 `*` Required when `endpoint` is not provided.
 

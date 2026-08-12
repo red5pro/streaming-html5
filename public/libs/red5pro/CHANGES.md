@@ -1,5 +1,9 @@
 # Changes
 
+## 16.0.0
+
+- feat: MOQ Integration with OpenMOQ Moq Playa (Todd Anderson).
+
 ## 15.6.1
 
 - fix: Firefox - stop subscriber reconnect loop from unpairable ICE candidates (davidengelmaier).
