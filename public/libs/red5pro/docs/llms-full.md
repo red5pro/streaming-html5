@@ -2,7 +2,7 @@
 
 - project: red5pro-html-sdk-ts
 - version: 16.0.0-beta.3
-- generated_at: 2026-07-29T19:49:45.674Z
+- generated_at: 2026-08-11T21:13:31.884Z
 
 ## Included Files
 
@@ -92,6 +92,10 @@
 ### Source: `CHANGES.md`
 
 # Changes
+
+## 15.6.1
+
+- fix: Firefox - stop subscriber reconnect loop from unpairable ICE candidates (davidengelmaier).
 
 ## 15.6.0
 

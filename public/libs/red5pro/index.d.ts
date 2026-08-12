@@ -587,6 +587,7 @@ declare class WHEPClient extends PlaybackController {
     protected _orientation: number | undefined;
     protected _streamingMode: string | undefined;
     protected _requestedStreamSwitch: string | undefined;
+    protected _reconnecting: boolean;
     protected _videoMuted: boolean;
     protected _audioMuted: boolean;
     protected _videoUnmuteHandler: (event: Event$1) => void;

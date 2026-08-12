@@ -40,6 +40,7 @@ import {
   type Settings,
 } from '@/settings'
 import {
+  deleteAbrProvision,
   postAbrProvisions,
   type AbrProvisionLevel,
   type AbrProvision,
@@ -400,14 +401,14 @@ async function onSubmit(event: SubmitEvent): Promise<void> {
 
   const { app, streamName, useAuthentication, username, password, token } = settings
   const provisionGuid = `${app}/${streamName}`
+  const provision: AbrProvision = {
+    credentials: useAuthentication ? { username, password, token } : undefined,
+    messageType: 'ProvisionCommand' as const,
+    provisionGuid,
+    streams: provisionLevels,
+  }
 
   try {
-    const provision: AbrProvision = {
-      credentials: useAuthentication ? { username, password, token } : undefined,
-      messageType: 'ProvisionCommand' as const,
-      provisionGuid,
-      streams: provisionLevels,
-    }
     setPrompt('Submitting ABR provisions...', 'progress')
     log(`Submitting ABR provisions: ${JSON.stringify(provision)}`)
     await submitForm(provision)
@@ -416,9 +417,25 @@ async function onSubmit(event: SubmitEvent): Promise<void> {
     await onProvisionReady(provisionLevels)
   } catch (error) {
     if (error instanceof ProvisionAlreadyExistsError) {
-      log('ABR provisions already exist.', 'info')
-      setPrompt('ABR provisions available.', 'success')
-      await onProvisionReady(provisionLevels)
+      try {
+        const credentials = getSmCredentials(settings)
+        if (!credentials) {
+          throw new Error('Stream Manager credentials are required')
+        }
+        setPrompt('ABR provisions already exist. Replacing...', 'progress')
+        log('ABR provisions already exist. Deleting stale provision before retrying create.', 'info')
+        await deleteAbrProvision(credentials.username, credentials.password, settings, provisionGuid)
+        log('Existing ABR provision deleted. Retrying create.', 'info')
+        await submitForm(provision)
+        setPrompt('ABR provisions replaced.', 'success')
+        log('ABR provisions replaced successfully.', 'success')
+        await onProvisionReady(provisionLevels)
+      } catch (replaceError) {
+        setPrompt('Submit failed.', 'failure')
+        log(`Replace existing provision failed: ${String(replaceError)}`, 'error')
+        alert(`Replace existing provision failed: ${String(replaceError)}`)
+        submitBtn.disabled = false
+      }
     } else {
       setPrompt('Submit failed.', 'failure')
       log(`Submit failed: ${String(error)}`, 'error')

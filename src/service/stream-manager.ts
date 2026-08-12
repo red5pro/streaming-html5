@@ -72,6 +72,38 @@ export interface AbrProvision {
   streams: AbrProvisionLevel[]
 }
 
+/**
+ * Read a failed Stream Manager REST response and return a displayable message.
+ *
+ * The SM's GlobalExceptionHandler (as-common) serializes StreamManagerExceptions
+ * as ErrorResponse `{ "error": string }`. Prefer that `error` field; fall back to
+ * the legacy `errorMessage`, then the raw body, then the HTTP status.
+ *
+ * Consumes the response body — call only on a failure path, and do not read the
+ * body again afterward.
+ */
+export async function readStreamManagerError(response: Response): Promise<string> {
+  let text = ''
+  try {
+    text = await response.text()
+  } catch {
+    return `HTTP ${response.status}`
+  }
+  if (text) {
+    try {
+      const json = JSON.parse(text)
+      const message = json?.error ?? json?.errorMessage
+      if (typeof message === 'string' && message.length > 0) {
+        return message
+      }
+    } catch {
+      // body was not JSON — fall through to the raw text
+    }
+    return `HTTP ${response.status}: ${text.slice(0, 500)}`
+  }
+  return `HTTP ${response.status}`
+}
+
 export async function authenticate(
   username: string,
   password: string,
@@ -93,12 +125,12 @@ export async function authenticate(
     })
 
     console.log('[r5] Authenticate response: ' + response.status)
-    var json = await response.json()
-    if (json.errorMessage) {
-      throw new Error(json.errorMessage)
+    if (!response.ok) {
+      throw new Error(await readStreamManagerError(response))
     }
-    if (response.status === 401) {
-      throw new Error('HTTP 401: Unauthorized')
+    var json = await response.json()
+    if (json.error || json.errorMessage) {
+      throw new Error(json.error || json.errorMessage)
     }
     console.log('[r5] authenticate() success: ' + json.token)
     return json.token
@@ -129,19 +161,11 @@ export async function authenticateMinimal(
     },
   })
   if (!resp.ok) {
-    // Read the body if any for diagnostics, but don't fail on JSON parse —
-    // SMs sometimes return HTML on auth-layer rejections.
-    let body = ''
-    try {
-      body = await resp.text()
-    } catch (_) {
-      /* ignore */
-    }
-    throw new Error(`HTTP ${resp.status}` + (body ? `: ${body.slice(0, 200)}` : ''))
+    throw new Error(await readStreamManagerError(resp))
   }
   const data = await resp.json()
-  if (data.errorMessage) {
-    throw new Error(data.errorMessage)
+  if (data.error || data.errorMessage) {
+    throw new Error(data.error || data.errorMessage)
   }
   return data.token
 }
@@ -164,6 +188,9 @@ export async function getAllEdges(
       'Content-Type': 'application/json',
     },
   })
+  if (!result.ok) {
+    throw new Error(`Listing edges: ${await readStreamManagerError(result)}`)
+  }
   const json = await result.json()
   const edges = json
     .filter(({ nodeEvent, scalingEvent }: { nodeEvent: NodeEvent; scalingEvent: ScalingEvent }) => {
@@ -193,6 +220,9 @@ export async function getAllOrigins(
       'Content-Type': 'application/json',
     },
   })
+  if (!result.ok) {
+    throw new Error(`Listing origins: ${await readStreamManagerError(result)}`)
+  }
   const json = await result.json()
   const origins = json
     .filter(({ nodeEvent, scalingEvent }: { nodeEvent: NodeEvent; scalingEvent: ScalingEvent }) => {
@@ -218,9 +248,12 @@ export async function getOriginForPublish(
     url += `?region=${region}`
   }
   const result = await fetch(url)
+  if (!result.ok) {
+    throw new Error(await readStreamManagerError(result))
+  }
   const json = await result.json()
-  if (json.errorMessage || json.error) {
-    throw new Error(json.errorMessage || json.error)
+  if (json.error || json.errorMessage) {
+    throw new Error(json.error || json.errorMessage)
   }
   const origin = Array.isArray(json) && json.length > 0 ? json[0] : json
   const { streamGuid } = origin
@@ -290,7 +323,7 @@ export async function listUnsecureNodeGroups(settings: Settings): Promise<string
   const url = `https://${host}/as/${smVersion}/streams/stream/node-groups`
   const resp = await fetch(url)
   if (!resp.ok) {
-    throw new Error(`HTTP ${resp.status} listing nodegroups`)
+    throw new Error(`Listing node groups: ${await readStreamManagerError(resp)}`)
   }
   try {
     const json = await resp.json()
@@ -315,7 +348,7 @@ export async function listNodeGroups(settings: Settings, jwt: string): Promise<u
     headers: { Authorization: `Bearer ${jwt}` },
   })
   if (!resp.ok) {
-    throw new Error(`HTTP ${resp.status} listing nodegroups`)
+    throw new Error(`Listing node groups: ${await readStreamManagerError(resp)}`)
   }
   return await resp.json()
 }
@@ -333,7 +366,7 @@ export async function getNodeGroupConfig(
   })
   if (resp.status === 404) return null
   if (!resp.ok) {
-    throw new Error(`HTTP ${resp.status} reading nodegroup config`)
+    throw new Error(`Reading nodegroup config: ${await readStreamManagerError(resp)}`)
   }
   return await resp.json()
 }
@@ -351,7 +384,7 @@ export async function getNodeGroupStatus(
   })
   if (resp.status === 404) return null
   if (!resp.ok) {
-    throw new Error(`HTTP ${resp.status} reading nodegroup status`)
+    throw new Error(`Reading nodegroup status: ${await readStreamManagerError(resp)}`)
   }
   return await resp.json()
 }
@@ -399,8 +432,40 @@ export async function postAbrProvisions(
   } else if (result.status === 409) {
     throw new ProvisionAlreadyExistsError('Provision already exists')
   } else {
-    throw new ProvisionRequestFailedError(`Provision request failed: ${result.status}`)
+    throw new ProvisionRequestFailedError(await readStreamManagerError(result))
   }
+}
+
+function encodePathSegments(value: string): string {
+  return value
+    .split('/')
+    .filter((segment) => segment.length > 0)
+    .map((segment) => encodeURIComponent(segment))
+    .join('/')
+}
+
+export async function deleteAbrProvision(
+  username: string,
+  password: string,
+  settings: Settings,
+  provisionGuid: string
+): Promise<void> {
+  const { host, streamManagerApiVersion, nodeGroupName } = settings
+  const token = await authenticate(username, password, settings)
+  const url = `https://${host}/as/${streamManagerApiVersion}/streams/provision/${encodeURIComponent(nodeGroupName)}/${encodePathSegments(provisionGuid)}`
+  const result = await fetch(url, {
+    method: 'DELETE',
+    // @ts-expect-error - withCredentials is not supported in the types
+    withCredentials: true,
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+  })
+  if (result.status >= 200 && result.status < 300) {
+    return
+  }
+  throw new ProvisionRequestFailedError(await readStreamManagerError(result))
 }
 
 export async function forwardPOSTRequest(
@@ -433,8 +498,7 @@ export async function forwardPOSTRequest(
     })
 
     if (!response.ok) {
-      const text = await response.text()
-      const message = `HTTP ${response.status}: ${text || response.statusText}`
+      const message = await readStreamManagerError(response)
       console.error('[forwardPost] ' + message)
       return { success: false, errorMessage: message }
     }
@@ -458,8 +522,8 @@ export async function forwardPOSTRequest(
       return { success: false, errorMessage: message }
     }
 
-    if (json && json.errorMessage) {
-      const message = `Server returned error: ${json.errorMessage}`
+    if (json && (json.error || json.errorMessage)) {
+      const message = `Server returned error: ${json.error || json.errorMessage}`
       console.error('[forwardPost] ' + message)
       return { success: false, errorMessage: message }
     }
