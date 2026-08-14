@@ -340,10 +340,10 @@ export class R5PublishSettings extends HTMLElement {
     }
   }
 
-  async refreshStream(): Promise<MediaStream | null> {
-    if (this.isInteractionDisabled()) return this.stream
+  async refreshStream(force = false): Promise<MediaStream | null> {
+    if (this.isInteractionDisabled() && !force) return this.stream
     if (this.refreshPromise) return this.refreshPromise
-    this.refreshPromise = this.acquireStream().finally(() => {
+    this.refreshPromise = this.acquireStream(force).finally(() => {
       this.refreshPromise = null
     })
     return this.refreshPromise
@@ -472,14 +472,18 @@ export class R5PublishSettings extends HTMLElement {
       disabled || !this.isConstraintSupported('echoCancellation')
     this.audioNoiseSuppressionInput.disabled =
       disabled || !this.isConstraintSupported('noiseSuppression')
-    this.audioAutoGainControlInput.disabled = disabled || !this.isConstraintSupported('autoGainControl')
+    this.audioAutoGainControlInput.disabled =
+      disabled || !this.isConstraintSupported('autoGainControl')
     this.syncAudioAdvancedVisibility()
   }
 
   private syncSupportedAudioAdvancedFields(): void {
     this.toggleUnsupportedField(this.audioSampleRateInput, this.isConstraintSupported('sampleRate'))
     this.toggleUnsupportedField(this.audioSampleSizeInput, this.isConstraintSupported('sampleSize'))
-    this.toggleUnsupportedField(this.audioChannelCountInput, this.isConstraintSupported('channelCount'))
+    this.toggleUnsupportedField(
+      this.audioChannelCountInput,
+      this.isConstraintSupported('channelCount')
+    )
     this.toggleUnsupportedCheckboxField(
       this.echoCancellationField,
       this.isConstraintSupported('echoCancellation')
@@ -724,8 +728,8 @@ export class R5PublishSettings extends HTMLElement {
     }
   }
 
-  private async acquireStream(): Promise<MediaStream | null> {
-    if (this.isInteractionDisabled()) return this.stream
+  private async acquireStream(force = false): Promise<MediaStream | null> {
+    if (this.isInteractionDisabled() && !force) return this.stream
     if (this.refreshPromise) return this.refreshPromise
     this.refreshPromise = (
       this.hasScreenshare() ? this.acquireDisplayStream() : this.acquireUserMediaStream()
