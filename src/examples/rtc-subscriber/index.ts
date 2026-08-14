@@ -29,6 +29,7 @@ import '@/components/r5-subscriber-stats'
 import type { R5SubscriberStatsElement } from '@/components/r5-subscriber-stats'
 import {
   applyTheme,
+  isAutostartRequested,
   loadSettings,
   resolveConnectionParamsFromSettings,
   resolveEndpointFromSettings,
@@ -43,6 +44,7 @@ sdk.setLogLevel('debug')
 
 let settings = loadSettings()
 applyTheme(settings.theme)
+const requestAutostart = isAutostartRequested()
 
 let subscriber: RTCSubscriber | null = null
 
@@ -221,4 +223,9 @@ window.addEventListener('beforeunload', () => {
 })
 
 updateConnectionInfo()
-log('RTC Subscriber loaded (SDK 14.3.0). Configure Settings, then start subscribing.')
+if (requestAutostart) {
+  log('RTC Subscriber loaded (SDK 14.3.0). `autostart=1` detected. Starting subscribe.')
+  void startSubscribe()
+} else {
+  log('RTC Subscriber loaded (SDK 14.3.0). Configure Settings, then start subscribing.')
+}
