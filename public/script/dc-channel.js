@@ -98,15 +98,22 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
 
     const streamName = resolveStreamName()
-    connectionInfoEl.textContent = window.webrtcTestbed.resolveEndpointFromSettings(
-      { ...settings, streamName },
+    const endpointSettings = resolveEndpointSettings()
+    const { host, protocol, port } = endpointSettings
+    console.log('updateConnectionInfo', endpointSettings)
+    const endpoint = window.webrtcTestbed.resolveEndpointFromSettings(
+      { ...settings, ...endpointSettings, streamName },
       'whip'
+    )
+    connectionInfoEl.textContent = endpoint.replace(
+      /^((https|http)?:\/\/[^:/]+):\d+(\/.*)?$/i,
+      (m, protocolHost, path = '') => `${protocol}://${host}:${port}/${path}`
     )
   }
 
   function buildDataChannelConfig() {
     const mode = $('dcMode').value
-    const name = $('dcName').value || 'soundwhale'
+    const name = $('dcName').value || 'red5pro'
     /** @type {Record<string, unknown>} */
     const cfg = { name }
     if (mode === 'reliable-ordered') {
@@ -135,23 +142,53 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     return stream
   }
 
+  function resolveEndpointSettings() {
+    const host = $('host').value.trim()
+    const port = parseInt($('port').value.trim(), 10)
+    const useTls = $('useTls').checked
+    const app = $('app').value.trim()
+    const streamName = resolveStreamName()
+    return { host, port, protocol: useTls ? 'https' : 'http', app, streamName }
+  }
+
   function buildPublisherConfig(dcCfg) {
     const tb = window.webrtcTestbed
     const streamName = resolveStreamName()
+    const endpointSettings = resolveEndpointSettings()
+    const useAudio = $('useAudio').checked
+    const useVideo = $('useVideo').checked
+    const { port } = endpointSettings
 
     return {
-      endpoint: tb.resolveEndpointFromSettings({ ...settings, streamName }, 'whip'),
+      endpoint: tb.resolveEndpointFromSettings(
+        { ...settings, ...endpointSettings, streamName },
+        'whip'
+      ),
+      port,
       streamName,
       connectionParams: tb.resolveConnectionParamsFromSettings(settings),
       stats: tb.resolveStatisticsConfigurationFromSettings(settings) ?? undefined,
       rtcConfiguration: tb.resolveRtcConfigurationFromSettings(settings),
       includeDataChannel: true,
       dataChannelConfiguration: dcCfg,
-      mediaConstraints: {
-        audio: $('useAudio').checked,
-        video: $('useVideo').checked,
-      },
+      mediaElementId:
+        useAudio && !useVideo ? 'red5pro-audio' : useVideo ? 'red5pro-video' : undefined,
+      ...(useAudio || useVideo
+        ? {
+            mediaConstraints: {
+              audio: useAudio,
+              video: useVideo,
+            },
+          }
+        : {}),
     }
+  }
+
+  function updateMediaElement() {
+    const useAudio = $('useAudio').checked
+    const useVideo = $('useVideo').checked
+    $('red5pro-video').setAttribute('hidden', !useVideo)
+    $('red5pro-audio').setAttribute('hidden', !(useAudio && !useVideo))
   }
 
   function markDcOpen(dc) {
@@ -205,14 +242,24 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     const dcCfg = buildDataChannelConfig()
     const config = buildPublisherConfig(dcCfg)
 
+    const { mediaConstraints } = config
+    const { WHIPClient, MessageChannel } = sdk
+
+    if (mediaConstraints) {
+      logLine('Media constraints: ' + JSON.stringify(mediaConstraints))
+    } else {
+      logLine('No media constraints')
+    }
+
     logLine('Connect: endpoint=' + config.endpoint)
     logLine('DC config: ' + JSON.stringify(dcCfg))
     setStatus('connecting')
     $('connectBtn').disabled = true
     $('disconnectBtn').disabled = false
+    updateMediaElement()
 
     try {
-      publisher = new sdk.MessageChannel()
+      publisher = mediaConstraints ? new WHIPClient() : new MessageChannel()
       publisher.on('*', (event) => {
         if (event.type === 'WebRTC.DataChannel.Available') {
           logLine('event: DataChannel.Available')
@@ -441,7 +488,15 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     $('backpressure').addEventListener('change', () => {
       $('backpressureRow').classList.toggle('is-hidden', !$('backpressure').checked)
     })
-    $('streamName').addEventListener('change', updateConnectionInfo)
+
+    Array.from(['streamName', 'host', 'port', 'useTls', 'app']).forEach((id) => {
+      const el = $('' + id)
+      if (el) {
+        el.addEventListener('change', updateConnectionInfo)
+      } else {
+        console.error('Element not found: ' + id)
+      }
+    })
   }
 
   function initPage() {

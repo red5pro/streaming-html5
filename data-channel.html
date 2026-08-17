@@ -37,12 +37,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. -->
     <r5-header></r5-header>
 
     <main class="page">
-      <nav class="breadcrumb"><a href="/">WebRTC Testbed</a> &rsaquo; Data Channel</nav>
+      <nav class="breadcrumb"><a href="/">WebRTC Testbed</a> &rsaquo; Data Channel (Enhanced)</nav>
 
-      <h1 class="page__heading">Data Channel</h1>
+      <h1 class="page__heading">Data Channel (Enhanced)</h1>
       <p class="page__description">
-        MessageChannel publish with configurable data-channel reliability, text messaging, and binary
-        flood testing. Configure host, stream name, and node group in Settings, then connect.
+        MessageChannel publish with configurable data-channel reliability, text messaging, and
+        binary flood testing. Configure host, stream name, and node group in Settings, then connect.
       </p>
 
       <div class="page__layout">
@@ -53,11 +53,18 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. -->
             </div>
             <div class="form-row">
               <label for="host">Host</label>
-              <input type="text" id="host" value="splitwaves.com" />
+              <input type="text" id="host" value="localhost" />
             </div>
             <div class="form-row form-row--inline">
               <label for="port" class="form-row__label--compact">Port</label>
-              <input type="number" id="port" value="443" min="1" max="65535" class="input--narrow" />
+              <input
+                type="number"
+                id="port"
+                value="443"
+                min="1"
+                max="65535"
+                class="input--narrow"
+              />
               <label class="form-row__checkbox-label">
                 <input type="checkbox" id="useTls" checked /> TLS (https/wss)
               </label>
@@ -68,12 +75,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. -->
             </div>
             <div class="form-row">
               <label for="streamName">Stream Name</label>
-              <input
-                type="text"
-                id="streamName"
-                value=""
-                placeholder="auto-generated if blank"
-              />
+              <input type="text" id="streamName" value="" placeholder="auto-generated if blank" />
             </div>
           </section>
 
@@ -83,7 +85,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. -->
             </div>
             <div class="form-row form-row--checkboxes">
               <label class="form-row__checkbox-label">
-                <input type="checkbox" id="useAudio" checked /> Publish audio
+                <input type="checkbox" id="useAudio" /> Publish audio
               </label>
               <label class="form-row__checkbox-label">
                 <input type="checkbox" id="useVideo" /> Publish video
@@ -97,7 +99,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. -->
             </div>
             <div class="form-row">
               <label for="dcName">DC Name</label>
-              <input type="text" id="dcName" value="soundwhale" />
+              <input type="text" id="dcName" value="red5pro" />
             </div>
             <div class="form-row">
               <label for="dcMode">Reliability</label>
@@ -130,12 +132,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. -->
 
             <p class="connection-info" id="connection-info">Endpoint not configured</p>
 
+            <video id="red5pro-video" hidden muted autoplay playsinline></video>
+            <audio id="red5pro-audio" hidden muted autoplay playsinline></audio>
+
             <div class="controls">
               <button class="btn btn--primary" id="connectBtn">Connect</button>
               <button class="btn btn--danger" id="disconnectBtn" disabled>Disconnect</button>
             </div>
-
-            <video id="red5pro-publisher" muted autoplay playsinline></video>
           </section>
 
           <section class="config-panel">

@@ -62,10 +62,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 }
 
 .data-channel-layout .controls {
+  margin-top: 0.75rem;
   margin-bottom: 0.75rem;
+  justify-content: flex-start;
 }
 
-.data-channel-layout #red5pro-publisher {
+.data-channel-layout video,
+.data-channel-layout audio {
   width: 100%;
   max-width: 240px;
   aspect-ratio: 3 / 2;
