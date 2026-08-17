@@ -187,8 +187,15 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   function updateMediaElement() {
     const useAudio = $('useAudio').checked
     const useVideo = $('useVideo').checked
-    $('red5pro-video').setAttribute('hidden', !useVideo)
-    $('red5pro-audio').setAttribute('hidden', !(useAudio && !useVideo))
+    $('red5pro-audio').setAttribute('hidden', true)
+    if (useVideo) {
+      $('red5pro-video').removeAttribute('hidden')
+    } else {
+      $('red5pro-video').setAttribute('hidden', true)
+    }
+    if (useAudio && !useVideo) {
+      $('red5pro-audio').removeAttribute('hidden')
+    }
   }
 
   function markDcOpen(dc) {
@@ -263,6 +270,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       publisher.on('*', (event) => {
         if (event.type === 'WebRTC.DataChannel.Available') {
           logLine('event: DataChannel.Available')
+          setStatus('connected')
           const dc = publisher.getDataChannel ? publisher.getDataChannel() : null
           if (dc) attachDataChannelHandlers(dc)
           if (dc) {

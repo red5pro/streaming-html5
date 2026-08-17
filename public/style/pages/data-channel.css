@@ -73,6 +73,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   max-width: 240px;
   aspect-ratio: 3 / 2;
   border-radius: 8px;
+}
+
+.data-channel-layout video {
   background: #000;
 }
 
