@@ -145,30 +145,32 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. -->
             <div class="config-panel__header">
               <h2 class="section-title">Send</h2>
             </div>
-            <div class="form-row">
+            <div class="form-row form-row__section">
               <label for="textMsg">Text Message</label>
               <input type="text" id="textMsg" />
               <button class="btn btn--primary" id="sendTextBtn" disabled>Send</button>
             </div>
-            <div class="form-row form-row--inline">
+            <div class="form-row form-row--inline form-row__section">
               <label for="packetSize">Binary Packet Size</label>
               <input type="number" id="packetSize" value="2048" min="1" class="input--narrow" />
               <label for="intervalMs" class="form-row__label--compact">Interval (ms)</label>
               <input type="number" id="intervalMs" value="20" min="1" class="input--narrow" />
-              <button class="btn btn--primary" id="floodStartBtn" disabled>Start Flood</button>
-              <button class="btn btn--danger" id="floodStopBtn" disabled>Stop Flood</button>
+              <p class="form-row__section-actions">
+                <button class="btn btn--primary" id="floodStartBtn" disabled>Start Flood</button>
+                <button class="btn btn--danger" id="floodStopBtn" disabled>Stop Flood</button>
+              </p>
             </div>
-            <div class="form-row">
+            <div class="form-row form-row__section">
               <label class="form-row__checkbox-label">
                 <input type="checkbox" id="backpressure" /> Back-pressure (pause when buffered &gt;
                 high, resume on low)
               </label>
-            </div>
-            <div class="form-row is-hidden" id="backpressureRow">
-              <label for="bpHigh">High watermark (bytes)</label>
-              <input type="number" id="bpHigh" value="1048576" min="1" class="input--wide" />
-              <label for="bpLow" class="form-row__label--wide">Low watermark (bytes)</label>
-              <input type="number" id="bpLow" value="262144" min="1" class="input--wide" />
+              <div class="form-row is-hidden" id="backpressureRow">
+                <label for="bpHigh">High watermark (bytes)</label>
+                <input type="number" id="bpHigh" value="1048576" min="1" class="input--wide" />
+                <label for="bpLow" class="form-row__label--wide">Low watermark (bytes)</label>
+                <input type="number" id="bpLow" value="262144" min="1" class="input--wide" />
+              </div>
             </div>
             <div class="form-row form-row--metrics">
               <span>sent: <span id="sentCount">0</span></span>

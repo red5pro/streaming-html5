@@ -171,6 +171,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       rtcConfiguration: tb.resolveRtcConfigurationFromSettings(settings),
       includeDataChannel: true,
       dataChannelConfiguration: dcCfg,
+      clearMediaOnUnpublish: true,
       mediaElementId:
         useAudio && !useVideo ? 'red5pro-audio' : useVideo ? 'red5pro-video' : undefined,
       ...(useAudio || useVideo

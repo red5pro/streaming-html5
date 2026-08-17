@@ -87,6 +87,17 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   flex-wrap: wrap;
 }
 
+.form-row__section {
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg-secondary);
+}
+
+.form-row__section-actions {
+  width: 100%;
+}
+
 .form-row:last-child {
   margin-bottom: 0;
 }
@@ -141,6 +152,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   color: var(--text);
   font-family: var(--font-sans);
   font-size: 0.82rem;
+}
+
+#backpressureRow input[type='number'] {
+  flex: unset;
 }
 
 .input--narrow {
