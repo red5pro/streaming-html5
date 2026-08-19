@@ -46,6 +46,7 @@ import {
 import { wireExampleLog } from '@/lib/example-log'
 import { updateSubscriberLink } from '@/lib/example-links'
 import { postSocialPusherProvision } from '@/lib/social-pusher-provision'
+import { createProvision } from '@/service/restreamer'
 
 const sdk = window.red5prosdk
 sdk.setLogLevel('debug')
@@ -340,11 +341,17 @@ async function handleSocialPusherSubmit(event: SubmitEvent): Promise<void> {
   if (!publisher || socialPusherRequestInFlight) return
   if (!ensureCoreSettings(settings)) return
 
+  const { app, streamName } = settings
+  const streamGuid = `${app}/${streamName}`
   const password = socialPusherPasswordInputEl.value
   const destinationUri = socialPusherDestinationUriInputEl.value.trim()
   const streamKey = socialPusherStreamKeyInputEl.value.trim()
   const startingForward = !isForwarding
   const actionLabel = startingForward ? 'provision.create' : 'provision.delete'
+
+  // TODO
+  // @ts-expect-error - global variable for debugging
+  const provisionResult = await createProvision(settings, streamKey, streamGuid, destinationUri)
 
   if (!password) {
     log('Password is required for social forwarding.', 'error')

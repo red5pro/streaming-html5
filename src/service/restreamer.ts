@@ -25,6 +25,26 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 /**
+ * Standalone
+ {
+    "guid": "restream1",
+    "context": "live",
+    "name": "stream1",
+    "level": 0,
+    "parameters": {
+        "action": "create",
+        "type": "rtmp-push",
+        "rtmpUri": "rtmp://localhost/live/social1",
+        "immediate": "false",
+        "attempts": "3",
+        "delayS": "10",
+        "persist": "true"
+    }
+  }
+*/
+
+/**
+ * SM
  {
     "provisionGuid": "social1",
     "streams": [
@@ -45,45 +65,79 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 */
 
-import { resolveConnectionFromHost, Settings } from '@/settings'
+import {
+  resolveConnectionFromHost,
+  resolveStreamManagerAdminCredentialsFromSettings,
+  Settings,
+} from '@/settings'
+import { authenticate } from './stream-manager'
 
 export async function createProvision(
   settings: Settings,
   guid: string,
   streamGuid: string,
-  uri: string,
+  destinationUri: string,
   persist: boolean = false
 ): Promise<unknown> {
-  // @ts-expect-error - useStreamManager and streamManagerApiVersion are not used
-  const { host, app, useStreamManager, streamManagerApiVersion } = settings
+  const { host, app, streamName, useStreamManager, streamManagerApiVersion, nodeGroupName } =
+    settings
   const { protocol, port } = resolveConnectionFromHost(host)
-  const baseUrl = `${protocol}://${host}:${port}/${app}`
-  const url = `${baseUrl}/restream`
-  const data = {
-    provisionGuid: guid,
-    streams: [
-      {
-        streamGuid,
-        abrLevel: 0,
-        camParams: {
-          properties: {
-            action: 'create',
-            type: 'rtmp-push',
-            rtmpUri: uri,
-            immediate: 'true',
-            persist: persist ? 'true' : 'false',
-            attempts: '3',
-            delayS: '10',
+  let url = `${protocol}://${host}:${port}/${app}/restream`
+  let headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  }
+  let data = {
+    guid,
+    context: app,
+    name: streamName,
+    level: 0,
+    parameters: {
+      action: 'create',
+      type: 'rtmp-push',
+      rtmpUri: `${destinationUri}/${app}/${guid}`,
+      immediate: 'true',
+      attempts: '3',
+      delayS: '10',
+      persist: persist ? 'true' : 'false',
+    },
+  }
+  if (useStreamManager) {
+    const { username, password } = resolveStreamManagerAdminCredentialsFromSettings(settings)!
+    const token = await authenticate(username, password, settings)
+    // https://as-test1.example.org/as/v1/streams/provision/nodegroup1
+    url = `${protocol}://${host}:${port}/as/${streamManagerApiVersion}/streams/provision/${nodeGroupName}`
+    headers = {
+      ...headers,
+      Authorization: `Bearer ${token}`,
+    }
+    data = {
+      // @ts-expect-error - provisionGuid is not supported in the types
+      provisionGuid: guid,
+      streams: [
+        {
+          streamGuid,
+          abrLevel: 0,
+          camParams: {
+            properties: {
+              action: 'create',
+              type: 'rtmp-push',
+              rtmpUri: `${destinationUri}/${guid}`,
+              immediate: 'true',
+              persist: persist ? 'true' : 'false',
+              attempts: '3',
+              delayS: '10',
+            },
           },
         },
-      },
-    ],
+      ],
+    }
   }
   const response = await fetch(url, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    headers,
+    credentials: 'include',
+    // @ts-expect-error - withCredentials is not supported in the types
+    withCredentials: true,
     body: JSON.stringify(data),
   })
   if (!response.ok) {
@@ -116,11 +170,22 @@ export async function createProvision(
   }
 */
 export async function deleteProvision(settings: Settings, guid: string): Promise<unknown> {
-  // @ts-expect-error - useStreamManager and streamManagerApiVersion are not used
-  const { host, app, useStreamManager, streamManagerApiVersion } = settings
+  const { host, app, useStreamManager, streamManagerApiVersion, nodeGroupName } = settings
   const { protocol, port } = resolveConnectionFromHost(host)
-  const baseUrl = `${protocol}://${host}:${port}/${app}`
-  const url = `${baseUrl}/restream`
+  let url = `${protocol}://${host}:${port}/${app}/restream`
+  let headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  }
+  if (useStreamManager) {
+    const { username, password } = resolveStreamManagerAdminCredentialsFromSettings(settings)!
+    const token = await authenticate(username, password, settings)
+    // https://as-test1.example.org/as/v1/streams/provision/nodegroup1/guid
+    url = `${protocol}://${host}:${port}/as/${streamManagerApiVersion}/streams/provision/${nodeGroupName}/${guid}`
+    headers = {
+      ...headers,
+      Authorization: `Bearer ${token}`,
+    }
+  }
   const data = {
     guid,
     parameters: {
@@ -130,10 +195,11 @@ export async function deleteProvision(settings: Settings, guid: string): Promise
     },
   }
   const response = await fetch(url, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    method: 'DELETE',
+    headers,
+    credentials: 'include',
+    // @ts-expect-error - withCredentials is not supported in the types
+    withCredentials: true,
     body: JSON.stringify(data),
   })
   if (!response.ok) {
