@@ -517,7 +517,7 @@ Exposed on the [init configuration](#init-configuration) is the `pubnub` attribu
 | `publishKey` | [x] | _None_ | The registered publish key from PubNub. This can be found in your [Red5 Cloud](https://cloud.red5.net) deployment. |
 | `subscribeKey` | [x] | _None_ | The registered subscribe key from PubNub. This can be found in your [Red5 Cloud](https://cloud.red5.net) deployment. |
 | `userId` | [x] | Auto-generated if not provided. | The associated User ID for PubNub. |
-| `channelId` | [x] | `red5` | Default Channel ID to subscribe to in PubNub messaging. |
+| `roomId` | [x] | `red5` | Default Channel ID to subscribe to in PubNub messaging. |
 | `expiryMinutes` | [-] | `120` | Default expiration of issued token associated with client. |
 | `authToken` | [-] | _None_ | Optional authentication token issues from PubNub - if known. |
 | `cloudEndpoint` | [-] | _None_ | Optional endpoint of Red5 Cloud deployment to attempt access of `authToken` from PubNub system. |
@@ -544,11 +544,11 @@ To learn more about the Backend SDKs and authentication token generation, [pleas
 
 Once PubNub authentication and connection has been established through initialization, the following API can be used to as it relates to sending and receiving messages:
 
-### subscribePubNub(channelId: string, options: any | undefined)
+### subscribePubNub(roomId: string, options: any | undefined)
 
 Request to subscribe to target channel with optional `options`.
 
-### sendPubNub(channelId: string, message: any)
+### sendPubNub(roomId: string, message: any)
 
 Request to publish a message on the target channel.
 

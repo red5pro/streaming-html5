@@ -1,8 +1,8 @@
 # Red5 Pro HTML SDK - LLM Reference
 
 - project: red5pro-html-sdk-ts
-- version: 16.0.0-beta.7
-- generated_at: 2026-08-14T13:57:45.338Z
+- version: 16.1.0-beta.1
+- generated_at: 2026-08-19T15:24:48.504Z
 
 ## Included Files
 
@@ -1390,7 +1390,7 @@ const config = {
   publishKey: 'pub-c-XXXX',
   subscribeKey: 'sub-c-XXXX',
   userId: 'user-1234',
-  channelId: 'red5',
+  roomId: 'red5',
   authToken: 'XXXX='
 }
 const pubnubClient = new PubNubClient()
@@ -1399,22 +1399,22 @@ pubnub.on('*', (event) => {
   console.log(`[PubNub]:: ${type}`, data)
 })
 await pubnub.init(pubnubConfig)
-await pubnub.subscribe(channelId)
+await pubnub.subscribe(roomId)
 ```
 
 ## Messaging API
 
 The following methods relate to the Message API of the `PubNubClient` that integrates with the PubNub service.
 
-### subscribe(channelId: string)
+### subscribe(roomId: string)
 
-Request to subscribe to messages on the given channel. In most cases, this will be the same as the `channelId` provided in the `init()` configuration, as that is used to generate a valid token in the system.
+Request to subscribe to messages on the given channel. In most cases, this will be the same as the `roomId` provided in the `init()` configuration, as that is used to generate a valid token in the system.
 
-### publishMessage(channelId: string, message: any)
+### publishMessage(roomId: string, message: any)
 
-Request to deliver a message on the target channel. In most cases, this will be the same as the `channelId` provided in the `init()` configuration, as that is used to generate a valid token in the system.
+Request to deliver a message on the target channel. In most cases, this will be the same as the `roomId` provided in the `init()` configuration, as that is used to generate a valid token in the system.
 
-### unsubscribe(channelId: string)
+### unsubscribe(roomId: string)
 
 Request to stop receiving messages on the given channel.
 
@@ -1434,7 +1434,7 @@ When using the `init()` call of a `PubNubClient`, the following initialization p
 | `publishKey` | [x] | _None_ | The registered publish key from PubNub. This can be found in your [Red5 Cloud](https://cloud.red5.net) deployment. |
 | `subscribeKey` | [x] | _None_ | The registered subscribe key from PubNub. This can be found in your [Red5 Cloud](https://cloud.red5.net) deployment. |
 | `userId` | [x] | Auto-generated if not provided. | The associated User ID for PubNub. |
-| `channelId` | [x] | `red5` | Default Channel ID to subscribe to in PubNub messaging. |
+| `roomId` | [x] | `red5` | Default Channel ID to subscribe to in PubNub messaging. |
 | `expiryMinutes` | [-] | `120` | Default expiration of issued token associated with client. |
 | `authToken` | [-] | _None_ | Optional authentication token issues from PubNub - if known. |
 | `cloudEndpoint` | [-] | _None_ | Optional endpoint of Red5 Cloud deployment to attempt access of `authToken` from PubNub system. |
@@ -1993,7 +1993,7 @@ Exposed on the [init configuration](#init-configuration) is the `pubnub` attribu
 | `publishKey` | [x] | _None_ | The registered publish key from PubNub. This can be found in your [Red5 Cloud](https://cloud.red5.net) deployment. |
 | `subscribeKey` | [x] | _None_ | The registered subscribe key from PubNub. This can be found in your [Red5 Cloud](https://cloud.red5.net) deployment. |
 | `userId` | [x] | Auto-generated if not provided. | The associated User ID for PubNub. |
-| `channelId` | [x] | `red5` | Default Channel ID to subscribe to in PubNub messaging. |
+| `roomId` | [x] | `red5` | Default Channel ID to subscribe to in PubNub messaging. |
 | `expiryMinutes` | [-] | `120` | Default expiration of issued token associated with client. |
 | `authToken` | [-] | _None_ | Optional authentication token issues from PubNub - if known. |
 | `cloudEndpoint` | [-] | _None_ | Optional endpoint of Red5 Cloud deployment to attempt access of `authToken` from PubNub system. |
@@ -2020,11 +2020,11 @@ To learn more about the Backend SDKs and authentication token generation, [pleas
 
 Once PubNub authentication and connection has been established through initialization, the following API can be used to as it relates to sending and receiving messages:
 
-### subscribePubNub(channelId: string, options: any | undefined)
+### subscribePubNub(roomId: string, options: any | undefined)
 
 Request to subscribe to target channel with optional `options`.
 
-### sendPubNub(channelId: string, message: any)
+### sendPubNub(roomId: string, message: any)
 
 Request to publish a message on the target channel.
 
@@ -2573,7 +2573,7 @@ Exposed on the [init configuration](#init-configuration) is the `pubnub` attribu
 | `publishKey` | [x] | _None_ | The registered publish key from PubNub. This can be found in your [Red5 Cloud](https://cloud.red5.net) deployment. |
 | `subscribeKey` | [x] | _None_ | The registered subscribe key from PubNub. This can be found in your [Red5 Cloud](https://cloud.red5.net) deployment. |
 | `userId` | [x] | Auto-generated if not provided. | The associated User ID for PubNub. |
-| `channelId` | [x] | `red5` | Default Channel ID to subscribe to in PubNub messaging. |
+| `roomId` | [x] | `red5` | Default Channel ID to subscribe to in PubNub messaging. |
 | `expiryMinutes` | [-] | `120` | Default expiration of issued token associated with client. |
 | `authToken` | [-] | _None_ | Optional authentication token issues from PubNub - if known. |
 | `cloudEndpoint` | [-] | _None_ | Optional endpoint of Red5 Cloud deployment to attempt access of `authToken` from PubNub system. |
@@ -2600,11 +2600,11 @@ To learn more about the Backend SDKs and authentication token generation, [pleas
 
 Once PubNub authentication and connection has been established through initialization, the following API can be used to as it relates to sending and receiving messages:
 
-### subscribePubNub(channelId: string, options: any | undefined)
+### subscribePubNub(roomId: string, options: any | undefined)
 
 Request to subscribe to target channel with optional `options`.
 
-### sendPubNub(channelId: string, message: any)
+### sendPubNub(roomId: string, message: any)
 
 Request to publish a message on the target channel.
 
@@ -2634,7 +2634,7 @@ The following events are dispatched by the underlying pubnub integration and bub
 
 ### Source: `docs/api/classes/Event.md`
 
-[**Red5 Pro WebRTC SDK v16.0.0-beta.7**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
 
 ***
 
@@ -2702,7 +2702,7 @@ Get the type of event.
 
 ### Source: `docs/api/classes/EventEmitter.md`
 
-[**Red5 Pro WebRTC SDK v16.0.0-beta.7**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
 
 ***
 
@@ -2812,7 +2812,7 @@ Dispatch an event to be handled by any assigned callbacks.
 
 ### Source: `docs/api/classes/HLSSubscriber.md`
 
-[**Red5 Pro WebRTC SDK v16.0.0-beta.7**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
 
 ***
 
@@ -3216,7 +3216,7 @@ Unsubscribe from the HLS stream.
 
 ### Source: `docs/api/classes/LiveSeekClient.md`
 
-[**Red5 Pro WebRTC SDK v16.0.0-beta.7**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
 
 ***
 
@@ -4084,7 +4084,7 @@ The channel to unsubscribe from.
 
 ### Source: `docs/api/classes/MessageChannel.md`
 
-[**Red5 Pro WebRTC SDK v16.0.0-beta.7**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
 
 ***
 
@@ -4837,7 +4837,7 @@ The optimization parameters to update.
 
 ### Source: `docs/api/classes/MessageChannelEvent.md`
 
-[**Red5 Pro WebRTC SDK v16.0.0-beta.7**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
 
 ***
 
@@ -4939,7 +4939,7 @@ Get the type of event.
 
 ### Source: `docs/api/classes/MessageTransportStateEvent.md`
 
-[**Red5 Pro WebRTC SDK v16.0.0-beta.7**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
 
 ***
 
@@ -5041,7 +5041,7 @@ Get the type of event.
 
 ### Source: `docs/api/classes/MOQCatalog.md`
 
-[**Red5 Pro WebRTC SDK v16.0.0-beta.7**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
 
 ***
 
@@ -5263,7 +5263,7 @@ Dispatch an event to be handled by any assigned callbacks.
 
 ### Source: `docs/api/classes/MOQPublisher.md`
 
-[**Red5 Pro WebRTC SDK v16.0.0-beta.7**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
 
 ***
 
@@ -5545,7 +5545,7 @@ Dispatch an event to be handled by any assigned callbacks.
 
 ### Source: `docs/api/classes/MOQSubscriber.md`
 
-[**Red5 Pro WebRTC SDK v16.0.0-beta.7**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
 
 ***
 
@@ -5978,7 +5978,7 @@ Dispatch an event to be handled by any assigned callbacks.
 
 ### Source: `docs/api/classes/PlaybackController.md`
 
-[**Red5 Pro WebRTC SDK v16.0.0-beta.7**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
 
 ***
 
@@ -6307,7 +6307,7 @@ Unmute the media element.
 
 ### Source: `docs/api/classes/PlaybackControls.md`
 
-[**Red5 Pro WebRTC SDK v16.0.0-beta.7**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
 
 ***
 
@@ -6604,7 +6604,7 @@ The event to trigger.
 
 ### Source: `docs/api/classes/PublisherEvent.md`
 
-[**Red5 Pro WebRTC SDK v16.0.0-beta.7**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
 
 ***
 
@@ -6706,7 +6706,7 @@ Get the type of event.
 
 ### Source: `docs/api/classes/PubNubClient.md`
 
-[**Red5 Pro WebRTC SDK v16.0.0-beta.7**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
 
 ***
 
@@ -6926,7 +6926,7 @@ Dispatch an event to be handled by any assigned callbacks.
 
 ### Source: `docs/api/classes/PubNubEvent.md`
 
-[**Red5 Pro WebRTC SDK v16.0.0-beta.7**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
 
 ***
 
@@ -7028,7 +7028,7 @@ Get the type of event.
 
 ### Source: `docs/api/classes/SourceHandler.md`
 
-[**Red5 Pro WebRTC SDK v16.0.0-beta.7**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
 
 ***
 
@@ -7463,7 +7463,7 @@ Unpublish the media element.
 
 ### Source: `docs/api/classes/SourceHandlerImpl.md`
 
-[**Red5 Pro WebRTC SDK v16.0.0-beta.7**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
 
 ***
 
@@ -7877,7 +7877,7 @@ Unpublish the media element.
 
 ### Source: `docs/api/classes/SubscriberEvent.md`
 
-[**Red5 Pro WebRTC SDK v16.0.0-beta.7**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
 
 ***
 
@@ -7979,7 +7979,7 @@ Get the type of event.
 
 ### Source: `docs/api/classes/WHEPClient.md`
 
-[**Red5 Pro WebRTC SDK v16.0.0-beta.7**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
 
 ***
 
@@ -8746,7 +8746,7 @@ The channel to unsubscribe from.
 
 ### Source: `docs/api/classes/WHIPClient.md`
 
-[**Red5 Pro WebRTC SDK v16.0.0-beta.7**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
 
 ***
 
@@ -9352,7 +9352,7 @@ The optimization parameters to update.
 
 ### Source: `docs/api/enumerations/MessageChannelEventTypes.md`
 
-[**Red5 Pro WebRTC SDK v16.0.0-beta.7**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
 
 ***
 
@@ -9398,7 +9398,7 @@ The optimization parameters to update.
 
 ### Source: `docs/api/enumerations/MessageTransportStateEventTypes.md`
 
-[**Red5 Pro WebRTC SDK v16.0.0-beta.7**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
 
 ***
 
@@ -9432,7 +9432,7 @@ The optimization parameters to update.
 
 ### Source: `docs/api/enumerations/PlaybackAudioEncoder.md`
 
-[**Red5 Pro WebRTC SDK v16.0.0-beta.7**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
 
 ***
 
@@ -9454,7 +9454,7 @@ The optimization parameters to update.
 
 ### Source: `docs/api/enumerations/PlaybackState.md`
 
-[**Red5 Pro WebRTC SDK v16.0.0-beta.7**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
 
 ***
 
@@ -9494,7 +9494,7 @@ The optimization parameters to update.
 
 ### Source: `docs/api/enumerations/PlaybackVideoEncoder.md`
 
-[**Red5 Pro WebRTC SDK v16.0.0-beta.7**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
 
 ***
 
@@ -9534,7 +9534,7 @@ The optimization parameters to update.
 
 ### Source: `docs/api/enumerations/PublishAudioEncoder.md`
 
-[**Red5 Pro WebRTC SDK v16.0.0-beta.7**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
 
 ***
 
@@ -9552,7 +9552,7 @@ Enumeration of Audio Encoder types to request for Broadcast.
 
 ### Source: `docs/api/enumerations/PublisherEventTypes.md`
 
-[**Red5 Pro WebRTC SDK v16.0.0-beta.7**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
 
 ***
 
@@ -9676,7 +9676,7 @@ Enumeration of Audio Encoder types to request for Broadcast.
 
 ### Source: `docs/api/enumerations/PublishVideoEncoder.md`
 
-[**Red5 Pro WebRTC SDK v16.0.0-beta.7**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
 
 ***
 
@@ -9712,7 +9712,7 @@ Enumeration of Video Encoder types to request for Broadcast.
 
 ### Source: `docs/api/enumerations/PubNubEventTypes.md`
 
-[**Red5 Pro WebRTC SDK v16.0.0-beta.7**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
 
 ***
 
@@ -9800,7 +9800,7 @@ Enumeration of Video Encoder types to request for Broadcast.
 
 ### Source: `docs/api/enumerations/RTCPublisherEventTypes.md`
 
-[**Red5 Pro WebRTC SDK v16.0.0-beta.7**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
 
 ***
 
@@ -9942,7 +9942,7 @@ Enumeration of Video Encoder types to request for Broadcast.
 
 ### Source: `docs/api/enumerations/RTCSubscriberEventTypes.md`
 
-[**Red5 Pro WebRTC SDK v16.0.0-beta.7**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
 
 ***
 
@@ -10084,7 +10084,7 @@ Enumeration of Video Encoder types to request for Broadcast.
 
 ### Source: `docs/api/enumerations/StatsEndpointType.md`
 
-[**Red5 Pro WebRTC SDK v16.0.0-beta.7**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
 
 ***
 
@@ -10112,7 +10112,7 @@ Enumeration of Video Encoder types to request for Broadcast.
 
 ### Source: `docs/api/enumerations/SubscriberEventTypes.md`
 
-[**Red5 Pro WebRTC SDK v16.0.0-beta.7**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
 
 ***
 
@@ -10284,7 +10284,7 @@ Enumeration of Video Encoder types to request for Broadcast.
 
 ### Source: `docs/api/enumerations/WebRTCConnectionEventTypes.md`
 
-[**Red5 Pro WebRTC SDK v16.0.0-beta.7**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
 
 ***
 
@@ -10318,7 +10318,7 @@ Enumeration of Video Encoder types to request for Broadcast.
 
 ### Source: `docs/api/functions/getRecordedLogs.md`
 
-[**Red5 Pro WebRTC SDK v16.0.0-beta.7**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
 
 ***
 
@@ -10338,7 +10338,7 @@ Array of recorded log messages.
 
 ### Source: `docs/api/functions/getVersion.md`
 
-[**Red5 Pro WebRTC SDK v16.0.0-beta.7**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
 
 ***
 
@@ -10356,7 +10356,7 @@ Get the version of the SDK.
 
 ### Source: `docs/api/functions/setLogLevel.md`
 
-[**Red5 Pro WebRTC SDK v16.0.0-beta.7**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
 
 ***
 
@@ -10382,11 +10382,11 @@ Get the version of the SDK.
 
 ### Source: `docs/api/globals.md`
 
-[**Red5 Pro WebRTC SDK v16.0.0-beta.7**](README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](README.md)
 
 ***
 
-# Red5 Pro WebRTC SDK v16.0.0-beta.7
+# Red5 Pro WebRTC SDK v16.1.0-beta.1
 
 Red5 Pro WebRTC SDK
 
@@ -10469,7 +10469,7 @@ Red5 Pro WebRTC SDK
 
 ### Source: `docs/api/interfaces/EventEmitterInterface.md`
 
-[**Red5 Pro WebRTC SDK v16.0.0-beta.7**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
 
 ***
 
@@ -10543,7 +10543,7 @@ Dispatch an event to be handled by any assigned callbacks.
 
 ### Source: `docs/api/README.md`
 
-**Red5 Pro WebRTC SDK v16.0.0-beta.7**
+**Red5 Pro WebRTC SDK v16.1.0-beta.1**
 
 ***
 
@@ -10779,7 +10779,7 @@ The initialization configurations and relevant APIs available for each client ca
 
 ### Source: `docs/api/type-aliases/BandwidthConfig.md`
 
-[**Red5 Pro WebRTC SDK v16.0.0-beta.7**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
 
 ***
 
@@ -10803,7 +10803,7 @@ The initialization configurations and relevant APIs available for each client ca
 
 ### Source: `docs/api/type-aliases/HLSSubscriberConfigType.md`
 
-[**Red5 Pro WebRTC SDK v16.0.0-beta.7**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
 
 ***
 
@@ -10873,7 +10873,7 @@ The initialization configurations and relevant APIs available for each client ca
 
 ### Source: `docs/api/type-aliases/LiveSeekConfigType.md`
 
-[**Red5 Pro WebRTC SDK v16.0.0-beta.7**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
 
 ***
 
@@ -10891,7 +10891,7 @@ The initialization configurations and relevant APIs available for each client ca
 
 ### Source: `docs/api/type-aliases/LiveSeekOptions.md`
 
-[**Red5 Pro WebRTC SDK v16.0.0-beta.7**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
 
 ***
 
@@ -10947,7 +10947,7 @@ The initialization configurations and relevant APIs available for each client ca
 
 ### Source: `docs/api/type-aliases/MediaConstraintRange.md`
 
-[**Red5 Pro WebRTC SDK v16.0.0-beta.7**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
 
 ***
 
@@ -10983,7 +10983,7 @@ The initialization configurations and relevant APIs available for each client ca
 
 ### Source: `docs/api/type-aliases/MediaConstraints.md`
 
-[**Red5 Pro WebRTC SDK v16.0.0-beta.7**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
 
 ***
 
@@ -11007,7 +11007,7 @@ The initialization configurations and relevant APIs available for each client ca
 
 ### Source: `docs/api/type-aliases/RTCPublisherConfigType.md`
 
-[**Red5 Pro WebRTC SDK v16.0.0-beta.7**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
 
 ***
 
@@ -11197,7 +11197,7 @@ The initialization configurations and relevant APIs available for each client ca
 
 ### Source: `docs/api/type-aliases/RTCSubscriberConfigType.md`
 
-[**Red5 Pro WebRTC SDK v16.0.0-beta.7**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
 
 ***
 
@@ -11371,7 +11371,7 @@ The initialization configurations and relevant APIs available for each client ca
 
 ### Source: `docs/api/type-aliases/RTCWhepSubscriberConfigType.md`
 
-[**Red5 Pro WebRTC SDK v16.0.0-beta.7**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
 
 ***
 
@@ -11393,7 +11393,7 @@ The initialization configurations and relevant APIs available for each client ca
 
 ### Source: `docs/api/type-aliases/RTCWhipPublisherConfigType.md`
 
-[**Red5 Pro WebRTC SDK v16.0.0-beta.7**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
 
 ***
 
@@ -11415,7 +11415,7 @@ The initialization configurations and relevant APIs available for each client ca
 
 ### Source: `docs/api/type-aliases/StatsConfig.md`
 
-[**Red5 Pro WebRTC SDK v16.0.0-beta.7**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
 
 ***
 
@@ -11453,7 +11453,7 @@ Configuration for RTC Stats Monitoring.
 
 ### Source: `docs/api/type-aliases/VideoConstraints.md`
 
-[**Red5 Pro WebRTC SDK v16.0.0-beta.7**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
 
 ***
 
@@ -11489,7 +11489,7 @@ Configuration for RTC Stats Monitoring.
 
 ### Source: `docs/api/variables/Capability.md`
 
-[**Red5 Pro WebRTC SDK v16.0.0-beta.7**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
 
 ***
 
@@ -11511,7 +11511,7 @@ Configuration for RTC Stats Monitoring.
 
 ### Source: `docs/api/variables/default.md`
 
-[**Red5 Pro WebRTC SDK v16.0.0-beta.7**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
 
 ***
 
@@ -11757,7 +11757,7 @@ Get the version of the SDK.
 
 ### Source: `docs/api/variables/defaultHLSSubscriberConfig.md`
 
-[**Red5 Pro WebRTC SDK v16.0.0-beta.7**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
 
 ***
 
@@ -11769,7 +11769,7 @@ Get the version of the SDK.
 
 ### Source: `docs/api/variables/defaultLiveSeekConfig.md`
 
-[**Red5 Pro WebRTC SDK v16.0.0-beta.7**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
 
 ***
 
@@ -11781,7 +11781,7 @@ Get the version of the SDK.
 
 ### Source: `docs/api/variables/defaultStatsConfig.md`
 
-[**Red5 Pro WebRTC SDK v16.0.0-beta.7**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
 
 ***
 
@@ -11793,7 +11793,7 @@ Get the version of the SDK.
 
 ### Source: `docs/api/variables/defaultWhepSubscriberConfig.md`
 
-[**Red5 Pro WebRTC SDK v16.0.0-beta.7**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
 
 ***
 
@@ -11805,7 +11805,7 @@ Get the version of the SDK.
 
 ### Source: `docs/api/variables/defaultWhipPublisherConfig.md`
 
-[**Red5 Pro WebRTC SDK v16.0.0-beta.7**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
 
 ***
 
@@ -11817,7 +11817,7 @@ Get the version of the SDK.
 
 ### Source: `docs/api/variables/LOG_LEVELS.md`
 
-[**Red5 Pro WebRTC SDK v16.0.0-beta.7**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
 
 ***
 
@@ -11855,7 +11855,7 @@ Get the version of the SDK.
 
 ### Source: `docs/api/variables/PlaybackStateReadableMap.md`
 
-[**Red5 Pro WebRTC SDK v16.0.0-beta.7**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
 
 ***
 
@@ -12838,7 +12838,7 @@ const config = {
   publishKey: 'pub-c-XXXX',
   subscribeKey: 'sub-c-XXXX',
   userId: 'user-1234',
-  channelId: 'red5',
+  roomId: 'red5',
   authToken: 'XXXX='
 }
 const pubnubClient = new PubNubClient()
@@ -12847,22 +12847,22 @@ pubnub.on('*', (event) => {
   console.log(`[PubNub]:: ${type}`, data)
 })
 await pubnub.init(pubnubConfig)
-await pubnub.subscribe(channelId)
+await pubnub.subscribe(roomId)
 ```
 
 ## Messaging API
 
 The following methods relate to the Message API of the `PubNubClient` that integrates with the PubNub service.
 
-### subscribe(channelId: string)
+### subscribe(roomId: string)
 
-Request to subscribe to messages on the given channel. In most cases, this will be the same as the `channelId` provided in the `init()` configuration, as that is used to generate a valid token in the system.
+Request to subscribe to messages on the given channel. In most cases, this will be the same as the `roomId` provided in the `init()` configuration, as that is used to generate a valid token in the system.
 
-### publishMessage(channelId: string, message: any)
+### publishMessage(roomId: string, message: any)
 
-Request to deliver a message on the target channel. In most cases, this will be the same as the `channelId` provided in the `init()` configuration, as that is used to generate a valid token in the system.
+Request to deliver a message on the target channel. In most cases, this will be the same as the `roomId` provided in the `init()` configuration, as that is used to generate a valid token in the system.
 
-### unsubscribe(channelId: string)
+### unsubscribe(roomId: string)
 
 Request to stop receiving messages on the given channel.
 
@@ -12882,7 +12882,7 @@ When using the `init()` call of a `PubNubClient`, the following initialization p
 | `publishKey` | [x] | _None_ | The registered publish key from PubNub. This can be found in your [Red5 Cloud](https://cloud.red5.net) deployment. |
 | `subscribeKey` | [x] | _None_ | The registered subscribe key from PubNub. This can be found in your [Red5 Cloud](https://cloud.red5.net) deployment. |
 | `userId` | [x] | Auto-generated if not provided. | The associated User ID for PubNub. |
-| `channelId` | [x] | `red5` | Default Channel ID to subscribe to in PubNub messaging. |
+| `roomId` | [x] | `red5` | Default Channel ID to subscribe to in PubNub messaging. |
 | `expiryMinutes` | [-] | `120` | Default expiration of issued token associated with client. |
 | `authToken` | [-] | _None_ | Optional authentication token issues from PubNub - if known. |
 | `cloudEndpoint` | [-] | _None_ | Optional endpoint of Red5 Cloud deployment to attempt access of `authToken` from PubNub system. |
@@ -13441,7 +13441,7 @@ Exposed on the [init configuration](#init-configuration) is the `pubnub` attribu
 | `publishKey` | [x] | _None_ | The registered publish key from PubNub. This can be found in your [Red5 Cloud](https://cloud.red5.net) deployment. |
 | `subscribeKey` | [x] | _None_ | The registered subscribe key from PubNub. This can be found in your [Red5 Cloud](https://cloud.red5.net) deployment. |
 | `userId` | [x] | Auto-generated if not provided. | The associated User ID for PubNub. |
-| `channelId` | [x] | `red5` | Default Channel ID to subscribe to in PubNub messaging. |
+| `roomId` | [x] | `red5` | Default Channel ID to subscribe to in PubNub messaging. |
 | `expiryMinutes` | [-] | `120` | Default expiration of issued token associated with client. |
 | `authToken` | [-] | _None_ | Optional authentication token issues from PubNub - if known. |
 | `cloudEndpoint` | [-] | _None_ | Optional endpoint of Red5 Cloud deployment to attempt access of `authToken` from PubNub system. |
@@ -13468,11 +13468,11 @@ To learn more about the Backend SDKs and authentication token generation, [pleas
 
 Once PubNub authentication and connection has been established through initialization, the following API can be used to as it relates to sending and receiving messages:
 
-### subscribePubNub(channelId: string, options: any | undefined)
+### subscribePubNub(roomId: string, options: any | undefined)
 
 Request to subscribe to target channel with optional `options`.
 
-### sendPubNub(channelId: string, message: any)
+### sendPubNub(roomId: string, message: any)
 
 Request to publish a message on the target channel.
 
@@ -14021,7 +14021,7 @@ Exposed on the [init configuration](#init-configuration) is the `pubnub` attribu
 | `publishKey` | [x] | _None_ | The registered publish key from PubNub. This can be found in your [Red5 Cloud](https://cloud.red5.net) deployment. |
 | `subscribeKey` | [x] | _None_ | The registered subscribe key from PubNub. This can be found in your [Red5 Cloud](https://cloud.red5.net) deployment. |
 | `userId` | [x] | Auto-generated if not provided. | The associated User ID for PubNub. |
-| `channelId` | [x] | `red5` | Default Channel ID to subscribe to in PubNub messaging. |
+| `roomId` | [x] | `red5` | Default Channel ID to subscribe to in PubNub messaging. |
 | `expiryMinutes` | [-] | `120` | Default expiration of issued token associated with client. |
 | `authToken` | [-] | _None_ | Optional authentication token issues from PubNub - if known. |
 | `cloudEndpoint` | [-] | _None_ | Optional endpoint of Red5 Cloud deployment to attempt access of `authToken` from PubNub system. |
@@ -14048,11 +14048,11 @@ To learn more about the Backend SDKs and authentication token generation, [pleas
 
 Once PubNub authentication and connection has been established through initialization, the following API can be used to as it relates to sending and receiving messages:
 
-### subscribePubNub(channelId: string, options: any | undefined)
+### subscribePubNub(roomId: string, options: any | undefined)
 
 Request to subscribe to target channel with optional `options`.
 
-### sendPubNub(channelId: string, message: any)
+### sendPubNub(roomId: string, message: any)
 
 Request to publish a message on the target channel.
 
