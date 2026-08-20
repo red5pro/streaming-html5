@@ -46,21 +46,14 @@ import {
 import { wireExampleLog } from '@/lib/example-log'
 import { updateSubscriberLink } from '@/lib/example-links'
 import { postSocialPusherProvision } from '@/lib/social-pusher-provision'
-import { createProvision } from '@/service/restreamer'
 
 const sdk = window.red5prosdk
 sdk.setLogLevel('debug')
 
-const DEFAULT_PASSWORD = 'changeme'
-const DEFAULT_DESTINATION_URI = 'rtmp://localhost/live'
+// TODO: Reset.
+const DEFAULT_DESTINATION_URI = 'rtmp://todd-ord.ci.red5.net:1935/live'
 
 let settings = loadSettings()
-if (!settings.useStreamManager) {
-  const standaloneOptionEls = document.querySelectorAll('.standalone-option')
-  Array.from(standaloneOptionEls).forEach((el) => {
-    el.classList.remove('is-hidden')
-  })
-}
 applyTheme(settings.theme)
 
 let publisher: WHIPClient | null = null
@@ -77,9 +70,6 @@ const publishConfigSectionEl = document.getElementById('publish-config-section')
 const socialPusherSectionEl = document.getElementById('social-pusher-section') as HTMLElement
 const socialPusherStatusEl = document.getElementById('social-pusher-status') as HTMLSpanElement
 const socialPusherFormEl = document.getElementById('social-pusher-form') as HTMLFormElement
-const socialPusherPasswordInputEl = document.getElementById(
-  'social-pusher-password-input'
-) as HTMLInputElement
 const socialPusherDestinationUriInputEl = document.getElementById(
   'social-pusher-destination-uri-input'
 ) as HTMLInputElement
@@ -129,7 +119,6 @@ function syncStreamKeyDefault(): void {
 function syncSocialPusherFormState(forwarding: boolean): void {
   isForwarding = forwarding
   const inputsDisabled = forwarding || socialPusherRequestInFlight
-  socialPusherPasswordInputEl.disabled = inputsDisabled
   socialPusherDestinationUriInputEl.disabled = inputsDisabled
   socialPusherStreamKeyInputEl.disabled = inputsDisabled
   socialPusherSubmitBtn.textContent = forwarding ? 'Stop Forwarding' : 'Start Forwarding'
@@ -146,7 +135,6 @@ function syncSocialPusherFormState(forwarding: boolean): void {
 
 function resetSocialPusherForm(): void {
   socialPusherRequestInFlight = false
-  socialPusherPasswordInputEl.value = DEFAULT_PASSWORD
   socialPusherDestinationUriInputEl.value = DEFAULT_DESTINATION_URI
   syncStreamKeyDefault()
   syncSocialPusherFormState(false)
@@ -341,23 +329,11 @@ async function handleSocialPusherSubmit(event: SubmitEvent): Promise<void> {
   if (!publisher || socialPusherRequestInFlight) return
   if (!ensureCoreSettings(settings)) return
 
-  const { app, streamName } = settings
-  const streamGuid = `${app}/${streamName}`
-  const password = socialPusherPasswordInputEl.value
   const destinationUri = socialPusherDestinationUriInputEl.value.trim()
   const streamKey = socialPusherStreamKeyInputEl.value.trim()
   const startingForward = !isForwarding
   const actionLabel = startingForward ? 'provision.create' : 'provision.delete'
 
-  // TODO
-  // @ts-expect-error - global variable for debugging
-  const provisionResult = await createProvision(settings, streamKey, streamGuid, destinationUri)
-
-  if (!password) {
-    log('Password is required for social forwarding.', 'error')
-    setSocialPusherStatus('Password required', 'error')
-    return
-  }
   if (!destinationUri) {
     log('Destination URI is required for social forwarding.', 'error')
     setSocialPusherStatus('Destination URI required', 'error')
@@ -375,26 +351,17 @@ async function handleSocialPusherSubmit(event: SubmitEvent): Promise<void> {
     startingForward ? 'Starting forwarding...' : 'Stopping forwarding...',
     'connecting'
   )
-  log(
-    `Sending ${actionLabel} request${settings.useStreamManager ? ' via Stream Manager forward proxy' : ''}...`
-  )
+  log(`Sending ${actionLabel} restream request...`)
 
   try {
     const result = await postSocialPusherProvision(
       {
         settings,
-        password,
         destinationUri,
         streamKey,
         isForwarding,
       },
-      ({ attempt, maxAttempts, status, willRetry }) => {
-        if (willRetry) {
-          const message = `Gateway timeout (504). Retrying in 10s (${attempt}/${maxAttempts})...`
-          setSocialPusherStatus(message, 'connecting')
-          log(message)
-          return
-        }
+      ({ status }) => {
         if (status > 0) {
           log(`Social pusher response: ${status}`)
         }

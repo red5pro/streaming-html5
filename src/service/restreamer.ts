@@ -77,6 +77,7 @@ export async function createProvision(
   guid: string,
   streamGuid: string,
   destinationUri: string,
+  immediate: boolean = false,
   persist: boolean = false
 ): Promise<unknown> {
   const { host, app, streamName, useStreamManager, streamManagerApiVersion, nodeGroupName } =
@@ -86,19 +87,23 @@ export async function createProvision(
   let headers: Record<string, string> = {
     'Content-Type': 'application/json',
   }
+  let payload: RequestInit = {
+    method: 'POST',
+    headers,
+  }
   let data = {
     guid,
     context: app,
     name: streamName,
     level: 0,
     parameters: {
-      action: 'create',
       type: 'rtmp-push',
-      rtmpUri: `${destinationUri}/${app}/${guid}`,
-      immediate: 'true',
+      action: 'create',
+      rtmpUri: `${destinationUri}/${guid}`,
+      immediate: immediate ? 'true' : undefined,
       attempts: '3',
       delayS: '10',
-      persist: persist ? 'true' : 'false',
+      persist: persist ? 'true' : undefined,
     },
   }
   if (useStreamManager) {
@@ -106,10 +111,13 @@ export async function createProvision(
     const token = await authenticate(username, password, settings)
     // https://as-test1.example.org/as/v1/streams/provision/nodegroup1
     url = `${protocol}://${host}:${port}/as/${streamManagerApiVersion}/streams/provision/${nodeGroupName}`
-    headers = {
-      ...headers,
+    payload.headers = {
+      ...payload.headers,
       Authorization: `Bearer ${token}`,
     }
+    payload.credentials = 'include'
+    // @ts-expect-error - withCredentials is not supported in the types
+    payload.withCredentials = true
     data = {
       // @ts-expect-error - provisionGuid is not supported in the types
       provisionGuid: guid,
@@ -119,11 +127,11 @@ export async function createProvision(
           abrLevel: 0,
           camParams: {
             properties: {
-              action: 'create',
               type: 'rtmp-push',
+              action: 'create',
               rtmpUri: `${destinationUri}/${guid}`,
-              immediate: 'true',
-              persist: persist ? 'true' : 'false',
+              immediate: immediate ? 'true' : undefined,
+              persist: persist ? 'true' : undefined,
               attempts: '3',
               delayS: '10',
             },
@@ -132,28 +140,22 @@ export async function createProvision(
       ],
     }
   }
-  const response = await fetch(url, {
-    method: 'POST',
-    headers,
-    credentials: 'include',
-    // @ts-expect-error - withCredentials is not supported in the types
-    withCredentials: true,
-    body: JSON.stringify(data),
-  })
+  payload.body = JSON.stringify(data)
+  const response = await fetch(url, payload)
   if (!response.ok) {
     throw new Error(`Failed to create provision: ${response.statusText}`)
   }
-  let payload = undefined
+  let result = undefined
   try {
-    payload = await response.json()
+    result = await response.json()
   } catch (error: unknown) {
     try {
-      payload = JSON.parse(await response.text())
+      result = JSON.parse(await response.text())
     } catch (_error: unknown) {
       throw new Error(`Failed to parse response: ${error ?? _error}`)
     }
   }
-  return payload
+  return result
 }
 
 /**
@@ -170,50 +172,55 @@ export async function createProvision(
   }
 */
 export async function deleteProvision(settings: Settings, guid: string): Promise<unknown> {
-  const { host, app, useStreamManager, streamManagerApiVersion, nodeGroupName } = settings
+  const { host, app, streamName, useStreamManager, streamManagerApiVersion, nodeGroupName } =
+    settings
   const { protocol, port } = resolveConnectionFromHost(host)
   let url = `${protocol}://${host}:${port}/${app}/restream`
   let headers: Record<string, string> = {
     'Content-Type': 'application/json',
+  }
+  const data = {
+    guid,
+    context: app,
+    name: streamName,
+    level: 0,
+    parameters: {
+      type: 'rtmp-push',
+      action: 'kill',
+    },
+  }
+  let payload: RequestInit = {
+    method: 'POST',
+    headers,
+    body: JSON.stringify(data),
   }
   if (useStreamManager) {
     const { username, password } = resolveStreamManagerAdminCredentialsFromSettings(settings)!
     const token = await authenticate(username, password, settings)
     // https://as-test1.example.org/as/v1/streams/provision/nodegroup1/guid
     url = `${protocol}://${host}:${port}/as/${streamManagerApiVersion}/streams/provision/${nodeGroupName}/${guid}`
-    headers = {
-      ...headers,
+    payload.headers = {
+      ...payload.headers,
       Authorization: `Bearer ${token}`,
     }
-  }
-  const data = {
-    guid,
-    parameters: {
-      action: 'kill',
-      type: 'rtmp-push',
-      persist: 'true',
-    },
-  }
-  const response = await fetch(url, {
-    method: 'DELETE',
-    headers,
-    credentials: 'include',
+    payload.credentials = 'include'
     // @ts-expect-error - withCredentials is not supported in the types
-    withCredentials: true,
-    body: JSON.stringify(data),
-  })
+    payload.withCredentials = true
+  }
+
+  const response = await fetch(url, payload)
   if (!response.ok) {
     throw new Error(`Failed to delete provision: ${response.statusText}`)
   }
-  let payload = undefined
+  let result = undefined
   try {
-    payload = await response.json()
+    result = await response.json()
   } catch (error: unknown) {
     try {
-      payload = JSON.parse(await response.text())
+      result = JSON.parse(await response.text())
     } catch (_error: unknown) {
       throw new Error(`Failed to parse response: ${error ?? _error}`)
     }
   }
-  return payload
+  return result
 }
