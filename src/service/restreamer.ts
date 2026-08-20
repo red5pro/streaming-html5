@@ -24,47 +24,6 @@ WHETHER IN  AN  ACTION  OF  CONTRACT,  TORT  OR  OTHERWISE,  ARISING  FROM,  OUT
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-/**
- * Standalone
- {
-    "guid": "restream1",
-    "context": "live",
-    "name": "stream1",
-    "level": 0,
-    "parameters": {
-        "action": "create",
-        "type": "rtmp-push",
-        "rtmpUri": "rtmp://localhost/live/social1",
-        "immediate": "false",
-        "attempts": "3",
-        "delayS": "10",
-        "persist": "true"
-    }
-  }
-*/
-
-/**
- * SM
- {
-    "provisionGuid": "social1",
-    "streams": [
-        {
-            "streamGuid": "live/stream1",
-            "abrLevel": 0,
-            "camParams": {
-                "properties": {
-                    "action": "create",
-                    "type": "rtmp-push",
-                    "rtmpUri": "rtmp://localhost/live/social1",
-                    "immediate": "true",
-                    "persist": "false"
-                }
-            }
-        }
-    ]
-  }
-*/
-
 import {
   resolveConnectionFromHost,
   resolveStreamManagerAdminCredentialsFromSettings,
@@ -115,30 +74,32 @@ export async function createProvision(
       ...payload.headers,
       Authorization: `Bearer ${token}`,
     }
-    payload.credentials = 'include'
+    // payload.credentials = 'include'
     // @ts-expect-error - withCredentials is not supported in the types
     payload.withCredentials = true
-    data = {
-      // @ts-expect-error - provisionGuid is not supported in the types
-      provisionGuid: guid,
-      streams: [
-        {
-          streamGuid,
-          abrLevel: 0,
-          camParams: {
-            properties: {
-              type: 'rtmp-push',
-              action: 'create',
-              rtmpUri: `${destinationUri}/${guid}`,
-              immediate: immediate ? 'true' : undefined,
-              persist: persist ? 'true' : undefined,
-              attempts: '3',
-              delayS: '10',
+    // @ts-expect-error - data/streams is not supported in the types
+    data = [
+      {
+        provisionGuid: guid,
+        streams: [
+          {
+            streamGuid,
+            abrLevel: 0,
+            camParams: {
+              properties: {
+                type: 'rtmp-push',
+                action: 'create',
+                rtmpUri: `${destinationUri}/${guid}`,
+                immediate: immediate ? 'true' : undefined,
+                persist: persist ? 'true' : undefined,
+                attempts: '3',
+                delayS: '10',
+              },
             },
           },
-        },
-      ],
-    }
+        ],
+      },
+    ]
   }
   payload.body = JSON.stringify(data)
   const response = await fetch(url, payload)
@@ -158,19 +119,6 @@ export async function createProvision(
   return result
 }
 
-/**
- {
-    "guid": "restream1",
-    "context": "live",
-    "name": "stream1",
-    "level": 0,
-    "parameters": {
-        "action": "kill",
-        "type": "rtmp-push",
-        "persist": "true"
-    }
-  }
-*/
 export async function deleteProvision(settings: Settings, guid: string): Promise<unknown> {
   const { host, app, streamName, useStreamManager, streamManagerApiVersion, nodeGroupName } =
     settings
@@ -199,11 +147,12 @@ export async function deleteProvision(settings: Settings, guid: string): Promise
     const token = await authenticate(username, password, settings)
     // https://as-test1.example.org/as/v1/streams/provision/nodegroup1/guid
     url = `${protocol}://${host}:${port}/as/${streamManagerApiVersion}/streams/provision/${nodeGroupName}/${guid}`
+    payload.method = 'DELETE'
     payload.headers = {
       ...payload.headers,
       Authorization: `Bearer ${token}`,
     }
-    payload.credentials = 'include'
+    // payload.credentials = 'include'
     // @ts-expect-error - withCredentials is not supported in the types
     payload.withCredentials = true
   }
