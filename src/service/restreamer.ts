@@ -31,6 +31,21 @@ import {
 } from '@/settings'
 import { authenticate } from './stream-manager'
 
+export interface RestreamEndpoint {
+  guid: string
+  context: string
+  name: string
+  rtmpUri: string
+  persist?: string
+  isActive?: boolean
+  error?: string
+}
+
+export interface ListProvisionsResponse {
+  message?: string
+  endpoints?: RestreamEndpoint[]
+}
+
 export async function createProvision(
   settings: Settings,
   guid: string,
@@ -172,4 +187,73 @@ export async function deleteProvision(settings: Settings, guid: string): Promise
     }
   }
   return result
+}
+
+export async function listProvisions(settings: Settings): Promise<ListProvisionsResponse> {
+  const { host, app, streamName, useStreamManager, streamManagerApiVersion, nodeGroupName } =
+    settings
+  const { protocol, port } = resolveConnectionFromHost(host)
+  const streamGuid = `${app}/${streamName}`
+  let url = `${protocol}://${host}:${port}/${app}/restream`
+  let headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  }
+  let payload: RequestInit = {
+    method: 'POST',
+    headers,
+  }
+  let data = {
+    guid: streamGuid,
+    context: app,
+    name: streamName,
+    level: 0,
+    parameters: {
+      type: 'rtmp-push',
+      action: 'list',
+    },
+  }
+  if (useStreamManager) {
+    const { username, password } = resolveStreamManagerAdminCredentialsFromSettings(settings)!
+    const token = await authenticate(username, password, settings)
+    url = `${protocol}://${host}:${port}/as/${streamManagerApiVersion}/streams/provision/${nodeGroupName}`
+    payload.headers = {
+      ...payload.headers,
+      Authorization: `Bearer ${token}`,
+    }
+    // @ts-expect-error - withCredentials is not supported in the types
+    payload.withCredentials = true
+    // @ts-expect-error - data/streams is not supported in the types
+    data = [
+      {
+        streams: [
+          {
+            streamGuid,
+            abrLevel: 0,
+            camParams: {
+              properties: {
+                type: 'rtmp-push',
+                action: 'list',
+              },
+            },
+          },
+        ],
+      },
+    ]
+  }
+  payload.body = JSON.stringify(data)
+  const response = await fetch(url, payload)
+  if (!response.ok) {
+    throw new Error(`Failed to list provisions: ${response.statusText}`)
+  }
+  let result: ListProvisionsResponse | undefined = undefined
+  try {
+    result = (await response.json()) as ListProvisionsResponse
+  } catch (error: unknown) {
+    try {
+      result = JSON.parse(await response.text()) as ListProvisionsResponse
+    } catch (_error: unknown) {
+      throw new Error(`Failed to parse response: ${error ?? _error}`)
+    }
+  }
+  return result ?? {}
 }
