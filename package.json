@@ -1,50 +1,29 @@
 {
-  "name": "red5pro-html-sdk-testbed",
-  "version": "15.6.0",
-  "description": "Testbed examples for Red5 Pro HTML SDK",
-  "main": "src/js/index.js",
+  "name": "streaming-webrtc",
+  "version": "16.0.0",
+  "description": "Web-based testbed for Red5 SDK WHIP/WHEP client functionality",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "lint": "eslint src --ext .ts",
+    "format": "prettier --write src",
+    "check:license-headers": "node scripts/check-license-headers.mjs",
+    "check:license-headers:staged": "node scripts/check-license-headers.mjs --staged"
+  },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/infrared5/red5pro-html-sdk-testbed.git"
+    "url": "git+https://github.com/infrared5/streaming-webrtc.git"
   },
-  "keywords": [
-    "Red5",
-    "Red5Pro",
-    "Testbed",
-    "HTML",
-    "SDK"
-  ],
-  "author": "Infrared5, Inc.",
-  "license": "LICENSE",
-  "bugs": {
-    "url": "https://github.com/infrared5/red5pro-html-sdk-testbed/issues"
-  },
-  "homepage": "https://github.com/infrared5/red5pro-html-sdk-testbed#readme",
+  "license": "ISC",
   "devDependencies": {
-    "@babel/eslint-parser": "^7.17.0",
-    "babel-eslint": "^10.1.0",
-    "eslint": "^8.9.0",
-    "eslint-plugin-prettier": "^4.2.1",
-    "eslint-config-prettier": "^8.8.0",
-    "gulp": "^4.0.2",
-    "gulp-bump": "^2.4.0",
-    "gulp-compile-handlebars": "^0.6.1",
-    "gulp-rename": "^1.4.0",
-    "gulp-replace": "^1.0.0",
-    "mkdirp": "^1.0.4",
-    "prettier": "^2.8.7"
-  },
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "clean:build": "rm -rf build",
-    "clean:dist": "rm -rf dist",
-    "prebuild": "./scripts/inject-license.sh",
-    "build": "NODE_ENV=develop gulp build",
-    "predist": "npm run clean:dist && npm run prebuild",
-    "dist": "gulp bump-version && NODE_ENV=production gulp build",
-    "dist:webapp": "NODE_ENV=production gulp build:webapp"
-  },
-  "dependencies": {
-    "@babel/core": "^7.17.4"
+    "@types/node": "^22.19.17",
+    "@typescript-eslint/eslint-plugin": "^8.31.0",
+    "@typescript-eslint/parser": "^8.31.0",
+    "eslint": "^9.25.0",
+    "eslint-config-prettier": "^10.1.2",
+    "prettier": "^3.5.3",
+    "typescript": "^5.8.3",
+    "vite": "^6.3.1"
   }
 }

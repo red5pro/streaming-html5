@@ -1,0 +1,88 @@
+# LLM Docs Index
+
+- project: red5pro-html-sdk-ts
+- version: 16.0.0-beta.7
+- generated_at: 2026-08-14T13:57:45.338Z
+
+## Included Markdown Files
+
+- CHANGES.md
+- docs/api/_media/hls-subscriber.md
+- docs/api/_media/message-channel.md
+- docs/api/_media/moq-catalog.md
+- docs/api/_media/moq-publisher.md
+- docs/api/_media/moq-subscriber.md
+- docs/api/_media/pubnub-client.md
+- docs/api/_media/whep-client.md
+- docs/api/_media/whip-client.md
+- docs/api/classes/Event.md
+- docs/api/classes/EventEmitter.md
+- docs/api/classes/HLSSubscriber.md
+- docs/api/classes/LiveSeekClient.md
+- docs/api/classes/MessageChannel.md
+- docs/api/classes/MessageChannelEvent.md
+- docs/api/classes/MessageTransportStateEvent.md
+- docs/api/classes/MOQCatalog.md
+- docs/api/classes/MOQPublisher.md
+- docs/api/classes/MOQSubscriber.md
+- docs/api/classes/PlaybackController.md
+- docs/api/classes/PlaybackControls.md
+- docs/api/classes/PublisherEvent.md
+- docs/api/classes/PubNubClient.md
+- docs/api/classes/PubNubEvent.md
+- docs/api/classes/SourceHandler.md
+- docs/api/classes/SourceHandlerImpl.md
+- docs/api/classes/SubscriberEvent.md
+- docs/api/classes/WHEPClient.md
+- docs/api/classes/WHIPClient.md
+- docs/api/enumerations/MessageChannelEventTypes.md
+- docs/api/enumerations/MessageTransportStateEventTypes.md
+- docs/api/enumerations/PlaybackAudioEncoder.md
+- docs/api/enumerations/PlaybackState.md
+- docs/api/enumerations/PlaybackVideoEncoder.md
+- docs/api/enumerations/PublishAudioEncoder.md
+- docs/api/enumerations/PublisherEventTypes.md
+- docs/api/enumerations/PublishVideoEncoder.md
+- docs/api/enumerations/PubNubEventTypes.md
+- docs/api/enumerations/RTCPublisherEventTypes.md
+- docs/api/enumerations/RTCSubscriberEventTypes.md
+- docs/api/enumerations/StatsEndpointType.md
+- docs/api/enumerations/SubscriberEventTypes.md
+- docs/api/enumerations/WebRTCConnectionEventTypes.md
+- docs/api/functions/getRecordedLogs.md
+- docs/api/functions/getVersion.md
+- docs/api/functions/setLogLevel.md
+- docs/api/globals.md
+- docs/api/interfaces/EventEmitterInterface.md
+- docs/api/README.md
+- docs/api/type-aliases/BandwidthConfig.md
+- docs/api/type-aliases/HLSSubscriberConfigType.md
+- docs/api/type-aliases/LiveSeekConfigType.md
+- docs/api/type-aliases/LiveSeekOptions.md
+- docs/api/type-aliases/MediaConstraintRange.md
+- docs/api/type-aliases/MediaConstraints.md
+- docs/api/type-aliases/RTCPublisherConfigType.md
+- docs/api/type-aliases/RTCSubscriberConfigType.md
+- docs/api/type-aliases/RTCWhepSubscriberConfigType.md
+- docs/api/type-aliases/RTCWhipPublisherConfigType.md
+- docs/api/type-aliases/StatsConfig.md
+- docs/api/type-aliases/VideoConstraints.md
+- docs/api/variables/Capability.md
+- docs/api/variables/default.md
+- docs/api/variables/defaultHLSSubscriberConfig.md
+- docs/api/variables/defaultLiveSeekConfig.md
+- docs/api/variables/defaultStatsConfig.md
+- docs/api/variables/defaultWhepSubscriberConfig.md
+- docs/api/variables/defaultWhipPublisherConfig.md
+- docs/api/variables/LOG_LEVELS.md
+- docs/api/variables/PlaybackStateReadableMap.md
+- docs/hls-subscriber.md
+- docs/message-channel.md
+- docs/moq-catalog.md
+- docs/moq-publisher.md
+- docs/moq-subscriber.md
+- docs/pubnub-client.md
+- docs/whep-client.md
+- docs/whip-client.md
+- MIGRATION_GUIDE.md
+- README.md

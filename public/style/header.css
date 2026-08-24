@@ -1,0 +1,429 @@
+/*
+Copyright © 2015 Infrared5, Inc. All rights reserved.
+
+The accompanying code comprising examples for use solely in conjunction with Red5 Pro (the "Example Code")
+is  licensed  to  you  by  Infrared5  Inc.  in  consideration  of  your  agreement  to  the  following
+license terms  and  conditions.  Access,  use,  modification,  or  redistribution  of  the  accompanying
+code  constitutes your acceptance of the following license terms and conditions.
+
+Permission is hereby granted, free of charge, to you to use the Example Code and associated documentation
+files (collectively, the "Software") without restriction, including without limitation the rights to use,
+copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit
+persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The Software shall be used solely in conjunction with Red5 Pro. Red5 Pro is licensed under a separate end
+user  license  agreement  (the  "EULA"),  which  must  be  executed  with  Infrared5,  Inc.
+An  example  of  the EULA can be found on our website at: https://account.red5.net/assets/LICENSE.txt.
+
+The above copyright notice and this license shall be included in all copies or portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,  INCLUDING  BUT
+NOT  LIMITED  TO  THE  WARRANTIES  OF  MERCHANTABILITY, FITNESS  FOR  A  PARTICULAR  PURPOSE  AND
+NONINFRINGEMENT.   IN  NO  EVENT  SHALL INFRARED5, INC. BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+WHETHER IN  AN  ACTION  OF  CONTRACT,  TORT  OR  OTHERWISE,  ARISING  FROM,  OUT  OF  OR  IN CONNECTION
+WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
+
+:host {
+  display: block;
+  position: sticky;
+  z-index: 100;
+  font-family:
+    'Clash Grotesk',
+    system-ui,
+    -apple-system,
+    sans-serif;
+}
+
+.header-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.25rem;
+  height: 52px;
+  background: #0c0c0c;
+  color: #ffffff;
+  border-bottom: 1px solid #1a1a1a;
+  gap: 1rem;
+}
+
+.header-bar__brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.9rem;
+  color: #ffffff;
+  text-decoration: none;
+  white-space: nowrap;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.header-bar__brand-logo {
+  height: 26px;
+  width: auto;
+  flex-shrink: 0;
+}
+
+.header-bar__nav {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-size: 0.8rem;
+  color: #9ca3af;
+}
+
+.header-bar__nav a {
+  color: #9ca3af;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.header-bar__nav a:hover {
+  color: #ffffff;
+}
+
+.toggle-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: none;
+  border: 1px solid #333333;
+  border-radius: 999px;
+  color: #9ca3af;
+  font-size: 0.78rem;
+  font-weight: 500;
+  padding: 0.3rem 0.8rem;
+  cursor: pointer;
+  transition:
+    border-color 0.15s,
+    color 0.15s;
+  white-space: nowrap;
+  font-family: inherit;
+  letter-spacing: 0.02em;
+}
+
+.toggle-btn:hover {
+  border-color: #666666;
+  color: #ffffff;
+}
+
+.toggle-btn__icon {
+  transition: transform 0.2s;
+  font-style: normal;
+  font-size: 1rem;
+}
+
+.toggle-btn__icon.open {
+  transform: rotate(180deg);
+}
+
+.settings-panel {
+  background: #111111;
+  border-bottom: 1px solid #1a1a1a;
+  overflow: hidden;
+  max-height: 0;
+  transition:
+    max-height 0.25s ease,
+    padding 0.25s ease;
+  padding: 0 1.5rem;
+}
+
+.settings-panel.open {
+  max-height: fit-content;
+  padding: 1.25rem 1.5rem;
+}
+
+.settings-panel__sections {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.settings-panel__section {
+  background: #0f0f0f;
+  border: 1px solid #232323;
+  border-radius: 8px;
+  padding: 0.75rem;
+}
+
+.settings-panel__section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.65rem;
+}
+
+.settings-panel__section-title {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.settings-panel__row {
+  display: flex;
+  gap: 0.85rem;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+
+.settings-panel__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 220px;
+  flex: 1 1 0;
+}
+
+.settings-panel__field--grow {
+  flex: 1 1 100%;
+  min-width: 0;
+}
+
+.settings-panel__label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #6c757d;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.settings-panel__input {
+  background: #1a1a1a;
+  border: 1px solid #333333;
+  border-radius: 6px;
+  color: #f1f5f9;
+  font-size: 0.85rem;
+  font-family: 'IBM Plex Mono', ui-monospace, 'SF Mono', monospace;
+  padding: 0.5rem 0.75rem;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.settings-panel__input:focus {
+  border-color: #db1f26;
+}
+
+.settings-panel__input::placeholder {
+  color: #4b5563;
+}
+
+.settings-panel__password-wrap {
+  position: relative;
+}
+
+.settings-panel__input--password {
+  padding-right: 2.2rem;
+}
+
+.settings-panel__password-toggle {
+  position: absolute;
+  right: 0.4rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  font-size: 0.95rem;
+  line-height: 1;
+  padding: 0.2rem;
+  cursor: pointer;
+}
+
+.settings-panel__password-toggle:hover {
+  color: #e2e8f0;
+}
+
+.settings-panel__password-toggle:disabled {
+  color: #4b5563;
+  cursor: not-allowed;
+}
+
+.settings-panel__toggle {
+  gap: 0.5rem;
+}
+
+.settings-panel__toggle-text {
+  color: #cbd5e1;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.settings-panel__dependent-row.is-hidden {
+  display: none;
+}
+
+.is-hidden {
+  display: none !important;
+}
+
+.settings-panel__select-wrap {
+  position: relative;
+}
+
+.settings-panel__inline-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.settings-panel__inline-row .settings-panel__select-wrap {
+  flex: 1 1 auto;
+}
+
+.settings-panel__select-wrap::after {
+  content: '▾';
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #6c757d;
+  pointer-events: none;
+  font-size: 0.7rem;
+  line-height: 1;
+}
+
+.settings-panel__select {
+  background: #1a1a1a;
+  border: 1px solid #333333;
+  border-radius: 6px;
+  color: #f1f5f9;
+  font-size: 0.85rem;
+  font-family: 'IBM Plex Mono', ui-monospace, 'SF Mono', monospace;
+  padding: 0.5rem 2rem 0.5rem 0.75rem;
+  outline: none;
+  appearance: none;
+  cursor: pointer;
+  transition: border-color 0.15s;
+  width: 100%;
+}
+
+.settings-panel__select:focus {
+  border-color: #db1f26;
+}
+
+.settings-panel__select option {
+  background: #1a1a1a;
+  color: #f1f5f9;
+}
+
+.settings-panel__icon-btn {
+  width: 2rem;
+  height: 2rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  border: 1px solid #333333;
+  background: #1a1a1a;
+  color: #94a3b8;
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    border-color 0.15s,
+    color 0.15s,
+    background 0.15s;
+}
+
+.settings-panel__icon-btn:hover:not(:disabled) {
+  border-color: #666666;
+  color: #ffffff;
+}
+
+.settings-panel__icon-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+}
+
+.theme-toggle__track {
+  position: relative;
+  width: 32px;
+  height: 18px;
+  background: #333333;
+  border-radius: 999px;
+  transition: background 0.2s;
+  flex-shrink: 0;
+  border: 1px solid #444444;
+}
+
+.theme-toggle__track.on {
+  background: #db1f26;
+  border-color: #db1f26;
+}
+
+.theme-toggle__thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 12px;
+  height: 12px;
+  background: #ffffff;
+  border-radius: 50%;
+  transition: transform 0.2s;
+}
+
+.theme-toggle__track.on .theme-toggle__thumb {
+  transform: translateX(14px);
+}
+
+.settings-panel__actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  justify-content: flex-end;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.4rem 1.1rem;
+  border-radius: 999px;
+  font-family: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition:
+    background 0.15s,
+    color 0.15s,
+    border-color 0.15s;
+  white-space: nowrap;
+  letter-spacing: 0.02em;
+}
+
+.btn--primary {
+  background: #db1f26;
+  color: #ffffff;
+}
+
+.btn--primary:hover {
+  background: #b91c1c;
+}
+
+.btn--ghost {
+  background: transparent;
+  border: 1px solid #333333;
+  color: #9ca3af;
+}
+
+.btn--ghost:hover {
+  border-color: #666666;
+  color: #ffffff;
+}
+
+.fill-width {
+  width: 100%;
+}

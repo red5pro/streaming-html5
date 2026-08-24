@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+echo "[pre-commit] Checking license headers on staged files..."
+node scripts/check-license-headers.mjs --staged
+
+echo "[pre-commit] Running build..."
+npm run build

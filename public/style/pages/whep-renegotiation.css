@@ -1,0 +1,405 @@
+/*
+Copyright © 2015 Infrared5, Inc. All rights reserved.
+
+The accompanying code comprising examples for use solely in conjunction with Red5 Pro (the "Example Code")
+is  licensed  to  you  by  Infrared5  Inc.  in  consideration  of  your  agreement  to  the  following
+license terms  and  conditions.  Access,  use,  modification,  or  redistribution  of  the  accompanying
+code  constitutes your acceptance of the following license terms and conditions.
+
+Permission is hereby granted, free of charge, to you to use the Example Code and associated documentation
+files (collectively, the "Software") without restriction, including without limitation the rights to use,
+copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit
+persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The Software shall be used solely in conjunction with Red5 Pro. Red5 Pro is licensed under a separate end
+user  license  agreement  (the  "EULA"),  which  must  be  executed  with  Infrared5,  Inc.
+An  example  of  the EULA can be found on our website at: https://account.red5.net/assets/LICENSE.txt.
+
+The above copyright notice and this license shall be included in all copies or portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,  INCLUDING  BUT
+NOT  LIMITED  TO  THE  WARRANTIES  OF  MERCHANTABILITY, FITNESS  FOR  A  PARTICULAR  PURPOSE  AND
+NONINFRINGEMENT.   IN  NO  EVENT  SHALL INFRARED5, INC. BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+WHETHER IN  AN  ACTION  OF  CONTRACT,  TORT  OR  OTHERWISE,  ARISING  FROM,  OUT  OF  OR  IN CONNECTION
+WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
+
+/* ── Layout ──────────────────────────────────────────────────────────────── */
+
+.whep-renegotiation-layout {
+  max-width: 720px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+/* ── Media panel ─────────────────────────────────────────────────────────── */
+
+.whep-renegotiation-layout .media-panel {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg-card);
+  padding: 0.85rem;
+}
+
+.whep-renegotiation-layout .media-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.whep-renegotiation-layout .section-title {
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* ── Testing steps ───────────────────────────────────────────────────────── */
+
+.testing-steps {
+  margin: 0 0 1rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg-secondary);
+}
+
+.testing-steps__title {
+  margin: 0 0 0.65rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.testing-steps__list {
+  margin: 0;
+  padding-left: 1.25rem;
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+/* ── Video ───────────────────────────────────────────────────────────────── */
+
+#subscriber-video {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: 8px;
+  background: #000;
+  margin-bottom: 0.75rem;
+}
+
+/* ── Renegotiation config form ───────────────────────────────────────────── */
+
+.renegotiation-config-section {
+  margin-bottom: 0.85rem;
+  transition: opacity 0.15s ease;
+}
+
+.renegotiation-config-section.is-disabled {
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.renegotiation-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.renegotiation-form__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.renegotiation-form__label {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+}
+
+.renegotiation-form__select {
+  width: 100%;
+  padding: 0.45rem 0.55rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg-card);
+  color: var(--text-primary);
+  font-size: 0.875rem;
+}
+
+.renegotiation-form__select:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* ── Reconnection info ───────────────────────────────────────────────────── */
+
+.whep-renegotiation-layout .reconnection-info {
+  margin: 0.85rem 0 0;
+  padding-top: 0.85rem;
+  border-top: 1px solid var(--border);
+  font-size: 0.82rem;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+}
+
+/* ── Connection Health panel ─────────────────────────────────────────────── */
+
+.connection-health {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.connection-health.is-hidden {
+  display: none;
+}
+
+/* header bar */
+.connection-health__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.65rem 0.9rem;
+  background: #1a1b1e;
+}
+
+.connection-health__title {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #f0f0f0;
+  letter-spacing: 0.01em;
+}
+
+/* status badge */
+.connection-health__badge {
+  padding: 0.2rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.connection-health__badge--ok {
+  background: rgba(34, 197, 94, 0.18);
+  color: #22c55e;
+}
+
+.connection-health__badge--warning {
+  background: #f59e0b;
+  color: #fff;
+}
+
+.connection-health__badge--critical {
+  background: #ef4444;
+  color: #fff;
+}
+
+/* 2 × 2 metric grid */
+.connection-health__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background: var(--bg-card);
+}
+
+.connection-health__cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 1rem 0.75rem 0.9rem;
+  border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.connection-health__cell:nth-child(even) {
+  border-right: none;
+}
+
+.connection-health__cell:nth-last-child(-n + 2) {
+  border-bottom: none;
+}
+
+.connection-health__cell-label {
+  font-size: 0.63rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  margin-bottom: 0.4rem;
+}
+
+.connection-health__cell-count {
+  font-size: 1.65rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1;
+}
+
+.connection-health__cell-count[data-severity='critical'] {
+  color: #ef4444;
+}
+
+.connection-health__cell-count[data-severity='severe'] {
+  color: #ef4444;
+}
+
+.connection-health__cell-count[data-severity='poor'] {
+  color: #f59e0b;
+}
+
+.connection-health__cell-count[data-severity='degrading'] {
+  color: #f59e0b;
+}
+
+.connection-health__cell-count[data-severity='warning'] {
+  color: #f59e0b;
+}
+
+.connection-health__cell-severity {
+  margin-top: 0.3rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.connection-health__cell-severity--critical {
+  color: #ef4444;
+}
+
+.connection-health__cell-severity--severe {
+  color: #ef4444;
+}
+
+.connection-health__cell-severity--poor {
+  color: #f59e0b;
+}
+
+.connection-health__cell-severity--degrading {
+  color: #f59e0b;
+}
+
+.connection-health__cell-severity--healthy {
+  color: #22c55e;
+}
+
+.connection-health__cell-severity--warning {
+  color: #f59e0b;
+}
+
+.connection-health__cell-severity.is-hidden {
+  display: none;
+}
+
+.connection-health__cell-detail {
+  margin-top: 0.15rem;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+.connection-health__cell-detail.is-hidden {
+  display: none;
+}
+
+/* ── Event log ───────────────────────────────────────────────────────────── */
+
+.connection-health__log {
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border);
+}
+
+.connection-health__log-header {
+  padding: 0.45rem 0.9rem;
+  font-size: 0.63rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  border-bottom: 1px solid var(--border);
+}
+
+.connection-health__log-entries {
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.connection-health__log-empty {
+  margin: 0;
+  padding: 0.75rem 0.9rem;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+/* individual entry */
+.health-log-entry {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  padding: 0.55rem 0.9rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.health-log-entry:last-child {
+  border-bottom: none;
+}
+
+.health-log-entry__dot {
+  flex-shrink: 0;
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  margin-top: 0.25rem;
+  background: #6b7280;
+}
+
+.health-log-entry--critical .health-log-entry__dot {
+  background: #ef4444;
+}
+
+.health-log-entry--warning .health-log-entry__dot {
+  background: #f59e0b;
+}
+
+.health-log-entry--ok .health-log-entry__dot {
+  background: #22c55e;
+}
+
+.health-log-entry__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.health-log-entry__row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.1rem;
+}
+
+.health-log-entry__title {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.health-log-entry__time {
+  flex-shrink: 0;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+.health-log-entry__desc {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}

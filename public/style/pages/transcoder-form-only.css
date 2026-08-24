@@ -1,0 +1,224 @@
+/*
+Copyright © 2015 Infrared5, Inc. All rights reserved.
+
+The accompanying code comprising examples for use solely in conjunction with Red5 Pro (the "Example Code")
+is  licensed  to  you  by  Infrared5  Inc.  in  consideration  of  your  agreement  to  the  following
+license terms  and  conditions.  Access,  use,  modification,  or  redistribution  of  the  accompanying
+code  constitutes your acceptance of the following license terms and conditions.
+
+Permission is hereby granted, free of charge, to you to use the Example Code and associated documentation
+files (collectively, the "Software") without restriction, including without limitation the rights to use,
+copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit
+persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The Software shall be used solely in conjunction with Red5 Pro. Red5 Pro is licensed under a separate end
+user  license  agreement  (the  "EULA"),  which  must  be  executed  with  Infrared5,  Inc.
+An  example  of  the EULA can be found on our website at: https://account.red5.net/assets/LICENSE.txt.
+
+The above copyright notice and this license shall be included in all copies or portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,  INCLUDING  BUT
+NOT  LIMITED  TO  THE  WARRANTIES  OF  MERCHANTABILITY, FITNESS  FOR  A  PARTICULAR  PURPOSE  AND
+NONINFRINGEMENT.   IN  NO  EVENT  SHALL INFRARED5, INC. BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+WHETHER IN  AN  ACTION  OF  CONTRACT,  TORT  OR  OTHERWISE,  ARISING  FROM,  OUT  OF  OR  IN CONNECTION
+WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
+
+.transcoder-form-only-layout {
+  max-width: 960px;
+}
+
+.transcoder-form-only-layout .media-panel {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg-card);
+  padding: 1.25rem 1.5rem;
+}
+
+.prompt {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.75rem;
+  padding: 0.45rem 0.65rem;
+  border-radius: 6px;
+  background: var(--bg-secondary);
+}
+
+.prompt:empty {
+  display: none;
+}
+
+.prompt--progress {
+  background: var(--status-connecting-bg);
+  color: var(--status-connecting-text);
+}
+
+.prompt--success {
+  background: var(--status-connected-bg);
+  color: var(--status-connected-text);
+}
+
+.prompt--failure {
+  background: var(--status-error-bg);
+  color: var(--status-error-text);
+}
+
+.abr-form__intro {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 1.25rem;
+}
+
+.abr-form__columns {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.abr-form__column {
+  border: none;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+}
+
+.abr-form__tier {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 0.85rem;
+  padding: 0;
+}
+
+.abr-form__field {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin-bottom: 0.65rem;
+}
+
+.abr-form__label {
+  flex: 0 0 4.5rem;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.abr-form__input {
+  flex: 1 1 auto;
+  min-width: 0;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text);
+  font-size: 0.85rem;
+  font-family: var(--font-mono);
+  padding: 0.35rem 0.5rem;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.abr-form__input:focus {
+  border-color: var(--accent);
+}
+
+.abr-form__actions {
+  display: flex;
+  justify-content: center;
+}
+
+.rtmp-url-section {
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+}
+
+.rtmp-url-section.is-hidden {
+  display: none;
+}
+
+.rtmp-url-section__title {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 0.75rem;
+}
+
+.rtmp-url-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.rtmp-url-list__item {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.55rem 0.65rem;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.rtmp-url-list__label {
+  flex: 0 0 2.75rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  letter-spacing: 0.06em;
+}
+
+.rtmp-url-list__guid {
+  flex: 0 0 auto;
+  font-size: 0.72rem;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.rtmp-url-list__url {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 0.78rem;
+  font-family: var(--font-mono);
+  color: var(--text);
+  word-break: break-all;
+}
+
+.rtmp-url-list__copy {
+  flex-shrink: 0;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-secondary);
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.3rem 0.55rem;
+  cursor: pointer;
+  transition:
+    border-color 0.15s,
+    color 0.15s;
+}
+
+.rtmp-url-list__copy:hover {
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+.rtmp-url-list__copy.is-copied {
+  border-color: var(--status-connected-text);
+  color: var(--status-connected-text);
+}
+
+@media (max-width: 720px) {
+  .abr-form__columns {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+}
