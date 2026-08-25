@@ -2,7 +2,7 @@
 
 - project: red5pro-html-sdk-ts
 - version: 16.1.0-beta.1
-- generated_at: 2026-08-19T15:24:48.504Z
+- generated_at: 2026-08-25T19:08:18.450Z
 
 ## Included Files
 
@@ -92,6 +92,11 @@
 ### Source: `CHANGES.md`
 
 # Changes
+
+## 16.1.0
+
+- fix: PubNub Integration (Todd Anderson).
+- feat: MediaSource MOQSubscriber init configuration.
 
 ## 16.0.0
 
@@ -1275,7 +1280,8 @@ The `init()` call accepts `MOQSubscriberConfigType`.
 | `prefetchCatalog` | [-] | `false` | Attempt HTTP catalog prefetch before MOQ playback session starts. |
 | `connectionParams` | [-] | `undefined` | Additional connection parameters passed through options. |
 | `moqtLogLevel` | [-] | `none` | Log level passed to MOQ components. |
-| `mseMediaSourceOptions` | [-] | `undefined` | The desired `MseMediaSourceOptions` to apply when the video package format is received as `CMAF/CMSF`. |
+| `mediaSource` | [-] | `none` | An instance of a `MediaSourceLike` (from [moq-playa](https://github.com/openmoq/moq-playa)) implementation. _Make sure you know what you are doing, as it carries responsibility for managing buffers and media playout._ |
+| `mseMediaSourceOptions` | [-] | `undefined` | The desired `MseMediaSourceOptions` to apply when the video package format is received as `CMAF/CMSF`. Ignored when `mediaSource` is provided. |
 
 `*` Required when `endpoint` is not provided.
 
@@ -12723,7 +12729,8 @@ The `init()` call accepts `MOQSubscriberConfigType`.
 | `prefetchCatalog` | [-] | `false` | Attempt HTTP catalog prefetch before MOQ playback session starts. |
 | `connectionParams` | [-] | `undefined` | Additional connection parameters passed through options. |
 | `moqtLogLevel` | [-] | `none` | Log level passed to MOQ components. |
-| `mseMediaSourceOptions` | [-] | `undefined` | The desired `MseMediaSourceOptions` to apply when the video package format is received as `CMAF/CMSF`. |
+| `mediaSource` | [-] | `none` | An instance of a `MediaSourceLike` (from [moq-playa](https://github.com/openmoq/moq-playa)) implementation. _Make sure you know what you are doing, as it carries responsibility for managing buffers and media playout._ |
+| `mseMediaSourceOptions` | [-] | `undefined` | The desired `MseMediaSourceOptions` to apply when the video package format is received as `CMAF/CMSF`. Ignored when `mediaSource` is provided. |
 
 `*` Required when `endpoint` is not provided.
 
