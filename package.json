@@ -1,6 +1,6 @@
 {
   "name": "streaming-webrtc",
-  "version": "16.0.0",
+  "version": "16.1.0",
   "description": "Web-based testbed for Red5 SDK WHIP/WHEP client functionality",
   "scripts": {
     "dev": "vite",

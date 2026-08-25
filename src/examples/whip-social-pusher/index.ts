@@ -46,25 +46,24 @@ import {
 import { wireExampleLog } from '@/lib/example-log'
 import { updateSubscriberLink } from '@/lib/example-links'
 import { postSocialPusherProvision } from '@/lib/social-pusher-provision'
+import {
+  listProvisions,
+  type ListProvisionsResponse,
+  type RestreamEndpoint,
+} from '@/service/restreamer'
 
 const sdk = window.red5prosdk
 sdk.setLogLevel('debug')
 
-const DEFAULT_PASSWORD = 'changeme'
-const DEFAULT_DESTINATION_URI = 'rtmp://localhost/live'
+const DEFAULT_DESTINATION_URI = ''
 
 let settings = loadSettings()
-if (!settings.useStreamManager) {
-  const standaloneOptionEls = document.querySelectorAll('.standalone-option')
-  Array.from(standaloneOptionEls).forEach((el) => {
-    el.classList.remove('is-hidden')
-  })
-}
 applyTheme(settings.theme)
 
 let publisher: WHIPClient | null = null
 let isForwarding = false
 let socialPusherRequestInFlight = false
+let provisionsListRequestInFlight = false
 
 const publishBtn = document.getElementById('publish-btn') as HTMLButtonElement
 const unpublishBtn = document.getElementById('unpublish-btn') as HTMLButtonElement
@@ -76,9 +75,6 @@ const publishConfigSectionEl = document.getElementById('publish-config-section')
 const socialPusherSectionEl = document.getElementById('social-pusher-section') as HTMLElement
 const socialPusherStatusEl = document.getElementById('social-pusher-status') as HTMLSpanElement
 const socialPusherFormEl = document.getElementById('social-pusher-form') as HTMLFormElement
-const socialPusherPasswordInputEl = document.getElementById(
-  'social-pusher-password-input'
-) as HTMLInputElement
 const socialPusherDestinationUriInputEl = document.getElementById(
   'social-pusher-destination-uri-input'
 ) as HTMLInputElement
@@ -88,6 +84,10 @@ const socialPusherStreamKeyInputEl = document.getElementById(
 const socialPusherSubmitBtn = document.getElementById(
   'social-pusher-submit-btn'
 ) as HTMLButtonElement
+const provisionsListSectionEl = document.getElementById('provisions-list-section') as HTMLElement
+const provisionsListStatusEl = document.getElementById('provisions-list-status') as HTMLSpanElement
+const provisionsListBtn = document.getElementById('provisions-list-btn') as HTMLButtonElement
+const provisionsListOutputEl = document.getElementById('provisions-list-output') as HTMLElement
 const openSubscriberLinkEl = document.getElementById(
   'open-subscriber-link'
 ) as R5SubscriberLinkElement
@@ -116,6 +116,143 @@ function setSocialPusherStatus(
   }
 }
 
+function setProvisionsListStatus(
+  text: string,
+  state: 'idle' | 'connecting' | 'connected' | 'error' | 'unknown'
+): void {
+  provisionsListStatusEl.textContent = text
+  if (state !== 'unknown') {
+    provisionsListStatusEl.className = `status status--${state}`
+  }
+}
+
+function resetProvisionsListOutput(): void {
+  provisionsListOutputEl.replaceChildren()
+  const placeholder = document.createElement('p')
+  placeholder.className = 'provisions-list-output__placeholder'
+  placeholder.textContent = 'No provisions loaded. Click List Provisions to fetch endpoints.'
+  provisionsListOutputEl.appendChild(placeholder)
+  setProvisionsListStatus('Not loaded', 'idle')
+}
+
+function renderProvisionsList(response: ListProvisionsResponse): void {
+  provisionsListOutputEl.replaceChildren()
+
+  const endpoints = response.endpoints ?? []
+  if (endpoints.length === 0) {
+    const empty = document.createElement('p')
+    empty.className = 'provisions-list-output__placeholder'
+    empty.textContent = response.message
+      ? `${response.message}: no endpoints returned.`
+      : 'No endpoints returned.'
+    provisionsListOutputEl.appendChild(empty)
+    return
+  }
+
+  const table = document.createElement('table')
+  table.className = 'provisions-list-table'
+
+  const thead = document.createElement('thead')
+  thead.innerHTML = `
+    <tr>
+      <th>Guid</th>
+      <th>Stream</th>
+      <th>RTMP URI</th>
+      <th>Active</th>
+      <th>Persist</th>
+      <th>Error</th>
+    </tr>
+  `
+  table.appendChild(thead)
+
+  const tbody = document.createElement('tbody')
+  for (const endpoint of endpoints) {
+    tbody.appendChild(createProvisionRow(endpoint))
+  }
+  table.appendChild(tbody)
+  provisionsListOutputEl.appendChild(table)
+}
+
+function createProvisionRow(endpoint: RestreamEndpoint): HTMLTableRowElement {
+  const row = document.createElement('tr')
+
+  const guidCell = document.createElement('td')
+  guidCell.className = 'provisions-list-table__mono'
+  guidCell.textContent = endpoint.guid
+  row.appendChild(guidCell)
+
+  const streamCell = document.createElement('td')
+  streamCell.textContent = `${endpoint.context}/${endpoint.name}`
+  row.appendChild(streamCell)
+
+  const rtmpCell = document.createElement('td')
+  rtmpCell.className = 'provisions-list-table__mono'
+  rtmpCell.textContent = endpoint.rtmpUri
+  row.appendChild(rtmpCell)
+
+  const activeCell = document.createElement('td')
+  const activeBadge = document.createElement('span')
+  activeBadge.className = endpoint.isActive
+    ? 'provisions-list-table__badge provisions-list-table__badge--active'
+    : 'provisions-list-table__badge provisions-list-table__badge--inactive'
+  activeBadge.textContent = endpoint.isActive ? 'Active' : 'Inactive'
+  activeCell.appendChild(activeBadge)
+  row.appendChild(activeCell)
+
+  const persistCell = document.createElement('td')
+  persistCell.textContent = endpoint.persist ?? '—'
+  row.appendChild(persistCell)
+
+  const errorCell = document.createElement('td')
+  if (endpoint.error) {
+    const errorBadge = document.createElement('span')
+    errorBadge.className = 'provisions-list-table__badge provisions-list-table__badge--error'
+    errorBadge.textContent = 'Error'
+    errorBadge.title = endpoint.error
+    errorCell.appendChild(errorBadge)
+  } else {
+    errorCell.className = 'provisions-list-table__empty'
+    errorCell.textContent = '—'
+  }
+  row.appendChild(errorCell)
+
+  return row
+}
+
+async function handleListProvisions(): Promise<void> {
+  if (provisionsListRequestInFlight) return
+  if (!ensureCoreSettings(settings)) return
+
+  provisionsListRequestInFlight = true
+  provisionsListBtn.disabled = true
+  setProvisionsListStatus('Loading...', 'connecting')
+  log('Sending restream list request...')
+
+  try {
+    const response = await listProvisions(settings)
+    renderProvisionsList(response)
+    const count = response.endpoints?.length ?? 0
+    setProvisionsListStatus(`${count} endpoint${count === 1 ? '' : 's'}`, 'connected')
+    log(`Restream list returned ${count} endpoint${count === 1 ? '' : 's'}.`, 'success')
+  } catch (error) {
+    resetProvisionsListOutput()
+    setProvisionsListStatus('Request failed', 'error')
+    log(`Restream list failed: ${String(error)}`, 'error')
+  } finally {
+    provisionsListRequestInFlight = false
+    provisionsListBtn.disabled = false
+  }
+}
+
+function syncProvisionsListSection(visible: boolean): void {
+  provisionsListSectionEl.classList.toggle('is-hidden', !visible)
+  if (!visible) {
+    resetProvisionsListOutput()
+    provisionsListBtn.disabled = false
+    provisionsListRequestInFlight = false
+  }
+}
+
 function defaultStreamKey(streamName: string): string {
   return `${streamName}Social`
 }
@@ -128,7 +265,6 @@ function syncStreamKeyDefault(): void {
 function syncSocialPusherFormState(forwarding: boolean): void {
   isForwarding = forwarding
   const inputsDisabled = forwarding || socialPusherRequestInFlight
-  socialPusherPasswordInputEl.disabled = inputsDisabled
   socialPusherDestinationUriInputEl.disabled = inputsDisabled
   socialPusherStreamKeyInputEl.disabled = inputsDisabled
   socialPusherSubmitBtn.textContent = forwarding ? 'Stop Forwarding' : 'Start Forwarding'
@@ -145,7 +281,6 @@ function syncSocialPusherFormState(forwarding: boolean): void {
 
 function resetSocialPusherForm(): void {
   socialPusherRequestInFlight = false
-  socialPusherPasswordInputEl.value = DEFAULT_PASSWORD
   socialPusherDestinationUriInputEl.value = DEFAULT_DESTINATION_URI
   syncStreamKeyDefault()
   syncSocialPusherFormState(false)
@@ -154,6 +289,7 @@ function resetSocialPusherForm(): void {
 
 function syncSocialPusherSection(visible: boolean): void {
   socialPusherSectionEl.classList.toggle('is-hidden', !visible)
+  syncProvisionsListSection(visible)
   if (!visible) {
     resetSocialPusherForm()
   } else if (!isForwarding) {
@@ -340,17 +476,11 @@ async function handleSocialPusherSubmit(event: SubmitEvent): Promise<void> {
   if (!publisher || socialPusherRequestInFlight) return
   if (!ensureCoreSettings(settings)) return
 
-  const password = socialPusherPasswordInputEl.value
   const destinationUri = socialPusherDestinationUriInputEl.value.trim()
   const streamKey = socialPusherStreamKeyInputEl.value.trim()
   const startingForward = !isForwarding
   const actionLabel = startingForward ? 'provision.create' : 'provision.delete'
 
-  if (!password) {
-    log('Password is required for social forwarding.', 'error')
-    setSocialPusherStatus('Password required', 'error')
-    return
-  }
   if (!destinationUri) {
     log('Destination URI is required for social forwarding.', 'error')
     setSocialPusherStatus('Destination URI required', 'error')
@@ -368,26 +498,17 @@ async function handleSocialPusherSubmit(event: SubmitEvent): Promise<void> {
     startingForward ? 'Starting forwarding...' : 'Stopping forwarding...',
     'connecting'
   )
-  log(
-    `Sending ${actionLabel} request${settings.useStreamManager ? ' via Stream Manager forward proxy' : ''}...`
-  )
+  log(`Sending ${actionLabel} restream request...`)
 
   try {
     const result = await postSocialPusherProvision(
       {
         settings,
-        password,
         destinationUri,
         streamKey,
         isForwarding,
       },
-      ({ attempt, maxAttempts, status, willRetry }) => {
-        if (willRetry) {
-          const message = `Gateway timeout (504). Retrying in 10s (${attempt}/${maxAttempts})...`
-          setSocialPusherStatus(message, 'connecting')
-          log(message)
-          return
-        }
+      ({ status }) => {
         if (status > 0) {
           log(`Social pusher response: ${status}`)
         }
@@ -408,6 +529,7 @@ async function handleSocialPusherSubmit(event: SubmitEvent): Promise<void> {
         'success'
       )
       log(successMessage, 'success')
+      void handleListProvisions()
       return
     }
 
@@ -439,6 +561,10 @@ socialPusherFormEl.addEventListener('submit', (event) => {
   void handleSocialPusherSubmit(event)
 })
 
+provisionsListBtn.addEventListener('click', () => {
+  void handleListProvisions()
+})
+
 document.addEventListener('webrtc-settings-applied', (e) => {
   settings = (e as CustomEvent).detail as Settings
   syncStreamKeyDefault()
@@ -454,6 +580,7 @@ window.addEventListener('beforeunload', () => {
 })
 
 syncStreamKeyDefault()
+resetProvisionsListOutput()
 log(
   'WHIP Social Pusher loaded. Configure Settings, adjust publish controls, then start publishing.'
 )

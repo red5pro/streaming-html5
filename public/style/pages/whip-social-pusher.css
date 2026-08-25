@@ -151,3 +151,122 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   opacity: 0.55;
   cursor: not-allowed;
 }
+
+.provisions-list-section {
+  max-width: 720px;
+  margin: 0 auto 1rem;
+  padding: 0.85rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg-card);
+}
+
+.provisions-list-section.is-hidden {
+  display: none;
+}
+
+.provisions-list-section__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.provisions-list-section__title {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.provisions-list-section__description {
+  margin: 0 0 0.75rem;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.provisions-list-section__actions {
+  margin-bottom: 0.75rem;
+}
+
+.provisions-list-output {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg-secondary);
+  overflow: auto;
+}
+
+.provisions-list-output__placeholder {
+  margin: 0;
+  padding: 1rem;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.provisions-list-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.75rem;
+}
+
+.provisions-list-table th,
+.provisions-list-table td {
+  padding: 0.5rem 0.65rem;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  vertical-align: top;
+}
+
+.provisions-list-table th {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  background: var(--bg-card);
+}
+
+.provisions-list-table tr:last-child td {
+  border-bottom: 0;
+}
+
+.provisions-list-table__mono {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  word-break: break-all;
+}
+
+.provisions-list-table__empty {
+  color: var(--text-muted);
+}
+
+.provisions-list-table__badge {
+  display: inline-block;
+  padding: 0.15rem 0.45rem;
+  border-radius: 999px;
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.provisions-list-table__badge--active {
+  color: #1b5e20;
+  background: #e8f5e9;
+}
+
+.provisions-list-table__badge--inactive {
+  color: var(--text-secondary);
+  background: var(--bg-card);
+}
+
+.provisions-list-table__badge--error {
+  color: #b71c1c;
+  background: #ffebee;
+  cursor: help;
+}
