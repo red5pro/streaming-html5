@@ -29,6 +29,7 @@ import '@/components/r5-subscriber-stats'
 import type { R5SubscriberStatsElement } from '@/components/r5-subscriber-stats'
 import {
   applyTheme,
+  isAutostartRequested,
   loadSettings,
   resolveConnectionParamsFromSettings,
   resolveEndpointFromSettings,
@@ -43,6 +44,7 @@ sdk.setLogLevel('debug')
 
 let settings = loadSettings()
 applyTheme(settings.theme)
+const requestAutostart = isAutostartRequested()
 
 let subscriber: WHEPClient | null = null
 let reconnectionAttempts = 0
@@ -613,4 +615,9 @@ window.addEventListener('beforeunload', () => {
 
 updateConnectionInfo()
 updateReconnectionInfo()
-log('WHEP renegotiation example loaded. Configure policy options, then click Subscribe.')
+if (requestAutostart) {
+  log('WHEP renegotiation example loaded. `autostart=1` detected. Starting subscribe.')
+  void startSubscribe()
+} else {
+  log('WHEP renegotiation example loaded. Configure policy options, then click Subscribe.')
+}
