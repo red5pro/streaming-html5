@@ -159,6 +159,7 @@ export default defineConfig(({ command }) => ({
         'proxy-subscriber-amount': resolve(__dirname, 'proxy-subscriber-amount.html'),
         'proxy-publisher': resolve(__dirname, 'proxy-publisher.html'),
         'proxy-screenshare': resolve(__dirname, 'proxy-screenshare.html'),
+        'data-channel': resolve(__dirname, 'data-channel.html'),
         'whip-whep-basic': resolve(__dirname, 'src/examples/whip-whep/index.html'),
         'whip-basic': resolve(__dirname, 'src/examples/whip-basic/index.html'),
         'rtc-publisher': resolve(__dirname, 'src/examples/rtc-publisher/index.html'),
