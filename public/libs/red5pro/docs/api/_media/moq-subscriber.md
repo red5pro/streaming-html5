@@ -97,7 +97,8 @@ The `init()` call accepts `MOQSubscriberConfigType`.
 | `prefetchCatalog` | [-] | `false` | Attempt HTTP catalog prefetch before MOQ playback session starts. |
 | `connectionParams` | [-] | `undefined` | Additional connection parameters passed through options. |
 | `moqtLogLevel` | [-] | `none` | Log level passed to MOQ components. |
-| `mseMediaSourceOptions` | [-] | `undefined` | The desired `MseMediaSourceOptions` to apply when the video package format is received as `CMAF/CMSF`. |
+| `mediaSource` | [-] | `none` | An instance of a `MediaSourceLike` (from [moq-playa](https://github.com/openmoq/moq-playa)) implementation. _Make sure you know what you are doing, as it carries responsibility for managing buffers and media playout._ |
+| `mseMediaSourceOptions` | [-] | `undefined` | The desired `MseMediaSourceOptions` to apply when the video package format is received as `CMAF/CMSF`. Ignored when `mediaSource` is provided. |
 
 `*` Required when `endpoint` is not provided.
 

@@ -31,7 +31,7 @@ const config = {
   publishKey: 'pub-c-XXXX',
   subscribeKey: 'sub-c-XXXX',
   userId: 'user-1234',
-  channelId: 'red5',
+  roomId: 'red5',
   authToken: 'XXXX='
 }
 const pubnubClient = new PubNubClient()
@@ -40,22 +40,22 @@ pubnub.on('*', (event) => {
   console.log(`[PubNub]:: ${type}`, data)
 })
 await pubnub.init(pubnubConfig)
-await pubnub.subscribe(channelId)
+await pubnub.subscribe(roomId)
 ```
 
 ## Messaging API
 
 The following methods relate to the Message API of the `PubNubClient` that integrates with the PubNub service.
 
-### subscribe(channelId: string)
+### subscribe(roomId: string)
 
-Request to subscribe to messages on the given channel. In most cases, this will be the same as the `channelId` provided in the `init()` configuration, as that is used to generate a valid token in the system.
+Request to subscribe to messages on the given channel. In most cases, this will be the same as the `roomId` provided in the `init()` configuration, as that is used to generate a valid token in the system.
 
-### publishMessage(channelId: string, message: any)
+### publishMessage(roomId: string, message: any)
 
-Request to deliver a message on the target channel. In most cases, this will be the same as the `channelId` provided in the `init()` configuration, as that is used to generate a valid token in the system.
+Request to deliver a message on the target channel. In most cases, this will be the same as the `roomId` provided in the `init()` configuration, as that is used to generate a valid token in the system.
 
-### unsubscribe(channelId: string)
+### unsubscribe(roomId: string)
 
 Request to stop receiving messages on the given channel.
 
@@ -75,7 +75,7 @@ When using the `init()` call of a `PubNubClient`, the following initialization p
 | `publishKey` | [x] | _None_ | The registered publish key from PubNub. This can be found in your [Red5 Cloud](https://cloud.red5.net) deployment. |
 | `subscribeKey` | [x] | _None_ | The registered subscribe key from PubNub. This can be found in your [Red5 Cloud](https://cloud.red5.net) deployment. |
 | `userId` | [x] | Auto-generated if not provided. | The associated User ID for PubNub. |
-| `channelId` | [x] | `red5` | Default Channel ID to subscribe to in PubNub messaging. |
+| `roomId` | [x] | `red5` | Default Channel ID to subscribe to in PubNub messaging. |
 | `expiryMinutes` | [-] | `120` | Default expiration of issued token associated with client. |
 | `authToken` | [-] | _None_ | Optional authentication token issues from PubNub - if known. |
 | `cloudEndpoint` | [-] | _None_ | Optional endpoint of Red5 Cloud deployment to attempt access of `authToken` from PubNub system. |

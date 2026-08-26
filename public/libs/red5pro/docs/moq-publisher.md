@@ -138,6 +138,7 @@ publisher.off('*', onPublisherEvent)
 | `RELAY_ERROR` | `MOQ.Relay.Error` | Relay/session error reported. |
 | `RELAY_CLOSE` | `MOQ.Relay.Close` | Relay/session closed. |
 | `ENCODER_ERROR` | `MOQ.Encoder.Error` | Encoder or capture pipeline error. |
+| `SEND_STATS` | `MOQ.Send.Stats` | Per-track send counters after a media object is published. Payload includes `trackName`, `role`, role-specific counters (`videoFrames`/`keyframeCount` or `audioChunks`), and a `tracks` snapshot keyed by track name with the same role-specific shape. |
 | `STATS_REPORT` | `MOQ.Stats.Report` | Stats report emitted when monitoring is enabled. |
 
 # Statistics
