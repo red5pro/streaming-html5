@@ -2,7 +2,7 @@
 
 - project: red5pro-html-sdk-ts
 - version: 16.1.0-beta.1
-- generated_at: 2026-08-25T19:08:18.450Z
+- generated_at: 2026-08-26T13:43:07.355Z
 
 ## Included Files
 
@@ -1165,6 +1165,7 @@ publisher.off('*', onPublisherEvent)
 | `RELAY_ERROR` | `MOQ.Relay.Error` | Relay/session error reported. |
 | `RELAY_CLOSE` | `MOQ.Relay.Close` | Relay/session closed. |
 | `ENCODER_ERROR` | `MOQ.Encoder.Error` | Encoder or capture pipeline error. |
+| `SEND_STATS` | `MOQ.Send.Stats` | Per-track send counters after a media object is published. Payload includes `trackName`, `role`, role-specific counters (`videoFrames`/`keyframeCount` or `audioChunks`), and a `tracks` snapshot keyed by track name with the same role-specific shape. |
 | `STATS_REPORT` | `MOQ.Stats.Report` | Stats report emitted when monitoring is enabled. |
 
 # Statistics
@@ -12614,6 +12615,7 @@ publisher.off('*', onPublisherEvent)
 | `RELAY_ERROR` | `MOQ.Relay.Error` | Relay/session error reported. |
 | `RELAY_CLOSE` | `MOQ.Relay.Close` | Relay/session closed. |
 | `ENCODER_ERROR` | `MOQ.Encoder.Error` | Encoder or capture pipeline error. |
+| `SEND_STATS` | `MOQ.Send.Stats` | Per-track send counters after a media object is published. Payload includes `trackName`, `role`, role-specific counters (`videoFrames`/`keyframeCount` or `audioChunks`), and a `tracks` snapshot keyed by track name with the same role-specific shape. |
 | `STATS_REPORT` | `MOQ.Stats.Report` | Stats report emitted when monitoring is enabled. |
 
 # Statistics

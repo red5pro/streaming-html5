@@ -35,6 +35,7 @@ import type { R5PublishModeElement, StreamMode } from '@/components/r5-publish-m
 import type { R5SubscriberLinkElement } from '@/components/r5-subscriber-link'
 import {
   applyTheme,
+  isAutostartRequested,
   loadSettings,
   resolveEndpointFromSettings,
   resolveConnectionParamsFromSettings,
@@ -50,6 +51,7 @@ sdk.setLogLevel('debug')
 
 let settings = loadSettings()
 applyTheme(settings.theme)
+const requestAutostart = isAutostartRequested()
 
 let publisher: RTCPublisher | null = null
 
@@ -157,7 +159,7 @@ async function startPublish(): Promise<void> {
     const stats = resolveStatisticsConfigurationFromSettings(settings)
     const rtcConfiguration = resolveRtcConfigurationFromSettings(settings)
     const streamMode = publishModeEl.streamMode as StreamMode
-    const mediaStream = await publishSettingsEl.refreshStream()
+    const mediaStream = await publishSettingsEl.refreshStream(requestAutostart)
     const { videoEnabled, audioEnabled } = publishSettingsEl.getMediaConfig()
 
     if (!mediaStream) {
@@ -262,6 +264,11 @@ window.addEventListener('beforeunload', () => {
 })
 
 updateConnectionInfo()
-log(
-  'RTC Publisher loaded (SDK 14.3.0). Configure Settings, adjust publish controls, then start publishing.'
-)
+if (requestAutostart) {
+  log('RTC Publisher loaded (SDK 14.3.0). `autostart=1` detected. Starting publish.')
+  void startPublish()
+} else {
+  log(
+    'RTC Publisher loaded (SDK 14.3.0). Configure Settings, adjust publish controls, then start publishing.'
+  )
+}

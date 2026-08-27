@@ -29,6 +29,7 @@ import '@/components/r5-subscriber-stats'
 import type { R5SubscriberStatsElement } from '@/components/r5-subscriber-stats'
 import {
   applyTheme,
+  isAutostartRequested,
   loadSettings,
   resolveConnectionParamsFromSettings,
   resolveEndpointFromSettings,
@@ -57,6 +58,7 @@ sdk.setLogLevel('debug')
 
 let settings = loadSettings()
 applyTheme(settings.theme)
+const requestAutostart = isAutostartRequested()
 
 const dataChannelForm: DataChannelFormElements = {
   nameInput: document.getElementById('dc-name-input') as HTMLInputElement,
@@ -411,4 +413,9 @@ window.addEventListener('beforeunload', () => {
 wireDataChannelForm(dataChannelForm)
 syncSubscribeReceiptsSection(false)
 updateConnectionInfo()
-log('WHEP Data Channel loaded. Configure DataChannel settings, then start subscribing.')
+if (requestAutostart) {
+  log('WHEP Data Channel loaded. `autostart=1` detected. Starting subscribe.')
+  void startSubscribe()
+} else {
+  log('WHEP Data Channel loaded. Configure DataChannel settings, then start subscribing.')
+}

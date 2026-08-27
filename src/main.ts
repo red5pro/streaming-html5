@@ -375,9 +375,15 @@ const examples: ExampleSection[] = [
     ],
   },
   {
-    title: 'Stream Manager Automated Tests',
+    title: 'Stream Manager & Self-contained Automated Tests',
     description: 'Stream Manager tests available for test automation.',
     examples: [
+      {
+        title: 'Data Channel Enhanced',
+        description: 'Data Channel with enhanced features.',
+        tag: 'Data Channel',
+        href: './data-channel.html',
+      },
       {
         title: 'Proxy Publisher',
         description:
