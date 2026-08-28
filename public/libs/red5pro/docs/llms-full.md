@@ -1,8 +1,8 @@
 # Red5 Pro HTML SDK - LLM Reference
 
 - project: red5pro-html-sdk-ts
-- version: 16.1.0-beta.1
-- generated_at: 2026-08-26T13:43:07.355Z
+- version: 16.1.0-beta.2
+- generated_at: 2026-08-28T13:26:31.819Z
 
 ## Included Files
 
@@ -1073,6 +1073,21 @@ await publisher.init({
   mediaConstraints: {
     audio: true,
     video: true
+  },
+  bandwidth: {
+    audio: 56,
+    video: 3000
+  },
+  // Optional: publish a 3-rung video ladder (source + 2 generated tracks)
+  simulcast: {
+    enabled: true,
+    rungs: 3
+    // Or explicit variants (index 0 kept as original track; 1..n generated):
+    // rungs: [
+    //   { width: 1280, height: 720, fps: 60, bitrate: 3000 },
+    //   { width: 640, height: 360, fps: 30, bitrate: 1500 },
+    //   { width: 320, height: 180, fps: 15, bitrate: 750 }
+    // ]
   }
 })
 
@@ -1122,11 +1137,25 @@ The `init()` call accepts `MOQPublisherConfigType`.
 | `audioEncoding` | [-] | `OPUS` | Audio codec (`PublishAudioEncoder`). |
 | `mediaElementId` | [-] | `red5pro-publisher` | Preview element id for local media display. |
 | `clearMediaOnUnpublish` | [-] | `true` | Stop preview stream tracks on unpublish. |
+| `maxVideoQueue` | [-] | `120` | Max queued encoded video chunks per track before shed policy. |
+| `maxAudioQueue` | [-] | `240` | Max queued encoded audio chunks per track before shed policy. |
+| `simulcast` | [-] | `{ enabled: false, rungs: 3 }` | Optional simulcast ladder. When `enabled`, `rungs` is either a count (`1..3`) or an explicit `SimulcastVariant[]`. Source/captured video is always the top rung; lower rungs are generated (auto: ½ resolution/bitrate each step, and ½ fps when top FPS ≥ 60). |
 | `stats` | [-] | `undefined` | Optional stats monitor configuration. |
 | `connectionParams` | [-] | `undefined` | Additional params used for stats metadata and endpoint context. |
 | `moqtLogLevel` | [-] | `none` | Log level passed to MOQ components. |
 
 `*` Required when `endpoint` is not provided.
+
+### Simulcast notes
+
+- `simulcast.rungs` may be:
+  - a `number` (clamped to `1..3`) for automatic ladder generation
+  - a `SimulcastVariant[]` (`{ width, height, fps, bitrate }`, bitrate in kbps) for an explicit ladder
+- With an explicit array, index `0` is **not generated** — the original source track is kept as `video-0`. Entries `1..n-1` are generated. Top-tier encode fps/bitrate may still come from index `0`.
+- `rungs: 1` / a single-variant array skips generation (single source track only).
+- Lower rungs are produced with `OffscreenCanvas` + `MediaStreamTrackGenerator` and published as additional catalog video tracks (`video-0`, `video-1`, …).
+- Additional non-ladder video tracks already present on the input stream (for example screenshare) are preserved after the ladder tracks.
+- Requires Chromium insertable-streams APIs (`MediaStreamTrackProcessor` / `MediaStreamTrackGenerator`).
 
 # Events
 
@@ -2641,7 +2670,7 @@ The following events are dispatched by the underlying pubnub integration and bub
 
 ### Source: `docs/api/classes/Event.md`
 
-[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.2**](../README.md)
 
 ***
 
@@ -2709,7 +2738,7 @@ Get the type of event.
 
 ### Source: `docs/api/classes/EventEmitter.md`
 
-[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.2**](../README.md)
 
 ***
 
@@ -2819,7 +2848,7 @@ Dispatch an event to be handled by any assigned callbacks.
 
 ### Source: `docs/api/classes/HLSSubscriber.md`
 
-[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.2**](../README.md)
 
 ***
 
@@ -3223,7 +3252,7 @@ Unsubscribe from the HLS stream.
 
 ### Source: `docs/api/classes/LiveSeekClient.md`
 
-[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.2**](../README.md)
 
 ***
 
@@ -4091,7 +4120,7 @@ The channel to unsubscribe from.
 
 ### Source: `docs/api/classes/MessageChannel.md`
 
-[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.2**](../README.md)
 
 ***
 
@@ -4844,7 +4873,7 @@ The optimization parameters to update.
 
 ### Source: `docs/api/classes/MessageChannelEvent.md`
 
-[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.2**](../README.md)
 
 ***
 
@@ -4946,7 +4975,7 @@ Get the type of event.
 
 ### Source: `docs/api/classes/MessageTransportStateEvent.md`
 
-[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.2**](../README.md)
 
 ***
 
@@ -5048,7 +5077,7 @@ Get the type of event.
 
 ### Source: `docs/api/classes/MOQCatalog.md`
 
-[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.2**](../README.md)
 
 ***
 
@@ -5270,7 +5299,7 @@ Dispatch an event to be handled by any assigned callbacks.
 
 ### Source: `docs/api/classes/MOQPublisher.md`
 
-[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.2**](../README.md)
 
 ***
 
@@ -5552,7 +5581,7 @@ Dispatch an event to be handled by any assigned callbacks.
 
 ### Source: `docs/api/classes/MOQSubscriber.md`
 
-[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.2**](../README.md)
 
 ***
 
@@ -5985,7 +6014,7 @@ Dispatch an event to be handled by any assigned callbacks.
 
 ### Source: `docs/api/classes/PlaybackController.md`
 
-[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.2**](../README.md)
 
 ***
 
@@ -6314,7 +6343,7 @@ Unmute the media element.
 
 ### Source: `docs/api/classes/PlaybackControls.md`
 
-[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.2**](../README.md)
 
 ***
 
@@ -6611,7 +6640,7 @@ The event to trigger.
 
 ### Source: `docs/api/classes/PublisherEvent.md`
 
-[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.2**](../README.md)
 
 ***
 
@@ -6713,7 +6742,7 @@ Get the type of event.
 
 ### Source: `docs/api/classes/PubNubClient.md`
 
-[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.2**](../README.md)
 
 ***
 
@@ -6933,7 +6962,7 @@ Dispatch an event to be handled by any assigned callbacks.
 
 ### Source: `docs/api/classes/PubNubEvent.md`
 
-[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.2**](../README.md)
 
 ***
 
@@ -7035,7 +7064,7 @@ Get the type of event.
 
 ### Source: `docs/api/classes/SourceHandler.md`
 
-[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.2**](../README.md)
 
 ***
 
@@ -7470,7 +7499,7 @@ Unpublish the media element.
 
 ### Source: `docs/api/classes/SourceHandlerImpl.md`
 
-[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.2**](../README.md)
 
 ***
 
@@ -7884,7 +7913,7 @@ Unpublish the media element.
 
 ### Source: `docs/api/classes/SubscriberEvent.md`
 
-[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.2**](../README.md)
 
 ***
 
@@ -7986,7 +8015,7 @@ Get the type of event.
 
 ### Source: `docs/api/classes/WHEPClient.md`
 
-[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.2**](../README.md)
 
 ***
 
@@ -8753,7 +8782,7 @@ The channel to unsubscribe from.
 
 ### Source: `docs/api/classes/WHIPClient.md`
 
-[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.2**](../README.md)
 
 ***
 
@@ -9359,7 +9388,7 @@ The optimization parameters to update.
 
 ### Source: `docs/api/enumerations/MessageChannelEventTypes.md`
 
-[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.2**](../README.md)
 
 ***
 
@@ -9405,7 +9434,7 @@ The optimization parameters to update.
 
 ### Source: `docs/api/enumerations/MessageTransportStateEventTypes.md`
 
-[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.2**](../README.md)
 
 ***
 
@@ -9439,7 +9468,7 @@ The optimization parameters to update.
 
 ### Source: `docs/api/enumerations/PlaybackAudioEncoder.md`
 
-[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.2**](../README.md)
 
 ***
 
@@ -9461,7 +9490,7 @@ The optimization parameters to update.
 
 ### Source: `docs/api/enumerations/PlaybackState.md`
 
-[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.2**](../README.md)
 
 ***
 
@@ -9501,7 +9530,7 @@ The optimization parameters to update.
 
 ### Source: `docs/api/enumerations/PlaybackVideoEncoder.md`
 
-[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.2**](../README.md)
 
 ***
 
@@ -9541,7 +9570,7 @@ The optimization parameters to update.
 
 ### Source: `docs/api/enumerations/PublishAudioEncoder.md`
 
-[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.2**](../README.md)
 
 ***
 
@@ -9559,7 +9588,7 @@ Enumeration of Audio Encoder types to request for Broadcast.
 
 ### Source: `docs/api/enumerations/PublisherEventTypes.md`
 
-[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.2**](../README.md)
 
 ***
 
@@ -9683,7 +9712,7 @@ Enumeration of Audio Encoder types to request for Broadcast.
 
 ### Source: `docs/api/enumerations/PublishVideoEncoder.md`
 
-[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.2**](../README.md)
 
 ***
 
@@ -9719,7 +9748,7 @@ Enumeration of Video Encoder types to request for Broadcast.
 
 ### Source: `docs/api/enumerations/PubNubEventTypes.md`
 
-[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.2**](../README.md)
 
 ***
 
@@ -9807,7 +9836,7 @@ Enumeration of Video Encoder types to request for Broadcast.
 
 ### Source: `docs/api/enumerations/RTCPublisherEventTypes.md`
 
-[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.2**](../README.md)
 
 ***
 
@@ -9949,7 +9978,7 @@ Enumeration of Video Encoder types to request for Broadcast.
 
 ### Source: `docs/api/enumerations/RTCSubscriberEventTypes.md`
 
-[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.2**](../README.md)
 
 ***
 
@@ -10091,7 +10120,7 @@ Enumeration of Video Encoder types to request for Broadcast.
 
 ### Source: `docs/api/enumerations/StatsEndpointType.md`
 
-[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.2**](../README.md)
 
 ***
 
@@ -10119,7 +10148,7 @@ Enumeration of Video Encoder types to request for Broadcast.
 
 ### Source: `docs/api/enumerations/SubscriberEventTypes.md`
 
-[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.2**](../README.md)
 
 ***
 
@@ -10291,7 +10320,7 @@ Enumeration of Video Encoder types to request for Broadcast.
 
 ### Source: `docs/api/enumerations/WebRTCConnectionEventTypes.md`
 
-[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.2**](../README.md)
 
 ***
 
@@ -10325,7 +10354,7 @@ Enumeration of Video Encoder types to request for Broadcast.
 
 ### Source: `docs/api/functions/getRecordedLogs.md`
 
-[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.2**](../README.md)
 
 ***
 
@@ -10345,7 +10374,7 @@ Array of recorded log messages.
 
 ### Source: `docs/api/functions/getVersion.md`
 
-[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.2**](../README.md)
 
 ***
 
@@ -10363,7 +10392,7 @@ Get the version of the SDK.
 
 ### Source: `docs/api/functions/setLogLevel.md`
 
-[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.2**](../README.md)
 
 ***
 
@@ -10389,11 +10418,11 @@ Get the version of the SDK.
 
 ### Source: `docs/api/globals.md`
 
-[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.2**](README.md)
 
 ***
 
-# Red5 Pro WebRTC SDK v16.1.0-beta.1
+# Red5 Pro WebRTC SDK v16.1.0-beta.2
 
 Red5 Pro WebRTC SDK
 
@@ -10476,7 +10505,7 @@ Red5 Pro WebRTC SDK
 
 ### Source: `docs/api/interfaces/EventEmitterInterface.md`
 
-[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.2**](../README.md)
 
 ***
 
@@ -10550,7 +10579,7 @@ Dispatch an event to be handled by any assigned callbacks.
 
 ### Source: `docs/api/README.md`
 
-**Red5 Pro WebRTC SDK v16.1.0-beta.1**
+**Red5 Pro WebRTC SDK v16.1.0-beta.2**
 
 ***
 
@@ -10786,7 +10815,7 @@ The initialization configurations and relevant APIs available for each client ca
 
 ### Source: `docs/api/type-aliases/BandwidthConfig.md`
 
-[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.2**](../README.md)
 
 ***
 
@@ -10810,7 +10839,7 @@ The initialization configurations and relevant APIs available for each client ca
 
 ### Source: `docs/api/type-aliases/HLSSubscriberConfigType.md`
 
-[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.2**](../README.md)
 
 ***
 
@@ -10880,7 +10909,7 @@ The initialization configurations and relevant APIs available for each client ca
 
 ### Source: `docs/api/type-aliases/LiveSeekConfigType.md`
 
-[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.2**](../README.md)
 
 ***
 
@@ -10898,7 +10927,7 @@ The initialization configurations and relevant APIs available for each client ca
 
 ### Source: `docs/api/type-aliases/LiveSeekOptions.md`
 
-[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.2**](../README.md)
 
 ***
 
@@ -10954,7 +10983,7 @@ The initialization configurations and relevant APIs available for each client ca
 
 ### Source: `docs/api/type-aliases/MediaConstraintRange.md`
 
-[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.2**](../README.md)
 
 ***
 
@@ -10990,7 +11019,7 @@ The initialization configurations and relevant APIs available for each client ca
 
 ### Source: `docs/api/type-aliases/MediaConstraints.md`
 
-[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.2**](../README.md)
 
 ***
 
@@ -11014,7 +11043,7 @@ The initialization configurations and relevant APIs available for each client ca
 
 ### Source: `docs/api/type-aliases/RTCPublisherConfigType.md`
 
-[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.2**](../README.md)
 
 ***
 
@@ -11204,7 +11233,7 @@ The initialization configurations and relevant APIs available for each client ca
 
 ### Source: `docs/api/type-aliases/RTCSubscriberConfigType.md`
 
-[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.2**](../README.md)
 
 ***
 
@@ -11378,7 +11407,7 @@ The initialization configurations and relevant APIs available for each client ca
 
 ### Source: `docs/api/type-aliases/RTCWhepSubscriberConfigType.md`
 
-[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.2**](../README.md)
 
 ***
 
@@ -11400,7 +11429,7 @@ The initialization configurations and relevant APIs available for each client ca
 
 ### Source: `docs/api/type-aliases/RTCWhipPublisherConfigType.md`
 
-[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.2**](../README.md)
 
 ***
 
@@ -11422,7 +11451,7 @@ The initialization configurations and relevant APIs available for each client ca
 
 ### Source: `docs/api/type-aliases/StatsConfig.md`
 
-[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.2**](../README.md)
 
 ***
 
@@ -11460,7 +11489,7 @@ Configuration for RTC Stats Monitoring.
 
 ### Source: `docs/api/type-aliases/VideoConstraints.md`
 
-[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.2**](../README.md)
 
 ***
 
@@ -11496,7 +11525,7 @@ Configuration for RTC Stats Monitoring.
 
 ### Source: `docs/api/variables/Capability.md`
 
-[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.2**](../README.md)
 
 ***
 
@@ -11518,7 +11547,7 @@ Configuration for RTC Stats Monitoring.
 
 ### Source: `docs/api/variables/default.md`
 
-[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.2**](../README.md)
 
 ***
 
@@ -11764,7 +11793,7 @@ Get the version of the SDK.
 
 ### Source: `docs/api/variables/defaultHLSSubscriberConfig.md`
 
-[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.2**](../README.md)
 
 ***
 
@@ -11776,7 +11805,7 @@ Get the version of the SDK.
 
 ### Source: `docs/api/variables/defaultLiveSeekConfig.md`
 
-[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.2**](../README.md)
 
 ***
 
@@ -11788,7 +11817,7 @@ Get the version of the SDK.
 
 ### Source: `docs/api/variables/defaultStatsConfig.md`
 
-[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.2**](../README.md)
 
 ***
 
@@ -11800,7 +11829,7 @@ Get the version of the SDK.
 
 ### Source: `docs/api/variables/defaultWhepSubscriberConfig.md`
 
-[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.2**](../README.md)
 
 ***
 
@@ -11812,7 +11841,7 @@ Get the version of the SDK.
 
 ### Source: `docs/api/variables/defaultWhipPublisherConfig.md`
 
-[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.2**](../README.md)
 
 ***
 
@@ -11824,7 +11853,7 @@ Get the version of the SDK.
 
 ### Source: `docs/api/variables/LOG_LEVELS.md`
 
-[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.2**](../README.md)
 
 ***
 
@@ -11862,7 +11891,7 @@ Get the version of the SDK.
 
 ### Source: `docs/api/variables/PlaybackStateReadableMap.md`
 
-[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.2**](../README.md)
 
 ***
 
@@ -12523,6 +12552,21 @@ await publisher.init({
   mediaConstraints: {
     audio: true,
     video: true
+  },
+  bandwidth: {
+    audio: 56,
+    video: 3000
+  },
+  // Optional: publish a 3-rung video ladder (source + 2 generated tracks)
+  simulcast: {
+    enabled: true,
+    rungs: 3
+    // Or explicit variants (index 0 kept as original track; 1..n generated):
+    // rungs: [
+    //   { width: 1280, height: 720, fps: 60, bitrate: 3000 },
+    //   { width: 640, height: 360, fps: 30, bitrate: 1500 },
+    //   { width: 320, height: 180, fps: 15, bitrate: 750 }
+    // ]
   }
 })
 
@@ -12572,11 +12616,25 @@ The `init()` call accepts `MOQPublisherConfigType`.
 | `audioEncoding` | [-] | `OPUS` | Audio codec (`PublishAudioEncoder`). |
 | `mediaElementId` | [-] | `red5pro-publisher` | Preview element id for local media display. |
 | `clearMediaOnUnpublish` | [-] | `true` | Stop preview stream tracks on unpublish. |
+| `maxVideoQueue` | [-] | `120` | Max queued encoded video chunks per track before shed policy. |
+| `maxAudioQueue` | [-] | `240` | Max queued encoded audio chunks per track before shed policy. |
+| `simulcast` | [-] | `{ enabled: false, rungs: 3 }` | Optional simulcast ladder. When `enabled`, `rungs` is either a count (`1..3`) or an explicit `SimulcastVariant[]`. Source/captured video is always the top rung; lower rungs are generated (auto: ½ resolution/bitrate each step, and ½ fps when top FPS ≥ 60). |
 | `stats` | [-] | `undefined` | Optional stats monitor configuration. |
 | `connectionParams` | [-] | `undefined` | Additional params used for stats metadata and endpoint context. |
 | `moqtLogLevel` | [-] | `none` | Log level passed to MOQ components. |
 
 `*` Required when `endpoint` is not provided.
+
+### Simulcast notes
+
+- `simulcast.rungs` may be:
+  - a `number` (clamped to `1..3`) for automatic ladder generation
+  - a `SimulcastVariant[]` (`{ width, height, fps, bitrate }`, bitrate in kbps) for an explicit ladder
+- With an explicit array, index `0` is **not generated** — the original source track is kept as `video-0`. Entries `1..n-1` are generated. Top-tier encode fps/bitrate may still come from index `0`.
+- `rungs: 1` / a single-variant array skips generation (single source track only).
+- Lower rungs are produced with `OffscreenCanvas` + `MediaStreamTrackGenerator` and published as additional catalog video tracks (`video-0`, `video-1`, …).
+- Additional non-ladder video tracks already present on the input stream (for example screenshare) are preserved after the ladder tracks.
+- Requires Chromium insertable-streams APIs (`MediaStreamTrackProcessor` / `MediaStreamTrackGenerator`).
 
 # Events
 

@@ -1,8 +1,8 @@
-[**Red5 Pro WebRTC SDK v16.1.0-beta.1**](README.md)
+[**Red5 Pro WebRTC SDK v16.1.0-beta.2**](README.md)
 
 ***
 
-# Red5 Pro WebRTC SDK v16.1.0-beta.1
+# Red5 Pro WebRTC SDK v16.1.0-beta.2
 
 Red5 Pro WebRTC SDK
 
