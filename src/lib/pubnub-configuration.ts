@@ -26,6 +26,18 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 export type PubNubAuthOption = 'cloud-endpoint' | 'backend-url' | 'auth-token'
 
+export const PUBNUB_SETTINGS_STORAGE_KEY = 'r5PubNubSettings'
+
+export interface PubNubStoredSettings {
+  authOption: PubNubAuthOption
+  cloudEndpoint: string
+  backendUrl: string
+  authToken: string
+  channelId: string
+  publishKey: string
+  subscribeKey: string
+}
+
 export interface PubNubInitConfig {
   userId: string
   publishKey?: string
@@ -149,4 +161,75 @@ export function wirePubNubForm(elements: PubNubFormElements): void {
   elements.backendUrlRadio.addEventListener('change', onAuthChange)
   elements.authTokenRadio.addEventListener('change', onAuthChange)
   syncPubNubAuthInputs(elements)
+}
+
+export function readPubNubStoredSettings(elements: PubNubFormElements): PubNubStoredSettings {
+  return {
+    authOption: getSelectedAuthOption(elements),
+    cloudEndpoint: elements.cloudEndpointInput.value.trim(),
+    backendUrl: elements.backendUrlInput.value.trim(),
+    authToken: elements.authTokenInput.value.trim(),
+    channelId: elements.channelIdInput.value.trim(),
+    publishKey: elements.publishKeyInput.value.trim(),
+    subscribeKey: elements.subscribeKeyInput.value.trim(),
+  }
+}
+
+function setSelectedAuthOption(elements: PubNubFormElements, authOption: PubNubAuthOption): void {
+  elements.cloudEndpointRadio.checked = authOption === 'cloud-endpoint'
+  elements.backendUrlRadio.checked = authOption === 'backend-url'
+  elements.authTokenRadio.checked = authOption === 'auth-token'
+}
+
+export function applyPubNubStoredSettings(
+  elements: PubNubFormElements,
+  settings: PubNubStoredSettings
+): void {
+  setSelectedAuthOption(elements, settings.authOption)
+  elements.cloudEndpointInput.value = settings.cloudEndpoint
+  elements.backendUrlInput.value = settings.backendUrl
+  elements.authTokenInput.value = settings.authToken
+  elements.channelIdInput.value = settings.channelId
+  elements.publishKeyInput.value = settings.publishKey
+  elements.subscribeKeyInput.value = settings.subscribeKey
+  syncPubNubAuthInputs(elements)
+}
+
+export function loadPubNubSettingsFromStorage(): PubNubStoredSettings | null {
+  try {
+    const raw = localStorage.getItem(PUBNUB_SETTINGS_STORAGE_KEY)
+    if (!raw) return null
+
+    const parsed = JSON.parse(raw) as Partial<PubNubStoredSettings>
+    if (
+      parsed.authOption !== 'cloud-endpoint' &&
+      parsed.authOption !== 'backend-url' &&
+      parsed.authOption !== 'auth-token'
+    ) {
+      return null
+    }
+
+    return {
+      authOption: parsed.authOption,
+      cloudEndpoint: typeof parsed.cloudEndpoint === 'string' ? parsed.cloudEndpoint : '',
+      backendUrl: typeof parsed.backendUrl === 'string' ? parsed.backendUrl : '',
+      authToken: typeof parsed.authToken === 'string' ? parsed.authToken : '',
+      channelId: typeof parsed.channelId === 'string' ? parsed.channelId : '',
+      publishKey: typeof parsed.publishKey === 'string' ? parsed.publishKey : '',
+      subscribeKey: typeof parsed.subscribeKey === 'string' ? parsed.subscribeKey : '',
+    }
+  } catch {
+    return null
+  }
+}
+
+export function savePubNubSettingsToStorage(elements: PubNubFormElements): void {
+  try {
+    localStorage.setItem(
+      PUBNUB_SETTINGS_STORAGE_KEY,
+      JSON.stringify(readPubNubStoredSettings(elements))
+    )
+  } catch {
+    // Ignore unavailable localStorage.
+  }
 }
