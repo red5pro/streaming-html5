@@ -29,6 +29,7 @@ import { getAllEdges } from '@/service/stream-manager'
 import {
   applyTheme,
   loadSettings,
+  resolveConnectionFromHost,
   resolveConnectionParamsFromSettings,
   resolveDirectNodeEndpointForHost,
   resolveEndpointFromSettings,
@@ -41,6 +42,7 @@ import {
 
 window.webrtcTestbed = {
   loadSettings,
+  resolveConnectionFromHost,
   resolveEndpointFromSettings,
   resolveEndpointForHost,
   resolveDirectNodeEndpointForHost,

@@ -29,6 +29,7 @@ import '@/components/r5-subscriber-stats'
 import type { R5SubscriberStatsElement } from '@/components/r5-subscriber-stats'
 import {
   applyTheme,
+  isAutostartRequested,
   loadSettings,
   resolveConnectionParamsFromSettings,
   resolveEndpointFromSettings,
@@ -43,6 +44,7 @@ sdk.setLogLevel('debug')
 
 let settings = loadSettings()
 applyTheme(settings.theme)
+const requestAutostart = isAutostartRequested()
 
 let subscriber: WHEPClient | null = null
 let manualMediaStream: MediaStream | null = null
@@ -433,4 +435,9 @@ window.addEventListener('beforeunload', () => {
 })
 
 updateConnectionInfo()
-log('WHEP manual stream example loaded. Click Start Subscribe to begin.')
+if (requestAutostart) {
+  log('WHEP manual stream example loaded. `autostart=1` detected. Starting subscribe.')
+  void startSubscribe()
+} else {
+  log('WHEP manual stream example loaded. Click Start Subscribe to begin.')
+}

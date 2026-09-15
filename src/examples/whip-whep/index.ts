@@ -41,8 +41,11 @@ import {
   resolveStatisticsConfigurationFromSettings,
   resolveRtcConfigurationFromSettings,
   type Settings,
+  isAutostartRequested,
 } from '@/settings'
 import { wireExampleLog } from '@/lib/example-log'
+
+const requestAutostart = isAutostartRequested()
 
 const sdk = window.red5prosdk
 sdk.setLogLevel('debug')
@@ -102,6 +105,10 @@ function onPublisherEvent(event: any): void {
   const { type } = event
   if (type === 'Publish.Start') {
     setPublisherStatus('Publishing', 'connected')
+  } else if (type === 'Publish.Available') {
+    if (requestAutostart) {
+      void startSubscribe()
+    }
   } else if (publisherFailureEvents.includes(type)) {
     setPublisherStatus('Publish Error', 'error')
   } else if (type === 'Unpublish.Success') {
@@ -154,7 +161,7 @@ async function startPublish(): Promise<void> {
     const stats = resolveStatisticsConfigurationFromSettings(settings)
     const rtcConfiguration = resolveRtcConfigurationFromSettings(settings)
     const streamMode = publishModeEl.streamMode as StreamMode
-    const mediaStream = await publishSettingsEl.refreshStream()
+    const mediaStream = await publishSettingsEl.refreshStream(requestAutostart)
     const { videoEnabled, audioEnabled } = publishSettingsEl.getMediaConfig()
     if (!mediaStream) {
       throw new Error('Unable to acquire media stream. Check Publish Settings.')
@@ -320,6 +327,12 @@ window.addEventListener('pagehide', () => {
 })
 window.addEventListener('beforeunload', () => {
   void shutdown()
+})
+
+document.addEventListener('DOMContentLoaded', () => {
+  if (requestAutostart) {
+    void startPublish()
+  }
 })
 
 log('Ready. Configure host and stream name in Settings, then publish and subscribe.')

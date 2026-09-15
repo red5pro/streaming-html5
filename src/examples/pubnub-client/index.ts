@@ -25,16 +25,24 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 import '@/components/r5-header'
+import '@/components/r5-subscriber-link'
 import { applyTheme, loadSettings } from '@/settings'
 import {
+  applyPubNubStoredSettings,
   generateUserId,
+  loadPubNubSettingsFromStorage,
   readPubNubInitConfig,
+  savePubNubSettingsToStorage,
   setPubNubFormEnabled,
   validatePubNubForm,
   wirePubNubForm,
   type PubNubFormElements,
 } from '@/lib/pubnub-configuration'
+import { buildExampleUrl } from '@/lib/example-links'
 import { wireExampleLog } from '@/lib/example-log'
+import type { R5SubscriberLinkElement } from '@/components/r5-subscriber-link'
+
+const PUBNUB_CLIENT_PATH = './index.html'
 
 const sdk = window.red5prosdk
 sdk.setLogLevel('debug')
@@ -68,6 +76,9 @@ const chatMessagesClearBtn = document.getElementById('chat-messages-clear-btn') 
 const pubnubMessageFormEl = document.getElementById('pubnub-message-form') as HTMLFormElement
 const pubnubMessageInputEl = document.getElementById('pubnub-message-input') as HTMLInputElement
 const pubnubMessageSendBtn = document.getElementById('pubnub-message-send-btn') as HTMLButtonElement
+const openPubNubClientLinkEl = document.getElementById(
+  'open-pubnub-client-link'
+) as R5SubscriberLinkElement
 const { log } = wireExampleLog()
 
 type ChatMessageAlignment = 'sent' | 'received'
@@ -91,10 +102,15 @@ function syncPubNubMessagingSection(visible: boolean): void {
   pubnubMessagingSectionEl.classList.toggle('is-hidden', !visible)
   pubnubMessageInputEl.disabled = !visible
   pubnubMessageSendBtn.disabled = !visible
+  openPubNubClientLinkEl.disabled = !visible
   if (!visible) {
     clearChatMessages()
     pubnubMessageInputEl.value = ''
   }
+}
+
+function refreshPubNubClientLink(): void {
+  openPubNubClientLinkEl.href = buildExampleUrl(PUBNUB_CLIENT_PATH, loadSettings())
 }
 
 function clearChatMessages(): void {
@@ -221,6 +237,8 @@ async function startSubscribe(): Promise<void> {
     return
   }
 
+  savePubNubSettingsToStorage(pubnubForm)
+
   subscribeBtn.disabled = true
   destroyBtn.disabled = true
   setPubNubStatus('Connecting...', 'connecting')
@@ -243,6 +261,7 @@ async function startSubscribe(): Promise<void> {
     destroyBtn.disabled = false
     syncPubNubConfigSection(false)
     syncPubNubMessagingSection(true)
+    refreshPubNubClientLink()
     setPubNubStatus('Subscribed', 'connected')
     // @ts-expect-error - global variable for debugging
     window.r5pubnubClient = pubnubClient
@@ -334,5 +353,12 @@ window.addEventListener('beforeunload', () => {
 wirePubNubForm(pubnubForm)
 syncPubNubMessagingSection(false)
 clearChatMessages()
+
+const storedPubNubSettings = loadPubNubSettingsFromStorage()
+if (storedPubNubSettings) {
+  applyPubNubStoredSettings(pubnubForm, storedPubNubSettings)
+  log('PubNub Client loaded. Restored settings from browser storage.')
+} else {
+  log('PubNub Client loaded. Configure settings, then start subscribe.')
+}
 pubnubForm.userIdInput.value = generateUserId()
-log('PubNub Client loaded. Configure settings, then start subscribe.')

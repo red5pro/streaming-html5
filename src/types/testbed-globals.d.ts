@@ -26,6 +26,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 interface WebRTCTestbedAPI {
   loadSettings(): import('@/settings').Settings
+  resolveConnectionFromHost(host: string): import('@/settings').ResolvedConnection
   resolveEndpointFromSettings(
     settings: import('@/settings').Settings,
     clientType: 'whip' | 'whep'

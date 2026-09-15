@@ -25,6 +25,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 const STORAGE_KEY = 'webrtc-settings'
+export const AUTOSTART_QUERY_KEY = 'autostart'
 
 export type Theme = 'light' | 'dark'
 export type Protocol = 'https' | 'http'
@@ -325,6 +326,11 @@ export function resolveRtcConfigurationFromSettings(settings: Settings): RTCConf
     iceCandidatePoolSize: 2,
     bundlePolicy: 'max-bundle',
   }
+}
+
+export function isAutostartRequested(search = window.location.search): boolean {
+  const params = new URLSearchParams(search)
+  return params.get(AUTOSTART_QUERY_KEY) === '1'
 }
 
 function readFromStorage(): Partial<Settings> {

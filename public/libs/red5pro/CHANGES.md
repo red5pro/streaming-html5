@@ -1,5 +1,10 @@
 # Changes
 
+## 16.1.0
+
+- fix: PubNub Integration (Todd Anderson).
+- feat: MediaSource MOQSubscriber init configuration.
+
 ## 16.0.0
 
 - feat: MOQ Integration with OpenMOQ Moq Playa (Todd Anderson).

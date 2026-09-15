@@ -29,6 +29,7 @@ import '@/components/r5-subscriber-stats'
 import type { R5SubscriberStatsElement } from '@/components/r5-subscriber-stats'
 import {
   applyTheme,
+  isAutostartRequested,
   loadSettings,
   resolveConnectionParamsFromSettings,
   resolveEndpointFromSettings,
@@ -44,6 +45,7 @@ sdk.setLogLevel('debug')
 
 let settings = loadSettings()
 applyTheme(settings.theme)
+const requestAutostart = isAutostartRequested()
 
 let subscriber: WHEPClient | null = null
 
@@ -315,4 +317,9 @@ window.addEventListener('beforeunload', () => {
 })
 
 updateConnectionInfo()
-log('WHEP Audio Playback loaded. Configure Settings, then start subscribing.')
+if (requestAutostart) {
+  log('WHEP Audio Playback loaded. `autostart=1` detected. Starting subscribe.')
+  void startSubscribe()
+} else {
+  log('WHEP Audio Playback loaded. Configure Settings, then start subscribing.')
+}

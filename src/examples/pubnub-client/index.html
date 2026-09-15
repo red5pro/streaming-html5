@@ -33,7 +33,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. -->
     <link rel="stylesheet" href="/style/pages/pubnub-client.css" />
     <link rel="stylesheet" href="/style/pages/message-channel.css" />
     <link rel="stylesheet" href="/style/pages/whip-data-channel.css" />
-    <script src="//cdn.pubnub.com/sdk/javascript/pubnub.10.2.5.min.js"></script>
+    <script src="//cdn.pubnub.com/sdk/javascript/pubnub.12.0.3.min.js"></script>
     <script src="/libs/red5pro/red5pro-sdk.min.js"></script>
   </head>
   <body>
@@ -235,7 +235,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. -->
                     />
                   </label>
                   <div class="messaging-form__actions">
-                    <button class="btn btn--primary" type="submit" id="pubnub-message-send-btn" disabled>
+                    <button
+                      class="btn btn--primary"
+                      type="submit"
+                      id="pubnub-message-send-btn"
+                      disabled
+                    >
                       Send
                     </button>
                   </div>
@@ -248,6 +253,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. -->
                 <button class="btn btn--primary" id="subscribe-btn">Start Subscribe</button>
                 <button class="btn btn--danger" id="destroy-btn" disabled>Close Client</button>
               </div>
+              <r5-subscriber-link
+                id="open-pubnub-client-link"
+                href="./index.html"
+                label="Open PubNub Client"
+                disabled
+              ></r5-subscriber-link>
             </div>
           </section>
         </div>
