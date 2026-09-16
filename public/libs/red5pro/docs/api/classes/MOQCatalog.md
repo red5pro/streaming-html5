@@ -1,4 +1,4 @@
-[**Red5 Pro WebRTC SDK v16.1.0-beta.2**](../README.md)
+[**Red5 Pro WebRTC SDK v16.2.0-beta.1**](../README.md)
 
 ***
 
@@ -168,13 +168,17 @@ Assign a callback handler to an event type.
 
 ### subscribe()
 
-> **subscribe**(`namespace?`): `Promise`\<`MOQCatalog`\>
+> **subscribe**(`namespace?`, `joiningFetch?`): `Promise`\<`MOQCatalog`\>
 
 #### Parameters
 
 ##### namespace?
 
 `string`
+
+##### joiningFetch?
+
+`boolean` = `true`
 
 #### Returns
 
