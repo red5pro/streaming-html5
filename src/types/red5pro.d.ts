@@ -82,6 +82,7 @@ interface WHEPConfig {
   videoEncoding?: PlaybackVideoEncoder
   audioEncoding?: PlaybackAudioEncoder
   renegotiationPolicy?: RenegotiationPolicyType
+  postEmptyOffer?: boolean
 }
 
 interface RenegotiationPolicyType {
