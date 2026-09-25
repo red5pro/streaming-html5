@@ -28,11 +28,11 @@ export { LiveSeekConfigType, LiveSeekOptions, defaultLiveSeekConfig } from 'conf
 import { PubnubConfigType } from 'configuration/pubnub';
 import { PublisherEventTypes, SubscriberEventTypes, RTCPublisherEventTypes, RTCSubscriberEventTypes, MessageTransportStateEventTypes, MessageChannelEventTypes, WebRTCConnectionEventTypes } from 'event/event-types';
 export { MessageChannelEventTypes, MessageTransportStateEventTypes, PublisherEventTypes, RTCPublisherEventTypes, RTCSubscriberEventTypes, SubscriberEventTypes, WebRTCConnectionEventTypes } from 'event/event-types';
+import { MOQDataChannelConfiguration, MOQMessageChannelConfigType, MOQSubscriberConfigType, MOQPublisherConfigType, MOQCatalogConfigType, MOQSubscriber, MOQPublisher, MOQMessageChannel, MOQCatalog } from 'moq';
+export { MOQCatalog, MOQCatalogConfigType, MOQDataChannelConfiguration, MOQMessageChannel, MOQMessageChannelConfigType, MOQPublisher, MOQPublisherConfigType, MOQSubscriber, MOQSubscriberConfigType, defaultMOQCatalogConfig, defaultMOQDataChannelConfiguration, defaultMOQMessageChannelConfig, defaultMOQPublisherConfig, defaultMOQSubscriberConfig } from 'moq';
 export { default as Capability } from 'types/capabilities';
 import { PubNubEventTypes } from 'event/pubnub';
 export { PubNubEventTypes } from 'event/pubnub';
-import { MOQSubscriber, MOQPublisher, MOQCatalog } from 'moq';
-export { MOQCatalog, MOQPublisher, MOQSubscriber } from 'moq';
 
 declare const LEVELS: {
     readonly TRACE: "trace";
@@ -1378,9 +1378,15 @@ declare const _default: {
     defaultWhepSubscriberConfig: RTCWhepSubscriberConfigType;
     defaultWhipPublisherConfig: RTCWhipPublisherConfigType;
     defaultStatsConfig: StatsConfig;
+    defaultMOQDataChannelConfiguration: Required<Pick<MOQDataChannelConfiguration, "name" | "keepEcho" | "unreliable">>;
+    defaultMOQMessageChannelConfig: MOQMessageChannelConfigType;
+    defaultMOQSubscriberConfig: MOQSubscriberConfigType;
+    defaultMOQPublisherConfig: MOQPublisherConfigType;
+    defaultMOQCatalogConfig: MOQCatalogConfigType;
     StatsEndpointType: typeof EndpointType;
     MOQSubscriber: typeof MOQSubscriber;
     MOQPublisher: typeof MOQPublisher;
+    MOQMessageChannel: typeof MOQMessageChannel;
     MOQCatalog: typeof MOQCatalog;
 };
 

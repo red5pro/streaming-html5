@@ -2,11 +2,11 @@
 
 ***
 
-[Red5 Pro WebRTC SDK](../globals.md) / HLSSubscriberConfigType
+[Red5 Pro WebRTC SDK](../globals.md) / MOQCatalogConfigType
 
-# Type Alias: HLSSubscriberConfigType
+# Type Alias: MOQCatalogConfigType
 
-> **HLSSubscriberConfigType** = `object`
+> **MOQCatalogConfigType** = `object`
 
 ## Properties
 
@@ -16,13 +16,15 @@
 
 ***
 
-### connectionParams?
+### certKey?
 
-> `optional` **connectionParams?**: `object`
+> `optional` **certKey?**: `string`
 
-#### Index Signature
+***
 
-\[`key`: `string`\]: `any`
+### draftVersion?
+
+> `optional` **draftVersion?**: `DraftVersion`
 
 ***
 
@@ -38,15 +40,15 @@
 
 ***
 
-### mediaElementId?
+### moqtLogLevel?
 
-> `optional` **mediaElementId?**: `string`
+> `optional` **moqtLogLevel?**: `LogLevel`
 
 ***
 
-### muteOnAutoplayRestriction?
+### namespace?
 
-> `optional` **muteOnAutoplayRestriction?**: `boolean`
+> `optional` **namespace?**: `string`
 
 ***
 

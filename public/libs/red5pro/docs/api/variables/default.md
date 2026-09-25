@@ -1,4 +1,4 @@
-[**Red5 Pro WebRTC SDK v16.2.0-beta.2**](../README.md)
+[**Red5 Pro WebRTC SDK v16.3.0-beta.4**](../README.md)
 
 ***
 
@@ -21,6 +21,26 @@
 #### Capability.stream
 
 > `readonly` **stream**: `3` = `3`
+
+### defaultMOQCatalogConfig
+
+> **defaultMOQCatalogConfig**: [`MOQCatalogConfigType`](../type-aliases/MOQCatalogConfigType.md)
+
+### defaultMOQDataChannelConfiguration
+
+> **defaultMOQDataChannelConfiguration**: `Required`\<`Pick`\<[`MOQDataChannelConfiguration`](../type-aliases/MOQDataChannelConfiguration.md), `"name"` \| `"keepEcho"` \| `"unreliable"`\>\>
+
+### defaultMOQMessageChannelConfig
+
+> **defaultMOQMessageChannelConfig**: [`MOQMessageChannelConfigType`](../type-aliases/MOQMessageChannelConfigType.md)
+
+### defaultMOQPublisherConfig
+
+> **defaultMOQPublisherConfig**: [`MOQPublisherConfigType`](../type-aliases/MOQPublisherConfigType.md)
+
+### defaultMOQSubscriberConfig
+
+> **defaultMOQSubscriberConfig**: [`MOQSubscriberConfigType`](../type-aliases/MOQSubscriberConfigType.md)
 
 ### defaultStatsConfig
 
@@ -115,6 +135,10 @@ Get the version of the SDK.
 ### MOQCatalog
 
 > **MOQCatalog**: *typeof* [`MOQCatalog`](../classes/MOQCatalog.md)
+
+### MOQMessageChannel
+
+> **MOQMessageChannel**: *typeof* [`MOQMessageChannel`](../classes/MOQMessageChannel.md)
 
 ### MOQPublisher
 

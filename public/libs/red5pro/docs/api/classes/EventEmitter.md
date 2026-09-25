@@ -1,4 +1,4 @@
-[**Red5 Pro WebRTC SDK v16.2.0-beta.2**](../README.md)
+[**Red5 Pro WebRTC SDK v16.3.0-beta.4**](../README.md)
 
 ***
 
@@ -16,6 +16,7 @@ Base class for an Event Emitter.
 - [`PubNubClient`](PubNubClient.md)
 - [`MOQSubscriber`](MOQSubscriber.md)
 - [`MOQPublisher`](MOQPublisher.md)
+- [`MOQMessageChannel`](MOQMessageChannel.md)
 - [`MOQCatalog`](MOQCatalog.md)
 
 ## Implements

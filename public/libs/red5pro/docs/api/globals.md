@@ -1,8 +1,8 @@
-[**Red5 Pro WebRTC SDK v16.2.0-beta.2**](README.md)
+[**Red5 Pro WebRTC SDK v16.3.0-beta.4**](README.md)
 
 ***
 
-# Red5 Pro WebRTC SDK v16.2.0-beta.2
+# Red5 Pro WebRTC SDK v16.3.0-beta.4
 
 Red5 Pro WebRTC SDK
 
@@ -33,6 +33,7 @@ Red5 Pro WebRTC SDK
 - [MessageChannelEvent](classes/MessageChannelEvent.md)
 - [MessageTransportStateEvent](classes/MessageTransportStateEvent.md)
 - [MOQCatalog](classes/MOQCatalog.md)
+- [MOQMessageChannel](classes/MOQMessageChannel.md)
 - [MOQPublisher](classes/MOQPublisher.md)
 - [MOQSubscriber](classes/MOQSubscriber.md)
 - [PlaybackController](classes/PlaybackController.md)
@@ -58,6 +59,11 @@ Red5 Pro WebRTC SDK
 - [LiveSeekOptions](type-aliases/LiveSeekOptions.md)
 - [MediaConstraintRange](type-aliases/MediaConstraintRange.md)
 - [MediaConstraints](type-aliases/MediaConstraints.md)
+- [MOQCatalogConfigType](type-aliases/MOQCatalogConfigType.md)
+- [MOQDataChannelConfiguration](type-aliases/MOQDataChannelConfiguration.md)
+- [MOQMessageChannelConfigType](type-aliases/MOQMessageChannelConfigType.md)
+- [MOQPublisherConfigType](type-aliases/MOQPublisherConfigType.md)
+- [MOQSubscriberConfigType](type-aliases/MOQSubscriberConfigType.md)
 - [RTCPublisherConfigType](type-aliases/RTCPublisherConfigType.md)
 - [RTCSubscriberConfigType](type-aliases/RTCSubscriberConfigType.md)
 - [RTCWhepSubscriberConfigType](type-aliases/RTCWhepSubscriberConfigType.md)
@@ -71,6 +77,11 @@ Red5 Pro WebRTC SDK
 - [default](variables/default.md)
 - [defaultHLSSubscriberConfig](variables/defaultHLSSubscriberConfig.md)
 - [defaultLiveSeekConfig](variables/defaultLiveSeekConfig.md)
+- [defaultMOQCatalogConfig](variables/defaultMOQCatalogConfig.md)
+- [defaultMOQDataChannelConfiguration](variables/defaultMOQDataChannelConfiguration.md)
+- [defaultMOQMessageChannelConfig](variables/defaultMOQMessageChannelConfig.md)
+- [defaultMOQPublisherConfig](variables/defaultMOQPublisherConfig.md)
+- [defaultMOQSubscriberConfig](variables/defaultMOQSubscriberConfig.md)
 - [defaultStatsConfig](variables/defaultStatsConfig.md)
 - [defaultWhepSubscriberConfig](variables/defaultWhepSubscriberConfig.md)
 - [defaultWhipPublisherConfig](variables/defaultWhipPublisherConfig.md)

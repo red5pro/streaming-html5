@@ -44,7 +44,16 @@ await subscriber.init({
   endpoint: 'https://relay.example.com:4433',
   namespace: 'live/mystream',
   mediaElementId: 'red5pro-subscriber',
-  prefetchCatalog: false
+  prefetchCatalog: false,
+  // Optional: internally managed MOQMessageChannel
+  messageChannel: {
+    enabled: true,
+    mode: 'shared', // 'shared' reuses subscriber connection, 'sidecar' uses separate connection
+    dataChannelConfiguration: {
+      name: 'red5pro',
+      keepEcho: false
+    }
+  }
 })
 
 await subscriber.subscribe()
@@ -55,6 +64,8 @@ To stop:
 ```js
 await subscriber.unsubscribe()
 ```
+
+`unsubscribe()` aborts any in-flight WebTransport handshake / `MoqtPlayer.load()` immediately, so Stop does not wait for a hung relay connection. An in-flight `subscribe()` promise rejects without `Subscribe.Fail`; teardown still emits `Subscribe.Stop` when the stop was user-initiated.
 
 ## Constructing with URL
 
@@ -99,8 +110,23 @@ The `init()` call accepts `MOQSubscriberConfigType`.
 | `moqtLogLevel` | [-] | `none` | Log level passed to MOQ components. |
 | `mediaSource` | [-] | `none` | An instance of a `MediaSourceLike` (from [moq-playa](https://github.com/openmoq/moq-playa)) implementation. _Make sure you know what you are doing, as it carries responsibility for managing buffers and media playout._ |
 | `mseMediaSourceOptions` | [-] | `undefined` | The desired `MseMediaSourceOptions` to apply when the video package format is received as `CMAF/CMSF`. Ignored when `mediaSource` is provided. |
+| `locmafDecoding` | [-] | `mse` | How LOCMAF tracks are consumed: reconstructed CMAF chunks for MSE (`mse`), or coded frames for WebCodecs (`frame`). |
+| `messageChannel` | [-] | `{ enabled: false, mode: 'shared' }` | Optional internally managed `MOQMessageChannel`. `mode: 'shared'` reuses subscriber/player `MoqtConnection`; `mode: 'sidecar'` creates a separate MoQT session for messaging. |
 
 `*` Required when `endpoint` is not provided.
+
+### Managed MessageChannel notes
+
+- `messageChannel.enabled: true` makes `MOQSubscriber` create/manage a channel during `subscribe()` and close it during `unsubscribe()`.
+- `mode: 'shared'`:
+  - reuses the active subscriber/player `MoqtConnection`
+  - keeps media + messaging on one transport/session
+  - useful for same-connection troubleshooting
+- `mode: 'sidecar'`:
+  - creates a second `MoqtConnection` only for messaging
+  - helps isolate transport contention from media playback
+- `messageChannel.dataChannelConfiguration` supports the same semantics as standalone `MOQMessageChannel` (for example `name`, `clientId`, `keepEcho`, `unreliable`).
+- In `sidecar` mode, messaging endpoint fields may be overridden under `messageChannel` (`endpoint`, `host`, `protocol`, `port`, `certKey`, `draftVersion`, `connectionParams`, `app`, `streamName`); otherwise subscriber values are used.
 
 # Events
 
@@ -143,6 +169,21 @@ subscriber.off('*', onSubscriberEvent)
 | `STATS_REPORT` | `MOQ.Stats.Report` | Stats report emitted when enabled. |
 | `AUDIO_BLOCKED` | `MOQ.Audio.Blocked` | Browser blocked audio output pending user gesture. |
 | `AUDIO_UNBLOCKED` | `MOQ.Audio.Unblocked` | Audio output resumed after user gesture. |
+| `MESSAGE_CHANNEL_OPEN` | `MOQ.MessageChannel.Open` | Managed `MOQMessageChannel` opened successfully. |
+| `MESSAGE_CHANNEL_SEND` | `MOQ.MessageChannel.Send` | Managed `MOQMessageChannel` sent a message/data payload. |
+| `MESSAGE_CHANNEL_RECEIVE` | `MOQ.MessageChannel.Receive` | Managed `MOQMessageChannel` received a message/data payload. |
+| `MESSAGE_CHANNEL_CLOSE` | `MOQ.MessageChannel.Close` | Managed `MOQMessageChannel` closed. |
+| `MESSAGE_CHANNEL_FAIL` | `MOQ.MessageChannel.Fail` | Managed `MOQMessageChannel` failed to open. |
+| `MESSAGE_CHANNEL_ERROR` | `MOQ.MessageChannel.Error` | Managed `MOQMessageChannel` reported an error. |
+
+Managed MessageChannel events include metadata in `event.data`:
+
+- `transport`: `'moq'`
+- `mode`: `'shared' | 'sidecar'`
+- `label`: configured channel label (`dataChannelConfiguration.name`)
+- `streamName`: configured stream name used by the managed channel
+- `configuredClientId`: configured sender identity if provided
+- `event`: original underlying `MessageChannel` event payload
 
 # Playback API
 
@@ -165,6 +206,7 @@ You can access internals for advanced integrations:
 ```js
 const options = subscriber.getOptions()
 const player = subscriber.getPlayer()
+const messageChannel = subscriber.getMessageChannel()
 const view = subscriber.getRendererView()
 ```
 
