@@ -90,6 +90,83 @@ Examples:
 - base URL: `https://yourcdn/company`
 - full URL: `https://yourcdn/company/live/stream1.m3u8`
 
+## Stream Manager Proxy HLS
+
+When the video packager writes HLS to local files (`output.type=file`) instead of S3, check
+**Use Stream Manager proxy**. The example then uses this as `fullURL`:
+
+`https://{host}/as/{version}/proxy/packager/{nodeGroup}/hls/{app}/{stream}/playlist.m3u8`
+
+## Player Controls
+
+By default the example uses its own control bar (untick **Use example player controls** for the
+SDK's built-in one). Its timeline spans the whole recording the HLS playlist lists, from the first
+segment to the live edge: click or drag to seek, and the far right end returns to live. It shows
+the position and total length, the playhead's wall-clock time, and the clip range in yellow.
+
+LiveSeekClient behaviours the example works around: its `pause()` drops its arguments, so during
+HLS playback it pauses only the hidden WebRTC video, and the bar plays and pauses the video on
+screen directly instead; after a switch between WebRTC and HLS it
+only starts the new video if the old one was playing, so the bar restarts playback unless the
+viewer paused; and it calls hls.js `recoverMediaError()` on every media error, including
+non-fatal buffer stalls, which reloads the playlist at the live edge, so the example's hls.js
+subclass only recovers fatal errors.
+
+## MP4 Clip Creation
+
+The **Playing** badge shows whether the player is on live WebRTC or the HLS recording (after a
+seek back). The **● LIVE** button in the player's control bar returns to live WebRTC
+(`seekTo(1)`); it is red at live and grey on HLS. When playback drops from HLS back to live, the
+log says whether HLS reached the end of its duration or which hls.js error came last. The **MP4 Clip** panel cuts a range of the HLS recording into an MP4:
+
+1. Seek the player to the clip's start and press **Set Start Time**, then seek to its end and
+   press **Set End Time**. While on HLS each takes the playhead's wall-clock time (hls.js `playingDate`, from
+   `EXT-X-PROGRAM-DATE-TIME`); at live, the live edge. The example passes an hls.js
+   subclass as `liveSeek.hlsjsRef` to get at the player's hls.js instance.
+2. Optionally add a title and press **Create MP4 Clip**.
+3. The page posts `{from, to, title}` (wall-clock ISO times) to
+   `POST /as/{version}/streams/package/{nodeGroup}/clip/{app}/{stream}`, then polls
+   `GET .../clip/{app}/{stream}/{clipId}` until the clip is `DONE` or `FAILED`.
+
+The video packager stream-copies the segments (no re-encode), up to 3 hours per clip. The start is
+exact where the player honors MP4 edit lists. Requirements:
+
+- Non-partitioned HLS (`hls.partition.seconds=0`).
+- The playlist must still list the range: use `hls.playlist.type=event` or a large
+  `hls.playlist.length.segments`.
+- A range across a publisher reconnect is refused.
+- S3 output: the MP4 goes to `clips/{app}/{stream}/{clipId}.mp4` in the bucket and the link is a
+  presigned URL.
+- File output: the MP4 is written next to the stream's HLS and downloaded through the Stream
+  Manager proxy, so it is reachable only while the stream is being packaged.
+
+When the packager has `webhook.url` set, it posts `clip_ready` or `clip_failed` once a clip
+finishes (`guid` is the stream GUID):
+
+```json
+{
+  "event": "clip_ready",
+  "guid": "live/stream1",
+  "timestamp": 1791200000000,
+  "value": {
+    "clipId": "6f1c…",
+    "title": "Goal",
+    "from": "2026-10-05T12:00:01.400Z",
+    "to": "2026-10-05T12:05:01.400Z",
+    "requestedDuration": 300.0,
+    "duration": 300.16,
+    "sizeBytes": 187654321,
+    "segments": 151,
+    "renderSecs": 9.8,
+    "location": { "bucket": "my-bucket", "objectKey": "clips/live/stream1/6f1c….mp4" }
+  }
+}
+```
+
+`duration` is the MP4's probed duration (null if the probe failed). With file output `location`
+is `{ "mp4Path": "hls/live/stream1/clip-6f1c….mp4" }`. `clip_failed` carries `error` instead of
+`duration` and `sizeBytes`.
+
 ## Standalone vs Stream Manager Endpoint Notes
 
 This example still subscribes through the WHEP endpoint resolution from Settings, but operationally it is documented and validated as Stream Manager-only due to VideoPackager and remote HLS workflow expectations.
@@ -130,6 +207,7 @@ When live seek is enabled, useful SDK events include:
 - settings validation (Stream Manager requirement): `ensureCoreSettings()`
 - URL mode handling (`baseURL` / `fullURL`): `resolveLiveSeekUrlValues()`
 - HTML URL mode controls: `src/examples/whep-live-seek/index.html`
+- Stream Manager proxy URL and MP4 clip panel: `src/examples/whep-live-seek/clip-panel.ts`
 
 ---
 

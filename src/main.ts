@@ -346,10 +346,10 @@ const examples: ExampleSection[] = [
         href: './src/examples/brew-mixer/index.html',
       },
       {
-        title: 'Subscribe Live VOD',
+        title: 'Subscribe Live VOD & MP4 Clip',
         description:
-          'LiveSeekClient subscribe with Stream Manager and optional baseURL/fullURL HLS DVR configuration.',
-        tag: 'Stream Manager, Subscribe, LiveSeek',
+          'LiveSeekClient subscribe with Stream Manager, baseURL/fullURL or Stream Manager proxy HLS DVR, and MP4 clip creation.',
+        tag: 'Stream Manager, Subscribe, LiveSeek, Clip',
         href: './src/examples/whep-live-seek/index.html',
       },
       {

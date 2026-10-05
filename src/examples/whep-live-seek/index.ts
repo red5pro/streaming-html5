@@ -38,6 +38,15 @@ import {
 } from '@/settings'
 import { wireExampleLog } from '@/lib/example-log'
 import CustomControls from './custom-controls'
+import {
+  attachLiveButton,
+  capturingHls,
+  enableClipMarks,
+  packagerProxyHlsUrl,
+  resetClipPanel,
+  setPlaybackSource,
+  setupClipPanel,
+} from './clip-panel'
 
 const sdk = window.red5prosdk
 sdk.setLogLevel('debug')
@@ -51,9 +60,11 @@ type LiveSeekClientInstance = {
   subscribe: () => Promise<void>
   unsubscribe: () => Promise<void>
   getPeerConnection: () => RTCPeerConnection | null
+  seekTo?: (percentage: number, duration?: number) => void
 }
 
 let subscriber: LiveSeekClientInstance | null = null
+let controls: CustomControls | null = null
 
 const subscribeBtn = document.getElementById('subscribe-btn') as HTMLButtonElement
 const unsubscribeBtn = document.getElementById('unsubscribe-btn') as HTMLButtonElement
@@ -62,6 +73,7 @@ const connectionInfoEl = document.getElementById('connection-info') as HTMLParag
 const optionalUrlInput = document.getElementById('optional-url-input') as HTMLInputElement
 const useBaseUrlCheck = document.getElementById('use-base-url-check') as HTMLInputElement
 const useFullUrlCheck = document.getElementById('use-full-url-check') as HTMLInputElement
+const useSmProxyCheck = document.getElementById('use-sm-proxy-check') as HTMLInputElement
 const useCustomControlsCheck = document.getElementById(
   'use-custom-controls-check'
 ) as HTMLInputElement
@@ -108,6 +120,14 @@ function resolveLiveSeekUrlValues(): {
   fullURL: string | undefined
   useCustomControls: boolean
 } | null {
+  if (useSmProxyCheck.checked) {
+    return {
+      baseURL: undefined,
+      fullURL: packagerProxyHlsUrl(settings),
+      useCustomControls: useCustomControlsCheck.checked,
+    }
+  }
+
   const url = optionalUrlInput.value.trim()
   const useBaseURL = useBaseUrlCheck.checked
   const useFullURL = useFullUrlCheck.checked
@@ -129,6 +149,12 @@ function resolveLiveSeekUrlValues(): {
     fullURL: useFullURL ? url : undefined,
     useCustomControls: useCustomControlsCheck.checked,
   }
+}
+
+function syncProxyOption(): void {
+  const useProxy = useSmProxyCheck.checked
+  optionalUrlInput.disabled = useBaseUrlCheck.disabled = useFullUrlCheck.disabled = useProxy
+  if (useProxy) optionalUrlInput.value = packagerProxyHlsUrl(settings)
 }
 
 function syncCustomControlsVisibility(): void {
@@ -167,6 +193,7 @@ function onSubscriberEvent(event: Red5ProEvent): void {
     subscribeBtn.disabled = false
     unsubscribeBtn.disabled = true
   } else if (subscriberStopEvents.includes(type)) {
+    setPlaybackSource(null)
     setSubscriberStatus('Subscriber Idle', 'idle')
     subscribeBtn.disabled = false
     unsubscribeBtn.disabled = true
@@ -217,6 +244,7 @@ async function startSubscribe(): Promise<void> {
       rtcConfiguration,
       liveSeek: {
         enabled: true,
+        hlsjsRef: capturingHls(),
         baseURL: liveSeekSettings.baseURL,
         fullURL: liveSeekSettings.fullURL,
         usePlaybackControlsUI: !liveSeekSettings.useCustomControls,
@@ -226,7 +254,7 @@ async function startSubscribe(): Promise<void> {
 
     if (liveSeekSettings.useCustomControls) {
       // Create external controls between init and subscribe when requested.
-      new CustomControls(subscriber)
+      controls = new CustomControls(subscriber, log)
     }
 
     await subscriber.subscribe()
@@ -239,13 +267,19 @@ async function startSubscribe(): Promise<void> {
 
     setSubscriberStatus('Subscribed', 'connected')
     unsubscribeBtn.disabled = false
+    enableClipMarks()
+    // seekTo(1) is LiveSeekClient's switch back to live WebRTC playback.
+    attachLiveButton(() => subscriber?.seekTo?.(1), document.getElementById('live-slot') as HTMLElement)
     log(`Subscribed with LiveSeek to ${settings.streamName} from ${settings.host}`, 'success')
   } catch (error) {
     setSubscriberStatus('Subscribe Error', 'error')
     subscribeBtn.disabled = false
     unsubscribeBtn.disabled = true
     subscriber = null
-    syncLiveSeekPanelVisibility(true)
+    controls?.destroy()
+    controls = null
+    syncLiveSeekPanelVisibility(false)
+    resetClipPanel()
     log(`Subscribe failed: ${String(error)}`, 'error')
   }
 }
@@ -265,7 +299,10 @@ async function stopSubscribe(): Promise<void> {
     subscribeBtn.disabled = false
     unsubscribeBtn.disabled = true
     setSubscriberStatus('Subscriber Idle', 'idle')
-    syncLiveSeekPanelVisibility(true)
+    controls?.destroy()
+    controls = null
+    syncLiveSeekPanelVisibility(false)
+    resetClipPanel()
   }
 }
 
@@ -278,10 +315,14 @@ unsubscribeBtn.addEventListener('click', () => {
 useCustomControlsCheck.addEventListener('change', () => {
   syncCustomControlsVisibility()
 })
+useSmProxyCheck.addEventListener('change', () => {
+  syncProxyOption()
+})
 
 document.addEventListener('webrtc-settings-applied', (e) => {
   settings = (e as CustomEvent).detail as Settings
   updateConnectionInfo()
+  syncProxyOption()
   log(`Settings updated: ${resolveEndpointFromSettings(settings, 'whep')} (${settings.streamName})`)
 })
 
@@ -294,4 +335,5 @@ window.addEventListener('beforeunload', () => {
 
 updateConnectionInfo()
 syncCustomControlsVisibility()
+setupClipPanel(() => settings, log)
 log('Live Seek subscriber loaded. Configure URL option and start subscribe.')
