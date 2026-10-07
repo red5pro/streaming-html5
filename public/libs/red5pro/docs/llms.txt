@@ -1,8 +1,8 @@
 # LLM Docs Index
 
 - project: red5pro-html-sdk-ts
-- version: 16.3.0-beta.4
-- generated_at: 2026-09-24T14:49:41.315Z
+- version: 16.4.0-beta.1
+- generated_at: 2026-10-07T20:05:19.483Z
 
 ## Included Markdown Files
 
@@ -10,6 +10,7 @@
 - docs/api/_media/hls-subscriber.md
 - docs/api/_media/message-channel.md
 - docs/api/_media/moq-catalog.md
+- docs/api/_media/moq-message-channel.md
 - docs/api/_media/moq-publisher.md
 - docs/api/_media/moq-subscriber.md
 - docs/api/_media/pubnub-client.md
@@ -90,6 +91,7 @@
 - docs/hls-subscriber.md
 - docs/message-channel.md
 - docs/moq-catalog.md
+- docs/moq-message-channel.md
 - docs/moq-publisher.md
 - docs/moq-subscriber.md
 - docs/pubnub-client.md

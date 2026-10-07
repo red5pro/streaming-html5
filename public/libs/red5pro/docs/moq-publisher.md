@@ -6,6 +6,7 @@
   <a href="#">MOQ Publishing</a> &bull;
   <a href="moq-subscriber.md">MOQ Subscribing</a> &bull;
   <a href="moq-catalog.md">MOQ Catalog</a> &bull;
+  <a href="moq-message-channel.md">MOQ Message Channel</a> &bull;
   <a href="whip-client.md">WHIP/WHEP Docs</a>
 </p>
 
@@ -119,7 +120,7 @@ The `init()` call accepts `MOQPublisherConfigType`.
 | `bandwidth` | [-] | `{ audio: 56, video: 750 }` | Target encode bandwidth settings. |
 | `mediaConstraints` | [x] | camera+mic defaults | Constraints for SDK-managed `getUserMedia`. |
 | `onGetUserMedia` | [-] | `undefined` | Optional override to provide your own media stream acquisition. |
-| `videoEncoding` | [-] | `H264` | Video codec (`PublishVideoEncoder`). |
+| `videoEncoding` | [-] | `H264` | Preferred video codec (`PublishVideoEncoder`: `H264_BASELINE`, `H264_HIGH`, `H264`, `H265`, `AV1`). The publisher probes `VideoEncoder.isConfigSupported` at the track resolution and frame rate, then falls back (Baseline ↔ High, then H.264 if HEVC/AV1 is requested). AVC level is raised automatically (e.g. 4.0 for 1080p30, 4.2 for 1080p60). If nothing is supported, `ENCODER_ERROR` fires with `terminal: true` and publish fails. |
 | `audioEncoding` | [-] | `OPUS` | Audio codec (`PublishAudioEncoder`). |
 | `mediaElementId` | [-] | `red5pro-publisher` | Preview element id for local media display. |
 | `clearMediaOnUnpublish` | [-] | `true` | Stop preview stream tracks on unpublish. |
@@ -141,6 +142,7 @@ The `init()` call accepts `MOQPublisherConfigType`.
 - With an explicit array, index `0` is **not generated** — the original source track is kept as `video-0`. Entries `1..n-1` are generated. Top-tier encode fps/bitrate may still come from index `0`.
 - `rungs: 1` / a single-variant array skips generation (single source track only).
 - Lower rungs are produced with `OffscreenCanvas` + `MediaStreamTrackGenerator` and published as additional catalog video tracks (`video-0`, `video-1`, …).
+- Video and audio encoders are registered before the namespace is announced. A catalog subscribe is held until that registration finishes, so the published catalog includes every rung and audio track.
 - Additional non-ladder video tracks already present on the input stream (for example screenshare) are preserved after the ladder tracks.
 - Requires Chromium insertable-streams APIs (`MediaStreamTrackProcessor` / `MediaStreamTrackGenerator`).
 
@@ -188,7 +190,7 @@ publisher.off('*', onPublisherEvent)
 | `CONSTRAINTS_REJECTED` | `MOQ.MediaConstraints.Rejected` | Media constraints rejected. |
 | `MEDIA_STREAM_AVAILABLE` | `MOQ.MediaStream.Available` | Local `MediaStream` became available. |
 | `NAMESPACE_PUBLISHED` | `MOQ.Namespace.Published` | Namespace announce/publish completed. |
-| `CATALOG_PUBLISHED` | `MOQ.Catalog.Published` | Catalog tracks announced to the session. |
+| `CATALOG_PUBLISHED` | `MOQ.Catalog.Published` | Catalog tracks announced to the session, after every encoder has been registered. |
 | `RELAY_SUBSCRIBE` | `MOQ.Relay.Subscribe` | Relay requested a known track subscription. |
 | `RELAY_SUBSCRIBE_FAILED` | `MOQ.Relay.Subscribe.Failed` | Relay requested unknown or rejected track. |
 | `RELAY_MESSAGE` | `MOQ.Relay.Message` | Relay control message received. |

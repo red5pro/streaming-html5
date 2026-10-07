@@ -1,5 +1,12 @@
 # Changes
 
+## 16.3.0
+
+- fix: MOQ Catalog subscribe+fetch (Todd Anderson).
+- feat: MOQ Message Channel (Todd Anderson).
+- feat: LOC-04 MOQ Broadcast support (Todd Anderson).
+- feat: LOCMAF package recognistion for MOQ Subscriber MSE playback (Todd Anderson).
+
 ## 16.1.0
 
 - fix: PubNub Integration (Todd Anderson).
