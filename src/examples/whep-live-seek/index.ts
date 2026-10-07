@@ -175,6 +175,7 @@ function onSubscriberEvent(event: Red5ProEvent): void {
   const { type, data } = event
   if (type === 'Subscribe.Metadata') {
     subscriberStatsEl.applySubscribeMetadata(data)
+    controls?.applySubscribeMetadata(data)
     return
   }
   if (type === 'WebRTC.Endpoint.Changed') {

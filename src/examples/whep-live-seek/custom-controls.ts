@@ -26,6 +26,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import { getClipMarks, getHls, isHlsActive, type HlsFragment } from './clip-panel'
 import type { ExampleLogger } from '@/lib/example-log'
+import { extractBroadcastStartTime, formatBroadcastLength } from '@/lib/subscribe-metadata'
 
 // Player controls for LiveSeekClient. The timeline spans the whole HLS recording the playlist
 // lists (from its first segment to the live edge), seeks on click or drag, shows the playhead's
@@ -103,6 +104,7 @@ export default class CustomControls {
   private userPaused = false
   private resuming = false
   private resumeFailed = false
+  private broadcastStartTime: number | null = null
 
   constructor(subscriber: LiveSeekPlaybackClient, log: ExampleLogger['log']) {
     this.subscriber = subscriber
@@ -133,8 +135,20 @@ export default class CustomControls {
     this.render()
   }
 
+  applySubscribeMetadata(payload: unknown): void {
+    const startTime = extractBroadcastStartTime(payload)
+    if (startTime === null) return
+    this.broadcastStartTime = startTime
+  }
+
   destroy(): void {
     clearInterval(this.ticker)
+    this.broadcastStartTime = null
+  }
+
+  private broadcastLengthLabel(nowMs = Date.now()): string | null {
+    if (this.broadcastStartTime === null) return null
+    return formatBroadcastLength(this.broadcastStartTime, nowMs)
   }
 
   /** The element currently on screen: the HLS video after a seek back, else WebRTC. */
@@ -244,26 +258,34 @@ export default class CustomControls {
     this.fullscreenButton.title = fullscreen ? 'Exit fullscreen' : 'Fullscreen'
 
     const range = timeline()
+    const live = !isHlsActive()
+    const lengthLabel = this.broadcastLengthLabel()
+
     if (!range) {
       this.scrubber.disabled = true
-      this.timeDisplay.textContent = 'LIVE'
+      this.timeDisplay.textContent = lengthLabel ? `LIVE / ${lengthLabel}` : 'LIVE'
       this.wallDisplay.textContent = ''
       this.clipRange.style.display = 'none'
       return
     }
-    const live = !isHlsActive()
     this.scrubber.disabled = false
     this.scrubber.min = String(range.start)
     this.scrubber.max = String(range.end)
     if (!this.scrubbing) this.scrubber.value = String(live ? range.end : media.currentTime)
 
     const position = Number(this.scrubber.value)
-    const total = range.end - range.start
-    this.timeDisplay.textContent =
-      live && !this.scrubbing
-        ? `LIVE / ${formatClock(total)}`
-        : `${formatClock(position - range.start)} / ${formatClock(total)}`
+    const windowSecs = range.end - range.start
     const wall = live && !this.scrubbing ? null : wallTimeAt(position, range.fragments)
+    if (live && !this.scrubbing) {
+      this.timeDisplay.textContent = lengthLabel ? `LIVE / ${lengthLabel}` : 'LIVE'
+    } else if (this.broadcastStartTime !== null && wall != null) {
+      const elapsed = Math.max(0, (wall - this.broadcastStartTime) / 1000)
+      this.timeDisplay.textContent = `${formatClock(elapsed)} / ${lengthLabel ?? formatClock(windowSecs)}`
+    } else {
+      this.timeDisplay.textContent = `${formatClock(position - range.start)} / ${
+        lengthLabel ?? formatClock(windowSecs)
+      }`
+    }
     this.wallDisplay.textContent =
       wall == null ? '' : `${new Date(wall).toISOString().slice(11, 19)} UTC`
 
@@ -271,12 +293,12 @@ export default class CustomControls {
     const { start, end } = getClipMarks()
     const from = start == null ? null : mediaTimeAt(start, range.fragments)
     const to = end == null ? (from == null ? null : position) : mediaTimeAt(end, range.fragments)
-    if (from == null || to == null || to <= from || total <= 0) {
+    if (from == null || to == null || to <= from || windowSecs <= 0) {
       this.clipRange.style.display = 'none'
       return
     }
     this.clipRange.style.display = 'block'
-    this.clipRange.style.left = `${((from - range.start) / total) * 100}%`
-    this.clipRange.style.width = `${((to - from) / total) * 100}%`
+    this.clipRange.style.left = `${((from - range.start) / windowSecs) * 100}%`
+    this.clipRange.style.width = `${((to - from) / windowSecs) * 100}%`
   }
 }
