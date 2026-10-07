@@ -144,6 +144,21 @@ export default class CustomControls {
   destroy(): void {
     clearInterval(this.ticker)
     this.broadcastStartTime = null
+    // Disable the scrubber and other UI elements.
+    this.scrubber.disabled = true
+    this.clipRange.style.display = 'none'
+    this.playPauseButton.classList.remove('is-playing')
+    this.playPauseButton.title = 'Play'
+    this.playPauseButton.disabled = true
+    this.playPauseButton.setAttribute('aria-pressed', 'false')
+    this.muteButton.classList.remove('is-muted')
+    this.muteButton.title = 'Mute'
+    this.muteButton.disabled = true
+    this.muteButton.setAttribute('aria-pressed', 'false')
+    this.fullscreenButton.classList.remove('is-fullscreen')
+    this.fullscreenButton.title = 'Fullscreen'
+    this.fullscreenButton.disabled = true
+    this.fullscreenButton.setAttribute('aria-pressed', 'false')
   }
 
   private broadcastLengthLabel(nowMs = Date.now()): string | null {
