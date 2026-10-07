@@ -5,6 +5,7 @@
   <a href="../README.md">Quick Start</a> &bull;
   <a href="whip-client.md">Publishing</a> &bull;
   <a href="whep-client.md">Subscribing</a> &bull;
+  <a href="moq-message-channel.md">MOQ Message Channel</a> &bull;
   <a href="#">Message Channel</a> &bull;
   <a href="pubnub-client.md">PubNub Client</a>
 </p>
@@ -24,6 +25,8 @@ Due to these clients' streaming nature, that underlying messaging channel will b
 In most cases, this is common scenario. However, if you would like to maintain a messaging channel _along-side_ a streaming client, you can utilize the `MessageChannel` client.
 
 > Be aware that since the `MessageChannel` is not inherently associated with a stream, synchronizations between messages and any associative, external streams will not be available.
+
+For MoQ / WebTransport messaging (same send method names, different wire protocol), see [MOQMessageChannel](moq-message-channel.md).
 
 * [Usage](#usage)
 * [Init Configuration](#init-configuration)

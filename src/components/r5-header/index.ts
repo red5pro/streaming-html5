@@ -190,15 +190,29 @@ export class R5Header extends HTMLElement {
     }
 
     document.addEventListener('click', this.onDocClick)
+    document.addEventListener('auxclick', this.onDocClick)
   }
 
   disconnectedCallback(): void {
     document.removeEventListener('click', this.onDocClick)
+    document.removeEventListener('auxclick', this.onDocClick)
+  }
+
+  private shouldOpenInNewTab(e: MouseEvent, anchor: HTMLAnchorElement): boolean {
+    if (e.metaKey || e.ctrlKey || e.shiftKey) return true
+    if (e.button === 1) return true
+    const linkTarget = anchor.getAttribute('target')
+    return Boolean(linkTarget && linkTarget !== '_self')
   }
 
   private handleLinkClick(e: MouseEvent): void {
-    const anchor = (e.target as Element).closest('a')
-    if (!anchor) return
+    if (e.defaultPrevented || e.altKey) return
+
+    const eventTarget = e.target
+    if (!(eventTarget instanceof Element)) return
+
+    const anchor = eventTarget.closest('a')
+    if (!(anchor instanceof HTMLAnchorElement)) return
 
     const href = anchor.getAttribute('href')
     if (!href || href.startsWith('#') || href.startsWith('mailto:')) return
@@ -221,7 +235,12 @@ export class R5Header extends HTMLElement {
     if (!changed) return
 
     e.preventDefault()
-    window.location.href = target.toString()
+    const url = target.toString()
+    if (this.shouldOpenInNewTab(e, anchor)) {
+      window.open(url, '_blank', 'noopener,noreferrer')
+      return
+    }
+    window.location.href = url
   }
 
   private togglePanel(): void {

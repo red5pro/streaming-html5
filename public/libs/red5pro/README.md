@@ -5,10 +5,11 @@
   <a href="#">Quick Start</a> &bull;
   <a href="docs/whip-client.md">Publishing</a> &bull;
   <a href="docs/whep-client.md">Subscribing</a> &bull;
+  <a href="docs/message-channel.md">Message Channel</a> &bull;
   <a href="docs/moq-publisher.md">MOQ Publishing</a> &bull;
   <a href="docs/moq-subscriber.md">MOQ Subscribing</a> &bull;
   <a href="docs/moq-catalog.md">MOQ Catalog</a> &bull;
-  <a href="docs/message-channel.md">Message Channel</a> &bull;
+  <a href="docs/moq-message-channel.md">MOQ Message Channel</a> &bull;
   <a href="docs/pubnub-client.md">PubNub Client</a>
 </p>
 
@@ -97,7 +98,7 @@ You can sign up and download the Red5 Server to manage your own deployment at [h
 
         const publisher = new WHIPClient()
         const subscriber = new WHEPClient()
-        
+
         const config = {
           host: 'mydeploy.red5.net',
           streamName: 'mystream'
@@ -227,3 +228,4 @@ The initialization configurations and relevant APIs available for each client ca
 * [MOQPublisher](docs/moq-publisher.md)
 * [MOQSubscriber](docs/moq-subscriber.md)
 * [MOQCatalog](docs/moq-catalog.md)
+* [MOQMessageChannel](docs/moq-message-channel.md)

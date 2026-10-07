@@ -26,6 +26,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import { getClipMarks, getHls, isHlsActive, type HlsFragment } from './clip-panel'
 import type { ExampleLogger } from '@/lib/example-log'
+import { extractBroadcastStartTime, formatBroadcastLength } from '@/lib/subscribe-metadata'
 
 // Player controls for LiveSeekClient. The timeline spans the whole HLS recording the playlist
 // lists (from its first segment to the live edge), seeks on click or drag, shows the playhead's
@@ -34,6 +35,8 @@ import type { ExampleLogger } from '@/lib/example-log'
 interface LiveSeekPlaybackClient {
   setVolume?: (volume: number) => void
   seekTo?: (percentage: number, duration?: number) => void
+  mute?: () => void
+  unmute?: () => void
 }
 
 interface Timeline {
@@ -67,13 +70,18 @@ function timeline(): Timeline | null {
 }
 
 function wallTimeAt(t: number, fragments: HlsFragment[]): number | null {
-  const frag = fragments.find((f) => t >= f.start && t < f.start + f.duration) ?? fragments[fragments.length - 1]
+  const frag =
+    fragments.find((f) => t >= f.start && t < f.start + f.duration) ??
+    fragments[fragments.length - 1]
   return frag.programDateTime == null ? null : frag.programDateTime + (t - frag.start) * 1000
 }
 
 function mediaTimeAt(wall: number, fragments: HlsFragment[]): number | null {
   const frag = fragments.find(
-    (f) => f.programDateTime != null && wall >= f.programDateTime && wall < f.programDateTime + f.duration * 1000
+    (f) =>
+      f.programDateTime != null &&
+      wall >= f.programDateTime &&
+      wall < f.programDateTime + f.duration * 1000
   )
   return frag ? frag.start + (wall - frag.programDateTime!) / 1000 : null
 }
@@ -96,6 +104,7 @@ export default class CustomControls {
   private userPaused = false
   private resuming = false
   private resumeFailed = false
+  private broadcastStartTime: number | null = null
 
   constructor(subscriber: LiveSeekPlaybackClient, log: ExampleLogger['log']) {
     this.subscriber = subscriber
@@ -126,8 +135,35 @@ export default class CustomControls {
     this.render()
   }
 
+  applySubscribeMetadata(payload: unknown): void {
+    const startTime = extractBroadcastStartTime(payload)
+    if (startTime === null) return
+    this.broadcastStartTime = startTime
+  }
+
   destroy(): void {
     clearInterval(this.ticker)
+    this.broadcastStartTime = null
+    // Disable the scrubber and other UI elements.
+    this.scrubber.disabled = true
+    this.clipRange.style.display = 'none'
+    this.playPauseButton.classList.remove('is-playing')
+    this.playPauseButton.title = 'Play'
+    this.playPauseButton.disabled = true
+    this.playPauseButton.setAttribute('aria-pressed', 'false')
+    this.muteButton.classList.remove('is-muted')
+    this.muteButton.title = 'Mute'
+    this.muteButton.disabled = true
+    this.muteButton.setAttribute('aria-pressed', 'false')
+    this.fullscreenButton.classList.remove('is-fullscreen')
+    this.fullscreenButton.title = 'Fullscreen'
+    this.fullscreenButton.disabled = true
+    this.fullscreenButton.setAttribute('aria-pressed', 'false')
+  }
+
+  private broadcastLengthLabel(nowMs = Date.now()): string | null {
+    if (this.broadcastStartTime === null) return null
+    return formatBroadcastLength(this.broadcastStartTime, nowMs)
   }
 
   /** The element currently on screen: the HLS video after a seek back, else WebRTC. */
@@ -156,7 +192,14 @@ export default class CustomControls {
    * HLS was playing. Restart whichever video is on screen unless the viewer paused it.
    */
   private keepPlaying(media: HTMLMediaElement): void {
-    if (this.userPaused || this.scrubbing || this.resuming || !media.paused || media.readyState === 0) return
+    if (
+      this.userPaused ||
+      this.scrubbing ||
+      this.resuming ||
+      !media.paused ||
+      media.readyState === 0
+    )
+      return
     this.resuming = true
     const source = media === this.webrtcVideo ? 'WebRTC' : 'HLS'
     media
@@ -166,7 +209,8 @@ export default class CustomControls {
         this.log(`Resumed ${source} playback after a switch`)
       })
       .catch((error) => {
-        if (!this.resumeFailed) this.log(`Could not resume ${source} playback: ${String(error)}`, 'error')
+        if (!this.resumeFailed)
+          this.log(`Could not resume ${source} playback: ${String(error)}`, 'error')
         this.resumeFailed = true
       })
       .finally(() => {
@@ -176,8 +220,11 @@ export default class CustomControls {
 
   private toggleMute(): void {
     const media = this.activeMedia()
-    this.subscriber.setVolume?.(media.muted || media.volume === 0 ? 1 : 0)
-    media.muted = false
+    if (media.muted) {
+      this.subscriber.unmute?.()
+    } else {
+      this.subscriber.mute?.()
+    }
   }
 
   private toggleFullscreen(): void {
@@ -215,44 +262,58 @@ export default class CustomControls {
   private render(): void {
     const media = this.activeMedia()
     this.keepPlaying(media)
-    this.playPauseButton.textContent = media.paused ? '▶' : '❚❚'
+    this.playPauseButton.classList.toggle('is-playing', !media.paused)
     this.playPauseButton.title = media.paused ? 'Play' : 'Pause'
-    this.muteButton.textContent = media.muted || media.volume === 0 ? '🔇' : '🔊'
-    this.fullscreenButton.textContent = document.fullscreenElement ? '✕' : '⛶'
+    const muted = media.muted || media.volume === 0
+    this.muteButton.classList.toggle('is-muted', muted)
+    this.muteButton.title = muted ? 'Unmute' : 'Mute'
+    this.muteButton.setAttribute('aria-pressed', String(muted))
+    const fullscreen = Boolean(document.fullscreenElement)
+    this.fullscreenButton.classList.toggle('is-fullscreen', fullscreen)
+    this.fullscreenButton.title = fullscreen ? 'Exit fullscreen' : 'Fullscreen'
 
     const range = timeline()
+    const live = !isHlsActive()
+    const lengthLabel = this.broadcastLengthLabel()
+
     if (!range) {
       this.scrubber.disabled = true
-      this.timeDisplay.textContent = 'LIVE'
+      this.timeDisplay.textContent = lengthLabel ? `LIVE / ${lengthLabel}` : 'LIVE'
       this.wallDisplay.textContent = ''
       this.clipRange.style.display = 'none'
       return
     }
-    const live = !isHlsActive()
     this.scrubber.disabled = false
     this.scrubber.min = String(range.start)
     this.scrubber.max = String(range.end)
     if (!this.scrubbing) this.scrubber.value = String(live ? range.end : media.currentTime)
 
     const position = Number(this.scrubber.value)
-    const total = range.end - range.start
-    this.timeDisplay.textContent =
-      live && !this.scrubbing
-        ? `LIVE / ${formatClock(total)}`
-        : `${formatClock(position - range.start)} / ${formatClock(total)}`
+    const windowSecs = range.end - range.start
     const wall = live && !this.scrubbing ? null : wallTimeAt(position, range.fragments)
-    this.wallDisplay.textContent = wall == null ? '' : `${new Date(wall).toISOString().slice(11, 19)} UTC`
+    if (live && !this.scrubbing) {
+      this.timeDisplay.textContent = lengthLabel ? `LIVE / ${lengthLabel}` : 'LIVE'
+    } else if (this.broadcastStartTime !== null && wall != null) {
+      const elapsed = Math.max(0, (wall - this.broadcastStartTime) / 1000)
+      this.timeDisplay.textContent = `${formatClock(elapsed)} / ${lengthLabel ?? formatClock(windowSecs)}`
+    } else {
+      this.timeDisplay.textContent = `${formatClock(position - range.start)} / ${
+        lengthLabel ?? formatClock(windowSecs)
+      }`
+    }
+    this.wallDisplay.textContent =
+      wall == null ? '' : `${new Date(wall).toISOString().slice(11, 19)} UTC`
 
     // Highlight the clip range on the track.
     const { start, end } = getClipMarks()
     const from = start == null ? null : mediaTimeAt(start, range.fragments)
     const to = end == null ? (from == null ? null : position) : mediaTimeAt(end, range.fragments)
-    if (from == null || to == null || to <= from || total <= 0) {
+    if (from == null || to == null || to <= from || windowSecs <= 0) {
       this.clipRange.style.display = 'none'
       return
     }
     this.clipRange.style.display = 'block'
-    this.clipRange.style.left = `${((from - range.start) / total) * 100}%`
-    this.clipRange.style.width = `${((to - from) / total) * 100}%`
+    this.clipRange.style.left = `${((from - range.start) / windowSecs) * 100}%`
+    this.clipRange.style.width = `${((to - from) / windowSecs) * 100}%`
   }
 }
