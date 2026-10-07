@@ -108,8 +108,74 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. -->
                 controls
               ></video>
               <div class="custom-controls is-hidden">
-                <button type="button" class="player-btn" id="play-pause-button" title="Play">▶</button>
-                <button type="button" class="player-btn" id="mute-unmute-button" title="Mute">🔊</button>
+                <button type="button" class="player-btn" id="play-pause-button" title="Play">
+                  <svg
+                    class="player-btn__icon player-btn__icon--play"
+                    viewBox="0 0 100 100"
+                    aria-hidden="true"
+                  >
+                    <polygon points="28,16 28,84 84,50" fill="currentColor" />
+                  </svg>
+                  <svg
+                    class="player-btn__icon player-btn__icon--pause"
+                    viewBox="0 0 100 100"
+                    aria-hidden="true"
+                  >
+                    <rect x="22" y="16" width="18" height="68" rx="3" fill="currentColor" />
+                    <rect x="60" y="16" width="18" height="68" rx="3" fill="currentColor" />
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  class="player-btn"
+                  id="mute-unmute-button"
+                  title="Mute"
+                  aria-pressed="false"
+                >
+                  <svg
+                    class="player-btn__icon player-btn__icon--unmuted"
+                    viewBox="0 0 100 100"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M48 22L30 38H16a4 4 0 0 0-4 4v16a4 4 0 0 0 4 4h14L48 78V22z"
+                      fill="currentColor"
+                    />
+                    <path
+                      d="M61 35A20 20 0 0 1 61 65"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="7"
+                      stroke-linecap="round"
+                    />
+                    <path
+                      d="M71 25A34 34 0 0 1 71 75"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="7"
+                      stroke-linecap="round"
+                    />
+                  </svg>
+                  <svg
+                    class="player-btn__icon player-btn__icon--muted"
+                    viewBox="0 0 100 100"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M48 22L30 38H16a4 4 0 0 0-4 4v16a4 4 0 0 0 4 4h14L48 78V22z"
+                      fill="currentColor"
+                    />
+                    <line
+                      x1="60"
+                      y1="32"
+                      x2="90"
+                      y2="68"
+                      stroke="currentColor"
+                      stroke-width="8"
+                      stroke-linecap="round"
+                    />
+                  </svg>
+                </button>
                 <div class="player-timeline">
                   <div class="player-timeline__clip" id="timeline-clip"></div>
                   <input id="scrubber" type="range" min="0" max="0" step="0.1" value="0" disabled />
@@ -117,7 +183,28 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. -->
                 <span class="player-time" id="time-display">LIVE</span>
                 <span class="player-wall" id="wall-display"></span>
                 <span id="live-slot"></span>
-                <button type="button" class="player-btn" id="fullscreen-button" title="Fullscreen">⛶</button>
+                <button type="button" class="player-btn" id="fullscreen-button" title="Fullscreen">
+                  <svg
+                    class="player-btn__icon player-btn__icon--enter-fs"
+                    viewBox="0 0 100 100"
+                    aria-hidden="true"
+                  >
+                    <path d="M22 22h22v-8H14v30h8V22z" fill="currentColor" />
+                    <path d="M78 22H56v-8h30v30h-8V22z" fill="currentColor" />
+                    <path d="M22 78h22v8H14V56h8v22z" fill="currentColor" />
+                    <path d="M78 78H56v8h30V56h-8v22z" fill="currentColor" />
+                  </svg>
+                  <svg
+                    class="player-btn__icon player-btn__icon--exit-fs"
+                    viewBox="0 0 100 100"
+                    aria-hidden="true"
+                  >
+                    <path d="M14 36h22V14h-8v14H14v8z" fill="currentColor" />
+                    <path d="M86 36H64V14h8v14h14v8z" fill="currentColor" />
+                    <path d="M14 64h22v22h-8V72H14v-8z" fill="currentColor" />
+                    <path d="M86 64H64v22h8V72h14v-8z" fill="currentColor" />
+                  </svg>
+                </button>
               </div>
             </div>
 

@@ -167,7 +167,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 }
 
 .player-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   min-width: 2rem;
+  min-height: 2rem;
   padding: 0.25rem 0.4rem;
   border: none;
   border-radius: 4px;
@@ -179,6 +183,30 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 .player-btn:hover {
   background: rgba(255, 255, 255, 0.12);
+}
+
+.player-btn__icon {
+  display: block;
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.player-btn__icon--muted,
+.player-btn__icon--pause,
+.player-btn__icon--exit-fs {
+  display: none;
+}
+
+.player-btn.is-muted .player-btn__icon--unmuted,
+.player-btn.is-playing .player-btn__icon--play,
+.player-btn.is-fullscreen .player-btn__icon--enter-fs {
+  display: none;
+}
+
+.player-btn.is-muted .player-btn__icon--muted,
+.player-btn.is-playing .player-btn__icon--pause,
+.player-btn.is-fullscreen .player-btn__icon--exit-fs {
+  display: block;
 }
 
 .player-timeline {
@@ -209,12 +237,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 .player-time,
 .player-wall {
   font-family: monospace;
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   white-space: nowrap;
 }
 
 .player-wall {
   color: #9ca3af;
+  display: none;
 }
 
 @media (max-width: 760px) {
@@ -249,8 +278,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   margin-bottom: 0.75rem;
 }
 
-
-
 .clip-panel__value {
   min-width: 11rem;
   font-family: monospace;
@@ -270,19 +297,22 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 .playback-source {
   display: inline-block;
-  padding: 0.15rem 0.6rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  padding: 0.25rem 0.75rem;
   border-radius: 999px;
-  font-weight: 600;
-  color: #fff;
-  background: #6b7280;
+  background: var(--status-idle-bg);
+  color: var(--status-idle-text);
 }
 
 .playback-source--webrtc {
   background: #16a34a;
+  color: #fff;
 }
 
 .playback-source--hls {
   background: #d97706;
+  color: #fff;
 }
 
 .live-button {
@@ -291,7 +321,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   border: none;
   border-radius: 4px;
   font-weight: 700;
-  font-size: 0.8rem;
+  font-size: 0.75rem;
+  font-family: 'IBM Plex Mono', ui-monospace, 'SF Mono', monospace;
   color: #fff;
   background: #6b7280;
   cursor: pointer;

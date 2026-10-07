@@ -34,6 +34,8 @@ import type { ExampleLogger } from '@/lib/example-log'
 interface LiveSeekPlaybackClient {
   setVolume?: (volume: number) => void
   seekTo?: (percentage: number, duration?: number) => void
+  mute?: () => void
+  unmute?: () => void
 }
 
 interface Timeline {
@@ -67,13 +69,18 @@ function timeline(): Timeline | null {
 }
 
 function wallTimeAt(t: number, fragments: HlsFragment[]): number | null {
-  const frag = fragments.find((f) => t >= f.start && t < f.start + f.duration) ?? fragments[fragments.length - 1]
+  const frag =
+    fragments.find((f) => t >= f.start && t < f.start + f.duration) ??
+    fragments[fragments.length - 1]
   return frag.programDateTime == null ? null : frag.programDateTime + (t - frag.start) * 1000
 }
 
 function mediaTimeAt(wall: number, fragments: HlsFragment[]): number | null {
   const frag = fragments.find(
-    (f) => f.programDateTime != null && wall >= f.programDateTime && wall < f.programDateTime + f.duration * 1000
+    (f) =>
+      f.programDateTime != null &&
+      wall >= f.programDateTime &&
+      wall < f.programDateTime + f.duration * 1000
   )
   return frag ? frag.start + (wall - frag.programDateTime!) / 1000 : null
 }
@@ -156,7 +163,14 @@ export default class CustomControls {
    * HLS was playing. Restart whichever video is on screen unless the viewer paused it.
    */
   private keepPlaying(media: HTMLMediaElement): void {
-    if (this.userPaused || this.scrubbing || this.resuming || !media.paused || media.readyState === 0) return
+    if (
+      this.userPaused ||
+      this.scrubbing ||
+      this.resuming ||
+      !media.paused ||
+      media.readyState === 0
+    )
+      return
     this.resuming = true
     const source = media === this.webrtcVideo ? 'WebRTC' : 'HLS'
     media
@@ -166,7 +180,8 @@ export default class CustomControls {
         this.log(`Resumed ${source} playback after a switch`)
       })
       .catch((error) => {
-        if (!this.resumeFailed) this.log(`Could not resume ${source} playback: ${String(error)}`, 'error')
+        if (!this.resumeFailed)
+          this.log(`Could not resume ${source} playback: ${String(error)}`, 'error')
         this.resumeFailed = true
       })
       .finally(() => {
@@ -176,8 +191,11 @@ export default class CustomControls {
 
   private toggleMute(): void {
     const media = this.activeMedia()
-    this.subscriber.setVolume?.(media.muted || media.volume === 0 ? 1 : 0)
-    media.muted = false
+    if (media.muted) {
+      this.subscriber.unmute?.()
+    } else {
+      this.subscriber.mute?.()
+    }
   }
 
   private toggleFullscreen(): void {
@@ -215,10 +233,15 @@ export default class CustomControls {
   private render(): void {
     const media = this.activeMedia()
     this.keepPlaying(media)
-    this.playPauseButton.textContent = media.paused ? '▶' : '❚❚'
+    this.playPauseButton.classList.toggle('is-playing', !media.paused)
     this.playPauseButton.title = media.paused ? 'Play' : 'Pause'
-    this.muteButton.textContent = media.muted || media.volume === 0 ? '🔇' : '🔊'
-    this.fullscreenButton.textContent = document.fullscreenElement ? '✕' : '⛶'
+    const muted = media.muted || media.volume === 0
+    this.muteButton.classList.toggle('is-muted', muted)
+    this.muteButton.title = muted ? 'Unmute' : 'Mute'
+    this.muteButton.setAttribute('aria-pressed', String(muted))
+    const fullscreen = Boolean(document.fullscreenElement)
+    this.fullscreenButton.classList.toggle('is-fullscreen', fullscreen)
+    this.fullscreenButton.title = fullscreen ? 'Exit fullscreen' : 'Fullscreen'
 
     const range = timeline()
     if (!range) {
@@ -241,7 +264,8 @@ export default class CustomControls {
         ? `LIVE / ${formatClock(total)}`
         : `${formatClock(position - range.start)} / ${formatClock(total)}`
     const wall = live && !this.scrubbing ? null : wallTimeAt(position, range.fragments)
-    this.wallDisplay.textContent = wall == null ? '' : `${new Date(wall).toISOString().slice(11, 19)} UTC`
+    this.wallDisplay.textContent =
+      wall == null ? '' : `${new Date(wall).toISOString().slice(11, 19)} UTC`
 
     // Highlight the clip range on the track.
     const { start, end } = getClipMarks()
