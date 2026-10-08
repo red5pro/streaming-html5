@@ -1,6 +1,6 @@
 {
   "name": "streaming-webrtc",
-  "version": "16.2.0",
+  "version": "16.3.0",
   "description": "Web-based testbed for Red5 SDK WHIP/WHEP client functionality",
   "scripts": {
     "dev": "vite",
@@ -24,6 +24,6 @@
     "eslint-config-prettier": "^10.1.2",
     "prettier": "^3.5.3",
     "typescript": "^5.8.3",
-    "vite": "^6.3.1"
+    "vite": "^6.4.3"
   }
 }
