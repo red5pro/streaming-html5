@@ -165,6 +165,46 @@ Whether the media element is a VOD.
 
 ***
 
+### setBroadcastStartTime()
+
+> `abstract` **setBroadcastStartTime**(`timestampMs`): `void`
+
+Set the broadcast start time used for the control-bar length.
+
+#### Parameters
+
+##### timestampMs
+
+`number` \| `null`
+
+UTC epoch milliseconds when the broadcast started, or null to clear it.
+
+#### Returns
+
+`void`
+
+***
+
+### setLiveEdgeActive()
+
+> `abstract` **setLiveEdgeActive**(`active`): `void`
+
+Whether playback is on the live edge. The LIVE pill is red only in this state while playing.
+
+#### Parameters
+
+##### active
+
+`boolean`
+
+True for live WebRTC playback, false while a seek is playing from HLS.
+
+#### Returns
+
+`void`
+
+***
+
 ### setMutedState()
 
 > `abstract` **setMutedState**(`muted`): `void`

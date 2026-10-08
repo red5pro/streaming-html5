@@ -39,7 +39,7 @@ import {
 import { wireExampleLog } from '@/lib/example-log'
 import CustomControls from './custom-controls'
 import {
-  attachLiveButton,
+  // attachLiveButton,
   capturingHls,
   enableClipMarks,
   packagerProxyHlsUrl,
@@ -270,10 +270,10 @@ async function startSubscribe(): Promise<void> {
     unsubscribeBtn.disabled = false
     enableClipMarks()
     // seekTo(1) is LiveSeekClient's switch back to live WebRTC playback.
-    attachLiveButton(
-      () => subscriber?.seekTo?.(1),
-      document.getElementById('live-slot') as HTMLElement
-    )
+    // attachLiveButton(
+    //   () => subscriber?.seekTo?.(1),
+    //   document.getElementById('live-slot') as HTMLElement
+    // )
     log(`Subscribed with LiveSeek to ${settings.streamName} from ${settings.host}`, 'success')
   } catch (error) {
     setSubscriberStatus('Subscribe Error', 'error')
