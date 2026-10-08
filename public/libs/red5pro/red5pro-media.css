@@ -21,12 +21,13 @@
 }
 
 .red5pro-media-control-bar {
+  box-sizing: border-box;
   font-family: sans-serif;
   opacity: 0;
   display: flex;
   align-items: center;
   flex-direction: row;
-  flex-align: center;
+  gap: 0.6rem;
   display: -ms-flexbox;
   -ms-flex-direction: row;
   -ms-flex-align: center;
@@ -35,10 +36,11 @@
   bottom: 0;
   left: 0;
   right: 0;
-  height: 1.5em;
-  padding: 0.5em;
-  background-color: rgba(255, 255, 255, 0.9);
-  color: #595959;
+  height: fit-content;
+  padding: 0.5rem 0.75rem;
+  background-color: #111827;
+  color: #f9fafb;
+  border-radius: 0 0 8px 8px;
   -webkit-transition: opacity 0.5s ease-in-out;
      -moz-transition: opacity 0.5s ease-in-out;
       -ms-transition: opacity 0.5s ease-in-out;
@@ -59,12 +61,17 @@ input[type=range][orient=vertical] {
 }
 
 .red5pro-media-control-element {
-  margin: 0 0.5em;
+  margin: 0;
   cursor: pointer;
 }
 .red5pro-media-time-field {
-  font-size: 0.8em;
-  line-height: 1em;
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: 0.04em;
+  color: #f9fafb;
+  white-space: nowrap;
+  text-transform: uppercase;
   -webkit-user-select: none;
   -khtml-user-select: none;
   -moz-user-select: none;
@@ -73,9 +80,10 @@ input[type=range][orient=vertical] {
 }
 
 .red5pro-media-slider {
+  position: relative;
+  height: 14px;
   -webkit-appearance: none !important; /*Needed to reset default slider styles */
   transition: all 0.3s ease;
-  margin-top: 0.8em;
   cursor: pointer;
   -webkit-user-select: none;
   -khtml-user-select: none;
@@ -84,59 +92,123 @@ input[type=range][orient=vertical] {
   user-select: none;
 }
 
-.red5pro-media-slider-track {
-  background-color: #595959;
-  height: 0.2em;
-  position: relative;
+.red5pro-media-slider-track,
+.red5pro-media-slider-progress {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  height: 4px;
+  margin-top: -2px;
+  border-radius: 999px;
   display: block;
-  top: 0.1em
+}
+
+.red5pro-media-slider-track {
+  right: 0;
+  background-color: #4b5563;
 }
 
 .red5pro-media-slider-progress {
-  background-color: #4286F4;
-  height: 0.2em;
-  position: relative;
-  display: block;
-  top: -0.1em;
+  background-color: #9ca3af;
+  width: 0;
 }
 
 .red5pro-media-slider-button {
-  width: 1em;
-  height: 1em;
-  max-width: 24px;
-  max-height: 24px;
-  top: -0.7em;
-  position: relative;
+  width: 14px;
+  height: 14px;
+  position: absolute;
+  top: 50%;
+  margin-top: -7px;
+  z-index: 1;
   display: block;
-  border-radius: 20px;
-  background-color: #4286F4;
+  border-radius: 50%;
+  background-color: #e5e7eb;
 }
 
 .red5pro-media-slider-disabled {
-  background-color: #bbb;
-  cursor: arrow;
+  opacity: 0.45;
+  cursor: default;
 }
 
 .red5pro-media-volume-slider {
   width: 110px;
+  display: none;
 }
 
 .red5pro-media-seektime-slider {
-  flex-grow: 1;
-  -ms-flex-grow: 1;
+  flex: 1 1 auto;
+  -ms-flex: 1 1 auto;
   -ms-flex-positive: 1;
+  width: auto;
+  min-width: 4rem;
+  height: 1.25rem;
+  margin: 0;
+  accent-color: #fff;
+  background: transparent;
+  cursor: pointer;
+}
+
+.red5pro-media-seektime-slider:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.red5pro-media-live-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex: 0 0 auto;
+  margin: 0;
+  padding: 0.2rem 0.55rem;
+  border: none;
+  border-radius: 4px;
+  background: #6b7280;
+  color: #fff;
+  font-family: ui-monospace, 'SF Mono', monospace;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.red5pro-media-live-button::before {
+  content: '';
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.red5pro-media-live-button-live {
+  background: #dc2626;
+}
+
+.red5pro-media-live-button-hidden {
+  display: none;
 }
 
 .red5pro-media-element-button {
-  width: 24px;
-  height: 24px;
-  display: inline-block;
-  background-size: contain;
-  background-position: 50% 50%;
-  background-color: transparent;
-  background-repeat: no-repeat;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2rem;
+  min-height: 2rem;
+  padding: 0.25rem 0.4rem;
   border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: inherit;
+  font-size: 1rem;
   cursor: pointer;
+}
+
+.red5pro-media-element-button:hover {
+  background-color: rgba(255, 255, 255, 0.12);
+}
+
+.red5pro-media-element-button-disabled:hover {
+  background-color: transparent;
 }
 
 .red5pro-media-element-button-disabled {
@@ -145,37 +217,43 @@ input[type=range][orient=vertical] {
 }
 
 .red5pro-media-play-button {
-  background-image: url('data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22100%22%20height%3D%22100%22%20viewBox%3D%220%200%20100%20100%22%3E%3Cpolygon%20points%3D%2230%2C15%2030%2C85%2080%2C50%22%20fill%3D%22%23595959%22%2F%3E%3C%2Fsvg%3E');
-  background-size: contain;
+  background-image: url('data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Cpolygon%20points%3D%2228,16%2028,84%2084,50%22%20fill%3D%22%23f9fafb%22/%3E%3C/svg%3E');
+  background-size: 65% 65%;
+  background-position: 50% 50%;
   background-repeat: no-repeat;
 }
 
 .red5pro-media-pause-button {
-  background-image: url('data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22100%22%20height%3D%22100%22%20viewBox%3D%220%200%20100%20100%22%3E%3Crect%20x%3D%2220%22%20y%3D%2215%22%20width%3D%2220%22%20height%3D%2270%22%20fill%3D%22%23595959%22%2F%3E%3Crect%20x%3D%2260%22%20y%3D%2215%22%20width%3D%2220%22%20height%3D%2270%22%20fill%3D%22%23595959%22%2F%3E%3C%2Fsvg%3E');
-  background-size: contain;
+  background-image: url('data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Crect%20x%3D%2222%22%20y%3D%2216%22%20width%3D%2218%22%20height%3D%2268%22%20rx%3D%223%22%20fill%3D%22%23f9fafb%22/%3E%3Crect%20x%3D%2260%22%20y%3D%2216%22%20width%3D%2218%22%20height%3D%2268%22%20rx%3D%223%22%20fill%3D%22%23f9fafb%22/%3E%3C/svg%3E');
+  background-size: 65% 65%;
+  background-position: 50% 50%;
   background-repeat: no-repeat;
 }
 
 .red5pro-media-unmute-button {
-  background-image: url('data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20100%20100%22%20fill%3D%22none%22%20stroke%3D%22%23595959%22%20stroke-width%3D%228%22%20stroke-linecap%3D%22butt%22%20stroke-linejoin%3D%22miter%22%3E%3Cpath%20d%3D%22M46%2020L28%2036H16a4%204%200%200%200-4%204v16a4%204%200%200%200%204%204h12l18%2016V20z%22%2F%3E%3Cpath%20d%3D%22M50%2036a14%2014%200%200%201%200%2028%22%2F%3E%3Cpath%20d%3D%22M70%2028a24%2024%200%200%201%200%2048%22%2F%3E%3C%2Fsvg%3E');
-  background-size: contain;
+  background-image: url('data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Cpath%20d%3D%22M48%2022L30%2038H16a4%204%200%200%200-4%204v16a4%204%200%200%200%204%204h14L48%2078V22z%22%20fill%3D%22%23f9fafb%22/%3E%3Cpath%20d%3D%22M61%2035A20%2020%200%200%201%2061%2065%22%20fill%3D%22none%22%20stroke%3D%22%23f9fafb%22%20stroke-width%3D%227%22%20stroke-linecap%3D%22round%22/%3E%3Cpath%20d%3D%22M71%2025A34%2034%200%200%201%2071%2075%22%20fill%3D%22none%22%20stroke%3D%22%23f9fafb%22%20stroke-width%3D%227%22%20stroke-linecap%3D%22round%22/%3E%3C/svg%3E');
+  background-size: 65% 65%;
+  background-position: 50% 50%;
   background-repeat: no-repeat;
 }
 
 .red5pro-media-mute-button {
-  background-image: url('data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22100%22%20height%3D%22100%22%20viewBox%3D%220%200%20100%20100%22%20fill%3D%22%23595959%22%3E%3Cpath%20d%3D%22M46%2020L28%2036H16a4%204%200%200%200-4%204v16a4%204%200%200%200%204%204h12l18%2016V20z%22%20stroke%3D%22%23595959%22%20stroke-width%3D%228%22%2F%3E%3Cline%20x1%3D%2270%22%20y1%3D%2240%22%20x2%3D%2290%22%20y2%3D%2260%22%20stroke%3D%22%23595959%22%20stroke-width%3D%228%22%2F%3E%3Cline%20x1%3D%2290%22%20y1%3D%2240%22%20x2%3D%2270%22%20y2%3D%2260%22%20stroke%3D%22%23595959%22%20stroke-width%3D%228%22%2F%3E%3C%2Fsvg%3E');
-  background-size: contain;
+  background-image: url('data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Cpath%20d%3D%22M48%2022L30%2038H16a4%204%200%200%200-4%204v16a4%204%200%200%200%204%204h14L48%2078V22z%22%20fill%3D%22%23f9fafb%22/%3E%3Cline%20x1%3D%2260%22%20y1%3D%2232%22%20x2%3D%2290%22%20y2%3D%2268%22%20stroke%3D%22%23f9fafb%22%20stroke-width%3D%228%22%20stroke-linecap%3D%22round%22/%3E%3C/svg%3E');
+  background-size: 65% 65%;
+  background-position: 50% 50%;
   background-repeat: no-repeat;
 }
 
 .red5pro-media-fullscreen-button {
-  background-image: url('data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20100%20100%22%20fill%3D%22%23595959%22%20stroke%3D%22%23595959%22%20stroke-width%3D%225%22%20stroke-linecap%3D%22butt%22%20stroke-linejoin%3D%22miter%22%3E%3Cpath%20d%3D%22M20%2020h20v-8H12v28h8V20z%22%2F%3E%3Cpath%20d%3D%22M80%2020h-20v-8h28v28h-8V20z%22%2F%3E%3Cpath%20d%3D%22M20%2080h20v8H12V60h8v20z%22%2F%3E%3Cpath%20d%3D%22M80%2080h-20v8h28V60h-8v20z%22%2F%3E%3C%2Fsvg%3E');
-  background-size: contain;
+  background-image: url('data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Cpath%20d%3D%22M22%2022h22v-8H14v30h8V22z%22%20fill%3D%22%23f9fafb%22/%3E%3Cpath%20d%3D%22M78%2022H56v-8h30v30h-8V22z%22%20fill%3D%22%23f9fafb%22/%3E%3Cpath%20d%3D%22M22%2078h22v8H14V56h8v22z%22%20fill%3D%22%23f9fafb%22/%3E%3Cpath%20d%3D%22M78%2078H56v8h30V56h-8v22z%22%20fill%3D%22%23f9fafb%22/%3E%3C/svg%3E');
+  background-size: 65% 65%;
+  background-position: 50% 50%;
   background-repeat: no-repeat;
 }
 
 .red5pro-media-exit-fullscreen-button {
-  background-image: url('data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20100%20100%22%20fill%3D%22%23595959%22%20stroke%3D%22%23595959%22%20stroke-width%3D%225%22%20stroke-linecap%3D%22butt%22%20stroke-linejoin%3D%22miter%22%3E%3Cpath%20d%3D%22M32%2012v20H12%22%2F%3E%3Cpath%20d%3D%22M68%2012v20h20%22%2F%3E%3Cpath%20d%3D%22M32%2088V68H12%22%2F%3E%3Cpath%20d%3D%22M68%2088V68h20%22%2F%3E%3C%2Fsvg%3E');
-  background-size: contain;
+  background-image: url('data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Cpath%20d%3D%22M14%2036h22V14h-8v14H14v8z%22%20fill%3D%22%23f9fafb%22/%3E%3Cpath%20d%3D%22M86%2036H64V14h8v14h14v8z%22%20fill%3D%22%23f9fafb%22/%3E%3Cpath%20d%3D%22M14%2064h22v22h-8V72H14v-8z%22%20fill%3D%22%23f9fafb%22/%3E%3Cpath%20d%3D%22M86%2064H64v22h8V72h14v-8z%22%20fill%3D%22%23f9fafb%22/%3E%3C/svg%3E');
+  background-size: 65% 65%;
+  background-position: 50% 50%;
   background-repeat: no-repeat;
 }

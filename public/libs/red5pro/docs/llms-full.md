@@ -2,7 +2,7 @@
 
 - project: red5pro-html-sdk-ts
 - version: 16.4.0-beta.1
-- generated_at: 2026-10-07T20:05:19.484Z
+- generated_at: 2026-10-08T18:48:54.461Z
 
 ## Included Files
 
@@ -2467,6 +2467,7 @@ The `liveSeek` configuration object has the following signature:
 - Flag to use custom player controls UI from the SDK for scrubbing.
 - Setting to `false` requires that you provide your own controls and interactive with the Playback API.
 - Default: `true`
+- While WebRTC playback is at the live edge and playing, the time reads `LIVE / mm:ss` and the LIVE pill beside it is red. While a seek is playing from HLS, the time reads `mm:ss / mm:ss` and the pill is gray. The length after the slash keeps advancing with the live stream during that seek. When subscribe metadata includes `startTime` (UTC epoch milliseconds, or seconds), that length is `now - startTime`. The scrubber is a range from `0` to that length (or to the HLS live edge when `startTime` is absent). Its maximum grows as HLS media or the broadcast length grows. A position behind the end plays HLS; the end returns to the live edge. Clicking the pill returns to the live edge. Hours are included when the length is an hour or more.
 
 ### options
 
@@ -7314,6 +7315,46 @@ Set the VOD state of the media element.
 `boolean`
 
 Whether the media element is a VOD.
+
+#### Returns
+
+`void`
+
+***
+
+### setBroadcastStartTime()
+
+> `abstract` **setBroadcastStartTime**(`timestampMs`): `void`
+
+Set the broadcast start time used for the control-bar length.
+
+#### Parameters
+
+##### timestampMs
+
+`number` \| `null`
+
+UTC epoch milliseconds when the broadcast started, or null to clear it.
+
+#### Returns
+
+`void`
+
+***
+
+### setLiveEdgeActive()
+
+> `abstract` **setLiveEdgeActive**(`active`): `void`
+
+Whether playback is on the live edge. The LIVE pill is red only in this state while playing.
+
+#### Parameters
+
+##### active
+
+`boolean`
+
+True for live WebRTC playback, false while a seek is playing from HLS.
 
 #### Returns
 
@@ -15347,6 +15388,7 @@ The `liveSeek` configuration object has the following signature:
 - Flag to use custom player controls UI from the SDK for scrubbing.
 - Setting to `false` requires that you provide your own controls and interactive with the Playback API.
 - Default: `true`
+- While WebRTC playback is at the live edge and playing, the time reads `LIVE / mm:ss` and the LIVE pill beside it is red. While a seek is playing from HLS, the time reads `mm:ss / mm:ss` and the pill is gray. The length after the slash keeps advancing with the live stream during that seek. When subscribe metadata includes `startTime` (UTC epoch milliseconds, or seconds), that length is `now - startTime`. The scrubber is a range from `0` to that length (or to the HLS live edge when `startTime` is absent). Its maximum grows as HLS media or the broadcast length grows. A position behind the end plays HLS; the end returns to the live edge. Clicking the pill returns to the live edge. Hours are included when the length is an hour or more.
 
 ### options
 

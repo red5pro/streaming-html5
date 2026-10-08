@@ -397,6 +397,20 @@ declare abstract class PlaybackControls extends EventEmitter$1 {
      */
     abstract setPlaybackDuration(duration: number): void;
     /**
+     * Set the broadcast start time used for the control-bar length.
+     *
+     * @param {number | null} timestampMs - UTC epoch milliseconds when the broadcast started, or null to clear it.
+     * @returns {void}
+     */
+    abstract setBroadcastStartTime(timestampMs: number | null): void;
+    /**
+     * Whether playback is on the live edge. The LIVE pill is red only in this state while playing.
+     *
+     * @param {boolean} active - True for live WebRTC playback, false while a seek is playing from HLS.
+     * @returns {void}
+     */
+    abstract setLiveEdgeActive(active: boolean): void;
+    /**
      * Get the playback duration of the media element.
      *
      * @returns {number}
@@ -1169,6 +1183,7 @@ declare class LiveSeekClient extends WHEPClient {
     private _enableLiveSeek;
     private _startSeekableIfSeekableEnabled;
     protected _onUnpublish(): void;
+    protected _onMetaData(metadata: any): void;
     protected _onStreamSwitchComplete(): void;
 }
 

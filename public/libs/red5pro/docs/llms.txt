@@ -2,7 +2,7 @@
 
 - project: red5pro-html-sdk-ts
 - version: 16.4.0-beta.1
-- generated_at: 2026-10-07T20:05:19.483Z
+- generated_at: 2026-10-08T18:48:54.461Z
 
 ## Included Markdown Files
 
