@@ -1,4 +1,4 @@
-**Red5 Pro WebRTC SDK v16.3.0-beta.4**
+**Red5 Pro WebRTC SDK v16.4.0-beta.1**
 
 ***
 
@@ -9,10 +9,11 @@
   <a href="#">Quick Start</a> &bull;
   <a href="_media/whip-client.md">Publishing</a> &bull;
   <a href="_media/whep-client.md">Subscribing</a> &bull;
+  <a href="_media/message-channel.md">Message Channel</a> &bull;
   <a href="_media/moq-publisher.md">MOQ Publishing</a> &bull;
   <a href="_media/moq-subscriber.md">MOQ Subscribing</a> &bull;
   <a href="_media/moq-catalog.md">MOQ Catalog</a> &bull;
-  <a href="_media/message-channel.md">Message Channel</a> &bull;
+  <a href="_media/moq-message-channel.md">MOQ Message Channel</a> &bull;
   <a href="_media/pubnub-client.md">PubNub Client</a>
 </p>
 
@@ -101,7 +102,7 @@ You can sign up and download the Red5 Server to manage your own deployment at [h
 
         const publisher = new WHIPClient()
         const subscriber = new WHEPClient()
-        
+
         const config = {
           host: 'mydeploy.red5.net',
           streamName: 'mystream'
@@ -231,3 +232,4 @@ The initialization configurations and relevant APIs available for each client ca
 * [MOQPublisher](_media/moq-publisher.md)
 * [MOQSubscriber](_media/moq-subscriber.md)
 * [MOQCatalog](_media/moq-catalog.md)
+* [MOQMessageChannel](_media/moq-message-channel.md)

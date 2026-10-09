@@ -27,7 +27,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. -->
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Subscribe Live VOD — WebRTC Testbed</title>
+    <title>Subscribe Live VOD &amp; MP4 Clip — WebRTC Testbed</title>
     <link rel="stylesheet" href="/style/main.css" />
     <link rel="stylesheet" href="/style/pages/example.css" />
     <link rel="stylesheet" href="/style/pages/whep-live-seek.css" />
@@ -39,12 +39,16 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. -->
     <r5-header></r5-header>
 
     <main class="page">
-      <nav class="breadcrumb"><a href="/">WebRTC Testbed</a> &rsaquo; Subscribe Live VOD</nav>
+      <nav class="breadcrumb"><a href="/">WebRTC Testbed</a> &rsaquo; Subscribe Live VOD &amp; MP4 Clip</nav>
 
-      <h1 class="page__heading">Subscribe Live VOD</h1>
+      <h1 class="page__heading">Subscribe Live VOD &amp; MP4 Clip</h1>
       <p class="page__description">
-        LiveSeekClient subscribe using Stream Manager and HLS DVR settings. Provide a base URL or
-        full URL before starting subscribe.
+        Watch a live stream over WebRTC with DVR seek-back. Drag or click back on the timeline to
+        play the HLS recording from that point; press <strong>LIVE</strong> (or seek to the end) to
+        switch back to real-time WebRTC playback at around 200 ms latency. Set a start and end time
+        on the player to create an MP4 clip of the HLS recording. Requires Stream Manager: provide
+        the HLS playlist as a base or full URL (S3, CDN), or use the Stream Manager proxy for
+        packager file output, before starting subscribe.
       </p>
 
       <div class="page__layout">
@@ -54,6 +58,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. -->
               <h2 class="section-title">Subscriber</h2>
               <span class="status status--idle" id="subscribe-status">Subscriber Idle</span>
             </div>
+            <p class="playback-source-row">
+              Playing: <span class="playback-source playback-source--idle" id="playback-source">Not playing</span>
+            </p>
 
             <p class="connection-info" id="connection-info">Endpoint not configured</p>
 
@@ -83,41 +90,129 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. -->
                   <span>Use as fullURL</span>
                 </label>
               </div>
+              <div class="live-seek-panel__check-row live-seek-panel__check-row--spaced">
+                <label class="live-seek-panel__check">
+                  <input id="use-sm-proxy-check" type="checkbox" />
+                  <span>Use Stream Manager proxy (packager file output, not S3)</span>
+                </label>
+              </div>
             </div>
 
             <r5-subscriber-stats id="subscriber-stats"></r5-subscriber-stats>
-            <video
-              id="subscriber-video"
-              class="red5pro-media red5pro-media-background"
-              autoplay
-              playsinline
-              controls
-            ></video>
-            <div class="custom-controls is-hidden">
-              <button id="play-pause-button">Play</button>
-              &nbsp;&nbsp;
-              <button id="mute-unmute-button">Mute</button>
-              &nbsp;&nbsp;
-              <input
-                style="flex-grow: 2"
-                id="scrubber"
-                type="range"
-                min="0"
-                max="100"
-                step="1"
-                value="0"
-              />
-              &nbsp;&nbsp;
-              <span id="time-display">00:00:00</span>
-              &nbsp;&nbsp;
-              <button id="fullscreen-button">Fullscreen</button>
+            <div class="player" id="player">
+              <video
+                id="subscriber-video"
+                class="red5pro-media red5pro-media-background"
+                autoplay
+                playsinline
+                controls
+              ></video>
+              <div class="custom-controls is-hidden">
+                <button type="button" class="player-btn" id="play-pause-button" title="Play">
+                  <svg
+                    class="player-btn__icon player-btn__icon--play"
+                    viewBox="0 0 100 100"
+                    aria-hidden="true"
+                  >
+                    <polygon points="28,16 28,84 84,50" fill="currentColor" />
+                  </svg>
+                  <svg
+                    class="player-btn__icon player-btn__icon--pause"
+                    viewBox="0 0 100 100"
+                    aria-hidden="true"
+                  >
+                    <rect x="22" y="16" width="18" height="68" rx="3" fill="currentColor" />
+                    <rect x="60" y="16" width="18" height="68" rx="3" fill="currentColor" />
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  class="player-btn"
+                  id="mute-unmute-button"
+                  title="Mute"
+                  aria-pressed="false"
+                >
+                  <svg
+                    class="player-btn__icon player-btn__icon--unmuted"
+                    viewBox="0 0 100 100"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M48 22L30 38H16a4 4 0 0 0-4 4v16a4 4 0 0 0 4 4h14L48 78V22z"
+                      fill="currentColor"
+                    />
+                    <path
+                      d="M61 35A20 20 0 0 1 61 65"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="7"
+                      stroke-linecap="round"
+                    />
+                    <path
+                      d="M71 25A34 34 0 0 1 71 75"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="7"
+                      stroke-linecap="round"
+                    />
+                  </svg>
+                  <svg
+                    class="player-btn__icon player-btn__icon--muted"
+                    viewBox="0 0 100 100"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M48 22L30 38H16a4 4 0 0 0-4 4v16a4 4 0 0 0 4 4h14L48 78V22z"
+                      fill="currentColor"
+                    />
+                    <line
+                      x1="60"
+                      y1="32"
+                      x2="90"
+                      y2="68"
+                      stroke="currentColor"
+                      stroke-width="8"
+                      stroke-linecap="round"
+                    />
+                  </svg>
+                </button>
+                <div class="player-timeline">
+                  <div class="player-timeline__clip" id="timeline-clip"></div>
+                  <input id="scrubber" type="range" min="0" max="0" step="0.1" value="0" disabled />
+                </div>
+                <span class="player-time" id="time-display">LIVE</span>
+                <span class="player-wall" id="wall-display"></span>
+                <span id="live-slot"></span>
+                <button type="button" class="player-btn" id="fullscreen-button" title="Fullscreen">
+                  <svg
+                    class="player-btn__icon player-btn__icon--enter-fs"
+                    viewBox="0 0 100 100"
+                    aria-hidden="true"
+                  >
+                    <path d="M22 22h22v-8H14v30h8V22z" fill="currentColor" />
+                    <path d="M78 22H56v-8h30v30h-8V22z" fill="currentColor" />
+                    <path d="M22 78h22v8H14V56h8v22z" fill="currentColor" />
+                    <path d="M78 78H56v8h30V56h-8v22z" fill="currentColor" />
+                  </svg>
+                  <svg
+                    class="player-btn__icon player-btn__icon--exit-fs"
+                    viewBox="0 0 100 100"
+                    aria-hidden="true"
+                  >
+                    <path d="M14 36h22V14h-8v14H14v8z" fill="currentColor" />
+                    <path d="M86 36H64V14h8v14h14v8z" fill="currentColor" />
+                    <path d="M14 64h22v22h-8V72H14v-8z" fill="currentColor" />
+                    <path d="M86 64H64v22h8V72h14v-8z" fill="currentColor" />
+                  </svg>
+                </button>
+              </div>
             </div>
 
             <div class="controls controls--stacked">
-              <div class="live-seek-panel live-seek-panel__check-row is-hidden">
+              <div class="live-seek-panel live-seek-panel__check-row">
                 <label class="live-seek-panel__check">
-                  <input id="use-custom-controls-check" type="checkbox" />
-                  <span>Use External Controls</span>
+                  <input id="use-custom-controls-check" type="checkbox" checked />
+                  <span>Use example player controls (untick for the SDK's built-in controls)</span>
                 </label>
               </div>
               <div class="controls__row">
@@ -126,6 +221,29 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. -->
                   Stop Subscribe
                 </button>
               </div>
+            </div>
+
+            <div class="clip-panel">
+              <h2 class="section-title">MP4 Clip</h2>
+              <p class="clip-panel__copy">
+                Seek the player to where the clip should begin and press
+                <strong>Set Start Time</strong>, then seek to where it should end and press
+                <strong>Set End Time</strong>. At live, the time set is the live edge. The video
+                packager cuts the range into an MP4 without re-encoding (up to 3 hours). The HLS
+                playlist must still list the range, so use <code>hls.playlist.type=event</code> or
+                a long playlist. Clips go to S3 with S3 output, or next to the stream's HLS through
+                the Stream Manager proxy with file output.
+              </p>
+              <div class="clip-panel__row">
+                <button class="btn" id="clip-mark-in-btn" disabled>Set Start Time</button>
+                <button class="btn" id="clip-mark-out-btn" disabled>Set End Time</button>
+                <span class="clip-panel__value" id="clip-range">Start —  ·  End —</span>
+              </div>
+              <div class="clip-panel__row">
+                <input id="clip-title" class="live-seek-panel__input" type="text" maxlength="200" placeholder="Clip title (optional)" />
+                <button class="btn btn--primary" id="clip-create-btn" disabled>Create MP4 Clip</button>
+              </div>
+              <p class="clip-panel__status" id="clip-status"></p>
             </div>
           </section>
         </div>

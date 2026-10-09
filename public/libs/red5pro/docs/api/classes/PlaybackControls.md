@@ -1,4 +1,4 @@
-[**Red5 Pro WebRTC SDK v16.3.0-beta.4**](../README.md)
+[**Red5 Pro WebRTC SDK v16.4.0-beta.1**](../README.md)
 
 ***
 
@@ -158,6 +158,46 @@ Set the VOD state of the media element.
 `boolean`
 
 Whether the media element is a VOD.
+
+#### Returns
+
+`void`
+
+***
+
+### setBroadcastStartTime()
+
+> `abstract` **setBroadcastStartTime**(`timestampMs`): `void`
+
+Set the broadcast start time used for the control-bar length.
+
+#### Parameters
+
+##### timestampMs
+
+`number` \| `null`
+
+UTC epoch milliseconds when the broadcast started, or null to clear it.
+
+#### Returns
+
+`void`
+
+***
+
+### setLiveEdgeActive()
+
+> `abstract` **setLiveEdgeActive**(`active`): `void`
+
+Whether playback is on the live edge. The LIVE pill is red only in this state while playing.
+
+#### Parameters
+
+##### active
+
+`boolean`
+
+True for live WebRTC playback, false while a seek is playing from HLS.
 
 #### Returns
 

@@ -6,6 +6,7 @@
   <a href="moq-publisher.md">MOQ Publishing</a> &bull;
   <a href="#">MOQ Subscribing</a> &bull;
   <a href="moq-catalog.md">MOQ Catalog</a> &bull;
+  <a href="moq-message-channel.md">MOQ Message Channel</a> &bull;
   <a href="whep-client.md">WHIP/WHEP Docs</a>
 </p>
 

@@ -25,8 +25,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 .red5pro-media-control-bar {
-  height: 42px !important;
-  background: #f5f5f5 !important;
   border-radius: 0px 0px 8px 8px !important;
 }
 
@@ -133,28 +131,116 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   border-radius: 8px;
 }
 
-.custom-controls {
-  margin-top: 0.75rem;
-  margin-bottom: 0.75rem;
-  background: #dadee3;
-  padding: 1.5rem;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+.player {
+  position: relative;
+  background: #000;
   border-radius: 8px;
-  gap: 0.5rem;
+  overflow: hidden;
 }
 
-.custom-controls button {
-  background: #000;
-  color: #fff;
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
-  cursor: pointer;
+.player:fullscreen {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  border-radius: 0;
+}
+
+.player:fullscreen video {
+  flex: 1;
+  height: auto;
+  aspect-ratio: auto;
+}
+
+.custom-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.5rem 0.75rem;
+  background: #111827;
+  color: #f9fafb;
 }
 
 .custom-controls.is-hidden {
+  display: none;
+}
+
+.player-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2rem;
+  min-height: 2rem;
+  padding: 0.25rem 0.4rem;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: inherit;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.player-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.player-btn__icon {
+  display: block;
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.player-btn__icon--muted,
+.player-btn__icon--pause,
+.player-btn__icon--exit-fs {
+  display: none;
+}
+
+.player-btn.is-muted .player-btn__icon--unmuted,
+.player-btn.is-playing .player-btn__icon--play,
+.player-btn.is-fullscreen .player-btn__icon--enter-fs {
+  display: none;
+}
+
+.player-btn.is-muted .player-btn__icon--muted,
+.player-btn.is-playing .player-btn__icon--pause,
+.player-btn.is-fullscreen .player-btn__icon--exit-fs {
+  display: block;
+}
+
+.player-timeline {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+.player-timeline input[type='range'] {
+  width: 100%;
+  margin: 0;
+  accent-color: #3b82f6;
+  cursor: pointer;
+}
+
+.player-timeline__clip {
+  display: none;
+  position: absolute;
+  top: 50%;
+  height: 6px;
+  transform: translateY(-50%);
+  background: rgba(250, 204, 21, 0.75);
+  border-radius: 3px;
+  pointer-events: none;
+}
+
+.player-time,
+.player-wall {
+  font-family: monospace;
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+
+.player-wall {
+  color: #9ca3af;
   display: none;
 }
 
@@ -163,4 +249,88 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     flex-direction: column;
     align-items: flex-start;
   }
+}
+
+.live-seek-panel__check-row--spaced {
+  margin-top: 0.75rem;
+}
+
+.clip-panel {
+  margin-top: 0.75rem;
+  padding: 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg-secondary);
+}
+
+.clip-panel__copy {
+  margin: 0.5rem 0 0.9rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.clip-panel__row {
+  display: flex;
+  gap: 0.6rem;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.clip-panel__value {
+  min-width: 11rem;
+  font-family: monospace;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.clip-panel__status {
+  margin: 0;
+  color: var(--text);
+}
+
+.playback-source-row {
+  margin: 0 0 0.75rem;
+  color: var(--text-secondary);
+}
+
+.playback-source {
+  display: inline-block;
+  font-size: 0.8rem;
+  font-weight: 500;
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  background: var(--status-idle-bg);
+  color: var(--status-idle-text);
+}
+
+.playback-source--webrtc {
+  background: #16a34a;
+  color: #fff;
+}
+
+.playback-source--hls {
+  background: #d97706;
+  color: #fff;
+}
+
+.live-button {
+  margin-left: 0.5rem;
+  padding: 0.2rem 0.6rem;
+  border: none;
+  border-radius: 4px;
+  font-weight: 700;
+  font-size: 0.75rem;
+  font-family: 'IBM Plex Mono', ui-monospace, 'SF Mono', monospace;
+  color: #fff;
+  background: #6b7280;
+  cursor: pointer;
+}
+
+.live-button--live {
+  background: #dc2626;
+}
+
+.player #subscriber-video {
+  display: block;
+  border-radius: 0;
 }

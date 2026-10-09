@@ -1,4 +1,4 @@
-[**Red5 Pro WebRTC SDK v16.3.0-beta.4**](../README.md)
+[**Red5 Pro WebRTC SDK v16.4.0-beta.1**](../README.md)
 
 ***
 
@@ -19,6 +19,18 @@ Enumeration of Video Encoder types to request for Broadcast.
 ### H264
 
 > **H264**: `"H264"`
+
+***
+
+### H264\_BASELINE
+
+> **H264\_BASELINE**: `"H264_BASELINE"`
+
+***
+
+### H264\_HIGH
+
+> **H264\_HIGH**: `"H264_HIGH"`
 
 ***
 

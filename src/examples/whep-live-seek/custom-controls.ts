@@ -24,145 +24,296 @@ WHETHER IN  AN  ACTION  OF  CONTRACT,  TORT  OR  OTHERWISE,  ARISING  FROM,  OUT
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-function formatTime(value: number): string {
-  let hrs = 0
-  let mins = value === 0 || isNaN(value) ? 0 : Math.floor(value / 60)
-  let secs = 0
-  if (mins >= 60) {
-    hrs = Math.floor(mins / 60)
-    mins %= 60
-  }
-  secs = value === 0 || isNaN(value) ? 0 : Math.floor(value % 60)
+import { getClipMarks, getHls, isHlsActive, type HlsFragment } from './clip-panel'
+import type { ExampleLogger } from '@/lib/example-log'
+import { extractBroadcastStartTime, formatBroadcastLength } from '@/lib/subscribe-metadata'
 
-  const formattedArr: string[] = hrs < 10 ? [`0${hrs}`] : [hrs.toString()]
-  formattedArr.push(mins < 10 ? `0${mins}` : mins.toString())
-  formattedArr.push(secs < 10 ? `0${secs}` : secs.toString())
-  return formattedArr.join(':')
-}
+// Player controls for LiveSeekClient. The timeline spans the whole HLS recording the playlist
+// lists (from its first segment to the live edge), seeks on click or drag, shows the playhead's
+// wall-clock time, and highlights the clip range. The right end of the timeline is live WebRTC.
 
 interface LiveSeekPlaybackClient {
-  on: (type: string, handler: (event: unknown) => void) => void
-  play?: (withAction?: boolean) => void
-  pause?: (withAction?: boolean, stopBuffering?: boolean) => void
   setVolume?: (volume: number) => void
-  toggleFullScreen?: () => void
-  seekTo?: (percent: number, max: number) => void
+  seekTo?: (percentage: number, duration?: number) => void
+  mute?: () => void
+  unmute?: () => void
+}
+
+interface Timeline {
+  start: number
+  end: number
+  fragments: HlsFragment[]
+}
+
+const TICK_MS = 250
+// A seek this close to the live edge returns to live WebRTC instead.
+const LIVE_SNAP_SECS = 3
+
+function formatClock(secs: number): string {
+  const total = Math.max(0, Math.floor(secs))
+  const h = Math.floor(total / 3600)
+  const m = Math.floor((total % 3600) / 60)
+  const s = total % 60
+  const pad = (n: number): string => String(n).padStart(2, '0')
+  return h ? `${h}:${pad(m)}:${pad(s)}` : `${pad(m)}:${pad(s)}`
+}
+
+/** Fragments of the level hls.js is playing, as a media-time range. */
+function timeline(): Timeline | null {
+  const hls = getHls()
+  if (!hls) return null
+  const level = hls.levels[hls.currentLevel] ?? hls.levels[hls.levels.length - 1]
+  const fragments = level?.details?.fragments
+  if (!fragments?.length) return null
+  const last = fragments[fragments.length - 1]
+  return { start: fragments[0].start, end: last.start + last.duration, fragments }
+}
+
+function wallTimeAt(t: number, fragments: HlsFragment[]): number | null {
+  const frag =
+    fragments.find((f) => t >= f.start && t < f.start + f.duration) ??
+    fragments[fragments.length - 1]
+  return frag.programDateTime == null ? null : frag.programDateTime + (t - frag.start) * 1000
+}
+
+function mediaTimeAt(wall: number, fragments: HlsFragment[]): number | null {
+  const frag = fragments.find(
+    (f) =>
+      f.programDateTime != null &&
+      wall >= f.programDateTime &&
+      wall < f.programDateTime + f.duration * 1000
+  )
+  return frag ? frag.start + (wall - frag.programDateTime!) / 1000 : null
 }
 
 export default class CustomControls {
-  private subscriber: LiveSeekPlaybackClient
-  private isPlaying: boolean
-  private isMuted: boolean
-  private isFullscreen: boolean
-  private isScrubbingResumePlay: boolean
-  private playPauseButton: HTMLButtonElement
-  private muteUnmuteButton: HTMLButtonElement
-  private fullscreenButton: HTMLButtonElement
-  private timeDisplay: HTMLSpanElement
-  private scrubber: HTMLInputElement
+  private readonly subscriber: LiveSeekPlaybackClient
+  private readonly webrtcVideo: HTMLVideoElement
+  private readonly player: HTMLElement
+  private readonly playPauseButton: HTMLButtonElement
+  private readonly muteButton: HTMLButtonElement
+  private readonly fullscreenButton: HTMLButtonElement
+  private readonly timeDisplay: HTMLSpanElement
+  private readonly wallDisplay: HTMLSpanElement
+  private readonly scrubber: HTMLInputElement
+  private readonly clipRange: HTMLDivElement
+  private readonly ticker: ReturnType<typeof setInterval>
+  private readonly log: ExampleLogger['log']
+  private scrubbing = false
+  // Only an explicit pause from this bar keeps playback paused (see keepPlaying).
+  private userPaused = false
+  private resuming = false
+  private resumeFailed = false
+  private broadcastStartTime: number | null = null
 
-  constructor(subscriber: LiveSeekPlaybackClient) {
+  constructor(subscriber: LiveSeekPlaybackClient, log: ExampleLogger['log']) {
     this.subscriber = subscriber
+    this.log = log
+    this.webrtcVideo = document.getElementById('subscriber-video') as HTMLVideoElement
+    this.player = document.getElementById('player') as HTMLElement
+    this.playPauseButton = document.getElementById('play-pause-button') as HTMLButtonElement
+    this.muteButton = document.getElementById('mute-unmute-button') as HTMLButtonElement
+    this.fullscreenButton = document.getElementById('fullscreen-button') as HTMLButtonElement
+    this.timeDisplay = document.getElementById('time-display') as HTMLSpanElement
+    this.wallDisplay = document.getElementById('wall-display') as HTMLSpanElement
+    this.scrubber = document.getElementById('scrubber') as HTMLInputElement
+    this.clipRange = document.getElementById('timeline-clip') as HTMLDivElement
 
-    this.isPlaying = false
-    this.isMuted = false
-    this.isFullscreen = false
-    this.isScrubbingResumePlay = false
-
-    this.playPauseButton = document.querySelector('#play-pause-button') as HTMLButtonElement
-    this.muteUnmuteButton = document.querySelector('#mute-unmute-button') as HTMLButtonElement
-    this.fullscreenButton = document.querySelector('#fullscreen-button') as HTMLButtonElement
-    this.timeDisplay = document.querySelector('#time-display') as HTMLSpanElement
-    this.scrubber = document.querySelector('#scrubber') as HTMLInputElement
-
-    this.subscriber.on('*', (event) => this.onPlaybackEvent(event))
-
-    this.playPauseButton.addEventListener('click', () => this.onPlayPause())
-    this.muteUnmuteButton.addEventListener('click', () => this.onMuteUnmute())
-    this.fullscreenButton.addEventListener('click', () => this.onFullscreen())
-
-    this.scrubber.addEventListener('mousedown', () => this.onScrubberStart())
-    this.scrubber.addEventListener('mouseup', () => this.onScrubberEnd())
-    this.scrubber.addEventListener('change', (event) => this.onScrubberChange(event))
+    this.playPauseButton.onclick = () => this.togglePlay()
+    this.muteButton.onclick = () => this.toggleMute()
+    this.fullscreenButton.onclick = () => this.toggleFullscreen()
+    // A click on the track jumps there; dragging previews the time and seeks on release.
+    this.scrubber.oninput = () => {
+      this.scrubbing = true
+      this.render()
+    }
+    this.scrubber.onchange = () => {
+      this.scrubbing = false
+      this.seek(Number(this.scrubber.value))
+    }
+    this.ticker = setInterval(() => this.render(), TICK_MS)
+    this.render()
   }
 
-  setPlayPauseButtonState(isPlaying: boolean, withAction: boolean = false): void {
-    this.isPlaying = isPlaying
-    this.playPauseButton.innerHTML = isPlaying ? 'Pause' : 'Play'
-    if (!withAction) return
-    if (this.isPlaying) {
-      this.subscriber.play?.(true)
+  applySubscribeMetadata(payload: unknown): void {
+    const startTime = extractBroadcastStartTime(payload)
+    if (startTime === null) return
+    this.broadcastStartTime = startTime
+  }
+
+  destroy(): void {
+    clearInterval(this.ticker)
+    this.broadcastStartTime = null
+    // Disable the scrubber and other UI elements.
+    this.scrubber.disabled = true
+    this.clipRange.style.display = 'none'
+    this.playPauseButton.classList.remove('is-playing')
+    this.playPauseButton.title = 'Play'
+    this.playPauseButton.disabled = true
+    this.playPauseButton.setAttribute('aria-pressed', 'false')
+    this.muteButton.classList.remove('is-muted')
+    this.muteButton.title = 'Mute'
+    this.muteButton.disabled = true
+    this.muteButton.setAttribute('aria-pressed', 'false')
+    this.fullscreenButton.classList.remove('is-fullscreen')
+    this.fullscreenButton.title = 'Fullscreen'
+    this.fullscreenButton.disabled = true
+    this.fullscreenButton.setAttribute('aria-pressed', 'false')
+  }
+
+  private broadcastLengthLabel(nowMs = Date.now()): string | null {
+    if (this.broadcastStartTime === null) return null
+    return formatBroadcastLength(this.broadcastStartTime, nowMs)
+  }
+
+  /** The element currently on screen: the HLS video after a seek back, else WebRTC. */
+  private activeMedia(): HTMLMediaElement {
+    const media = getHls()?.media
+    return isHlsActive() && media ? media : this.webrtcVideo
+  }
+
+  /**
+   * Plays or pauses the video on screen directly: LiveSeekClient.pause() drops its arguments, so
+   * the source handler only pauses the WebRTC video and HLS playback carries on.
+   */
+  private togglePlay(): void {
+    const media = this.activeMedia()
+    this.userPaused = !media.paused
+    if (this.userPaused) {
+      media.pause()
+      return
+    }
+    media.play().catch((error) => this.log(`Play failed: ${String(error)}`, 'error'))
+  }
+
+  /**
+   * LiveSeekClient carries a paused state across its WebRTC/HLS switches: after a seek it only
+   * starts the HLS video if WebRTC is playing, and on returning to live it only starts WebRTC if
+   * HLS was playing. Restart whichever video is on screen unless the viewer paused it.
+   */
+  private keepPlaying(media: HTMLMediaElement): void {
+    if (
+      this.userPaused ||
+      this.scrubbing ||
+      this.resuming ||
+      !media.paused ||
+      media.readyState === 0
+    )
+      return
+    this.resuming = true
+    const source = media === this.webrtcVideo ? 'WebRTC' : 'HLS'
+    media
+      .play()
+      .then(() => {
+        this.resumeFailed = false
+        this.log(`Resumed ${source} playback after a switch`)
+      })
+      .catch((error) => {
+        if (!this.resumeFailed)
+          this.log(`Could not resume ${source} playback: ${String(error)}`, 'error')
+        this.resumeFailed = true
+      })
+      .finally(() => {
+        this.resuming = false
+      })
+  }
+
+  private toggleMute(): void {
+    const media = this.activeMedia()
+    if (media.muted) {
+      this.subscriber.unmute?.()
     } else {
-      this.subscriber.pause?.(true, true)
+      this.subscriber.mute?.()
     }
   }
 
-  setMuteUnmuteButtonState(isMuted: boolean, withAction: boolean = false): void {
-    this.isMuted = isMuted
-    this.muteUnmuteButton.innerHTML = isMuted ? 'Unmute' : 'Mute'
-    if (withAction) {
-      this.subscriber.setVolume?.(isMuted ? 0 : 1)
+  private toggleFullscreen(): void {
+    if (document.fullscreenElement) void document.exitFullscreen()
+    else void this.player.requestFullscreen()
+  }
+
+  private seek(t: number): void {
+    // Seeking means the viewer wants to watch: clear an earlier pause so playback resumes.
+    this.userPaused = false
+    const range = timeline()
+    const media = getHls()?.media
+    if (!range || !media) {
+      this.log('Cannot seek yet: the HLS recording has not loaded', 'error')
+      return
     }
-  }
-
-  setFullscreenButtonState(isFullscreen: boolean, withAction: boolean = false): void {
-    this.isFullscreen = isFullscreen
-    this.fullscreenButton.innerHTML = isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'
-    if (withAction) {
-      this.subscriber.toggleFullScreen?.()
+    if (range.end - t <= LIVE_SNAP_SECS) {
+      this.log('Seek to live')
+      this.subscriber.seekTo?.(1)
+      return
     }
-  }
-
-  onPlaybackEvent(event: unknown): void {
-    const { type, data } = event as { type: string; data: unknown }
-    if (type === 'Subscribe.Playback.Change') {
-      const { state } = data as { state: string }
-      if (state !== 'Playback.AVAILABLE') {
-        this.setPlayPauseButtonState(state === 'Playback.PLAYING')
-      }
-    } else if (type === 'Subscribe.Volume.Change') {
-      const { volume } = data as { volume: number }
-      this.setMuteUnmuteButtonState(volume === 0)
-    } else if (type === 'Subscribe.FullScreen.Change') {
-      const payload = data as { isFullscreen: boolean }
-      this.setFullscreenButtonState(payload.isFullscreen)
-    } else if (type === 'Subscribe.Time.Update') {
-      const { time, duration } = data as { time: number; duration: number }
-      this.timeDisplay.innerHTML = formatTime(time)
-      this.scrubber.setAttribute('max', duration.toString())
-      this.scrubber.value = time.toString()
+    // LiveSeekClient seeks to a fraction of the HLS element's duration.
+    if (!Number.isFinite(media.duration) || media.duration <= 0) {
+      this.log(`Cannot seek: HLS duration is ${media.duration}`, 'error')
+      return
     }
+    const fraction = Math.min(t / media.duration, 0.999)
+    this.log(
+      `Seek to ${formatClock(t - range.start)} of ${formatClock(range.end - range.start)} ` +
+        `(HLS ${t.toFixed(1)}s of ${media.duration.toFixed(1)}s, readyState ${media.readyState})`
+    )
+    this.subscriber.seekTo?.(fraction)
   }
 
-  onPlayPause(): void {
-    this.setPlayPauseButtonState(!this.isPlaying, true)
-  }
+  private render(): void {
+    const media = this.activeMedia()
+    this.keepPlaying(media)
+    this.playPauseButton.classList.toggle('is-playing', !media.paused)
+    this.playPauseButton.title = media.paused ? 'Play' : 'Pause'
+    const muted = media.muted || media.volume === 0
+    this.muteButton.classList.toggle('is-muted', muted)
+    this.muteButton.title = muted ? 'Unmute' : 'Mute'
+    this.muteButton.setAttribute('aria-pressed', String(muted))
+    const fullscreen = Boolean(document.fullscreenElement)
+    this.fullscreenButton.classList.toggle('is-fullscreen', fullscreen)
+    this.fullscreenButton.title = fullscreen ? 'Exit fullscreen' : 'Fullscreen'
 
-  onMuteUnmute(): void {
-    this.setMuteUnmuteButtonState(!this.isMuted, true)
-  }
+    const range = timeline()
+    const live = !isHlsActive()
+    const lengthLabel = this.broadcastLengthLabel()
 
-  onFullscreen(): void {
-    this.setFullscreenButtonState(!this.isFullscreen, true)
-  }
-
-  onScrubberStart(): void {
-    this.isScrubbingResumePlay = this.isPlaying
-    this.setPlayPauseButtonState(false, true)
-  }
-
-  onScrubberChange(event: Event): void {
-    const element = event.target as HTMLInputElement
-    const time = Number(element.value)
-    const max = Number(element.max)
-    const perc = max - time > 6 ? time / max : 1
-    this.subscriber.seekTo?.(perc, max)
-  }
-
-  onScrubberEnd(): void {
-    if (this.isScrubbingResumePlay) {
-      this.setPlayPauseButtonState(true, true)
+    if (!range) {
+      this.scrubber.disabled = true
+      this.timeDisplay.textContent = lengthLabel ? `LIVE / ${lengthLabel}` : 'LIVE'
+      this.wallDisplay.textContent = ''
+      this.clipRange.style.display = 'none'
+      return
     }
-    this.isScrubbingResumePlay = false
+    this.scrubber.disabled = false
+    this.scrubber.min = String(range.start)
+    this.scrubber.max = String(range.end)
+    if (!this.scrubbing) this.scrubber.value = String(live ? range.end : media.currentTime)
+
+    const position = Number(this.scrubber.value)
+    const windowSecs = range.end - range.start
+    const wall = live && !this.scrubbing ? null : wallTimeAt(position, range.fragments)
+    if (live && !this.scrubbing) {
+      this.timeDisplay.textContent = lengthLabel ? `LIVE / ${lengthLabel}` : 'LIVE'
+    } else if (this.broadcastStartTime !== null && wall != null) {
+      const elapsed = Math.max(0, (wall - this.broadcastStartTime) / 1000)
+      this.timeDisplay.textContent = `${formatClock(elapsed)} / ${lengthLabel ?? formatClock(windowSecs)}`
+    } else {
+      this.timeDisplay.textContent = `${formatClock(position - range.start)} / ${
+        lengthLabel ?? formatClock(windowSecs)
+      }`
+    }
+    this.wallDisplay.textContent =
+      wall == null ? '' : `${new Date(wall).toISOString().slice(11, 19)} UTC`
+
+    // Highlight the clip range on the track.
+    const { start, end } = getClipMarks()
+    const from = start == null ? null : mediaTimeAt(start, range.fragments)
+    const to = end == null ? (from == null ? null : position) : mediaTimeAt(end, range.fragments)
+    if (from == null || to == null || to <= from || windowSecs <= 0) {
+      this.clipRange.style.display = 'none'
+      return
+    }
+    this.clipRange.style.display = 'block'
+    this.clipRange.style.left = `${((from - range.start) / windowSecs) * 100}%`
+    this.clipRange.style.width = `${((to - from) / windowSecs) * 100}%`
   }
 }
