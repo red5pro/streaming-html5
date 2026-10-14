@@ -116,6 +116,7 @@ The `init()` call accepts `MOQPublisherConfigType`.
 | `namespace` | [-] | `app/streamName` | MOQ namespace to publish. |
 | `draftVersion` | [-] | auto | MoQ transport draft version. |
 | `certKey` | [-] | `undefined` | Certificate hash input for WebTransport setup. |
+| `authorization` | [-] | `undefined` | Optional CAT credentials attached to the MoQT connection. See [Authorization](#authorization). |
 | `keyFramerate` | [-] | `2000` | Keyframe interval in milliseconds. |
 | `bandwidth` | [-] | `{ audio: 56, video: 750 }` | Target encode bandwidth settings. |
 | `mediaConstraints` | [x] | camera+mic defaults | Constraints for SDK-managed `getUserMedia`. |
@@ -130,9 +131,29 @@ The `init()` call accepts `MOQPublisherConfigType`.
 | `messageChannel` | [-] | `{ enabled: false, mode: 'shared' }` | Optional internally managed `MOQMessageChannel`. `mode: 'shared'` reuses publisher's `MoqtConnection`; `mode: 'sidecar'` creates a separate MoQT session for messaging. |
 | `stats` | [-] | `undefined` | Optional stats monitor configuration. |
 | `connectionParams` | [-] | `undefined` | Additional params used for stats metadata and endpoint context. |
-| `moqtLogLevel` | [-] | `none` | Log level passed to MOQ components. |
+| `moqLogLevel` | [-] | `none` | Log level passed to MOQ components. |
 
 `*` Required when `endpoint` is not provided.
+
+### Authorization
+
+`authorization` supplies CAT tokens when `publish()` opens the MoQT session. With `enabled: true`, the SDK decodes `token` and passes it to `connect()` along with the publisher relay URL. The credential is used only for that connection attempt. It is not stored and it is not added to viewer links.
+
+| Field | Description |
+| :--- | :--- |
+| `enabled` | When `false`, or when `authorization` is omitted, no auth attributes are sent. |
+| `profile` | `cat4moq` sends token type `1`. `moqx-compat` sends token type `16`. |
+| `token` | Base64-encoded CAT token. An optional `base64:` prefix is stripped. The decoded token must be at most 32768 bytes. |
+
+```js
+authorization: {
+  enabled: true,
+  profile: 'cat4moq',
+  token: '<base64 CAT token>'
+}
+```
+
+`publish()` fails if `profile` is not `cat4moq` or `moqx-compat`, or if `token` is empty or not valid base64.
 
 ### Simulcast notes
 
@@ -157,7 +178,7 @@ The `init()` call accepts `MOQPublisherConfigType`.
   - creates a second `MoqtConnection` only for messaging
   - helps isolate transport contention from media publishing
 - `messageChannel.dataChannelConfiguration` supports the same semantics as standalone `MOQMessageChannel` (for example `name`, `clientId`, `keepEcho`, `unreliable`).
-- In `sidecar` mode, messaging endpoint fields may be overridden under `messageChannel` (`endpoint`, `host`, `protocol`, `port`, `certKey`, `draftVersion`, `connectionParams`, `app`, `streamName`); otherwise publisher values are used.
+- In `sidecar` mode, messaging endpoint fields may be overridden under `messageChannel` (`endpoint`, `host`, `protocol`, `port`, `certKey`, `draftVersion`, `connectionParams`, `authorization`, `app`, `streamName`); otherwise publisher values are used. `messageChannel.authorization` overrides the publisher `authorization` for that sidecar connection. Shared mode reuses the publisher session and does not connect again.
 
 # Events
 

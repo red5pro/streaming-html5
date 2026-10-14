@@ -120,7 +120,7 @@ On `open()` the client:
 | `app` | [x] | `live` | App path; split on `/` for the MoQT namespace prefix. |
 | `streamName` | [-] | `undefined` | Fallback `clientId` when `dataChannelConfiguration.clientId` is omitted. |
 | `draftVersion` | [-] | auto / connection | MoQ transport draft. Datagram send requires **18**. |
-| `connectionParams` | [-] | `{ maxRequestId }` | Passed to `MoqtConnection.connect()` in sidecar mode (auth token, etc.). |
+| `connectionParams` | [-] | `{ maxRequestId }` | Extra `MoqtConnection.connect()` options in sidecar mode. CAT credentials use `authorization`, not this object. |
 | `dataChannelConfiguration` | [-] | see below | Channel label and send/receive behavior. |
 
 ### `dataChannelConfiguration`
@@ -141,8 +141,29 @@ On `open()` the client:
 | `protocol` | [x] | `https` | `ws` / `wss` map to `http` / `https` for WebTransport. |
 | `port` | [x] | `4433` | Relay port. |
 | `certKey` | [-] | `undefined` | Certificate hash for WebTransport. |
+| `authorization` | [-] | `undefined` | Optional CAT credentials for the sidecar `MoqtConnection.connect()`. See [Authorization](#authorization). |
 
 `*` Required when `endpoint` is not provided.
+
+### Authorization
+
+Sidecar mode sends `authorization` on `connect()` with `relayUrl` set to the channel endpoint. Shared mode does not connect again; it uses the session that was already authenticated.
+
+| Field | Description |
+| :--- | :--- |
+| `enabled` | When `false`, or when `authorization` is omitted, no auth attributes are sent. |
+| `profile` | `cat4moq` sends token type `1`. `moqx-compat` sends token type `16`. |
+| `token` | Base64-encoded CAT token. An optional `base64:` prefix is stripped. The decoded token must be at most 32768 bytes. |
+
+```js
+authorization: {
+  enabled: true,
+  profile: 'cat4moq',
+  token: '<base64 CAT token>'
+}
+```
+
+`open()` fails if `profile` is not `cat4moq` or `moqx-compat`, or if `token` is empty or not valid base64. When `MOQPublisher` or `MOQSubscriber` owns a sidecar channel, `messageChannel.authorization` overrides that client's `authorization`; otherwise the client value is used.
 
 ## Shared (`mode: 'shared'`)
 

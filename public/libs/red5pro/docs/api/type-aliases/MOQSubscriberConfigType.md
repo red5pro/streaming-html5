@@ -1,4 +1,4 @@
-[**Red5 Pro WebRTC SDK v16.4.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
 
 ***
 
@@ -19,6 +19,12 @@
 ### authority?
 
 > `optional` **authority?**: `string`
+
+***
+
+### authorization?
+
+> `optional` **authorization?**: `AuthorizationSettings`
 
 ***
 
@@ -53,6 +59,12 @@
 ### draftVersion?
 
 > `optional` **draftVersion?**: `DraftVersion`
+
+***
+
+### drmConfig?
+
+> `optional` **drmConfig?**: `DrmConfig`
 
 ***
 
@@ -112,9 +124,9 @@ Optional internally managed data messaging channel.
 
 ***
 
-### moqtLogLevel?
+### moqLogLevel?
 
-> `optional` **moqtLogLevel?**: `LogLevel`
+> `optional` **moqLogLevel?**: `LogLevel`
 
 ***
 

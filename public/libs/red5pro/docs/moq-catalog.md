@@ -110,9 +110,30 @@ The `init()` call accepts `MOQCatalogConfigType`.
 | `namespace` | [-] | `app/streamName` | Explicit namespace for fetch/subscribe calls. |
 | `draftVersion` | [-] | `16` | MoQ transport draft version. |
 | `certKey` | [-] | `undefined` | Certificate hash input for WebTransport setup. |
-| `moqtLogLevel` | [-] | `none` | Log level for MOQ internals. |
+| `authorization` | [-] | `undefined` | Optional CAT credentials attached to the MoQT connection. See [Authorization](#authorization). |
+| `moqLogLevel` | [-] | `none` | Log level for MOQ internals. |
 
 `*` Required when `endpoint` is not provided.
+
+### Authorization
+
+`authorization` supplies CAT tokens when a fetch or subscribe opens the MoQT session. With `enabled: true`, the SDK decodes `token` and passes it to `MoqtConnection.connect()` along with the catalog relay URL. The credential is used only for that connection attempt. It is not stored.
+
+| Field | Description |
+| :--- | :--- |
+| `enabled` | When `false`, or when `authorization` is omitted, no auth attributes are sent. |
+| `profile` | `cat4moq` sends token type `1`. `moqx-compat` sends token type `16`. |
+| `token` | Base64-encoded CAT token. An optional `base64:` prefix is stripped. The decoded token must be at most 32768 bytes. |
+
+```js
+authorization: {
+  enabled: true,
+  profile: 'cat4moq',
+  token: '<base64 CAT token>'
+}
+```
+
+Fetch and subscribe fail if `profile` is not `cat4moq` or `moqx-compat`, or if `token` is empty or not valid base64.
 
 # Events
 
