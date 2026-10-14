@@ -1,8 +1,8 @@
 # Red5 Pro HTML SDK - LLM Reference
 
 - project: red5pro-html-sdk-ts
-- version: 16.4.0-beta.1
-- generated_at: 2026-10-08T18:48:54.461Z
+- version: 16.4.0-beta.2
+- generated_at: 2026-10-14T13:37:37.021Z
 
 ## Included Files
 
@@ -1040,9 +1040,30 @@ The `init()` call accepts `MOQCatalogConfigType`.
 | `namespace` | [-] | `app/streamName` | Explicit namespace for fetch/subscribe calls. |
 | `draftVersion` | [-] | `16` | MoQ transport draft version. |
 | `certKey` | [-] | `undefined` | Certificate hash input for WebTransport setup. |
-| `moqtLogLevel` | [-] | `none` | Log level for MOQ internals. |
+| `authorization` | [-] | `undefined` | Optional CAT credentials attached to the MoQT connection. See [Authorization](#authorization). |
+| `moqLogLevel` | [-] | `none` | Log level for MOQ internals. |
 
 `*` Required when `endpoint` is not provided.
+
+### Authorization
+
+`authorization` supplies CAT tokens when a fetch or subscribe opens the MoQT session. With `enabled: true`, the SDK decodes `token` and passes it to `MoqtConnection.connect()` along with the catalog relay URL. The credential is used only for that connection attempt. It is not stored.
+
+| Field | Description |
+| :--- | :--- |
+| `enabled` | When `false`, or when `authorization` is omitted, no auth attributes are sent. |
+| `profile` | `cat4moq` sends token type `1`. `moqx-compat` sends token type `16`. |
+| `token` | Base64-encoded CAT token. An optional `base64:` prefix is stripped. The decoded token must be at most 32768 bytes. |
+
+```js
+authorization: {
+  enabled: true,
+  profile: 'cat4moq',
+  token: '<base64 CAT token>'
+}
+```
+
+Fetch and subscribe fail if `profile` is not `cat4moq` or `moqx-compat`, or if `token` is empty or not valid base64.
 
 # Events
 
@@ -1214,7 +1235,7 @@ On `open()` the client:
 | `app` | [x] | `live` | App path; split on `/` for the MoQT namespace prefix. |
 | `streamName` | [-] | `undefined` | Fallback `clientId` when `dataChannelConfiguration.clientId` is omitted. |
 | `draftVersion` | [-] | auto / connection | MoQ transport draft. Datagram send requires **18**. |
-| `connectionParams` | [-] | `{ maxRequestId }` | Passed to `MoqtConnection.connect()` in sidecar mode (auth token, etc.). |
+| `connectionParams` | [-] | `{ maxRequestId }` | Extra `MoqtConnection.connect()` options in sidecar mode. CAT credentials use `authorization`, not this object. |
 | `dataChannelConfiguration` | [-] | see below | Channel label and send/receive behavior. |
 
 ### `dataChannelConfiguration`
@@ -1235,8 +1256,29 @@ On `open()` the client:
 | `protocol` | [x] | `https` | `ws` / `wss` map to `http` / `https` for WebTransport. |
 | `port` | [x] | `4433` | Relay port. |
 | `certKey` | [-] | `undefined` | Certificate hash for WebTransport. |
+| `authorization` | [-] | `undefined` | Optional CAT credentials for the sidecar `MoqtConnection.connect()`. See [Authorization](#authorization). |
 
 `*` Required when `endpoint` is not provided.
+
+### Authorization
+
+Sidecar mode sends `authorization` on `connect()` with `relayUrl` set to the channel endpoint. Shared mode does not connect again; it uses the session that was already authenticated.
+
+| Field | Description |
+| :--- | :--- |
+| `enabled` | When `false`, or when `authorization` is omitted, no auth attributes are sent. |
+| `profile` | `cat4moq` sends token type `1`. `moqx-compat` sends token type `16`. |
+| `token` | Base64-encoded CAT token. An optional `base64:` prefix is stripped. The decoded token must be at most 32768 bytes. |
+
+```js
+authorization: {
+  enabled: true,
+  profile: 'cat4moq',
+  token: '<base64 CAT token>'
+}
+```
+
+`open()` fails if `profile` is not `cat4moq` or `moqx-compat`, or if `token` is empty or not valid base64. When `MOQPublisher` or `MOQSubscriber` owns a sidecar channel, `messageChannel.authorization` overrides that client's `authorization`; otherwise the client value is used.
 
 ## Shared (`mode: 'shared'`)
 
@@ -1492,6 +1534,7 @@ The `init()` call accepts `MOQPublisherConfigType`.
 | `namespace` | [-] | `app/streamName` | MOQ namespace to publish. |
 | `draftVersion` | [-] | auto | MoQ transport draft version. |
 | `certKey` | [-] | `undefined` | Certificate hash input for WebTransport setup. |
+| `authorization` | [-] | `undefined` | Optional CAT credentials attached to the MoQT connection. See [Authorization](#authorization). |
 | `keyFramerate` | [-] | `2000` | Keyframe interval in milliseconds. |
 | `bandwidth` | [-] | `{ audio: 56, video: 750 }` | Target encode bandwidth settings. |
 | `mediaConstraints` | [x] | camera+mic defaults | Constraints for SDK-managed `getUserMedia`. |
@@ -1506,9 +1549,29 @@ The `init()` call accepts `MOQPublisherConfigType`.
 | `messageChannel` | [-] | `{ enabled: false, mode: 'shared' }` | Optional internally managed `MOQMessageChannel`. `mode: 'shared'` reuses publisher's `MoqtConnection`; `mode: 'sidecar'` creates a separate MoQT session for messaging. |
 | `stats` | [-] | `undefined` | Optional stats monitor configuration. |
 | `connectionParams` | [-] | `undefined` | Additional params used for stats metadata and endpoint context. |
-| `moqtLogLevel` | [-] | `none` | Log level passed to MOQ components. |
+| `moqLogLevel` | [-] | `none` | Log level passed to MOQ components. |
 
 `*` Required when `endpoint` is not provided.
+
+### Authorization
+
+`authorization` supplies CAT tokens when `publish()` opens the MoQT session. With `enabled: true`, the SDK decodes `token` and passes it to `connect()` along with the publisher relay URL. The credential is used only for that connection attempt. It is not stored and it is not added to viewer links.
+
+| Field | Description |
+| :--- | :--- |
+| `enabled` | When `false`, or when `authorization` is omitted, no auth attributes are sent. |
+| `profile` | `cat4moq` sends token type `1`. `moqx-compat` sends token type `16`. |
+| `token` | Base64-encoded CAT token. An optional `base64:` prefix is stripped. The decoded token must be at most 32768 bytes. |
+
+```js
+authorization: {
+  enabled: true,
+  profile: 'cat4moq',
+  token: '<base64 CAT token>'
+}
+```
+
+`publish()` fails if `profile` is not `cat4moq` or `moqx-compat`, or if `token` is empty or not valid base64.
 
 ### Simulcast notes
 
@@ -1533,7 +1596,7 @@ The `init()` call accepts `MOQPublisherConfigType`.
   - creates a second `MoqtConnection` only for messaging
   - helps isolate transport contention from media publishing
 - `messageChannel.dataChannelConfiguration` supports the same semantics as standalone `MOQMessageChannel` (for example `name`, `clientId`, `keepEcho`, `unreliable`).
-- In `sidecar` mode, messaging endpoint fields may be overridden under `messageChannel` (`endpoint`, `host`, `protocol`, `port`, `certKey`, `draftVersion`, `connectionParams`, `app`, `streamName`); otherwise publisher values are used.
+- In `sidecar` mode, messaging endpoint fields may be overridden under `messageChannel` (`endpoint`, `host`, `protocol`, `port`, `certKey`, `draftVersion`, `connectionParams`, `authorization`, `app`, `streamName`); otherwise publisher values are used. `messageChannel.authorization` overrides the publisher `authorization` for that sidecar connection. Shared mode reuses the publisher session and does not connect again.
 
 # Events
 
@@ -1779,6 +1842,7 @@ The `init()` call accepts `MOQSubscriberConfigType`.
 | `videoAudioElementId` | [-] | `undefined` | Optional media element id used by alternate paths. |
 | `draftVersion` | [-] | auto | MoQ transport draft version. |
 | `certKey` | [-] | `undefined` | Certificate hash input for WebTransport setup. |
+| `authorization` | [-] | `undefined` | Optional CAT credentials attached to the MoQT connection. See [Authorization](#authorization). |
 | `lateFrameThreshold` | [-] | `100` | Late frame threshold in ms for playback adaptation. |
 | `gapTimeout` | [-] | `500` | Gap timeout in ms for recovery behavior. |
 | `preferSoftwareDecoder` | [-] | `false` | Prefer software decode over hardware where supported. |
@@ -1789,13 +1853,94 @@ The `init()` call accepts `MOQSubscriberConfigType`.
 | `stats` | [-] | `undefined` | Optional stats monitor configuration. |
 | `prefetchCatalog` | [-] | `false` | Attempt HTTP catalog prefetch before MOQ playback session starts. |
 | `connectionParams` | [-] | `undefined` | Additional connection parameters passed through options. |
-| `moqtLogLevel` | [-] | `none` | Log level passed to MOQ components. |
+| `moqLogLevel` | [-] | `none` | Log level passed to MOQ components. |
 | `mediaSource` | [-] | `none` | An instance of a `MediaSourceLike` (from [moq-playa](https://github.com/openmoq/moq-playa)) implementation. _Make sure you know what you are doing, as it carries responsibility for managing buffers and media playout._ |
-| `mseMediaSourceOptions` | [-] | `undefined` | The desired `MseMediaSourceOptions` to apply when the video package format is received as `CMAF/CMSF`. Ignored when `mediaSource` is provided. |
+| `mseMediaSourceOptions` | [-] | buffer defaults | CMAF/MSE buffer and MediaSource settings. Ignored when `mediaSource` is provided. See [CMAF playback](#cmaf-playback). |
+| `drmConfig` | [-] | `undefined` | EME license settings for encrypted CMAF playback. Overrides `mseMediaSourceOptions.drmConfig`. See [CMAF playback](#cmaf-playback). |
 | `locmafDecoding` | [-] | `mse` | How LOCMAF tracks are consumed: reconstructed CMAF chunks for MSE (`mse`), or coded frames for WebCodecs (`frame`). |
 | `messageChannel` | [-] | `{ enabled: false, mode: 'shared' }` | Optional internally managed `MOQMessageChannel`. `mode: 'shared'` reuses subscriber/player `MoqtConnection`; `mode: 'sidecar'` creates a separate MoQT session for messaging. |
 
 `*` Required when `endpoint` is not provided.
+
+### Authorization
+
+`authorization` supplies CAT tokens when `subscribe()` opens the MoQT session. With `enabled: true`, the SDK decodes `token` and the player passes it to `MoqtConnection.connect()` along with the subscriber relay URL. The credential is used only for that connection attempt, including reconnects on the same session. It is not stored and it is not added to viewer links.
+
+| Field | Description |
+| :--- | :--- |
+| `enabled` | When `false`, or when `authorization` is omitted, no auth attributes are sent. |
+| `profile` | `cat4moq` sends token type `1`. `moqx-compat` sends token type `16`. |
+| `token` | Base64-encoded CAT token. An optional `base64:` prefix is stripped. The decoded token must be at most 32768 bytes. |
+
+```js
+authorization: {
+  enabled: true,
+  profile: 'cat4moq',
+  token: '<base64 CAT token>'
+}
+```
+
+`subscribe()` fails if `profile` is not `cat4moq` or `moqx-compat`, or if `token` is empty or not valid base64.
+
+### CMAF playback
+
+`mseMediaSourceOptions` and `drmConfig` apply only when the catalog is played as CMAF/CMSF through Media Source Extensions. The LOC/WebCodecs path does not use them. If you pass your own `mediaSource`, the SDK uses that instance and ignores both fields.
+
+On the CMAF path the SDK builds one options object and passes it to the MSE media source:
+
+- start from `mseMediaSourceOptions`
+- set `drmConfig` from the top-level `drmConfig` when it is set, otherwise from `mseMediaSourceOptions.drmConfig`
+
+Omit both DRM fields for clear playback.
+
+SDK default for `mseMediaSourceOptions`:
+
+```js
+{
+  mseImplementation: 'auto',
+  mseAttachment: 'auto',
+  maxAheadSec: 15,
+  targetAheadSec: 2,
+  keepBehindSec: 10,
+  gapJumpMs: 2000
+}
+```
+
+| Field | Default | Description |
+| :--- | :--- | :--- |
+| `mseImplementation` | `auto` | Which `MediaSource` to construct. `auto` and `managed` prefer `ManagedMediaSource` when the browser has it (required on iPhone Safari), otherwise standard `MediaSource`. `standard` prefers standard `MediaSource`. If the requested implementation is missing, the other one is used. Playback fails only when the browser has neither. |
+| `mseAttachment` | `auto` | How that `MediaSource` is attached to the element. `auto` uses an object URL for standard `MediaSource` and `srcObject` for `ManagedMediaSource`. `object-url` and `src-object` force that mode and throw if it cannot be used. |
+| `keepBehindSec` | `10` | Seconds of already-played media kept behind `currentTime`. Older buffered data is removed so the browser quota is not filled by history. |
+| `maxAheadSec` | `15` | If the buffer runs farther ahead of `currentTime` than this, playback jumps toward the live edge after startup. `Infinity` disables the jump (VOD or time-shift). |
+| `targetAheadSec` | `2` | Where a live-edge jump lands: the end of the buffered range minus this many seconds. |
+| `gapJumpMs` | `2000` | When the playhead is stuck at the end of a buffered range and the hole ahead is at most 2 seconds, wait this long, then seek just past the hole. `0` disables gap jumps. Must be a finite number `>= 0`. |
+| `stallThresholdMs` | unset | How long playback must be stalled before a stall is reported. Must be a finite number `>= 0` when set. The SDK default leaves this to the MSE media source. |
+| `drmConfig` | `undefined` | Same shape as the top-level `drmConfig` below. The top-level field wins when both are set. |
+
+`drmConfig` turns on Encrypted Media Extensions for that playback. The media element receives a `MediaKeys` session, and license challenges are posted to `licenseUrl`.
+
+| Field | Default | Description |
+| :--- | :--- | :--- |
+| `licenseUrl` | required | License server URL. The challenge is sent as a `POST`. |
+| `keySystem` | `com.widevine.alpha` | EME key system passed to `requestMediaKeySystemAccess`. |
+| `serverCertificate` | `undefined` | Optional license-server certificate (`Uint8Array`) given to the CDM. |
+
+```js
+await subscriber.init({
+  endpoint: 'https://relay.example.com:4433',
+  namespace: 'live/mystream',
+  mseMediaSourceOptions: {
+    maxAheadSec: 15,
+    targetAheadSec: 2,
+    keepBehindSec: 10,
+    gapJumpMs: 2000
+  },
+  drmConfig: {
+    licenseUrl: 'https://license.example.com/widevine',
+    keySystem: 'com.widevine.alpha'
+  }
+})
+```
 
 ### Managed MessageChannel notes
 
@@ -1808,7 +1953,7 @@ The `init()` call accepts `MOQSubscriberConfigType`.
   - creates a second `MoqtConnection` only for messaging
   - helps isolate transport contention from media playback
 - `messageChannel.dataChannelConfiguration` supports the same semantics as standalone `MOQMessageChannel` (for example `name`, `clientId`, `keepEcho`, `unreliable`).
-- In `sidecar` mode, messaging endpoint fields may be overridden under `messageChannel` (`endpoint`, `host`, `protocol`, `port`, `certKey`, `draftVersion`, `connectionParams`, `app`, `streamName`); otherwise subscriber values are used.
+- In `sidecar` mode, messaging endpoint fields may be overridden under `messageChannel` (`endpoint`, `host`, `protocol`, `port`, `certKey`, `draftVersion`, `connectionParams`, `authorization`, `app`, `streamName`); otherwise subscriber values are used. `messageChannel.authorization` overrides the subscriber `authorization` for that sidecar connection. Shared mode reuses the subscriber session and does not connect again.
 
 # Events
 
@@ -3182,7 +3327,7 @@ The following events are dispatched by the underlying pubnub integration and bub
 
 ### Source: `docs/api/classes/Event.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
 
 ***
 
@@ -3250,7 +3395,7 @@ Get the type of event.
 
 ### Source: `docs/api/classes/EventEmitter.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
 
 ***
 
@@ -3361,7 +3506,7 @@ Dispatch an event to be handled by any assigned callbacks.
 
 ### Source: `docs/api/classes/HLSSubscriber.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
 
 ***
 
@@ -3765,7 +3910,7 @@ Unsubscribe from the HLS stream.
 
 ### Source: `docs/api/classes/LiveSeekClient.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
 
 ***
 
@@ -4633,7 +4778,7 @@ The channel to unsubscribe from.
 
 ### Source: `docs/api/classes/MessageChannel.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
 
 ***
 
@@ -5386,7 +5531,7 @@ The optimization parameters to update.
 
 ### Source: `docs/api/classes/MessageChannelEvent.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
 
 ***
 
@@ -5488,7 +5633,7 @@ Get the type of event.
 
 ### Source: `docs/api/classes/MessageTransportStateEvent.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
 
 ***
 
@@ -5590,7 +5735,7 @@ Get the type of event.
 
 ### Source: `docs/api/classes/MOQCatalog.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
 
 ***
 
@@ -5816,7 +5961,7 @@ Dispatch an event to be handled by any assigned callbacks.
 
 ### Source: `docs/api/classes/MOQMessageChannel.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
 
 ***
 
@@ -6071,7 +6216,7 @@ Call before `open()`.
 
 ### Source: `docs/api/classes/MOQPublisher.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
 
 ***
 
@@ -6373,7 +6518,7 @@ Dispatch an event to be handled by any assigned callbacks.
 
 ### Source: `docs/api/classes/MOQSubscriber.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
 
 ***
 
@@ -6826,7 +6971,7 @@ Dispatch an event to be handled by any assigned callbacks.
 
 ### Source: `docs/api/classes/PlaybackController.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
 
 ***
 
@@ -7155,7 +7300,7 @@ Unmute the media element.
 
 ### Source: `docs/api/classes/PlaybackControls.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
 
 ***
 
@@ -7492,7 +7637,7 @@ The event to trigger.
 
 ### Source: `docs/api/classes/PublisherEvent.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
 
 ***
 
@@ -7594,7 +7739,7 @@ Get the type of event.
 
 ### Source: `docs/api/classes/PubNubClient.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
 
 ***
 
@@ -7814,7 +7959,7 @@ Dispatch an event to be handled by any assigned callbacks.
 
 ### Source: `docs/api/classes/PubNubEvent.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
 
 ***
 
@@ -7916,7 +8061,7 @@ Get the type of event.
 
 ### Source: `docs/api/classes/SourceHandler.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
 
 ***
 
@@ -8351,7 +8496,7 @@ Unpublish the media element.
 
 ### Source: `docs/api/classes/SourceHandlerImpl.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
 
 ***
 
@@ -8765,7 +8910,7 @@ Unpublish the media element.
 
 ### Source: `docs/api/classes/SubscriberEvent.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
 
 ***
 
@@ -8867,7 +9012,7 @@ Get the type of event.
 
 ### Source: `docs/api/classes/WHEPClient.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
 
 ***
 
@@ -9634,7 +9779,7 @@ The channel to unsubscribe from.
 
 ### Source: `docs/api/classes/WHIPClient.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
 
 ***
 
@@ -10240,7 +10385,7 @@ The optimization parameters to update.
 
 ### Source: `docs/api/enumerations/MessageChannelEventTypes.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
 
 ***
 
@@ -10286,7 +10431,7 @@ The optimization parameters to update.
 
 ### Source: `docs/api/enumerations/MessageTransportStateEventTypes.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
 
 ***
 
@@ -10320,7 +10465,7 @@ The optimization parameters to update.
 
 ### Source: `docs/api/enumerations/PlaybackAudioEncoder.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
 
 ***
 
@@ -10342,7 +10487,7 @@ The optimization parameters to update.
 
 ### Source: `docs/api/enumerations/PlaybackState.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
 
 ***
 
@@ -10382,7 +10527,7 @@ The optimization parameters to update.
 
 ### Source: `docs/api/enumerations/PlaybackVideoEncoder.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
 
 ***
 
@@ -10420,9 +10565,15 @@ The optimization parameters to update.
 
 > **VP8**: `"VP8"`
 
+***
+
+### VP9
+
+> **VP9**: `"VP9"`
+
 ### Source: `docs/api/enumerations/PublishAudioEncoder.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
 
 ***
 
@@ -10440,7 +10591,7 @@ Enumeration of Audio Encoder types to request for Broadcast.
 
 ### Source: `docs/api/enumerations/PublisherEventTypes.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
 
 ***
 
@@ -10564,7 +10715,7 @@ Enumeration of Audio Encoder types to request for Broadcast.
 
 ### Source: `docs/api/enumerations/PublishVideoEncoder.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
 
 ***
 
@@ -10610,9 +10761,15 @@ Enumeration of Video Encoder types to request for Broadcast.
 
 > **VP8**: `"VP8"`
 
+***
+
+### VP9
+
+> **VP9**: `"VP9"`
+
 ### Source: `docs/api/enumerations/PubNubEventTypes.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
 
 ***
 
@@ -10700,7 +10857,7 @@ Enumeration of Video Encoder types to request for Broadcast.
 
 ### Source: `docs/api/enumerations/RTCPublisherEventTypes.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
 
 ***
 
@@ -10836,7 +10993,7 @@ Enumeration of Video Encoder types to request for Broadcast.
 
 ### Source: `docs/api/enumerations/RTCSubscriberEventTypes.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
 
 ***
 
@@ -10972,7 +11129,7 @@ Enumeration of Video Encoder types to request for Broadcast.
 
 ### Source: `docs/api/enumerations/StatsEndpointType.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
 
 ***
 
@@ -11000,7 +11157,7 @@ Enumeration of Video Encoder types to request for Broadcast.
 
 ### Source: `docs/api/enumerations/SubscriberEventTypes.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
 
 ***
 
@@ -11172,7 +11329,7 @@ Enumeration of Video Encoder types to request for Broadcast.
 
 ### Source: `docs/api/enumerations/WebRTCConnectionEventTypes.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
 
 ***
 
@@ -11206,7 +11363,7 @@ Enumeration of Video Encoder types to request for Broadcast.
 
 ### Source: `docs/api/functions/getRecordedLogs.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
 
 ***
 
@@ -11226,7 +11383,7 @@ Array of recorded log messages.
 
 ### Source: `docs/api/functions/getVersion.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
 
 ***
 
@@ -11244,7 +11401,7 @@ Get the version of the SDK.
 
 ### Source: `docs/api/functions/setLogLevel.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
 
 ***
 
@@ -11270,11 +11427,11 @@ Get the version of the SDK.
 
 ### Source: `docs/api/globals.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.1**](README.md)
+[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](README.md)
 
 ***
 
-# Red5 Pro WebRTC SDK v16.4.0-beta.1
+# Red5 Pro WebRTC SDK v16.4.0-beta.2
 
 Red5 Pro WebRTC SDK
 
@@ -11368,7 +11525,7 @@ Red5 Pro WebRTC SDK
 
 ### Source: `docs/api/interfaces/EventEmitterInterface.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
 
 ***
 
@@ -11442,7 +11599,7 @@ Dispatch an event to be handled by any assigned callbacks.
 
 ### Source: `docs/api/README.md`
 
-**Red5 Pro WebRTC SDK v16.4.0-beta.1**
+**Red5 Pro WebRTC SDK v16.4.0-beta.2**
 
 ***
 
@@ -11680,7 +11837,7 @@ The initialization configurations and relevant APIs available for each client ca
 
 ### Source: `docs/api/type-aliases/BandwidthConfig.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
 
 ***
 
@@ -11704,7 +11861,7 @@ The initialization configurations and relevant APIs available for each client ca
 
 ### Source: `docs/api/type-aliases/HLSSubscriberConfigType.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
 
 ***
 
@@ -11774,7 +11931,7 @@ The initialization configurations and relevant APIs available for each client ca
 
 ### Source: `docs/api/type-aliases/LiveSeekConfigType.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
 
 ***
 
@@ -11792,7 +11949,7 @@ The initialization configurations and relevant APIs available for each client ca
 
 ### Source: `docs/api/type-aliases/LiveSeekOptions.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
 
 ***
 
@@ -11848,7 +12005,7 @@ The initialization configurations and relevant APIs available for each client ca
 
 ### Source: `docs/api/type-aliases/MediaConstraintRange.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
 
 ***
 
@@ -11884,7 +12041,7 @@ The initialization configurations and relevant APIs available for each client ca
 
 ### Source: `docs/api/type-aliases/MediaConstraints.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
 
 ***
 
@@ -11908,7 +12065,7 @@ The initialization configurations and relevant APIs available for each client ca
 
 ### Source: `docs/api/type-aliases/MOQCatalogConfigType.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
 
 ***
 
@@ -11923,6 +12080,12 @@ The initialization configurations and relevant APIs available for each client ca
 ### app
 
 > **app**: `string`
+
+***
+
+### authorization?
+
+> `optional` **authorization?**: `AuthorizationSettings`
 
 ***
 
@@ -11950,9 +12113,9 @@ The initialization configurations and relevant APIs available for each client ca
 
 ***
 
-### moqtLogLevel?
+### moqLogLevel?
 
-> `optional` **moqtLogLevel?**: `LogLevel`
+> `optional` **moqLogLevel?**: `LogLevel`
 
 ***
 
@@ -11980,7 +12143,7 @@ The initialization configurations and relevant APIs available for each client ca
 
 ### Source: `docs/api/type-aliases/MOQDataChannelConfiguration.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
 
 ***
 
@@ -12024,7 +12187,7 @@ Prefer datagram send path for outbound messages.
 
 ### Source: `docs/api/type-aliases/MOQMessageChannelConfigType.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
 
 ***
 
@@ -12036,7 +12199,7 @@ Prefer datagram send path for outbound messages.
 
 ### Source: `docs/api/type-aliases/MOQPublisherConfigType.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
 
 ***
 
@@ -12057,6 +12220,12 @@ Prefer datagram send path for outbound messages.
 ### audioEncoding?
 
 > `optional` **audioEncoding?**: [`PublishAudioEncoder`](../enumerations/PublishAudioEncoder.md)
+
+***
+
+### authorization?
+
+> `optional` **authorization?**: `AuthorizationSettings`
 
 ***
 
@@ -12150,9 +12319,9 @@ Optional internally managed data messaging channel.
 
 ***
 
-### moqtLogLevel?
+### moqLogLevel?
 
-> `optional` **moqtLogLevel?**: `LogLevel`
+> `optional` **moqLogLevel?**: `LogLevel`
 
 ***
 
@@ -12211,7 +12380,7 @@ lower rungs are generated via OffscreenCanvas + track generators.
 
 ### Source: `docs/api/type-aliases/MOQSubscriberConfigType.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
 
 ***
 
@@ -12232,6 +12401,12 @@ lower rungs are generated via OffscreenCanvas + track generators.
 ### authority?
 
 > `optional` **authority?**: `string`
+
+***
+
+### authorization?
+
+> `optional` **authorization?**: `AuthorizationSettings`
 
 ***
 
@@ -12266,6 +12441,12 @@ lower rungs are generated via OffscreenCanvas + track generators.
 ### draftVersion?
 
 > `optional` **draftVersion?**: `DraftVersion`
+
+***
+
+### drmConfig?
+
+> `optional` **drmConfig?**: `DrmConfig`
 
 ***
 
@@ -12325,9 +12506,9 @@ Optional internally managed data messaging channel.
 
 ***
 
-### moqtLogLevel?
+### moqLogLevel?
 
-> `optional` **moqtLogLevel?**: `LogLevel`
+> `optional` **moqLogLevel?**: `LogLevel`
 
 ***
 
@@ -12421,7 +12602,7 @@ Optional internally managed data messaging channel.
 
 ### Source: `docs/api/type-aliases/RTCPublisherConfigType.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
 
 ***
 
@@ -12611,7 +12792,7 @@ Optional internally managed data messaging channel.
 
 ### Source: `docs/api/type-aliases/RTCSubscriberConfigType.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
 
 ***
 
@@ -12785,7 +12966,7 @@ Optional internally managed data messaging channel.
 
 ### Source: `docs/api/type-aliases/RTCWhepSubscriberConfigType.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
 
 ***
 
@@ -12807,7 +12988,7 @@ Optional internally managed data messaging channel.
 
 ### Source: `docs/api/type-aliases/RTCWhipPublisherConfigType.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
 
 ***
 
@@ -12829,7 +13010,7 @@ Optional internally managed data messaging channel.
 
 ### Source: `docs/api/type-aliases/StatsConfig.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
 
 ***
 
@@ -12867,7 +13048,7 @@ Configuration for RTC Stats Monitoring.
 
 ### Source: `docs/api/type-aliases/VideoConstraints.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
 
 ***
 
@@ -12903,7 +13084,7 @@ Configuration for RTC Stats Monitoring.
 
 ### Source: `docs/api/variables/Capability.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
 
 ***
 
@@ -12925,7 +13106,7 @@ Configuration for RTC Stats Monitoring.
 
 ### Source: `docs/api/variables/default.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
 
 ***
 
@@ -13195,7 +13376,7 @@ Get the version of the SDK.
 
 ### Source: `docs/api/variables/defaultHLSSubscriberConfig.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
 
 ***
 
@@ -13207,7 +13388,7 @@ Get the version of the SDK.
 
 ### Source: `docs/api/variables/defaultLiveSeekConfig.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
 
 ***
 
@@ -13219,7 +13400,7 @@ Get the version of the SDK.
 
 ### Source: `docs/api/variables/defaultMOQCatalogConfig.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
 
 ***
 
@@ -13231,7 +13412,7 @@ Get the version of the SDK.
 
 ### Source: `docs/api/variables/defaultMOQDataChannelConfiguration.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
 
 ***
 
@@ -13243,7 +13424,7 @@ Get the version of the SDK.
 
 ### Source: `docs/api/variables/defaultMOQMessageChannelConfig.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
 
 ***
 
@@ -13255,7 +13436,7 @@ Get the version of the SDK.
 
 ### Source: `docs/api/variables/defaultMOQPublisherConfig.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
 
 ***
 
@@ -13267,7 +13448,7 @@ Get the version of the SDK.
 
 ### Source: `docs/api/variables/defaultMOQSubscriberConfig.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
 
 ***
 
@@ -13279,7 +13460,7 @@ Get the version of the SDK.
 
 ### Source: `docs/api/variables/defaultStatsConfig.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
 
 ***
 
@@ -13291,7 +13472,7 @@ Get the version of the SDK.
 
 ### Source: `docs/api/variables/defaultWhepSubscriberConfig.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
 
 ***
 
@@ -13303,7 +13484,7 @@ Get the version of the SDK.
 
 ### Source: `docs/api/variables/defaultWhipPublisherConfig.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
 
 ***
 
@@ -13315,7 +13496,7 @@ Get the version of the SDK.
 
 ### Source: `docs/api/variables/LOG_LEVELS.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
 
 ***
 
@@ -13353,7 +13534,7 @@ Get the version of the SDK.
 
 ### Source: `docs/api/variables/PlaybackStateReadableMap.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
 
 ***
 
@@ -13961,9 +14142,30 @@ The `init()` call accepts `MOQCatalogConfigType`.
 | `namespace` | [-] | `app/streamName` | Explicit namespace for fetch/subscribe calls. |
 | `draftVersion` | [-] | `16` | MoQ transport draft version. |
 | `certKey` | [-] | `undefined` | Certificate hash input for WebTransport setup. |
-| `moqtLogLevel` | [-] | `none` | Log level for MOQ internals. |
+| `authorization` | [-] | `undefined` | Optional CAT credentials attached to the MoQT connection. See [Authorization](#authorization). |
+| `moqLogLevel` | [-] | `none` | Log level for MOQ internals. |
 
 `*` Required when `endpoint` is not provided.
+
+### Authorization
+
+`authorization` supplies CAT tokens when a fetch or subscribe opens the MoQT session. With `enabled: true`, the SDK decodes `token` and passes it to `MoqtConnection.connect()` along with the catalog relay URL. The credential is used only for that connection attempt. It is not stored.
+
+| Field | Description |
+| :--- | :--- |
+| `enabled` | When `false`, or when `authorization` is omitted, no auth attributes are sent. |
+| `profile` | `cat4moq` sends token type `1`. `moqx-compat` sends token type `16`. |
+| `token` | Base64-encoded CAT token. An optional `base64:` prefix is stripped. The decoded token must be at most 32768 bytes. |
+
+```js
+authorization: {
+  enabled: true,
+  profile: 'cat4moq',
+  token: '<base64 CAT token>'
+}
+```
+
+Fetch and subscribe fail if `profile` is not `cat4moq` or `moqx-compat`, or if `token` is empty or not valid base64.
 
 # Events
 
@@ -14135,7 +14337,7 @@ On `open()` the client:
 | `app` | [x] | `live` | App path; split on `/` for the MoQT namespace prefix. |
 | `streamName` | [-] | `undefined` | Fallback `clientId` when `dataChannelConfiguration.clientId` is omitted. |
 | `draftVersion` | [-] | auto / connection | MoQ transport draft. Datagram send requires **18**. |
-| `connectionParams` | [-] | `{ maxRequestId }` | Passed to `MoqtConnection.connect()` in sidecar mode (auth token, etc.). |
+| `connectionParams` | [-] | `{ maxRequestId }` | Extra `MoqtConnection.connect()` options in sidecar mode. CAT credentials use `authorization`, not this object. |
 | `dataChannelConfiguration` | [-] | see below | Channel label and send/receive behavior. |
 
 ### `dataChannelConfiguration`
@@ -14156,8 +14358,29 @@ On `open()` the client:
 | `protocol` | [x] | `https` | `ws` / `wss` map to `http` / `https` for WebTransport. |
 | `port` | [x] | `4433` | Relay port. |
 | `certKey` | [-] | `undefined` | Certificate hash for WebTransport. |
+| `authorization` | [-] | `undefined` | Optional CAT credentials for the sidecar `MoqtConnection.connect()`. See [Authorization](#authorization). |
 
 `*` Required when `endpoint` is not provided.
+
+### Authorization
+
+Sidecar mode sends `authorization` on `connect()` with `relayUrl` set to the channel endpoint. Shared mode does not connect again; it uses the session that was already authenticated.
+
+| Field | Description |
+| :--- | :--- |
+| `enabled` | When `false`, or when `authorization` is omitted, no auth attributes are sent. |
+| `profile` | `cat4moq` sends token type `1`. `moqx-compat` sends token type `16`. |
+| `token` | Base64-encoded CAT token. An optional `base64:` prefix is stripped. The decoded token must be at most 32768 bytes. |
+
+```js
+authorization: {
+  enabled: true,
+  profile: 'cat4moq',
+  token: '<base64 CAT token>'
+}
+```
+
+`open()` fails if `profile` is not `cat4moq` or `moqx-compat`, or if `token` is empty or not valid base64. When `MOQPublisher` or `MOQSubscriber` owns a sidecar channel, `messageChannel.authorization` overrides that client's `authorization`; otherwise the client value is used.
 
 ## Shared (`mode: 'shared'`)
 
@@ -14413,6 +14636,7 @@ The `init()` call accepts `MOQPublisherConfigType`.
 | `namespace` | [-] | `app/streamName` | MOQ namespace to publish. |
 | `draftVersion` | [-] | auto | MoQ transport draft version. |
 | `certKey` | [-] | `undefined` | Certificate hash input for WebTransport setup. |
+| `authorization` | [-] | `undefined` | Optional CAT credentials attached to the MoQT connection. See [Authorization](#authorization). |
 | `keyFramerate` | [-] | `2000` | Keyframe interval in milliseconds. |
 | `bandwidth` | [-] | `{ audio: 56, video: 750 }` | Target encode bandwidth settings. |
 | `mediaConstraints` | [x] | camera+mic defaults | Constraints for SDK-managed `getUserMedia`. |
@@ -14427,9 +14651,29 @@ The `init()` call accepts `MOQPublisherConfigType`.
 | `messageChannel` | [-] | `{ enabled: false, mode: 'shared' }` | Optional internally managed `MOQMessageChannel`. `mode: 'shared'` reuses publisher's `MoqtConnection`; `mode: 'sidecar'` creates a separate MoQT session for messaging. |
 | `stats` | [-] | `undefined` | Optional stats monitor configuration. |
 | `connectionParams` | [-] | `undefined` | Additional params used for stats metadata and endpoint context. |
-| `moqtLogLevel` | [-] | `none` | Log level passed to MOQ components. |
+| `moqLogLevel` | [-] | `none` | Log level passed to MOQ components. |
 
 `*` Required when `endpoint` is not provided.
+
+### Authorization
+
+`authorization` supplies CAT tokens when `publish()` opens the MoQT session. With `enabled: true`, the SDK decodes `token` and passes it to `connect()` along with the publisher relay URL. The credential is used only for that connection attempt. It is not stored and it is not added to viewer links.
+
+| Field | Description |
+| :--- | :--- |
+| `enabled` | When `false`, or when `authorization` is omitted, no auth attributes are sent. |
+| `profile` | `cat4moq` sends token type `1`. `moqx-compat` sends token type `16`. |
+| `token` | Base64-encoded CAT token. An optional `base64:` prefix is stripped. The decoded token must be at most 32768 bytes. |
+
+```js
+authorization: {
+  enabled: true,
+  profile: 'cat4moq',
+  token: '<base64 CAT token>'
+}
+```
+
+`publish()` fails if `profile` is not `cat4moq` or `moqx-compat`, or if `token` is empty or not valid base64.
 
 ### Simulcast notes
 
@@ -14454,7 +14698,7 @@ The `init()` call accepts `MOQPublisherConfigType`.
   - creates a second `MoqtConnection` only for messaging
   - helps isolate transport contention from media publishing
 - `messageChannel.dataChannelConfiguration` supports the same semantics as standalone `MOQMessageChannel` (for example `name`, `clientId`, `keepEcho`, `unreliable`).
-- In `sidecar` mode, messaging endpoint fields may be overridden under `messageChannel` (`endpoint`, `host`, `protocol`, `port`, `certKey`, `draftVersion`, `connectionParams`, `app`, `streamName`); otherwise publisher values are used.
+- In `sidecar` mode, messaging endpoint fields may be overridden under `messageChannel` (`endpoint`, `host`, `protocol`, `port`, `certKey`, `draftVersion`, `connectionParams`, `authorization`, `app`, `streamName`); otherwise publisher values are used. `messageChannel.authorization` overrides the publisher `authorization` for that sidecar connection. Shared mode reuses the publisher session and does not connect again.
 
 # Events
 
@@ -14700,6 +14944,7 @@ The `init()` call accepts `MOQSubscriberConfigType`.
 | `videoAudioElementId` | [-] | `undefined` | Optional media element id used by alternate paths. |
 | `draftVersion` | [-] | auto | MoQ transport draft version. |
 | `certKey` | [-] | `undefined` | Certificate hash input for WebTransport setup. |
+| `authorization` | [-] | `undefined` | Optional CAT credentials attached to the MoQT connection. See [Authorization](#authorization). |
 | `lateFrameThreshold` | [-] | `100` | Late frame threshold in ms for playback adaptation. |
 | `gapTimeout` | [-] | `500` | Gap timeout in ms for recovery behavior. |
 | `preferSoftwareDecoder` | [-] | `false` | Prefer software decode over hardware where supported. |
@@ -14710,13 +14955,94 @@ The `init()` call accepts `MOQSubscriberConfigType`.
 | `stats` | [-] | `undefined` | Optional stats monitor configuration. |
 | `prefetchCatalog` | [-] | `false` | Attempt HTTP catalog prefetch before MOQ playback session starts. |
 | `connectionParams` | [-] | `undefined` | Additional connection parameters passed through options. |
-| `moqtLogLevel` | [-] | `none` | Log level passed to MOQ components. |
+| `moqLogLevel` | [-] | `none` | Log level passed to MOQ components. |
 | `mediaSource` | [-] | `none` | An instance of a `MediaSourceLike` (from [moq-playa](https://github.com/openmoq/moq-playa)) implementation. _Make sure you know what you are doing, as it carries responsibility for managing buffers and media playout._ |
-| `mseMediaSourceOptions` | [-] | `undefined` | The desired `MseMediaSourceOptions` to apply when the video package format is received as `CMAF/CMSF`. Ignored when `mediaSource` is provided. |
+| `mseMediaSourceOptions` | [-] | buffer defaults | CMAF/MSE buffer and MediaSource settings. Ignored when `mediaSource` is provided. See [CMAF playback](#cmaf-playback). |
+| `drmConfig` | [-] | `undefined` | EME license settings for encrypted CMAF playback. Overrides `mseMediaSourceOptions.drmConfig`. See [CMAF playback](#cmaf-playback). |
 | `locmafDecoding` | [-] | `mse` | How LOCMAF tracks are consumed: reconstructed CMAF chunks for MSE (`mse`), or coded frames for WebCodecs (`frame`). |
 | `messageChannel` | [-] | `{ enabled: false, mode: 'shared' }` | Optional internally managed `MOQMessageChannel`. `mode: 'shared'` reuses subscriber/player `MoqtConnection`; `mode: 'sidecar'` creates a separate MoQT session for messaging. |
 
 `*` Required when `endpoint` is not provided.
+
+### Authorization
+
+`authorization` supplies CAT tokens when `subscribe()` opens the MoQT session. With `enabled: true`, the SDK decodes `token` and the player passes it to `MoqtConnection.connect()` along with the subscriber relay URL. The credential is used only for that connection attempt, including reconnects on the same session. It is not stored and it is not added to viewer links.
+
+| Field | Description |
+| :--- | :--- |
+| `enabled` | When `false`, or when `authorization` is omitted, no auth attributes are sent. |
+| `profile` | `cat4moq` sends token type `1`. `moqx-compat` sends token type `16`. |
+| `token` | Base64-encoded CAT token. An optional `base64:` prefix is stripped. The decoded token must be at most 32768 bytes. |
+
+```js
+authorization: {
+  enabled: true,
+  profile: 'cat4moq',
+  token: '<base64 CAT token>'
+}
+```
+
+`subscribe()` fails if `profile` is not `cat4moq` or `moqx-compat`, or if `token` is empty or not valid base64.
+
+### CMAF playback
+
+`mseMediaSourceOptions` and `drmConfig` apply only when the catalog is played as CMAF/CMSF through Media Source Extensions. The LOC/WebCodecs path does not use them. If you pass your own `mediaSource`, the SDK uses that instance and ignores both fields.
+
+On the CMAF path the SDK builds one options object and passes it to the MSE media source:
+
+- start from `mseMediaSourceOptions`
+- set `drmConfig` from the top-level `drmConfig` when it is set, otherwise from `mseMediaSourceOptions.drmConfig`
+
+Omit both DRM fields for clear playback.
+
+SDK default for `mseMediaSourceOptions`:
+
+```js
+{
+  mseImplementation: 'auto',
+  mseAttachment: 'auto',
+  maxAheadSec: 15,
+  targetAheadSec: 2,
+  keepBehindSec: 10,
+  gapJumpMs: 2000
+}
+```
+
+| Field | Default | Description |
+| :--- | :--- | :--- |
+| `mseImplementation` | `auto` | Which `MediaSource` to construct. `auto` and `managed` prefer `ManagedMediaSource` when the browser has it (required on iPhone Safari), otherwise standard `MediaSource`. `standard` prefers standard `MediaSource`. If the requested implementation is missing, the other one is used. Playback fails only when the browser has neither. |
+| `mseAttachment` | `auto` | How that `MediaSource` is attached to the element. `auto` uses an object URL for standard `MediaSource` and `srcObject` for `ManagedMediaSource`. `object-url` and `src-object` force that mode and throw if it cannot be used. |
+| `keepBehindSec` | `10` | Seconds of already-played media kept behind `currentTime`. Older buffered data is removed so the browser quota is not filled by history. |
+| `maxAheadSec` | `15` | If the buffer runs farther ahead of `currentTime` than this, playback jumps toward the live edge after startup. `Infinity` disables the jump (VOD or time-shift). |
+| `targetAheadSec` | `2` | Where a live-edge jump lands: the end of the buffered range minus this many seconds. |
+| `gapJumpMs` | `2000` | When the playhead is stuck at the end of a buffered range and the hole ahead is at most 2 seconds, wait this long, then seek just past the hole. `0` disables gap jumps. Must be a finite number `>= 0`. |
+| `stallThresholdMs` | unset | How long playback must be stalled before a stall is reported. Must be a finite number `>= 0` when set. The SDK default leaves this to the MSE media source. |
+| `drmConfig` | `undefined` | Same shape as the top-level `drmConfig` below. The top-level field wins when both are set. |
+
+`drmConfig` turns on Encrypted Media Extensions for that playback. The media element receives a `MediaKeys` session, and license challenges are posted to `licenseUrl`.
+
+| Field | Default | Description |
+| :--- | :--- | :--- |
+| `licenseUrl` | required | License server URL. The challenge is sent as a `POST`. |
+| `keySystem` | `com.widevine.alpha` | EME key system passed to `requestMediaKeySystemAccess`. |
+| `serverCertificate` | `undefined` | Optional license-server certificate (`Uint8Array`) given to the CDM. |
+
+```js
+await subscriber.init({
+  endpoint: 'https://relay.example.com:4433',
+  namespace: 'live/mystream',
+  mseMediaSourceOptions: {
+    maxAheadSec: 15,
+    targetAheadSec: 2,
+    keepBehindSec: 10,
+    gapJumpMs: 2000
+  },
+  drmConfig: {
+    licenseUrl: 'https://license.example.com/widevine',
+    keySystem: 'com.widevine.alpha'
+  }
+})
+```
 
 ### Managed MessageChannel notes
 
@@ -14729,7 +15055,7 @@ The `init()` call accepts `MOQSubscriberConfigType`.
   - creates a second `MoqtConnection` only for messaging
   - helps isolate transport contention from media playback
 - `messageChannel.dataChannelConfiguration` supports the same semantics as standalone `MOQMessageChannel` (for example `name`, `clientId`, `keepEcho`, `unreliable`).
-- In `sidecar` mode, messaging endpoint fields may be overridden under `messageChannel` (`endpoint`, `host`, `protocol`, `port`, `certKey`, `draftVersion`, `connectionParams`, `app`, `streamName`); otherwise subscriber values are used.
+- In `sidecar` mode, messaging endpoint fields may be overridden under `messageChannel` (`endpoint`, `host`, `protocol`, `port`, `certKey`, `draftVersion`, `connectionParams`, `authorization`, `app`, `streamName`); otherwise subscriber values are used. `messageChannel.authorization` overrides the subscriber `authorization` for that sidecar connection. Shared mode reuses the subscriber session and does not connect again.
 
 # Events
 

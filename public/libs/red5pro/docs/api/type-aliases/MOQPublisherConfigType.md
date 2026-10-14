@@ -1,4 +1,4 @@
-[**Red5 Pro WebRTC SDK v16.4.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
 
 ***
 
@@ -19,6 +19,12 @@
 ### audioEncoding?
 
 > `optional` **audioEncoding?**: [`PublishAudioEncoder`](../enumerations/PublishAudioEncoder.md)
+
+***
+
+### authorization?
+
+> `optional` **authorization?**: `AuthorizationSettings`
 
 ***
 
@@ -112,9 +118,9 @@ Optional internally managed data messaging channel.
 
 ***
 
-### moqtLogLevel?
+### moqLogLevel?
 
-> `optional` **moqtLogLevel?**: `LogLevel`
+> `optional` **moqLogLevel?**: `LogLevel`
 
 ***
 

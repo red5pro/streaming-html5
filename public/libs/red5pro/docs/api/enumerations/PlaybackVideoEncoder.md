@@ -1,4 +1,4 @@
-[**Red5 Pro WebRTC SDK v16.4.0-beta.1**](../README.md)
+[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
 
 ***
 
@@ -35,3 +35,9 @@
 ### VP8
 
 > **VP8**: `"VP8"`
+
+***
+
+### VP9
+
+> **VP9**: `"VP9"`

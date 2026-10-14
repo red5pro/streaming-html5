@@ -98,6 +98,7 @@ The `init()` call accepts `MOQSubscriberConfigType`.
 | `videoAudioElementId` | [-] | `undefined` | Optional media element id used by alternate paths. |
 | `draftVersion` | [-] | auto | MoQ transport draft version. |
 | `certKey` | [-] | `undefined` | Certificate hash input for WebTransport setup. |
+| `authorization` | [-] | `undefined` | Optional CAT credentials attached to the MoQT connection. See [Authorization](#authorization). |
 | `lateFrameThreshold` | [-] | `100` | Late frame threshold in ms for playback adaptation. |
 | `gapTimeout` | [-] | `500` | Gap timeout in ms for recovery behavior. |
 | `preferSoftwareDecoder` | [-] | `false` | Prefer software decode over hardware where supported. |
@@ -108,13 +109,94 @@ The `init()` call accepts `MOQSubscriberConfigType`.
 | `stats` | [-] | `undefined` | Optional stats monitor configuration. |
 | `prefetchCatalog` | [-] | `false` | Attempt HTTP catalog prefetch before MOQ playback session starts. |
 | `connectionParams` | [-] | `undefined` | Additional connection parameters passed through options. |
-| `moqtLogLevel` | [-] | `none` | Log level passed to MOQ components. |
+| `moqLogLevel` | [-] | `none` | Log level passed to MOQ components. |
 | `mediaSource` | [-] | `none` | An instance of a `MediaSourceLike` (from [moq-playa](https://github.com/openmoq/moq-playa)) implementation. _Make sure you know what you are doing, as it carries responsibility for managing buffers and media playout._ |
-| `mseMediaSourceOptions` | [-] | `undefined` | The desired `MseMediaSourceOptions` to apply when the video package format is received as `CMAF/CMSF`. Ignored when `mediaSource` is provided. |
+| `mseMediaSourceOptions` | [-] | buffer defaults | CMAF/MSE buffer and MediaSource settings. Ignored when `mediaSource` is provided. See [CMAF playback](#cmaf-playback). |
+| `drmConfig` | [-] | `undefined` | EME license settings for encrypted CMAF playback. Overrides `mseMediaSourceOptions.drmConfig`. See [CMAF playback](#cmaf-playback). |
 | `locmafDecoding` | [-] | `mse` | How LOCMAF tracks are consumed: reconstructed CMAF chunks for MSE (`mse`), or coded frames for WebCodecs (`frame`). |
 | `messageChannel` | [-] | `{ enabled: false, mode: 'shared' }` | Optional internally managed `MOQMessageChannel`. `mode: 'shared'` reuses subscriber/player `MoqtConnection`; `mode: 'sidecar'` creates a separate MoQT session for messaging. |
 
 `*` Required when `endpoint` is not provided.
+
+### Authorization
+
+`authorization` supplies CAT tokens when `subscribe()` opens the MoQT session. With `enabled: true`, the SDK decodes `token` and the player passes it to `MoqtConnection.connect()` along with the subscriber relay URL. The credential is used only for that connection attempt, including reconnects on the same session. It is not stored and it is not added to viewer links.
+
+| Field | Description |
+| :--- | :--- |
+| `enabled` | When `false`, or when `authorization` is omitted, no auth attributes are sent. |
+| `profile` | `cat4moq` sends token type `1`. `moqx-compat` sends token type `16`. |
+| `token` | Base64-encoded CAT token. An optional `base64:` prefix is stripped. The decoded token must be at most 32768 bytes. |
+
+```js
+authorization: {
+  enabled: true,
+  profile: 'cat4moq',
+  token: '<base64 CAT token>'
+}
+```
+
+`subscribe()` fails if `profile` is not `cat4moq` or `moqx-compat`, or if `token` is empty or not valid base64.
+
+### CMAF playback
+
+`mseMediaSourceOptions` and `drmConfig` apply only when the catalog is played as CMAF/CMSF through Media Source Extensions. The LOC/WebCodecs path does not use them. If you pass your own `mediaSource`, the SDK uses that instance and ignores both fields.
+
+On the CMAF path the SDK builds one options object and passes it to the MSE media source:
+
+- start from `mseMediaSourceOptions`
+- set `drmConfig` from the top-level `drmConfig` when it is set, otherwise from `mseMediaSourceOptions.drmConfig`
+
+Omit both DRM fields for clear playback.
+
+SDK default for `mseMediaSourceOptions`:
+
+```js
+{
+  mseImplementation: 'auto',
+  mseAttachment: 'auto',
+  maxAheadSec: 15,
+  targetAheadSec: 2,
+  keepBehindSec: 10,
+  gapJumpMs: 2000
+}
+```
+
+| Field | Default | Description |
+| :--- | :--- | :--- |
+| `mseImplementation` | `auto` | Which `MediaSource` to construct. `auto` and `managed` prefer `ManagedMediaSource` when the browser has it (required on iPhone Safari), otherwise standard `MediaSource`. `standard` prefers standard `MediaSource`. If the requested implementation is missing, the other one is used. Playback fails only when the browser has neither. |
+| `mseAttachment` | `auto` | How that `MediaSource` is attached to the element. `auto` uses an object URL for standard `MediaSource` and `srcObject` for `ManagedMediaSource`. `object-url` and `src-object` force that mode and throw if it cannot be used. |
+| `keepBehindSec` | `10` | Seconds of already-played media kept behind `currentTime`. Older buffered data is removed so the browser quota is not filled by history. |
+| `maxAheadSec` | `15` | If the buffer runs farther ahead of `currentTime` than this, playback jumps toward the live edge after startup. `Infinity` disables the jump (VOD or time-shift). |
+| `targetAheadSec` | `2` | Where a live-edge jump lands: the end of the buffered range minus this many seconds. |
+| `gapJumpMs` | `2000` | When the playhead is stuck at the end of a buffered range and the hole ahead is at most 2 seconds, wait this long, then seek just past the hole. `0` disables gap jumps. Must be a finite number `>= 0`. |
+| `stallThresholdMs` | unset | How long playback must be stalled before a stall is reported. Must be a finite number `>= 0` when set. The SDK default leaves this to the MSE media source. |
+| `drmConfig` | `undefined` | Same shape as the top-level `drmConfig` below. The top-level field wins when both are set. |
+
+`drmConfig` turns on Encrypted Media Extensions for that playback. The media element receives a `MediaKeys` session, and license challenges are posted to `licenseUrl`.
+
+| Field | Default | Description |
+| :--- | :--- | :--- |
+| `licenseUrl` | required | License server URL. The challenge is sent as a `POST`. |
+| `keySystem` | `com.widevine.alpha` | EME key system passed to `requestMediaKeySystemAccess`. |
+| `serverCertificate` | `undefined` | Optional license-server certificate (`Uint8Array`) given to the CDM. |
+
+```js
+await subscriber.init({
+  endpoint: 'https://relay.example.com:4433',
+  namespace: 'live/mystream',
+  mseMediaSourceOptions: {
+    maxAheadSec: 15,
+    targetAheadSec: 2,
+    keepBehindSec: 10,
+    gapJumpMs: 2000
+  },
+  drmConfig: {
+    licenseUrl: 'https://license.example.com/widevine',
+    keySystem: 'com.widevine.alpha'
+  }
+})
+```
 
 ### Managed MessageChannel notes
 
@@ -127,7 +209,7 @@ The `init()` call accepts `MOQSubscriberConfigType`.
   - creates a second `MoqtConnection` only for messaging
   - helps isolate transport contention from media playback
 - `messageChannel.dataChannelConfiguration` supports the same semantics as standalone `MOQMessageChannel` (for example `name`, `clientId`, `keepEcho`, `unreliable`).
-- In `sidecar` mode, messaging endpoint fields may be overridden under `messageChannel` (`endpoint`, `host`, `protocol`, `port`, `certKey`, `draftVersion`, `connectionParams`, `app`, `streamName`); otherwise subscriber values are used.
+- In `sidecar` mode, messaging endpoint fields may be overridden under `messageChannel` (`endpoint`, `host`, `protocol`, `port`, `certKey`, `draftVersion`, `connectionParams`, `authorization`, `app`, `streamName`); otherwise subscriber values are used. `messageChannel.authorization` overrides the subscriber `authorization` for that sidecar connection. Shared mode reuses the subscriber session and does not connect again.
 
 # Events
 
