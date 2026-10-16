@@ -69,6 +69,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   --accent: #db1f26;
   --accent-hover: #b91c1c;
   --link: #db1f26;
+  --c-red: #d03832;
+  --c-amber: #b7791f;
+  --c-blue: #2f6fd6;
+  --c-purple: #8b5cf6;
 
   --btn-primary-bg: #0c0c0c;
   --btn-primary-text: #ffffff;
@@ -139,6 +143,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   --accent: #d03832;
   --accent-hover: #e0433c;
   --link: #f0756a;
+  --c-red: #f0756a;
+  --c-amber: #f2b55c;
+  --c-blue: #6ea8f8;
+  --c-purple: #a87ee8;
 
   --btn-primary-bg: #d03832;
   --btn-primary-text: #ffffff;
@@ -198,6 +206,17 @@ h1,
 h3,
 h2 {
   font-weight: 500;
+}
+
+svg.i {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  flex: none;
 }
 
 .page {

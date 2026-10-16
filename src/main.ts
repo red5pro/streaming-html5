@@ -30,10 +30,46 @@ import { applyTheme, loadSettings } from '@/settings'
 const { setLogLevel } = window.red5prosdk
 setLogLevel('debug')
 
+interface SectionChip {
+  tone: string
+  svg: string
+}
+
 interface ExampleSection {
   title: string
   description: string
+  chip?: SectionChip
   examples: ExampleMeta[]
+}
+
+const publishChip: SectionChip = {
+  tone: 'var(--c-red)',
+  svg: '<svg class="i" viewBox="0 0 24 24"><rect x="2.5" y="6" width="13" height="12" rx="2"></rect><path d="M15.5 10.5l6-3.5v10l-6-3.5"></path></svg>',
+}
+
+const subscribeChip: SectionChip = {
+  tone: 'var(--c-blue)',
+  svg: '<svg class="i" viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"></path><circle cx="12" cy="12" r="3"></circle></svg>',
+}
+
+const messagingChip: SectionChip = {
+  tone: 'var(--c-amber)',
+  svg: '<svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="2"></circle><path d="M8.5 15.5a5 5 0 0 1 0-7M15.5 8.5a5 5 0 0 1 0 7M5.6 18.4a9 9 0 0 1 0-12.8M18.4 5.6a9 9 0 0 1 0 12.8"></path></svg>',
+}
+
+const abrChip: SectionChip = {
+  tone: 'var(--c-purple)',
+  svg: '<svg class="i" viewBox="0 0 24 24"><path d="M3 17l4-4 4 3 5-6 5 4"></path><path d="M3 21h18"></path></svg>',
+}
+
+const mixerChip: SectionChip = {
+  tone: 'var(--c-amber)',
+  svg: '<svg class="i" viewBox="0 0 24 24"><rect x="3" y="4" width="8" height="7" rx="1.5"></rect><rect x="13" y="4" width="8" height="7" rx="1.5"></rect><rect x="3" y="13" width="18" height="7" rx="1.5"></rect></svg>',
+}
+
+const downloadChip: SectionChip = {
+  tone: 'var(--c-red)',
+  svg: '<svg class="i" viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5"></path><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"></path></svg>',
 }
 
 interface ExampleMeta {
@@ -41,12 +77,14 @@ interface ExampleMeta {
   description: string
   tag: string
   href: string
+  chips?: SectionChip[]
 }
 
 const examples: ExampleSection[] = [
   {
     title: 'Publish',
     description: 'Publish examples',
+    chip: publishChip,
     examples: [
       {
         title: 'Basic WHIP',
@@ -89,6 +127,7 @@ const examples: ExampleSection[] = [
           'WHIPClient publish with configurable RTCDataChannel settings, publish mode, and default SDK media capture.',
         tag: 'Publish, DataChannel',
         href: './src/examples/whip-data-channel/index.html',
+        chips: [publishChip, messagingChip],
       },
       {
         title: 'WHIP Live Encoding',
@@ -158,6 +197,7 @@ const examples: ExampleSection[] = [
   {
     title: 'Subscribe',
     description: 'Subscribe examples',
+    chip: subscribeChip,
     examples: [
       {
         title: 'Basic WHEP',
@@ -200,6 +240,7 @@ const examples: ExampleSection[] = [
           'WHEPClient subscribe with configurable RTCDataChannel settings and display of received RPC, JSON, and binary audio messages.',
         tag: 'Subscribe, DataChannel',
         href: './src/examples/whep-data-channel/index.html',
+        chips: [subscribeChip, messagingChip],
       },
       {
         title: 'WHEP Interstitial',
@@ -276,6 +317,7 @@ const examples: ExampleSection[] = [
           'WHIPClient publish with castLabs DRM settings, publish mode, media settings, preview, and start/stop controls.',
         tag: 'Publish, castLabs',
         href: './src/examples/whip-castlabs/index.html',
+        chips: [publishChip],
       },
       {
         title: 'castLabs DRM Subscriber',
@@ -283,6 +325,7 @@ const examples: ExampleSection[] = [
           'Dual WHEPClient playback with baseline encrypted/garbled validation and a CastLabs form-driven DRM subscriber.',
         tag: 'Subscribe, castLabs',
         href: './src/examples/whep-castlabs/index.html',
+        chips: [subscribeChip],
       },
       {
         title: 'castLabs Watermark Playback',
@@ -290,6 +333,7 @@ const examples: ExampleSection[] = [
           'WHEPClient subscribe with castLabs watermark service settings, playback stats, and start/stop controls.',
         tag: 'Subscribe, castLabs',
         href: './src/examples/whep-castlabs-watermark/index.html',
+        chips: [subscribeChip],
       },
       {
         title: 'PubNub Client',
@@ -297,6 +341,7 @@ const examples: ExampleSection[] = [
           'Standalone PubNubClient with configurable authentication, channel, and keys. Subscribe to connect; destroy to shut down.',
         tag: 'PubNub, Messaging',
         href: './src/examples/pubnub-client/index.html',
+        chips: [messagingChip],
       },
       {
         title: 'Message Channel',
@@ -304,6 +349,7 @@ const examples: ExampleSection[] = [
           'MessageChannel client with configurable RTCDataChannel settings and RPC, JSON, and binary messaging. No media streaming.',
         tag: 'Message Channel, DataChannel',
         href: './src/examples/message-channel/index.html',
+        chips: [messagingChip],
       },
       {
         title: 'WHIP / WHEP (Two Way)',
@@ -311,6 +357,7 @@ const examples: ExampleSection[] = [
           'Publish with WHIPClient and subscribe with WHEPClient using host and stream name from Settings.',
         tag: 'Publish & Subscribe',
         href: './src/examples/whip-whep/index.html',
+        chips: [publishChip, subscribeChip],
       },
     ],
   },
@@ -344,6 +391,7 @@ const examples: ExampleSection[] = [
           'Stream Manager mixer example with startup session configuration for event, output GUID, and encoder settings.',
         tag: 'Stream Manager, Mixer',
         href: './src/examples/brew-mixer/index.html',
+        chips: [mixerChip],
       },
       {
         title: 'Subscribe Live VOD & MP4 Clip',
@@ -351,12 +399,14 @@ const examples: ExampleSection[] = [
           'LiveSeekClient subscribe with Stream Manager, baseURL/fullURL or Stream Manager proxy HLS DVR, and MP4 clip creation.',
         tag: 'Stream Manager, Subscribe, LiveSeek, Clip',
         href: './src/examples/whep-live-seek/index.html',
+        chips: [subscribeChip, downloadChip],
       },
       {
         title: 'Transcoder (Form Only)',
         description: 'Transcoder with form only. Enable Stream Manager in Settings.',
         tag: 'Stream Manager, Transcoder',
         href: './src/examples/transcoder-form-only/index.html',
+        chips: [abrChip],
       },
       {
         title: 'Transcoder (Form and Publish)',
@@ -364,6 +414,7 @@ const examples: ExampleSection[] = [
           'Post ABR provisions to Stream Manager, then publish. Enable Stream Manager in Settings.',
         tag: 'Stream Manager, Transcoder, Publish',
         href: './src/examples/transcoder-form-and-publish/index.html',
+        chips: [abrChip, publishChip],
       },
       {
         title: 'Transcoder (Form, Publish and AMF)',
@@ -371,6 +422,7 @@ const examples: ExampleSection[] = [
           'Post ABR provisions, publish with WHIP, then send AMF metadata on the live stream.',
         tag: 'Stream Manager, Transcoder, Publish, AMF',
         href: './src/examples/transcoder-form-publish-amf/index.html',
+        chips: [abrChip, publishChip, messagingChip],
       },
     ],
   },
@@ -383,6 +435,7 @@ const examples: ExampleSection[] = [
         description: 'Data Channel with enhanced features.',
         tag: 'Data Channel',
         href: './data-channel.html',
+        chips: [messagingChip],
       },
       {
         title: 'Proxy Publisher',
@@ -390,6 +443,7 @@ const examples: ExampleSection[] = [
           'Self-contained Stream Manager WHIP publisher with inline stats. Enable Stream Manager in Settings.',
         tag: 'Stream Manager, Publish',
         href: './proxy-publisher.html',
+        chips: [publishChip],
       },
       {
         title: 'Proxy Subscriber',
@@ -397,6 +451,7 @@ const examples: ExampleSection[] = [
           'Self-contained Stream Manager WHEP subscriber with inline stats. Enable Stream Manager in Settings.',
         tag: 'Stream Manager, Subscribe',
         href: './proxy-subscriber.html',
+        chips: [subscribeChip],
       },
       {
         title: 'Proxy Subscriber (All Edge)',
@@ -404,6 +459,7 @@ const examples: ExampleSection[] = [
           'Discovers in-service edge nodes and subscribes to each directly. Requires Stream Manager and Authentication.',
         tag: 'Stream Manager, Subscribe',
         href: './proxy-subscriber-all-edge.html',
+        chips: [subscribeChip],
       },
       {
         title: 'Proxy Subscriber (Amount)',
@@ -411,6 +467,7 @@ const examples: ExampleSection[] = [
           'Opens multiple WHEP subscribers to the Stream Manager proxy. Control count with the amount query param.',
         tag: 'Stream Manager, Subscribe',
         href: './proxy-subscriber-amount.html?amount=2',
+        chips: [subscribeChip],
       },
       {
         title: 'Proxy Screenshare',
@@ -418,6 +475,7 @@ const examples: ExampleSection[] = [
           'Self-contained Stream Manager WHIP screenshare publisher. Enable Stream Manager in Settings.',
         tag: 'Stream Manager, Publish, Screenshare',
         href: './proxy-screenshare.html',
+        chips: [publishChip],
       },
     ],
   },
@@ -443,18 +501,33 @@ function exampleMatchesTag(tag: string, filter: string): boolean {
   return tag.toLowerCase().includes(query.toLowerCase())
 }
 
-function renderExampleCard({ title, description, tag, href }: ExampleMeta): string {
+function renderExampleCard(
+  { title, description, tag, href, chips }: ExampleMeta,
+  sectionChip?: SectionChip
+): string {
   const tags = tag
     .split(',')
     .map((t) => t.trim())
     .filter(Boolean)
     .map((t) => `<li class="example-card__tag">${t}</li>`)
     .join('')
+  const cardChips = chips ?? (sectionChip ? [sectionChip] : [])
+  const chipHtml = cardChips.length
+    ? `<div class="example-card__chips">${cardChips
+        .map(
+          (chip) =>
+            `<span class="chip" style="--tone: ${chip.tone}" aria-hidden="true">${chip.svg}</span>`
+        )
+        .join('')}</div>`
+    : ''
   return `
     <a class="example-card" href="${href}">
       <div class="example-card__title">${title}</div>
       <div class="example-card__description">${description}</div>
-      <ul class="example-card__tags">${tags}</ul>
+      <div class="example-card__footer">
+        ${chipHtml}
+        <ul class="example-card__tags">${tags}</ul>
+      </div>
     </a>`
 }
 
@@ -470,7 +543,7 @@ function renderSection(section: ExampleSection, filter: string): string {
       hasFilter ? 'No examples matching.' : 'No examples yet.'
     }</div>`
   } else {
-    content = `<div class="examples-section__grid">${visible.map(renderExampleCard).join('')}</div>`
+    content = `<div class="examples-section__grid">${visible.map((example) => renderExampleCard(example, section.chip)).join('')}</div>`
   }
 
   return `

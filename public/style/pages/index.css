@@ -32,8 +32,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  height: 38px;
-  padding: 0 14px;
+  padding: 4px 18px 4px 4px;
   border: 1px solid var(--border);
   border-radius: 999px;
   background: var(--bg-secondary);
@@ -41,13 +40,14 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   color: var(--text-secondary);
 }
 
-.relay-status::before {
-  content: '';
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--text-muted);
-  flex-shrink: 0;
+.host-ico {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  color: var(--c-amber);
+  flex: none;
 }
 
 .examples-filter {
@@ -159,13 +159,43 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   color: var(--text-secondary);
 }
 
+.example-card__footer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: auto;
+}
+
+.example-card__chips {
+  display: flex;
+  gap: 6px;
+  flex: none;
+}
+
 .example-card__tags {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  margin: auto 0 0;
+  margin: 0;
   padding: 0;
   list-style: none;
+}
+
+.chip {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  flex: none;
+  color: var(--tone);
+  background: color-mix(in srgb, var(--tone) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--tone) 30%, transparent);
+}
+
+.chip svg.i {
+  width: 22px;
+  height: 22px;
 }
 
 .example-card__tag {
