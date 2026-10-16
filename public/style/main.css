@@ -58,6 +58,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   --border: #d2d4d6;
   --border-subtle: #e8e8e8;
+  --border-strong: #9ca3af;
+
+  --tile-bg: #ffffff;
+  --input-bg: #f5f5f5;
+  --input-focus-border: #9ca3af;
+  --input-focus-ring: rgba(0, 0, 0, 0.06);
+  --placeholder: #9ca3af;
 
   --accent: #db1f26;
   --accent-hover: #b91c1c;
@@ -93,9 +100,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   --status-error-text: #dc2626;
 
   --page-max: 1080px;
-  --page-pad-x: 40px;
+  --page-pad-x: 32px;
   --page-pad-bottom: 72px;
   --radius-card: 18px;
+  --tile-border-width: 1.5px;
   --radius-panel: 12px;
   --radius-control: 10px;
   --control-height: 44px;
@@ -120,6 +128,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   --border: #38383b;
   --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-strong: #55555a;
+
+  --tile-bg: linear-gradient(180deg, #141415, #0f0f10);
+  --input-bg: #0b0b0c;
+  --input-focus-border: #6a6a70;
+  --input-focus-ring: rgba(255, 255, 255, 0.06);
+  --placeholder: #5f5f64;
 
   --accent: #d03832;
   --accent-hover: #e0433c;
@@ -192,7 +207,7 @@ h2 {
 }
 
 .page__heading {
-  font-size: 40px;
+  font-size: 46px;
   font-weight: 400;
   line-height: 1.15;
   color: var(--text);
@@ -201,6 +216,7 @@ h2 {
 
 .page__subheading,
 .page__description {
+  max-width: 720px;
   font-size: 1rem;
   line-height: 1.5;
   color: var(--text-secondary);

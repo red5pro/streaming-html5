@@ -24,23 +24,27 @@ WHETHER IN  AN  ACTION  OF  CONTRACT,  TORT  OR  OTHERWISE,  ARISING  FROM,  OUT
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
+.page__controls {
+  gap: 16px;
+}
+
 .relay-status {
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
-  font-size: 0.75rem;
-  color: var(--text-secondary);
-  background: var(--bg-secondary);
+  gap: 10px;
+  height: 38px;
+  padding: 0 14px;
   border: 1px solid var(--border);
   border-radius: 999px;
-  padding: 0.2rem 0.75rem;
-  margin-bottom: 2rem;
+  background: var(--bg-secondary);
+  font: 400 13px var(--font-mono);
+  color: var(--text-secondary);
 }
 
 .relay-status::before {
   content: '';
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
   background: var(--text-muted);
   flex-shrink: 0;
@@ -48,157 +52,168 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 .examples-filter {
   display: flex;
-  align-items: end;
   flex-direction: column;
-  gap: 0.35rem;
-  margin-bottom: 1rem;
-  min-width: 320px;
+  gap: 7px;
+  width: 280px;
+  max-width: 100%;
 }
 
 .examples-filter__label {
-  font-size: 0.7rem;
-  font-weight: 500;
-  color: var(--text-muted);
+  font: 500 var(--field-label-size) / 1 var(--font-mono);
+  color: var(--text-secondary);
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.05em;
 }
 
 .examples-filter__input {
-  min-height: var(--control-height);
-  background: var(--bg-secondary);
+  height: var(--control-height);
+  width: 100%;
+  padding: 0 14px 0 38px;
   border: 1px solid var(--border);
   border-radius: var(--radius-control);
+  background-color: var(--input-bg);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%237a7a7a' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='m20 20-3.5-3.5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: 12px center;
+  background-size: 18px 18px;
   color: var(--text);
-  font-size: var(--control-font);
-  font-family: 'IBM Plex Mono', ui-monospace, 'SF Mono', monospace;
-  padding: 0.5rem 0.75rem;
+  font: 400 var(--control-font) var(--font-sans);
   outline: none;
-  transition: border-color 0.15s;
-  width: 100%;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
 }
 
 .examples-filter__input:focus {
-  border-color: var(--accent);
+  border-color: var(--input-focus-border);
+  box-shadow: 0 0 0 3px var(--input-focus-ring);
 }
 
 .examples-filter__input::placeholder {
-  color: var(--text-muted);
-}
-
-.examples-sections {
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
-}
-
-.examples-section {
-  display: flex;
-  flex-direction: column;
-  gap: 0.85rem;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-card);
-  padding: 1.25rem 1.5rem;
+  color: var(--placeholder);
 }
 
 .examples-section__header {
   display: flex;
   flex-direction: column;
-  gap: 0.2rem;
+  gap: 4px;
+  margin: 40px 0 16px;
 }
 
 .examples-section__title {
   margin: 0;
-  font-family: var(--font-mono);
-  font-size: 14px;
-  font-weight: 500;
-  line-height: 21px;
+  font: 500 14px / 21px var(--font-mono);
   color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
 
 .examples-section__description {
-  font-size: 0.8rem;
-  color: var(--text-secondary);
-  line-height: 1.45;
+  margin: 0;
+  font-size: 13px;
+  line-height: 19px;
+  color: var(--text-muted);
 }
 
 .examples-section__grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 1rem;
-}
-
-.examples-section__empty {
-  padding: 1.25rem 1rem;
-  text-align: center;
-  color: var(--text-muted);
-  border: 1px dashed var(--border);
-  border-radius: var(--radius-card);
-  font-size: 0.825rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
 }
 
 .example-card {
   display: flex;
   flex-direction: column;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
+  padding: 22px 22px 18px;
+  background: var(--tile-bg);
+  border: var(--tile-border-width) solid var(--border);
   border-radius: var(--radius-card);
-  padding: 1.25rem 1.5rem;
-  text-decoration: none;
   color: inherit;
+  text-decoration: none;
   transition:
-    border-color 0.15s,
-    transform 0.15s,
-    box-shadow 0.15s;
-  gap: 0.35rem;
+    border-color 0.2s,
+    transform 0.2s;
 }
 
 .example-card:hover {
-  border-color: var(--accent);
+  border-color: var(--border-strong);
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px color-mix(in srgb, var(--accent) 12%, transparent);
+}
+
+.example-card:focus-visible {
+  outline: none;
+  border-color: var(--border-strong);
+  box-shadow: 0 0 0 3px var(--input-focus-ring);
 }
 
 .example-card__title {
-  font-size: 0.95rem;
-  font-weight: 500;
+  margin: 0 0 8px;
+  font: 500 18px / 1.25 var(--font-sans);
   color: var(--text);
 }
 
 .example-card__description {
-  font-size: 0.8rem;
+  margin: 0 0 18px;
+  font-size: 15px;
+  line-height: 23px;
   color: var(--text-secondary);
-  line-height: 1.55;
+}
+
+.example-card__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: auto 0 0;
+  padding: 0;
+  list-style: none;
 }
 
 .example-card__tag {
-  margin-top: auto;
-  padding-top: 0.75rem;
-  font-size: 0.7rem;
-  font-weight: 500;
-  color: var(--accent);
+  font: 500 11px / 1 var(--font-mono);
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-  letter-spacing: 0.07em;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 6px 9px;
 }
 
+.examples-section__empty,
 .empty-state {
-  grid-column: 1 / -1;
+  padding: 40px 18px;
   text-align: center;
-  padding: 3rem;
+  font-size: 13px;
+  line-height: 19px;
   color: var(--text-muted);
   border: 1px dashed var(--border);
   border-radius: var(--radius-card);
-  font-size: 0.875rem;
 }
 
-@media (max-width: 640px) {
+.empty-state {
+  margin-top: 40px;
+}
+
+@media (max-width: 1000px) {
+  .examples-section__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
   .page__controls {
     flex-direction: column;
-    align-items: start;
+    align-items: stretch;
   }
+
+  .relay-status {
+    align-self: flex-start;
+  }
+
   .examples-filter {
-    align-items: start;
+    width: 100%;
+  }
+
+  .examples-section__grid {
+    grid-template-columns: 1fr;
   }
 }

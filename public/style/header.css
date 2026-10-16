@@ -440,3 +440,25 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 .fill-width {
   width: 100%;
 }
+
+@media (max-width: 760px) {
+  .header-bar {
+    flex-wrap: wrap;
+    height: auto;
+    padding: 10px 16px;
+    row-gap: 10px;
+  }
+
+  .header-bar__nav {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .settings-panel {
+    padding: 0 16px;
+  }
+
+  .settings-panel.open {
+    padding: 1rem 16px;
+  }
+}

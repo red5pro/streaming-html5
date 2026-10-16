@@ -444,11 +444,17 @@ function exampleMatchesTag(tag: string, filter: string): boolean {
 }
 
 function renderExampleCard({ title, description, tag, href }: ExampleMeta): string {
+  const tags = tag
+    .split(',')
+    .map((t) => t.trim())
+    .filter(Boolean)
+    .map((t) => `<li class="example-card__tag">${t}</li>`)
+    .join('')
   return `
     <a class="example-card" href="${href}">
       <div class="example-card__title">${title}</div>
       <div class="example-card__description">${description}</div>
-      <div class="example-card__tag">${tag}</div>
+      <ul class="example-card__tags">${tags}</ul>
     </a>`
 }
 
