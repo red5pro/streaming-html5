@@ -61,7 +61,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   text-transform: uppercase;
 }
 
-#publisher-video,
+.media-stage {
+  margin-bottom: 0.75rem;
+}
+
+.media-stage video,
 #subscriber-video {
   width: 100%;
   aspect-ratio: 16 / 9;

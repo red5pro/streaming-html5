@@ -44,6 +44,7 @@ import {
   isAutostartRequested,
 } from '@/settings'
 import { wireExampleLog } from '@/lib/example-log'
+import { setLivePillVisible } from '@/lib/live-pill'
 
 const requestAutostart = isAutostartRequested()
 
@@ -106,13 +107,16 @@ function onPublisherEvent(event: any): void {
   if (type === 'Publish.Start') {
     setPublisherStatus('Publishing', 'connected')
   } else if (type === 'Publish.Available') {
+    setLivePillVisible(true)
     if (requestAutostart) {
       void startSubscribe()
     }
   } else if (publisherFailureEvents.includes(type)) {
     setPublisherStatus('Publish Error', 'error')
+    setLivePillVisible(false)
   } else if (type === 'Unpublish.Success') {
     setPublisherStatus('Publisher Idle', 'idle')
+    setLivePillVisible(false)
   } else if (type === 'WebRTC.Endpoint.Changed') {
     const endpoint = event.data?.endpoint as string | undefined
     if (!endpoint) return
@@ -203,6 +207,7 @@ async function startPublish(): Promise<void> {
     window.r5publisher = publisher
   } catch (error) {
     setPublisherStatus('Publish Error', 'error')
+    setLivePillVisible(false)
     publishBtn.disabled = false
     publishSettingsEl.enabled = true
     publishModeEl.enabled = true
@@ -227,6 +232,7 @@ async function stopPublish(): Promise<void> {
     publishSettingsEl.enabled = true
     publishModeEl.enabled = true
     setPublisherStatus('Publisher Idle', 'idle')
+    setLivePillVisible(false)
     // @ts-expect-error - global variable for debugging
     delete window.r5publisher
   }

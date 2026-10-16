@@ -28,6 +28,14 @@ export function subscriberLinkTemplate(assetPrefix: string): string {
   const p = assetPrefix
   return /* html */ `
   <link rel="stylesheet" href="${p}style/subscriber-link.css" />
-  <a class="subscriber-link"></a>
+  <a class="subscriber-link">
+    <span class="subscriber-link__icon" aria-hidden="true">
+      <svg class="i" viewBox="0 0 24 24">
+        <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"></path>
+        <circle cx="12" cy="12" r="3"></circle>
+      </svg>
+    </span>
+    <span class="subscriber-link__label"></span>
+  </a>
   `
 }

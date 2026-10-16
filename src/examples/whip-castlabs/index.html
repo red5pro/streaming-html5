@@ -152,8 +152,19 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. -->
             </section>
           </div>
 
-          <video id="publisher-video" autoplay playsinline muted controls></video>
+          <div class="media-stage">
 
+            <video id="publisher-video" autoplay playsinline muted controls></video>
+
+            <span class="live-pill is-hidden" id="live-pill" aria-live="polite">
+
+              <span class="live-pill__dot" aria-hidden="true"></span>
+
+              Live
+
+            </span>
+
+          </div>
           <div class="publish-config-section" id="publish-config-section">
             <r5-publish-mode id="publish-mode"></r5-publish-mode>
             <r5-publish-settings

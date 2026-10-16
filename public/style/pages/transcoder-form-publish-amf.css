@@ -52,8 +52,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 }
 
 .amf-metadata-form__label {
-  font-size: 0.75rem;
+  font-size: var(--field-label-size);
   color: var(--text-secondary);
+  font-family: var(--font-mono);
+  text-transform: uppercase;
 }
 
 .amf-metadata-form__input {

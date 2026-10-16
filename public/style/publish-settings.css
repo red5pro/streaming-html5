@@ -154,6 +154,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.08em;
+  font-family: var(--font-mono);
 }
 
 .publish-settings__input,
@@ -182,15 +183,16 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 }
 
 .publish-settings__select-wrap::after {
-  content: '▾';
+  content: '';
   position: absolute;
-  right: 0.75rem;
+  right: 0.9rem;
   top: 50%;
+  width: 14px;
+  height: 8px;
   transform: translateY(-50%);
-  color: var(--text-muted);
+  background: var(--text-secondary);
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
   pointer-events: none;
-  font-size: 0.7rem;
-  line-height: 1;
 }
 
 .publish-settings__select {

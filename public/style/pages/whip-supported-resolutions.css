@@ -50,12 +50,14 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   text-transform: uppercase;
 }
 
-#publisher-video {
-  width: 100%;
+.media-stage {
+  margin-bottom: 0.75rem;
+}
+
+.media-stage video {
   aspect-ratio: 16 / 9;
   border-radius: var(--radius-panel);
   background: #000;
-  margin-bottom: 0.75rem;
 }
 
 .media-setup-section {

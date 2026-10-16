@@ -41,6 +41,7 @@ import {
   type Settings,
 } from '@/settings'
 import { wireExampleLog } from '@/lib/example-log'
+import { setLivePillVisible } from '@/lib/live-pill'
 import { updateSubscriberLink } from '@/lib/example-links'
 
 const sdk = window.red5prosdk
@@ -109,14 +110,17 @@ function onPublisherEvent(event: Red5ProEvent): void {
     publishBtn.disabled = true
     unpublishBtn.disabled = false
   } else if (type === 'Publish.Available') {
+    setLivePillVisible(true)
     refreshSubscriberLink()
     openSubscriberLinkEl.disabled = false
   } else if (publisherFailureEvents.includes(type)) {
     setPublisherStatus('Publish Error', 'error')
+    setLivePillVisible(false)
     publishBtn.disabled = false
     unpublishBtn.disabled = true
   } else if (type === 'Unpublish.Success') {
     setPublisherStatus('Publisher Idle', 'idle')
+    setLivePillVisible(false)
     publishBtn.disabled = false
     unpublishBtn.disabled = true
   } else if (type === 'WebRTC.Endpoint.Changed') {
@@ -181,6 +185,7 @@ async function startPublish(): Promise<void> {
     log(`Publishing ${settings.streamName} to ${settings.host}`, 'success')
   } catch (error) {
     setPublisherStatus('Publish Error', 'error')
+    setLivePillVisible(false)
     publishBtn.disabled = false
     unpublishBtn.disabled = true
     publisher = null
@@ -203,6 +208,7 @@ async function stopPublish(): Promise<void> {
     publishBtn.disabled = false
     unpublishBtn.disabled = true
     setPublisherStatus('Publisher Idle', 'idle')
+    setLivePillVisible(false)
     openSubscriberLinkEl.disabled = true
     // @ts-expect-error - global variable for debugging
     delete window.r5publisher

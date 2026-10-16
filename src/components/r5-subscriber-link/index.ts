@@ -32,6 +32,7 @@ const DEFAULT_LABEL = 'Open subscriber'
 export class R5SubscriberLink extends HTMLElement {
   private shadow: ShadowRoot
   private linkEl!: HTMLAnchorElement
+  private labelEl!: HTMLSpanElement
   private onClick = (event: MouseEvent): void => {
     if (this.disabled) {
       event.preventDefault()
@@ -53,6 +54,7 @@ export class R5SubscriberLink extends HTMLElement {
     }
 
     this.linkEl = this.shadow.querySelector('.subscriber-link') as HTMLAnchorElement
+    this.labelEl = this.shadow.querySelector('.subscriber-link__label') as HTMLSpanElement
     this.linkEl.addEventListener('click', this.onClick)
     this.syncState()
   }
@@ -96,7 +98,7 @@ export class R5SubscriberLink extends HTMLElement {
     const href = this.href
     const disabled = this.disabled
 
-    this.linkEl.textContent = this.label
+    this.labelEl.textContent = this.label
     this.linkEl.classList.toggle('subscriber-link--disabled', disabled)
 
     if (disabled) {

@@ -49,6 +49,7 @@ import {
   type MediaTrackKind,
 } from '@/lib/media-source-swap'
 import { wireExampleLog } from '@/lib/example-log'
+import { setLivePillVisible } from '@/lib/live-pill'
 import { updateSubscriberLink } from '@/lib/example-links'
 
 const sdk = window.red5prosdk
@@ -223,15 +224,18 @@ function onPublisherEvent(event: Red5ProEvent): void {
     unpublishBtn.disabled = false
     void showMediaSwapSection()
   } else if (type === 'Publish.Available') {
+    setLivePillVisible(true)
     refreshSubscriberLink()
     openSubscriberLinkEl.disabled = false
   } else if (publisherFailureEvents.includes(type)) {
     setPublisherStatus('Publish Error', 'error')
+    setLivePillVisible(false)
     publishBtn.disabled = false
     unpublishBtn.disabled = true
     hideMediaSwapSection()
   } else if (type === 'Unpublish.Success') {
     setPublisherStatus('Publisher Idle', 'idle')
+    setLivePillVisible(false)
     publishBtn.disabled = false
     unpublishBtn.disabled = true
     hideMediaSwapSection()
@@ -314,6 +318,7 @@ async function startPublish(): Promise<void> {
     window.r5publisher = publisher
   } catch (error) {
     setPublisherStatus('Publish Error', 'error')
+    setLivePillVisible(false)
     publishBtn.disabled = false
     unpublishBtn.disabled = true
     hideMediaSwapSection()
@@ -340,6 +345,7 @@ async function stopPublish(): Promise<void> {
     unpublishBtn.disabled = true
     hideMediaSwapSection()
     setPublisherStatus('Publisher Idle', 'idle')
+    setLivePillVisible(false)
     openSubscriberLinkEl.disabled = true
     // @ts-expect-error - global variable for debugging
     delete window.r5publisher
