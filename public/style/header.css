@@ -52,8 +52,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 1.25rem;
-  height: 52px;
+  padding: 0 22px;
+  height: 76px;
   background: var(--bg);
   color: var(--text);
   border-bottom: 1px solid var(--border-subtle);
