@@ -30,7 +30,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 .whep-data-channel-layout .media-panel {
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: var(--radius-card);
   background: var(--bg-card);
   padding: 0.85rem;
 }
@@ -43,7 +43,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 }
 
 .whep-data-channel-layout .section-title {
-  font-size: 0.72rem;
+  font-size: var(--section-label-size);
   color: var(--text-secondary);
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -52,7 +52,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #subscriber-video {
   width: 100%;
   aspect-ratio: 16 / 9;
-  border-radius: 8px;
+  border-radius: var(--radius-panel);
   background: #000;
   margin-bottom: 0.75rem;
 }
@@ -73,7 +73,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 .receive-section {
   padding: 0.75rem;
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--radius-panel);
   background: var(--bg-secondary);
 }
 
@@ -97,8 +97,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 .receive-section__title {
   margin: 0 0 0.35rem;
-  font-size: 0.72rem;
-  font-weight: 600;
+  font-size: var(--section-label-size);
+  font-weight: 500;
   color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -118,11 +118,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   overflow: auto;
   padding: 0.55rem 0.65rem;
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--radius-control);
   background: var(--bg-card);
   color: var(--text);
   font-family: 'IBM Plex Mono', ui-monospace, 'SF Mono', monospace;
-  font-size: 0.72rem;
+  font-size: var(--section-label-size);
   line-height: 1.45;
   white-space: pre-wrap;
   word-break: break-word;

@@ -30,7 +30,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 .subscriber-link {
   font-size: 0.875rem;
-  font-weight: 600;
+  font-weight: 500;
   color: var(--link);
   text-decoration: none;
   white-space: nowrap;

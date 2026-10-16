@@ -166,7 +166,7 @@ input[type=range][orient=vertical] {
   color: #fff;
   font-family: ui-monospace, 'SF Mono', monospace;
   font-size: 0.75rem;
-  font-weight: 700;
+  font-weight: 500;
   letter-spacing: 0.04em;
   line-height: 1;
   cursor: pointer;

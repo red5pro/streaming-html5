@@ -32,14 +32,14 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   margin-bottom: 0.75rem;
   padding: 0.75rem;
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--radius-card);
   background: var(--bg-secondary);
 }
 
 .publish-settings__title {
   margin: 0 0 0.65rem;
-  font-size: 0.72rem;
-  font-weight: 600;
+  font-size: var(--section-label-size);
+  font-weight: 500;
   color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -53,7 +53,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 .publish-settings__section {
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--radius-panel);
   padding: 0.65rem;
   background: var(--bg-card);
 }
@@ -68,8 +68,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 .publish-settings__section-title {
   margin: 0;
-  font-size: 0.68rem;
-  font-weight: 600;
+  font-size: var(--field-label-size);
+  font-weight: 500;
   color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -149,8 +149,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 }
 
 .publish-settings__label {
-  font-size: 0.68rem;
-  font-weight: 600;
+  font-size: var(--field-label-size);
+  font-weight: 500;
   color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -158,11 +158,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 .publish-settings__input,
 .publish-settings__select {
+  min-height: var(--control-height);
   background: var(--bg-secondary);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--radius-control);
   color: var(--text);
-  font-size: 0.85rem;
+  font-size: var(--control-font);
   font-family: 'IBM Plex Mono', ui-monospace, 'SF Mono', monospace;
   padding: 0.5rem 0.75rem;
   outline: none;
@@ -193,6 +194,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 }
 
 .publish-settings__select {
+  min-height: var(--control-height);
   appearance: none;
   cursor: pointer;
   padding-right: 2rem;
@@ -271,5 +273,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 .publish-settings--disabled .publish-settings__input,
 .publish-settings--disabled .publish-settings__select {
+  min-height: var(--control-height);
   cursor: not-allowed;
 }

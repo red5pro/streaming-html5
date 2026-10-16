@@ -57,18 +57,19 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 .examples-filter__label {
   font-size: 0.7rem;
-  font-weight: 600;
+  font-weight: 500;
   color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.08em;
 }
 
 .examples-filter__input {
+  min-height: var(--control-height);
   background: var(--bg-secondary);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--radius-control);
   color: var(--text);
-  font-size: 0.85rem;
+  font-size: var(--control-font);
   font-family: 'IBM Plex Mono', ui-monospace, 'SF Mono', monospace;
   padding: 0.5rem 0.75rem;
   outline: none;
@@ -96,7 +97,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   gap: 0.85rem;
   background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: var(--radius-card);
   padding: 1.25rem 1.5rem;
 }
 
@@ -107,11 +108,14 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 }
 
 .examples-section__title {
-  font-size: 0.95rem;
-  font-weight: 700;
-  color: var(--accent);
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 21px;
+  color: var(--text-secondary);
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.04em;
 }
 
 .examples-section__description {
@@ -131,7 +135,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   text-align: center;
   color: var(--text-muted);
   border: 1px dashed var(--border);
-  border-radius: 10px;
+  border-radius: var(--radius-card);
   font-size: 0.825rem;
 }
 
@@ -140,7 +144,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   flex-direction: column;
   background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: var(--radius-card);
   padding: 1.25rem 1.5rem;
   text-decoration: none;
   color: inherit;
@@ -154,12 +158,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 .example-card:hover {
   border-color: var(--accent);
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(219, 31, 38, 0.12);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--accent) 12%, transparent);
 }
 
 .example-card__title {
   font-size: 0.95rem;
-  font-weight: 600;
+  font-weight: 500;
   color: var(--text);
 }
 
@@ -173,7 +177,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   margin-top: auto;
   padding-top: 0.75rem;
   font-size: 0.7rem;
-  font-weight: 600;
+  font-weight: 500;
   color: var(--accent);
   text-transform: uppercase;
   letter-spacing: 0.07em;
@@ -185,7 +189,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   padding: 3rem;
   color: var(--text-muted);
   border: 1px dashed var(--border);
-  border-radius: 10px;
+  border-radius: var(--radius-card);
   font-size: 0.875rem;
 }
 

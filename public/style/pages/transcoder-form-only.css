@@ -25,12 +25,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 .transcoder-form-only-layout {
-  max-width: 960px;
+  max-width: var(--page-max);
 }
 
 .transcoder-form-only-layout .media-panel {
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: var(--radius-card);
   background: var(--bg-card);
   padding: 1.25rem 1.5rem;
 }
@@ -40,7 +40,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   color: var(--text-secondary);
   margin-bottom: 0.75rem;
   padding: 0.45rem 0.65rem;
-  border-radius: 6px;
+  border-radius: var(--radius-control);
   background: var(--bg-secondary);
 }
 
@@ -65,7 +65,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 .abr-form__intro {
   font-size: 0.95rem;
-  font-weight: 600;
+  font-weight: 500;
   color: var(--text);
   margin-bottom: 1.25rem;
 }
@@ -86,7 +86,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 .abr-form__tier {
   font-size: 1.35rem;
-  font-weight: 700;
+  font-weight: 500;
   color: var(--text);
   margin-bottom: 0.85rem;
   padding: 0;
@@ -106,13 +106,14 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 }
 
 .abr-form__input {
+  min-height: var(--control-height);
   flex: 1 1 auto;
   min-width: 0;
   background: var(--bg-secondary);
   border: 1px solid var(--border);
   border-radius: 4px;
   color: var(--text);
-  font-size: 0.85rem;
+  font-size: var(--control-font);
   font-family: var(--font-mono);
   padding: 0.35rem 0.5rem;
   outline: none;
@@ -139,8 +140,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 }
 
 .rtmp-url-section__title {
-  font-size: 0.72rem;
-  font-weight: 600;
+  font-size: var(--section-label-size);
+  font-weight: 500;
   color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -163,20 +164,20 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   padding: 0.55rem 0.65rem;
   background: var(--bg-secondary);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--radius-control);
 }
 
 .rtmp-url-list__label {
   flex: 0 0 2.75rem;
   font-size: 0.7rem;
-  font-weight: 700;
+  font-weight: 500;
   color: var(--text-secondary);
   letter-spacing: 0.06em;
 }
 
 .rtmp-url-list__guid {
   flex: 0 0 auto;
-  font-size: 0.72rem;
+  font-size: var(--section-label-size);
   font-family: var(--font-mono);
   color: var(--text-muted);
   white-space: nowrap;
@@ -195,10 +196,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   flex-shrink: 0;
   background: transparent;
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--radius-control);
   color: var(--text-secondary);
-  font-size: 0.72rem;
-  font-weight: 600;
+  font-size: var(--section-label-size);
+  font-weight: 500;
   padding: 0.3rem 0.55rem;
   cursor: pointer;
   transition:

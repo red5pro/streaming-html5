@@ -31,7 +31,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 .whip-supported-resolutions-layout .media-panel {
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: var(--radius-card);
   background: var(--bg-card);
   padding: 0.85rem;
 }
@@ -44,7 +44,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 }
 
 .whip-supported-resolutions-layout .section-title {
-  font-size: 0.72rem;
+  font-size: var(--section-label-size);
   color: var(--text-secondary);
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -53,7 +53,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #publisher-video {
   width: 100%;
   aspect-ratio: 16 / 9;
-  border-radius: 8px;
+  border-radius: var(--radius-panel);
   background: #000;
   margin-bottom: 0.75rem;
 }
@@ -69,8 +69,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 }
 
 .media-setup-section__title {
-  font-size: 0.72rem;
-  font-weight: 600;
+  font-size: var(--section-label-size);
+  font-weight: 500;
   color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -90,10 +90,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 }
 
 .media-setup-field__select {
+  min-height: var(--control-height);
   width: 100%;
   padding: 0.45rem 0.55rem;
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--radius-control);
   background: var(--bg-secondary);
   color: var(--text);
   font-family: var(--font-sans);
@@ -133,7 +134,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   gap: 0.55rem;
   padding: 0.45rem 0.55rem;
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--radius-control);
   background: var(--bg-secondary);
   cursor: pointer;
 }
@@ -158,7 +159,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 }
 
 .resolution-option__meta {
-  font-size: 0.68rem;
+  font-size: var(--field-label-size);
   font-family: var(--font-mono);
   color: var(--text-muted);
 }

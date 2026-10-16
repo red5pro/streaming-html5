@@ -30,7 +30,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 .brew-mixer-panel {
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: var(--radius-card);
   background: var(--bg-card);
   padding: 0.85rem;
   margin: 0 auto;
@@ -47,7 +47,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 }
 
 .brew-mixer-panel .section-title {
-  font-size: 0.72rem;
+  font-size: var(--section-label-size);
   color: var(--text-secondary);
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -77,7 +77,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 .brew-mixer-nodegraph {
   margin: 0.75rem 0;
   border: 1px solid #262626;
-  border-radius: 8px;
+  border-radius: var(--radius-panel);
   background: #101010;
   padding: 0.75rem;
 }
@@ -101,7 +101,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   font-size: 0.78rem;
   line-height: 1.45;
   border: 1px solid #262626;
-  border-radius: 6px;
+  border-radius: var(--radius-control);
   background: #0b0b0b;
   color: #f4f4f4;
   padding: 0.75rem;
@@ -218,7 +218,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   width: min(980px, 100%);
   background: #050505;
   border: 1px solid #252525;
-  border-radius: 6px;
+  border-radius: var(--radius-control);
   padding: 2rem 2.25rem;
   color: #f4f4f4;
   display: flex;
@@ -269,7 +269,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 .brew-mixer-modal__tab {
   border: 1px solid #2f2f2f;
-  border-radius: 999px;
+  border-radius: var(--radius-btn);
   background: #131313;
   color: #cfcfcf;
   padding: 0.45rem 0.9rem;
@@ -297,7 +297,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   margin: 0;
   padding: 0;
   border: 1px solid #252525;
-  border-radius: 8px;
+  border-radius: var(--radius-panel);
   background: #101010;
   max-height: 320px;
   overflow-y: auto;
@@ -361,6 +361,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 }
 
 .brew-mixer-modal__input {
+  min-height: var(--control-height);
   width: 100%;
   border: 1px solid #212121;
   border-radius: 12px;
@@ -378,7 +379,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 .brew-mixer-modal__submit {
   text-transform: uppercase;
-  border-radius: 999px;
+  border-radius: var(--radius-btn);
   padding: 0.65rem 1.8rem;
   letter-spacing: 0.06em;
 }

@@ -31,8 +31,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 }
 
 .amf-metadata-section__title {
-  font-size: 0.72rem;
-  font-weight: 600;
+  font-size: var(--section-label-size);
+  font-weight: 500;
   color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -57,14 +57,15 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 }
 
 .amf-metadata-form__input {
+  min-height: var(--control-height);
   width: 100%;
   padding: 0.45rem 0.55rem;
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--radius-control);
   background: var(--bg-secondary);
   color: var(--text);
   font-family: var(--font-mono);
-  font-size: 0.78rem;
+  font-size: var(--control-font);
 }
 
 .amf-metadata-form__input:focus {
