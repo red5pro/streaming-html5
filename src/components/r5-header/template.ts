@@ -37,7 +37,7 @@ export function headerTemplate(assetPrefix: string): string {
   <nav class="header-bar__nav">
     <slot name="nav"></slot>
     <span class="header-bar__version">v__VERSION__</span>
-    <button class="toggle-btn" id="settings-toggle" aria-expanded="false">
+    <button class="toggle-btn settings-btn" id="settings-toggle" aria-expanded="false">
       <em class="toggle-btn__icon" id="toggle-icon">&#x25BE;</em>
       Settings
     </button>

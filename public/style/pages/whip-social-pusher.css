@@ -31,7 +31,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 .whip-social-pusher-layout .media-panel {
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: var(--radius-card);
   background: var(--bg-card);
   padding: 0.85rem;
 }
@@ -44,18 +44,20 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 }
 
 .whip-social-pusher-layout .section-title {
-  font-size: 0.72rem;
+  font-size: var(--section-label-size);
   color: var(--text-secondary);
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
-#publisher-video {
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  border-radius: 8px;
-  background: #000;
+.media-stage {
   margin-bottom: 0.75rem;
+}
+
+.media-stage video {
+  aspect-ratio: 16 / 9;
+  border-radius: var(--radius-panel);
+  background: #000;
 }
 
 .publish-config-section {
@@ -92,8 +94,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 }
 
 .social-pusher-section__title {
-  font-size: 0.72rem;
-  font-weight: 600;
+  font-size: var(--section-label-size);
+  font-weight: 500;
   color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -122,14 +124,15 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 }
 
 .social-pusher-form__input {
+  min-height: var(--control-height);
   width: 100%;
   padding: 0.45rem 0.55rem;
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--radius-control);
   background: var(--bg-secondary);
   color: var(--text);
   font-family: var(--font-mono);
-  font-size: 0.78rem;
+  font-size: var(--control-font);
 }
 
 .social-pusher-form__input:focus {
@@ -157,7 +160,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   margin: 0 auto 1rem;
   padding: 0.85rem;
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: var(--radius-card);
   background: var(--bg-card);
 }
 
@@ -175,8 +178,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 .provisions-list-section__title {
   margin: 0;
-  font-size: 0.72rem;
-  font-weight: 600;
+  font-size: var(--section-label-size);
+  font-weight: 500;
   color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -195,7 +198,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 .provisions-list-output {
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--radius-panel);
   background: var(--bg-secondary);
   overflow: auto;
 }
@@ -223,8 +226,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 }
 
 .provisions-list-table th {
-  font-size: 0.68rem;
-  font-weight: 600;
+  font-size: var(--field-label-size);
+  font-weight: 500;
   color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -237,7 +240,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 .provisions-list-table__mono {
   font-family: var(--font-mono);
-  font-size: 0.72rem;
+  font-size: var(--section-label-size);
   word-break: break-all;
 }
 
@@ -250,7 +253,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   padding: 0.15rem 0.45rem;
   border-radius: 999px;
   font-size: 0.65rem;
-  font-weight: 600;
+  font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }

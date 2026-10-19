@@ -24,10 +24,22 @@ WHETHER IN  AN  ACTION  OF  CONTRACT,  TORT  OR  OTHERWISE,  ARISING  FROM,  OUT
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-export function subscriberLinkTemplate(assetPrefix: string): string {
+export function subscriberLinkTemplate(assetPrefix: string, isMessaging: boolean = false): string {
   const p = assetPrefix
+  const path = isMessaging
+    ? 'M8.5 15.5a5 5 0 0 1 0-7M15.5 8.5a5 5 0 0 1 0 7M5.6 18.4a9 9 0 0 1 0-12.8M18.4 5.6a9 9 0 0 1 0 12.8'
+    : 'M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z'
+  const circle = isMessaging ? 'circle cx="12" cy="12" r="2"' : 'circle cx="12" cy="12" r="3"'
   return /* html */ `
   <link rel="stylesheet" href="${p}style/subscriber-link.css" />
-  <a class="subscriber-link"></a>
+  <a class="subscriber-link ${isMessaging ? 'messaging' : ''}">
+    <span class="subscriber-link__icon" aria-hidden="true">
+      <svg class="i" viewBox="0 0 24 24">
+        <path d="${path}"></path>
+        <circle ${circle}></circle>
+      </svg>
+    </span>
+    <span class="subscriber-link__label"></span>
+  </a>
   `
 }

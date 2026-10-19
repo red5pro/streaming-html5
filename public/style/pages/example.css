@@ -48,16 +48,25 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 }
 
 .log-panel__title {
-  font-size: 0.72rem;
-  font-weight: 600;
+  font-size: var(--section-label-size);
+  font-weight: 500;
   color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.08em;
 }
 
 .log-panel__clear {
-  padding: 0.3rem 0.75rem;
-  font-size: 0.75rem;
+  width: var(--btn-height-sm);
+  min-width: var(--btn-height-sm);
+  height: var(--btn-height-sm);
+  min-height: var(--btn-height-sm);
+  padding: 0;
+  flex: none;
+}
+
+.log-panel__clear svg.i {
+  width: 18px;
+  height: 18px;
 }
 
 .log-panel .log {
@@ -73,10 +82,75 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   flex-wrap: wrap;
 }
 
+.controls-tray > r5-subscriber-link {
+  margin-left: auto;
+}
+
+@media (max-width: 495px) {
+  .controls-tray > r5-subscriber-link {
+    margin-left: 0;
+  }
+}
+
 .controls-tray__actions {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 0.75rem;
   flex-wrap: wrap;
+}
+
+.media-stage {
+  position: relative;
+  margin-bottom: 0.75rem;
+}
+
+.media-stage video {
+  display: block;
+  width: 100%;
+}
+
+.live-pill {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px 6px 10px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--c-red) 16%, transparent);
+  border: 1px solid color-mix(in srgb, var(--c-red) 32%, transparent);
+  color: var(--c-red);
+  font: 500 11px / 1 var(--font-mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  pointer-events: none;
+}
+
+.live-pill.is-hidden {
+  display: none;
+}
+
+.live-pill__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+  flex: none;
+  animation: live-pill-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes live-pill-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.45;
+    transform: scale(0.82);
+  }
 }

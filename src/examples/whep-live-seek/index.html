@@ -39,16 +39,18 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. -->
     <r5-header></r5-header>
 
     <main class="page">
-      <nav class="breadcrumb"><a href="/">WebRTC Testbed</a> &rsaquo; Subscribe Live VOD &amp; MP4 Clip</nav>
+      <nav class="breadcrumb">
+        <a class="breadcrumb__home" href="/">Home</a><span class="breadcrumb__sep" aria-hidden="true">/</span> Subscribe Live VOD &amp; MP4 Clip
+      </nav>
 
       <h1 class="page__heading">Subscribe Live VOD &amp; MP4 Clip</h1>
       <p class="page__description">
         Watch a live stream over WebRTC with DVR seek-back. Drag or click back on the timeline to
-        play the HLS recording from that point; press <strong>LIVE</strong> (or seek to the end) to
-        switch back to real-time WebRTC playback at around 200 ms latency. Set a start and end time
-        on the player to create an MP4 clip of the HLS recording. Requires Stream Manager: provide
-        the HLS playlist as a base or full URL (S3, CDN), or use the Stream Manager proxy for
-        packager file output, before starting subscribe.
+        play the HLS recording from that point; press <span class="strong">LIVE</span> (or seek to
+        the end) to switch back to real-time WebRTC playback at around 200 ms latency. Set a start
+        and end time on the player to create an MP4 clip of the HLS recording. Requires Stream
+        Manager: provide the HLS playlist as a base or full URL (S3, CDN), or use the Stream Manager
+        proxy for packager file output, before starting subscribe.
       </p>
 
       <div class="page__layout">
@@ -59,15 +61,19 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. -->
               <span class="status status--idle" id="subscribe-status">Subscriber Idle</span>
             </div>
             <p class="playback-source-row">
-              Playing: <span class="playback-source playback-source--idle" id="playback-source">Not playing</span>
+              Playing:
+              <span class="playback-source playback-source--idle" id="playback-source"
+                >Not playing</span
+              >
             </p>
 
             <p class="connection-info" id="connection-info">Endpoint not configured</p>
 
             <div class="live-seek-panel">
               <p class="live-seek-panel__copy">
-                Provide either a <strong>baseURL</strong> or <strong>fullURL</strong> that points to
-                HLS manifest, such as a CDN, S3 Bucket, NFS mount, etc.
+                Provide either a <span class="strong">baseURL</span> or
+                <span class="strong">fullURL</span> that points to HLS manifest, such as a CDN, S3
+                Bucket, NFS mount, etc.
               </p>
               <div class="live-seek-panel__url-row">
                 <label for="optional-url-input" class="live-seek-panel__label"
@@ -227,21 +233,30 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. -->
               <h2 class="section-title">MP4 Clip</h2>
               <p class="clip-panel__copy">
                 Seek the player to where the clip should begin and press
-                <strong>Set Start Time</strong>, then seek to where it should end and press
-                <strong>Set End Time</strong>. At live, the time set is the live edge. The video
-                packager cuts the range into an MP4 without re-encoding (up to 3 hours). The HLS
-                playlist must still list the range, so use <code>hls.playlist.type=event</code> or
-                a long playlist. Clips go to S3 with S3 output, or next to the stream's HLS through
-                the Stream Manager proxy with file output.
+                <span class="strong">Set Start Time</span>, then seek to where it should end and
+                press <span class="strong">Set End Time</span>. At live, the time set is the live
+                edge. The video packager cuts the range into an MP4 without re-encoding (up to 3
+                hours). The HLS playlist must still list the range, so use
+                <code>hls.playlist.type=event</code> or a long playlist. Clips go to S3 with S3
+                output, or next to the stream's HLS through the Stream Manager proxy with file
+                output.
               </p>
               <div class="clip-panel__row">
                 <button class="btn" id="clip-mark-in-btn" disabled>Set Start Time</button>
                 <button class="btn" id="clip-mark-out-btn" disabled>Set End Time</button>
-                <span class="clip-panel__value" id="clip-range">Start —  ·  End —</span>
+                <span class="clip-panel__value" id="clip-range">Start — · End —</span>
               </div>
               <div class="clip-panel__row">
-                <input id="clip-title" class="live-seek-panel__input" type="text" maxlength="200" placeholder="Clip title (optional)" />
-                <button class="btn btn--primary" id="clip-create-btn" disabled>Create MP4 Clip</button>
+                <input
+                  id="clip-title"
+                  class="live-seek-panel__input"
+                  type="text"
+                  maxlength="200"
+                  placeholder="Clip title (optional)"
+                />
+                <button class="btn btn--primary" id="clip-create-btn" disabled>
+                  Create MP4 Clip
+                </button>
               </div>
               <p class="clip-panel__status" id="clip-status"></p>
             </div>
@@ -251,9 +266,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. -->
         <div class="log-panel">
           <div class="log-panel__header">
             <h2 class="log-panel__title">Log</h2>
-            <button type="button" class="btn btn--ghost log-panel__clear" id="log-clear-btn">
-              Clear
-            </button>
+            <button type="button" class="btn btn--ghost log-panel__clear" id="log-clear-btn" aria-label="Clear log" title="Clear log"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"></path><path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M10 11v6"></path><path d="M14 11v6"></path></svg></button>
           </div>
           <div class="log" id="log"></div>
         </div>

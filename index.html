@@ -40,7 +40,15 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. -->
       <p class="page__subheading">Client-side examples for WHIPClient and WHEPClient workflows</p>
 
       <div class="page__controls">
-        <div class="relay-status" id="relay-status">Host not configured</div>
+        <div class="relay-status">
+          <span class="host-ico" aria-hidden="true">
+            <svg class="i" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="9"></circle>
+              <path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"></path>
+            </svg>
+          </span>
+          <span id="relay-status">Host not configured</span>
+        </div>
 
         <div class="examples-filter">
           <label class="examples-filter__label" for="examples-filter-input">Filter by tag</label>

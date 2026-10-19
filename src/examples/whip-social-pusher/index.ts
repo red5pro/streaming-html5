@@ -44,6 +44,7 @@ import {
   type Settings,
 } from '@/settings'
 import { wireExampleLog } from '@/lib/example-log'
+import { setLivePillVisible } from '@/lib/live-pill'
 import { updateSubscriberLink } from '@/lib/example-links'
 import { postSocialPusherProvision } from '@/lib/social-pusher-provision'
 import {
@@ -348,16 +349,19 @@ function onPublisherEvent(event: Red5ProEvent): void {
     syncPublishConfigSection(false)
     syncSocialPusherSection(true)
   } else if (type === 'Publish.Available') {
+    setLivePillVisible(true)
     refreshSubscriberLink()
     openSubscriberLinkEl.disabled = false
   } else if (publisherFailureEvents.includes(type)) {
     setPublisherStatus('Publish Error', 'error')
+    setLivePillVisible(false)
     publishBtn.disabled = false
     unpublishBtn.disabled = true
     syncPublishConfigSection(true)
     syncSocialPusherSection(false)
   } else if (type === 'Unpublish.Success') {
     setPublisherStatus('Publisher Idle', 'idle')
+    setLivePillVisible(false)
     publishBtn.disabled = false
     unpublishBtn.disabled = true
     syncPublishConfigSection(true)
@@ -438,6 +442,7 @@ async function startPublish(): Promise<void> {
     window.r5publisher = publisher
   } catch (error) {
     setPublisherStatus('Publish Error', 'error')
+    setLivePillVisible(false)
     publishBtn.disabled = false
     unpublishBtn.disabled = true
     syncPublishConfigSection(true)
@@ -465,6 +470,7 @@ async function stopPublish(): Promise<void> {
     syncPublishConfigSection(true)
     syncSocialPusherSection(false)
     setPublisherStatus('Publisher Idle', 'idle')
+    setLivePillVisible(false)
     openSubscriberLinkEl.disabled = true
     // @ts-expect-error - global variable for debugging
     delete window.r5publisher

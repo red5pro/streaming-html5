@@ -25,7 +25,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 .red5pro-media-control-bar {
-  border-radius: 0px 0px 8px 8px !important;
+  border-radius: 0 0 var(--radius-panel) var(--radius-panel) !important;
 }
 
 .live-seek-layout {
@@ -34,7 +34,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 .live-seek-layout .media-panel {
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: var(--radius-card);
   background: var(--bg-card);
   padding: 0.85rem;
 }
@@ -47,7 +47,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 }
 
 .live-seek-layout .section-title {
-  font-size: 0.72rem;
+  font-size: var(--section-label-size);
   color: var(--text-secondary);
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -57,7 +57,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   margin: 0.75rem 0;
   padding: 0.9rem;
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--radius-panel);
   background: var(--bg-secondary);
 }
 
@@ -85,9 +85,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 }
 
 .live-seek-panel__input {
+  min-height: var(--control-height);
   width: 100%;
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--radius-panel);
   background: var(--bg-card);
   color: var(--text);
   padding: 0.55rem 0.75rem;
@@ -124,17 +125,17 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   width: 100%;
   aspect-ratio: 16 / 9;
   background: #000;
-  border-radius: 8px;
+  border-radius: var(--radius-panel);
 }
 
 .red5pro-hls-vod {
-  border-radius: 8px;
+  border-radius: var(--radius-panel);
 }
 
 .player {
   position: relative;
   background: #000;
-  border-radius: 8px;
+  border-radius: var(--radius-panel);
   overflow: hidden;
 }
 
@@ -259,7 +260,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   margin-top: 0.75rem;
   padding: 0.9rem;
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--radius-panel);
   background: var(--bg-secondary);
 }
 
@@ -318,7 +319,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   padding: 0.2rem 0.6rem;
   border: none;
   border-radius: 4px;
-  font-weight: 700;
+  font-weight: 500;
   font-size: 0.75rem;
   font-family: 'IBM Plex Mono', ui-monospace, 'SF Mono', monospace;
   color: #fff;
@@ -333,4 +334,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 .player #subscriber-video {
   display: block;
   border-radius: 0;
+}
+
+.strong {
+  font-weight: 500;
+  color: var(--text);
 }

@@ -50,6 +50,7 @@ import {
   DEFAULT_KEYFRAME_INTERVAL_SECONDS,
 } from '@/lib/publish-presets'
 import { wireExampleLog } from '@/lib/example-log'
+import { setLivePillVisible } from '@/lib/live-pill'
 import { updateSubscriberLink } from '@/lib/example-links'
 
 const KEYFRAME_INTERVAL_MS = DEFAULT_KEYFRAME_INTERVAL_SECONDS * 1000
@@ -367,16 +368,19 @@ function onPublisherEvent(event: Red5ProEvent): void {
     unpublishBtn.disabled = false
     syncPublishControls(false)
   } else if (type === 'Publish.Available') {
+    setLivePillVisible(true)
     refreshSubscriberLink()
     openSubscriberLinkEl.disabled = false
   } else if (publisherFailureEvents.includes(type)) {
     setPublisherStatus('Publish Error', 'error')
+    setLivePillVisible(false)
     publishBtn.disabled = false
     unpublishBtn.disabled = true
     syncPublishControls(true)
     updatePublishButtonState()
   } else if (type === 'Unpublish.Success') {
     setPublisherStatus('Publisher Idle', 'idle')
+    setLivePillVisible(false)
     publishBtn.disabled = false
     unpublishBtn.disabled = true
     syncPublishControls(true)
@@ -451,6 +455,7 @@ async function startPublish(): Promise<void> {
     )
   } catch (error) {
     setPublisherStatus('Publish Error', 'error')
+    setLivePillVisible(false)
     syncPublishControls(true)
     updatePublishButtonState()
     publisher = null
@@ -474,6 +479,7 @@ async function stopPublish(): Promise<void> {
     unpublishBtn.disabled = true
     syncPublishControls(true)
     setPublisherStatus('Publisher Idle', 'idle')
+    setLivePillVisible(false)
     updatePublishButtonState()
     openSubscriberLinkEl.disabled = true
   }

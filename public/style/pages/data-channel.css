@@ -26,7 +26,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 .data-channel-layout {
   width: 100%;
-  max-width: 960px;
+  max-width: var(--page-max);
   display: flex;
   flex-direction: column;
   gap: 0.85rem;
@@ -35,7 +35,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 .data-channel-layout .config-panel,
 .data-channel-layout .media-panel {
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: var(--radius-card);
   background: var(--bg-card);
   padding: 0.85rem;
 }
@@ -51,7 +51,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 }
 
 .data-channel-layout .section-title {
-  font-size: 0.72rem;
+  font-size: var(--section-label-size);
   color: var(--text-secondary);
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -72,7 +72,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   width: 100%;
   max-width: 240px;
   aspect-ratio: 3 / 2;
-  border-radius: 8px;
+  border-radius: var(--radius-panel);
 }
 
 .data-channel-layout video {
@@ -90,7 +90,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 .form-row__section {
   padding: 0.75rem;
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--radius-panel);
   background: var(--bg-secondary);
 }
 
@@ -147,7 +147,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   max-width: 100%;
   padding: 0.35rem 0.55rem;
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--radius-control);
   background: var(--bg);
   color: var(--text);
   font-family: var(--font-sans);
@@ -190,7 +190,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   border-radius: 999px;
   background: var(--status-idle-bg);
   color: var(--status-idle-text);
-  font-size: 0.72rem;
+  font-size: var(--section-label-size);
   font-family: var(--font-mono);
 }
 
@@ -206,6 +206,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 .page__layout > .log {
   width: 100%;
-  max-width: 960px;
+  max-width: var(--page-max);
   white-space: pre-wrap;
 }

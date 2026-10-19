@@ -28,22 +28,35 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   display: block;
   position: sticky;
   z-index: 100;
+  --bg: #0c0c0c;
+  --bg-secondary: #141415;
+  --bg-panel: #0f0f10;
+  --text: #ffffff;
+  --text-secondary: #b1b1b1;
+  --text-muted: #7a7a7a;
+  --border: #38383b;
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-strong: #55555a;
+  --accent: #d03832;
+  --accent-hover: #e0433c;
   font-family:
     'Clash Grotesk',
+    'Helvetica Neue',
+    Arial,
+    sans-serif,
     system-ui,
-    -apple-system,
-    sans-serif;
+    -apple-system;
 }
 
 .header-bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 1.25rem;
-  height: 52px;
-  background: #0c0c0c;
-  color: #ffffff;
-  border-bottom: 1px solid #1a1a1a;
+  padding: 0 22px;
+  height: 76px;
+  background: var(--bg);
+  color: var(--text);
+  border-bottom: 1px solid var(--border-subtle);
   gap: 1rem;
 }
 
@@ -52,7 +65,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   align-items: center;
   gap: 0.6rem;
   font-size: 0.9rem;
-  color: #ffffff;
+  color: var(--text-secondary);
   text-decoration: none;
   white-space: nowrap;
   letter-spacing: 0.04em;
@@ -60,8 +73,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 }
 
 .header-bar__brand-logo {
-  height: 26px;
-  width: auto;
+  height: auto;
+  width: 98px;
   flex-shrink: 0;
 }
 
@@ -69,18 +82,19 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   display: flex;
   align-items: center;
   gap: 1rem;
-  font-size: 0.8rem;
-  color: #9ca3af;
+  font: 400 12px / 1 var(--font-mono);
+  color: var(--text-muted);
+  letter-spacing: 0.02em;
 }
 
 .header-bar__nav a {
-  color: #9ca3af;
+  color: var(--text-secondary);
   text-decoration: none;
   font-weight: 500;
 }
 
 .header-bar__nav a:hover {
-  color: #ffffff;
+  color: var(--text);
 }
 
 .toggle-btn {
@@ -88,9 +102,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   align-items: center;
   gap: 0.4rem;
   background: none;
-  border: 1px solid #333333;
-  border-radius: 999px;
-  color: #9ca3af;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-btn);
+  color: var(--text-secondary);
   font-size: 0.78rem;
   font-weight: 500;
   padding: 0.3rem 0.8rem;
@@ -104,8 +118,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 }
 
 .toggle-btn:hover {
-  border-color: #666666;
-  color: #ffffff;
+  border-color: var(--border-strong);
+  color: var(--text);
 }
 
 .toggle-btn__icon {
@@ -118,9 +132,15 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   transform: rotate(180deg);
 }
 
+.settings-btn {
+  font: 500 var(--field-label-size) / 1 var(--font-mono);
+  color: var(--text-secondary);
+  text-transform: uppercase;
+}
+
 .settings-panel {
-  background: #111111;
-  border-bottom: 1px solid #1a1a1a;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-subtle);
   overflow: hidden;
   max-height: 0;
   transition:
@@ -141,9 +161,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 }
 
 .settings-panel__section {
-  background: #0f0f0f;
-  border: 1px solid #232323;
-  border-radius: 8px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-panel);
   padding: 0.75rem;
 }
 
@@ -158,8 +178,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 .settings-panel__section-title {
   margin: 0;
   font-size: 0.72rem;
-  font-weight: 600;
-  color: #94a3b8;
+  font-weight: 500;
+  color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.08em;
 }
@@ -186,17 +206,17 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 .settings-panel__label {
   font-size: 0.7rem;
-  font-weight: 600;
-  color: #6c757d;
+  font-weight: 500;
+  color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.08em;
 }
 
 .settings-panel__input {
-  background: #1a1a1a;
-  border: 1px solid #333333;
-  border-radius: 6px;
-  color: #f1f5f9;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  color: var(--text);
   font-size: 0.85rem;
   font-family: 'IBM Plex Mono', ui-monospace, 'SF Mono', monospace;
   padding: 0.5rem 0.75rem;
@@ -205,11 +225,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 }
 
 .settings-panel__input:focus {
-  border-color: #db1f26;
+  border-color: var(--accent);
 }
 
 .settings-panel__input::placeholder {
-  color: #4b5563;
+  color: var(--text-muted);
 }
 
 .settings-panel__password-wrap {
@@ -227,7 +247,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   transform: translateY(-50%);
   background: transparent;
   border: none;
-  color: #94a3b8;
+  color: var(--text-secondary);
   font-size: 0.95rem;
   line-height: 1;
   padding: 0.2rem;
@@ -235,11 +255,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 }
 
 .settings-panel__password-toggle:hover {
-  color: #e2e8f0;
+  color: var(--text);
 }
 
 .settings-panel__password-toggle:disabled {
-  color: #4b5563;
+  color: var(--text-muted);
   cursor: not-allowed;
 }
 
@@ -248,7 +268,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 }
 
 .settings-panel__toggle-text {
-  color: #cbd5e1;
+  color: var(--text-secondary);
   font-size: 0.8rem;
   font-weight: 500;
 }
@@ -276,22 +296,23 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 }
 
 .settings-panel__select-wrap::after {
-  content: '▾';
+  content: '';
   position: absolute;
-  right: 0.75rem;
+  right: 0.9rem;
   top: 50%;
+  width: 14px;
+  height: 8px;
   transform: translateY(-50%);
-  color: #6c757d;
+  background: var(--text-secondary);
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
   pointer-events: none;
-  font-size: 0.7rem;
-  line-height: 1;
 }
 
 .settings-panel__select {
-  background: #1a1a1a;
-  border: 1px solid #333333;
-  border-radius: 6px;
-  color: #f1f5f9;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  color: var(--text);
   font-size: 0.85rem;
   font-family: 'IBM Plex Mono', ui-monospace, 'SF Mono', monospace;
   padding: 0.5rem 2rem 0.5rem 0.75rem;
@@ -303,12 +324,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 }
 
 .settings-panel__select:focus {
-  border-color: #db1f26;
+  border-color: var(--accent);
 }
 
 .settings-panel__select option {
-  background: #1a1a1a;
-  color: #f1f5f9;
+  background: var(--bg-secondary);
+  color: var(--text);
 }
 
 .settings-panel__icon-btn {
@@ -317,10 +338,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 6px;
-  border: 1px solid #333333;
-  background: #1a1a1a;
-  color: #94a3b8;
+  border-radius: var(--radius-control);
+  border: 1px solid var(--border);
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
   font-size: 1rem;
   line-height: 1;
   cursor: pointer;
@@ -331,8 +352,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 }
 
 .settings-panel__icon-btn:hover:not(:disabled) {
-  border-color: #666666;
-  color: #ffffff;
+  border-color: var(--border-strong);
+  color: var(--text);
 }
 
 .settings-panel__icon-btn:disabled {
@@ -351,16 +372,16 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   position: relative;
   width: 32px;
   height: 18px;
-  background: #333333;
+  background: var(--border);
   border-radius: 999px;
   transition: background 0.2s;
   flex-shrink: 0;
-  border: 1px solid #444444;
+  border: 1px solid var(--border);
 }
 
 .theme-toggle__track.on {
-  background: #db1f26;
-  border-color: #db1f26;
+  background: var(--accent);
+  border-color: var(--accent);
 }
 
 .theme-toggle__thumb {
@@ -369,7 +390,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   left: 2px;
   width: 12px;
   height: 12px;
-  background: #ffffff;
+  background: var(--text);
   border-radius: 50%;
   transition: transform 0.2s;
 }
@@ -390,10 +411,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   align-items: center;
   justify-content: center;
   padding: 0.4rem 1.1rem;
-  border-radius: 999px;
+  border-radius: var(--radius-btn);
   font-family: inherit;
   font-size: 0.8rem;
-  font-weight: 600;
+  font-weight: 500;
   cursor: pointer;
   border: none;
   transition:
@@ -405,25 +426,47 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 }
 
 .btn--primary {
-  background: #db1f26;
-  color: #ffffff;
+  background: var(--accent);
+  color: var(--text);
 }
 
 .btn--primary:hover {
-  background: #b91c1c;
+  background: var(--accent-hover);
 }
 
 .btn--ghost {
   background: transparent;
-  border: 1px solid #333333;
-  color: #9ca3af;
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
 }
 
 .btn--ghost:hover {
-  border-color: #666666;
-  color: #ffffff;
+  border-color: var(--border-strong);
+  color: var(--text);
 }
 
 .fill-width {
   width: 100%;
+}
+
+@media (max-width: 760px) {
+  .header-bar {
+    flex-wrap: wrap;
+    height: auto;
+    padding: 10px 16px;
+    row-gap: 10px;
+  }
+
+  .header-bar__nav {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .settings-panel {
+    padding: 0 16px;
+  }
+
+  .settings-panel.open {
+    padding: 1rem 16px;
+  }
 }

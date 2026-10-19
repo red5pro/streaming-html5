@@ -30,7 +30,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 .proxy-subscriber-all-edge-layout .media-panel {
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: var(--radius-card);
   background: var(--bg-card);
   padding: 0.85rem;
 }
@@ -43,7 +43,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 }
 
 .proxy-subscriber-all-edge-layout .section-title {
-  font-size: 0.72rem;
+  font-size: var(--section-label-size);
   color: var(--text-secondary);
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -54,7 +54,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   color: var(--text-secondary);
   margin-bottom: 0.75rem;
   padding: 0.45rem 0.65rem;
-  border-radius: 6px;
+  border-radius: var(--radius-control);
   background: var(--bg-secondary);
 }
 
@@ -86,13 +86,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   padding: 1.25rem 1rem;
   color: var(--text-muted);
   border: 1px dashed var(--border);
-  border-radius: 10px;
+  border-radius: var(--radius-card);
   font-size: 0.825rem;
 }
 
 .edge-subscriber {
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--radius-panel);
   background: var(--bg-secondary);
   padding: 0.65rem;
   display: flex;
@@ -108,19 +108,19 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 }
 
 .edge-subscriber__title {
-  font-size: 0.72rem;
-  font-weight: 600;
+  font-size: var(--section-label-size);
+  font-weight: 500;
   color: var(--text);
   font-family: var(--font-mono);
   word-break: keep-all;
 }
 
 .edge-subscriber__prompt {
-  font-size: 0.72rem;
+  font-size: var(--section-label-size);
   color: var(--text-secondary);
   margin: 0;
   padding: 0.35rem 0.5rem;
-  border-radius: 6px;
+  border-radius: var(--radius-control);
   background: var(--bg-card);
 }
 
@@ -142,6 +142,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 .edge-subscriber__video {
   width: 100%;
   aspect-ratio: 4 / 3;
-  border-radius: 6px;
+  border-radius: var(--radius-control);
   background: #000;
 }

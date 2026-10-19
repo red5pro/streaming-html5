@@ -24,6 +24,9 @@ WHETHER IN  AN  ACTION  OF  CONTRACT,  TORT  OR  OTHERWISE,  ARISING  FROM,  OUT
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&display=swap');
+@import url('https://api.fontshare.com/v2/css?f[]=clash-grotesk@400,500,600,700&display=swap');
+
 *,
 *::before,
 *::after {
@@ -55,10 +58,21 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   --border: #d2d4d6;
   --border-subtle: #e8e8e8;
+  --border-strong: #9ca3af;
+
+  --tile-bg: #ffffff;
+  --input-bg: #f5f5f5;
+  --input-focus-border: #9ca3af;
+  --input-focus-ring: rgba(0, 0, 0, 0.06);
+  --placeholder: #9ca3af;
 
   --accent: #db1f26;
   --accent-hover: #b91c1c;
   --link: #db1f26;
+  --c-red: #d03832;
+  --c-amber: #b7791f;
+  --c-blue: #2f6fd6;
+  --c-purple: #8b5cf6;
 
   --btn-primary-bg: #0c0c0c;
   --btn-primary-text: #ffffff;
@@ -66,6 +80,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   --btn-danger-bg: #db1f26;
   --btn-danger-text: #ffffff;
+  --btn-danger-border: #db1f26;
   --btn-danger-hover: #b91c1c;
 
   --btn-ghost-border: #d2d4d6;
@@ -87,52 +102,80 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   --status-connected-text: #065f46;
   --status-error-bg: #fee2e2;
   --status-error-text: #dc2626;
+
+  --page-max: 1080px;
+  --page-pad-x: 32px;
+  --page-pad-bottom: 72px;
+  --radius-card: 18px;
+  --tile-border-width: 1.5px;
+  --radius-panel: 12px;
+  --radius-control: 10px;
+  --control-height: 44px;
+  --control-font: 15px;
+  --btn-height: 46px;
+  --btn-height-sm: 34px;
+  --radius-btn: 12px;
+  --section-label-size: 14px;
+  --field-label-size: 12px;
 }
 
 [data-theme='dark'] {
-  --bg: #0f172a;
-  --bg-secondary: #1e293b;
-  --bg-card: #1e293b;
-  --bg-panel: #1e293b;
+  color-scheme: dark;
+  --bg: #0c0c0c;
+  --bg-secondary: #141415;
+  --bg-card: #141415;
+  --bg-panel: #0f0f10;
 
-  --text: #e2e8f0;
-  --text-secondary: #94a3b8;
-  --text-muted: #64748b;
+  --text: #ffffff;
+  --text-secondary: #b1b1b1;
+  --text-muted: #7a7a7a;
 
-  --border: #334155;
-  --border-subtle: #1e293b;
+  --border: #38383b;
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-strong: #55555a;
 
-  --accent: #db1f26;
-  --accent-hover: #ef4444;
-  --link: #f87171;
+  --tile-bg: linear-gradient(180deg, #141415, #0f0f10);
+  --input-bg: #0b0b0c;
+  --input-focus-border: #6a6a70;
+  --input-focus-ring: rgba(255, 255, 255, 0.06);
+  --placeholder: #5f5f64;
 
-  --btn-primary-bg: #db1f26;
+  --accent: #d03832;
+  --accent-hover: #e0433c;
+  --link: #f0756a;
+  --c-red: #f0756a;
+  --c-amber: #f2b55c;
+  --c-blue: #6ea8f8;
+  --c-purple: #a87ee8;
+
+  --btn-primary-bg: #d03832;
   --btn-primary-text: #ffffff;
-  --btn-primary-hover: #b91c1c;
+  --btn-primary-hover: #e0433c;
 
-  --btn-danger-bg: #dc2626;
-  --btn-danger-text: #ffffff;
-  --btn-danger-hover: #ef4444;
+  --btn-danger-bg: transparent;
+  --btn-danger-text: #f0756a;
+  --btn-danger-border: #f0756a;
+  --btn-danger-hover: rgba(240, 117, 106, 0.12);
 
-  --btn-ghost-border: #334155;
-  --btn-ghost-text: #94a3b8;
-  --btn-ghost-hover-border: #64748b;
-  --btn-ghost-hover-text: #e2e8f0;
+  --btn-ghost-border: #38383b;
+  --btn-ghost-text: #b1b1b1;
+  --btn-ghost-hover-border: #55555a;
+  --btn-ghost-hover-text: #ffffff;
 
-  --log-bg: #0f172a;
-  --log-border: #1e293b;
-  --log-text: #94a3b8;
-  --log-success: #4ade80;
-  --log-error: #f87171;
+  --log-bg: #0f0f10;
+  --log-border: #38383b;
+  --log-text: #b1b1b1;
+  --log-success: #5fd0b6;
+  --log-error: #f0756a;
 
-  --status-idle-bg: #1e293b;
-  --status-idle-text: #64748b;
+  --status-idle-bg: #141415;
+  --status-idle-text: #b1b1b1;
   --status-connecting-bg: #1c3149;
   --status-connecting-text: #38bdf8;
-  --status-connected-bg: #14291f;
-  --status-connected-text: #4ade80;
-  --status-error-bg: #2c1a1a;
-  --status-error-text: #f87171;
+  --status-connected-bg: rgba(95, 208, 182, 0.16);
+  --status-connected-text: #5fd0b6;
+  --status-error-bg: rgba(240, 117, 106, 0.16);
+  --status-error-text: #f0756a;
 }
 
 html {
@@ -149,26 +192,52 @@ body {
   min-height: 100vh;
   background: var(--bg);
   color: var(--text);
+  line-height: 1.5;
+}
+
+[data-theme='dark'] body {
+  background:
+    radial-gradient(900px 500px at 10% 15%, rgba(150, 70, 40, 0.14), transparent 60%),
+    radial-gradient(800px 500px at 100% 0%, rgba(80, 90, 160, 0.1), transparent 60%), var(--bg);
+  background-attachment: fixed;
+}
+
+h1,
+h3,
+h2 {
+  font-weight: 500;
+}
+
+svg.i {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  flex: none;
 }
 
 .page {
-  max-width: 960px;
+  max-width: var(--page-max);
   margin: 0 auto;
-  padding: 1.5rem 1.5rem 2.5rem;
+  padding: var(--page-pad-x) var(--page-pad-x) var(--page-pad-bottom);
 }
 
 .page__heading {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--accent);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  margin-bottom: 0.35rem;
+  font-size: 46px;
+  font-weight: 400;
+  line-height: 1.15;
+  color: var(--text);
+  margin: 0 0 14px;
 }
 
 .page__subheading,
 .page__description {
-  font-size: 0.875rem;
+  max-width: 720px;
+  font-size: 1rem;
+  line-height: 1.5;
   color: var(--text-secondary);
   margin-bottom: 1.5rem;
 }
@@ -188,29 +257,37 @@ body {
 }
 
 .breadcrumb {
-  font-size: 0.8rem;
+  font: 500 12px / 1.4 var(--font-mono);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
   color: var(--text-muted);
   margin-bottom: 1.25rem;
 }
 
 .breadcrumb a {
-  color: var(--link);
+  color: inherit;
   text-decoration: none;
 }
 
 .breadcrumb a:hover {
-  text-decoration: underline;
+  color: var(--text-secondary);
+}
+
+.breadcrumb__sep {
+  margin: 0 0.45em;
+  opacity: 0.85;
 }
 
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0.45rem 1.2rem;
-  border-radius: 999px;
+  min-height: var(--btn-height);
+  padding: 0 18px;
+  border-radius: var(--radius-btn);
   font-family: var(--font-sans);
-  font-size: 0.875rem;
-  font-weight: 600;
+  font-size: var(--control-font);
+  font-weight: 500;
   cursor: pointer;
   border: none;
   transition:
@@ -237,6 +314,7 @@ body {
 .btn--danger {
   background: var(--btn-danger-bg);
   color: var(--btn-danger-text);
+  border: 1px solid var(--btn-danger-border);
 }
 
 .btn--danger:hover {
@@ -252,7 +330,6 @@ body {
   background: transparent;
   border: 1px solid var(--btn-ghost-border);
   color: var(--btn-ghost-text);
-  border-radius: 999px;
 }
 
 .btn--ghost:hover {
@@ -287,10 +364,10 @@ body {
 .log {
   background: var(--log-bg);
   border: 1px solid var(--log-border);
-  border-radius: 8px;
+  border-radius: var(--radius-panel);
   padding: 0.75rem 1rem;
   font-family: var(--font-mono);
-  font-size: 0.78rem;
+  font-size: 12px;
   line-height: 1.7;
   min-height: 240px;
   max-height: 480px;
@@ -322,4 +399,14 @@ body {
   font-family: var(--font-mono);
   margin-bottom: 0.75rem;
   word-break: break-all;
+}
+
+@media (max-width: 760px) {
+  .page {
+    padding: 16px 16px 56px;
+  }
+
+  .page__heading {
+    font-size: 32px;
+  }
 }
