@@ -335,3 +335,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   display: block;
   border-radius: 0;
 }
+
+.strong {
+  font-weight: 500;
+  color: var(--text);
+}

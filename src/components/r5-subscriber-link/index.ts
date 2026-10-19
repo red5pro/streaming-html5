@@ -40,7 +40,7 @@ export class R5SubscriberLink extends HTMLElement {
   }
 
   static get observedAttributes(): string[] {
-    return ['href', 'disabled', 'label']
+    return ['href', 'disabled', 'label', 'messaging']
   }
 
   constructor() {
@@ -50,7 +50,7 @@ export class R5SubscriberLink extends HTMLElement {
 
   connectedCallback(): void {
     if (!this.shadow.querySelector('.subscriber-link')) {
-      this.shadow.innerHTML = subscriberLinkTemplate(publicAssetPrefix())
+      this.shadow.innerHTML = subscriberLinkTemplate(publicAssetPrefix(), this.messaging)
     }
 
     this.linkEl = this.shadow.querySelector('.subscriber-link') as HTMLAnchorElement
@@ -73,6 +73,14 @@ export class R5SubscriberLink extends HTMLElement {
 
   set href(value: string) {
     this.setAttribute('href', value)
+  }
+
+  get messaging(): boolean {
+    return this.getAttribute('messaging') === 'true'
+  }
+
+  set messaging(value: boolean) {
+    this.setAttribute('messaging', value ? 'true' : 'false')
   }
 
   get label(): string {

@@ -69,7 +69,7 @@ const defaults: Settings = {
   host: window.location.hostname,
   streamName: 'stream1',
   app: 'live',
-  theme: 'light',
+  theme: 'dark',
   useStreamManager: false,
   nodeGroupName: 'default',
   region: '',

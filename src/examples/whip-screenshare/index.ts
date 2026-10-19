@@ -181,7 +181,7 @@ async function startPublish(): Promise<void> {
       {
         endpoint,
         streamName,
-        clearMediaOnUnpublish: false,
+        clearMediaOnUnpublish: true,
         mediaElementId: 'publisher-video',
         connectionParams,
         stats: stats ?? undefined,

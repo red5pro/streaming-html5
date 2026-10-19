@@ -62,6 +62,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   border: 1px solid color-mix(in srgb, var(--c-blue) 30%, transparent);
 }
 
+.messaging .subscriber-link__icon {
+  color: var(--c-amber);
+  background: color-mix(in srgb, var(--c-amber) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--c-amber) 30%, transparent);
+}
+
 .subscriber-link__icon svg.i {
   width: 18px;
   height: 18px;
