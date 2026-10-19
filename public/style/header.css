@@ -82,8 +82,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   display: flex;
   align-items: center;
   gap: 1rem;
-  font-size: 0.8rem;
-  color: var(--text-secondary);
+  font: 400 12px / 1 var(--font-mono);
+  color: var(--text-muted);
+  letter-spacing: 0.02em;
 }
 
 .header-bar__nav a {

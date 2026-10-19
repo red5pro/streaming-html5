@@ -257,18 +257,25 @@ svg.i {
 }
 
 .breadcrumb {
-  font-size: 0.8rem;
+  font: 500 12px / 1.4 var(--font-mono);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
   color: var(--text-muted);
   margin-bottom: 1.25rem;
 }
 
 .breadcrumb a {
-  color: var(--link);
+  color: inherit;
   text-decoration: none;
 }
 
 .breadcrumb a:hover {
-  text-decoration: underline;
+  color: var(--text-secondary);
+}
+
+.breadcrumb__sep {
+  margin: 0 0.45em;
+  opacity: 0.85;
 }
 
 .btn {

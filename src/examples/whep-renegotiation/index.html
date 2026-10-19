@@ -37,7 +37,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. -->
     <r5-header></r5-header>
 
     <main class="page">
-      <nav class="breadcrumb"><a href="/">WebRTC Testbed</a> &rsaquo; WHEP Renegotiation</nav>
+      <nav class="breadcrumb"><a class="breadcrumb__home" href="/">Home</a><span class="breadcrumb__sep" aria-hidden="true">/</span> WHEP Renegotiation</nav>
 
       <h1 class="page__heading">WHEP Renegotiation</h1>
       <p class="page__description">
@@ -153,9 +153,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. -->
         <div class="log-panel">
           <div class="log-panel__header">
             <h2 class="log-panel__title">Log</h2>
-            <button type="button" class="btn btn--ghost log-panel__clear" id="log-clear-btn">
-              Clear
-            </button>
+            <button type="button" class="btn btn--ghost log-panel__clear" id="log-clear-btn" aria-label="Clear log" title="Clear log"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"></path><path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M10 11v6"></path><path d="M14 11v6"></path></svg></button>
           </div>
           <div class="log" id="log"></div>
         </div>
