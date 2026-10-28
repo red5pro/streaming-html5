@@ -37,6 +37,8 @@ For MoQ / WebTransport messaging (same send method names, different wire protoco
 
 # Usage
 
+On a script-tag page, load either the full SDK (`red5-web-sdk.min.js`) or the WHIP/WHEP/HLS build (`red5-web-sdk-webrtc.min.js`). Both attach `window.red5websdk`. From npm, `import { MessageChannel } from 'red5-web-sdk'` or `'red5-web-sdk/webrtc'`.
+
 Because `MessageChannel` is a subclass of `WHIPClient` (the media streaming broadcaster), much of the init setup and event structure is similar.
 
 To create and use a `MessageChannel` client:
@@ -65,13 +67,13 @@ Dependening on how you include the SDK into your project, you can access the `Me
 _NPM install_:
 
 ```js
-import { MessageChannel } from 'red5pro-webrtc-sdk'
+import { MessageChannel } from 'red5-web-sdk'
 ```
 
 _Browser, CDN_:
 
 ```js
-const { MessageChannel } = red5prosdk
+const { MessageChannel } = red5websdk
 ```
 
 > For more in-depth information related to usage, please refer to the [WHIPClient](whip-client.md#usage) documentation.
@@ -168,7 +170,7 @@ The configuration used for statistics monitoring has the following structure:
   // If provided, it will POST stats to this endpoint.
   // If undefined or `data-channel`, it will post stats to message transport.
   // If null or `event-transport`, it will only emit status events.
-  endpoint: red5prosdk.StatsEndpointType.DATA_CHANNEL,
+  endpoint: red5websdk.StatsEndpointType.DATA_CHANNEL,
   additionalHeaders: undefined,
   interval: 5000, // Interval to poll stats, in milliseconds.
   include: [], // Empty array allows SDK to be judicious about what stats to include.
@@ -260,7 +262,7 @@ The following is an example of a statistics metadata that is emitted in a `WebRT
 
 > This section provides information that relate to the release of Stream Manager 2.0 and its integration with WHIP/WHEP clients, and MessageChannel.
 
-The Stream Manager 2.0 simplifies the proxying of web clients to Origin and Edge nodes. As such, an initialization configuration property called `endpoint` was added to the WebRTC SDK. This `endpoint` value should be the full URL path to the proxy endpoint on the Stream Manager as is used as such:
+The Stream Manager 2.0 simplifies the proxying of web clients to Origin and Edge nodes. As such, an initialization configuration property called `endpoint` was added to the Red5 Web SDK. This `endpoint` value should be the full URL path to the proxy endpoint on the Stream Manager as is used as such:
 
 ## WHIP Proxy
 

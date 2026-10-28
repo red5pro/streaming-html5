@@ -31,13 +31,16 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. -->
     <link rel="stylesheet" href="/style/main.css" />
     <link rel="stylesheet" href="/style/pages/example.css" />
     <link rel="stylesheet" href="/style/pages/whip-codec-preference.css" />
-    <script src="/libs/red5pro/red5pro-sdk.min.js"></script>
+    <script src="/libs/red5pro/red5-web-sdk-webrtc.min.js"></script>
   </head>
   <body>
     <r5-header></r5-header>
 
     <main class="page">
-      <nav class="breadcrumb"><a class="breadcrumb__home" href="/">Home</a><span class="breadcrumb__sep" aria-hidden="true">/</span> WHIP Codec Preference</nav>
+      <nav class="breadcrumb">
+        <a class="breadcrumb__home" href="/">Home</a
+        ><span class="breadcrumb__sep" aria-hidden="true">/</span> WHIP Codec Preference
+      </nav>
 
       <h1 class="page__heading">WHIP Codec Preference</h1>
       <p class="page__description">
@@ -102,7 +105,21 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. -->
       <div class="log-panel">
         <div class="log-panel__header">
           <h2 class="log-panel__title">Log</h2>
-          <button type="button" class="btn btn--ghost log-panel__clear" id="log-clear-btn" aria-label="Clear log" title="Clear log"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"></path><path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M10 11v6"></path><path d="M14 11v6"></path></svg></button>
+          <button
+            type="button"
+            class="btn btn--ghost log-panel__clear"
+            id="log-clear-btn"
+            aria-label="Clear log"
+            title="Clear log"
+          >
+            <svg class="i" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M3 6h18"></path>
+              <path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"></path>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path>
+              <path d="M10 11v6"></path>
+              <path d="M14 11v6"></path>
+            </svg>
+          </button>
         </div>
         <div class="log" id="log"></div>
       </div>

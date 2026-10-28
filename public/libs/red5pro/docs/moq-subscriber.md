@@ -26,6 +26,8 @@ When you want to play MoQ media streams in the browser, the SDK provides `MOQSub
 
 # Usage
 
+On a script-tag page, load either the full SDK (`red5-web-sdk.min.js`) or the MOQ build (`red5-web-sdk-moq.min.js`). Both attach `window.red5websdk`. From npm, `import { MOQSubscriber } from 'red5-web-sdk'` or `'red5-web-sdk/moq'`.
+
 There are two options to start a `MOQSubscriber`:
 
 1. Construct with a MOQ URL (auto init and subscribe).
@@ -34,7 +36,7 @@ There are two options to start a `MOQSubscriber`:
 ## Using init() and subscribe()
 
 ```js
-const { MOQSubscriber, MOQSubscriberEventTypes } = red5prosdk
+const { MOQSubscriber, MOQSubscriberEventTypes } = red5websdk
 
 const subscriber = new MOQSubscriber()
 subscriber.on('*', event => {
@@ -295,10 +297,30 @@ const view = subscriber.getRendererView()
 
 # Statistics
 
+The default endpoint is `EVENT_TRANSPORT` (`MOQ.Stats.Report`). To send the same `STATS_REPORT` JSON over the managed MoQ message channel, set `endpoint` to `DATA_CHANNEL` and enable `messageChannel`:
+
 ```js
-subscriber.monitorStats({
-  interval: 5000
+const { StatsEndpointType } = red5websdk
+
+await subscriber.init({
+  endpoint: 'https://relay.example.com:4433',
+  app: 'live',
+  streamName: 'mystream',
+  messageChannel: { enabled: true },
+  stats: {
+    interval: 5000,
+    endpoint: StatsEndpointType.DATA_CHANNEL
+  }
 })
 ```
+
+```js
+subscriber.monitorStats({
+  interval: 5000,
+  endpoint: StatsEndpointType.EVENT_TRANSPORT
+})
+```
+
+If `DATA_CHANNEL` is requested but `messageChannel.enabled` is not set, the SDK warns once and emits `STATS_REPORT` instead. Reports that arrive before the channel is open are queued until `MOQ.MessageChannel.Open`.
 
 You can also provide `stats` in `init()` options to start monitoring automatically after subscription starts.

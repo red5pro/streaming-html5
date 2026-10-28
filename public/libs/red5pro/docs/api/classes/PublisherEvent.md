@@ -1,12 +1,12 @@
-[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.1**](../README.md)
 
 ***
 
-[Red5 Pro WebRTC SDK](../globals.md) / PublisherEvent
+[Red5 Web SDK](../globals.md) / PublisherEvent
 
 # Class: PublisherEvent
 
-Event for a Publisher within the Red5 Pro WebRTC SDK.
+Event for a Publisher within the Red5 Web SDK.
 
 ## Extends
 

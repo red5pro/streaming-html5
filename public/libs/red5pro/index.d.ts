@@ -4,7 +4,6 @@ export { PlaybackAudioEncoder, PlaybackState, PlaybackStateReadableMap, Playback
 import * as browser_bunyan_lib from 'browser-bunyan/lib';
 import { PublishVideoEncoder, PublishAudioEncoder } from 'types/publisher';
 export { PublishAudioEncoder, PublishVideoEncoder } from 'types/publisher';
-import { Logger } from 'browser-bunyan';
 import EventEmitter$1 from 'core/event-emitter';
 import { RTCWhipPublisherConfigType, OptimizationParams } from 'configuration/publisher';
 export { BandwidthConfig, MediaConstraintRange, MediaConstraints, RTCPublisherConfigType, RTCWhipPublisherConfigType, VideoConstraints, defaultWhipPublisherConfig } from 'configuration/publisher';
@@ -33,6 +32,7 @@ export { MOQCatalog, MOQCatalogConfigType, MOQDataChannelConfiguration, MOQMessa
 export { default as Capability } from 'types/capabilities';
 import { PubNubEventTypes } from 'event/pubnub';
 export { PubNubEventTypes } from 'event/pubnub';
+import { Logger } from 'browser-bunyan';
 
 declare const LEVELS: {
     readonly TRACE: "trace";
@@ -56,6 +56,17 @@ declare const getLogger: () => Logger;
  * @return {string[]} Array of recorded log messages.
  */
 declare const getRecordedLogs: () => string[];
+
+/**
+ * Shared SDK runtime: version, logger init, and log-level API.
+ * Used by the monolith, webrtc, and moq entries so each bundle initializes once.
+ */
+
+declare const setLogLevel: (level: string, record?: boolean) => void;
+/**
+ * Get the version of the SDK.
+ */
+declare const getVersion: () => string;
 
 /**
  * WHIP-based Publisher.
@@ -336,7 +347,7 @@ declare class WHIPClient extends EventEmitter$1 {
 }
 
 /**
- * Base class for a PlaybackControls within the Red5 Pro WebRTC SDK.
+ * Base class for a PlaybackControls within the Red5 Web SDK.
  * A PlaybackControls is responsible for managing the playback and state of an HTML media element through UI controls.
  */
 declare abstract class PlaybackControls extends EventEmitter$1 {
@@ -448,7 +459,7 @@ declare abstract class PlaybackControls extends EventEmitter$1 {
 }
 
 /**
- * Base class for a PlaybackController within the Red5 Pro WebRTC SDK.
+ * Base class for a PlaybackController within the Red5 Web SDK.
  * A PlaybackController is responsible for managing the playback and state of a media element.
  */
 declare abstract class PlaybackController extends EventEmitter$1 {
@@ -544,7 +555,7 @@ declare abstract class PlaybackController extends EventEmitter$1 {
     off(event: string, fn: (...args: any[]) => void): void;
 }
 /**
- * Base class for a SourceHandler within the Red5 Pro WebRTC SDK.
+ * Base class for a SourceHandler within the Red5 Web SDK.
  * A SourceHandler is responsible for managing the MediaStream source of a media element.
  */
 declare abstract class SourceHandler extends PlaybackController {
@@ -1334,12 +1345,6 @@ declare class EventEmitter implements EventEmitterInterface {
      */
     trigger(event: Event$1): void;
 }
-
-declare const setLogLevel: (level: string, record?: boolean) => void;
-/**
- * Get the version of the SDK.
- */
-declare const getVersion: () => string;
 
 declare const _default: {
     version: string;

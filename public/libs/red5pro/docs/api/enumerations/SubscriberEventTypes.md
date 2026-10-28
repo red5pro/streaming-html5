@@ -1,8 +1,8 @@
-[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.1**](../README.md)
 
 ***
 
-[Red5 Pro WebRTC SDK](../globals.md) / SubscriberEventTypes
+[Red5 Web SDK](../globals.md) / SubscriberEventTypes
 
 # Enumeration: SubscriberEventTypes
 

@@ -1,21 +1,21 @@
-# Red5 Pro HTML SDK - LLM Reference
+# Red5 Web SDK - LLM Reference
 
-- project: red5pro-html-sdk-ts
-- version: 16.4.0-beta.2
-- generated_at: 2026-10-16T15:17:53.898Z
+- project: red5-web-sdk
+- version: 17.0.0-beta.1
+- generated_at: 2026-10-28T20:07:42.412Z
 
 ## Included Files
 
 - CHANGES.md
-- docs/api/_media/hls-subscriber.md
-- docs/api/_media/message-channel.md
-- docs/api/_media/moq-catalog.md
-- docs/api/_media/moq-message-channel.md
-- docs/api/_media/moq-publisher.md
-- docs/api/_media/moq-subscriber.md
-- docs/api/_media/pubnub-client.md
-- docs/api/_media/whep-client.md
-- docs/api/_media/whip-client.md
+- docs/api/\_media/hls-subscriber.md
+- docs/api/\_media/message-channel.md
+- docs/api/\_media/moq-catalog.md
+- docs/api/\_media/moq-message-channel.md
+- docs/api/\_media/moq-publisher.md
+- docs/api/\_media/moq-subscriber.md
+- docs/api/\_media/pubnub-client.md
+- docs/api/\_media/whep-client.md
+- docs/api/\_media/whip-client.md
 - docs/api/classes/Event.md
 - docs/api/classes/EventEmitter.md
 - docs/api/classes/HLSSubscriber.md
@@ -106,6 +106,16 @@
 
 # Changes
 
+## 17.0.0
+
+**ALERT: Breaking Changes**
+
+- feat: Rename published SDK to **Red5 Web SDK** (`red5-web-sdk`). Previous npm name: `red5pro-webrtc-sdk`.
+- feat: UMD global `red5websdk`; `17.x` also sets `window.red5prosdk` to the same object for script-tag compatibility.
+- feat: Bundle files `red5-web-sdk.min.js` / `red5-web-sdk.esm.min.js` (replacing `red5pro-sdk*.js`).
+- feat: Focused CDN/npm builds `red5-web-sdk-webrtc` and `red5-web-sdk-moq` (same `red5websdk` global). Import `red5-web-sdk/webrtc` or `red5-web-sdk/moq`. Load one script per page.
+- Default `mediaElementId` values, `red5pro-media.css`, and event strings are unchanged.
+
 ## 16.3.0
 
 - fix: MOQ Catalog subscribe+fetch (Todd Anderson).
@@ -143,8 +153,8 @@
 ## 15.4.0-beta.1
 
 - feat: Introduction of `reconnect` configuration parameter for `WHIPClient` (Todd Anderson).
-    * This feature allows for graceful reconnect on network loss for publishers.
-    * NOTE: Requires `15.4.0` release of Red5 Server with the `resilient-stream` plugin enabled.
+  - This feature allows for graceful reconnect on network loss for publishers.
+  - NOTE: Requires `15.4.0` release of Red5 Server with the `resilient-stream` plugin enabled.
 
 ## 15.4.0-alpha.1
 
@@ -206,13 +216,12 @@
 - Fix for connectionParams tacked on WHIP/WHEP calls. (Todd Anderson)
 - Fix for Firefox issue with Bundle order (Todd Anderson)
 
-    > The issue was that the offer provided by the server has a BUNDLE order of 0 1
-    > 2. When the WHEP client set that as their remote SDP and generated an offer,
-    > the BUNDLE order changed to 2 1 0 in the answer SDP. This would cause
-    > subscription issues and non-existant candidates.
+  > The issue was that the offer provided by the server has a BUNDLE order of 0 1 2. When the WHEP client set that as their remote SDP and generated an offer,
+  > the BUNDLE order changed to 2 1 0 in the answer SDP. This would cause
+  > subscription issues and non-existant candidates.
 
-    > Solution was the munge in the incoming offer BUNDLE line order to that of the
-    > answer.
+  > Solution was the munge in the incoming offer BUNDLE line order to that of the
+  > answer.
 
 - Using host query param when Location provided to WHIP/WHEP clients. (Todd Anderson)
 - Fix for live seek fullURL switching. (Todd Anderson)
@@ -232,7 +241,7 @@
 - using Hls.js fallback for Safari and seek feature. (bustardcelly)
 - Allow playback on scrub when unpublish (bustardcelly)
 
-    > If the live stream becomes unpublished, but the video has been scrubbed to VOD time segment, then we want to allow for playback until the end of the live stream termination.
+  > If the live stream becomes unpublished, but the video has been scrubbed to VOD time segment, then we want to allow for playback until the end of the live stream termination.
 
 ## 10.6.0
 
@@ -285,16 +294,16 @@
 - Fix for flash stalled playback. (bustardcelly)
 - Added notifications for RTCPeerConnection open event. (bustardcelly)
 
-    > This will allow for clients to recognize when they can start using peer connection APIs such as mute/unmute.
+  > This will allow for clients to recognize when they can start using peer connection APIs such as mute/unmute.
 
 - fix for HLS socket authentication failure capture. (bustardcelly)
 - Fix for Safari Publisher issue. (bustardcelly)
 
-    > When `gUM` returns with `video` track listed before `audio`, there is an issue on delivering the media to the server. Most likely due to mismatched candidates.
+  > When `gUM` returns with `video` track listed before `audio`, there is an issue on delivering the media to the server. Most likely due to mismatched candidates.
 
 - Fixed improper spelling of `productInstallUrl` config option. (bustardcelly)
 
-    > Is now `productInstallURL` for both rtmp publisher and subscriber.
+  > Is now `productInstallURL` for both rtmp publisher and subscriber.
 
 - fix for unpublish not resolving if not currently publishing. (bustardcelly)
 - API update to allow for providing MediaStream for publish to bypass gUM in SDK internally. (bustardcelly)
@@ -314,9 +323,9 @@
 - fix for bandwidth inject in latest chrome browser. (bustardcelly)
 - adding notification and retry support for autoplay restriction of subscribers. (bustardcelly)
 
-    > * WebRTC, RTMP and HLS Subscriber support
-    > * muteOnAutoplayRestriction configuration property added
-    > * Additional subscriber events for client-side notifications of autoplay restrictions
+  > - WebRTC, RTMP and HLS Subscriber support
+  > - muteOnAutoplayRestriction configuration property added
+  > - Additional subscriber events for client-side notifications of autoplay restrictions
 
 - allowing for decoupled socket for sharedobject connections. (bustardcelly)
 
@@ -337,10 +346,10 @@
 - fix for DOM cleanup on unsubscribe. (bustardcelly)
 - Adding `rtcConfiguration` support (bustardcelly)
 
-    > * WebRTC Publisher
-    > * WebRTC Subscriber
-    > * defaults to `iceServers` if rtcConfiguration is undefined
-    > * Provides a default rtcConfiguration
+  > - WebRTC Publisher
+  > - WebRTC Subscriber
+  > - defaults to `iceServers` if rtcConfiguration is undefined
+  > - Provides a default rtcConfiguration
 
 ## 5.2.0
 
@@ -352,8 +361,8 @@
 - remove of duplicate event handler. (bustardcelly)
 - Adding check for empty candidate from server (bustardcelly)
 
-    > * Server at times (depending on client) will send a `candidate` object as empty during the negotiation process.
-    > * A new event type has been added to notify listeners of this empty candidate
+  > - Server at times (depending on client) will send a `candidate` object as empty during the negotiation process.
+  > - A new event type has been added to notify listeners of this empty candidate
 
 - Pub/Sub support for mobile device orientation recognition. (bustardcelly)
 
@@ -362,7 +371,7 @@
 - removing onbeforeunload hook to dismantle sockets. (bustardcelly)
 - Allowing for auth/validation on HLS Subscribers (bustardcelly)
 
-    > Enabling auth/validation using connectionParam options on HLS Subscribers. This will internally attempt to make a connection on a WebSocket using the connection parameters. If the socket is opened, it is considered successful validation. If rejected, the client is shutdown.
+  > Enabling auth/validation using connectionParam options on HLS Subscribers. This will internally attempt to make a connection on a WebSocket using the connection parameters. If the socket is opened, it is considered successful validation. If rejected, the client is shutdown.
 
 - fix for mutiple property updates on shared object integration. (bustardcelly)
 - offload translation logic for orientation to focus on dynamic layout updates. (bustardcelly)
@@ -371,8 +380,8 @@
 - removal of unnecessary bandwidth config prop on subscribers. (bustardcelly)
 - Exposing autoLayoutOrientation (bustardcelly)
 
-    > Defaulted to true.
-    > When set to false, it is up to the developer to assign transitions as related to orientation of broadcasts.
+  > Defaulted to true.
+  > When set to false, it is up to the developer to assign transitions as related to orientation of broadcasts.
 
 ## 4.5.0
 
@@ -433,7 +442,6 @@
 
 ## 3.4.3
 
-
 - fix for test of `srcObject` in video element. (bustardcelly)
 - fix for subscriber.stop event dispatch. (bustardcelly)
 
@@ -443,11 +451,9 @@
 - offloading subscriber start event to websocket notification. (bustardcelly)
 - Update for API change in browsers. (bustardcelly)
 
-    Though latest adapter.js should handle, adding for legacy and new browsers.
-
+  Though latest adapter.js should handle, adding for legacy and new browsers.
 
 ## 3.4.0
-
 
 ## 3.3.0
 
@@ -485,16 +491,18 @@ This document intends to describe how to use the `HLSSubscriber` client included
 
 > HLS content playback from Red5 is still supported in browser with non-native HLS support by using a 3rd-Party HLS library. We recommend using [HLS.js](https://github.com/video-dev/hls.js/).
 
-* [HLSSubscriber](#hlssubscriber)
-    * [Usage](#usage)
-    * [Init Configuration](#init-configuration)
-    * [Events](#events)
+- [HLSSubscriber](#hlssubscriber)
+  - [Usage](#usage)
+  - [Init Configuration](#init-configuration)
+  - [Events](#events)
 
 # HLSSubscriber
 
 The `HLSSubscriber` available from the SDK provides an easy way to setup HLS playback of a stream from Red5 in a browser that supports native HLS playback (i.e., Mobile and Desktop Safari).
 
 ## Usage
+
+On a script-tag page, load either the full SDK (`red5-web-sdk.min.js`) or the WHIP/WHEP/HLS build (`red5-web-sdk-webrtc.min.js`). Both attach `window.red5websdk`. From npm, `import { HLSSubscriber } from 'red5-web-sdk'` or `'red5-web-sdk/webrtc'`.
 
 The follow example demonstrates the usage of `HLSSubscriber` from the SDK loaded in a browser as a script dependency. The example is easily transferrable to one in which the SDK is loaded as a module - either through NPM dependency - or as a script declaration - using `import`.
 
@@ -513,14 +521,14 @@ Because of Cross-Origin policies in browsers, you will not be able to load HLS f
 ```
 
 ```js
-const { HLSSubscriber } = red5prosdk
+const { HLSSubscriber } = red5websdk
 
 const startHLSSubscriber = async () => {
   try {
     const subscriber = new HLSSubscriber()
     await subscriber.init({
-       endpoint: 'https://nfs.myred5-deployment.cloud.red5.net/live/mystream.m3u8',
-       streamName: 'mystream'
+      endpoint: 'https://nfs.myred5-deployment.cloud.red5.net/live/mystream.m3u8',
+      streamName: 'mystream',
     })
     await subscriber.subscribe()
   } catch (error) {
@@ -544,20 +552,20 @@ If your app is targeting a standalone self-deployed version of the Red5 Server, 
 ```
 
 ```js
-const { HLSSubscriber } = red5prosdk
+const { HLSSubscriber } = red5websdk
 
 const startHLSSubscriber = async () => {
   try {
     const subscriber = new HLSSubscriber()
-    subscriber.on('*', event => {
-        const { type, data } = event
-        console.log(type, data)
+    subscriber.on('*', (event) => {
+      const { type, data } = event
+      console.log(type, data)
     })
     await subscriber.init({
-       protocol: 'https',
-       port: 443,
-       host: 'my-red5-server.com',
-       streamName: 'mystream'
+      protocol: 'https',
+      port: 443,
+      host: 'my-red5-server.com',
+      streamName: 'mystream',
     })
     await subscriber.subscribe()
   } catch (error) {
@@ -574,38 +582,38 @@ startHLSSubscriber()
 
 The following are the available properties that can be defined in the init configuration provided to the `HLSSubscriber` client:
 
-| Property | Required | Default | Description |
-| :--- | :---: | :--- | :--- |
-| protocol | [x] | `https` | The protocol uri that the stream source resides on. |
-| port | [-] | `443` | The port uri that the stream source resides on. |
-| app | [x] | `live` | The webapp name that the stream source resides in. |
-| host | [x] | *None* | The IP or FQDN address that the stream resides on. |
-| streamName | [x] | *None* | The stream name to subscribe to. |
-| endpoint | [-] | `undefined` | The full URL of the `m3u8` file to load, if known. |
-| mediaElementId | [-] | `red5pro-subscriber` | The target `video` or `audio` element `id` attribute which will display the stream. |
-| muteOnAutoplayRestriction | [-] | `true` | Flag to attempt to mute the `video` element when `autoplay` is restricted in the browser. [See documentation on Autoplay Restrictions](../articles/autoplay/autoplay_policy.md) |
-| connectionParams | [-] |  `undefined` | An object of connection parameters to send to the server upon connection request. |
+| Property                  | Required | Default              | Description                                                                                                                                                                     |
+| :------------------------ | :------: | :------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| protocol                  |   [x]    | `https`              | The protocol uri that the stream source resides on.                                                                                                                             |
+| port                      |   [-]    | `443`                | The port uri that the stream source resides on.                                                                                                                                 |
+| app                       |   [x]    | `live`               | The webapp name that the stream source resides in.                                                                                                                              |
+| host                      |   [x]    | _None_               | The IP or FQDN address that the stream resides on.                                                                                                                              |
+| streamName                |   [x]    | _None_               | The stream name to subscribe to.                                                                                                                                                |
+| endpoint                  |   [-]    | `undefined`          | The full URL of the `m3u8` file to load, if known.                                                                                                                              |
+| mediaElementId            |   [-]    | `red5pro-subscriber` | The target `video` or `audio` element `id` attribute which will display the stream.                                                                                             |
+| muteOnAutoplayRestriction |   [-]    | `true`               | Flag to attempt to mute the `video` element when `autoplay` is restricted in the browser. [See documentation on Autoplay Restrictions](../articles/autoplay/autoplay_policy.md) |
+| connectionParams          |   [-]    | `undefined`          | An object of connection parameters to send to the server upon connection request.                                                                                               |
 
 ## Events
 
 The following describe the various events that can be listened for on the `HLSSubscriber` and enumerated on the `SubscriberEventTypes` object:
 
-| Access | Event Type | Meaning |
-| :--- | :--- | :--- |
-| `CONNECT_SUCCESS` | 'Connect.Success' | When the subscriber has established a required remote connection, such as to a WebSocket server. |
-| `CONNECT_FAILURE` | 'Connect.Failure' | When the subscriber has failed to establish a required remote connection for consuming a stream. |
-| `SUBSCRIBE_START` | 'Subscribe.Start' | When the subscriber has started a subscribing to a stream. |
-| `SUBSCRIBE_STOP` | 'Subscribe.Stop' | When the subscriber has successfully closed an active subscription to a stream. |
-| `SUBSCRIBE_METADATA` | 'Subscribe.Metadata' | When metadata is received on the client from the server. |
-| `VIDEO_DIMENSIONS_CHANGE` | 'Subscribe.VideoDimensions.Change' | Invoked when `video` element has loaded metadata and the incoming stream dimensions are available. |
-| `ORIENTATION_CHANGE` | 'Subscribe.Orientation.Change' | Invoked when an orientation change is detected in metadata. Mobile (iOS and Android) broadcasts are sent with an orientation. |
-| `STREAMING_MODE_CHANGE` | 'Subscribe.StreamingMode.Change' | Invoked when the broadcast has "muted" either or both their video and audio tracks. |
-| `VOLUME_CHANGE` | 'Subscribe.Volume.Change' | Invoked when a change to volume is detected during playback. _From 0 to 1._ |
-| `PLAYBACK_TIME_UPDATE` | 'Subscribe.Time.Update' | Invoked when a change in playhead time is detected during playback. _In seconds._ |
-| `PLAYBACK_STATE_CHANGE` | 'Subscribe.Playback.Change' | Invoked when a change in playback state has occured, such as when going from a `Playback.PAUSED` state to `Playback.PLAYING` state. |
-| `FULL_SCREEN_STATE_CHANGE` | 'Subscribe.FullScreen.Change' | Invoked when a change in fullscreen state occurs during playback. |
-| `AUTO_PLAYBACK_FAILURE` | 'Subscribe.Autoplay.Failure' | Invoked when an attempt to `autoplay` on a media element throws a browser exception; typically due to browser security restrictions and their autoplay policies. (WebRTC and HLS, only) [See section on Autoplay Restrictions](../articles/autoplay/autoplay_policy.md) |
-| `AUTO_PLAYBACK_MUTED` | 'Subscribe.Autoplay.Muted' | Invoked when an attempt to `autoplay` on a media element throws a browser exception and is muted based on the `muteOnAutoplayRestriction` config property; typically due to browser security restrictions and their autoplay policies. (WebRTC and HLS, only) [See section on Autoplay Restrictions](../articles/autoplay/autoplay_policy.md) |
+| Access                     | Event Type                         | Meaning                                                                                                                                                                                                                                                                                                                                       |
+| :------------------------- | :--------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `CONNECT_SUCCESS`          | 'Connect.Success'                  | When the subscriber has established a required remote connection, such as to a WebSocket server.                                                                                                                                                                                                                                              |
+| `CONNECT_FAILURE`          | 'Connect.Failure'                  | When the subscriber has failed to establish a required remote connection for consuming a stream.                                                                                                                                                                                                                                              |
+| `SUBSCRIBE_START`          | 'Subscribe.Start'                  | When the subscriber has started a subscribing to a stream.                                                                                                                                                                                                                                                                                    |
+| `SUBSCRIBE_STOP`           | 'Subscribe.Stop'                   | When the subscriber has successfully closed an active subscription to a stream.                                                                                                                                                                                                                                                               |
+| `SUBSCRIBE_METADATA`       | 'Subscribe.Metadata'               | When metadata is received on the client from the server.                                                                                                                                                                                                                                                                                      |
+| `VIDEO_DIMENSIONS_CHANGE`  | 'Subscribe.VideoDimensions.Change' | Invoked when `video` element has loaded metadata and the incoming stream dimensions are available.                                                                                                                                                                                                                                            |
+| `ORIENTATION_CHANGE`       | 'Subscribe.Orientation.Change'     | Invoked when an orientation change is detected in metadata. Mobile (iOS and Android) broadcasts are sent with an orientation.                                                                                                                                                                                                                 |
+| `STREAMING_MODE_CHANGE`    | 'Subscribe.StreamingMode.Change'   | Invoked when the broadcast has "muted" either or both their video and audio tracks.                                                                                                                                                                                                                                                           |
+| `VOLUME_CHANGE`            | 'Subscribe.Volume.Change'          | Invoked when a change to volume is detected during playback. _From 0 to 1._                                                                                                                                                                                                                                                                   |
+| `PLAYBACK_TIME_UPDATE`     | 'Subscribe.Time.Update'            | Invoked when a change in playhead time is detected during playback. _In seconds._                                                                                                                                                                                                                                                             |
+| `PLAYBACK_STATE_CHANGE`    | 'Subscribe.Playback.Change'        | Invoked when a change in playback state has occured, such as when going from a `Playback.PAUSED` state to `Playback.PLAYING` state.                                                                                                                                                                                                           |
+| `FULL_SCREEN_STATE_CHANGE` | 'Subscribe.FullScreen.Change'      | Invoked when a change in fullscreen state occurs during playback.                                                                                                                                                                                                                                                                             |
+| `AUTO_PLAYBACK_FAILURE`    | 'Subscribe.Autoplay.Failure'       | Invoked when an attempt to `autoplay` on a media element throws a browser exception; typically due to browser security restrictions and their autoplay policies. (WebRTC and HLS, only) [See section on Autoplay Restrictions](../articles/autoplay/autoplay_policy.md)                                                                       |
+| `AUTO_PLAYBACK_MUTED`      | 'Subscribe.Autoplay.Muted'         | Invoked when an attempt to `autoplay` on a media element throws a browser exception and is muted based on the `muteOnAutoplayRestriction` config property; typically due to browser security restrictions and their autoplay policies. (WebRTC and HLS, only) [See section on Autoplay Restrictions](../articles/autoplay/autoplay_policy.md) |
 
 ### Listening for Events
 
@@ -669,14 +677,16 @@ In most cases, this is common scenario. However, if you would like to maintain a
 
 For MoQ / WebTransport messaging (same send method names, different wire protocol), see [MOQMessageChannel](moq-message-channel.md).
 
-* [Usage](#usage)
-* [Init Configuration](#init-configuration)
-* [Send API](#send-api)
-* [Events](#events)
-* [Statistics](#statistics)
-* [Stream Manager 2.0](#stream-manager-20)
+- [Usage](#usage)
+- [Init Configuration](#init-configuration)
+- [Send API](#send-api)
+- [Events](#events)
+- [Statistics](#statistics)
+- [Stream Manager 2.0](#stream-manager-20)
 
 # Usage
+
+On a script-tag page, load either the full SDK (`red5-web-sdk.min.js`) or the WHIP/WHEP/HLS build (`red5-web-sdk-webrtc.min.js`). Both attach `window.red5websdk`. From npm, `import { MessageChannel } from 'red5-web-sdk'` or `'red5-web-sdk/webrtc'`.
 
 Because `MessageChannel` is a subclass of `WHIPClient` (the media streaming broadcaster), much of the init setup and event structure is similar.
 
@@ -706,13 +716,13 @@ Dependening on how you include the SDK into your project, you can access the `Me
 _NPM install_:
 
 ```js
-import { MessageChannel } from 'red5pro-webrtc-sdk'
+import { MessageChannel } from 'red5-web-sdk'
 ```
 
 _Browser, CDN_:
 
 ```js
-const { MessageChannel } = red5prosdk
+const { MessageChannel } = red5websdk
 ```
 
 > For more in-depth information related to usage, please refer to the [WHIPClient](whip-client.md#usage) documentation.
@@ -723,17 +733,17 @@ Because `MessageChannel` inherits from `WHIPClient`, its initialization configur
 
 The following properties are respected by the `MessageChannel` client:
 
-| Property | Required | Default | Description |
-| :--- | :---: | :---: | :--- |
-| `host` | [x] | *None* | The IP or address that the WebSocket server resides on. |
-| `streamName` | [x] | *None* | The name of the message channel to use in association. |
-| `protocol` | [x] | `https` | The protocol of the host for the signaling communication. |
-| `port` | [x] | `443` | The port on the host that the Red5 server listens on; `5080` or `443` (insecure or secure, respectively). |
-| `app` | [x] | `live` | The webapp context name that the stream is on. |
-| `endpoint` | [-] | `undefined` | The full URL of the endpoint to stream to. **This is primarily used in Stream Manager 2.0 integration for clients.**
-| `rtcConfiguration` | [-] | _Basic_ | The `RTCConfiguration` to use in setting up `RTCPeerConnection`. [RTCConfiguration](https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/RTCPeerConnection#RTCConfiguration_dictionary)|
-| `dataChannelConfiguration` | [-] | `{name: "red5pro"}` | An object used in configuring a n `RTCDataChannel`. _Only used when `includeDataChannel` is defined as `true`_ |
-| `connectionParams` | [-] | `undefined` | An object of connection parameters to send to the server upon connection request. |
+| Property                   | Required |       Default       | Description                                                                                                                                                                                           |
+| :------------------------- | :------: | :-----------------: | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `host`                     |   [x]    |       _None_        | The IP or address that the WebSocket server resides on.                                                                                                                                               |
+| `streamName`               |   [x]    |       _None_        | The name of the message channel to use in association.                                                                                                                                                |
+| `protocol`                 |   [x]    |       `https`       | The protocol of the host for the signaling communication.                                                                                                                                             |
+| `port`                     |   [x]    |        `443`        | The port on the host that the Red5 server listens on; `5080` or `443` (insecure or secure, respectively).                                                                                             |
+| `app`                      |   [x]    |       `live`        | The webapp context name that the stream is on.                                                                                                                                                        |
+| `endpoint`                 |   [-]    |     `undefined`     | The full URL of the endpoint to stream to. **This is primarily used in Stream Manager 2.0 integration for clients.**                                                                                  |
+| `rtcConfiguration`         |   [-]    |       _Basic_       | The `RTCConfiguration` to use in setting up `RTCPeerConnection`. [RTCConfiguration](https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/RTCPeerConnection#RTCConfiguration_dictionary) |
+| `dataChannelConfiguration` |   [-]    | `{name: "red5pro"}` | An object used in configuring a n `RTCDataChannel`. _Only used when `includeDataChannel` is defined as `true`_                                                                                        |
+| `connectionParams`         |   [-]    |     `undefined`     | An object of connection parameters to send to the server upon connection request.                                                                                                                     |
 
 ## Init Example
 
@@ -784,14 +794,14 @@ Because `MessageChannel` inherits from `WHIPClient`, events unrelated to streami
 
 There are a few that are specific to `MessageChannel` that are available and enumerated on the `MessageChannelEventTypes` object:
 
-| Access | Event Type | Meaning |
-| :--- | :--- | :--- |
-| `OPEN` | 'MessageChannel.Open' | When the message channel has successfully opened and available to send and receive messages. |
-| `SEND` | 'MessageChannel.Send' | When the message channel has sent a message along the message channel. _Note: This is not confirmation that the server received the actual message._ |
-| `RECEIVE` | 'MessageChannel.Receive' | When the message channel has received a message. |
-| `CLOSE` | 'MessageChannel.Close' | When the message channel has been closed. |
-| `FAIL` | 'MessageChannel.Fail' | When the message channel has failed to open properly. |
-| `ERROR` | 'MessageChannel.Error' | When an error has occurred in opening or during a message channel session. |
+| Access    | Event Type               | Meaning                                                                                                                                              |
+| :-------- | :----------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `OPEN`    | 'MessageChannel.Open'    | When the message channel has successfully opened and available to send and receive messages.                                                         |
+| `SEND`    | 'MessageChannel.Send'    | When the message channel has sent a message along the message channel. _Note: This is not confirmation that the server received the actual message._ |
+| `RECEIVE` | 'MessageChannel.Receive' | When the message channel has received a message.                                                                                                     |
+| `CLOSE`   | 'MessageChannel.Close'   | When the message channel has been closed.                                                                                                            |
+| `FAIL`    | 'MessageChannel.Fail'    | When the message channel has failed to open properly.                                                                                                |
+| `ERROR`   | 'MessageChannel.Error'   | When an error has occurred in opening or during a message channel session.                                                                           |
 
 > Please visit the [WHIPClient](whip-client.md#events) documentation for more in-depth listing of events.
 
@@ -809,7 +819,7 @@ The configuration used for statistics monitoring has the following structure:
   // If provided, it will POST stats to this endpoint.
   // If undefined or `data-channel`, it will post stats to message transport.
   // If null or `event-transport`, it will only emit status events.
-  endpoint: red5prosdk.StatsEndpointType.DATA_CHANNEL,
+  endpoint: red5websdk.StatsEndpointType.DATA_CHANNEL,
   additionalHeaders: undefined,
   interval: 5000, // Interval to poll stats, in milliseconds.
   include: [], // Empty array allows SDK to be judicious about what stats to include.
@@ -818,9 +828,9 @@ The configuration used for statistics monitoring has the following structure:
 
 ### endpoint
 
-* If the `endpoint` is defined with a URL, the SDK will attempt to make `POST` requests with a JSON body representing each individual report.
-* If the `endpoint` is set to `data-channel` or `undefined`, the SDK will post metadata with type `stats-report` on the underlying message transport (DataChannel) if available.
-* If the `endpoint` is set to `event-transport` or `null`, the SDK will only emit events with the metadata on the `WebRTC.StatsReport` event.
+- If the `endpoint` is defined with a URL, the SDK will attempt to make `POST` requests with a JSON body representing each individual report.
+- If the `endpoint` is set to `data-channel` or `undefined`, the SDK will post metadata with type `stats-report` on the underlying message transport (DataChannel) if available.
+- If the `endpoint` is set to `event-transport` or `null`, the SDK will only emit events with the metadata on the `WebRTC.StatsReport` event.
 
 ### additionalHeaders
 
@@ -846,8 +856,8 @@ include: ['data-channel', 'transport']
 
 To start statistics monitoring, you have a couple of options:
 
-* You can provide a `stats` attribute with the [stats configuration object](#stats-configuration) to the [init configuration](#webrtc-configuration-parameters).
-* You can call `monitorStats` on the publisher client with the optional [stats configuration object](#stats-configuration) parameter.
+- You can provide a `stats` attribute with the [stats configuration object](#stats-configuration) to the [init configuration](#webrtc-configuration-parameters).
+- You can call `monitorStats` on the publisher client with the optional [stats configuration object](#stats-configuration) parameter.
 
 > Additionally, you can stop monitoring by calling `unmonitorStats` on the publisher client.
 
@@ -897,11 +907,12 @@ The following is an example of a statistics metadata that is emitted in a `WebRT
   }
 }
 ```
+
 # Stream Manager 2.0
 
 > This section provides information that relate to the release of Stream Manager 2.0 and its integration with WHIP/WHEP clients, and MessageChannel.
 
-The Stream Manager 2.0 simplifies the proxying of web clients to Origin and Edge nodes. As such, an initialization configuration property called `endpoint` was added to the WebRTC SDK. This `endpoint` value should be the full URL path to the proxy endpoint on the Stream Manager as is used as such:
+The Stream Manager 2.0 simplifies the proxying of web clients to Origin and Edge nodes. As such, an initialization configuration property called `endpoint` was added to the Red5 Web SDK. This `endpoint` value should be the full URL path to the proxy endpoint on the Stream Manager as is used as such:
 
 ## WHIP Proxy
 
@@ -914,11 +925,11 @@ const config = {
   endpoint,
   streamName,
   connectionParams: {
-    nodeGroup
+    nodeGroup,
   },
   dataChannelConfiguration: {
-    name: 'my-channel'
-  }
+    name: 'my-channel',
+  },
   // additional configurations
 }
 const messageChannel = await new MessageChannel().init(config)
@@ -957,19 +968,21 @@ Use it when you want to inspect track metadata without starting full media playb
 
 # Usage
 
+On a script-tag page, load either the full SDK (`red5-web-sdk.min.js`) or the MOQ build (`red5-web-sdk-moq.min.js`). Both attach `window.red5websdk`. From npm, `import { MOQCatalog } from 'red5-web-sdk'` or `'red5-web-sdk/moq'`.
+
 Initialize first, then call either `fetch()` or `subscribe()`.
 
 ```js
-const { MOQCatalog, MOQCatalogEventTypes } = red5prosdk
+const { MOQCatalog, MOQCatalogEventTypes } = red5websdk
 
 const catalog = new MOQCatalog()
-catalog.on('*', event => {
+catalog.on('*', (event) => {
   console.log(event.type, event.data)
 })
 
 await catalog.init({
   endpoint: 'https://relay.example.com:4433',
-  namespace: 'live/mystream'
+  namespace: 'live/mystream',
 })
 ```
 
@@ -983,19 +996,19 @@ await catalog.fetch('live/mystream')
 
 `fetch(namespace?, fetchOptions?)` issues a MoQ FETCH for the catalog track. `fetchOptions` is optional:
 
-| Property | Default | Description |
-| :--- | :---: | :--- |
-| `startGroup` | `0` | First group to fetch. |
-| `startObject` | `0` | First object in `startGroup`. |
-| `endGroup` | `0` | Last group to fetch. |
-| `endObject` | `0` | Last object in `endGroup`. |
+| Property      | Default | Description                   |
+| :------------ | :-----: | :---------------------------- |
+| `startGroup`  |   `0`   | First group to fetch.         |
+| `startObject` |   `0`   | First object in `startGroup`. |
+| `endGroup`    |   `0`   | Last group to fetch.          |
+| `endObject`   |   `0`   | Last object in `endGroup`.    |
 
 ```js
 await catalog.fetch('live/mystream', {
   startGroup: 0,
   startObject: 0,
   endGroup: 0,
-  endObject: 0
+  endObject: 0,
 })
 ```
 
@@ -1029,19 +1042,19 @@ await catalog.fetch()
 
 The `init()` call accepts `MOQCatalogConfigType`.
 
-| Property | Required | Default | Description |
-| :--- | :---: | :---: | :--- |
-| `endpoint` | [-] | `undefined` | Full MOQ relay URL. If omitted, SDK uses `protocol://host:port`. |
-| `host` | [x]* | `undefined` | Relay host when `endpoint` is omitted. |
-| `streamName` | [x]* | `undefined` | Stream name used for namespace fallback. |
-| `protocol` | [x] | `https` | Relay protocol (`ws`, `wss`, `http`, `https`). |
-| `port` | [x] | `4433` | Relay port. |
-| `app` | [x] | `live` | App scope used for namespace fallback. |
-| `namespace` | [-] | `app/streamName` | Explicit namespace for fetch/subscribe calls. |
-| `draftVersion` | [-] | `16` | MoQ transport draft version. |
-| `certKey` | [-] | `undefined` | Certificate hash input for WebTransport setup. |
-| `authorization` | [-] | `undefined` | Optional CAT credentials attached to the MoQT connection. See [Authorization](#authorization). |
-| `moqLogLevel` | [-] | `none` | Log level for MOQ internals. |
+| Property        | Required |     Default      | Description                                                                                    |
+| :-------------- | :------: | :--------------: | :--------------------------------------------------------------------------------------------- |
+| `endpoint`      |   [-]    |   `undefined`    | Full MOQ relay URL. If omitted, SDK uses `protocol://host:port`.                               |
+| `host`          |  [x]\*   |   `undefined`    | Relay host when `endpoint` is omitted.                                                         |
+| `streamName`    |  [x]\*   |   `undefined`    | Stream name used for namespace fallback.                                                       |
+| `protocol`      |   [x]    |     `https`      | Relay protocol (`ws`, `wss`, `http`, `https`).                                                 |
+| `port`          |   [x]    |      `4433`      | Relay port.                                                                                    |
+| `app`           |   [x]    |      `live`      | App scope used for namespace fallback.                                                         |
+| `namespace`     |   [-]    | `app/streamName` | Explicit namespace for fetch/subscribe calls.                                                  |
+| `draftVersion`  |   [-]    |       `16`       | MoQ transport draft version.                                                                   |
+| `certKey`       |   [-]    |   `undefined`    | Certificate hash input for WebTransport setup.                                                 |
+| `authorization` |   [-]    |   `undefined`    | Optional CAT credentials attached to the MoQT connection. See [Authorization](#authorization). |
+| `moqLogLevel`   |   [-]    |      `none`      | Log level for MOQ internals.                                                                   |
 
 `*` Required when `endpoint` is not provided.
 
@@ -1049,11 +1062,11 @@ The `init()` call accepts `MOQCatalogConfigType`.
 
 `authorization` supplies CAT tokens when a fetch or subscribe opens the MoQT session. With `enabled: true`, the SDK decodes `token` and passes it to `MoqtConnection.connect()` along with the catalog relay URL. The credential is used only for that connection attempt. It is not stored.
 
-| Field | Description |
-| :--- | :--- |
-| `enabled` | When `false`, or when `authorization` is omitted, no auth attributes are sent. |
-| `profile` | `cat4moq` sends token type `1`. `moqx-compat` sends token type `16`. |
-| `token` | Base64-encoded CAT token. An optional `base64:` prefix is stripped. The decoded token must be at most 32768 bytes. |
+| Field     | Description                                                                                                        |
+| :-------- | :----------------------------------------------------------------------------------------------------------------- |
+| `enabled` | When `false`, or when `authorization` is omitted, no auth attributes are sent.                                     |
+| `profile` | `cat4moq` sends token type `1`. `moqx-compat` sends token type `16`.                                               |
+| `token`   | Base64-encoded CAT token. An optional `base64:` prefix is stripped. The decoded token must be at most 32768 bytes. |
 
 ```js
 authorization: {
@@ -1070,7 +1083,7 @@ Fetch and subscribe fail if `profile` is not `cat4moq` or `moqx-compat`, or if `
 `MOQCatalog` is an event emitter:
 
 ```js
-const onCatalogEvent = event => {
+const onCatalogEvent = (event) => {
   const { type, data } = event
   console.log(type, data)
 }
@@ -1082,30 +1095,30 @@ catalog.off('*', onCatalogEvent)
 
 The following are emitted from `MOQCatalogEventTypes`:
 
-| Access | Event Type | Meaning |
-| :--- | :--- | :--- |
-| `FETCH` | `MOQ.Catalog.Fetch` | One-shot fetch started. |
-| `UNFETCH` | `MOQ.Catalog.Unfetch` | One-shot fetch session closed. |
-| `SUBSCRIBE` | `MOQ.Catalog.Subscribe` | Live catalog subscription started. |
-| `UNSUBSCRIBE` | `MOQ.Catalog.Unsubscribe` | Live catalog subscription stopped. |
-| `CATALOG_RECEIVED` | `MOQ.Catalog.Received` | Parsed catalog delivered. See payload below. |
-| `CATALOG_PARSE_ERROR` | `MOQ.Catalog.Parse.Error` | Catalog payload parse failed. `data.error` is the thrown `Error`. |
-| `MESSAGE` | `MOQ.Catalog.Message` | Other relay control messages. `data.message` is the raw control message. |
-| `FAIL` | `MOQ.Catalog.Fail` | Session or request failure. `data.error` is the error object. |
-| `CLOSE` | `MOQ.Catalog.Close` | Relay/session closed. |
+| Access                | Event Type                | Meaning                                                                  |
+| :-------------------- | :------------------------ | :----------------------------------------------------------------------- |
+| `FETCH`               | `MOQ.Catalog.Fetch`       | One-shot fetch started.                                                  |
+| `UNFETCH`             | `MOQ.Catalog.Unfetch`     | One-shot fetch session closed.                                           |
+| `SUBSCRIBE`           | `MOQ.Catalog.Subscribe`   | Live catalog subscription started.                                       |
+| `UNSUBSCRIBE`         | `MOQ.Catalog.Unsubscribe` | Live catalog subscription stopped.                                       |
+| `CATALOG_RECEIVED`    | `MOQ.Catalog.Received`    | Parsed catalog delivered. See payload below.                             |
+| `CATALOG_PARSE_ERROR` | `MOQ.Catalog.Parse.Error` | Catalog payload parse failed. `data.error` is the thrown `Error`.        |
+| `MESSAGE`             | `MOQ.Catalog.Message`     | Other relay control messages. `data.message` is the raw control message. |
+| `FAIL`                | `MOQ.Catalog.Fail`        | Session or request failure. `data.error` is the error object.            |
+| `CLOSE`               | `MOQ.Catalog.Close`       | Relay/session closed.                                                    |
 
 ### `CATALOG_RECEIVED` payload
 
 `event.data.catalog` is an accumulator result (deltas are applied internally):
 
-| Field | Meaning |
-| :--- | :--- |
-| `mode` | How this object was parsed: `cf01-independent`, `cf01-delta`, `msf-independent`, `msf-delta`, or `empty`. |
-| `rawText` | UTF-8 catalog bytes as text. |
-| `state` | Current catalog after this object: `{ version, tracks, generatedAt? }`. Track metadata lives on `state.tracks`. |
+| Field     | Meaning                                                                                                         |
+| :-------- | :-------------------------------------------------------------------------------------------------------------- |
+| `mode`    | How this object was parsed: `cf01-independent`, `cf01-delta`, `msf-independent`, `msf-delta`, or `empty`.       |
+| `rawText` | UTF-8 catalog bytes as text.                                                                                    |
+| `state`   | Current catalog after this object: `{ version, tracks, generatedAt? }`. Track metadata lives on `state.tracks`. |
 
 ```js
-catalog.on(MOQCatalogEventTypes.CATALOG_RECEIVED, event => {
+catalog.on(MOQCatalogEventTypes.CATALOG_RECEIVED, (event) => {
   const { mode, state } = event.data.catalog
   console.log(mode, state.tracks)
 })
@@ -1139,22 +1152,24 @@ Use it when you want:
 
 `MOQPublisher` and `MOQSubscriber` can also create and tear down a channel for you via `messageChannel` in their init config. This page covers the standalone client and the send/receive contract.
 
-* [Usage](#usage)
-* [Init configuration](#init-configuration)
-* [Send API](#send-api)
-* [Events](#events)
-* [Managed channels](#managed-channels)
-* [Interop with WebRTC MessageChannel](#interop-with-webrtc-messagechannel)
+- [Usage](#usage)
+- [Init configuration](#init-configuration)
+- [Send API](#send-api)
+- [Events](#events)
+- [Managed channels](#managed-channels)
+- [Interop with WebRTC MessageChannel](#interop-with-webrtc-messagechannel)
 
 # Usage
+
+On a script-tag page, load either the full SDK (`red5-web-sdk.min.js`) or the MOQ build (`red5-web-sdk-moq.min.js`). Both attach `window.red5websdk`. From npm, `import { MOQMessageChannel } from 'red5-web-sdk'` or `'red5-web-sdk/moq'`.
 
 Initialize, then `open()`. Listen for events before `open()` so you do not miss `MessageChannel.Open`.
 
 ```js
-const { MOQMessageChannel, MessageChannelEventTypes } = red5prosdk
+const { MOQMessageChannel, MessageChannelEventTypes } = red5websdk
 
 const channel = new MOQMessageChannel()
-channel.on('*', event => {
+channel.on('*', (event) => {
   console.log(event.type, event.data)
 })
 
@@ -1166,8 +1181,8 @@ await channel.init({
     name: 'red5pro',
     clientId: 'publisher-1', // auto-generated by default, if not provided.
     keepEcho: false,
-    unreliable: false
-  }
+    unreliable: false,
+  },
 })
 await channel.open()
 
@@ -1179,22 +1194,19 @@ await channel.close()
 Passing a URL to the constructor runs `init()` and `open()` automatically:
 
 ```js
-const channel = new MOQMessageChannel(
-  'https://relay.example.com:4433/live/mystream',
-  {
-    dataChannelConfiguration: { name: 'red5pro' }
-  }
-)
+const channel = new MOQMessageChannel('https://relay.example.com:4433/live/mystream', {
+  dataChannelConfiguration: { name: 'red5pro' },
+})
 ```
 
 Failures on that auto-start path are reported as `MessageChannel.Fail` / `MessageChannel.Error` (the constructor promise is not awaited).
 
 ## Shared vs sidecar
 
-| Mode | Connection | Typical use |
-| :--- | :--- | :--- |
+| Mode                               | Connection                          | Typical use                                                |
+| :--------------------------------- | :---------------------------------- | :--------------------------------------------------------- |
 | `sidecar` (default for standalone) | New WebTransport + `MoqtConnection` | Messaging without media, or a second session next to media |
-| `shared` | Existing connected `MoqtConnection` | Same MoQT session as a publisher or subscriber |
+| `shared`                           | Existing connected `MoqtConnection` | Same MoQT session as a publisher or subscriber             |
 
 Shared mode requires `moqtConnection` at `init()`, or call `useConnection(connection)` before `open()`:
 
@@ -1206,7 +1218,7 @@ await channel.init({
   moqtConnection: publisher.getConnection(),
   app: 'live',
   streamName: 'mystream',
-  closeProvidedConnection: false
+  closeProvidedConnection: false,
 })
 await channel.open()
 ```
@@ -1229,34 +1241,34 @@ On `open()` the client:
 
 ## Common fields
 
-| Property | Required | Default | Description |
-| :--- | :---: | :---: | :--- |
-| `mode` | [-] | `sidecar` | `'sidecar'` or `'shared'`. |
-| `app` | [x] | `live` | App path; split on `/` for the MoQT namespace prefix. |
-| `streamName` | [-] | `undefined` | Fallback `clientId` when `dataChannelConfiguration.clientId` is omitted. |
-| `draftVersion` | [-] | auto / connection | MoQ transport draft. Datagram send requires **18**. |
-| `connectionParams` | [-] | `{ maxRequestId }` | Extra `MoqtConnection.connect()` options in sidecar mode. CAT credentials use `authorization`, not this object. |
-| `dataChannelConfiguration` | [-] | see below | Channel label and send/receive behavior. |
+| Property                   | Required |      Default       | Description                                                                                                     |
+| :------------------------- | :------: | :----------------: | :-------------------------------------------------------------------------------------------------------------- |
+| `mode`                     |   [-]    |     `sidecar`      | `'sidecar'` or `'shared'`.                                                                                      |
+| `app`                      |   [x]    |       `live`       | App path; split on `/` for the MoQT namespace prefix.                                                           |
+| `streamName`               |   [-]    |    `undefined`     | Fallback `clientId` when `dataChannelConfiguration.clientId` is omitted.                                        |
+| `draftVersion`             |   [-]    | auto / connection  | MoQ transport draft. Datagram send requires **18**.                                                             |
+| `connectionParams`         |   [-]    | `{ maxRequestId }` | Extra `MoqtConnection.connect()` options in sidecar mode. CAT credentials use `authorization`, not this object. |
+| `dataChannelConfiguration` |   [-]    |     see below      | Channel label and send/receive behavior.                                                                        |
 
 ### `dataChannelConfiguration`
 
-| Property | Default | Description |
-| :--- | :---: | :--- |
-| `name` | `red5pro` | Track / channel label. Peers must use the same name. |
-| `clientId` | `streamName` or generated | Publish namespace suffix and echo filter identity. |
-| `keepEcho` | `false` | When `false`, inbound JSON objects with `senderName === clientId` are dropped. |
-| `unreliable` | `false` | When `true`, send via MoQT datagrams (draft **18** only). Otherwise each send is a subgroup object. |
+| Property     |          Default          | Description                                                                                         |
+| :----------- | :-----------------------: | :-------------------------------------------------------------------------------------------------- |
+| `name`       |         `red5pro`         | Track / channel label. Peers must use the same name.                                                |
+| `clientId`   | `streamName` or generated | Publish namespace suffix and echo filter identity.                                                  |
+| `keepEcho`   |          `false`          | When `false`, inbound JSON objects with `senderName === clientId` are dropped.                      |
+| `unreliable` |          `false`          | When `true`, send via MoQT datagrams (draft **18** only). Otherwise each send is a subgroup object. |
 
 ## Sidecar (`mode: 'sidecar'`)
 
-| Property | Required | Default | Description |
-| :--- | :---: | :---: | :--- |
-| `endpoint` | [-] | `protocol://host:port` | Full relay URL. |
-| `host` | [x]* | `undefined` | Relay host when `endpoint` is omitted. |
-| `protocol` | [x] | `https` | `ws` / `wss` map to `http` / `https` for WebTransport. |
-| `port` | [x] | `4433` | Relay port. |
-| `certKey` | [-] | `undefined` | Certificate hash for WebTransport. |
-| `authorization` | [-] | `undefined` | Optional CAT credentials for the sidecar `MoqtConnection.connect()`. See [Authorization](#authorization). |
+| Property        | Required |        Default         | Description                                                                                               |
+| :-------------- | :------: | :--------------------: | :-------------------------------------------------------------------------------------------------------- |
+| `endpoint`      |   [-]    | `protocol://host:port` | Full relay URL.                                                                                           |
+| `host`          |  [x]\*   |      `undefined`       | Relay host when `endpoint` is omitted.                                                                    |
+| `protocol`      |   [x]    |        `https`         | `ws` / `wss` map to `http` / `https` for WebTransport.                                                    |
+| `port`          |   [x]    |         `4433`         | Relay port.                                                                                               |
+| `certKey`       |   [-]    |      `undefined`       | Certificate hash for WebTransport.                                                                        |
+| `authorization` |   [-]    |      `undefined`       | Optional CAT credentials for the sidecar `MoqtConnection.connect()`. See [Authorization](#authorization). |
 
 `*` Required when `endpoint` is not provided.
 
@@ -1264,11 +1276,11 @@ On `open()` the client:
 
 Sidecar mode sends `authorization` on `connect()` with `relayUrl` set to the channel endpoint. Shared mode does not connect again; it uses the session that was already authenticated.
 
-| Field | Description |
-| :--- | :--- |
-| `enabled` | When `false`, or when `authorization` is omitted, no auth attributes are sent. |
-| `profile` | `cat4moq` sends token type `1`. `moqx-compat` sends token type `16`. |
-| `token` | Base64-encoded CAT token. An optional `base64:` prefix is stripped. The decoded token must be at most 32768 bytes. |
+| Field     | Description                                                                                                        |
+| :-------- | :----------------------------------------------------------------------------------------------------------------- |
+| `enabled` | When `false`, or when `authorization` is omitted, no auth attributes are sent.                                     |
+| `profile` | `cat4moq` sends token type `1`. `moqx-compat` sends token type `16`.                                               |
+| `token`   | Base64-encoded CAT token. An optional `base64:` prefix is stripped. The decoded token must be at most 32768 bytes. |
 
 ```js
 authorization: {
@@ -1282,10 +1294,10 @@ authorization: {
 
 ## Shared (`mode: 'shared'`)
 
-| Property | Required | Default | Description |
-| :--- | :---: | :---: | :--- |
-| `moqtConnection` | [x] | — | Already-connected `MoqtConnection`. |
-| `closeProvidedConnection` | [-] | `false` | If `true`, `close()` also closes that connection. |
+| Property                  | Required | Default | Description                                       |
+| :------------------------ | :------: | :-----: | :------------------------------------------------ |
+| `moqtConnection`          |   [x]    |    —    | Already-connected `MoqtConnection`.               |
+| `closeProvidedConnection` |   [-]    | `false` | If `true`, `close()` also closes that connection. |
 
 # Send API
 
@@ -1304,7 +1316,7 @@ Unlike WebRTC `MessageChannel`, this client does **not** automatically add `send
 ```js
 await channel.sendMessage({
   senderName: channel.getOptions().dataChannelConfiguration.clientId,
-  text: 'hello'
+  text: 'hello',
 })
 ```
 
@@ -1323,14 +1335,14 @@ Sends binary data: `Uint8Array`, `ArrayBuffer`, or an `ArrayBufferView`. Incomin
 
 `MOQMessageChannel` uses the same `MessageChannelEventTypes` as WebRTC `MessageChannel`:
 
-| Access | Event Type | Meaning |
-| :--- | :--- | :--- |
-| `OPEN` | `MessageChannel.Open` | Publish OK completed; send is available. Receive is available if hub subscribe succeeded. |
-| `SEND` | `MessageChannel.Send` | Local send accepted by the transport. Not an ack from remote peers. `data` is the JSON object or binary payload. |
-| `RECEIVE` | `MessageChannel.Receive` | Inbound payload. See shape below. |
-| `CLOSE` | `MessageChannel.Close` | Channel closed (local `close()` or session close). |
-| `FAIL` | `MessageChannel.Fail` | `open()` failed. `data.error` is the message. |
-| `ERROR` | `MessageChannel.Error` | Session error, publish reject, send failure, or receive path disabled (`track not found`). |
+| Access    | Event Type               | Meaning                                                                                                          |
+| :-------- | :----------------------- | :--------------------------------------------------------------------------------------------------------------- |
+| `OPEN`    | `MessageChannel.Open`    | Publish OK completed; send is available. Receive is available if hub subscribe succeeded.                        |
+| `SEND`    | `MessageChannel.Send`    | Local send accepted by the transport. Not an ack from remote peers. `data` is the JSON object or binary payload. |
+| `RECEIVE` | `MessageChannel.Receive` | Inbound payload. See shape below.                                                                                |
+| `CLOSE`   | `MessageChannel.Close`   | Channel closed (local `close()` or session close).                                                               |
+| `FAIL`    | `MessageChannel.Fail`    | `open()` failed. `data.error` is the message.                                                                    |
+| `ERROR`   | `MessageChannel.Error`   | Session error, publish reject, send failure, or receive path disabled (`track not found`).                       |
 
 ### `RECEIVE` payload
 
@@ -1347,7 +1359,7 @@ Sends binary data: `Uint8Array`, `ArrayBuffer`, or an `ArrayBufferView`. Incomin
 ```
 
 ```js
-channel.on(MessageChannelEventTypes.RECEIVE, event => {
+channel.on(MessageChannelEventTypes.RECEIVE, (event) => {
   const { data, source } = event.data.message
   console.log(source, data)
 })
@@ -1358,7 +1370,7 @@ channel.on(MessageChannelEventTypes.RECEIVE, event => {
 ```js
 channel.getOptions()
 channel.getConnection() // MoqtConnection while open
-channel.getType()       // 'MOQ_DATA_CHANNEL'
+channel.getType() // 'MOQ_DATA_CHANNEL'
 ```
 
 # Managed channels
@@ -1374,9 +1386,9 @@ await publisher.init({
     mode: 'shared', // or 'sidecar'
     dataChannelConfiguration: {
       name: 'red5pro',
-      keepEcho: false
-    }
-  }
+      keepEcho: false,
+    },
+  },
 })
 await publisher.publish()
 
@@ -1392,16 +1404,16 @@ Managed events are also forwarded as `MOQ.MessageChannel.*` on the publisher/sub
 
 WebRTC messaging is [`MessageChannel`](message-channel.md) (`src/message-channel`): a WHIP-based client over `RTCDataChannel`. `MOQMessageChannel` reuses the **same JavaScript send methods and `MessageChannelEventTypes`**, not the same on-the-wire protocol.
 
-| | WebRTC `MessageChannel` | `MOQMessageChannel` |
-| :--- | :--- | :--- |
-| Transport | `RTCPeerConnection` + `RTCDataChannel` | MoQT over WebTransport |
-| Server path | WHIP / Stream Manager proxy | MoQ relay |
-| Channel id | `dataChannelConfiguration.name` | Same field → MoQT **track name** |
-| Sender identity | Injects `sender_id` (from `streamName`) and `send_timestamp` on `sendMessage` | Does **not** inject fields; use `clientId` + `senderName` in your JSON |
-| Echo | Not filtered in the SDK | Drops JSON with `senderName === clientId` unless `keepEcho: true` |
-| Unreliable | DataChannel `maxRetransmits` / unordered (WHIP config) | MoQT datagrams, draft 18, `unreliable: true` |
-| Standalone vs media | Separate WHIP ingest; media DataChannel dies with the stream | `sidecar` session, or `shared` on the media `MoqtConnection` |
-| `RECEIVE` `data` | WHIP / DataChannel message wrapping | `{ dataChannel, message: { data, source, groupId } }` |
+|                     | WebRTC `MessageChannel`                                                       | `MOQMessageChannel`                                                    |
+| :------------------ | :---------------------------------------------------------------------------- | :--------------------------------------------------------------------- |
+| Transport           | `RTCPeerConnection` + `RTCDataChannel`                                        | MoQT over WebTransport                                                 |
+| Server path         | WHIP / Stream Manager proxy                                                   | MoQ relay                                                              |
+| Channel id          | `dataChannelConfiguration.name`                                               | Same field → MoQT **track name**                                       |
+| Sender identity     | Injects `sender_id` (from `streamName`) and `send_timestamp` on `sendMessage` | Does **not** inject fields; use `clientId` + `senderName` in your JSON |
+| Echo                | Not filtered in the SDK                                                       | Drops JSON with `senderName === clientId` unless `keepEcho: true`      |
+| Unreliable          | DataChannel `maxRetransmits` / unordered (WHIP config)                        | MoQT datagrams, draft 18, `unreliable: true`                           |
+| Standalone vs media | Separate WHIP ingest; media DataChannel dies with the stream                  | `sidecar` session, or `shared` on the media `MoqtConnection`           |
+| `RECEIVE` `data`    | WHIP / DataChannel message wrapping                                           | `{ dataChannel, message: { data, source, groupId } }`                  |
 
 **They do not interoperate on one session.** A browser using WebRTC `MessageChannel` talks to the Red5 WHIP/WHEP data channel; a browser using `MOQMessageChannel` talks to the MoQ `_dc` tracks. A server or app can **bridge** them only by translating payloads.
 
@@ -1436,14 +1448,16 @@ When you want to publish media over Media over QUIC (MoQ), the SDK provides `MOQ
 
 `MOQPublisher` captures media (`getUserMedia` by default, or your own stream), connects to a MOQ relay over WebTransport, publishes a namespace, and serves encoded tracks and catalog data to subscriber requests.
 
-* [Usage](#usage)
-* [Init Configuration](#init-configuration)
-* [Events](#events)
-* [Capture timestamp pins](#capture-timestamp-pins)
-* [Send timing diagnostics](#send-timing-diagnostics)
-* [Statistics](#statistics)
+- [Usage](#usage)
+- [Init Configuration](#init-configuration)
+- [Events](#events)
+- [Capture timestamp pins](#capture-timestamp-pins)
+- [Send timing diagnostics](#send-timing-diagnostics)
+- [Statistics](#statistics)
 
 # Usage
+
+On a script-tag page, load either the full SDK (`red5-web-sdk.min.js`) or the MOQ build (`red5-web-sdk-moq.min.js`). Both attach `window.red5websdk`. From npm, `import { MOQPublisher } from 'red5-web-sdk'` or `'red5-web-sdk/moq'`.
 
 There are two options to start a `MOQPublisher`:
 
@@ -1453,10 +1467,10 @@ There are two options to start a `MOQPublisher`:
 ## Using init() and publish()
 
 ```js
-const { MOQPublisher, PublisherEventTypes, MOQPublisherEventTypes } = red5prosdk
+const { MOQPublisher, PublisherEventTypes, MOQPublisherEventTypes } = red5websdk
 
 const publisher = new MOQPublisher()
-publisher.on('*', event => {
+publisher.on('*', (event) => {
   console.log(event.type, event.data)
 })
 
@@ -1466,16 +1480,16 @@ await publisher.init({
   mediaElementId: 'red5pro-publisher',
   mediaConstraints: {
     audio: true,
-    video: true
+    video: true,
   },
   bandwidth: {
     audio: 56,
-    video: 3000
+    video: 3000,
   },
   // Optional: publish a 3-rung video ladder (source + 2 generated tracks)
   simulcast: {
     enabled: true,
-    rungs: 3
+    rungs: 3,
     // Or explicit variants (index 0 kept as original track; 1..n generated):
     // rungs: [
     //   { width: 1280, height: 720, fps: 60, bitrate: 3000 },
@@ -1489,9 +1503,9 @@ await publisher.init({
     mode: 'shared', // 'shared' reuses publisher connection, 'sidecar' uses separate connection
     dataChannelConfiguration: {
       name: 'red5pro',
-      keepEcho: false
-    }
-  }
+      keepEcho: false,
+    },
+  },
 })
 
 await publisher.publish()
@@ -1514,7 +1528,7 @@ const publisher = new MOQPublisher(
   'https://relay.example.com:4433/live/mystream',
   document.getElementById('red5pro-publisher'),
   {
-    namespace: 'live/mystream'
+    namespace: 'live/mystream',
   }
 )
 ```
@@ -1523,33 +1537,33 @@ const publisher = new MOQPublisher(
 
 The `init()` call accepts `MOQPublisherConfigType`.
 
-| Property | Required | Default | Description |
-| :--- | :---: | :---: | :--- |
-| `endpoint` | [-] | `undefined` | Full MOQ relay URL. If omitted, SDK uses `protocol://host:port`. |
-| `host` | [x]* | `undefined` | Relay host when `endpoint` is omitted. |
-| `streamName` | [x]* | `undefined` | Stream name used for namespace derivation and stats metadata. |
-| `protocol` | [x] | `https` | Relay protocol (`ws`, `wss`, `http`, `https`). |
-| `port` | [x] | `4433` | Relay port. |
-| `app` | [x] | `live` | App scope used in namespace fallback. |
-| `namespace` | [-] | `app/streamName` | MOQ namespace to publish. |
-| `draftVersion` | [-] | auto | MoQ transport draft version. |
-| `certKey` | [-] | `undefined` | Certificate hash input for WebTransport setup. |
-| `authorization` | [-] | `undefined` | Optional CAT credentials attached to the MoQT connection. See [Authorization](#authorization). |
-| `keyFramerate` | [-] | `2000` | Keyframe interval in milliseconds. |
-| `bandwidth` | [-] | `{ audio: 56, video: 750 }` | Target encode bandwidth settings. |
-| `mediaConstraints` | [x] | camera+mic defaults | Constraints for SDK-managed `getUserMedia`. |
-| `onGetUserMedia` | [-] | `undefined` | Optional override to provide your own media stream acquisition. |
-| `videoEncoding` | [-] | `H264` | Preferred video codec (`PublishVideoEncoder`: `H264_BASELINE`, `H264_HIGH`, `H264`, `H265`, `AV1`). The publisher probes `VideoEncoder.isConfigSupported` at the track resolution and frame rate, then falls back (Baseline ↔ High, then H.264 if HEVC/AV1 is requested). AVC level is raised automatically (e.g. 4.0 for 1080p30, 4.2 for 1080p60). If nothing is supported, `ENCODER_ERROR` fires with `terminal: true` and publish fails. |
-| `audioEncoding` | [-] | `OPUS` | Audio codec (`PublishAudioEncoder`). |
-| `mediaElementId` | [-] | `red5pro-publisher` | Preview element id for local media display. |
-| `clearMediaOnUnpublish` | [-] | `true` | Stop preview stream tracks on unpublish. |
-| `maxVideoQueue` | [-] | `120` | Max queued encoded video chunks per track before shed policy. |
-| `maxAudioQueue` | [-] | `240` | Max queued encoded audio chunks per track before shed policy. |
-| `simulcast` | [-] | `{ enabled: false, rungs: 3 }` | Optional simulcast ladder. When `enabled`, `rungs` is either a count (`1..3`) or an explicit `SimulcastVariant[]`. Source/captured video is always the top rung; lower rungs are generated (auto: ½ resolution/bitrate each step, and ½ fps when top FPS ≥ 60). |
-| `messageChannel` | [-] | `{ enabled: false, mode: 'shared' }` | Optional internally managed `MOQMessageChannel`. `mode: 'shared'` reuses publisher's `MoqtConnection`; `mode: 'sidecar'` creates a separate MoQT session for messaging. |
-| `stats` | [-] | `undefined` | Optional stats monitor configuration. |
-| `connectionParams` | [-] | `undefined` | Additional params used for stats metadata and endpoint context. |
-| `moqLogLevel` | [-] | `none` | Log level passed to MOQ components. |
+| Property                | Required |               Default                | Description                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| :---------------------- | :------: | :----------------------------------: | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `endpoint`              |   [-]    |             `undefined`              | Full MOQ relay URL. If omitted, SDK uses `protocol://host:port`.                                                                                                                                                                                                                                                                                                                                                                             |
+| `host`                  |  [x]\*   |             `undefined`              | Relay host when `endpoint` is omitted.                                                                                                                                                                                                                                                                                                                                                                                                       |
+| `streamName`            |  [x]\*   |             `undefined`              | Stream name used for namespace derivation and stats metadata.                                                                                                                                                                                                                                                                                                                                                                                |
+| `protocol`              |   [x]    |               `https`                | Relay protocol (`ws`, `wss`, `http`, `https`).                                                                                                                                                                                                                                                                                                                                                                                               |
+| `port`                  |   [x]    |                `4433`                | Relay port.                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| `app`                   |   [x]    |                `live`                | App scope used in namespace fallback.                                                                                                                                                                                                                                                                                                                                                                                                        |
+| `namespace`             |   [-]    |           `app/streamName`           | MOQ namespace to publish.                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| `draftVersion`          |   [-]    |                 auto                 | MoQ transport draft version.                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| `certKey`               |   [-]    |             `undefined`              | Certificate hash input for WebTransport setup.                                                                                                                                                                                                                                                                                                                                                                                               |
+| `authorization`         |   [-]    |             `undefined`              | Optional CAT credentials attached to the MoQT connection. See [Authorization](#authorization).                                                                                                                                                                                                                                                                                                                                               |
+| `keyFramerate`          |   [-]    |                `2000`                | Keyframe interval in milliseconds.                                                                                                                                                                                                                                                                                                                                                                                                           |
+| `bandwidth`             |   [-]    |     `{ audio: 56, video: 750 }`      | Target encode bandwidth settings.                                                                                                                                                                                                                                                                                                                                                                                                            |
+| `mediaConstraints`      |   [x]    |         camera+mic defaults          | Constraints for SDK-managed `getUserMedia`.                                                                                                                                                                                                                                                                                                                                                                                                  |
+| `onGetUserMedia`        |   [-]    |             `undefined`              | Optional override to provide your own media stream acquisition.                                                                                                                                                                                                                                                                                                                                                                              |
+| `videoEncoding`         |   [-]    |                `H264`                | Preferred video codec (`PublishVideoEncoder`: `H264_BASELINE`, `H264_HIGH`, `H264`, `H265`, `AV1`). The publisher probes `VideoEncoder.isConfigSupported` at the track resolution and frame rate, then falls back (Baseline ↔ High, then H.264 if HEVC/AV1 is requested). AVC level is raised automatically (e.g. 4.0 for 1080p30, 4.2 for 1080p60). If nothing is supported, `ENCODER_ERROR` fires with `terminal: true` and publish fails. |
+| `audioEncoding`         |   [-]    |                `OPUS`                | Audio codec (`PublishAudioEncoder`).                                                                                                                                                                                                                                                                                                                                                                                                         |
+| `mediaElementId`        |   [-]    |         `red5pro-publisher`          | Preview element id for local media display.                                                                                                                                                                                                                                                                                                                                                                                                  |
+| `clearMediaOnUnpublish` |   [-]    |                `true`                | Stop preview stream tracks on unpublish.                                                                                                                                                                                                                                                                                                                                                                                                     |
+| `maxVideoQueue`         |   [-]    |                `120`                 | Max queued encoded video chunks per track before shed policy.                                                                                                                                                                                                                                                                                                                                                                                |
+| `maxAudioQueue`         |   [-]    |                `240`                 | Max queued encoded audio chunks per track before shed policy.                                                                                                                                                                                                                                                                                                                                                                                |
+| `simulcast`             |   [-]    |    `{ enabled: false, rungs: 3 }`    | Optional simulcast ladder. When `enabled`, `rungs` is either a count (`1..3`) or an explicit `SimulcastVariant[]`. Source/captured video is always the top rung; lower rungs are generated (auto: ½ resolution/bitrate each step, and ½ fps when top FPS ≥ 60).                                                                                                                                                                              |
+| `messageChannel`        |   [-]    | `{ enabled: false, mode: 'shared' }` | Optional internally managed `MOQMessageChannel`. `mode: 'shared'` reuses publisher's `MoqtConnection`; `mode: 'sidecar'` creates a separate MoQT session for messaging.                                                                                                                                                                                                                                                                      |
+| `stats`                 |   [-]    |             `undefined`              | Optional stats monitor configuration.                                                                                                                                                                                                                                                                                                                                                                                                        |
+| `connectionParams`      |   [-]    |             `undefined`              | Additional params used for stats metadata and endpoint context.                                                                                                                                                                                                                                                                                                                                                                              |
+| `moqLogLevel`           |   [-]    |                `none`                | Log level passed to MOQ components.                                                                                                                                                                                                                                                                                                                                                                                                          |
 
 `*` Required when `endpoint` is not provided.
 
@@ -1557,11 +1571,11 @@ The `init()` call accepts `MOQPublisherConfigType`.
 
 `authorization` supplies CAT tokens when `publish()` opens the MoQT session. With `enabled: true`, the SDK decodes `token` and passes it to `connect()` along with the publisher relay URL. The credential is used only for that connection attempt. It is not stored and it is not added to viewer links.
 
-| Field | Description |
-| :--- | :--- |
-| `enabled` | When `false`, or when `authorization` is omitted, no auth attributes are sent. |
-| `profile` | `cat4moq` sends token type `1`. `moqx-compat` sends token type `16`. |
-| `token` | Base64-encoded CAT token. An optional `base64:` prefix is stripped. The decoded token must be at most 32768 bytes. |
+| Field     | Description                                                                                                        |
+| :-------- | :----------------------------------------------------------------------------------------------------------------- |
+| `enabled` | When `false`, or when `authorization` is omitted, no auth attributes are sent.                                     |
+| `profile` | `cat4moq` sends token type `1`. `moqx-compat` sends token type `16`.                                               |
+| `token`   | Base64-encoded CAT token. An optional `base64:` prefix is stripped. The decoded token must be at most 32768 bytes. |
 
 ```js
 authorization: {
@@ -1603,7 +1617,7 @@ authorization: {
 `MOQPublisher` is an event emitter. You can subscribe with wildcard (`*`) or by specific event name.
 
 ```js
-const onPublisherEvent = event => {
+const onPublisherEvent = (event) => {
   const { type, publisher, data } = event
   console.log(type, publisher, data)
 }
@@ -1615,38 +1629,38 @@ publisher.off('*', onPublisherEvent)
 
 ### Core publish lifecycle events (`PublisherEventTypes`)
 
-| Access | Event Type | Meaning |
-| :--- | :--- | :--- |
-| `PUBLISH_START` | `Publish.Start` | Publishing has started. |
-| `PUBLISH_FAIL` | `Publish.Fail` | Publishing failed. Payload includes `error` and `terminal` (`true` when setup cannot continue, for example when `MediaStreamTrackProcessor` is unavailable). |
-| `UNPUBLISH_SUCCESS` | `Unpublish.Success` | Unpublish completed. |
+| Access              | Event Type          | Meaning                                                                                                                                                      |
+| :------------------ | :------------------ | :----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `PUBLISH_START`     | `Publish.Start`     | Publishing has started.                                                                                                                                      |
+| `PUBLISH_FAIL`      | `Publish.Fail`      | Publishing failed. Payload includes `error` and `terminal` (`true` when setup cannot continue, for example when `MediaStreamTrackProcessor` is unavailable). |
+| `UNPUBLISH_SUCCESS` | `Unpublish.Success` | Unpublish completed.                                                                                                                                         |
 
 ### MOQ-specific events (`MOQPublisherEventTypes`)
 
-| Access | Event Type | Meaning |
-| :--- | :--- | :--- |
-| `CONSTRAINTS_ACCEPTED` | `MOQ.MediaConstraints.Accepted` | Media constraints accepted. |
-| `CONSTRAINTS_REJECTED` | `MOQ.MediaConstraints.Rejected` | Media constraints rejected. |
-| `MEDIA_STREAM_AVAILABLE` | `MOQ.MediaStream.Available` | Local `MediaStream` became available. |
-| `NAMESPACE_PUBLISHED` | `MOQ.Namespace.Published` | Namespace announce/publish completed. |
-| `CATALOG_PUBLISHED` | `MOQ.Catalog.Published` | Catalog tracks announced to the session, after every encoder has been registered. |
-| `RELAY_SUBSCRIBE` | `MOQ.Relay.Subscribe` | Relay requested a known track subscription. |
-| `RELAY_SUBSCRIBE_FAILED` | `MOQ.Relay.Subscribe.Failed` | Relay requested unknown or rejected track. |
-| `RELAY_MESSAGE` | `MOQ.Relay.Message` | Relay control message received. |
-| `RELAY_ERROR` | `MOQ.Relay.Error` | Relay/session error reported. |
-| `RELAY_CLOSE` | `MOQ.Relay.Close` | Relay/session closed. |
-| `ENCODER_ERROR` | `MOQ.Encoder.Error` | Encoder or capture pipeline error. Payload includes `encoder` (`media` / `video` / `audio` / `catalog`), `error` (message), and `terminal` (`true` when publish setup cannot continue). Missing `MediaStreamTrackProcessor` emits `{ encoder: 'media', code: 'MEDIA_STREAM_TRACK_PROCESSOR_UNAVAILABLE', feature: 'MediaStreamTrackProcessor', terminal: true }` and then `PUBLISH_FAIL`. |
-| `SEND_STATS` | `MOQ.Send.Stats` | Per-track send counters after a media object is published. Payload includes `trackName`, `role`, role-specific counters (`videoFrames`/`keyframeCount` or `audioChunks`), send-timing fields (see **Send timing diagnostics** below), a `tracks` snapshot keyed by track name with the same per-track fields, and capture-pin fields (see **Capture timestamp pins** below). |
-| `TIMESTAMP_PINNED` | `MOQ.Timestamp.Pinned` | Fired once when both audio and video capture clocks have been pinned and the video warm-up has finished. Same pin-field shape as `SEND_STATS`. |
-| `TIMESTAMP_REPINNED` | `MOQ.Timestamp.Repinned` | A capture offset was corrected by ≥100ms after objects of that kind were already sent. Payload adds `track` (`'audio'` / `'video'`) and `correctionMs` to the pin fields. For video, the SDK forces a keyframe so the corrected timeline starts on a new group. |
-| `CAPTURE_COLD_START` | `MOQ.Capture.ColdStart` | Fired once per kind when that kind's first capture sample reached the SDK at least 500ms late, typically a camera waking from idle. The correction is already applied. Payload: `track`, `lateByMs`, `timeToFirstFrameMs`, `beforeFirstSend`, `audioCorrectionMs`, `videoCorrectionMs`. |
-| `MESSAGE_CHANNEL_OPEN` | `MOQ.MessageChannel.Open` | Managed `MOQMessageChannel` opened successfully. |
-| `MESSAGE_CHANNEL_SEND` | `MOQ.MessageChannel.Send` | Managed `MOQMessageChannel` sent a message/data payload. |
-| `MESSAGE_CHANNEL_RECEIVE` | `MOQ.MessageChannel.Receive` | Managed `MOQMessageChannel` received a message/data payload. |
-| `MESSAGE_CHANNEL_CLOSE` | `MOQ.MessageChannel.Close` | Managed `MOQMessageChannel` closed. |
-| `MESSAGE_CHANNEL_FAIL` | `MOQ.MessageChannel.Fail` | Managed `MOQMessageChannel` failed to open. |
-| `MESSAGE_CHANNEL_ERROR` | `MOQ.MessageChannel.Error` | Managed `MOQMessageChannel` reported an error. |
-| `STATS_REPORT` | `MOQ.Stats.Report` | Stats report emitted when monitoring is enabled. |
+| Access                    | Event Type                      | Meaning                                                                                                                                                                                                                                                                                                                                                                                   |
+| :------------------------ | :------------------------------ | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `CONSTRAINTS_ACCEPTED`    | `MOQ.MediaConstraints.Accepted` | Media constraints accepted.                                                                                                                                                                                                                                                                                                                                                               |
+| `CONSTRAINTS_REJECTED`    | `MOQ.MediaConstraints.Rejected` | Media constraints rejected.                                                                                                                                                                                                                                                                                                                                                               |
+| `MEDIA_STREAM_AVAILABLE`  | `MOQ.MediaStream.Available`     | Local `MediaStream` became available.                                                                                                                                                                                                                                                                                                                                                     |
+| `NAMESPACE_PUBLISHED`     | `MOQ.Namespace.Published`       | Namespace announce/publish completed.                                                                                                                                                                                                                                                                                                                                                     |
+| `CATALOG_PUBLISHED`       | `MOQ.Catalog.Published`         | Catalog tracks announced to the session, after every encoder has been registered.                                                                                                                                                                                                                                                                                                         |
+| `RELAY_SUBSCRIBE`         | `MOQ.Relay.Subscribe`           | Relay requested a known track subscription.                                                                                                                                                                                                                                                                                                                                               |
+| `RELAY_SUBSCRIBE_FAILED`  | `MOQ.Relay.Subscribe.Failed`    | Relay requested unknown or rejected track.                                                                                                                                                                                                                                                                                                                                                |
+| `RELAY_MESSAGE`           | `MOQ.Relay.Message`             | Relay control message received.                                                                                                                                                                                                                                                                                                                                                           |
+| `RELAY_ERROR`             | `MOQ.Relay.Error`               | Relay/session error reported.                                                                                                                                                                                                                                                                                                                                                             |
+| `RELAY_CLOSE`             | `MOQ.Relay.Close`               | Relay/session closed.                                                                                                                                                                                                                                                                                                                                                                     |
+| `ENCODER_ERROR`           | `MOQ.Encoder.Error`             | Encoder or capture pipeline error. Payload includes `encoder` (`media` / `video` / `audio` / `catalog`), `error` (message), and `terminal` (`true` when publish setup cannot continue). Missing `MediaStreamTrackProcessor` emits `{ encoder: 'media', code: 'MEDIA_STREAM_TRACK_PROCESSOR_UNAVAILABLE', feature: 'MediaStreamTrackProcessor', terminal: true }` and then `PUBLISH_FAIL`. |
+| `SEND_STATS`              | `MOQ.Send.Stats`                | Per-track send counters after a media object is published. Payload includes `trackName`, `role`, role-specific counters (`videoFrames`/`keyframeCount` or `audioChunks`), send-timing fields (see **Send timing diagnostics** below), a `tracks` snapshot keyed by track name with the same per-track fields, and capture-pin fields (see **Capture timestamp pins** below).              |
+| `TIMESTAMP_PINNED`        | `MOQ.Timestamp.Pinned`          | Fired once when both audio and video capture clocks have been pinned and the video warm-up has finished. Same pin-field shape as `SEND_STATS`.                                                                                                                                                                                                                                            |
+| `TIMESTAMP_REPINNED`      | `MOQ.Timestamp.Repinned`        | A capture offset was corrected by ≥100ms after objects of that kind were already sent. Payload adds `track` (`'audio'` / `'video'`) and `correctionMs` to the pin fields. For video, the SDK forces a keyframe so the corrected timeline starts on a new group.                                                                                                                           |
+| `CAPTURE_COLD_START`      | `MOQ.Capture.ColdStart`         | Fired once per kind when that kind's first capture sample reached the SDK at least 500ms late, typically a camera waking from idle. The correction is already applied. Payload: `track`, `lateByMs`, `timeToFirstFrameMs`, `beforeFirstSend`, `audioCorrectionMs`, `videoCorrectionMs`.                                                                                                   |
+| `MESSAGE_CHANNEL_OPEN`    | `MOQ.MessageChannel.Open`       | Managed `MOQMessageChannel` opened successfully.                                                                                                                                                                                                                                                                                                                                          |
+| `MESSAGE_CHANNEL_SEND`    | `MOQ.MessageChannel.Send`       | Managed `MOQMessageChannel` sent a message/data payload.                                                                                                                                                                                                                                                                                                                                  |
+| `MESSAGE_CHANNEL_RECEIVE` | `MOQ.MessageChannel.Receive`    | Managed `MOQMessageChannel` received a message/data payload.                                                                                                                                                                                                                                                                                                                              |
+| `MESSAGE_CHANNEL_CLOSE`   | `MOQ.MessageChannel.Close`      | Managed `MOQMessageChannel` closed.                                                                                                                                                                                                                                                                                                                                                       |
+| `MESSAGE_CHANNEL_FAIL`    | `MOQ.MessageChannel.Fail`       | Managed `MOQMessageChannel` failed to open.                                                                                                                                                                                                                                                                                                                                               |
+| `MESSAGE_CHANNEL_ERROR`   | `MOQ.MessageChannel.Error`      | Managed `MOQMessageChannel` reported an error.                                                                                                                                                                                                                                                                                                                                            |
+| `STATS_REPORT`            | `MOQ.Stats.Report`              | Stats report emitted when monitoring is enabled.                                                                                                                                                                                                                                                                                                                                          |
 
 Managed MessageChannel events include metadata in `event.data`:
 
@@ -1669,18 +1683,18 @@ Pins, corrections, and the warm-up reset on each `start()`.
 
 `TIMESTAMP_PINNED`, `TIMESTAMP_REPINNED`, and `SEND_STATS` share these fields:
 
-| Field | Meaning |
-| :--- | :--- |
-| `audioPin` / `videoPin` | First capture observation per kind: `{ wallUs, mediaTimestampUs, offsetUs }`, or `null`. |
-| `audioCorrectionMs` / `videoCorrectionMs` | Total amount the offset has been lowered since the first observation. Large values mean the first sample arrived late; the correction is already applied. |
-| `pinSeverity` | Based on the larger correction: `ok` (<200ms), `warn` (≥200ms), `error` (≥1500ms). `null` until a kind has pinned. Describes the capture condition, not remaining A/V error. |
-| `pinSkewMs` | `(videoPin.wallUs − audioPin.wallUs)` in milliseconds: when each kind was first observed. Informational. `null` until both kinds have pinned. |
+| Field                                     | Meaning                                                                                                                                                                      |
+| :---------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `audioPin` / `videoPin`                   | First capture observation per kind: `{ wallUs, mediaTimestampUs, offsetUs }`, or `null`.                                                                                     |
+| `audioCorrectionMs` / `videoCorrectionMs` | Total amount the offset has been lowered since the first observation. Large values mean the first sample arrived late; the correction is already applied.                    |
+| `pinSeverity`                             | Based on the larger correction: `ok` (<200ms), `warn` (≥200ms), `error` (≥1500ms). `null` until a kind has pinned. Describes the capture condition, not remaining A/V error. |
+| `pinSkewMs`                               | `(videoPin.wallUs − audioPin.wallUs)` in milliseconds: when each kind was first observed. Informational. `null` until both kinds have pinned.                                |
 
 ```js
-publisher.on(MOQPublisherEventTypes.TIMESTAMP_PINNED, event => {
+publisher.on(MOQPublisherEventTypes.TIMESTAMP_PINNED, (event) => {
   const { videoCorrectionMs, audioCorrectionMs, pinSeverity } = event.data
 })
-publisher.on(MOQPublisherEventTypes.TIMESTAMP_REPINNED, event => {
+publisher.on(MOQPublisherEventTypes.TIMESTAMP_REPINNED, (event) => {
   const { track, correctionMs } = event.data
 })
 ```
@@ -1689,18 +1703,18 @@ publisher.on(MOQPublisherEventTypes.TIMESTAMP_REPINNED, event => {
 
 `CAPTURE_COLD_START` reports a first sample that reached the SDK late by at least 500ms. The SDK only detects this once a fresher sample arrives to compare against, so video is checked when its warm-up ends, before any video object is sent. Audio is checked whenever its correction first crosses the threshold.
 
-| Field | Meaning |
-| :--- | :--- |
-| `track` | `'video'` or `'audio'`. |
-| `lateByMs` | How late the first sample arrived (the kind's total correction). |
-| `timeToFirstFrameMs` | From capture start to the first sample of that kind. |
-| `beforeFirstSend` | `true` when the correction landed before any object of that kind was sent, so subscribers never saw the bad stamps. |
+| Field                                     | Meaning                                                                                                                                          |
+| :---------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `track`                                   | `'video'` or `'audio'`.                                                                                                                          |
+| `lateByMs`                                | How late the first sample arrived (the kind's total correction).                                                                                 |
+| `timeToFirstFrameMs`                      | From capture start to the first sample of that kind.                                                                                             |
+| `beforeFirstSend`                         | `true` when the correction landed before any object of that kind was sent, so subscribers never saw the bad stamps.                              |
 | `audioCorrectionMs` / `videoCorrectionMs` | Both kinds' corrections at that moment. A large video value with small audio means the stall was in video capture specifically, not a busy page. |
 
-A camera that is only slow to *start* (late but fresh first frame) does not trigger this event; it causes no timestamp error.
+A camera that is only slow to _start_ (late but fresh first frame) does not trigger this event; it causes no timestamp error.
 
 ```js
-publisher.on(MOQPublisherEventTypes.CAPTURE_COLD_START, event => {
+publisher.on(MOQPublisherEventTypes.CAPTURE_COLD_START, (event) => {
   const { track, lateByMs, beforeFirstSend } = event.data
 })
 ```
@@ -1709,12 +1723,12 @@ publisher.on(MOQPublisherEventTypes.CAPTURE_COLD_START, event => {
 
 Each track in `SEND_STATS` (top-level for the emitting track, and in every `tracks` entry) reports:
 
-| Field | Meaning |
-| :--- | :--- |
-| `sendLatencyMs` | Wall clock minus the object's LOC capture timestamp at hand-off to the transport. Covers encode time plus SDK queue wait. `null` before the first send. |
-| `minSendLatencyMs` | Lowest `sendLatencyMs` since `start()`. |
-| `queueDepth` | Objects waiting in the SDK send queue for this track. |
-| `encoderQueueDepth` | Frames waiting inside the WebCodecs encoder (`encodeQueueSize`). |
+| Field               | Meaning                                                                                                                                                 |
+| :------------------ | :------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `sendLatencyMs`     | Wall clock minus the object's LOC capture timestamp at hand-off to the transport. Covers encode time plus SDK queue wait. `null` before the first send. |
+| `minSendLatencyMs`  | Lowest `sendLatencyMs` since `start()`.                                                                                                                 |
+| `queueDepth`        | Objects waiting in the SDK send queue for this track.                                                                                                   |
+| `encoderQueueDepth` | Frames waiting inside the WebCodecs encoder (`encodeQueueSize`).                                                                                        |
 
 Compare audio and video to diagnose A/V offset seen by all subscribers:
 
@@ -1723,20 +1737,37 @@ Compare audio and video to diagnose A/V offset seen by all subscribers:
 - Both near audio: the publisher is not the source; check subscriber-side playback sync.
 
 ```js
-publisher.on(MOQPublisherEventTypes.SEND_STATS, event => {
+publisher.on(MOQPublisherEventTypes.SEND_STATS, (event) => {
   const { trackName, sendLatencyMs, minSendLatencyMs, queueDepth, encoderQueueDepth } = event.data
 })
 ```
 
 # Statistics
 
-`MOQPublisher` supports the same stats pattern as other SDK clients:
+`MOQPublisher` supports the same stats pattern as other SDK clients. The default endpoint is `EVENT_TRANSPORT` (`MOQ.Stats.Report`). To send the same `STATS_REPORT` JSON over the managed MoQ message channel, set `endpoint` to `DATA_CHANNEL` and enable `messageChannel`:
+
+```js
+const { StatsEndpointType } = red5websdk
+
+await publisher.init({
+  endpoint: 'https://relay.example.com:4433',
+  namespace: 'live/mystream',
+  messageChannel: { enabled: true },
+  stats: {
+    interval: 5000,
+    endpoint: StatsEndpointType.DATA_CHANNEL,
+  },
+})
+```
 
 ```js
 publisher.monitorStats({
-  interval: 5000
+  interval: 5000,
+  endpoint: StatsEndpointType.EVENT_TRANSPORT,
 })
 ```
+
+If `DATA_CHANNEL` is requested but `messageChannel.enabled` is not set, the SDK warns once and emits `STATS_REPORT` instead. Reports that arrive before the channel is open are queued until `MOQ.MessageChannel.Open`.
 
 You can also provide `stats` directly in `init()` options to start monitoring automatically once publishing starts.
 
@@ -1762,13 +1793,15 @@ When you want to play MoQ media streams in the browser, the SDK provides `MOQSub
 
 `MOQSubscriber` connects to a MOQ relay, receives catalog updates, chooses an internal render path (LOC/WebCodecs or CMAF/MSE), and provides playback and track-selection APIs.
 
-* [Usage](#usage)
-* [Init Configuration](#init-configuration)
-* [Events](#events)
-* [Playback API](#playback-api)
-* [Statistics](#statistics)
+- [Usage](#usage)
+- [Init Configuration](#init-configuration)
+- [Events](#events)
+- [Playback API](#playback-api)
+- [Statistics](#statistics)
 
 # Usage
+
+On a script-tag page, load either the full SDK (`red5-web-sdk.min.js`) or the MOQ build (`red5-web-sdk-moq.min.js`). Both attach `window.red5websdk`. From npm, `import { MOQSubscriber } from 'red5-web-sdk'` or `'red5-web-sdk/moq'`.
 
 There are two options to start a `MOQSubscriber`:
 
@@ -1778,10 +1811,10 @@ There are two options to start a `MOQSubscriber`:
 ## Using init() and subscribe()
 
 ```js
-const { MOQSubscriber, MOQSubscriberEventTypes } = red5prosdk
+const { MOQSubscriber, MOQSubscriberEventTypes } = red5websdk
 
 const subscriber = new MOQSubscriber()
-subscriber.on('*', event => {
+subscriber.on('*', (event) => {
   console.log(event.type, event.data)
 })
 
@@ -1796,9 +1829,9 @@ await subscriber.init({
     mode: 'shared', // 'shared' reuses subscriber connection, 'sidecar' uses separate connection
     dataChannelConfiguration: {
       name: 'red5pro',
-      keepEcho: false
-    }
-  }
+      keepEcho: false,
+    },
+  },
 })
 
 await subscriber.subscribe()
@@ -1828,37 +1861,37 @@ const subscriber = new MOQSubscriber(
 
 The `init()` call accepts `MOQSubscriberConfigType`.
 
-| Property | Required | Default | Description |
-| :--- | :---: | :---: | :--- |
-| `endpoint` | [-] | `undefined` | Full MOQ relay URL. If omitted, SDK uses `protocol://host:port`. |
-| `host` | [x]* | `undefined` | Relay host when `endpoint` is omitted. |
-| `streamName` | [x]* | `undefined` | Stream name used for namespace derivation. |
-| `namespace` | [-] | `app/streamName` | Namespace to subscribe from. |
-| `protocol` | [x] | `https` | Relay protocol (`ws`, `wss`, `http`, `https`). |
-| `port` | [x] | `4433` | Relay port. |
-| `app` | [x] | `live` | App scope for namespace fallback. |
-| `mediaElementId` | [-] | `red5pro-subscriber` | Target render element id. |
-| `canvasElementId` | [-] | `undefined` | Optional canvas element id used by LOC rendering path. |
-| `videoAudioElementId` | [-] | `undefined` | Optional media element id used by alternate paths. |
-| `draftVersion` | [-] | auto | MoQ transport draft version. |
-| `certKey` | [-] | `undefined` | Certificate hash input for WebTransport setup. |
-| `authorization` | [-] | `undefined` | Optional CAT credentials attached to the MoQT connection. See [Authorization](#authorization). |
-| `lateFrameThreshold` | [-] | `100` | Late frame threshold in ms for playback adaptation. |
-| `gapTimeout` | [-] | `500` | Gap timeout in ms for recovery behavior. |
-| `preferSoftwareDecoder` | [-] | `false` | Prefer software decode over hardware where supported. |
-| `muted` | [-] | `true` | Initial mute state. |
-| `showControls` | [-] | `true` | Enable built-in controls (where applicable). |
-| `initialVolume` | [-] | `1` | Initial playback volume (0..1). |
-| `muteOnAutoplayRestriction` | [-] | `true` | Auto-mute fallback for browser autoplay restrictions. |
-| `stats` | [-] | `undefined` | Optional stats monitor configuration. |
-| `prefetchCatalog` | [-] | `false` | Attempt HTTP catalog prefetch before MOQ playback session starts. |
-| `connectionParams` | [-] | `undefined` | Additional connection parameters passed through options. |
-| `moqLogLevel` | [-] | `none` | Log level passed to MOQ components. |
-| `mediaSource` | [-] | `none` | An instance of a `MediaSourceLike` (from [moq-playa](https://github.com/openmoq/moq-playa)) implementation. _Make sure you know what you are doing, as it carries responsibility for managing buffers and media playout._ |
-| `mseMediaSourceOptions` | [-] | buffer defaults | CMAF/MSE buffer and MediaSource settings. Ignored when `mediaSource` is provided. See [CMAF playback](#cmaf-playback). |
-| `drmConfig` | [-] | `undefined` | EME license settings for encrypted CMAF playback. Overrides `mseMediaSourceOptions.drmConfig`. See [CMAF playback](#cmaf-playback). |
-| `locmafDecoding` | [-] | `mse` | How LOCMAF tracks are consumed: reconstructed CMAF chunks for MSE (`mse`), or coded frames for WebCodecs (`frame`). |
-| `messageChannel` | [-] | `{ enabled: false, mode: 'shared' }` | Optional internally managed `MOQMessageChannel`. `mode: 'shared'` reuses subscriber/player `MoqtConnection`; `mode: 'sidecar'` creates a separate MoQT session for messaging. |
+| Property                    | Required |               Default                | Description                                                                                                                                                                                                               |
+| :-------------------------- | :------: | :----------------------------------: | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `endpoint`                  |   [-]    |             `undefined`              | Full MOQ relay URL. If omitted, SDK uses `protocol://host:port`.                                                                                                                                                          |
+| `host`                      |  [x]\*   |             `undefined`              | Relay host when `endpoint` is omitted.                                                                                                                                                                                    |
+| `streamName`                |  [x]\*   |             `undefined`              | Stream name used for namespace derivation.                                                                                                                                                                                |
+| `namespace`                 |   [-]    |           `app/streamName`           | Namespace to subscribe from.                                                                                                                                                                                              |
+| `protocol`                  |   [x]    |               `https`                | Relay protocol (`ws`, `wss`, `http`, `https`).                                                                                                                                                                            |
+| `port`                      |   [x]    |                `4433`                | Relay port.                                                                                                                                                                                                               |
+| `app`                       |   [x]    |                `live`                | App scope for namespace fallback.                                                                                                                                                                                         |
+| `mediaElementId`            |   [-]    |         `red5pro-subscriber`         | Target render element id.                                                                                                                                                                                                 |
+| `canvasElementId`           |   [-]    |             `undefined`              | Optional canvas element id used by LOC rendering path.                                                                                                                                                                    |
+| `videoAudioElementId`       |   [-]    |             `undefined`              | Optional media element id used by alternate paths.                                                                                                                                                                        |
+| `draftVersion`              |   [-]    |                 auto                 | MoQ transport draft version.                                                                                                                                                                                              |
+| `certKey`                   |   [-]    |             `undefined`              | Certificate hash input for WebTransport setup.                                                                                                                                                                            |
+| `authorization`             |   [-]    |             `undefined`              | Optional CAT credentials attached to the MoQT connection. See [Authorization](#authorization).                                                                                                                            |
+| `lateFrameThreshold`        |   [-]    |                `100`                 | Late frame threshold in ms for playback adaptation.                                                                                                                                                                       |
+| `gapTimeout`                |   [-]    |                `500`                 | Gap timeout in ms for recovery behavior.                                                                                                                                                                                  |
+| `preferSoftwareDecoder`     |   [-]    |               `false`                | Prefer software decode over hardware where supported.                                                                                                                                                                     |
+| `muted`                     |   [-]    |                `true`                | Initial mute state.                                                                                                                                                                                                       |
+| `showControls`              |   [-]    |                `true`                | Enable built-in controls (where applicable).                                                                                                                                                                              |
+| `initialVolume`             |   [-]    |                 `1`                  | Initial playback volume (0..1).                                                                                                                                                                                           |
+| `muteOnAutoplayRestriction` |   [-]    |                `true`                | Auto-mute fallback for browser autoplay restrictions.                                                                                                                                                                     |
+| `stats`                     |   [-]    |             `undefined`              | Optional stats monitor configuration.                                                                                                                                                                                     |
+| `prefetchCatalog`           |   [-]    |               `false`                | Attempt HTTP catalog prefetch before MOQ playback session starts.                                                                                                                                                         |
+| `connectionParams`          |   [-]    |             `undefined`              | Additional connection parameters passed through options.                                                                                                                                                                  |
+| `moqLogLevel`               |   [-]    |                `none`                | Log level passed to MOQ components.                                                                                                                                                                                       |
+| `mediaSource`               |   [-]    |                `none`                | An instance of a `MediaSourceLike` (from [moq-playa](https://github.com/openmoq/moq-playa)) implementation. _Make sure you know what you are doing, as it carries responsibility for managing buffers and media playout._ |
+| `mseMediaSourceOptions`     |   [-]    |           buffer defaults            | CMAF/MSE buffer and MediaSource settings. Ignored when `mediaSource` is provided. See [CMAF playback](#cmaf-playback).                                                                                                    |
+| `drmConfig`                 |   [-]    |             `undefined`              | EME license settings for encrypted CMAF playback. Overrides `mseMediaSourceOptions.drmConfig`. See [CMAF playback](#cmaf-playback).                                                                                       |
+| `locmafDecoding`            |   [-]    |                `mse`                 | How LOCMAF tracks are consumed: reconstructed CMAF chunks for MSE (`mse`), or coded frames for WebCodecs (`frame`).                                                                                                       |
+| `messageChannel`            |   [-]    | `{ enabled: false, mode: 'shared' }` | Optional internally managed `MOQMessageChannel`. `mode: 'shared'` reuses subscriber/player `MoqtConnection`; `mode: 'sidecar'` creates a separate MoQT session for messaging.                                             |
 
 `*` Required when `endpoint` is not provided.
 
@@ -1866,11 +1899,11 @@ The `init()` call accepts `MOQSubscriberConfigType`.
 
 `authorization` supplies CAT tokens when `subscribe()` opens the MoQT session. With `enabled: true`, the SDK decodes `token` and the player passes it to `MoqtConnection.connect()` along with the subscriber relay URL. The credential is used only for that connection attempt, including reconnects on the same session. It is not stored and it is not added to viewer links.
 
-| Field | Description |
-| :--- | :--- |
-| `enabled` | When `false`, or when `authorization` is omitted, no auth attributes are sent. |
-| `profile` | `cat4moq` sends token type `1`. `moqx-compat` sends token type `16`. |
-| `token` | Base64-encoded CAT token. An optional `base64:` prefix is stripped. The decoded token must be at most 32768 bytes. |
+| Field     | Description                                                                                                        |
+| :-------- | :----------------------------------------------------------------------------------------------------------------- |
+| `enabled` | When `false`, or when `authorization` is omitted, no auth attributes are sent.                                     |
+| `profile` | `cat4moq` sends token type `1`. `moqx-compat` sends token type `16`.                                               |
+| `token`   | Base64-encoded CAT token. An optional `base64:` prefix is stripped. The decoded token must be at most 32768 bytes. |
 
 ```js
 authorization: {
@@ -1906,24 +1939,24 @@ SDK default for `mseMediaSourceOptions`:
 }
 ```
 
-| Field | Default | Description |
-| :--- | :--- | :--- |
-| `mseImplementation` | `auto` | Which `MediaSource` to construct. `auto` and `managed` prefer `ManagedMediaSource` when the browser has it (required on iPhone Safari), otherwise standard `MediaSource`. `standard` prefers standard `MediaSource`. If the requested implementation is missing, the other one is used. Playback fails only when the browser has neither. |
-| `mseAttachment` | `auto` | How that `MediaSource` is attached to the element. `auto` uses an object URL for standard `MediaSource` and `srcObject` for `ManagedMediaSource`. `object-url` and `src-object` force that mode and throw if it cannot be used. |
-| `keepBehindSec` | `10` | Seconds of already-played media kept behind `currentTime`. Older buffered data is removed so the browser quota is not filled by history. |
-| `maxAheadSec` | `15` | If the buffer runs farther ahead of `currentTime` than this, playback jumps toward the live edge after startup. `Infinity` disables the jump (VOD or time-shift). |
-| `targetAheadSec` | `2` | Where a live-edge jump lands: the end of the buffered range minus this many seconds. |
-| `gapJumpMs` | `2000` | When the playhead is stuck at the end of a buffered range and the hole ahead is at most 2 seconds, wait this long, then seek just past the hole. `0` disables gap jumps. Must be a finite number `>= 0`. |
-| `stallThresholdMs` | unset | How long playback must be stalled before a stall is reported. Must be a finite number `>= 0` when set. The SDK default leaves this to the MSE media source. |
-| `drmConfig` | `undefined` | Same shape as the top-level `drmConfig` below. The top-level field wins when both are set. |
+| Field               | Default     | Description                                                                                                                                                                                                                                                                                                                               |
+| :------------------ | :---------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `mseImplementation` | `auto`      | Which `MediaSource` to construct. `auto` and `managed` prefer `ManagedMediaSource` when the browser has it (required on iPhone Safari), otherwise standard `MediaSource`. `standard` prefers standard `MediaSource`. If the requested implementation is missing, the other one is used. Playback fails only when the browser has neither. |
+| `mseAttachment`     | `auto`      | How that `MediaSource` is attached to the element. `auto` uses an object URL for standard `MediaSource` and `srcObject` for `ManagedMediaSource`. `object-url` and `src-object` force that mode and throw if it cannot be used.                                                                                                           |
+| `keepBehindSec`     | `10`        | Seconds of already-played media kept behind `currentTime`. Older buffered data is removed so the browser quota is not filled by history.                                                                                                                                                                                                  |
+| `maxAheadSec`       | `15`        | If the buffer runs farther ahead of `currentTime` than this, playback jumps toward the live edge after startup. `Infinity` disables the jump (VOD or time-shift).                                                                                                                                                                         |
+| `targetAheadSec`    | `2`         | Where a live-edge jump lands: the end of the buffered range minus this many seconds.                                                                                                                                                                                                                                                      |
+| `gapJumpMs`         | `2000`      | When the playhead is stuck at the end of a buffered range and the hole ahead is at most 2 seconds, wait this long, then seek just past the hole. `0` disables gap jumps. Must be a finite number `>= 0`.                                                                                                                                  |
+| `stallThresholdMs`  | unset       | How long playback must be stalled before a stall is reported. Must be a finite number `>= 0` when set. The SDK default leaves this to the MSE media source.                                                                                                                                                                               |
+| `drmConfig`         | `undefined` | Same shape as the top-level `drmConfig` below. The top-level field wins when both are set.                                                                                                                                                                                                                                                |
 
 `drmConfig` turns on Encrypted Media Extensions for that playback. The media element receives a `MediaKeys` session, and license challenges are posted to `licenseUrl`.
 
-| Field | Default | Description |
-| :--- | :--- | :--- |
-| `licenseUrl` | required | License server URL. The challenge is sent as a `POST`. |
-| `keySystem` | `com.widevine.alpha` | EME key system passed to `requestMediaKeySystemAccess`. |
-| `serverCertificate` | `undefined` | Optional license-server certificate (`Uint8Array`) given to the CDM. |
+| Field               | Default              | Description                                                          |
+| :------------------ | :------------------- | :------------------------------------------------------------------- |
+| `licenseUrl`        | required             | License server URL. The challenge is sent as a `POST`.               |
+| `keySystem`         | `com.widevine.alpha` | EME key system passed to `requestMediaKeySystemAccess`.              |
+| `serverCertificate` | `undefined`          | Optional license-server certificate (`Uint8Array`) given to the CDM. |
 
 ```js
 await subscriber.init({
@@ -1933,12 +1966,12 @@ await subscriber.init({
     maxAheadSec: 15,
     targetAheadSec: 2,
     keepBehindSec: 10,
-    gapJumpMs: 2000
+    gapJumpMs: 2000,
   },
   drmConfig: {
     licenseUrl: 'https://license.example.com/widevine',
-    keySystem: 'com.widevine.alpha'
-  }
+    keySystem: 'com.widevine.alpha',
+  },
 })
 ```
 
@@ -1960,7 +1993,7 @@ await subscriber.init({
 `MOQSubscriber` is an event emitter. You can subscribe with wildcard (`*`) or by specific event name.
 
 ```js
-const onSubscriberEvent = event => {
+const onSubscriberEvent = (event) => {
   const { type, subscriber, data } = event
   console.log(type, subscriber, data)
 }
@@ -1972,36 +2005,36 @@ subscriber.off('*', onSubscriberEvent)
 
 ### Core subscriber lifecycle (`SubscriberEventTypes`)
 
-| Access | Event Type | Meaning |
-| :--- | :--- | :--- |
-| `CONNECT_SUCCESS` | `Connect.Success` | Session established. |
-| `SUBSCRIBE_START` | `Subscribe.Start` | Playback started. |
-| `SUBSCRIBE_STOP` | `Subscribe.Stop` | Playback stopped/unsubscribed. |
-| `SUBSCRIBE_FAIL` | `Subscribe.Fail` | Subscribe failed. |
+| Access                   | Event Type              | Meaning                                                |
+| :----------------------- | :---------------------- | :----------------------------------------------------- |
+| `CONNECT_SUCCESS`        | `Connect.Success`       | Session established.                                   |
+| `SUBSCRIBE_START`        | `Subscribe.Start`       | Playback started.                                      |
+| `SUBSCRIBE_STOP`         | `Subscribe.Stop`        | Playback stopped/unsubscribed.                         |
+| `SUBSCRIBE_FAIL`         | `Subscribe.Fail`        | Subscribe failed.                                      |
 | `SUBSCRIBE_INVALID_NAME` | `Subscribe.InvalidName` | Invalid stream/namespace during prefetch or subscribe. |
 
 ### MOQ-specific events (`MOQSubscriberEventTypes`)
 
-| Access | Event Type | Meaning |
-| :--- | :--- | :--- |
-| `SESSION_CONNECTING` | `MOQ.Session.Connecting` | Session connect process started. |
-| `SESSION_ESTABLISHED` | `MOQ.Session.Established` | Session connected. |
-| `SESSION_ERROR` | `MOQ.Session.Error` | Session-level error. |
-| `CATALOG_RECEIVED` | `MOQ.Catalog.Received` | Catalog received (prefetch or relay). |
-| `CATALOG_UPDATED` | `MOQ.Catalog.Updated` | Catalog update observed. |
-| `TRACK_SUBSCRIBE` | `MOQ.Track.Subscribe` | Track subscription succeeded. |
-| `TRACK_SUBSCRIBE_FAILED` | `MOQ.Track.Subscribe.Failed` | Track subscription failed. |
-| `TRACK_UNSUBSCRIBE` | `MOQ.Track.Unsubscribe` | Track unsubscribed. |
-| `FIRST_FRAME` | `MOQ.FirstFrame` | First frame rendered. |
-| `STATS_REPORT` | `MOQ.Stats.Report` | Stats report emitted when enabled. |
-| `AUDIO_BLOCKED` | `MOQ.Audio.Blocked` | Browser blocked audio output pending user gesture. |
-| `AUDIO_UNBLOCKED` | `MOQ.Audio.Unblocked` | Audio output resumed after user gesture. |
-| `MESSAGE_CHANNEL_OPEN` | `MOQ.MessageChannel.Open` | Managed `MOQMessageChannel` opened successfully. |
-| `MESSAGE_CHANNEL_SEND` | `MOQ.MessageChannel.Send` | Managed `MOQMessageChannel` sent a message/data payload. |
+| Access                    | Event Type                   | Meaning                                                      |
+| :------------------------ | :--------------------------- | :----------------------------------------------------------- |
+| `SESSION_CONNECTING`      | `MOQ.Session.Connecting`     | Session connect process started.                             |
+| `SESSION_ESTABLISHED`     | `MOQ.Session.Established`    | Session connected.                                           |
+| `SESSION_ERROR`           | `MOQ.Session.Error`          | Session-level error.                                         |
+| `CATALOG_RECEIVED`        | `MOQ.Catalog.Received`       | Catalog received (prefetch or relay).                        |
+| `CATALOG_UPDATED`         | `MOQ.Catalog.Updated`        | Catalog update observed.                                     |
+| `TRACK_SUBSCRIBE`         | `MOQ.Track.Subscribe`        | Track subscription succeeded.                                |
+| `TRACK_SUBSCRIBE_FAILED`  | `MOQ.Track.Subscribe.Failed` | Track subscription failed.                                   |
+| `TRACK_UNSUBSCRIBE`       | `MOQ.Track.Unsubscribe`      | Track unsubscribed.                                          |
+| `FIRST_FRAME`             | `MOQ.FirstFrame`             | First frame rendered.                                        |
+| `STATS_REPORT`            | `MOQ.Stats.Report`           | Stats report emitted when enabled.                           |
+| `AUDIO_BLOCKED`           | `MOQ.Audio.Blocked`          | Browser blocked audio output pending user gesture.           |
+| `AUDIO_UNBLOCKED`         | `MOQ.Audio.Unblocked`        | Audio output resumed after user gesture.                     |
+| `MESSAGE_CHANNEL_OPEN`    | `MOQ.MessageChannel.Open`    | Managed `MOQMessageChannel` opened successfully.             |
+| `MESSAGE_CHANNEL_SEND`    | `MOQ.MessageChannel.Send`    | Managed `MOQMessageChannel` sent a message/data payload.     |
 | `MESSAGE_CHANNEL_RECEIVE` | `MOQ.MessageChannel.Receive` | Managed `MOQMessageChannel` received a message/data payload. |
-| `MESSAGE_CHANNEL_CLOSE` | `MOQ.MessageChannel.Close` | Managed `MOQMessageChannel` closed. |
-| `MESSAGE_CHANNEL_FAIL` | `MOQ.MessageChannel.Fail` | Managed `MOQMessageChannel` failed to open. |
-| `MESSAGE_CHANNEL_ERROR` | `MOQ.MessageChannel.Error` | Managed `MOQMessageChannel` reported an error. |
+| `MESSAGE_CHANNEL_CLOSE`   | `MOQ.MessageChannel.Close`   | Managed `MOQMessageChannel` closed.                          |
+| `MESSAGE_CHANNEL_FAIL`    | `MOQ.MessageChannel.Fail`    | Managed `MOQMessageChannel` failed to open.                  |
+| `MESSAGE_CHANNEL_ERROR`   | `MOQ.MessageChannel.Error`   | Managed `MOQMessageChannel` reported an error.               |
 
 Managed MessageChannel events include metadata in `event.data`:
 
@@ -2039,11 +2072,31 @@ const view = subscriber.getRendererView()
 
 # Statistics
 
+The default endpoint is `EVENT_TRANSPORT` (`MOQ.Stats.Report`). To send the same `STATS_REPORT` JSON over the managed MoQ message channel, set `endpoint` to `DATA_CHANNEL` and enable `messageChannel`:
+
 ```js
-subscriber.monitorStats({
-  interval: 5000
+const { StatsEndpointType } = red5websdk
+
+await subscriber.init({
+  endpoint: 'https://relay.example.com:4433',
+  app: 'live',
+  streamName: 'mystream',
+  messageChannel: { enabled: true },
+  stats: {
+    interval: 5000,
+    endpoint: StatsEndpointType.DATA_CHANNEL,
+  },
 })
 ```
+
+```js
+subscriber.monitorStats({
+  interval: 5000,
+  endpoint: StatsEndpointType.EVENT_TRANSPORT,
+})
+```
+
+If `DATA_CHANNEL` is requested but `messageChannel.enabled` is not set, the SDK warns once and emits `STATS_REPORT` instead. Reports that arrive before the channel is open are queued until `MOQ.MessageChannel.Open`.
 
 You can also provide `stats` in `init()` options to start monitoring automatically after subscription starts.
 
@@ -2053,30 +2106,32 @@ You can also provide `stats` in `init()` options to start monitoring automatical
 
 Our goal at [Red5](https://red5.net) has always been to give developers the tools they need to deliver real-time streaming without complexity, bottlenecks, or hidden limitations. The Red5 integration with [PubNub](https://www.pubnub.com/) represents a major step toward that mission, combining sub-250 ms video streaming with sub-100 ms data delivery to power chat, reactions, synchronized metadata, and other interactive features at global scale.
 
-The intent of this document is to describe the integration points within our HTML SDK in which you can take advantage of PubNub and its services.
+The intent of this document is to describe the integration points within the Red5 Web SDK in which you can take advantage of PubNub and its services.
 
 > Read more about our thoughts and goals regarding PubNub Integration [here](https://www.red5.net/blog/red5-cloud-integrates-pubnub-to-deliver-interactivity-intelligence-global-scalability-for-real-time-streaming/).
 
 # PubNubClient
 
-The Red5 HTML SDK provides a basic `PubNubClient` to establish a connection to PubNub services for message communication. Its interface is very similar to that of the `WHIPClient` and `WHEPClient` provided in the SDK - both of which also provide easy init parameters and hooks for include PubNub intergation.
+The Red5 Web SDK provides a basic `PubNubClient` to establish a connection to PubNub services for message communication. Its interface is very similar to that of the `WHIPClient` and `WHEPClient` provided in the SDK - both of which also provide easy init parameters and hooks for include PubNub intergation.
 
 This document details the use of `PubNubClient` itself and may provide clearer details of the integration with the publisher and subscriber clients.
 
 > To learn more about how to include PubNub integration for a `WHIPClient` and `WHEPClient`, please review [WHIPClient - PubNub](./whip-client.md#pubnub-integration) and [WHEPClient - PubNub](./whep-client.md#pubnub-integration), respectively.
 
-* [Usage](#usage)
-* [Init Configuration](#init-configuration)
-* [Events](#events)
+- [Usage](#usage)
+- [Init Configuration](#init-configuration)
+- [Events](#events)
 
 # Usage
+
+On a script-tag page, load either the full SDK (`red5-web-sdk.min.js`) or the WHIP/WHEP/HLS build (`red5-web-sdk-webrtc.min.js`). Both attach `window.red5websdk`. From npm, `import { PubNubClient } from 'red5-web-sdk'` or `'red5-web-sdk/webrtc'`.
 
 A `PubNubClient` can be used singularly without taking advantage of the streaming capabilities of the `WHIPClient` and `WHEPClient` clients of the SDK.
 
 ```js
-// import { PubNubClient } from red5pro-webrtc-sdk
+// import { PubNubClient } from red5-web-sdk
 // OR, if loaded from CDN
-const { PubNubClient } = red5prosdk
+const { PubNubClient } = red5websdk
 ...
 const config = {
   publishKey: 'pub-c-XXXX',
@@ -2120,18 +2175,18 @@ Request to shut down the PubNub client integration and any channel subscriptions
 
 When using the `init()` call of a `PubNubClient`, the following initialization properties are available:
 
-| Property | Required | Default | Description |
-| :--- | :---: | :---: | :--- |
-| `pubnub` | [x] | `window.PubNub` | Reference to the [PubNub](https://www.npmjs.com/package/pubnub) library to utilize. |
-| `publishKey` | [x] | _None_ | The registered publish key from PubNub. This can be found in your [Red5 Cloud](https://cloud.red5.net) deployment. |
-| `subscribeKey` | [x] | _None_ | The registered subscribe key from PubNub. This can be found in your [Red5 Cloud](https://cloud.red5.net) deployment. |
-| `userId` | [x] | Auto-generated if not provided. | The associated User ID for PubNub. |
-| `roomId` | [x] | `red5` | Default Channel ID to subscribe to in PubNub messaging. |
-| `expiryMinutes` | [-] | `120` | Default expiration of issued token associated with client. |
-| `authToken` | [-] | _None_ | Optional authentication token issues from PubNub - if known. |
-| `cloudEndpoint` | [-] | _None_ | Optional endpoint of Red5 Cloud deployment to attempt access of `authToken` from PubNub system. |
-| `backendUrl` | [-] | _None_ | Optional full URL of service endpoint to access `authToken` from PubNub system. [See documentation on deploying your own service.](https://www.red5.net/docs/red5-cloud/development/sdks/backend-sdk/) |
-| `logLevel` | [-] | `trace` | The default log level of the PubNub client. |
+| Property        | Required |             Default             | Description                                                                                                                                                                                            |
+| :-------------- | :------: | :-----------------------------: | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pubnub`        |   [x]    |         `window.PubNub`         | Reference to the [PubNub](https://www.npmjs.com/package/pubnub) library to utilize.                                                                                                                    |
+| `publishKey`    |   [x]    |             _None_              | The registered publish key from PubNub. This can be found in your [Red5 Cloud](https://cloud.red5.net) deployment.                                                                                     |
+| `subscribeKey`  |   [x]    |             _None_              | The registered subscribe key from PubNub. This can be found in your [Red5 Cloud](https://cloud.red5.net) deployment.                                                                                   |
+| `userId`        |   [x]    | Auto-generated if not provided. | The associated User ID for PubNub.                                                                                                                                                                     |
+| `roomId`        |   [x]    |             `red5`              | Default Channel ID to subscribe to in PubNub messaging.                                                                                                                                                |
+| `expiryMinutes` |   [-]    |              `120`              | Default expiration of issued token associated with client.                                                                                                                                             |
+| `authToken`     |   [-]    |             _None_              | Optional authentication token issues from PubNub - if known.                                                                                                                                           |
+| `cloudEndpoint` |   [-]    |             _None_              | Optional endpoint of Red5 Cloud deployment to attempt access of `authToken` from PubNub system.                                                                                                        |
+| `backendUrl`    |   [-]    |             _None_              | Optional full URL of service endpoint to access `authToken` from PubNub system. [See documentation on deploying your own service.](https://www.red5.net/docs/red5-cloud/development/sdks/backend-sdk/) |
+| `logLevel`      |   [-]    |             `trace`             | The default log level of the PubNub client.                                                                                                                                                            |
 
 ## Authentication
 
@@ -2149,28 +2204,27 @@ If the `authToken` is not known or your [Red5 Cloud](https://cloud.red5.net) dep
 
 To learn more about the Backend SDKs and authentication token generation, [please refer to the documentation](https://www.red5.net/docs/red5-cloud/development/sdks/backend-sdk/).
 
-
 > This init configuration is also the same used when enabling PubNub integration for WHIP/WHEP Clients. View documentation related to [WHIPClient](./whip-client.md#pubnub-integration) and [WHEPClient](./whep-client.md#pubnub-integration).
 
 # Events
 
 The following events are dispatched by the `PubNubClient` and enumerated on the `PubNubEventTypes` object:
 
-| Access | Event Type | Meaning |
-| :--- | :--- | :--- |
-| `CONNECTED` | 'PubNub.Connected' | Dispatched when the PubNub client has successfully connected to the PubNub service. |
-| `DISCONNECTED` | 'PubNub.Disconnected' | Dispatched when the PubNub client has disconnected from the PubNub service. |
-| `SUBSCRIBE_SUCCESS` | 'PubNub.Subscribe.Success' | Dispatched when a channel subscription request has completed successfully. The `data` property contains details about the subscription. |
-| `SUBSCRIBE_FAILURE` | 'PubNub.Subscribe.Failure' | Dispatched when a channel subscription request has failed. The `data` property contains error information. |
-| `UNSUBSCRIBE_SUCCESS` | 'PubNub.Unsubscribe.Success' | Dispatched when a channel unsubscribe request has completed successfully. The `data` property contains details about the unsubscription. |
-| `UNSUBSCRIBE_FAILURE` | 'PubNub.Unsubscribe.Failure' | Dispatched when a channel unsubscribe request has failed. The `data` property contains error information. |
-| `MESSAGE_RECEIVED` | 'PubNub.Message.Received' | Dispatched when a message is received on a subscribed channel. The `data` property contains the message payload. |
-| `MESSAGE_SEND_SUCCESS` | 'PubNub.Message.Send.Success' | Dispatched when a message has been successfully published to a channel. The `data` property contains confirmation details. |
-| `MESSAGE_SEND_FAILURE` | 'PubNub.Message.Send.Failure' | Dispatched when a message publish request has failed. The `data` property contains error information. |
-| `AUTH_TOKEN_GENERATED` | 'PubNub.AuthToken.Generated' | Dispatched when an authentication token has been successfully generated. The `data` property contains the token information. |
-| `AUTH_TOKEN_GENERATION_ERROR` | 'PubNub.AuthToken.Generation.Error' | Dispatched when authentication token generation has failed. The `data` property contains error information. |
-| `STATUS` | 'PubNub.Status' | Dispatched on general status notification. The `data` property contains the status. |
-| `ERROR` | 'PubNub.Error' | Dispatched when a general error occurs in the PubNub client. The `data` property contains error details. |
+| Access                        | Event Type                          | Meaning                                                                                                                                  |
+| :---------------------------- | :---------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------- |
+| `CONNECTED`                   | 'PubNub.Connected'                  | Dispatched when the PubNub client has successfully connected to the PubNub service.                                                      |
+| `DISCONNECTED`                | 'PubNub.Disconnected'               | Dispatched when the PubNub client has disconnected from the PubNub service.                                                              |
+| `SUBSCRIBE_SUCCESS`           | 'PubNub.Subscribe.Success'          | Dispatched when a channel subscription request has completed successfully. The `data` property contains details about the subscription.  |
+| `SUBSCRIBE_FAILURE`           | 'PubNub.Subscribe.Failure'          | Dispatched when a channel subscription request has failed. The `data` property contains error information.                               |
+| `UNSUBSCRIBE_SUCCESS`         | 'PubNub.Unsubscribe.Success'        | Dispatched when a channel unsubscribe request has completed successfully. The `data` property contains details about the unsubscription. |
+| `UNSUBSCRIBE_FAILURE`         | 'PubNub.Unsubscribe.Failure'        | Dispatched when a channel unsubscribe request has failed. The `data` property contains error information.                                |
+| `MESSAGE_RECEIVED`            | 'PubNub.Message.Received'           | Dispatched when a message is received on a subscribed channel. The `data` property contains the message payload.                         |
+| `MESSAGE_SEND_SUCCESS`        | 'PubNub.Message.Send.Success'       | Dispatched when a message has been successfully published to a channel. The `data` property contains confirmation details.               |
+| `MESSAGE_SEND_FAILURE`        | 'PubNub.Message.Send.Failure'       | Dispatched when a message publish request has failed. The `data` property contains error information.                                    |
+| `AUTH_TOKEN_GENERATED`        | 'PubNub.AuthToken.Generated'        | Dispatched when an authentication token has been successfully generated. The `data` property contains the token information.             |
+| `AUTH_TOKEN_GENERATION_ERROR` | 'PubNub.AuthToken.Generation.Error' | Dispatched when authentication token generation has failed. The `data` property contains error information.                              |
+| `STATUS`                      | 'PubNub.Status'                     | Dispatched on general status notification. The `data` property contains the status.                                                      |
+| `ERROR`                       | 'PubNub.Error'                      | Dispatched when a general error occurs in the PubNub client. The `data` property contains error details.                                 |
 
 ### Source: `docs/api/_media/whep-client.md`
 
@@ -2195,16 +2249,18 @@ The `WHEPClient` - under the hood - is based on the [WebRTC-HTTP egress](https:/
 
 This provides a standardized - and _blazingly fast_ - way to establish and playback a live stream using WebRTC.
 
-* [Usage](#usage)
-* [Init Configuration](#init-configuration)
-* [Events](#events)
-* [Statistics](#statistics)
-* [Renegotiation Policy](#renegotiation-policy)
-* [Live Seek](#live-seek)
-* [Stream Manager 2.0](#stream-manager-20)
-* [PubNub Integration](#pubnub-integration)
+- [Usage](#usage)
+- [Init Configuration](#init-configuration)
+- [Events](#events)
+- [Statistics](#statistics)
+- [Renegotiation Policy](#renegotiation-policy)
+- [Live Seek](#live-seek)
+- [Stream Manager 2.0](#stream-manager-20)
+- [PubNub Integration](#pubnub-integration)
 
 # Usage
+
+On a script-tag page, load either the full SDK (`red5-web-sdk.min.js`) or the WHIP/WHEP/HLS build (`red5-web-sdk-webrtc.min.js`). Both attach `window.red5websdk`. From npm, `import { WHEPClient } from 'red5-web-sdk'` or `'red5-web-sdk/webrtc'`.
 
 There are two options to initiate a `WHEPClient`:
 
@@ -2276,30 +2332,30 @@ try {
 
 When using the `init()` call of a `WHEPClient` - or, alternatively, when using a **WHEP** endpoint with additional options in the constructor - the following initialization properties are available:
 
-| Property | Required | Default | Description |
-| :--- | :---: | :--- | :--- |
-| `host` | [x] | *None* | The IP or address that the WebSocket server resides on. |
-| `streamName` | [x] | *None* | The name of the stream to subscribe to. |
-| `protocol` | [x] | `https` | The protocol of the host for the signaling communication. |
-| `port` | [x] | `443` | The port on the host that the Red5 server listens on; `5080` or `443` (insecure or secure, respectively). |
-| `app` | [x] | `live` | The webapp context name that the stream is on. |
-| `endpoint` | [-] | `undefined` | The full URL of the endpoint to stream to. **This is primarily used in Stream Manager 2.0 integration for clients.**
-| `mediaElementId` | [-] | `red5pro-subscriber` | The target `video` or `audio` element `id` attribute which will display the stream. |
-| `rtcConfiguration` | [-] | _Basic_ | The `RTCConfiguration` to use in setting up `RTCPeerConnection`. [RTCConfiguration](https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/RTCPeerConnection#RTCConfiguration_dictionary)|
-| `includeDataChannel` | [-] | `true` | Flag to open a datachannel for messaging between server and client once connection is established.
-| `dataChannelConfiguration` | [-] | `{name: "red5pro"}` | An object used in configuring a n `RTCDataChannel`. _Only used when `includeDataChannel` is defined as `true`_ |
-| `iceTransport` | [-] | `UDP` | The transport type to use in ICE negotiation. Either `UDP` or `TCP` |
-| `subscriptionId` | [x] | auto-generated | A unique string representing the requesting client. |
-| `connectionParams` | [-] | `undefined` | An object of additional connection parameters to send to the server upon connection request. |
-| `videoEncoding` | [-] | *None* | Specifies target video encoder. |
-| `audioEncoding` | [-] | *None* | Specifies target audio encoder. |
-| `muteOnAutoplayRestriction` | [-] | `true` | Flag to attempt to mute the `video` element when `autoplay` is restricted in the browser. [See section on Autoplay Restrictions](../articles/autoplay/autoplay_policy.md) |
-| `buffer` | [-] | `0` | Request to set a buffer - in seconds - for playback.
-| `maintainStreamVariant` | [-] | `false` | Flag to instruct the server - when utilizing transcoding - to not switch subscriber stream variants when network conditions change. By setting this to `true`, when you request to playback a stream that is transcoded, the server will not deliver a variant of higher or lower quality dependending on current network conditions. |
-| `stats` | [-] | *None* | Configuration object to enable stats reporting. See [Stats Reporting](#statistics) for more information. |
-| `liveSeek` | [-] | *None* | Configuration object to enable live seek capability. See [Live Seek](#live-seek) for more information. |
-| `renegotiationPolicy` | [-] | *None* | Configuration object for renegotiation of ICE. See [Renegotiation Policy](#renegotiation-policy) for more information. |
-| `pubnub` | [-] | *None* | Configuration object for PubNub integration. See [PubNub Integration](#pubnub-integration) for more information. |
+| Property                    | Required | Default              | Description                                                                                                                                                                                                                                                                                                                           |
+| :-------------------------- | :------: | :------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `host`                      |   [x]    | _None_               | The IP or address that the WebSocket server resides on.                                                                                                                                                                                                                                                                               |
+| `streamName`                |   [x]    | _None_               | The name of the stream to subscribe to.                                                                                                                                                                                                                                                                                               |
+| `protocol`                  |   [x]    | `https`              | The protocol of the host for the signaling communication.                                                                                                                                                                                                                                                                             |
+| `port`                      |   [x]    | `443`                | The port on the host that the Red5 server listens on; `5080` or `443` (insecure or secure, respectively).                                                                                                                                                                                                                             |
+| `app`                       |   [x]    | `live`               | The webapp context name that the stream is on.                                                                                                                                                                                                                                                                                        |
+| `endpoint`                  |   [-]    | `undefined`          | The full URL of the endpoint to stream to. **This is primarily used in Stream Manager 2.0 integration for clients.**                                                                                                                                                                                                                  |
+| `mediaElementId`            |   [-]    | `red5pro-subscriber` | The target `video` or `audio` element `id` attribute which will display the stream.                                                                                                                                                                                                                                                   |
+| `rtcConfiguration`          |   [-]    | _Basic_              | The `RTCConfiguration` to use in setting up `RTCPeerConnection`. [RTCConfiguration](https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/RTCPeerConnection#RTCConfiguration_dictionary)                                                                                                                                 |
+| `includeDataChannel`        |   [-]    | `true`               | Flag to open a datachannel for messaging between server and client once connection is established.                                                                                                                                                                                                                                    |
+| `dataChannelConfiguration`  |   [-]    | `{name: "red5pro"}`  | An object used in configuring a n `RTCDataChannel`. _Only used when `includeDataChannel` is defined as `true`_                                                                                                                                                                                                                        |
+| `iceTransport`              |   [-]    | `UDP`                | The transport type to use in ICE negotiation. Either `UDP` or `TCP`                                                                                                                                                                                                                                                                   |
+| `subscriptionId`            |   [x]    | auto-generated       | A unique string representing the requesting client.                                                                                                                                                                                                                                                                                   |
+| `connectionParams`          |   [-]    | `undefined`          | An object of additional connection parameters to send to the server upon connection request.                                                                                                                                                                                                                                          |
+| `videoEncoding`             |   [-]    | _None_               | Specifies target video encoder.                                                                                                                                                                                                                                                                                                       |
+| `audioEncoding`             |   [-]    | _None_               | Specifies target audio encoder.                                                                                                                                                                                                                                                                                                       |
+| `muteOnAutoplayRestriction` |   [-]    | `true`               | Flag to attempt to mute the `video` element when `autoplay` is restricted in the browser. [See section on Autoplay Restrictions](../articles/autoplay/autoplay_policy.md)                                                                                                                                                             |
+| `buffer`                    |   [-]    | `0`                  | Request to set a buffer - in seconds - for playback.                                                                                                                                                                                                                                                                                  |
+| `maintainStreamVariant`     |   [-]    | `false`              | Flag to instruct the server - when utilizing transcoding - to not switch subscriber stream variants when network conditions change. By setting this to `true`, when you request to playback a stream that is transcoded, the server will not deliver a variant of higher or lower quality dependending on current network conditions. |
+| `stats`                     |   [-]    | _None_               | Configuration object to enable stats reporting. See [Stats Reporting](#statistics) for more information.                                                                                                                                                                                                                              |
+| `liveSeek`                  |   [-]    | _None_               | Configuration object to enable live seek capability. See [Live Seek](#live-seek) for more information.                                                                                                                                                                                                                                |
+| `renegotiationPolicy`       |   [-]    | _None_               | Configuration object for renegotiation of ICE. See [Renegotiation Policy](#renegotiation-policy) for more information.                                                                                                                                                                                                                |
+| `pubnub`                    |   [-]    | _None_               | Configuration object for PubNub integration. See [PubNub Integration](#pubnub-integration) for more information.                                                                                                                                                                                                                      |
 
 # Events
 
@@ -2333,54 +2389,54 @@ The following sections of this document describe the event types that can also b
 
 You can also listen to events individually. The following describe the various events that can be listened for on the `WHEPClient` and enumerated on the `SubscriberEventTypes` object:
 
-| Access | Event Type | Meaning |
-| :--- | :--- | :--- |
-| `CONNECT_SUCCESS` | 'Connect.Success' | When the subscriber has established a required remote connection, such as to a WebSocket server. |
-| `CONNECT_FAILURE` | 'Connect.Failure' | When the subscriber has failed to establish a required remote connection for consuming a stream. |
-| `RECONNECT_START` | 'Reconnect.Start' | Signal when attempt on reconnect has begun. This is used in conjunction with the `renegotiationPolicy` of the `init()` configuration. |
-| `RECONNECT_FAILURE` | 'Reconnect.Failure' | Signal when attempt on reconnect has failed. |
-| `SUBSCRIBE_START` | 'Subscribe.Start' | When the subscriber has started a subscribing to a stream. |
-| `SUBSCRIBE_STOP` | 'Subscribe.Stop' | When the subscriber has successfully closed an active subscription to a stream. |
-| `SUBSCRIBE_METADATA` | 'Subscribe.Metadata' | When metadata is received on the client from the server. |
-| `VIDEO_DIMENSIONS_CHANGE` | 'Subscribe.VideoDimensions.Change' | Invoked when `video` element has loaded metadata and the incoming stream dimensions are available. |
-| `ORIENTATION_CHANGE` | 'Subscribe.Orientation.Change' | Invoked when an orientation change is detected in metadata. Mobile (iOS and Android) broadcasts are sent with an orientation. |
-| `STREAMING_MODE_CHANGE` | 'Subscribe.StreamingMode.Change' | Invoked when the broadcast has "muted" either or both their video and audio tracks. |
-| `VOLUME_CHANGE` | 'Subscribe.Volume.Change' | Invoked when a change to volume is detected during playback. _From 0 to 1._ |
-| `PLAYBACK_TIME_UPDATE` | 'Subscribe.Time.Update' | Invoked when a change in playhead time is detected during playback. _In seconds._ |
-| `PLAYBACK_STATE_CHANGE` | 'Subscribe.Playback.Change' | Invoked when a change in playback state has occured, such as when going from a `Playback.PAUSED` state to `Playback.PLAYING` state. |
-| `FULL_SCREEN_STATE_CHANGE` | 'Subscribe.FullScreen.Change' | Invoked when a change in fullscreen state occurs during playback. |
-| `AUTO_PLAYBACK_FAILURE` | 'Subscribe.Autoplay.Failure' | Invoked when an attempt to `autoplay` on a media element throws a browser exception; typically due to browser security restrictions and their autoplay policies. (WebRTC and HLS, only) [See section on Autoplay Restrictions](../articles/autoplay/autoplay_policy.md) |
-| `AUTO_PLAYBACK_MUTED` | 'Subscribe.Autoplay.Muted' | Invoked when an attempt to `autoplay` on a media element throws a browser exception and is muted based on the `muteOnAutoplayRestriction` config property; typically due to browser security restrictions and their autoplay policies. (WebRTC and HLS, only) [See section on Autoplay Restrictions](../articles/autoplay/autoplay_policy.md) |
+| Access                     | Event Type                         | Meaning                                                                                                                                                                                                                                                                                                                                       |
+| :------------------------- | :--------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `CONNECT_SUCCESS`          | 'Connect.Success'                  | When the subscriber has established a required remote connection, such as to a WebSocket server.                                                                                                                                                                                                                                              |
+| `CONNECT_FAILURE`          | 'Connect.Failure'                  | When the subscriber has failed to establish a required remote connection for consuming a stream.                                                                                                                                                                                                                                              |
+| `RECONNECT_START`          | 'Reconnect.Start'                  | Signal when attempt on reconnect has begun. This is used in conjunction with the `renegotiationPolicy` of the `init()` configuration.                                                                                                                                                                                                         |
+| `RECONNECT_FAILURE`        | 'Reconnect.Failure'                | Signal when attempt on reconnect has failed.                                                                                                                                                                                                                                                                                                  |
+| `SUBSCRIBE_START`          | 'Subscribe.Start'                  | When the subscriber has started a subscribing to a stream.                                                                                                                                                                                                                                                                                    |
+| `SUBSCRIBE_STOP`           | 'Subscribe.Stop'                   | When the subscriber has successfully closed an active subscription to a stream.                                                                                                                                                                                                                                                               |
+| `SUBSCRIBE_METADATA`       | 'Subscribe.Metadata'               | When metadata is received on the client from the server.                                                                                                                                                                                                                                                                                      |
+| `VIDEO_DIMENSIONS_CHANGE`  | 'Subscribe.VideoDimensions.Change' | Invoked when `video` element has loaded metadata and the incoming stream dimensions are available.                                                                                                                                                                                                                                            |
+| `ORIENTATION_CHANGE`       | 'Subscribe.Orientation.Change'     | Invoked when an orientation change is detected in metadata. Mobile (iOS and Android) broadcasts are sent with an orientation.                                                                                                                                                                                                                 |
+| `STREAMING_MODE_CHANGE`    | 'Subscribe.StreamingMode.Change'   | Invoked when the broadcast has "muted" either or both their video and audio tracks.                                                                                                                                                                                                                                                           |
+| `VOLUME_CHANGE`            | 'Subscribe.Volume.Change'          | Invoked when a change to volume is detected during playback. _From 0 to 1._                                                                                                                                                                                                                                                                   |
+| `PLAYBACK_TIME_UPDATE`     | 'Subscribe.Time.Update'            | Invoked when a change in playhead time is detected during playback. _In seconds._                                                                                                                                                                                                                                                             |
+| `PLAYBACK_STATE_CHANGE`    | 'Subscribe.Playback.Change'        | Invoked when a change in playback state has occured, such as when going from a `Playback.PAUSED` state to `Playback.PLAYING` state.                                                                                                                                                                                                           |
+| `FULL_SCREEN_STATE_CHANGE` | 'Subscribe.FullScreen.Change'      | Invoked when a change in fullscreen state occurs during playback.                                                                                                                                                                                                                                                                             |
+| `AUTO_PLAYBACK_FAILURE`    | 'Subscribe.Autoplay.Failure'       | Invoked when an attempt to `autoplay` on a media element throws a browser exception; typically due to browser security restrictions and their autoplay policies. (WebRTC and HLS, only) [See section on Autoplay Restrictions](../articles/autoplay/autoplay_policy.md)                                                                       |
+| `AUTO_PLAYBACK_MUTED`      | 'Subscribe.Autoplay.Muted'         | Invoked when an attempt to `autoplay` on a media element throws a browser exception and is muted based on the `muteOnAutoplayRestriction` config property; typically due to browser security restrictions and their autoplay policies. (WebRTC and HLS, only) [See section on Autoplay Restrictions](../articles/autoplay/autoplay_policy.md) |
 
 In addition to the above events, the following events are also dispatched from a `WHEPClient` and are defined on the `RTCSubscriberEventTypes` enum:
 
-| Access | Event Type | Meaning |
-| :--- | :--- | :--- |
-| `PEER_CONNECTION_AVAILABLE` | 'WebRTC.PeerConnection.Available' | When the negotation process has produced a valid `PeerConnection`. |
-| `OFFER_START` | 'WebRTC.Offer.Start' | When the subscriber requests to start an offer on the `PeerConnection`. |
-| `OFFER_END` | 'WebRTC.Offer.End' | When the subscriber has received a `SessionDescription` from a requested offer over the `PeerConnection`. |
-| `ANSWER_START` | 'WebRTC.Answer.Start' | When the subscriber requests to send an answer on the `PeerConnection`. |
-| `ANSWER_END` | 'WebRTC.Answer.End' | When the subscriber has received an answer (in form of a `MediaStream`) over the `PeerConnection`. |
-| `CANDIDATE_CREATE` | 'WebRTC.Candidate.Create' | When the subscriber requests to send a candidate on the `PeerConnection`. |
-| `CANDIDATE_RECEIVE` | 'WebRTC.Candidate.Receive' | When the subscriber has received a candidate over the `PeerConnection`. |
-| `ICE_TRICKLE_COMPLETE` | 'WebRTC.IceTrickle.Complete' | When the negotaiton process (a.k.a. trickle) has completed and the subscriber will attempt at consuming a stream. |
-| `ON_ADD_STREAM` | 'WebRTC.Add.Stream' | When a `MediaStream` object has become available for playback. |
-| `TRACK_ADDED` | 'WebRTC.PeerConnection.OnTrack' | When a MediaTrack has become available on the underlying `RTCPeerConnection`. |
-| `DATA_CHANNEL_AVAILABLE` | 'WebRTC.DataChannel.Available' |  the underlying `RTCDataChannel` is available when `includeDataChannel` configuration is used. |
-| `DATA_CHANNEL_OPEN` | 'WebRTC.DataChannel.Open' | When the underlying `RTCDataChannel` is opened when `signalingServerOnly` configuration is used.
-| `DATA_CHANNEL_CLOSE` | 'WebRTC.DataChannel.Close' | When the underlying `RTCDataChannel` is closed when `includeDataChannel` configuration is used. |
-| `DATA_CHANNEL_ERROR` | 'WebRTC.DataChannel.Error' | When an error has occurred within the underlying `RTCDataChannel` when `includeDataChannel` configuration is used. |
-| `DATA_CHANNEL_MESSAGE` | 'WebRTC.DataChannel.Message' | When a message has been delivered over the underlying `RTCDataChannel` when `includeDataChannel` configuration is used. |
-| `HOST_ENDPOINT_CHANGED` | 'WebRTC.Endpoint.Changed' | Notification when the endpoint on which to signal and stream from has been asigned. |
-| `SUBSCRIBE_STREAM_SWITCH` | 'WebRTC.Subscribe.StreamSwitch' | Notification when request to switch stream on the connection is completed. |
-| `STATS_REPORT` | 'WebRTC.Stats.Report' | Notification of a statistics report generated from the stream connection. _Statistics are only reported based on the availability of `stats` on the init configuration or after calling [monitorStats](#statistics)._
-| `LIVE_SEEK_UNSUPPORTED` | 'WebRTC.LiveSeek.Unsupported' | When `liveSeek` is specified but the browser does not support th integration of HLS.JS for Live VOD playback. |
-| `LIVE_SEEK_ENABLED` | 'WebRTC.LiveSeek.Enabled' | When `liveSeek` is used to playback Live VOD and the HLS video has been loaded and available to seek. |
-| `LIVE_SEEK_DISABLED` | 'WebRTC.LiveSeek.Disabled' | When `liveSeek` is used to playback Live VOD and HLS video has not been loaded nor available to seek. |
-| `LIVE_SEEK_ERROR` | 'WebRTC.LiveSeek.Error' | When `liveSeek` is used to playback Live VOD and HLS video and an error in playback has occurred. Inspect the `error` attribute on the event for more details. |
-| `LIVE_SEEK_LOADING` | 'WebRTC.LiveSeek.FragmentLoading' | When `liveSeek` is used to playback Live VOD and HLS video in currently loading a fragment during seeking. |
-| `LIVE_SEEK_LOADED` | 'WebRTC.LiveSeek.FragmentLoaded' | When `liveSeek` is used to playback Live VOD and HLS video has completed loading a fragment during seeking. |
-| `LIVE_SEEK_CHANGE` | 'WebRTC.LiveSeek.Change' | When `liveSeek` is used, this event notifies on a change of state going from "live" to "vod" and vice versa. |
+| Access                      | Event Type                        | Meaning                                                                                                                                                                                                               |
+| :-------------------------- | :-------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `PEER_CONNECTION_AVAILABLE` | 'WebRTC.PeerConnection.Available' | When the negotation process has produced a valid `PeerConnection`.                                                                                                                                                    |
+| `OFFER_START`               | 'WebRTC.Offer.Start'              | When the subscriber requests to start an offer on the `PeerConnection`.                                                                                                                                               |
+| `OFFER_END`                 | 'WebRTC.Offer.End'                | When the subscriber has received a `SessionDescription` from a requested offer over the `PeerConnection`.                                                                                                             |
+| `ANSWER_START`              | 'WebRTC.Answer.Start'             | When the subscriber requests to send an answer on the `PeerConnection`.                                                                                                                                               |
+| `ANSWER_END`                | 'WebRTC.Answer.End'               | When the subscriber has received an answer (in form of a `MediaStream`) over the `PeerConnection`.                                                                                                                    |
+| `CANDIDATE_CREATE`          | 'WebRTC.Candidate.Create'         | When the subscriber requests to send a candidate on the `PeerConnection`.                                                                                                                                             |
+| `CANDIDATE_RECEIVE`         | 'WebRTC.Candidate.Receive'        | When the subscriber has received a candidate over the `PeerConnection`.                                                                                                                                               |
+| `ICE_TRICKLE_COMPLETE`      | 'WebRTC.IceTrickle.Complete'      | When the negotaiton process (a.k.a. trickle) has completed and the subscriber will attempt at consuming a stream.                                                                                                     |
+| `ON_ADD_STREAM`             | 'WebRTC.Add.Stream'               | When a `MediaStream` object has become available for playback.                                                                                                                                                        |
+| `TRACK_ADDED`               | 'WebRTC.PeerConnection.OnTrack'   | When a MediaTrack has become available on the underlying `RTCPeerConnection`.                                                                                                                                         |
+| `DATA_CHANNEL_AVAILABLE`    | 'WebRTC.DataChannel.Available'    | the underlying `RTCDataChannel` is available when `includeDataChannel` configuration is used.                                                                                                                         |
+| `DATA_CHANNEL_OPEN`         | 'WebRTC.DataChannel.Open'         | When the underlying `RTCDataChannel` is opened when `signalingServerOnly` configuration is used.                                                                                                                      |
+| `DATA_CHANNEL_CLOSE`        | 'WebRTC.DataChannel.Close'        | When the underlying `RTCDataChannel` is closed when `includeDataChannel` configuration is used.                                                                                                                       |
+| `DATA_CHANNEL_ERROR`        | 'WebRTC.DataChannel.Error'        | When an error has occurred within the underlying `RTCDataChannel` when `includeDataChannel` configuration is used.                                                                                                    |
+| `DATA_CHANNEL_MESSAGE`      | 'WebRTC.DataChannel.Message'      | When a message has been delivered over the underlying `RTCDataChannel` when `includeDataChannel` configuration is used.                                                                                               |
+| `HOST_ENDPOINT_CHANGED`     | 'WebRTC.Endpoint.Changed'         | Notification when the endpoint on which to signal and stream from has been asigned.                                                                                                                                   |
+| `SUBSCRIBE_STREAM_SWITCH`   | 'WebRTC.Subscribe.StreamSwitch'   | Notification when request to switch stream on the connection is completed.                                                                                                                                            |
+| `STATS_REPORT`              | 'WebRTC.Stats.Report'             | Notification of a statistics report generated from the stream connection. _Statistics are only reported based on the availability of `stats` on the init configuration or after calling [monitorStats](#statistics)._ |
+| `LIVE_SEEK_UNSUPPORTED`     | 'WebRTC.LiveSeek.Unsupported'     | When `liveSeek` is specified but the browser does not support th integration of HLS.JS for Live VOD playback.                                                                                                         |
+| `LIVE_SEEK_ENABLED`         | 'WebRTC.LiveSeek.Enabled'         | When `liveSeek` is used to playback Live VOD and the HLS video has been loaded and available to seek.                                                                                                                 |
+| `LIVE_SEEK_DISABLED`        | 'WebRTC.LiveSeek.Disabled'        | When `liveSeek` is used to playback Live VOD and HLS video has not been loaded nor available to seek.                                                                                                                 |
+| `LIVE_SEEK_ERROR`           | 'WebRTC.LiveSeek.Error'           | When `liveSeek` is used to playback Live VOD and HLS video and an error in playback has occurred. Inspect the `error` attribute on the event for more details.                                                        |
+| `LIVE_SEEK_LOADING`         | 'WebRTC.LiveSeek.FragmentLoading' | When `liveSeek` is used to playback Live VOD and HLS video in currently loading a fragment during seeking.                                                                                                            |
+| `LIVE_SEEK_LOADED`          | 'WebRTC.LiveSeek.FragmentLoaded'  | When `liveSeek` is used to playback Live VOD and HLS video has completed loading a fragment during seeking.                                                                                                           |
+| `LIVE_SEEK_CHANGE`          | 'WebRTC.LiveSeek.Change'          | When `liveSeek` is used, this event notifies on a change of state going from "live" to "vod" and vice versa.                                                                                                          |
 
 Additionally, the following events are related to ICE connection monitoring when integrating with Statistics:
 | Access | Event Type | Meaning |
@@ -2404,7 +2460,7 @@ The configuration used for statistics monitoring has the following structure:
   // If provided, it will POST stats to this endpoint.
   // If undefined or `data-channel`, it will post stats to message transport.
   // If null or `event-transport`, it will only emit status events.
-  endpoint: red5prosdk.StatsEndpointType.DATA_CHANNEL,
+  endpoint: red5websdk.StatsEndpointType.DATA_CHANNEL,
   additionalHeaders: undefined,
   interval: 5000, // Interval to poll stats, in milliseconds.
   include: [], // Empty array allows SDK to be judicious about what stats to include.
@@ -2413,9 +2469,9 @@ The configuration used for statistics monitoring has the following structure:
 
 ### endpoint
 
-* If the `endpoint` is defined with a URL, the SDK will attempt to make `POST` requests with a JSON body representing each individual report.
-* If the `endpoint` is set to `data-channel` or `undefined`, the SDK will post metadata with type `stats-report` on the underlying message transport (DataChannel) if available.
-* If the `endpoint` is set to `event-transport` or `null`, the SDK will only emit events with the metadata on the `WebRTC.StatsReport` event.
+- If the `endpoint` is defined with a URL, the SDK will attempt to make `POST` requests with a JSON body representing each individual report.
+- If the `endpoint` is set to `data-channel` or `undefined`, the SDK will post metadata with type `stats-report` on the underlying message transport (DataChannel) if available.
+- If the `endpoint` is set to `event-transport` or `null`, the SDK will only emit events with the metadata on the `WebRTC.StatsReport` event.
 
 ### additionalHeaders
 
@@ -2441,8 +2497,8 @@ include: ['inbound-rtp', 'transport']
 
 To start statistics monitoring, you have a couple of options:
 
-* You can provide a `stats` attribute with the [stats configuration object](#stats-configuration) to the [init configuration](#webrtc-configuration-parameters).
-* You can call `monitorStats` on the subscriber client with the optional [stats configuration object](#stats-configuration) parameter.
+- You can provide a `stats` attribute with the [stats configuration object](#stats-configuration) to the [init configuration](#webrtc-configuration-parameters).
+- You can call `monitorStats` on the subscriber client with the optional [stats configuration object](#stats-configuration) parameter.
 
 > Additionally, you can stop monitoring by calling `unmonitorStats` on the subscriber client.
 
@@ -2522,12 +2578,12 @@ type RenegotiationPolicyType = {
 
 The following `type` values are:
 
-| Name | Meaning |
-| :--- | :--- |
-| `regression` | When the ICE status has changed from a previously designated `success`. This will not always occur during ICE negotiation failures. |
-| `timeout` | When it has been determined (in conjunction with the `iceTimeoutInterval`), that too much time has elapsed since the start of the negotiation process in order for it to conclude successfully. |
-| `disconnect` | When the peer connection has decided to disconnect after a failure of ICE negotiation. |
-| `excessive-rtt` | Then the round-trip time determined through statistics is considered excessive (anything over `600ms` is considered severe.)
+| Name            | Meaning                                                                                                                                                                                         |
+| :-------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `regression`    | When the ICE status has changed from a previously designated `success`. This will not always occur during ICE negotiation failures.                                                             |
+| `timeout`       | When it has been determined (in conjunction with the `iceTimeoutInterval`), that too much time has elapsed since the start of the negotiation process in order for it to conclude successfully. |
+| `disconnect`    | When the peer connection has decided to disconnect after a failure of ICE negotiation.                                                                                                          |
+| `excessive-rtt` | Then the round-trip time determined through statistics is considered excessive (anything over `600ms` is considered severe.)                                                                    |
 
 Typically, these will be executed in the order defined in the table above, however it should be noted that sometimes a `regression` may not occur in poor connection scenarios. If the process were to fail, both `timeout` and `disconnect` will occur.
 
@@ -2623,7 +2679,7 @@ The `liveSeek` configuration object has the following signature:
 
 > This section provides information that relate to the release of Stream Manager 2.0 and its integration with WHIP/WHEP clients.
 
-The Stream Manager 2.0 simplifies the proxying of web clients to Origin and Edge nodes. As such, an initialization configuration property called `endpoint` was added to the WebRTC SDK. This `endpoint` value should be the full URL path to the proxy endpoint on the Stream Manager as is used as such:
+The Stream Manager 2.0 simplifies the proxying of web clients to Origin and Edge nodes. As such, an initialization configuration property called `endpoint` was added to the Red5 Web SDK. This `endpoint` value should be the full URL path to the proxy endpoint on the Stream Manager as is used as such:
 
 ## WHIP Proxy
 
@@ -2636,7 +2692,7 @@ const config = {
   endpoint,
   streamName,
   connectionParams: {
-    nodeGroup
+    nodeGroup,
   },
   // additional configurations
 }
@@ -2656,7 +2712,7 @@ const config = {
   endpoint,
   streamName,
   connectionParams: {
-    nodeGroup
+    nodeGroup,
   },
   // additional configurations
 }
@@ -2667,8 +2723,8 @@ await subscriber.subscribe()
 
 There are a few things to note here:
 
-* The difference of `/whip` and `/whep` in the URI for the endpoint calls between `WHIPClient` and `WHEPClient`, respecively.
-* The requirement of a `nodeGroup` connection parameter that is the target nodegroup within your Stream Manager deployment on which you want to proxy the WHIP/WHEP client(s).
+- The difference of `/whip` and `/whep` in the URI for the endpoint calls between `WHIPClient` and `WHEPClient`, respecively.
+- The requirement of a `nodeGroup` connection parameter that is the target nodegroup within your Stream Manager deployment on which you want to proxy the WHIP/WHEP client(s).
 
 # PubNub Integration
 
@@ -2680,18 +2736,18 @@ While the SDK provides a way to [utilize PubNub integration](./pubnub-client.md)
 
 Exposed on the [init configuration](#init-configuration) is the `pubnub` attribute. The following `pubnub` object configuration attributes are supported:
 
-| Property | Required | Default | Description |
-| :--- | :---: | :---: | :--- |
-| `pubnub` | [x] | `window.PubNub` | Reference to the [PubNub](https://www.npmjs.com/package/pubnub) library to utilize. |
-| `publishKey` | [x] | _None_ | The registered publish key from PubNub. This can be found in your [Red5 Cloud](https://cloud.red5.net) deployment. |
-| `subscribeKey` | [x] | _None_ | The registered subscribe key from PubNub. This can be found in your [Red5 Cloud](https://cloud.red5.net) deployment. |
-| `userId` | [x] | Auto-generated if not provided. | The associated User ID for PubNub. |
-| `roomId` | [x] | `red5` | Default Channel ID to subscribe to in PubNub messaging. |
-| `expiryMinutes` | [-] | `120` | Default expiration of issued token associated with client. |
-| `authToken` | [-] | _None_ | Optional authentication token issues from PubNub - if known. |
-| `cloudEndpoint` | [-] | _None_ | Optional endpoint of Red5 Cloud deployment to attempt access of `authToken` from PubNub system. |
-| `backendUrl` | [-] | _None_ | Optional full URL of service endpoint to access `authToken` from PubNub system. [See documentation on deploying your own service.](https://www.red5.net/docs/red5-cloud/development/sdks/backend-sdk/) |
-| `logLevel` | [-] | `trace` | The default log level of the PubNub client. |
+| Property        | Required |             Default             | Description                                                                                                                                                                                            |
+| :-------------- | :------: | :-----------------------------: | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pubnub`        |   [x]    |         `window.PubNub`         | Reference to the [PubNub](https://www.npmjs.com/package/pubnub) library to utilize.                                                                                                                    |
+| `publishKey`    |   [x]    |             _None_              | The registered publish key from PubNub. This can be found in your [Red5 Cloud](https://cloud.red5.net) deployment.                                                                                     |
+| `subscribeKey`  |   [x]    |             _None_              | The registered subscribe key from PubNub. This can be found in your [Red5 Cloud](https://cloud.red5.net) deployment.                                                                                   |
+| `userId`        |   [x]    | Auto-generated if not provided. | The associated User ID for PubNub.                                                                                                                                                                     |
+| `roomId`        |   [x]    |             `red5`              | Default Channel ID to subscribe to in PubNub messaging.                                                                                                                                                |
+| `expiryMinutes` |   [-]    |              `120`              | Default expiration of issued token associated with client.                                                                                                                                             |
+| `authToken`     |   [-]    |             _None_              | Optional authentication token issues from PubNub - if known.                                                                                                                                           |
+| `cloudEndpoint` |   [-]    |             _None_              | Optional endpoint of Red5 Cloud deployment to attempt access of `authToken` from PubNub system.                                                                                                        |
+| `backendUrl`    |   [-]    |             _None_              | Optional full URL of service endpoint to access `authToken` from PubNub system. [See documentation on deploying your own service.](https://www.red5.net/docs/red5-cloud/development/sdks/backend-sdk/) |
+| `logLevel`      |   [-]    |             `trace`             | The default log level of the PubNub client.                                                                                                                                                            |
 
 ## Authentication
 
@@ -2729,21 +2785,21 @@ Request to publish a message on the target channel.
 
 The following events are dispatched by the underlying pubnub integration and bubbled out through the `WHEPClient` and enumerated on the `PubNubEventTypes` object:
 
-| Access | Event Type | Meaning |
-| :--- | :--- | :--- |
-| `CONNECTED` | 'PubNub.Connected' | Dispatched when the PubNub client has successfully connected to the PubNub service. |
-| `DISCONNECTED` | 'PubNub.Disconnected' | Dispatched when the PubNub client has disconnected from the PubNub service. |
-| `SUBSCRIBE_SUCCESS` | 'PubNub.Subscribe.Success' | Dispatched when a channel subscription request has completed successfully. The `data` property contains details about the subscription. |
-| `SUBSCRIBE_FAILURE` | 'PubNub.Subscribe.Failure' | Dispatched when a channel subscription request has failed. The `data` property contains error information. |
-| `UNSUBSCRIBE_SUCCESS` | 'PubNub.Unsubscribe.Success' | Dispatched when a channel unsubscribe request has completed successfully. The `data` property contains details about the unsubscription. |
-| `UNSUBSCRIBE_FAILURE` | 'PubNub.Unsubscribe.Failure' | Dispatched when a channel unsubscribe request has failed. The `data` property contains error information. |
-| `MESSAGE_RECEIVED` | 'PubNub.Message.Received' | Dispatched when a message is received on a subscribed channel. The `data` property contains the message payload. |
-| `MESSAGE_SEND_SUCCESS` | 'PubNub.Message.Send.Success' | Dispatched when a message has been successfully published to a channel. The `data` property contains confirmation details. |
-| `MESSAGE_SEND_FAILURE` | 'PubNub.Message.Send.Failure' | Dispatched when a message publish request has failed. The `data` property contains error information. |
-| `AUTH_TOKEN_GENERATED` | 'PubNub.AuthToken.Generated' | Dispatched when an authentication token has been successfully generated. The `data` property contains the token information. |
-| `AUTH_TOKEN_GENERATION_ERROR` | 'PubNub.AuthToken.Generation.Error' | Dispatched when authentication token generation has failed. The `data` property contains error information. |
-| `STATUS` | 'PubNub.Status' | Dispatched on general status notification. The `data` property contains the status. |
-| `ERROR` | 'PubNub.Error' | Dispatched when a general error occurs in the PubNub client. The `data` property contains error details. |
+| Access                        | Event Type                          | Meaning                                                                                                                                  |
+| :---------------------------- | :---------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------- |
+| `CONNECTED`                   | 'PubNub.Connected'                  | Dispatched when the PubNub client has successfully connected to the PubNub service.                                                      |
+| `DISCONNECTED`                | 'PubNub.Disconnected'               | Dispatched when the PubNub client has disconnected from the PubNub service.                                                              |
+| `SUBSCRIBE_SUCCESS`           | 'PubNub.Subscribe.Success'          | Dispatched when a channel subscription request has completed successfully. The `data` property contains details about the subscription.  |
+| `SUBSCRIBE_FAILURE`           | 'PubNub.Subscribe.Failure'          | Dispatched when a channel subscription request has failed. The `data` property contains error information.                               |
+| `UNSUBSCRIBE_SUCCESS`         | 'PubNub.Unsubscribe.Success'        | Dispatched when a channel unsubscribe request has completed successfully. The `data` property contains details about the unsubscription. |
+| `UNSUBSCRIBE_FAILURE`         | 'PubNub.Unsubscribe.Failure'        | Dispatched when a channel unsubscribe request has failed. The `data` property contains error information.                                |
+| `MESSAGE_RECEIVED`            | 'PubNub.Message.Received'           | Dispatched when a message is received on a subscribed channel. The `data` property contains the message payload.                         |
+| `MESSAGE_SEND_SUCCESS`        | 'PubNub.Message.Send.Success'       | Dispatched when a message has been successfully published to a channel. The `data` property contains confirmation details.               |
+| `MESSAGE_SEND_FAILURE`        | 'PubNub.Message.Send.Failure'       | Dispatched when a message publish request has failed. The `data` property contains error information.                                    |
+| `AUTH_TOKEN_GENERATED`        | 'PubNub.AuthToken.Generated'        | Dispatched when an authentication token has been successfully generated. The `data` property contains the token information.             |
+| `AUTH_TOKEN_GENERATION_ERROR` | 'PubNub.AuthToken.Generation.Error' | Dispatched when authentication token generation has failed. The `data` property contains error information.                              |
+| `STATUS`                      | 'PubNub.Status'                     | Dispatched on general status notification. The `data` property contains the status.                                                      |
+| `ERROR`                       | 'PubNub.Error'                      | Dispatched when a general error occurs in the PubNub client. The `data` property contains error details.                                 |
 
 ### Source: `docs/api/_media/whip-client.md`
 
@@ -2768,15 +2824,17 @@ The `WHIPClient` - under the hood - is based on the [WebRTC-HTTP ingestion](http
 
 This provides a standardized - and _blazingly fast_ - way to establish and broadcast a live stream using WebRTC.
 
-* [Usage](#usage)
-* [Init Configuration](#init-configuration)
-* [Events](#events)
-* [Reconnect](#reconnect)
-* [Statistics](#statistics)
-* [Stream Manager 2.0](#stream-manager-20)
-* [PubNub Integration](#pubnub-integration)
+- [Usage](#usage)
+- [Init Configuration](#init-configuration)
+- [Events](#events)
+- [Reconnect](#reconnect)
+- [Statistics](#statistics)
+- [Stream Manager 2.0](#stream-manager-20)
+- [PubNub Integration](#pubnub-integration)
 
 # Usage
+
+On a script-tag page, load either the full SDK (`red5-web-sdk.min.js`) or the WHIP/WHEP/HLS build (`red5-web-sdk-webrtc.min.js`). Both attach `window.red5websdk`. From npm, `import { WHIPClient } from 'red5-web-sdk'` or `'red5-web-sdk/webrtc'`.
 
 There are two options to initiate a `WHIPClient`:
 
@@ -2848,36 +2906,36 @@ try {
 
 When using the `init()` call of a `WHIPClient` - or, alternatively, when using a **WHIP** endpoint with additional options in the constructor - the following initialization properties are available:
 
-| Property | Required | Default | Description |
-| :--- | :---: | :---: | :--- |
-| `host` | [x] | *None* | The IP or address that the WebSocket server resides on. |
-| `streamName` | [x] | *None* | The name of the stream to subscribe to. |
-| `protocol` | [x] | `https` | The protocol of the host for the signaling communication. |
-| `port` | [x] | `443` | The port on the host that the Red5 server listens on; `5080` or `443` (insecure or secure, respectively). |
-| `app` | [x] | `live` | The webapp context name that the stream is on. |
-| `endpoint` | [-] | `undefined` | The full URL of the endpoint to stream to. **This is primarily used in Stream Manager 2.0 integration for clients.**
-| `streamMode` | [x] | `live` | The mode to broadcast; `live`, `record` or `append`. |
-| `keyFramerate` | [-] | `3000` | The framerate (in milliseconds) between sending key frames in broadcast. |
-| `mediaElementId` | [-] | `red5pro-publisher` | The target `video` or `audio` element `id` attribute which will display the preview media. |
-| `rtcConfiguration` | [-] | _Basic_ | The `RTCConfiguration` to use in setting up `RTCPeerConnection`. [RTCConfiguration](https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/RTCPeerConnection#RTCConfiguration_dictionary)|
-| `includeDataChannel` | [-] | `true` | Flag to open a datachannel for messaging between server and client once connection is established.
-| `dataChannelConfiguration` | [-] | `{name: "red5pro"}` | An object used in configuring a n `RTCDataChannel`. _Only used when `includeDataChannel` is defined as `true`_ |
-| `iceTransport` | [-] | `UDP` | The transport type to use in ICE negotiation. Either `UDP` or `TCP` |
-| `bandwidth` | [-] |`{audio: 56, video: 750}` | A configuration object to setup bandwidth setting in publisher. |
-| `connectionParams` | [-] | `undefined` | An object of connection parameters to send to the server upon connection request. |
-| `mediaConstraints` | [x] | [see below](#using-mediaconstraints-and-ongetusermedia) | A object representative of the [Media Constraints](https://developer.mozilla.org/en-US/docs/Web/API/MediaStreamConstraints) to use while setting up the Media (via `getUserMedia` internally to the SDK). |
-| `onGetUserMedia` | [-] | [see below](#using-mediaconstraints-and-ongetusermedia) | An override method for performing your own `getUserMedia` request. Expected return is a `Promise` |
-| `videoEncoding` | [-] | `undefined` | `PublishVideoEncoder` enum: `VP8` | `H264` | `H265` | `AV1` . |
-| `audioEncoding` | [-] | `undefined` | `PublishAudioEncoder` enum. |
-| `offerSDPResolution` | [-] | `false` | Request to send the initial resolution on the SDP offer in an attribute line with the following format: `a=framesize:${width}-${height}` |
-| `stats` | [-] | *None* | Configuration object to enable stats reporting. See [Stats Reporting](#statistics) for more information. |
-| `reconnect` | [-] | *None* | Configuration object to enable auto re-connect on lost connection, due to such things as change in network. See [Reconnect](#reconnect) for more information. |
-| `optimizationParams` | [-] | *None* | Properties that can be assign on encodings and delivery of the published stream. See [OptimizationParams](#optimization-params) for more information. |
-| `pubnub` | [-] | *None* | Configuration object for PubNub integration. See [PubNub Integration](#pubnub-integration) for more information. |
+| Property                   | Required |                         Default                         | Description                                                                                                                                                                                               |
+| :------------------------- | :------: | :-----------------------------------------------------: | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ | ------ | ------- |
+| `host`                     |   [x]    |                         _None_                          | The IP or address that the WebSocket server resides on.                                                                                                                                                   |
+| `streamName`               |   [x]    |                         _None_                          | The name of the stream to subscribe to.                                                                                                                                                                   |
+| `protocol`                 |   [x]    |                         `https`                         | The protocol of the host for the signaling communication.                                                                                                                                                 |
+| `port`                     |   [x]    |                          `443`                          | The port on the host that the Red5 server listens on; `5080` or `443` (insecure or secure, respectively).                                                                                                 |
+| `app`                      |   [x]    |                         `live`                          | The webapp context name that the stream is on.                                                                                                                                                            |
+| `endpoint`                 |   [-]    |                       `undefined`                       | The full URL of the endpoint to stream to. **This is primarily used in Stream Manager 2.0 integration for clients.**                                                                                      |
+| `streamMode`               |   [x]    |                         `live`                          | The mode to broadcast; `live`, `record` or `append`.                                                                                                                                                      |
+| `keyFramerate`             |   [-]    |                         `3000`                          | The framerate (in milliseconds) between sending key frames in broadcast.                                                                                                                                  |
+| `mediaElementId`           |   [-]    |                   `red5pro-publisher`                   | The target `video` or `audio` element `id` attribute which will display the preview media.                                                                                                                |
+| `rtcConfiguration`         |   [-]    |                         _Basic_                         | The `RTCConfiguration` to use in setting up `RTCPeerConnection`. [RTCConfiguration](https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/RTCPeerConnection#RTCConfiguration_dictionary)     |
+| `includeDataChannel`       |   [-]    |                         `true`                          | Flag to open a datachannel for messaging between server and client once connection is established.                                                                                                        |
+| `dataChannelConfiguration` |   [-]    |                   `{name: "red5pro"}`                   | An object used in configuring a n `RTCDataChannel`. _Only used when `includeDataChannel` is defined as `true`_                                                                                            |
+| `iceTransport`             |   [-]    |                          `UDP`                          | The transport type to use in ICE negotiation. Either `UDP` or `TCP`                                                                                                                                       |
+| `bandwidth`                |   [-]    |                `{audio: 56, video: 750}`                | A configuration object to setup bandwidth setting in publisher.                                                                                                                                           |
+| `connectionParams`         |   [-]    |                       `undefined`                       | An object of connection parameters to send to the server upon connection request.                                                                                                                         |
+| `mediaConstraints`         |   [x]    | [see below](#using-mediaconstraints-and-ongetusermedia) | A object representative of the [Media Constraints](https://developer.mozilla.org/en-US/docs/Web/API/MediaStreamConstraints) to use while setting up the Media (via `getUserMedia` internally to the SDK). |
+| `onGetUserMedia`           |   [-]    | [see below](#using-mediaconstraints-and-ongetusermedia) | An override method for performing your own `getUserMedia` request. Expected return is a `Promise`                                                                                                         |
+| `videoEncoding`            |   [-]    |                       `undefined`                       | `PublishVideoEncoder` enum: `VP8`                                                                                                                                                                         | `H264` | `H265` | `AV1` . |
+| `audioEncoding`            |   [-]    |                       `undefined`                       | `PublishAudioEncoder` enum.                                                                                                                                                                               |
+| `offerSDPResolution`       |   [-]    |                         `false`                         | Request to send the initial resolution on the SDP offer in an attribute line with the following format: `a=framesize:${width}-${height}`                                                                  |
+| `stats`                    |   [-]    |                         _None_                          | Configuration object to enable stats reporting. See [Stats Reporting](#statistics) for more information.                                                                                                  |
+| `reconnect`                |   [-]    |                         _None_                          | Configuration object to enable auto re-connect on lost connection, due to such things as change in network. See [Reconnect](#reconnect) for more information.                                             |
+| `optimizationParams`       |   [-]    |                         _None_                          | Properties that can be assign on encodings and delivery of the published stream. See [OptimizationParams](#optimization-params) for more information.                                                     |
+| `pubnub`                   |   [-]    |                         _None_                          | Configuration object for PubNub integration. See [PubNub Integration](#pubnub-integration) for more information.                                                                                          |
 
 ## Using MediaConstraints and onGetUserMedia
 
-The Red5 HTML SDK will handle the `getUserMedia` requirements internally to set up your Camera and/or Microphone for a broadcast. As such, you can provide the [Media Constraint](https://developer.mozilla.org/en-US/docs/Web/API/MediaStreamConstraints) object to be used on the `init` configuration:
+The Red5 Web SDK will handle the `getUserMedia` requirements internally to set up your Camera and/or Microphone for a broadcast. As such, you can provide the [Media Constraint](https://developer.mozilla.org/en-US/docs/Web/API/MediaStreamConstraints) object to be used on the `init` configuration:
 
 ```js
 const config = {
@@ -2888,18 +2946,18 @@ const config = {
     video: {
       width: {
         min: 640,
-        max: 1280
+        max: 1280,
       },
       height: {
         min: 360,
-        max: 720
+        max: 720,
       },
       frameRate: {
         min: 15,
-        max: 60
-      }
-    }
-  }
+        max: 60,
+      },
+    },
+  },
 }
 
 const publisher = new WHIPClient()
@@ -2907,7 +2965,7 @@ await publisher.init(config)
 await publisher.publish()
 ```
 
-Internally, the Red5 HTML SDK will use the provided *Media Constraint* to test if the resolutions requested are supported by the browser. If not, it will find the nearest supported lower neighbor based on the originally provided area dimension(s) of the resolutions.
+Internally, the Red5 Web SDK will use the provided _Media Constraint_ to test if the resolutions requested are supported by the browser. If not, it will find the nearest supported lower neighbor based on the originally provided area dimension(s) of the resolutions.
 
 > If you would like to bypass the internal determination of resolution, you can use the `onGetUserMedia` override of the configuration properties.
 
@@ -2923,19 +2981,19 @@ const config = {
       video: {
         width: {
           min: 640,
-          max: 1280
+          max: 1280,
         },
         height: {
           min: 360,
-          max: 720
+          max: 720,
         },
         frameRate: {
           min: 15,
-          max: 60
-        }
-      }
+          max: 60,
+        },
+      },
     })
-  }
+  },
 }
 
 const publisher = new WHIPClient()
@@ -2943,16 +3001,16 @@ await publisher.init(config)
 await publisher.publish()
 ```
 
-The `onGetUserMedia` method - when defined on the configuration provide to a WebRTC-based Publisher - will override the internal call to `getUserMedia` in the Red5 HTML SDK.
+The `onGetUserMedia` method - when defined on the configuration provide to a WebRTC-based Publisher - will override the internal call to `getUserMedia` in the Red5 Web SDK.
 
 You can provide your own logic on how `getUserMedia` is invoked and a [Media Stream](https://developer.mozilla.org/en-US/docs/Web/API/MediaStream) attained by setting the `onGetUserMedia` attribute to a method that conforms to the following guidelines:
 
-* No input arguments are provided to `onGetUserMedia`.
-* It is *expected* that a `Promise` object is returned.
-* A `MediaStream` object must be provided in the resolve of the `Promise`.
-* The error provided in the reject of the `Promise` is optional, but recommended as a `String`.
+- No input arguments are provided to `onGetUserMedia`.
+- It is _expected_ that a `Promise` object is returned.
+- A `MediaStream` object must be provided in the resolve of the `Promise`.
+- The error provided in the reject of the `Promise` is optional, but recommended as a `String`.
 
-Be aware that overriding `onGetUserMedia` you are losing the logic from the Red5 HTML SDK that attempts to pick the optimal resolution supported by your browser. **Use with descretion.**
+Be aware that overriding `onGetUserMedia` you are losing the logic from the Red5 Web SDK that attempts to pick the optimal resolution supported by your browser. **Use with descretion.**
 
 > To read more about `getUserMedia` please read the following document from Mozilla Developer Network: [https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia](https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia)
 
@@ -2988,46 +3046,46 @@ The following sections of this document describe the event types that can also b
 
 You can also listen to events individually. The following describe the various events that can be listened for on the `WHIPClient` and enumerated on the `PublisherEventTypes` object:
 
-| Access | Event Type | Meaning |
-| :--- | :--- | :--- |
-| `CONNECT_SUCCESS` | 'Connect.Success' | When the publisher has established a required remote connection, such as to a WebSocket or RTMP-based server. |
-| `CONNECT_FAILURE` | 'Connect.Failure' | When the publisher has failed to establish a required remote connection for streaming. |
-| `PUBLISH_START` | 'Publish.Start' | When the publisher has started a broadcast stream. |
-| `PUBLISH_FAIL` | 'Publish.Fail' | When the publisher has failed to start a broadcast stream. |
-| `PUBLISH_INVALID_NAME` | 'Publish.InvalidName' | When the publisher is rejected from starting a broadcast stream because the `streamName` provided is already in use. |
-| `UNPUBLISH_SUCCESS` | 'Unpublish.Success' | When the publisher has successfully closed an active broadcast stream. |
-| `PUBLISH_METADATA` | 'Publish.Metadata' | When the publisher receives metadata from the server. |
-| `PUBLISH_STATUS` | 'Publish.Status' | When a status event of the publisher has been receieved from the server. |
-| `PUBLISH_AVAILABLE` | 'Publish.Available' | When the publisher stream has become available on the origin server to be consumed. This will follow the connection setup and `Publish.Start` event. |
-| `PUBLISH_INSUFFICIENT_BANDWIDTH` | 'Publish.InsufficientBW' | When the current broadcast session is experiencing insufficient bandwidth conditions. |
-| `PUBLISH_RECOVERING_BANDWIDTH` | 'Publish.RecoveringBW' | Then the current broadcast has updated information related to bandwidth condition recovery. |
-| `PUBLISH_SUFFICIENT_BANDWIDTH` | 'Publish.SufficientBW' | When the current broadcast session has sufficient bandwidth conditions from previously experiencing network issues. |
-| `CONNECTION_CLOSED` | 'Publisher.Connection.Closed' | Invoked when a close to the connection is detected. |
-| `DIMENSION_CHANGE` | 'Publisher.Video.DimensionChange' | Notification when the Camera resolution has been set or change. |
-| `STATISTICS_ENDPOINT_CHANGE` | 'Publisher.StatisticsEndpoint.Change' | Notification that the server has signaled a change in endpoint to deliver WebRTC Statistics based on RTCStatsReports. _Statistics are only reported after calling [monitorStats](#statistics)._ |
-| `RECONNECT_START` | 'Reconnect.Start' | Notification when a reconnection sequence has started. Requires `reconnect` initialization property to be enabled. |
-| `RECONNECT_FAILURE` | 'Reconnect.Failure' | Notification when a reconnection sequence has failed. Requires `reconnect` initialization property to be enabled. |
-| `RECONNECT_SUCCESS` | 'Reconnect.Success' | Notification when a reconnection sequence has been successful. Requires `reconnect` initialization property to be enabled.|
+| Access                           | Event Type                            | Meaning                                                                                                                                                                                         |
+| :------------------------------- | :------------------------------------ | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `CONNECT_SUCCESS`                | 'Connect.Success'                     | When the publisher has established a required remote connection, such as to a WebSocket or RTMP-based server.                                                                                   |
+| `CONNECT_FAILURE`                | 'Connect.Failure'                     | When the publisher has failed to establish a required remote connection for streaming.                                                                                                          |
+| `PUBLISH_START`                  | 'Publish.Start'                       | When the publisher has started a broadcast stream.                                                                                                                                              |
+| `PUBLISH_FAIL`                   | 'Publish.Fail'                        | When the publisher has failed to start a broadcast stream.                                                                                                                                      |
+| `PUBLISH_INVALID_NAME`           | 'Publish.InvalidName'                 | When the publisher is rejected from starting a broadcast stream because the `streamName` provided is already in use.                                                                            |
+| `UNPUBLISH_SUCCESS`              | 'Unpublish.Success'                   | When the publisher has successfully closed an active broadcast stream.                                                                                                                          |
+| `PUBLISH_METADATA`               | 'Publish.Metadata'                    | When the publisher receives metadata from the server.                                                                                                                                           |
+| `PUBLISH_STATUS`                 | 'Publish.Status'                      | When a status event of the publisher has been receieved from the server.                                                                                                                        |
+| `PUBLISH_AVAILABLE`              | 'Publish.Available'                   | When the publisher stream has become available on the origin server to be consumed. This will follow the connection setup and `Publish.Start` event.                                            |
+| `PUBLISH_INSUFFICIENT_BANDWIDTH` | 'Publish.InsufficientBW'              | When the current broadcast session is experiencing insufficient bandwidth conditions.                                                                                                           |
+| `PUBLISH_RECOVERING_BANDWIDTH`   | 'Publish.RecoveringBW'                | Then the current broadcast has updated information related to bandwidth condition recovery.                                                                                                     |
+| `PUBLISH_SUFFICIENT_BANDWIDTH`   | 'Publish.SufficientBW'                | When the current broadcast session has sufficient bandwidth conditions from previously experiencing network issues.                                                                             |
+| `CONNECTION_CLOSED`              | 'Publisher.Connection.Closed'         | Invoked when a close to the connection is detected.                                                                                                                                             |
+| `DIMENSION_CHANGE`               | 'Publisher.Video.DimensionChange'     | Notification when the Camera resolution has been set or change.                                                                                                                                 |
+| `STATISTICS_ENDPOINT_CHANGE`     | 'Publisher.StatisticsEndpoint.Change' | Notification that the server has signaled a change in endpoint to deliver WebRTC Statistics based on RTCStatsReports. _Statistics are only reported after calling [monitorStats](#statistics)._ |
+| `RECONNECT_START`                | 'Reconnect.Start'                     | Notification when a reconnection sequence has started. Requires `reconnect` initialization property to be enabled.                                                                              |
+| `RECONNECT_FAILURE`              | 'Reconnect.Failure'                   | Notification when a reconnection sequence has failed. Requires `reconnect` initialization property to be enabled.                                                                               |
+| `RECONNECT_SUCCESS`              | 'Reconnect.Success'                   | Notification when a reconnection sequence has been successful. Requires `reconnect` initialization property to be enabled.                                                                      |
 
 In addition to the above events, the following events are also dispatched from a `WHIPClient` and are defined on the `RTCPublisherEventTypes` enum:
 
-| Access | Event Type | Meaning |
-| :--- | :--- | :--- |
-| `CONSTRAINTS_ACCEPTED` | 'WebRTC.MediaConstraints.Accepted' | When constraints have been accepted from the internal request to `getUserMedia`. The `data` property of this event contains a `requested` object detailing the constraints used in the `getUserMedia` request and an `accepted` object which is the current constraint settings for the media. |
-| `CONSTRAINTS_REJECTED` | 'WebRTC.MediaConstraints.Rejected' | Then constraints have been rejected from the internal request to `getUserMedia`. The `data` property of this event contains a `constraints` object detailing the constraints that were used and rejected from `getUserMedia`. |
-| `MEDIA_STREAM_AVAILABLE` | 'WebRTC.MediaStream.Available' | When the negotation process has returned a `MediaStream` object to use. |
-| `PEER_CONNECTION_AVAILABLE` | 'WebRTC.PeerConnection.Available' | When the negotation process has produced a valid `PeerConnection`. |
-| `OFFER_START` | 'WebRTC.Offer.Start' | When the publisher requests to send an offer using a `SessionDescription` on the `PeerConnection`. |
-| `OFFER_END` | 'WebRTC.Offer.End' | When the publisher has received an answer from the `SDP` offer on the `PeerConnection`. |
-| `CANDIDATE_CREATE` | 'WebRTC.Candidate.Create' | When the publisher requests to send a candidate on the `PeerConnection`. |
-| `CANDIDATE_RECEIVE` | 'WebRTC.Candidate.Receive' | When the publisher has received a candidate over the `PeerConnection`. |
-| `ICE_TRICKLE_COMPLETE` | 'WebRTC.IceTrickle.Complete' | When the negotaiton process (a.k.a. trickle) has completed and the publisher will attempt at opening a broadcast stream. |
-| `DATA_CHANNEL_AVAILABLE` | 'WebRTC.DataChannel.Available' |  the underlying `RTCDataChannel` is available when `signalingSocketOnly` configuration is used. |
-| `DATA_CHANNEL_OPEN` | 'WebRTC.DataChannel.Open' | When the underlying `RTCDataChannel` is opened when `signalingSocketOnly` configuration is used.
-| `DATA_CHANNEL_CLOSE` | 'WebRTC.DataChannel.Close' | When the underlying `RTCDataChannel` is closed when `signalingSocketOnly` configuration is used. |
-| `DATA_CHANNEL_ERROR` | 'WebRTC.DataChannel.Error' | When an error has occurred within the underlying `RTCDataChannel` when `signalingSocketOnly` configuration is used. |
-| `DATA_CHANNEL_MESSAGE` | 'WebRTC.DataChannel.Message' | When a message has been delivered over the underlying `RTCDataChannel` when `signalingSocketOnly` configuration is used. |
-| `STATS_REPORT` | 'WebRTC.Stats.Report' | An RTCStatsReport has been captured by the WebRTC client based on configurations from calling [monitorStats](#statistics). |
+| Access                      | Event Type                         | Meaning                                                                                                                                                                                                                                                                                        |
+| :-------------------------- | :--------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `CONSTRAINTS_ACCEPTED`      | 'WebRTC.MediaConstraints.Accepted' | When constraints have been accepted from the internal request to `getUserMedia`. The `data` property of this event contains a `requested` object detailing the constraints used in the `getUserMedia` request and an `accepted` object which is the current constraint settings for the media. |
+| `CONSTRAINTS_REJECTED`      | 'WebRTC.MediaConstraints.Rejected' | Then constraints have been rejected from the internal request to `getUserMedia`. The `data` property of this event contains a `constraints` object detailing the constraints that were used and rejected from `getUserMedia`.                                                                  |
+| `MEDIA_STREAM_AVAILABLE`    | 'WebRTC.MediaStream.Available'     | When the negotation process has returned a `MediaStream` object to use.                                                                                                                                                                                                                        |
+| `PEER_CONNECTION_AVAILABLE` | 'WebRTC.PeerConnection.Available'  | When the negotation process has produced a valid `PeerConnection`.                                                                                                                                                                                                                             |
+| `OFFER_START`               | 'WebRTC.Offer.Start'               | When the publisher requests to send an offer using a `SessionDescription` on the `PeerConnection`.                                                                                                                                                                                             |
+| `OFFER_END`                 | 'WebRTC.Offer.End'                 | When the publisher has received an answer from the `SDP` offer on the `PeerConnection`.                                                                                                                                                                                                        |
+| `CANDIDATE_CREATE`          | 'WebRTC.Candidate.Create'          | When the publisher requests to send a candidate on the `PeerConnection`.                                                                                                                                                                                                                       |
+| `CANDIDATE_RECEIVE`         | 'WebRTC.Candidate.Receive'         | When the publisher has received a candidate over the `PeerConnection`.                                                                                                                                                                                                                         |
+| `ICE_TRICKLE_COMPLETE`      | 'WebRTC.IceTrickle.Complete'       | When the negotaiton process (a.k.a. trickle) has completed and the publisher will attempt at opening a broadcast stream.                                                                                                                                                                       |
+| `DATA_CHANNEL_AVAILABLE`    | 'WebRTC.DataChannel.Available'     | the underlying `RTCDataChannel` is available when `signalingSocketOnly` configuration is used.                                                                                                                                                                                                 |
+| `DATA_CHANNEL_OPEN`         | 'WebRTC.DataChannel.Open'          | When the underlying `RTCDataChannel` is opened when `signalingSocketOnly` configuration is used.                                                                                                                                                                                               |
+| `DATA_CHANNEL_CLOSE`        | 'WebRTC.DataChannel.Close'         | When the underlying `RTCDataChannel` is closed when `signalingSocketOnly` configuration is used.                                                                                                                                                                                               |
+| `DATA_CHANNEL_ERROR`        | 'WebRTC.DataChannel.Error'         | When an error has occurred within the underlying `RTCDataChannel` when `signalingSocketOnly` configuration is used.                                                                                                                                                                            |
+| `DATA_CHANNEL_MESSAGE`      | 'WebRTC.DataChannel.Message'       | When a message has been delivered over the underlying `RTCDataChannel` when `signalingSocketOnly` configuration is used.                                                                                                                                                                       |
+| `STATS_REPORT`              | 'WebRTC.Stats.Report'              | An RTCStatsReport has been captured by the WebRTC client based on configurations from calling [monitorStats](#statistics).                                                                                                                                                                     |
 
 # Reconnect
 
@@ -3096,7 +3154,7 @@ The configuration used for statistics monitoring has the following structure:
   // If provided, it will POST stats to this endpoint.
   // If undefined or `data-channel`, it will post stats to message transport.
   // If null or `event-transport`, it will only emit status events.
-  endpoint: red5prosdk.StatsEndpointType.DATA_CHANNEL,
+  endpoint: red5websdk.StatsEndpointType.DATA_CHANNEL,
   additionalHeaders: undefined,
   interval: 5000, // Interval to poll stats, in milliseconds.
   include: [], // Empty array allows SDK to be judicious about what stats to include.
@@ -3105,9 +3163,9 @@ The configuration used for statistics monitoring has the following structure:
 
 ### endpoint
 
-* If the `endpoint` is defined with a URL, the SDK will attempt to make `POST` requests with a JSON body representing each individual report.
-* If the `endpoint` is set to `data-channel` or `undefined`, the SDK will post metadata with type `stats-report` on the underlying message transport (DataChannel) if available.
-* If the `endpoint` is set to `event-transport` or `null`, the SDK will only emit events with the metadata on the `WebRTC.StatsReport` event.
+- If the `endpoint` is defined with a URL, the SDK will attempt to make `POST` requests with a JSON body representing each individual report.
+- If the `endpoint` is set to `data-channel` or `undefined`, the SDK will post metadata with type `stats-report` on the underlying message transport (DataChannel) if available.
+- If the `endpoint` is set to `event-transport` or `null`, the SDK will only emit events with the metadata on the `WebRTC.StatsReport` event.
 
 ### additionalHeaders
 
@@ -3133,8 +3191,8 @@ include: ['outbound-rtp', 'transport']
 
 To start statistics monitoring, you have a couple of options:
 
-* You can provide a `stats` attribute with the [stats configuration object](#stats-configuration) to the [init configuration](#webrtc-configuration-parameters).
-* You can call `monitorStats` on the publisher client with the optional [stats configuration object](#stats-configuration) parameter.
+- You can provide a `stats` attribute with the [stats configuration object](#stats-configuration) to the [init configuration](#webrtc-configuration-parameters).
+- You can call `monitorStats` on the publisher client with the optional [stats configuration object](#stats-configuration) parameter.
 
 > Additionally, you can stop monitoring by calling `unmonitorStats` on the publisher client.
 
@@ -3203,7 +3261,7 @@ The following is an example of a statistics metadata that is emitted in a `WebRT
 
 > This section provides information that relate to the release of Stream Manager 2.0 and its integration with WHIP/WHEP clients.
 
-The Stream Manager 2.0 simplifies the proxying of web clients to Origin and Edge nodes. As such, an initialization configuration property called `endpoint` was added to the WebRTC SDK. This `endpoint` value should be the full URL path to the proxy endpoint on the Stream Manager as is used as such:
+The Stream Manager 2.0 simplifies the proxying of web clients to Origin and Edge nodes. As such, an initialization configuration property called `endpoint` was added to the Red5 Web SDK. This `endpoint` value should be the full URL path to the proxy endpoint on the Stream Manager as is used as such:
 
 ## WHIP Proxy
 
@@ -3216,7 +3274,7 @@ const config = {
   endpoint,
   streamName,
   connectionParams: {
-    nodeGroup
+    nodeGroup,
   },
   // additional configurations
 }
@@ -3236,7 +3294,7 @@ const config = {
   endpoint,
   streamName,
   connectionParams: {
-    nodeGroup
+    nodeGroup,
   },
   // additional configurations
 }
@@ -3247,8 +3305,8 @@ await subscriber.subscribe()
 
 There are a few things to note here:
 
-* The difference of `/whip` and `/whep` in the URI for the endpoint calls between `WHIPClient` and `WHEPClient`, respecively.
-* The requirement of a `nodeGroup` connection parameter that is the target nodegroup within your Stream Manager deployment on which you want to proxy the WHIP/WHEP client(s).
+- The difference of `/whip` and `/whep` in the URI for the endpoint calls between `WHIPClient` and `WHEPClient`, respecively.
+- The requirement of a `nodeGroup` connection parameter that is the target nodegroup within your Stream Manager deployment on which you want to proxy the WHIP/WHEP client(s).
 
 # PubNub Integration
 
@@ -3260,18 +3318,18 @@ While the SDK provides a way to [utilize PubNub integration](./pubnub-client.md)
 
 Exposed on the [init configuration](#init-configuration) is the `pubnub` attribute. The following `pubnub` object configuration attributes are supported:
 
-| Property | Required | Default | Description |
-| :--- | :---: | :---: | :--- |
-| `pubnub` | [x] | `window.PubNub` | Reference to the [PubNub](https://www.npmjs.com/package/pubnub) library to utilize. |
-| `publishKey` | [x] | _None_ | The registered publish key from PubNub. This can be found in your [Red5 Cloud](https://cloud.red5.net) deployment. |
-| `subscribeKey` | [x] | _None_ | The registered subscribe key from PubNub. This can be found in your [Red5 Cloud](https://cloud.red5.net) deployment. |
-| `userId` | [x] | Auto-generated if not provided. | The associated User ID for PubNub. |
-| `roomId` | [x] | `red5` | Default Channel ID to subscribe to in PubNub messaging. |
-| `expiryMinutes` | [-] | `120` | Default expiration of issued token associated with client. |
-| `authToken` | [-] | _None_ | Optional authentication token issues from PubNub - if known. |
-| `cloudEndpoint` | [-] | _None_ | Optional endpoint of Red5 Cloud deployment to attempt access of `authToken` from PubNub system. |
-| `backendUrl` | [-] | _None_ | Optional full URL of service endpoint to access `authToken` from PubNub system. [See documentation on deploying your own service.](https://www.red5.net/docs/red5-cloud/development/sdks/backend-sdk/) |
-| `logLevel` | [-] | `trace` | The default log level of the PubNub client. |
+| Property        | Required |             Default             | Description                                                                                                                                                                                            |
+| :-------------- | :------: | :-----------------------------: | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pubnub`        |   [x]    |         `window.PubNub`         | Reference to the [PubNub](https://www.npmjs.com/package/pubnub) library to utilize.                                                                                                                    |
+| `publishKey`    |   [x]    |             _None_              | The registered publish key from PubNub. This can be found in your [Red5 Cloud](https://cloud.red5.net) deployment.                                                                                     |
+| `subscribeKey`  |   [x]    |             _None_              | The registered subscribe key from PubNub. This can be found in your [Red5 Cloud](https://cloud.red5.net) deployment.                                                                                   |
+| `userId`        |   [x]    | Auto-generated if not provided. | The associated User ID for PubNub.                                                                                                                                                                     |
+| `roomId`        |   [x]    |             `red5`              | Default Channel ID to subscribe to in PubNub messaging.                                                                                                                                                |
+| `expiryMinutes` |   [-]    |              `120`              | Default expiration of issued token associated with client.                                                                                                                                             |
+| `authToken`     |   [-]    |             _None_              | Optional authentication token issues from PubNub - if known.                                                                                                                                           |
+| `cloudEndpoint` |   [-]    |             _None_              | Optional endpoint of Red5 Cloud deployment to attempt access of `authToken` from PubNub system.                                                                                                        |
+| `backendUrl`    |   [-]    |             _None_              | Optional full URL of service endpoint to access `authToken` from PubNub system. [See documentation on deploying your own service.](https://www.red5.net/docs/red5-cloud/development/sdks/backend-sdk/) |
+| `logLevel`      |   [-]    |             `trace`             | The default log level of the PubNub client.                                                                                                                                                            |
 
 ## Authentication
 
@@ -3309,33 +3367,33 @@ Request to publish a message on the target channel.
 
 The following events are dispatched by the underlying pubnub integration and bubbled out through the `WHIPClient` and enumerated on the `PubNubEventTypes` object:
 
-| Access | Event Type | Meaning |
-| :--- | :--- | :--- |
-| `CONNECTED` | 'PubNub.Connected' | Dispatched when the PubNub client has successfully connected to the PubNub service. |
-| `DISCONNECTED` | 'PubNub.Disconnected' | Dispatched when the PubNub client has disconnected from the PubNub service. |
-| `SUBSCRIBE_SUCCESS` | 'PubNub.Subscribe.Success' | Dispatched when a channel subscription request has completed successfully. The `data` property contains details about the subscription. |
-| `SUBSCRIBE_FAILURE` | 'PubNub.Subscribe.Failure' | Dispatched when a channel subscription request has failed. The `data` property contains error information. |
-| `UNSUBSCRIBE_SUCCESS` | 'PubNub.Unsubscribe.Success' | Dispatched when a channel unsubscribe request has completed successfully. The `data` property contains details about the unsubscription. |
-| `UNSUBSCRIBE_FAILURE` | 'PubNub.Unsubscribe.Failure' | Dispatched when a channel unsubscribe request has failed. The `data` property contains error information. |
-| `MESSAGE_RECEIVED` | 'PubNub.Message.Received' | Dispatched when a message is received on a subscribed channel. The `data` property contains the message payload. |
-| `MESSAGE_SEND_SUCCESS` | 'PubNub.Message.Send.Success' | Dispatched when a message has been successfully published to a channel. The `data` property contains confirmation details. |
-| `MESSAGE_SEND_FAILURE` | 'PubNub.Message.Send.Failure' | Dispatched when a message publish request has failed. The `data` property contains error information. |
-| `AUTH_TOKEN_GENERATED` | 'PubNub.AuthToken.Generated' | Dispatched when an authentication token has been successfully generated. The `data` property contains the token information. |
-| `AUTH_TOKEN_GENERATION_ERROR` | 'PubNub.AuthToken.Generation.Error' | Dispatched when authentication token generation has failed. The `data` property contains error information. |
-| `STATUS` | 'PubNub.Status' | Dispatched on general status notification. The `data` property contains the status. |
-| `ERROR` | 'PubNub.Error' | Dispatched when a general error occurs in the PubNub client. The `data` property contains error details. |
+| Access                        | Event Type                          | Meaning                                                                                                                                  |
+| :---------------------------- | :---------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------- |
+| `CONNECTED`                   | 'PubNub.Connected'                  | Dispatched when the PubNub client has successfully connected to the PubNub service.                                                      |
+| `DISCONNECTED`                | 'PubNub.Disconnected'               | Dispatched when the PubNub client has disconnected from the PubNub service.                                                              |
+| `SUBSCRIBE_SUCCESS`           | 'PubNub.Subscribe.Success'          | Dispatched when a channel subscription request has completed successfully. The `data` property contains details about the subscription.  |
+| `SUBSCRIBE_FAILURE`           | 'PubNub.Subscribe.Failure'          | Dispatched when a channel subscription request has failed. The `data` property contains error information.                               |
+| `UNSUBSCRIBE_SUCCESS`         | 'PubNub.Unsubscribe.Success'        | Dispatched when a channel unsubscribe request has completed successfully. The `data` property contains details about the unsubscription. |
+| `UNSUBSCRIBE_FAILURE`         | 'PubNub.Unsubscribe.Failure'        | Dispatched when a channel unsubscribe request has failed. The `data` property contains error information.                                |
+| `MESSAGE_RECEIVED`            | 'PubNub.Message.Received'           | Dispatched when a message is received on a subscribed channel. The `data` property contains the message payload.                         |
+| `MESSAGE_SEND_SUCCESS`        | 'PubNub.Message.Send.Success'       | Dispatched when a message has been successfully published to a channel. The `data` property contains confirmation details.               |
+| `MESSAGE_SEND_FAILURE`        | 'PubNub.Message.Send.Failure'       | Dispatched when a message publish request has failed. The `data` property contains error information.                                    |
+| `AUTH_TOKEN_GENERATED`        | 'PubNub.AuthToken.Generated'        | Dispatched when an authentication token has been successfully generated. The `data` property contains the token information.             |
+| `AUTH_TOKEN_GENERATION_ERROR` | 'PubNub.AuthToken.Generation.Error' | Dispatched when authentication token generation has failed. The `data` property contains error information.                              |
+| `STATUS`                      | 'PubNub.Status'                     | Dispatched on general status notification. The `data` property contains the status.                                                      |
+| `ERROR`                       | 'PubNub.Error'                      | Dispatched when a general error occurs in the PubNub client. The `data` property contains error details.                                 |
 
 ### Source: `docs/api/classes/Event.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.1**](../README.md)
 
-***
+---
 
-[Red5 Pro WebRTC SDK](../globals.md) / Event
+[Red5 Web SDK](../globals.md) / Event
 
 # Class: Event
 
-Base class for an Event within the Red5 Pro WebRTC SDK.
+Base class for an Event within the Red5 Web SDK.
 
 ## Extended by
 
@@ -3379,7 +3437,7 @@ Get the data associated with the event.
 
 `any`
 
-***
+---
 
 ### type
 
@@ -3395,11 +3453,11 @@ Get the type of event.
 
 ### Source: `docs/api/classes/EventEmitter.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.1**](../README.md)
 
-***
+---
 
-[Red5 Pro WebRTC SDK](../globals.md) / EventEmitter
+[Red5 Web SDK](../globals.md) / EventEmitter
 
 # Class: EventEmitter
 
@@ -3456,7 +3514,7 @@ Remove a callback handler for an event type.
 
 [`EventEmitterInterface`](../interfaces/EventEmitterInterface.md).[`off`](../interfaces/EventEmitterInterface.md#off)
 
-***
+---
 
 ### on()
 
@@ -3482,7 +3540,7 @@ Assign a callback handler to an event type.
 
 [`EventEmitterInterface`](../interfaces/EventEmitterInterface.md).[`on`](../interfaces/EventEmitterInterface.md#on)
 
-***
+---
 
 ### trigger()
 
@@ -3506,11 +3564,11 @@ Dispatch an event to be handled by any assigned callbacks.
 
 ### Source: `docs/api/classes/HLSSubscriber.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.1**](../README.md)
 
-***
+---
 
-[Red5 Pro WebRTC SDK](../globals.md) / HLSSubscriber
+[Red5 Web SDK](../globals.md) / HLSSubscriber
 
 # Class: HLSSubscriber
 
@@ -3548,7 +3606,7 @@ Get the file URL of the HLS stream.
 
 `string` \| `undefined`
 
-***
+---
 
 ### options
 
@@ -3574,7 +3632,7 @@ Get the file URL of the HLS stream.
 
 `string` \| `undefined`
 
-***
+---
 
 ### getOptions()
 
@@ -3586,7 +3644,7 @@ Get the options of the HLS stream.
 
 [`HLSSubscriberConfigType`](../type-aliases/HLSSubscriberConfigType.md) \| `undefined`
 
-***
+---
 
 ### getPlayer()
 
@@ -3598,7 +3656,7 @@ Get the playback element of the HLS stream.
 
 `HTMLMediaElement` \| `undefined`
 
-***
+---
 
 ### getType()
 
@@ -3610,7 +3668,7 @@ Get the type of the subscriber (HLS).
 
 `string`
 
-***
+---
 
 ### getVolume()
 
@@ -3626,7 +3684,7 @@ Get the volume of the HLS stream.
 
 [`PlaybackController`](PlaybackController.md).[`getVolume`](PlaybackController.md#getvolume)
 
-***
+---
 
 ### init()
 
@@ -3644,7 +3702,7 @@ Initialize the HLS Subscriber.
 
 `Promise`\<`HLSSubscriber`\>
 
-***
+---
 
 ### mute()
 
@@ -3660,7 +3718,7 @@ Mute the HLS stream.
 
 [`PlaybackController`](PlaybackController.md).[`mute`](PlaybackController.md#mute)
 
-***
+---
 
 ### off()
 
@@ -3690,7 +3748,7 @@ The function to remove the listener from.
 
 [`PlaybackController`](PlaybackController.md).[`off`](PlaybackController.md#off)
 
-***
+---
 
 ### on()
 
@@ -3720,7 +3778,7 @@ The function to call when the event is triggered.
 
 [`PlaybackController`](PlaybackController.md).[`on`](PlaybackController.md#on)
 
-***
+---
 
 ### pause()
 
@@ -3736,7 +3794,7 @@ Pause the HLS stream.
 
 [`PlaybackController`](PlaybackController.md).[`pause`](PlaybackController.md#pause)
 
-***
+---
 
 ### play()
 
@@ -3752,7 +3810,7 @@ Play the HLS stream.
 
 [`PlaybackController`](PlaybackController.md).[`play`](PlaybackController.md#play)
 
-***
+---
 
 ### resume()
 
@@ -3768,7 +3826,7 @@ Resume the HLS stream.
 
 [`PlaybackController`](PlaybackController.md).[`resume`](PlaybackController.md#resume)
 
-***
+---
 
 ### seekTo()
 
@@ -3790,7 +3848,7 @@ Seek to a specific time in the HLS stream.
 
 [`PlaybackController`](PlaybackController.md).[`seekTo`](PlaybackController.md#seekto)
 
-***
+---
 
 ### setVolume()
 
@@ -3812,7 +3870,7 @@ Set the volume of the HLS stream.
 
 [`PlaybackController`](PlaybackController.md).[`setVolume`](PlaybackController.md#setvolume)
 
-***
+---
 
 ### stop()
 
@@ -3828,7 +3886,7 @@ Stop the HLS stream.
 
 [`PlaybackController`](PlaybackController.md).[`stop`](PlaybackController.md#stop)
 
-***
+---
 
 ### subscribe()
 
@@ -3840,7 +3898,7 @@ Subscribe to the HLS stream.
 
 `Promise`\<`HLSSubscriber`\>
 
-***
+---
 
 ### toggleFullScreen()
 
@@ -3856,7 +3914,7 @@ Toggle the full screen of the HLS stream.
 
 [`PlaybackController`](PlaybackController.md).[`toggleFullScreen`](PlaybackController.md#togglefullscreen)
 
-***
+---
 
 ### trigger()
 
@@ -3880,7 +3938,7 @@ The event to trigger.
 
 [`PlaybackController`](PlaybackController.md).[`trigger`](PlaybackController.md#trigger)
 
-***
+---
 
 ### unmute()
 
@@ -3896,7 +3954,7 @@ Unmute the HLS stream.
 
 [`PlaybackController`](PlaybackController.md).[`unmute`](PlaybackController.md#unmute)
 
-***
+---
 
 ### unsubscribe()
 
@@ -3910,11 +3968,11 @@ Unsubscribe from the HLS stream.
 
 ### Source: `docs/api/classes/LiveSeekClient.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.1**](../README.md)
 
-***
+---
 
-[Red5 Pro WebRTC SDK](../globals.md) / LiveSeekClient
+[Red5 Web SDK](../globals.md) / LiveSeekClient
 
 # Class: LiveSeekClient
 
@@ -4008,7 +4066,7 @@ The arguments to call the method with.
 
 [`WHEPClient`](WHEPClient.md).[`callServer`](WHEPClient.md#callserver)
 
-***
+---
 
 ### disableStandby()
 
@@ -4024,7 +4082,7 @@ Disable standby mode for the WHEP-based Subscriber. This will signal to the serv
 
 [`WHEPClient`](WHEPClient.md).[`disableStandby`](WHEPClient.md#disablestandby)
 
-***
+---
 
 ### emit()
 
@@ -4054,7 +4112,7 @@ The data to emit.
 
 [`WHEPClient`](WHEPClient.md).[`emit`](WHEPClient.md#emit)
 
-***
+---
 
 ### enableStandby()
 
@@ -4070,7 +4128,7 @@ Enable standby mode for the WHEP-based Subscriber. This will signal to the serve
 
 [`WHEPClient`](WHEPClient.md).[`enableStandby`](WHEPClient.md#enablestandby)
 
-***
+---
 
 ### getDataChannel()
 
@@ -4086,7 +4144,7 @@ Get the data channel for the WHEP-based Subscriber.
 
 [`WHEPClient`](WHEPClient.md).[`getDataChannel`](WHEPClient.md#getdatachannel)
 
-***
+---
 
 ### getMediaStream()
 
@@ -4102,7 +4160,7 @@ Get the media stream being played back by the subscriber.
 
 [`WHEPClient`](WHEPClient.md).[`getMediaStream`](WHEPClient.md#getmediastream)
 
-***
+---
 
 ### getMessageTransport()
 
@@ -4118,7 +4176,7 @@ Get the message transport for the WHEP-based Subscriber.
 
 [`WHEPClient`](WHEPClient.md).[`getMessageTransport`](WHEPClient.md#getmessagetransport)
 
-***
+---
 
 ### getOptions()
 
@@ -4134,7 +4192,7 @@ Get the options for the WHEP-based Subscriber.
 
 [`WHEPClient`](WHEPClient.md).[`getOptions`](WHEPClient.md#getoptions)
 
-***
+---
 
 ### getPeerConnection()
 
@@ -4150,7 +4208,7 @@ Get the peer connection for the WHEP-based Subscriber.
 
 [`WHEPClient`](WHEPClient.md).[`getPeerConnection`](WHEPClient.md#getpeerconnection)
 
-***
+---
 
 ### getPlayer()
 
@@ -4166,7 +4224,7 @@ Get the media element for the WHEP-based Subscriber.
 
 [`WHEPClient`](WHEPClient.md).[`getPlayer`](WHEPClient.md#getplayer)
 
-***
+---
 
 ### getPubNubClient()
 
@@ -4182,7 +4240,7 @@ Get the PubNub client for the WHEP-based Subscriber.
 
 [`WHEPClient`](WHEPClient.md).[`getPubNubClient`](WHEPClient.md#getpubnubclient)
 
-***
+---
 
 ### getType()
 
@@ -4198,7 +4256,7 @@ Get the type of the WHEP-based Subscriber (RTC).
 
 [`WHEPClient`](WHEPClient.md).[`getType`](WHEPClient.md#gettype)
 
-***
+---
 
 ### getVolume()
 
@@ -4214,7 +4272,7 @@ Get the volume of the media being delivered to the subscriber.
 
 [`WHEPClient`](WHEPClient.md).[`getVolume`](WHEPClient.md#getvolume)
 
-***
+---
 
 ### init()
 
@@ -4238,7 +4296,7 @@ LiveSeekConfigType to use for configuration.
 
 [`WHEPClient`](WHEPClient.md).[`init`](WHEPClient.md#init)
 
-***
+---
 
 ### monitorStats()
 
@@ -4268,7 +4326,7 @@ The renegotiation policy configuration.
 
 [`WHEPClient`](WHEPClient.md).[`monitorStats`](WHEPClient.md#monitorstats)
 
-***
+---
 
 ### mute()
 
@@ -4284,7 +4342,7 @@ Mute the audio playback on the media being delivered to the subscriber.
 
 [`WHEPClient`](WHEPClient.md).[`mute`](WHEPClient.md#mute)
 
-***
+---
 
 ### muteAudio()
 
@@ -4300,7 +4358,7 @@ Mute the audio being delivered to the subscriber.
 
 [`WHEPClient`](WHEPClient.md).[`muteAudio`](WHEPClient.md#muteaudio)
 
-***
+---
 
 ### muteVideo()
 
@@ -4316,7 +4374,7 @@ Mute the video being delivered to the subscriber.
 
 [`WHEPClient`](WHEPClient.md).[`muteVideo`](WHEPClient.md#mutevideo)
 
-***
+---
 
 ### off()
 
@@ -4346,7 +4404,7 @@ The function to call when the event is triggered.
 
 [`WHEPClient`](WHEPClient.md).[`off`](WHEPClient.md#off)
 
-***
+---
 
 ### on()
 
@@ -4376,7 +4434,7 @@ The function to call when the event is triggered.
 
 [`WHEPClient`](WHEPClient.md).[`on`](WHEPClient.md#on)
 
-***
+---
 
 ### pause()
 
@@ -4392,7 +4450,7 @@ Pause the media being delivered to the subscriber.
 
 [`WHEPClient`](WHEPClient.md).[`pause`](WHEPClient.md#pause)
 
-***
+---
 
 ### play()
 
@@ -4408,7 +4466,7 @@ Play the media being delivered to the subscriber.
 
 [`WHEPClient`](WHEPClient.md).[`play`](WHEPClient.md#play)
 
-***
+---
 
 ### resume()
 
@@ -4424,7 +4482,7 @@ Resume the media being delivered to the subscriber.
 
 [`WHEPClient`](WHEPClient.md).[`resume`](WHEPClient.md#resume)
 
-***
+---
 
 ### seekTo()
 
@@ -4448,7 +4506,7 @@ The time to seek to.
 
 [`WHEPClient`](WHEPClient.md).[`seekTo`](WHEPClient.md#seekto)
 
-***
+---
 
 ### send()
 
@@ -4478,7 +4536,7 @@ The data to send.
 
 [`WHEPClient`](WHEPClient.md).[`send`](WHEPClient.md#send)
 
-***
+---
 
 ### sendLog()
 
@@ -4508,7 +4566,7 @@ The message to send.
 
 [`WHEPClient`](WHEPClient.md).[`sendLog`](WHEPClient.md#sendlog)
 
-***
+---
 
 ### sendPubNub()
 
@@ -4538,7 +4596,7 @@ The message to send.
 
 [`WHEPClient`](WHEPClient.md).[`sendPubNub`](WHEPClient.md#sendpubnub)
 
-***
+---
 
 ### setVolume()
 
@@ -4562,7 +4620,7 @@ The volume to set.
 
 [`WHEPClient`](WHEPClient.md).[`setVolume`](WHEPClient.md#setvolume)
 
-***
+---
 
 ### stop()
 
@@ -4578,7 +4636,7 @@ Stop the media being delivered to the subscriber.
 
 [`WHEPClient`](WHEPClient.md).[`stop`](WHEPClient.md#stop)
 
-***
+---
 
 ### subscribe()
 
@@ -4594,7 +4652,7 @@ Subscribe to the WHEP-based Subscriber.
 
 [`WHEPClient`](WHEPClient.md).[`subscribe`](WHEPClient.md#subscribe)
 
-***
+---
 
 ### subscribePubNub()
 
@@ -4624,7 +4682,7 @@ The options to use for subscription.
 
 [`WHEPClient`](WHEPClient.md).[`subscribePubNub`](WHEPClient.md#subscribepubnub)
 
-***
+---
 
 ### toggleFullScreen()
 
@@ -4640,7 +4698,7 @@ Toggle the full screen mode of the media being delivered to the subscriber.
 
 [`WHEPClient`](WHEPClient.md).[`toggleFullScreen`](WHEPClient.md#togglefullscreen)
 
-***
+---
 
 ### trigger()
 
@@ -4664,7 +4722,7 @@ The event to trigger.
 
 [`WHEPClient`](WHEPClient.md).[`trigger`](WHEPClient.md#trigger)
 
-***
+---
 
 ### unmonitorStats()
 
@@ -4680,7 +4738,7 @@ Unmonitor the statistics of the media being delivered to the subscriber over the
 
 [`WHEPClient`](WHEPClient.md).[`unmonitorStats`](WHEPClient.md#unmonitorstats)
 
-***
+---
 
 ### unmute()
 
@@ -4696,7 +4754,7 @@ Unmute the audio playback on the media being delivered to the subscriber.
 
 [`WHEPClient`](WHEPClient.md).[`unmute`](WHEPClient.md#unmute)
 
-***
+---
 
 ### unmuteAudio()
 
@@ -4712,7 +4770,7 @@ Unmute the audio being delivered to the subscriber.
 
 [`WHEPClient`](WHEPClient.md).[`unmuteAudio`](WHEPClient.md#unmuteaudio)
 
-***
+---
 
 ### unmuteVideo()
 
@@ -4728,7 +4786,7 @@ Unmute the video being delivered to the subscriber.
 
 [`WHEPClient`](WHEPClient.md).[`unmuteVideo`](WHEPClient.md#unmutevideo)
 
-***
+---
 
 ### unsubscribe()
 
@@ -4752,7 +4810,7 @@ Optional boolean to indicate if the unsubscribe is internal.
 
 [`WHEPClient`](WHEPClient.md).[`unsubscribe`](WHEPClient.md#unsubscribe)
 
-***
+---
 
 ### unsubscribePubNub()
 
@@ -4778,11 +4836,11 @@ The channel to unsubscribe from.
 
 ### Source: `docs/api/classes/MessageChannel.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.1**](../README.md)
 
-***
+---
 
-[Red5 Pro WebRTC SDK](../globals.md) / MessageChannel
+[Red5 Web SDK](../globals.md) / MessageChannel
 
 # Class: MessageChannel
 
@@ -4867,7 +4925,7 @@ The arguments to call the method with.
 
 [`WHIPClient`](WHIPClient.md).[`callServer`](WHIPClient.md#callserver)
 
-***
+---
 
 ### close()
 
@@ -4879,7 +4937,7 @@ Close the MessageChannel.
 
 `Promise`\<`void`\>
 
-***
+---
 
 ### emit()
 
@@ -4909,7 +4967,7 @@ The data to emit.
 
 [`WHIPClient`](WHIPClient.md).[`emit`](WHIPClient.md#emit)
 
-***
+---
 
 ### getDataChannel()
 
@@ -4925,7 +4983,7 @@ Get the DataChannel for the WHIPClient.
 
 [`WHIPClient`](WHIPClient.md).[`getDataChannel`](WHIPClient.md#getdatachannel)
 
-***
+---
 
 ### getMediaStream()
 
@@ -4941,7 +4999,7 @@ Get the MediaStream generated for the WHIPClient.
 
 [`WHIPClient`](WHIPClient.md).[`getMediaStream`](WHIPClient.md#getmediastream)
 
-***
+---
 
 ### getMessageTransport()
 
@@ -4957,7 +5015,7 @@ Get the MessageTransport for the WHIPClient.
 
 [`WHIPClient`](WHIPClient.md).[`getMessageTransport`](WHIPClient.md#getmessagetransport)
 
-***
+---
 
 ### getOptions()
 
@@ -4973,7 +5031,7 @@ Get the options for the WHIPClient.
 
 [`WHIPClient`](WHIPClient.md).[`getOptions`](WHIPClient.md#getoptions)
 
-***
+---
 
 ### getPeerConnection()
 
@@ -4989,7 +5047,7 @@ Get the PeerConnection for the WHIPClient.
 
 [`WHIPClient`](WHIPClient.md).[`getPeerConnection`](WHIPClient.md#getpeerconnection)
 
-***
+---
 
 ### getPubNubClient()
 
@@ -5005,7 +5063,7 @@ Get the PubNub client for the WHIPClient.
 
 [`WHIPClient`](WHIPClient.md).[`getPubNubClient`](WHIPClient.md#getpubnubclient)
 
-***
+---
 
 ### getType()
 
@@ -5021,7 +5079,7 @@ Get the type of the MessageChannel.
 
 [`WHIPClient`](WHIPClient.md).[`getType`](WHIPClient.md#gettype)
 
-***
+---
 
 ### init()
 
@@ -5045,7 +5103,7 @@ The options to initialize the MessageChannel with. See [RTCWhipPublisherConfigTy
 
 [`WHIPClient`](WHIPClient.md).[`init`](WHIPClient.md#init)
 
-***
+---
 
 ### initWithStream()
 
@@ -5075,7 +5133,7 @@ The stream to use for initialization.
 
 [`WHIPClient`](WHIPClient.md).[`initWithStream`](WHIPClient.md#initwithstream)
 
-***
+---
 
 ### monitorStats()
 
@@ -5099,7 +5157,7 @@ The statistics configuration.
 
 [`WHIPClient`](WHIPClient.md).[`monitorStats`](WHIPClient.md#monitorstats)
 
-***
+---
 
 ### muteAudio()
 
@@ -5115,7 +5173,7 @@ Mute the audio being published to the server.
 
 [`WHIPClient`](WHIPClient.md).[`muteAudio`](WHIPClient.md#muteaudio)
 
-***
+---
 
 ### muteVideo()
 
@@ -5131,7 +5189,7 @@ Mute the video being published to the server.
 
 [`WHIPClient`](WHIPClient.md).[`muteVideo`](WHIPClient.md#mutevideo)
 
-***
+---
 
 ### off()
 
@@ -5161,7 +5219,7 @@ The function to remove the listener from.
 
 [`WHIPClient`](WHIPClient.md).[`off`](WHIPClient.md#off)
 
-***
+---
 
 ### on()
 
@@ -5191,7 +5249,7 @@ The function to call when the event is triggered.
 
 [`WHIPClient`](WHIPClient.md).[`on`](WHIPClient.md#on)
 
-***
+---
 
 ### open()
 
@@ -5211,7 +5269,7 @@ The interval in milliseconds to send an inactive ping.
 
 `Promise`\<`MessageChannel`\>
 
-***
+---
 
 ### publish()
 
@@ -5227,14 +5285,15 @@ Publish the MediaStream to the server.
 
 [`WHIPClient`](WHIPClient.md).[`publish`](WHIPClient.md#publish)
 
-***
+---
 
 ### send()
 
 > **send**(`methodName`, `data`): `Promise`\<`boolean` \| `undefined`\>
 
 Send a JSON message to the server over the data channel.
- - Overrides the send method in the WHIPClient class to properly wrap the data in a message object with methodName.
+
+- Overrides the send method in the WHIPClient class to properly wrap the data in a message object with methodName.
 
 #### Parameters
 
@@ -5258,7 +5317,7 @@ The data to send.
 
 [`WHIPClient`](WHIPClient.md).[`send`](WHIPClient.md#send)
 
-***
+---
 
 ### sendData()
 
@@ -5278,7 +5337,7 @@ The data to send. Can be of any type, such as an arraybuffer.
 
 `Promise`\<`boolean`\>
 
-***
+---
 
 ### sendLog()
 
@@ -5308,7 +5367,7 @@ The message to send.
 
 [`WHIPClient`](WHIPClient.md).[`sendLog`](WHIPClient.md#sendlog)
 
-***
+---
 
 ### sendMessage()
 
@@ -5332,7 +5391,7 @@ The message to send.
 
 [sendData](#senddata) for sending raw data to the server over the data channel.
 
-***
+---
 
 ### sendPubNub()
 
@@ -5362,7 +5421,7 @@ The message to send.
 
 [`WHIPClient`](WHIPClient.md).[`sendPubNub`](WHIPClient.md#sendpubnub)
 
-***
+---
 
 ### subscribePubNub()
 
@@ -5392,7 +5451,7 @@ The options to use for subscription.
 
 [`WHIPClient`](WHIPClient.md).[`subscribePubNub`](WHIPClient.md#subscribepubnub)
 
-***
+---
 
 ### trigger()
 
@@ -5407,7 +5466,8 @@ Trigger an event on the MessageChannel.
 [`Event`](Event.md)
 
 The event to trigger.
- - Overrides the trigger method in the WHIPClient class to properly trigger the event on the MessageChannel.
+
+- Overrides the trigger method in the WHIPClient class to properly trigger the event on the MessageChannel.
 
 #### Returns
 
@@ -5417,7 +5477,7 @@ The event to trigger.
 
 [`WHIPClient`](WHIPClient.md).[`trigger`](WHIPClient.md#trigger)
 
-***
+---
 
 ### unmonitorStats()
 
@@ -5433,7 +5493,7 @@ Unmonitor the statistics of the MediaStream being published to the server over t
 
 [`WHIPClient`](WHIPClient.md).[`unmonitorStats`](WHIPClient.md#unmonitorstats)
 
-***
+---
 
 ### unmuteAudio()
 
@@ -5449,7 +5509,7 @@ Unmute the audio being published to the server.
 
 [`WHIPClient`](WHIPClient.md).[`unmuteAudio`](WHIPClient.md#unmuteaudio)
 
-***
+---
 
 ### unmuteVideo()
 
@@ -5465,7 +5525,7 @@ Unmute the video being published to the server.
 
 [`WHIPClient`](WHIPClient.md).[`unmuteVideo`](WHIPClient.md#unmutevideo)
 
-***
+---
 
 ### unpublish()
 
@@ -5481,7 +5541,7 @@ Unpublish the MediaStream from the server.
 
 [`WHIPClient`](WHIPClient.md).[`unpublish`](WHIPClient.md#unpublish)
 
-***
+---
 
 ### unsubscribePubNub()
 
@@ -5505,7 +5565,7 @@ The channel to unsubscribe from.
 
 [`WHIPClient`](WHIPClient.md).[`unsubscribePubNub`](WHIPClient.md#unsubscribepubnub)
 
-***
+---
 
 ### updateOptimizationParams()
 
@@ -5531,15 +5591,15 @@ The optimization parameters to update.
 
 ### Source: `docs/api/classes/MessageChannelEvent.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.1**](../README.md)
 
-***
+---
 
-[Red5 Pro WebRTC SDK](../globals.md) / MessageChannelEvent
+[Red5 Web SDK](../globals.md) / MessageChannelEvent
 
 # Class: MessageChannelEvent
 
-Event for a MessageChannel within the Red5 Pro WebRTC SDK.
+Event for a MessageChannel within the Red5 Web SDK.
 
 ## Extends
 
@@ -5599,7 +5659,7 @@ Get the data associated with the event.
 
 [`Event`](Event.md).[`data`](Event.md#data)
 
-***
+---
 
 ### messageChannel
 
@@ -5613,7 +5673,7 @@ Get the message channel (MessageChannel) that triggered the event.
 
 `any`
 
-***
+---
 
 ### type
 
@@ -5633,15 +5693,15 @@ Get the type of event.
 
 ### Source: `docs/api/classes/MessageTransportStateEvent.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.1**](../README.md)
 
-***
+---
 
-[Red5 Pro WebRTC SDK](../globals.md) / MessageTransportStateEvent
+[Red5 Web SDK](../globals.md) / MessageTransportStateEvent
 
 # Class: MessageTransportStateEvent
 
-Event for a Message Transport (e.g., RTCDataChannel) State within the Red5 Pro WebRTC SDK.
+Event for a Message Transport (e.g., RTCDataChannel) State within the Red5 Web SDK.
 
 ## Extends
 
@@ -5701,7 +5761,7 @@ Get the data associated with the event.
 
 [`Event`](Event.md).[`data`](Event.md#data)
 
-***
+---
 
 ### name
 
@@ -5715,7 +5775,7 @@ Get the name of the message transport.
 
 `any`
 
-***
+---
 
 ### type
 
@@ -5735,11 +5795,11 @@ Get the type of event.
 
 ### Source: `docs/api/classes/MOQCatalog.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.1**](../README.md)
 
-***
+---
 
-[Red5 Pro WebRTC SDK](../globals.md) / MOQCatalog
+[Red5 Web SDK](../globals.md) / MOQCatalog
 
 # Class: MOQCatalog
 
@@ -5789,7 +5849,7 @@ Base class for an Event Emitter.
 
 `Promise`\<\{ `adapter`: `MoqtConnection`; `transport`: `WebTransportLike`; \}\>
 
-***
+---
 
 ### fetch()
 
@@ -5823,7 +5883,7 @@ Base class for an Event Emitter.
 
 `Promise`\<`MOQCatalog`\>
 
-***
+---
 
 ### getOptions()
 
@@ -5833,7 +5893,7 @@ Base class for an Event Emitter.
 
 [`MOQCatalogConfigType`](../type-aliases/MOQCatalogConfigType.md)
 
-***
+---
 
 ### init()
 
@@ -5849,7 +5909,7 @@ Base class for an Event Emitter.
 
 `Promise`\<`MOQCatalog`\>
 
-***
+---
 
 ### off()
 
@@ -5875,7 +5935,7 @@ Remove a callback handler for an event type.
 
 [`EventEmitter`](EventEmitter.md).[`off`](EventEmitter.md#off)
 
-***
+---
 
 ### on()
 
@@ -5901,7 +5961,7 @@ Assign a callback handler to an event type.
 
 [`EventEmitter`](EventEmitter.md).[`on`](EventEmitter.md#on)
 
-***
+---
 
 ### subscribe()
 
@@ -5921,7 +5981,7 @@ Assign a callback handler to an event type.
 
 `Promise`\<`MOQCatalog`\>
 
-***
+---
 
 ### trigger()
 
@@ -5943,7 +6003,7 @@ Dispatch an event to be handled by any assigned callbacks.
 
 [`EventEmitter`](EventEmitter.md).[`trigger`](EventEmitter.md#trigger)
 
-***
+---
 
 ### unsubscribe()
 
@@ -5961,11 +6021,11 @@ Dispatch an event to be handled by any assigned callbacks.
 
 ### Source: `docs/api/classes/MOQMessageChannel.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.1**](../README.md)
 
-***
+---
 
-[Red5 Pro WebRTC SDK](../globals.md) / MOQMessageChannel
+[Red5 Web SDK](../globals.md) / MOQMessageChannel
 
 # Class: MOQMessageChannel
 
@@ -6009,7 +6069,7 @@ Base class for an Event Emitter.
 
 `Promise`\<`void`\>
 
-***
+---
 
 ### getConnection()
 
@@ -6019,7 +6079,7 @@ Base class for an Event Emitter.
 
 `MoqtConnection` \| `undefined`
 
-***
+---
 
 ### getOptions()
 
@@ -6029,7 +6089,7 @@ Base class for an Event Emitter.
 
 [`MOQMessageChannelConfigType`](../type-aliases/MOQMessageChannelConfigType.md)
 
-***
+---
 
 ### getType()
 
@@ -6039,7 +6099,7 @@ Base class for an Event Emitter.
 
 `string`
 
-***
+---
 
 ### init()
 
@@ -6055,7 +6115,7 @@ Base class for an Event Emitter.
 
 `Promise`\<`MOQMessageChannel`\>
 
-***
+---
 
 ### off()
 
@@ -6081,7 +6141,7 @@ Remove a callback handler for an event type.
 
 [`EventEmitter`](EventEmitter.md).[`off`](EventEmitter.md#off)
 
-***
+---
 
 ### on()
 
@@ -6107,7 +6167,7 @@ Assign a callback handler to an event type.
 
 [`EventEmitter`](EventEmitter.md).[`on`](EventEmitter.md#on)
 
-***
+---
 
 ### open()
 
@@ -6117,7 +6177,7 @@ Assign a callback handler to an event type.
 
 `Promise`\<`MOQMessageChannel`\>
 
-***
+---
 
 ### send()
 
@@ -6137,7 +6197,7 @@ Assign a callback handler to an event type.
 
 `Promise`\<`boolean`\>
 
-***
+---
 
 ### sendData()
 
@@ -6153,7 +6213,7 @@ Assign a callback handler to an event type.
 
 `Promise`\<`boolean`\>
 
-***
+---
 
 ### sendMessage()
 
@@ -6169,7 +6229,7 @@ Assign a callback handler to an event type.
 
 `Promise`\<`boolean`\>
 
-***
+---
 
 ### trigger()
 
@@ -6191,7 +6251,7 @@ Dispatch an event to be handled by any assigned callbacks.
 
 [`EventEmitter`](EventEmitter.md).[`trigger`](EventEmitter.md#trigger)
 
-***
+---
 
 ### useConnection()
 
@@ -6216,11 +6276,11 @@ Call before `open()`.
 
 ### Source: `docs/api/classes/MOQPublisher.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.1**](../README.md)
 
-***
+---
 
-[Red5 Pro WebRTC SDK](../globals.md) / MOQPublisher
+[Red5 Web SDK](../globals.md) / MOQPublisher
 
 # Class: MOQPublisher
 
@@ -6282,7 +6342,7 @@ Base class for an Event Emitter.
 
 `void`
 
-***
+---
 
 ### getConnection()
 
@@ -6292,7 +6352,7 @@ Base class for an Event Emitter.
 
 `MoqtConnection` \| `undefined`
 
-***
+---
 
 ### getMessageChannel()
 
@@ -6302,7 +6362,7 @@ Base class for an Event Emitter.
 
 [`MOQMessageChannel`](MOQMessageChannel.md) \| `undefined`
 
-***
+---
 
 ### getOptions()
 
@@ -6312,7 +6372,7 @@ Base class for an Event Emitter.
 
 [`MOQPublisherConfigType`](../type-aliases/MOQPublisherConfigType.md)
 
-***
+---
 
 ### getType()
 
@@ -6322,7 +6382,7 @@ Base class for an Event Emitter.
 
 `string`
 
-***
+---
 
 ### init()
 
@@ -6338,7 +6398,7 @@ Base class for an Event Emitter.
 
 `Promise`\<`MOQPublisher`\>
 
-***
+---
 
 ### initWithStream()
 
@@ -6358,7 +6418,7 @@ Base class for an Event Emitter.
 
 `Promise`\<`MOQPublisher`\>
 
-***
+---
 
 ### monitorStats()
 
@@ -6374,7 +6434,7 @@ Base class for an Event Emitter.
 
 `MOQPublisher`
 
-***
+---
 
 ### off()
 
@@ -6400,7 +6460,7 @@ Remove a callback handler for an event type.
 
 [`EventEmitter`](EventEmitter.md).[`off`](EventEmitter.md#off)
 
-***
+---
 
 ### on()
 
@@ -6426,7 +6486,7 @@ Assign a callback handler to an event type.
 
 [`EventEmitter`](EventEmitter.md).[`on`](EventEmitter.md#on)
 
-***
+---
 
 ### preview()
 
@@ -6442,7 +6502,7 @@ Assign a callback handler to an event type.
 
 `void`
 
-***
+---
 
 ### publish()
 
@@ -6458,7 +6518,7 @@ Assign a callback handler to an event type.
 
 `Promise`\<`MOQPublisher`\>
 
-***
+---
 
 ### trigger()
 
@@ -6480,7 +6540,7 @@ Dispatch an event to be handled by any assigned callbacks.
 
 [`EventEmitter`](EventEmitter.md).[`trigger`](EventEmitter.md#trigger)
 
-***
+---
 
 ### unmonitorStats()
 
@@ -6490,7 +6550,7 @@ Dispatch an event to be handled by any assigned callbacks.
 
 `MOQPublisher`
 
-***
+---
 
 ### unpreview()
 
@@ -6500,7 +6560,7 @@ Dispatch an event to be handled by any assigned callbacks.
 
 `void`
 
-***
+---
 
 ### unpublish()
 
@@ -6518,11 +6578,11 @@ Dispatch an event to be handled by any assigned callbacks.
 
 ### Source: `docs/api/classes/MOQSubscriber.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.1**](../README.md)
 
-***
+---
 
-[Red5 Pro WebRTC SDK](../globals.md) / MOQSubscriber
+[Red5 Web SDK](../globals.md) / MOQSubscriber
 
 # Class: MOQSubscriber
 
@@ -6580,7 +6640,7 @@ Base class for an Event Emitter.
 
 `void`
 
-***
+---
 
 ### getConnection()
 
@@ -6590,7 +6650,7 @@ Base class for an Event Emitter.
 
 `MoqtConnection` \| `undefined`
 
-***
+---
 
 ### getMessageChannel()
 
@@ -6600,7 +6660,7 @@ Base class for an Event Emitter.
 
 [`MOQMessageChannel`](MOQMessageChannel.md) \| `undefined`
 
-***
+---
 
 ### getOptions()
 
@@ -6610,7 +6670,7 @@ Base class for an Event Emitter.
 
 [`MOQSubscriberConfigType`](../type-aliases/MOQSubscriberConfigType.md)
 
-***
+---
 
 ### getPlayer()
 
@@ -6620,7 +6680,7 @@ Base class for an Event Emitter.
 
 `MoqtPlayer` \| `undefined`
 
-***
+---
 
 ### getRendererView()
 
@@ -6630,7 +6690,7 @@ Base class for an Event Emitter.
 
 `HTMLVideoElement` \| `HTMLCanvasElement` \| `undefined`
 
-***
+---
 
 ### getType()
 
@@ -6640,7 +6700,7 @@ Base class for an Event Emitter.
 
 `string`
 
-***
+---
 
 ### init()
 
@@ -6656,7 +6716,7 @@ Base class for an Event Emitter.
 
 `Promise`\<`MOQSubscriber`\>
 
-***
+---
 
 ### initWithAudioContext()
 
@@ -6676,7 +6736,7 @@ Base class for an Event Emitter.
 
 `Promise`\<`MOQSubscriber`\>
 
-***
+---
 
 ### monitorStats()
 
@@ -6692,7 +6752,7 @@ Base class for an Event Emitter.
 
 `MOQSubscriber`
 
-***
+---
 
 ### mute()
 
@@ -6702,7 +6762,7 @@ Base class for an Event Emitter.
 
 `Promise`\<`void`\>
 
-***
+---
 
 ### off()
 
@@ -6728,7 +6788,7 @@ Remove a callback handler for an event type.
 
 [`EventEmitter`](EventEmitter.md).[`off`](EventEmitter.md#off)
 
-***
+---
 
 ### on()
 
@@ -6754,7 +6814,7 @@ Assign a callback handler to an event type.
 
 [`EventEmitter`](EventEmitter.md).[`on`](EventEmitter.md#on)
 
-***
+---
 
 ### pause()
 
@@ -6764,7 +6824,7 @@ Assign a callback handler to an event type.
 
 `Promise`\<`void`\>
 
-***
+---
 
 ### play()
 
@@ -6774,7 +6834,7 @@ Assign a callback handler to an event type.
 
 `Promise`\<`void`\>
 
-***
+---
 
 ### resume()
 
@@ -6784,7 +6844,7 @@ Assign a callback handler to an event type.
 
 `Promise`\<`void`\>
 
-***
+---
 
 ### resumeAudio()
 
@@ -6797,7 +6857,7 @@ Call from a click/tap/keydown handler when `MOQ.Audio.Blocked` fires.
 
 `Promise`\<`void`\>
 
-***
+---
 
 ### selectAudioTrack()
 
@@ -6817,7 +6877,7 @@ Call from a click/tap/keydown handler when `MOQ.Audio.Blocked` fires.
 
 `Promise`\<`void`\>
 
-***
+---
 
 ### selectVideoTrack()
 
@@ -6837,7 +6897,7 @@ Call from a click/tap/keydown handler when `MOQ.Audio.Blocked` fires.
 
 `Promise`\<`void`\>
 
-***
+---
 
 ### setVolume()
 
@@ -6853,7 +6913,7 @@ Call from a click/tap/keydown handler when `MOQ.Audio.Blocked` fires.
 
 `Promise`\<`void`\>
 
-***
+---
 
 ### startQlog()
 
@@ -6877,7 +6937,7 @@ Call from a click/tap/keydown handler when `MOQ.Audio.Blocked` fires.
 
 `void`
 
-***
+---
 
 ### stop()
 
@@ -6887,7 +6947,7 @@ Call from a click/tap/keydown handler when `MOQ.Audio.Blocked` fires.
 
 `Promise`\<`void`\>
 
-***
+---
 
 ### stopQlog()
 
@@ -6897,7 +6957,7 @@ Call from a click/tap/keydown handler when `MOQ.Audio.Blocked` fires.
 
 `Promise`\<\{ `blob`: `Blob`; `json`: `string`; \} \| `undefined`\>
 
-***
+---
 
 ### subscribe()
 
@@ -6907,7 +6967,7 @@ Call from a click/tap/keydown handler when `MOQ.Audio.Blocked` fires.
 
 `Promise`\<`MOQSubscriber`\>
 
-***
+---
 
 ### trigger()
 
@@ -6929,7 +6989,7 @@ Dispatch an event to be handled by any assigned callbacks.
 
 [`EventEmitter`](EventEmitter.md).[`trigger`](EventEmitter.md#trigger)
 
-***
+---
 
 ### unmonitorStats()
 
@@ -6939,7 +6999,7 @@ Dispatch an event to be handled by any assigned callbacks.
 
 `MOQSubscriber`
 
-***
+---
 
 ### unmute()
 
@@ -6949,7 +7009,7 @@ Dispatch an event to be handled by any assigned callbacks.
 
 `Promise`\<`void`\>
 
-***
+---
 
 ### unsubscribe()
 
@@ -6971,15 +7031,15 @@ Dispatch an event to be handled by any assigned callbacks.
 
 ### Source: `docs/api/classes/PlaybackController.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.1**](../README.md)
 
-***
+---
 
-[Red5 Pro WebRTC SDK](../globals.md) / PlaybackController
+[Red5 Web SDK](../globals.md) / PlaybackController
 
 # Abstract Class: PlaybackController
 
-Base class for a PlaybackController within the Red5 Pro WebRTC SDK.
+Base class for a PlaybackController within the Red5 Web SDK.
 A PlaybackController is responsible for managing the playback and state of a media element.
 
 ## Extends
@@ -7018,7 +7078,7 @@ Get the volume of the media element.
 
 `number`
 
-***
+---
 
 ### mute()
 
@@ -7030,7 +7090,7 @@ Mute the media element.
 
 `void`
 
-***
+---
 
 ### off()
 
@@ -7060,7 +7120,7 @@ The function to remove the listener from.
 
 [`EventEmitter`](EventEmitter.md).[`off`](EventEmitter.md#off)
 
-***
+---
 
 ### on()
 
@@ -7090,7 +7150,7 @@ The function to call when the event is triggered.
 
 [`EventEmitter`](EventEmitter.md).[`on`](EventEmitter.md#on)
 
-***
+---
 
 ### pause()
 
@@ -7116,7 +7176,7 @@ Whether the pause was triggered from a seek action.
 
 `void`
 
-***
+---
 
 ### play()
 
@@ -7136,7 +7196,7 @@ Whether the play was triggered from the controls.
 
 `void`
 
-***
+---
 
 ### resume()
 
@@ -7162,7 +7222,7 @@ Whether the resume was triggered from a seek action.
 
 `void`
 
-***
+---
 
 ### seekTo()
 
@@ -7194,7 +7254,7 @@ Whether the seek was triggered from the controls.
 
 `void`
 
-***
+---
 
 ### setVolume()
 
@@ -7220,7 +7280,7 @@ Whether the volume was triggered from the controls.
 
 `void`
 
-***
+---
 
 ### stop()
 
@@ -7236,7 +7296,7 @@ Whether the volume was triggered from the controls.
 
 `void`
 
-***
+---
 
 ### toggleFullScreen()
 
@@ -7262,7 +7322,7 @@ Whether the full screen was triggered from the controls.
 
 `void`
 
-***
+---
 
 ### trigger()
 
@@ -7286,7 +7346,7 @@ The event to trigger.
 
 [`EventEmitter`](EventEmitter.md).[`trigger`](EventEmitter.md#trigger)
 
-***
+---
 
 ### unmute()
 
@@ -7300,15 +7360,15 @@ Unmute the media element.
 
 ### Source: `docs/api/classes/PlaybackControls.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.1**](../README.md)
 
-***
+---
 
-[Red5 Pro WebRTC SDK](../globals.md) / PlaybackControls
+[Red5 Web SDK](../globals.md) / PlaybackControls
 
 # Abstract Class: PlaybackControls
 
-Base class for a PlaybackControls within the Red5 Pro WebRTC SDK.
+Base class for a PlaybackControls within the Red5 Web SDK.
 A PlaybackControls is responsible for managing the playback and state of an HTML media element through UI controls.
 
 ## Extends
@@ -7341,7 +7401,7 @@ Detach the playback controls from the media element.
 
 `void`
 
-***
+---
 
 ### enable()
 
@@ -7361,7 +7421,7 @@ Whether the playback controls are enabled.
 
 `void`
 
-***
+---
 
 ### getPlaybackDuration()
 
@@ -7373,7 +7433,7 @@ Get the playback duration of the media element.
 
 `number`
 
-***
+---
 
 ### getVolume()
 
@@ -7385,7 +7445,7 @@ Get the volume of the media element.
 
 `number`
 
-***
+---
 
 ### off()
 
@@ -7415,7 +7475,7 @@ The function to remove the listener from.
 
 [`EventEmitter`](EventEmitter.md).[`off`](EventEmitter.md#off)
 
-***
+---
 
 ### on()
 
@@ -7445,7 +7505,7 @@ The function to call when the event is triggered.
 
 [`EventEmitter`](EventEmitter.md).[`on`](EventEmitter.md#on)
 
-***
+---
 
 ### setAsVOD()
 
@@ -7465,7 +7525,7 @@ Whether the media element is a VOD.
 
 `void`
 
-***
+---
 
 ### setBroadcastStartTime()
 
@@ -7485,7 +7545,7 @@ UTC epoch milliseconds when the broadcast started, or null to clear it.
 
 `void`
 
-***
+---
 
 ### setLiveEdgeActive()
 
@@ -7505,7 +7565,7 @@ True for live WebRTC playback, false while a seek is playing from HLS.
 
 `void`
 
-***
+---
 
 ### setMutedState()
 
@@ -7525,7 +7585,7 @@ Whether the media element is muted.
 
 `void`
 
-***
+---
 
 ### setPlaybackDuration()
 
@@ -7545,7 +7605,7 @@ The duration to set.
 
 `void`
 
-***
+---
 
 ### setSeekTime()
 
@@ -7571,7 +7631,7 @@ The duration of the media element.
 
 `void`
 
-***
+---
 
 ### setState()
 
@@ -7591,7 +7651,7 @@ The state to set.
 
 `void`
 
-***
+---
 
 ### setVolume()
 
@@ -7611,7 +7671,7 @@ The volume to set.
 
 `void`
 
-***
+---
 
 ### trigger()
 
@@ -7637,15 +7697,15 @@ The event to trigger.
 
 ### Source: `docs/api/classes/PublisherEvent.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.1**](../README.md)
 
-***
+---
 
-[Red5 Pro WebRTC SDK](../globals.md) / PublisherEvent
+[Red5 Web SDK](../globals.md) / PublisherEvent
 
 # Class: PublisherEvent
 
-Event for a Publisher within the Red5 Pro WebRTC SDK.
+Event for a Publisher within the Red5 Web SDK.
 
 ## Extends
 
@@ -7705,7 +7765,7 @@ Get the data associated with the event.
 
 [`Event`](Event.md).[`data`](Event.md#data)
 
-***
+---
 
 ### publisher
 
@@ -7719,7 +7779,7 @@ Get the publisher (WHIPClient) that triggered the event.
 
 `any`
 
-***
+---
 
 ### type
 
@@ -7739,11 +7799,11 @@ Get the type of event.
 
 ### Source: `docs/api/classes/PubNubClient.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.1**](../README.md)
 
-***
+---
 
-[Red5 Pro WebRTC SDK](../globals.md) / PubNubClient
+[Red5 Web SDK](../globals.md) / PubNubClient
 
 # Class: PubNubClient
 
@@ -7779,7 +7839,7 @@ Base class for an Event Emitter.
 
 `PubnubConfigType` \| `undefined`
 
-***
+---
 
 ### pubnub
 
@@ -7801,7 +7861,7 @@ Base class for an Event Emitter.
 
 `Promise`\<`boolean`\>
 
-***
+---
 
 ### getOptions()
 
@@ -7811,7 +7871,7 @@ Base class for an Event Emitter.
 
 `PubnubConfigType` \| `undefined`
 
-***
+---
 
 ### init()
 
@@ -7827,7 +7887,7 @@ Base class for an Event Emitter.
 
 `Promise`\<`PubNubClient`\>
 
-***
+---
 
 ### off()
 
@@ -7853,7 +7913,7 @@ Remove a callback handler for an event type.
 
 [`EventEmitter`](EventEmitter.md).[`off`](EventEmitter.md#off)
 
-***
+---
 
 ### on()
 
@@ -7879,7 +7939,7 @@ Assign a callback handler to an event type.
 
 [`EventEmitter`](EventEmitter.md).[`on`](EventEmitter.md#on)
 
-***
+---
 
 ### publishMessage()
 
@@ -7899,7 +7959,7 @@ Assign a callback handler to an event type.
 
 `Promise`\<`boolean`\>
 
-***
+---
 
 ### subscribe()
 
@@ -7919,7 +7979,7 @@ Assign a callback handler to an event type.
 
 `Promise`\<`boolean`\>
 
-***
+---
 
 ### trigger()
 
@@ -7941,7 +8001,7 @@ Dispatch an event to be handled by any assigned callbacks.
 
 [`EventEmitter`](EventEmitter.md).[`trigger`](EventEmitter.md#trigger)
 
-***
+---
 
 ### unsubscribe()
 
@@ -7959,15 +8019,15 @@ Dispatch an event to be handled by any assigned callbacks.
 
 ### Source: `docs/api/classes/PubNubEvent.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.1**](../README.md)
 
-***
+---
 
-[Red5 Pro WebRTC SDK](../globals.md) / PubNubEvent
+[Red5 Web SDK](../globals.md) / PubNubEvent
 
 # Class: PubNubEvent
 
-Event for a PubNub within the Red5 Pro WebRTC SDK.
+Event for a PubNub within the Red5 Web SDK.
 
 ## Extends
 
@@ -8027,7 +8087,7 @@ Get the data associated with the event.
 
 [`Event`](Event.md).[`data`](Event.md#data)
 
-***
+---
 
 ### pubnub
 
@@ -8041,7 +8101,7 @@ Get the pubnub (PubNubClient) that triggered the event.
 
 `any`
 
-***
+---
 
 ### type
 
@@ -8061,15 +8121,15 @@ Get the type of event.
 
 ### Source: `docs/api/classes/SourceHandler.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.1**](../README.md)
 
-***
+---
 
-[Red5 Pro WebRTC SDK](../globals.md) / SourceHandler
+[Red5 Web SDK](../globals.md) / SourceHandler
 
 # Abstract Class: SourceHandler
 
-Base class for a SourceHandler within the Red5 Pro WebRTC SDK.
+Base class for a SourceHandler within the Red5 Web SDK.
 A SourceHandler is responsible for managing the MediaStream source of a media element.
 
 ## Extends
@@ -8114,7 +8174,7 @@ Whether to mute the media element on autoplay if the browser has a restriction.
 
 `void`
 
-***
+---
 
 ### disconnect()
 
@@ -8126,7 +8186,7 @@ Disconnect the media element.
 
 `void`
 
-***
+---
 
 ### getControls()
 
@@ -8138,7 +8198,7 @@ Get the controls for the media element.
 
 [`PlaybackControls`](PlaybackControls.md) \| `undefined`
 
-***
+---
 
 ### getVolume()
 
@@ -8154,7 +8214,7 @@ Get the volume of the media element.
 
 [`PlaybackController`](PlaybackController.md).[`getVolume`](PlaybackController.md#getvolume)
 
-***
+---
 
 ### isMuted()
 
@@ -8166,7 +8226,7 @@ Check if the media element is muted.
 
 `boolean`
 
-***
+---
 
 ### mute()
 
@@ -8182,7 +8242,7 @@ Mute the media element.
 
 [`PlaybackController`](PlaybackController.md).[`mute`](PlaybackController.md#mute)
 
-***
+---
 
 ### off()
 
@@ -8212,7 +8272,7 @@ The function to remove the listener from.
 
 [`PlaybackController`](PlaybackController.md).[`off`](PlaybackController.md#off)
 
-***
+---
 
 ### on()
 
@@ -8242,7 +8302,7 @@ The function to call when the event is triggered.
 
 [`PlaybackController`](PlaybackController.md).[`on`](PlaybackController.md#on)
 
-***
+---
 
 ### pause()
 
@@ -8272,7 +8332,7 @@ Whether the pause was triggered from a seek action.
 
 [`PlaybackController`](PlaybackController.md).[`pause`](PlaybackController.md#pause)
 
-***
+---
 
 ### play()
 
@@ -8296,7 +8356,7 @@ Whether the play was triggered from the controls.
 
 [`PlaybackController`](PlaybackController.md).[`play`](PlaybackController.md#play)
 
-***
+---
 
 ### resume()
 
@@ -8326,7 +8386,7 @@ Whether the resume was triggered from a seek action.
 
 [`PlaybackController`](PlaybackController.md).[`resume`](PlaybackController.md#resume)
 
-***
+---
 
 ### seekTo()
 
@@ -8362,7 +8422,7 @@ Whether the seek was triggered from the controls.
 
 [`PlaybackController`](PlaybackController.md).[`seekTo`](PlaybackController.md#seekto)
 
-***
+---
 
 ### setVolume()
 
@@ -8392,7 +8452,7 @@ Whether the volume was triggered from the controls.
 
 [`PlaybackController`](PlaybackController.md).[`setVolume`](PlaybackController.md#setvolume)
 
-***
+---
 
 ### stop()
 
@@ -8412,7 +8472,7 @@ Whether the volume was triggered from the controls.
 
 [`PlaybackController`](PlaybackController.md).[`stop`](PlaybackController.md#stop)
 
-***
+---
 
 ### toggleFullScreen()
 
@@ -8442,7 +8502,7 @@ Whether the full screen was triggered from the controls.
 
 [`PlaybackController`](PlaybackController.md).[`toggleFullScreen`](PlaybackController.md#togglefullscreen)
 
-***
+---
 
 ### trigger()
 
@@ -8466,7 +8526,7 @@ The event to trigger.
 
 [`PlaybackController`](PlaybackController.md).[`trigger`](PlaybackController.md#trigger)
 
-***
+---
 
 ### unmute()
 
@@ -8482,7 +8542,7 @@ Unmute the media element.
 
 [`PlaybackController`](PlaybackController.md).[`unmute`](PlaybackController.md#unmute)
 
-***
+---
 
 ### unpublish()
 
@@ -8496,11 +8556,11 @@ Unpublish the media element.
 
 ### Source: `docs/api/classes/SourceHandlerImpl.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.1**](../README.md)
 
-***
+---
 
-[Red5 Pro WebRTC SDK](../globals.md) / SourceHandlerImpl
+[Red5 Web SDK](../globals.md) / SourceHandlerImpl
 
 # Class: SourceHandlerImpl
 
@@ -8564,7 +8624,7 @@ Whether to mute the media element on autoplay if the browser has a restriction.
 
 [`SourceHandler`](SourceHandler.md).[`attemptAutoplay`](SourceHandler.md#attemptautoplay)
 
-***
+---
 
 ### disconnect()
 
@@ -8580,7 +8640,7 @@ Disconnect the media element.
 
 [`SourceHandler`](SourceHandler.md).[`disconnect`](SourceHandler.md#disconnect)
 
-***
+---
 
 ### getControls()
 
@@ -8596,7 +8656,7 @@ Get the controls for the media element.
 
 [`SourceHandler`](SourceHandler.md).[`getControls`](SourceHandler.md#getcontrols)
 
-***
+---
 
 ### getVolume()
 
@@ -8612,7 +8672,7 @@ Get the volume of the media element.
 
 [`SourceHandler`](SourceHandler.md).[`getVolume`](SourceHandler.md#getvolume)
 
-***
+---
 
 ### isMuted()
 
@@ -8628,7 +8688,7 @@ Check if the media element is muted.
 
 [`SourceHandler`](SourceHandler.md).[`isMuted`](SourceHandler.md#ismuted)
 
-***
+---
 
 ### isVOD()
 
@@ -8638,7 +8698,7 @@ Check if the media element is muted.
 
 `boolean`
 
-***
+---
 
 ### mute()
 
@@ -8654,7 +8714,7 @@ Mute the media element.
 
 [`SourceHandler`](SourceHandler.md).[`mute`](SourceHandler.md#mute)
 
-***
+---
 
 ### off()
 
@@ -8684,7 +8744,7 @@ The function to remove the listener from.
 
 [`SourceHandler`](SourceHandler.md).[`off`](SourceHandler.md#off)
 
-***
+---
 
 ### on()
 
@@ -8714,7 +8774,7 @@ The function to call when the event is triggered.
 
 [`SourceHandler`](SourceHandler.md).[`on`](SourceHandler.md#on)
 
-***
+---
 
 ### pause()
 
@@ -8730,7 +8790,7 @@ Pause the media element.
 
 [`SourceHandler`](SourceHandler.md).[`pause`](SourceHandler.md#pause)
 
-***
+---
 
 ### play()
 
@@ -8746,7 +8806,7 @@ Play the media element.
 
 [`SourceHandler`](SourceHandler.md).[`play`](SourceHandler.md#play)
 
-***
+---
 
 ### resume()
 
@@ -8762,7 +8822,7 @@ Resume the media element.
 
 [`SourceHandler`](SourceHandler.md).[`resume`](SourceHandler.md#resume)
 
-***
+---
 
 ### seekTo()
 
@@ -8790,7 +8850,7 @@ The duration of the media element.
 
 [`SourceHandler`](SourceHandler.md).[`seekTo`](SourceHandler.md#seekto)
 
-***
+---
 
 ### setVolume()
 
@@ -8814,7 +8874,7 @@ The volume to set.
 
 [`SourceHandler`](SourceHandler.md).[`setVolume`](SourceHandler.md#setvolume)
 
-***
+---
 
 ### stop()
 
@@ -8828,7 +8888,7 @@ The volume to set.
 
 [`SourceHandler`](SourceHandler.md).[`stop`](SourceHandler.md#stop)
 
-***
+---
 
 ### toggleFullScreen()
 
@@ -8852,7 +8912,7 @@ The element to toggle the full screen mode of.
 
 [`SourceHandler`](SourceHandler.md).[`toggleFullScreen`](SourceHandler.md#togglefullscreen)
 
-***
+---
 
 ### trigger()
 
@@ -8876,7 +8936,7 @@ The event to trigger.
 
 [`SourceHandler`](SourceHandler.md).[`trigger`](SourceHandler.md#trigger)
 
-***
+---
 
 ### unmute()
 
@@ -8892,7 +8952,7 @@ Unmute the media element.
 
 [`SourceHandler`](SourceHandler.md).[`unmute`](SourceHandler.md#unmute)
 
-***
+---
 
 ### unpublish()
 
@@ -8910,15 +8970,15 @@ Unpublish the media element.
 
 ### Source: `docs/api/classes/SubscriberEvent.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.1**](../README.md)
 
-***
+---
 
-[Red5 Pro WebRTC SDK](../globals.md) / SubscriberEvent
+[Red5 Web SDK](../globals.md) / SubscriberEvent
 
 # Class: SubscriberEvent
 
-Event for a Subscriber within the Red5 Pro WebRTC SDK.
+Event for a Subscriber within the Red5 Web SDK.
 
 ## Extends
 
@@ -8978,7 +9038,7 @@ Get the data associated with the event.
 
 [`Event`](Event.md).[`data`](Event.md#data)
 
-***
+---
 
 ### subscriber
 
@@ -8992,7 +9052,7 @@ Get the subscriber (WHEPClient) that triggered the event.
 
 `any`
 
-***
+---
 
 ### type
 
@@ -9012,11 +9072,11 @@ Get the type of event.
 
 ### Source: `docs/api/classes/WHEPClient.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.1**](../README.md)
 
-***
+---
 
-[Red5 Pro WebRTC SDK](../globals.md) / WHEPClient
+[Red5 Web SDK](../globals.md) / WHEPClient
 
 # Class: WHEPClient
 
@@ -9109,7 +9169,7 @@ The arguments to call the method with.
 
 `Promise`\<`any`\>
 
-***
+---
 
 ### disableStandby()
 
@@ -9121,7 +9181,7 @@ Disable standby mode for the WHEP-based Subscriber. This will signal to the serv
 
 `void`
 
-***
+---
 
 ### emit()
 
@@ -9147,7 +9207,7 @@ The data to emit.
 
 `void`
 
-***
+---
 
 ### enableStandby()
 
@@ -9159,7 +9219,7 @@ Enable standby mode for the WHEP-based Subscriber. This will signal to the serve
 
 `void`
 
-***
+---
 
 ### getDataChannel()
 
@@ -9171,7 +9231,7 @@ Get the data channel for the WHEP-based Subscriber.
 
 `RTCDataChannel` \| `undefined`
 
-***
+---
 
 ### getMediaStream()
 
@@ -9183,7 +9243,7 @@ Get the media stream being played back by the subscriber.
 
 `MediaStream` \| `undefined`
 
-***
+---
 
 ### getMessageTransport()
 
@@ -9195,7 +9255,7 @@ Get the message transport for the WHEP-based Subscriber.
 
 `MessageTransport` \| `undefined`
 
-***
+---
 
 ### getOptions()
 
@@ -9207,7 +9267,7 @@ Get the options for the WHEP-based Subscriber.
 
 [`RTCWhepSubscriberConfigType`](../type-aliases/RTCWhepSubscriberConfigType.md) \| `undefined`
 
-***
+---
 
 ### getPeerConnection()
 
@@ -9219,7 +9279,7 @@ Get the peer connection for the WHEP-based Subscriber.
 
 `RTCPeerConnection` \| `undefined`
 
-***
+---
 
 ### getPlayer()
 
@@ -9231,7 +9291,7 @@ Get the media element for the WHEP-based Subscriber.
 
 `HTMLMediaElement` \| `undefined`
 
-***
+---
 
 ### getPubNubClient()
 
@@ -9243,7 +9303,7 @@ Get the PubNub client for the WHEP-based Subscriber.
 
 [`PubNubClient`](PubNubClient.md) \| `undefined`
 
-***
+---
 
 ### getType()
 
@@ -9255,7 +9315,7 @@ Get the type of the WHEP-based Subscriber (RTC).
 
 `string`
 
-***
+---
 
 ### getVolume()
 
@@ -9271,7 +9331,7 @@ Get the volume of the media being delivered to the subscriber.
 
 [`PlaybackController`](PlaybackController.md).[`getVolume`](PlaybackController.md#getvolume)
 
-***
+---
 
 ### init()
 
@@ -9291,7 +9351,7 @@ RTCWhepSubscriberConfigType to use for configuration.
 
 `Promise`\<`WHEPClient`\>
 
-***
+---
 
 ### monitorStats()
 
@@ -9317,7 +9377,7 @@ The renegotiation policy configuration.
 
 `WHEPClient`
 
-***
+---
 
 ### mute()
 
@@ -9333,7 +9393,7 @@ Mute the audio playback on the media being delivered to the subscriber.
 
 [`PlaybackController`](PlaybackController.md).[`mute`](PlaybackController.md#mute)
 
-***
+---
 
 ### muteAudio()
 
@@ -9345,7 +9405,7 @@ Mute the audio being delivered to the subscriber.
 
 `void`
 
-***
+---
 
 ### muteVideo()
 
@@ -9357,7 +9417,7 @@ Mute the video being delivered to the subscriber.
 
 `void`
 
-***
+---
 
 ### off()
 
@@ -9387,7 +9447,7 @@ The function to call when the event is triggered.
 
 [`PlaybackController`](PlaybackController.md).[`off`](PlaybackController.md#off)
 
-***
+---
 
 ### on()
 
@@ -9417,7 +9477,7 @@ The function to call when the event is triggered.
 
 [`PlaybackController`](PlaybackController.md).[`on`](PlaybackController.md#on)
 
-***
+---
 
 ### pause()
 
@@ -9433,7 +9493,7 @@ Pause the media being delivered to the subscriber.
 
 [`PlaybackController`](PlaybackController.md).[`pause`](PlaybackController.md#pause)
 
-***
+---
 
 ### play()
 
@@ -9449,7 +9509,7 @@ Play the media being delivered to the subscriber.
 
 [`PlaybackController`](PlaybackController.md).[`play`](PlaybackController.md#play)
 
-***
+---
 
 ### resume()
 
@@ -9465,7 +9525,7 @@ Resume the media being delivered to the subscriber.
 
 [`PlaybackController`](PlaybackController.md).[`resume`](PlaybackController.md#resume)
 
-***
+---
 
 ### seekTo()
 
@@ -9489,7 +9549,7 @@ The time to seek to.
 
 [`PlaybackController`](PlaybackController.md).[`seekTo`](PlaybackController.md#seekto)
 
-***
+---
 
 ### send()
 
@@ -9515,7 +9575,7 @@ The data to send.
 
 `Promise`\<`boolean` \| `undefined`\>
 
-***
+---
 
 ### sendLog()
 
@@ -9541,7 +9601,7 @@ The message to send.
 
 `void`
 
-***
+---
 
 ### sendPubNub()
 
@@ -9567,7 +9627,7 @@ The message to send.
 
 `Promise`\<`boolean`\>
 
-***
+---
 
 ### setVolume()
 
@@ -9591,7 +9651,7 @@ The volume to set.
 
 [`PlaybackController`](PlaybackController.md).[`setVolume`](PlaybackController.md#setvolume)
 
-***
+---
 
 ### stop()
 
@@ -9607,7 +9667,7 @@ Stop the media being delivered to the subscriber.
 
 [`PlaybackController`](PlaybackController.md).[`stop`](PlaybackController.md#stop)
 
-***
+---
 
 ### subscribe()
 
@@ -9619,7 +9679,7 @@ Subscribe to the WHEP-based Subscriber.
 
 `Promise`\<`WHEPClient`\>
 
-***
+---
 
 ### subscribePubNub()
 
@@ -9645,7 +9705,7 @@ The options to use for subscription.
 
 `Promise`\<`boolean`\>
 
-***
+---
 
 ### toggleFullScreen()
 
@@ -9661,7 +9721,7 @@ Toggle the full screen mode of the media being delivered to the subscriber.
 
 [`PlaybackController`](PlaybackController.md).[`toggleFullScreen`](PlaybackController.md#togglefullscreen)
 
-***
+---
 
 ### trigger()
 
@@ -9685,7 +9745,7 @@ The event to trigger.
 
 [`PlaybackController`](PlaybackController.md).[`trigger`](PlaybackController.md#trigger)
 
-***
+---
 
 ### unmonitorStats()
 
@@ -9697,7 +9757,7 @@ Unmonitor the statistics of the media being delivered to the subscriber over the
 
 `WHEPClient`
 
-***
+---
 
 ### unmute()
 
@@ -9713,7 +9773,7 @@ Unmute the audio playback on the media being delivered to the subscriber.
 
 [`PlaybackController`](PlaybackController.md).[`unmute`](PlaybackController.md#unmute)
 
-***
+---
 
 ### unmuteAudio()
 
@@ -9725,7 +9785,7 @@ Unmute the audio being delivered to the subscriber.
 
 `void`
 
-***
+---
 
 ### unmuteVideo()
 
@@ -9737,7 +9797,7 @@ Unmute the video being delivered to the subscriber.
 
 `void`
 
-***
+---
 
 ### unsubscribe()
 
@@ -9757,7 +9817,7 @@ Optional boolean to indicate if the unsubscribe is internal.
 
 `Promise`\<`void`\>
 
-***
+---
 
 ### unsubscribePubNub()
 
@@ -9779,11 +9839,11 @@ The channel to unsubscribe from.
 
 ### Source: `docs/api/classes/WHIPClient.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.1**](../README.md)
 
-***
+---
 
-[Red5 Pro WebRTC SDK](../globals.md) / WHIPClient
+[Red5 Web SDK](../globals.md) / WHIPClient
 
 # Class: WHIPClient
 
@@ -9877,7 +9937,7 @@ The arguments to call the method with.
 
 `Promise`\<`any`\>
 
-***
+---
 
 ### emit()
 
@@ -9903,7 +9963,7 @@ The data to emit.
 
 `void`
 
-***
+---
 
 ### getDataChannel()
 
@@ -9915,7 +9975,7 @@ Get the DataChannel for the WHIPClient.
 
 `RTCDataChannel` \| `undefined`
 
-***
+---
 
 ### getMediaStream()
 
@@ -9927,7 +9987,7 @@ Get the MediaStream generated for the WHIPClient.
 
 `MediaStream` \| `undefined`
 
-***
+---
 
 ### getMessageTransport()
 
@@ -9939,7 +9999,7 @@ Get the MessageTransport for the WHIPClient.
 
 `MessageTransport` \| `undefined`
 
-***
+---
 
 ### getOptions()
 
@@ -9951,7 +10011,7 @@ Get the options for the WHIPClient.
 
 [`RTCWhipPublisherConfigType`](../type-aliases/RTCWhipPublisherConfigType.md) \| `undefined`
 
-***
+---
 
 ### getPeerConnection()
 
@@ -9963,7 +10023,7 @@ Get the PeerConnection for the WHIPClient.
 
 `RTCPeerConnection` \| `undefined`
 
-***
+---
 
 ### getPubNubClient()
 
@@ -9975,7 +10035,7 @@ Get the PubNub client for the WHIPClient.
 
 [`PubNubClient`](PubNubClient.md) \| `undefined`
 
-***
+---
 
 ### getType()
 
@@ -9987,7 +10047,7 @@ Get the type of the WHIPClient (RTC).
 
 `string`
 
-***
+---
 
 ### init()
 
@@ -10007,7 +10067,7 @@ The options to use for initialization.
 
 `Promise`\<`WHIPClient`\>
 
-***
+---
 
 ### initWithStream()
 
@@ -10033,7 +10093,7 @@ The stream to use for initialization.
 
 `Promise`\<`WHIPClient`\>
 
-***
+---
 
 ### monitorStats()
 
@@ -10053,7 +10113,7 @@ The statistics configuration.
 
 `WHIPClient`
 
-***
+---
 
 ### muteAudio()
 
@@ -10065,7 +10125,7 @@ Mute the audio being published to the server.
 
 `void`
 
-***
+---
 
 ### muteVideo()
 
@@ -10077,7 +10137,7 @@ Mute the video being published to the server.
 
 `void`
 
-***
+---
 
 ### off()
 
@@ -10107,7 +10167,7 @@ The function to remove the listener from.
 
 [`EventEmitter`](EventEmitter.md).[`off`](EventEmitter.md#off)
 
-***
+---
 
 ### on()
 
@@ -10137,7 +10197,7 @@ The function to call when the event is triggered.
 
 [`EventEmitter`](EventEmitter.md).[`on`](EventEmitter.md#on)
 
-***
+---
 
 ### publish()
 
@@ -10157,7 +10217,7 @@ The name of the stream to publish.
 
 `Promise`\<`WHIPClient`\>
 
-***
+---
 
 ### send()
 
@@ -10183,7 +10243,7 @@ The data to send.
 
 `Promise`\<`boolean` \| `undefined`\>
 
-***
+---
 
 ### sendLog()
 
@@ -10209,7 +10269,7 @@ The message to send.
 
 `void`
 
-***
+---
 
 ### sendPubNub()
 
@@ -10235,7 +10295,7 @@ The message to send.
 
 `Promise`\<`boolean`\>
 
-***
+---
 
 ### subscribePubNub()
 
@@ -10261,7 +10321,7 @@ The options to use for subscription.
 
 `Promise`\<`boolean`\>
 
-***
+---
 
 ### trigger()
 
@@ -10285,7 +10345,7 @@ The event to trigger.
 
 [`EventEmitter`](EventEmitter.md).[`trigger`](EventEmitter.md#trigger)
 
-***
+---
 
 ### unmonitorStats()
 
@@ -10297,7 +10357,7 @@ Unmonitor the statistics of the MediaStream being published to the server over t
 
 `WHIPClient`
 
-***
+---
 
 ### unmuteAudio()
 
@@ -10309,7 +10369,7 @@ Unmute the audio being published to the server.
 
 `void`
 
-***
+---
 
 ### unmuteVideo()
 
@@ -10321,7 +10381,7 @@ Unmute the video being published to the server.
 
 `void`
 
-***
+---
 
 ### unpublish()
 
@@ -10343,7 +10403,7 @@ Unpublish the MediaStream from the server.
 
 `Promise`\<`void`\>
 
-***
+---
 
 ### unsubscribePubNub()
 
@@ -10363,7 +10423,7 @@ The channel to unsubscribe from.
 
 `Promise`\<`boolean`\>
 
-***
+---
 
 ### updateOptimizationParams()
 
@@ -10385,11 +10445,11 @@ The optimization parameters to update.
 
 ### Source: `docs/api/enumerations/MessageChannelEventTypes.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.1**](../README.md)
 
-***
+---
 
-[Red5 Pro WebRTC SDK](../globals.md) / MessageChannelEventTypes
+[Red5 Web SDK](../globals.md) / MessageChannelEventTypes
 
 # Enumeration: MessageChannelEventTypes
 
@@ -10399,31 +10459,31 @@ The optimization parameters to update.
 
 > **CLOSE**: `"MessageChannel.Close"`
 
-***
+---
 
 ### ERROR
 
 > **ERROR**: `"MessageChannel.Error"`
 
-***
+---
 
 ### FAIL
 
 > **FAIL**: `"MessageChannel.Fail"`
 
-***
+---
 
 ### OPEN
 
 > **OPEN**: `"MessageChannel.Open"`
 
-***
+---
 
 ### RECEIVE
 
 > **RECEIVE**: `"MessageChannel.Receive"`
 
-***
+---
 
 ### SEND
 
@@ -10431,11 +10491,11 @@ The optimization parameters to update.
 
 ### Source: `docs/api/enumerations/MessageTransportStateEventTypes.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.1**](../README.md)
 
-***
+---
 
-[Red5 Pro WebRTC SDK](../globals.md) / MessageTransportStateEventTypes
+[Red5 Web SDK](../globals.md) / MessageTransportStateEventTypes
 
 # Enumeration: MessageTransportStateEventTypes
 
@@ -10445,19 +10505,19 @@ The optimization parameters to update.
 
 > **CHANGE**: `"MessageTransport.Change"`
 
-***
+---
 
 ### CLOSE
 
 > **CLOSE**: `"MessageTransport.Close"`
 
-***
+---
 
 ### ERROR
 
 > **ERROR**: `"MessageTransport.Error"`
 
-***
+---
 
 ### OPEN
 
@@ -10465,11 +10525,11 @@ The optimization parameters to update.
 
 ### Source: `docs/api/enumerations/PlaybackAudioEncoder.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.1**](../README.md)
 
-***
+---
 
-[Red5 Pro WebRTC SDK](../globals.md) / PlaybackAudioEncoder
+[Red5 Web SDK](../globals.md) / PlaybackAudioEncoder
 
 # Enumeration: PlaybackAudioEncoder
 
@@ -10479,7 +10539,7 @@ The optimization parameters to update.
 
 > **NONE**: `"NONE"`
 
-***
+---
 
 ### OPUS
 
@@ -10487,11 +10547,11 @@ The optimization parameters to update.
 
 ### Source: `docs/api/enumerations/PlaybackState.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.1**](../README.md)
 
-***
+---
 
-[Red5 Pro WebRTC SDK](../globals.md) / PlaybackState
+[Red5 Web SDK](../globals.md) / PlaybackState
 
 # Enumeration: PlaybackState
 
@@ -10501,25 +10561,25 @@ The optimization parameters to update.
 
 > **AVAILABLE**: `0`
 
-***
+---
 
 ### IDLE
 
 > **IDLE**: `1`
 
-***
+---
 
 ### PAUSED
 
 > **PAUSED**: `3`
 
-***
+---
 
 ### PLAYING
 
 > **PLAYING**: `2`
 
-***
+---
 
 ### UNAVAILABLE
 
@@ -10527,11 +10587,11 @@ The optimization parameters to update.
 
 ### Source: `docs/api/enumerations/PlaybackVideoEncoder.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.1**](../README.md)
 
-***
+---
 
-[Red5 Pro WebRTC SDK](../globals.md) / PlaybackVideoEncoder
+[Red5 Web SDK](../globals.md) / PlaybackVideoEncoder
 
 # Enumeration: PlaybackVideoEncoder
 
@@ -10541,31 +10601,31 @@ The optimization parameters to update.
 
 > **AV1**: `"AV1"`
 
-***
+---
 
 ### H264
 
 > **H264**: `"H264"`
 
-***
+---
 
 ### H265
 
 > **H265**: `"H265"`
 
-***
+---
 
 ### NONE
 
 > **NONE**: `"NONE"`
 
-***
+---
 
 ### VP8
 
 > **VP8**: `"VP8"`
 
-***
+---
 
 ### VP9
 
@@ -10573,11 +10633,11 @@ The optimization parameters to update.
 
 ### Source: `docs/api/enumerations/PublishAudioEncoder.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.1**](../README.md)
 
-***
+---
 
-[Red5 Pro WebRTC SDK](../globals.md) / PublishAudioEncoder
+[Red5 Web SDK](../globals.md) / PublishAudioEncoder
 
 # Enumeration: PublishAudioEncoder
 
@@ -10591,135 +10651,135 @@ Enumeration of Audio Encoder types to request for Broadcast.
 
 ### Source: `docs/api/enumerations/PublisherEventTypes.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.1**](../README.md)
 
-***
+---
 
-[Red5 Pro WebRTC SDK](../globals.md) / PublisherEventTypes
+[Red5 Web SDK](../globals.md) / PublisherEventTypes
 
 # Enumeration: PublisherEventTypes
 
 ## Enumeration Members
 
-### CONNECT\_FAILURE
+### CONNECT_FAILURE
 
-> **CONNECT\_FAILURE**: `"Connect.Failure"`
+> **CONNECT_FAILURE**: `"Connect.Failure"`
 
-***
+---
 
-### CONNECT\_SUCCESS
+### CONNECT_SUCCESS
 
-> **CONNECT\_SUCCESS**: `"Connect.Success"`
+> **CONNECT_SUCCESS**: `"Connect.Success"`
 
-***
+---
 
-### CONNECTION\_CLOSED
+### CONNECTION_CLOSED
 
-> **CONNECTION\_CLOSED**: `"Publisher.Connection.Closed"`
+> **CONNECTION_CLOSED**: `"Publisher.Connection.Closed"`
 
-***
+---
 
-### DIMENSION\_CHANGE
+### DIMENSION_CHANGE
 
-> **DIMENSION\_CHANGE**: `"Publisher.Video.DimensionChange"`
+> **DIMENSION_CHANGE**: `"Publisher.Video.DimensionChange"`
 
-***
+---
 
-### PUBLISH\_AVAILABLE
+### PUBLISH_AVAILABLE
 
-> **PUBLISH\_AVAILABLE**: `"Publish.Available"`
+> **PUBLISH_AVAILABLE**: `"Publish.Available"`
 
-***
+---
 
-### PUBLISH\_FAIL
+### PUBLISH_FAIL
 
-> **PUBLISH\_FAIL**: `"Publish.Fail"`
+> **PUBLISH_FAIL**: `"Publish.Fail"`
 
-***
+---
 
-### PUBLISH\_INSUFFICIENT\_BANDWIDTH
+### PUBLISH_INSUFFICIENT_BANDWIDTH
 
-> **PUBLISH\_INSUFFICIENT\_BANDWIDTH**: `"Publish.InsufficientBW"`
+> **PUBLISH_INSUFFICIENT_BANDWIDTH**: `"Publish.InsufficientBW"`
 
-***
+---
 
-### PUBLISH\_INVALID\_NAME
+### PUBLISH_INVALID_NAME
 
-> **PUBLISH\_INVALID\_NAME**: `"Publish.InvalidName"`
+> **PUBLISH_INVALID_NAME**: `"Publish.InvalidName"`
 
-***
+---
 
-### PUBLISH\_METADATA
+### PUBLISH_METADATA
 
-> **PUBLISH\_METADATA**: `"Publish.Metadata"`
+> **PUBLISH_METADATA**: `"Publish.Metadata"`
 
-***
+---
 
-### PUBLISH\_RECOVERING\_BANDWIDTH
+### PUBLISH_RECOVERING_BANDWIDTH
 
-> **PUBLISH\_RECOVERING\_BANDWIDTH**: `"Publish.RecoveringBW"`
+> **PUBLISH_RECOVERING_BANDWIDTH**: `"Publish.RecoveringBW"`
 
-***
+---
 
-### PUBLISH\_SEND\_INVOKE
+### PUBLISH_SEND_INVOKE
 
-> **PUBLISH\_SEND\_INVOKE**: `"Publish.Send.Invoke"`
+> **PUBLISH_SEND_INVOKE**: `"Publish.Send.Invoke"`
 
-***
+---
 
-### PUBLISH\_START
+### PUBLISH_START
 
-> **PUBLISH\_START**: `"Publish.Start"`
+> **PUBLISH_START**: `"Publish.Start"`
 
-***
+---
 
-### PUBLISH\_STATUS
+### PUBLISH_STATUS
 
-> **PUBLISH\_STATUS**: `"Publish.Status"`
+> **PUBLISH_STATUS**: `"Publish.Status"`
 
-***
+---
 
-### PUBLISH\_SUFFICIENT\_BANDWIDTH
+### PUBLISH_SUFFICIENT_BANDWIDTH
 
-> **PUBLISH\_SUFFICIENT\_BANDWIDTH**: `"Publish.SufficientBW"`
+> **PUBLISH_SUFFICIENT_BANDWIDTH**: `"Publish.SufficientBW"`
 
-***
+---
 
-### RECONNECT\_FAILURE
+### RECONNECT_FAILURE
 
-> **RECONNECT\_FAILURE**: `"Reconnect.Failure"`
+> **RECONNECT_FAILURE**: `"Reconnect.Failure"`
 
-***
+---
 
-### RECONNECT\_START
+### RECONNECT_START
 
-> **RECONNECT\_START**: `"Reconnect.Start"`
+> **RECONNECT_START**: `"Reconnect.Start"`
 
-***
+---
 
-### RECONNECT\_SUCCESS
+### RECONNECT_SUCCESS
 
-> **RECONNECT\_SUCCESS**: `"Reconnect.Success"`
+> **RECONNECT_SUCCESS**: `"Reconnect.Success"`
 
-***
+---
 
-### STATISTICS\_ENDPOINT\_CHANGE
+### STATISTICS_ENDPOINT_CHANGE
 
-> **STATISTICS\_ENDPOINT\_CHANGE**: `"Publisher.StatisticsEndpoint.Change"`
+> **STATISTICS_ENDPOINT_CHANGE**: `"Publisher.StatisticsEndpoint.Change"`
 
-***
+---
 
-### UNPUBLISH\_SUCCESS
+### UNPUBLISH_SUCCESS
 
-> **UNPUBLISH\_SUCCESS**: `"Unpublish.Success"`
+> **UNPUBLISH_SUCCESS**: `"Unpublish.Success"`
 
 ### Source: `docs/api/enumerations/PublishVideoEncoder.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.1**](../README.md)
 
-***
+---
 
-[Red5 Pro WebRTC SDK](../globals.md) / PublishVideoEncoder
+[Red5 Web SDK](../globals.md) / PublishVideoEncoder
 
 # Enumeration: PublishVideoEncoder
 
@@ -10731,37 +10791,37 @@ Enumeration of Video Encoder types to request for Broadcast.
 
 > **AV1**: `"AV1"`
 
-***
+---
 
 ### H264
 
 > **H264**: `"H264"`
 
-***
+---
 
-### H264\_BASELINE
+### H264_BASELINE
 
-> **H264\_BASELINE**: `"H264_BASELINE"`
+> **H264_BASELINE**: `"H264_BASELINE"`
 
-***
+---
 
-### H264\_HIGH
+### H264_HIGH
 
-> **H264\_HIGH**: `"H264_HIGH"`
+> **H264_HIGH**: `"H264_HIGH"`
 
-***
+---
 
 ### H265
 
 > **H265**: `"H265"`
 
-***
+---
 
 ### VP8
 
 > **VP8**: `"VP8"`
 
-***
+---
 
 ### VP9
 
@@ -10769,605 +10829,605 @@ Enumeration of Video Encoder types to request for Broadcast.
 
 ### Source: `docs/api/enumerations/PubNubEventTypes.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.1**](../README.md)
 
-***
+---
 
-[Red5 Pro WebRTC SDK](../globals.md) / PubNubEventTypes
+[Red5 Web SDK](../globals.md) / PubNubEventTypes
 
 # Enumeration: PubNubEventTypes
 
 ## Enumeration Members
 
-### AUTH\_TOKEN\_GENERATED
+### AUTH_TOKEN_GENERATED
 
-> **AUTH\_TOKEN\_GENERATED**: `"PubNub.AuthToken.Generated"`
+> **AUTH_TOKEN_GENERATED**: `"PubNub.AuthToken.Generated"`
 
-***
+---
 
-### AUTH\_TOKEN\_GENERATION\_ERROR
+### AUTH_TOKEN_GENERATION_ERROR
 
-> **AUTH\_TOKEN\_GENERATION\_ERROR**: `"PubNub.AuthToken.Generation.Error"`
+> **AUTH_TOKEN_GENERATION_ERROR**: `"PubNub.AuthToken.Generation.Error"`
 
-***
+---
 
 ### CONNECTED
 
 > **CONNECTED**: `"PubNub.Connected"`
 
-***
+---
 
 ### DISCONNECTED
 
 > **DISCONNECTED**: `"PubNub.Disconnected"`
 
-***
+---
 
 ### ERROR
 
 > **ERROR**: `"PubNub.Error"`
 
-***
+---
 
-### MESSAGE\_RECEIVED
+### MESSAGE_RECEIVED
 
-> **MESSAGE\_RECEIVED**: `"PubNub.Message.Received"`
+> **MESSAGE_RECEIVED**: `"PubNub.Message.Received"`
 
-***
+---
 
-### MESSAGE\_SEND\_FAILURE
+### MESSAGE_SEND_FAILURE
 
-> **MESSAGE\_SEND\_FAILURE**: `"PubNub.Message.Send.Failure"`
+> **MESSAGE_SEND_FAILURE**: `"PubNub.Message.Send.Failure"`
 
-***
+---
 
-### MESSAGE\_SEND\_SUCCESS
+### MESSAGE_SEND_SUCCESS
 
-> **MESSAGE\_SEND\_SUCCESS**: `"PubNub.Message.Send.Success"`
+> **MESSAGE_SEND_SUCCESS**: `"PubNub.Message.Send.Success"`
 
-***
+---
 
 ### STATUS
 
 > **STATUS**: `"PubNub.Status"`
 
-***
+---
 
-### SUBSCRIBE\_FAILURE
+### SUBSCRIBE_FAILURE
 
-> **SUBSCRIBE\_FAILURE**: `"PubNub.Subscribe.Failure"`
+> **SUBSCRIBE_FAILURE**: `"PubNub.Subscribe.Failure"`
 
-***
+---
 
-### SUBSCRIBE\_SUCCESS
+### SUBSCRIBE_SUCCESS
 
-> **SUBSCRIBE\_SUCCESS**: `"PubNub.Subscribe.Success"`
+> **SUBSCRIBE_SUCCESS**: `"PubNub.Subscribe.Success"`
 
-***
+---
 
-### UNSUBSCRIBE\_FAILURE
+### UNSUBSCRIBE_FAILURE
 
-> **UNSUBSCRIBE\_FAILURE**: `"PubNub.Unsubscribe.Failure"`
+> **UNSUBSCRIBE_FAILURE**: `"PubNub.Unsubscribe.Failure"`
 
-***
+---
 
-### UNSUBSCRIBE\_SUCCESS
+### UNSUBSCRIBE_SUCCESS
 
-> **UNSUBSCRIBE\_SUCCESS**: `"PubNub.Unsubscribe.Success"`
+> **UNSUBSCRIBE_SUCCESS**: `"PubNub.Unsubscribe.Success"`
 
 ### Source: `docs/api/enumerations/RTCPublisherEventTypes.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.1**](../README.md)
 
-***
+---
 
-[Red5 Pro WebRTC SDK](../globals.md) / RTCPublisherEventTypes
+[Red5 Web SDK](../globals.md) / RTCPublisherEventTypes
 
 # Enumeration: RTCPublisherEventTypes
 
 ## Enumeration Members
 
-### CANDIDATE\_CREATE
+### CANDIDATE_CREATE
 
-> **CANDIDATE\_CREATE**: `"WebRTC.Candidate.Create"`
+> **CANDIDATE_CREATE**: `"WebRTC.Candidate.Create"`
 
-***
+---
 
-### CANDIDATE\_RECEIVE
+### CANDIDATE_RECEIVE
 
-> **CANDIDATE\_RECEIVE**: `"WebRTC.Candidate.Receive"`
+> **CANDIDATE_RECEIVE**: `"WebRTC.Candidate.Receive"`
 
-***
+---
 
-### CONSTRAINTS\_ACCEPTED
+### CONSTRAINTS_ACCEPTED
 
-> **CONSTRAINTS\_ACCEPTED**: `"WebRTC.MediaConstraints.Accepted"`
+> **CONSTRAINTS_ACCEPTED**: `"WebRTC.MediaConstraints.Accepted"`
 
-***
+---
 
-### CONSTRAINTS\_REJECTED
+### CONSTRAINTS_REJECTED
 
-> **CONSTRAINTS\_REJECTED**: `"WebRTC.MediaConstraints.Rejected"`
+> **CONSTRAINTS_REJECTED**: `"WebRTC.MediaConstraints.Rejected"`
 
-***
+---
 
-### DATA\_CHANNEL\_AVAILABLE
+### DATA_CHANNEL_AVAILABLE
 
-> **DATA\_CHANNEL\_AVAILABLE**: `"WebRTC.DataChannel.Available"`
+> **DATA_CHANNEL_AVAILABLE**: `"WebRTC.DataChannel.Available"`
 
-***
+---
 
-### DATA\_CHANNEL\_CLOSE
+### DATA_CHANNEL_CLOSE
 
-> **DATA\_CHANNEL\_CLOSE**: `"WebRTC.DataChannel.Close"`
+> **DATA_CHANNEL_CLOSE**: `"WebRTC.DataChannel.Close"`
 
-***
+---
 
-### DATA\_CHANNEL\_ERROR
+### DATA_CHANNEL_ERROR
 
-> **DATA\_CHANNEL\_ERROR**: `"WebRTC.DataChannel.Error"`
+> **DATA_CHANNEL_ERROR**: `"WebRTC.DataChannel.Error"`
 
-***
+---
 
-### DATA\_CHANNEL\_MESSAGE
+### DATA_CHANNEL_MESSAGE
 
-> **DATA\_CHANNEL\_MESSAGE**: `"WebRTC.DataChannel.Message"`
+> **DATA_CHANNEL_MESSAGE**: `"WebRTC.DataChannel.Message"`
 
-***
+---
 
-### DATA\_CHANNEL\_OPEN
+### DATA_CHANNEL_OPEN
 
-> **DATA\_CHANNEL\_OPEN**: `"WebRTC.DataChannel.Open"`
+> **DATA_CHANNEL_OPEN**: `"WebRTC.DataChannel.Open"`
 
-***
+---
 
-### HOST\_ENDPOINT\_CHANGED
+### HOST_ENDPOINT_CHANGED
 
-> **HOST\_ENDPOINT\_CHANGED**: `"WebRTC.Endpoint.Changed"`
+> **HOST_ENDPOINT_CHANGED**: `"WebRTC.Endpoint.Changed"`
 
-***
+---
 
-### ICE\_TRICKLE\_COMPLETE
+### ICE_TRICKLE_COMPLETE
 
-> **ICE\_TRICKLE\_COMPLETE**: `"WebRTC.IceTrickle.Complete"`
+> **ICE_TRICKLE_COMPLETE**: `"WebRTC.IceTrickle.Complete"`
 
-***
+---
 
-### MEDIA\_STREAM\_AVAILABLE
+### MEDIA_STREAM_AVAILABLE
 
-> **MEDIA\_STREAM\_AVAILABLE**: `"WebRTC.MediaStream.Available"`
+> **MEDIA_STREAM_AVAILABLE**: `"WebRTC.MediaStream.Available"`
 
-***
+---
 
-### OFFER\_END
+### OFFER_END
 
-> **OFFER\_END**: `"WebRTC.Offer.End"`
+> **OFFER_END**: `"WebRTC.Offer.End"`
 
-***
+---
 
-### OFFER\_START
+### OFFER_START
 
-> **OFFER\_START**: `"WebRTC.Offer.Start"`
+> **OFFER_START**: `"WebRTC.Offer.Start"`
 
-***
+---
 
-### PEER\_CANDIDATE\_END
+### PEER_CANDIDATE_END
 
-> **PEER\_CANDIDATE\_END**: `"WebRTC.PeerConnection.CandidateEnd"`
+> **PEER_CANDIDATE_END**: `"WebRTC.PeerConnection.CandidateEnd"`
 
-***
+---
 
-### PEER\_CONNECTION\_AVAILABLE
+### PEER_CONNECTION_AVAILABLE
 
-> **PEER\_CONNECTION\_AVAILABLE**: `"WebRTC.PeerConnection.Available"`
+> **PEER_CONNECTION_AVAILABLE**: `"WebRTC.PeerConnection.Available"`
 
-***
+---
 
-### PEER\_CONNECTION\_OPEN
+### PEER_CONNECTION_OPEN
 
-> **PEER\_CONNECTION\_OPEN**: `"WebRTC.PeerConnection.Open"`
+> **PEER_CONNECTION_OPEN**: `"WebRTC.PeerConnection.Open"`
 
-***
+---
 
-### SOCKET\_MESSAGE
+### SOCKET_MESSAGE
 
-> **SOCKET\_MESSAGE**: `"WebRTC.Socket.Message"`
+> **SOCKET_MESSAGE**: `"WebRTC.Socket.Message"`
 
-***
+---
 
-### STATS\_REPORT
+### STATS_REPORT
 
-> **STATS\_REPORT**: `"WebRTC.Stats.Report"`
+> **STATS_REPORT**: `"WebRTC.Stats.Report"`
 
-***
+---
 
-### TRACK\_ADDED
+### TRACK_ADDED
 
-> **TRACK\_ADDED**: `"WebRTC.PeerConnection.OnTrack"`
+> **TRACK_ADDED**: `"WebRTC.PeerConnection.OnTrack"`
 
-***
+---
 
-### UNSUPPORTED\_FEATURE
+### UNSUPPORTED_FEATURE
 
-> **UNSUPPORTED\_FEATURE**: `"WebRTC.Unsupported.Feature"`
+> **UNSUPPORTED_FEATURE**: `"WebRTC.Unsupported.Feature"`
 
 ### Source: `docs/api/enumerations/RTCSubscriberEventTypes.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.1**](../README.md)
 
-***
+---
 
-[Red5 Pro WebRTC SDK](../globals.md) / RTCSubscriberEventTypes
+[Red5 Web SDK](../globals.md) / RTCSubscriberEventTypes
 
 # Enumeration: RTCSubscriberEventTypes
 
 ## Enumeration Members
 
-### ANSWER\_END
+### ANSWER_END
 
-> **ANSWER\_END**: `"WebRTC.Answer.End"`
+> **ANSWER_END**: `"WebRTC.Answer.End"`
 
-***
+---
 
-### ANSWER\_START
+### ANSWER_START
 
-> **ANSWER\_START**: `"WebRTC.Answer.Start"`
+> **ANSWER_START**: `"WebRTC.Answer.Start"`
 
-***
+---
 
-### CANDIDATE\_CREATE
+### CANDIDATE_CREATE
 
-> **CANDIDATE\_CREATE**: `"WebRTC.Candidate.Create"`
+> **CANDIDATE_CREATE**: `"WebRTC.Candidate.Create"`
 
-***
+---
 
-### CANDIDATE\_RECEIVE
+### CANDIDATE_RECEIVE
 
-> **CANDIDATE\_RECEIVE**: `"WebRTC.Candidate.Receive"`
+> **CANDIDATE_RECEIVE**: `"WebRTC.Candidate.Receive"`
 
-***
+---
 
-### DATA\_CHANNEL\_AVAILABLE
+### DATA_CHANNEL_AVAILABLE
 
-> **DATA\_CHANNEL\_AVAILABLE**: `"WebRTC.DataChannel.Available"`
+> **DATA_CHANNEL_AVAILABLE**: `"WebRTC.DataChannel.Available"`
 
-***
+---
 
-### DATA\_CHANNEL\_CLOSE
+### DATA_CHANNEL_CLOSE
 
-> **DATA\_CHANNEL\_CLOSE**: `"WebRTC.DataChannel.Close"`
+> **DATA_CHANNEL_CLOSE**: `"WebRTC.DataChannel.Close"`
 
-***
+---
 
-### DATA\_CHANNEL\_ERROR
+### DATA_CHANNEL_ERROR
 
-> **DATA\_CHANNEL\_ERROR**: `"WebRTC.DataChannel.Error"`
+> **DATA_CHANNEL_ERROR**: `"WebRTC.DataChannel.Error"`
 
-***
+---
 
-### DATA\_CHANNEL\_MESSAGE
+### DATA_CHANNEL_MESSAGE
 
-> **DATA\_CHANNEL\_MESSAGE**: `"WebRTC.DataChannel.Message"`
+> **DATA_CHANNEL_MESSAGE**: `"WebRTC.DataChannel.Message"`
 
-***
+---
 
-### DATA\_CHANNEL\_OPEN
+### DATA_CHANNEL_OPEN
 
-> **DATA\_CHANNEL\_OPEN**: `"WebRTC.DataChannel.Open"`
+> **DATA_CHANNEL_OPEN**: `"WebRTC.DataChannel.Open"`
 
-***
+---
 
-### HOST\_ENDPOINT\_CHANGED
+### HOST_ENDPOINT_CHANGED
 
-> **HOST\_ENDPOINT\_CHANGED**: `"WebRTC.Endpoint.Changed"`
+> **HOST_ENDPOINT_CHANGED**: `"WebRTC.Endpoint.Changed"`
 
-***
+---
 
-### ICE\_TRICKLE\_COMPLETE
+### ICE_TRICKLE_COMPLETE
 
-> **ICE\_TRICKLE\_COMPLETE**: `"WebRTC.IceTrickle.Complete"`
+> **ICE_TRICKLE_COMPLETE**: `"WebRTC.IceTrickle.Complete"`
 
-***
+---
 
-### OFFER\_END
+### OFFER_END
 
-> **OFFER\_END**: `"WebRTC.Offer.End"`
+> **OFFER_END**: `"WebRTC.Offer.End"`
 
-***
+---
 
-### OFFER\_START
+### OFFER_START
 
-> **OFFER\_START**: `"WebRTC.Offer.Start"`
+> **OFFER_START**: `"WebRTC.Offer.Start"`
 
-***
+---
 
-### ON\_ADD\_STREAM
+### ON_ADD_STREAM
 
-> **ON\_ADD\_STREAM**: `"WebRTC.Add.Stream"`
+> **ON_ADD_STREAM**: `"WebRTC.Add.Stream"`
 
-***
+---
 
-### PEER\_CANDIDATE\_END
+### PEER_CANDIDATE_END
 
-> **PEER\_CANDIDATE\_END**: `"WebRTC.PeerConnection.CandidateEnd"`
+> **PEER_CANDIDATE_END**: `"WebRTC.PeerConnection.CandidateEnd"`
 
-***
+---
 
-### PEER\_CONNECTION\_AVAILABLE
+### PEER_CONNECTION_AVAILABLE
 
-> **PEER\_CONNECTION\_AVAILABLE**: `"WebRTC.PeerConnection.Available"`
+> **PEER_CONNECTION_AVAILABLE**: `"WebRTC.PeerConnection.Available"`
 
-***
+---
 
-### PEER\_CONNECTION\_OPEN
+### PEER_CONNECTION_OPEN
 
-> **PEER\_CONNECTION\_OPEN**: `"WebRTC.PeerConnection.Open"`
+> **PEER_CONNECTION_OPEN**: `"WebRTC.PeerConnection.Open"`
 
-***
+---
 
-### SOCKET\_MESSAGE
+### SOCKET_MESSAGE
 
-> **SOCKET\_MESSAGE**: `"WebRTC.Socket.Message"`
+> **SOCKET_MESSAGE**: `"WebRTC.Socket.Message"`
 
-***
+---
 
-### STATS\_REPORT
+### STATS_REPORT
 
-> **STATS\_REPORT**: `"WebRTC.Stats.Report"`
+> **STATS_REPORT**: `"WebRTC.Stats.Report"`
 
-***
+---
 
-### SUBSCRIBE\_STREAM\_SWITCH
+### SUBSCRIBE_STREAM_SWITCH
 
-> **SUBSCRIBE\_STREAM\_SWITCH**: `"WebRTC.Subscribe.StreamSwitch"`
+> **SUBSCRIBE_STREAM_SWITCH**: `"WebRTC.Subscribe.StreamSwitch"`
 
-***
+---
 
-### TRACK\_ADDED
+### TRACK_ADDED
 
-> **TRACK\_ADDED**: `"WebRTC.PeerConnection.OnTrack"`
+> **TRACK_ADDED**: `"WebRTC.PeerConnection.OnTrack"`
 
 ### Source: `docs/api/enumerations/StatsEndpointType.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.1**](../README.md)
 
-***
+---
 
-[Red5 Pro WebRTC SDK](../globals.md) / StatsEndpointType
+[Red5 Web SDK](../globals.md) / StatsEndpointType
 
 # Enumeration: StatsEndpointType
 
 ## Enumeration Members
 
-### DATA\_CHANNEL
+### DATA_CHANNEL
 
-> **DATA\_CHANNEL**: `"data-channel"`
+> **DATA_CHANNEL**: `"data-channel"`
 
-***
+---
 
-### DEV\_NULL
+### DEV_NULL
 
-> **DEV\_NULL**: `"dev/null"`
+> **DEV_NULL**: `"dev/null"`
 
-***
+---
 
-### EVENT\_TRANSPORT
+### EVENT_TRANSPORT
 
-> **EVENT\_TRANSPORT**: `"event-transport"`
+> **EVENT_TRANSPORT**: `"event-transport"`
 
 ### Source: `docs/api/enumerations/SubscriberEventTypes.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.1**](../README.md)
 
-***
+---
 
-[Red5 Pro WebRTC SDK](../globals.md) / SubscriberEventTypes
+[Red5 Web SDK](../globals.md) / SubscriberEventTypes
 
 # Enumeration: SubscriberEventTypes
 
 ## Enumeration Members
 
-### AUTO\_PLAYBACK\_FAILURE
+### AUTO_PLAYBACK_FAILURE
 
-> **AUTO\_PLAYBACK\_FAILURE**: `"Subscribe.Autoplay.Failure"`
+> **AUTO_PLAYBACK_FAILURE**: `"Subscribe.Autoplay.Failure"`
 
-***
+---
 
-### AUTO\_PLAYBACK\_MUTED
+### AUTO_PLAYBACK_MUTED
 
-> **AUTO\_PLAYBACK\_MUTED**: `"Subscribe.Autoplay.Muted"`
+> **AUTO_PLAYBACK_MUTED**: `"Subscribe.Autoplay.Muted"`
 
-***
+---
 
-### CONNECT\_FAILURE
+### CONNECT_FAILURE
 
-> **CONNECT\_FAILURE**: `"Connect.Failure"`
+> **CONNECT_FAILURE**: `"Connect.Failure"`
 
-***
+---
 
-### CONNECT\_SUCCESS
+### CONNECT_SUCCESS
 
-> **CONNECT\_SUCCESS**: `"Connect.Success"`
+> **CONNECT_SUCCESS**: `"Connect.Success"`
 
-***
+---
 
-### CONNECTION\_CLOSED
+### CONNECTION_CLOSED
 
-> **CONNECTION\_CLOSED**: `"Subscribe.Connection.Closed"`
+> **CONNECTION_CLOSED**: `"Subscribe.Connection.Closed"`
 
-***
+---
 
-### FULL\_SCREEN\_STATE\_CHANGE
+### FULL_SCREEN_STATE_CHANGE
 
-> **FULL\_SCREEN\_STATE\_CHANGE**: `"Subscribe.FullScreen.Change"`
+> **FULL_SCREEN_STATE_CHANGE**: `"Subscribe.FullScreen.Change"`
 
-***
+---
 
-### LOADED\_METADATA
+### LOADED_METADATA
 
-> **LOADED\_METADATA**: `"Subscribe.LoadedMetadata"`
+> **LOADED_METADATA**: `"Subscribe.LoadedMetadata"`
 
-***
+---
 
-### ORIENTATION\_CHANGE
+### ORIENTATION_CHANGE
 
-> **ORIENTATION\_CHANGE**: `"Subscribe.Orientation.Change"`
+> **ORIENTATION_CHANGE**: `"Subscribe.Orientation.Change"`
 
-***
+---
 
-### PLAY\_UNPUBLISH
+### PLAY_UNPUBLISH
 
-> **PLAY\_UNPUBLISH**: `"Subscribe.Play.Unpublish"`
+> **PLAY_UNPUBLISH**: `"Subscribe.Play.Unpublish"`
 
-***
+---
 
-### PLAYBACK\_STATE\_CHANGE
+### PLAYBACK_STATE_CHANGE
 
-> **PLAYBACK\_STATE\_CHANGE**: `"Subscribe.Playback.Change"`
+> **PLAYBACK_STATE_CHANGE**: `"Subscribe.Playback.Change"`
 
-***
+---
 
-### PLAYBACK\_TIME\_UPDATE
+### PLAYBACK_TIME_UPDATE
 
-> **PLAYBACK\_TIME\_UPDATE**: `"Subscribe.Time.Update"`
+> **PLAYBACK_TIME_UPDATE**: `"Subscribe.Time.Update"`
 
-***
+---
 
-### RECONNECT\_FAILURE
+### RECONNECT_FAILURE
 
-> **RECONNECT\_FAILURE**: `"Reconnect.Failure"`
+> **RECONNECT_FAILURE**: `"Reconnect.Failure"`
 
-***
+---
 
-### RECONNECT\_START
+### RECONNECT_START
 
-> **RECONNECT\_START**: `"Reconnect.Start"`
+> **RECONNECT_START**: `"Reconnect.Start"`
 
-***
+---
 
-### SEEK\_CHANGE
+### SEEK_CHANGE
 
-> **SEEK\_CHANGE**: `"Subscribe.Seek.Change"`
+> **SEEK_CHANGE**: `"Subscribe.Seek.Change"`
 
-***
+---
 
-### STATISTICS\_ENDPOINT\_CHANGE
+### STATISTICS_ENDPOINT_CHANGE
 
-> **STATISTICS\_ENDPOINT\_CHANGE**: `"Subscribe.StatisticsEndpoint.Change"`
+> **STATISTICS_ENDPOINT_CHANGE**: `"Subscribe.StatisticsEndpoint.Change"`
 
-***
+---
 
-### STREAMING\_MODE\_CHANGE
+### STREAMING_MODE_CHANGE
 
-> **STREAMING\_MODE\_CHANGE**: `"Subscribe.StreamingMode.Change"`
+> **STREAMING_MODE_CHANGE**: `"Subscribe.StreamingMode.Change"`
 
-***
+---
 
-### SUBSCRIBE\_FAIL
+### SUBSCRIBE_FAIL
 
-> **SUBSCRIBE\_FAIL**: `"Subscribe.Fail"`
+> **SUBSCRIBE_FAIL**: `"Subscribe.Fail"`
 
-***
+---
 
-### SUBSCRIBE\_INVALID\_NAME
+### SUBSCRIBE_INVALID_NAME
 
-> **SUBSCRIBE\_INVALID\_NAME**: `"Subscribe.InvalidName"`
+> **SUBSCRIBE_INVALID_NAME**: `"Subscribe.InvalidName"`
 
-***
+---
 
-### SUBSCRIBE\_METADATA
+### SUBSCRIBE_METADATA
 
-> **SUBSCRIBE\_METADATA**: `"Subscribe.Metadata"`
+> **SUBSCRIBE_METADATA**: `"Subscribe.Metadata"`
 
-***
+---
 
-### SUBSCRIBE\_PUBLISHER\_CONGESTION
+### SUBSCRIBE_PUBLISHER_CONGESTION
 
-> **SUBSCRIBE\_PUBLISHER\_CONGESTION**: `"Subscribe.Publisher.NetworkCongestion"`
+> **SUBSCRIBE_PUBLISHER_CONGESTION**: `"Subscribe.Publisher.NetworkCongestion"`
 
-***
+---
 
-### SUBSCRIBE\_PUBLISHER\_RECOVERY
+### SUBSCRIBE_PUBLISHER_RECOVERY
 
-> **SUBSCRIBE\_PUBLISHER\_RECOVERY**: `"Subscribe.Publisher.NetworkRecovery"`
+> **SUBSCRIBE_PUBLISHER_RECOVERY**: `"Subscribe.Publisher.NetworkRecovery"`
 
-***
+---
 
-### SUBSCRIBE\_SEND\_INVOKE
+### SUBSCRIBE_SEND_INVOKE
 
-> **SUBSCRIBE\_SEND\_INVOKE**: `"Subscribe.Send.Invoke"`
+> **SUBSCRIBE_SEND_INVOKE**: `"Subscribe.Send.Invoke"`
 
-***
+---
 
-### SUBSCRIBE\_START
+### SUBSCRIBE_START
 
-> **SUBSCRIBE\_START**: `"Subscribe.Start"`
+> **SUBSCRIBE_START**: `"Subscribe.Start"`
 
-***
+---
 
-### SUBSCRIBE\_STATUS
+### SUBSCRIBE_STATUS
 
-> **SUBSCRIBE\_STATUS**: `"Subscribe.Status"`
+> **SUBSCRIBE_STATUS**: `"Subscribe.Status"`
 
-***
+---
 
-### SUBSCRIBE\_STOP
+### SUBSCRIBE_STOP
 
-> **SUBSCRIBE\_STOP**: `"Subscribe.Stop"`
+> **SUBSCRIBE_STOP**: `"Subscribe.Stop"`
 
-***
+---
 
-### VIDEO\_DIMENSIONS\_CHANGE
+### VIDEO_DIMENSIONS_CHANGE
 
-> **VIDEO\_DIMENSIONS\_CHANGE**: `"Subscribe.VideoDimensions.Change"`
+> **VIDEO_DIMENSIONS_CHANGE**: `"Subscribe.VideoDimensions.Change"`
 
-***
+---
 
-### VOLUME\_CHANGE
+### VOLUME_CHANGE
 
-> **VOLUME\_CHANGE**: `"Subscribe.Volume.Change"`
+> **VOLUME_CHANGE**: `"Subscribe.Volume.Change"`
 
 ### Source: `docs/api/enumerations/WebRTCConnectionEventTypes.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.1**](../README.md)
 
-***
+---
 
-[Red5 Pro WebRTC SDK](../globals.md) / WebRTCConnectionEventTypes
+[Red5 Web SDK](../globals.md) / WebRTCConnectionEventTypes
 
 # Enumeration: WebRTCConnectionEventTypes
 
 ## Enumeration Members
 
-### CONNECTION\_HEALTH\_EXCESSIVE\_RTT
+### CONNECTION_HEALTH_EXCESSIVE_RTT
 
-> **CONNECTION\_HEALTH\_EXCESSIVE\_RTT**: `"WebRTC.Connection.ExcessiveRTT"`
+> **CONNECTION_HEALTH_EXCESSIVE_RTT**: `"WebRTC.Connection.ExcessiveRTT"`
 
-***
+---
 
-### CONNECTION\_HEALTH\_ICE\_TIMEOUT
+### CONNECTION_HEALTH_ICE_TIMEOUT
 
-> **CONNECTION\_HEALTH\_ICE\_TIMEOUT**: `"WebRTC.Connection.IceTimeout"`
+> **CONNECTION_HEALTH_ICE_TIMEOUT**: `"WebRTC.Connection.IceTimeout"`
 
-***
+---
 
-### CONNECTION\_HEALTH\_STALE\_STATS
+### CONNECTION_HEALTH_STALE_STATS
 
-> **CONNECTION\_HEALTH\_STALE\_STATS**: `"WebRTC.Connection.StaleStats"`
+> **CONNECTION_HEALTH_STALE_STATS**: `"WebRTC.Connection.StaleStats"`
 
-***
+---
 
-### CONNECTION\_HEALTH\_STATE\_REGRESSION
+### CONNECTION_HEALTH_STATE_REGRESSION
 
-> **CONNECTION\_HEALTH\_STATE\_REGRESSION**: `"WebRTC.Connection.StateRegression"`
+> **CONNECTION_HEALTH_STATE_REGRESSION**: `"WebRTC.Connection.StateRegression"`
 
 ### Source: `docs/api/functions/getRecordedLogs.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.1**](../README.md)
 
-***
+---
 
-[Red5 Pro WebRTC SDK](../globals.md) / getRecordedLogs
+[Red5 Web SDK](../globals.md) / getRecordedLogs
 
 # Function: getRecordedLogs()
 
@@ -11383,11 +11443,11 @@ Array of recorded log messages.
 
 ### Source: `docs/api/functions/getVersion.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.1**](../README.md)
 
-***
+---
 
-[Red5 Pro WebRTC SDK](../globals.md) / getVersion
+[Red5 Web SDK](../globals.md) / getVersion
 
 # Function: getVersion()
 
@@ -11401,11 +11461,11 @@ Get the version of the SDK.
 
 ### Source: `docs/api/functions/setLogLevel.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.1**](../README.md)
 
-***
+---
 
-[Red5 Pro WebRTC SDK](../globals.md) / setLogLevel
+[Red5 Web SDK](../globals.md) / setLogLevel
 
 # Function: setLogLevel()
 
@@ -11427,13 +11487,13 @@ Get the version of the SDK.
 
 ### Source: `docs/api/globals.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](README.md)
+[**Red5 Web SDK v17.0.0-beta.1**](README.md)
 
-***
+---
 
-# Red5 Pro WebRTC SDK v16.4.0-beta.2
+# Red5 Web SDK v17.0.0-beta.1
 
-Red5 Pro WebRTC SDK
+Red5 Web SDK
 
 ## Enumerations
 
@@ -11514,7 +11574,7 @@ Red5 Pro WebRTC SDK
 - [defaultStatsConfig](variables/defaultStatsConfig.md)
 - [defaultWhepSubscriberConfig](variables/defaultWhepSubscriberConfig.md)
 - [defaultWhipPublisherConfig](variables/defaultWhipPublisherConfig.md)
-- [LOG\_LEVELS](variables/LOG_LEVELS.md)
+- [LOG_LEVELS](variables/LOG_LEVELS.md)
 - [PlaybackStateReadableMap](variables/PlaybackStateReadableMap.md)
 
 ## Functions
@@ -11525,11 +11585,11 @@ Red5 Pro WebRTC SDK
 
 ### Source: `docs/api/interfaces/EventEmitterInterface.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.1**](../README.md)
 
-***
+---
 
-[Red5 Pro WebRTC SDK](../globals.md) / EventEmitterInterface
+[Red5 Web SDK](../globals.md) / EventEmitterInterface
 
 # Interface: EventEmitterInterface
 
@@ -11557,7 +11617,7 @@ Remove a callback handler for an event type.
 
 `void`
 
-***
+---
 
 ### on
 
@@ -11579,7 +11639,7 @@ Assign a callback handler to an event type.
 
 `void`
 
-***
+---
 
 ### trigger
 
@@ -11599,9 +11659,9 @@ Dispatch an event to be handled by any assigned callbacks.
 
 ### Source: `docs/api/README.md`
 
-**Red5 Pro WebRTC SDK v16.4.0-beta.2**
+**Red5 Web SDK v17.0.0-beta.1**
 
-***
+---
 
 <h3 align="center">
   <img src="_media/Red5_Truetime_black.png" alt="Red5 Pro Logo" height="65" />
@@ -11620,18 +11680,18 @@ Dispatch an event to be handled by any assigned callbacks.
 
 ---
 
-# Red5 HTML SDK
+# Red5 Web SDK
 
-> The **Red5 HTML SDK** allows you to integrate live streaming video into your desktop and mobile browser.
+> The **Red5 Web SDK** allows you to integrate live streaming video into your desktop and mobile browser.
 
-* [Important Notices](#important-notices)
-* [Installation](#installation)
-* [Quick Start](#quick-start)
-* [Usage](#usage)
+- [Important Notices](#important-notices)
+- [Installation](#installation)
+- [Quick Start](#quick-start)
+- [Usage](#usage)
 
 # Important Notices
 
-With the `15.0.0` release of the **Red5 HTML SDK**, we have complete overhaul of its development and focus. We have decided to focus solely on **WISH** (WebRTC Ingest Signaling over HTTPS) and dropped WebSocket support previously used for signaling phase.
+With the `15.0.0` release of the **Red5 Web SDK**, we have complete overhaul of its development and focus. We have decided to focus solely on **WISH** (WebRTC Ingest Signaling over HTTPS) and dropped WebSocket support previously used for signaling phase.
 
 As such, the publishing and subscribing logic within the SDK are provided from the `WHIPClient` and `WHEPClient`, respectively.
 
@@ -11639,36 +11699,60 @@ Not only does this free up resources consumed by WebSockets on the Red5 Server d
 
 # Installation
 
+The default build is the **full** SDK (WHIP/WHEP/HLS and MOQ). If you only need one protocol, load the matching focused file instead. All three attach `window.red5websdk` (and alias `window.red5prosdk` on `17.x`). Load **one** script per page; a second file overwrites the global.
+
 ## As Script Dependency in HTML page
 
-```html
-<script src="https://cdn.jsdelivr.net/npm/red5pro-webrtc-sdk@latest/red5pro-sdk.min.js"></script>
-```
-
-... Or if you know the version:
+Full SDK:
 
 ```html
-<script src=https://cdn.jsdelivr.net/npm/red5pro-webrtc-sdk@15.0.0/red5pro-sdk.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/red5-web-sdk@latest/red5-web-sdk.min.js"></script>
 ```
+
+WHIP/WHEP/HLS only:
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/red5-web-sdk@latest/red5-web-sdk-webrtc.min.js"></script>
+```
+
+MOQ only:
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/red5-web-sdk@latest/red5-web-sdk-moq.min.js"></script>
+```
+
+... Or pin a version:
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/red5-web-sdk@15.0.0/red5-web-sdk.min.js"></script>
+```
+
+Playback UI styles ship in the release drop as `red5pro-media.css` (WHIP/WHEP/HLS) and `red5-moq-media.css` (MOQ).
 
 ## Using `npm` or `yarn` for you browser-based projects
 
 ```sh
-npm install --save red5pro-webrtc-sdk
+npm install --save red5-web-sdk
 ```
 
 ```sh
-yarn install red5pro-webrtc-sdk
+yarn install red5-web-sdk
+```
+
+```js
+import { WHIPClient, WHEPClient } from 'red5-web-sdk'
+import { WHIPClient } from 'red5-web-sdk/webrtc'
+import { MOQPublisher } from 'red5-web-sdk/moq'
 ```
 
 # Quick Start
 
-All members exposed on the otherwise global `window.red5prosdk` if loading as a script on an HTML page are importable from the `red5pro-webrtc-sdk` module:
+All members exposed on the otherwise global `window.red5websdk` if loading as a script on an HTML page are importable from the `red5-web-sdk` module:
 
 _index.js_
 
 ```js
-import { WHIPClient, WHEPClient } from 'red5pro-webrtc-sdk'
+import { WHIPClient, WHEPClient } from 'red5-web-sdk'
 ```
 
 ## Quick Start - Standalone Server Deployment
@@ -11692,14 +11776,14 @@ You can sign up and download the Red5 Server to manage your own deployment at [h
     <div>
       <video id="red5pro-subscriber" width="640" height="480" controls autoplay playsinline></video>
     </div>
-    <!-- Red5 HTML SDK -->
-    <script src="https://cdn.jsdelivr.net/npm/red5pro-webrtc-sdk@latest/red5pro-sdk.min.js"></script>
+    <!-- Red5 Web SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/red5-web-sdk@latest/red5-web-sdk.min.js"></script>
     <!-- Create Pub/Sub -->
     <script>
-      ((red5prosdk) => {
+      ((red5websdk) => {
         'use strict'
 
-        const { WHIPClient, WHEPClient, PublisherEventTypes } = red5prosdk
+        const { WHIPClient, WHEPClient, PublisherEventTypes } = red5websdk
 
         const publisher = new WHIPClient()
         const subscriber = new WHEPClient()
@@ -11732,7 +11816,7 @@ You can sign up and download the Red5 Server to manage your own deployment at [h
         // Start Publisher first ->
         publish()
 
-      }(window.red5prosdk))
+      }(window.red5websdk))
     </script>
   </body>
 </html>
@@ -11763,19 +11847,19 @@ The Red5 Cloud deployment utilizes a Stream Manager for autoscaling. With the St
     <div>
       <video id="red5pro-subscriber" width="640" height="480" controls autoplay playsinline></video>
     </div>
-    <!-- Red5 HTML SDK -->
-    <script src="https://cdn.jsdelivr.net/npm/red5pro-webrtc-sdk@latest/red5pro-sdk.min.js"></script>
+    <!-- Red5 Web SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/red5-web-sdk@latest/red5-web-sdk.min.js"></script>
     <!-- Create Pub/Sub -->
     <script>
       <script>
-      ((red5prosdk) => {
+      ((red5websdk) => {
         'use strict'
 
         const host = 'my-deployment.cloud.red5.net'
         const nodeGroup = 'my-node-group'
         const streamName = 'my-stream-name'
 
-        const { WHIPClient, WHEPClient, PublisherEventTypes } = red5prosdk
+        const { WHIPClient, WHEPClient, PublisherEventTypes } = red5websdk
         const publisher = new WHIPClient()
         const subscriber = new WHEPClient()
 
@@ -11815,7 +11899,7 @@ The Red5 Cloud deployment utilizes a Stream Manager for autoscaling. With the St
         // Start Publisher first ->
         publish()
 
-      }(window.red5prosdk))
+      }(window.red5websdk))
     </script>
   </body>
 </html>
@@ -11827,21 +11911,21 @@ The [WHIPClient](_media/whip-client.md) and [WHEPClient](_media/whep-client.md) 
 
 The initialization configurations and relevant APIs available for each client can be found in their respective documentation found in this repo:
 
-* [WHIPClient](_media/whip-client.md)
-* [WHEPClient](_media/whep-client.md)
-* [HLSSubscriber](_media/hls-subscriber.md)
-* [MOQPublisher](_media/moq-publisher.md)
-* [MOQSubscriber](_media/moq-subscriber.md)
-* [MOQCatalog](_media/moq-catalog.md)
-* [MOQMessageChannel](_media/moq-message-channel.md)
+- [WHIPClient](_media/whip-client.md)
+- [WHEPClient](_media/whep-client.md)
+- [HLSSubscriber](_media/hls-subscriber.md)
+- [MOQPublisher](_media/moq-publisher.md)
+- [MOQSubscriber](_media/moq-subscriber.md)
+- [MOQCatalog](_media/moq-catalog.md)
+- [MOQMessageChannel](_media/moq-message-channel.md)
 
 ### Source: `docs/api/type-aliases/BandwidthConfig.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.1**](../README.md)
 
-***
+---
 
-[Red5 Pro WebRTC SDK](../globals.md) / BandwidthConfig
+[Red5 Web SDK](../globals.md) / BandwidthConfig
 
 # Type Alias: BandwidthConfig
 
@@ -11853,7 +11937,7 @@ The initialization configurations and relevant APIs available for each client ca
 
 > `optional` **audio?**: `number`
 
-***
+---
 
 ### video?
 
@@ -11861,11 +11945,11 @@ The initialization configurations and relevant APIs available for each client ca
 
 ### Source: `docs/api/type-aliases/HLSSubscriberConfigType.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.1**](../README.md)
 
-***
+---
 
-[Red5 Pro WebRTC SDK](../globals.md) / HLSSubscriberConfigType
+[Red5 Web SDK](../globals.md) / HLSSubscriberConfigType
 
 # Type Alias: HLSSubscriberConfigType
 
@@ -11877,7 +11961,7 @@ The initialization configurations and relevant APIs available for each client ca
 
 > **app**: `string`
 
-***
+---
 
 ### connectionParams?
 
@@ -11887,43 +11971,43 @@ The initialization configurations and relevant APIs available for each client ca
 
 \[`key`: `string`\]: `any`
 
-***
+---
 
 ### endpoint?
 
 > `optional` **endpoint?**: `string`
 
-***
+---
 
 ### host?
 
 > `optional` **host?**: `string`
 
-***
+---
 
 ### mediaElementId?
 
 > `optional` **mediaElementId?**: `string`
 
-***
+---
 
 ### muteOnAutoplayRestriction?
 
 > `optional` **muteOnAutoplayRestriction?**: `boolean`
 
-***
+---
 
 ### port
 
 > **port**: `number`
 
-***
+---
 
 ### protocol
 
 > **protocol**: `"ws"` \| `"wss"` \| `"http"` \| `"https"`
 
-***
+---
 
 ### streamName?
 
@@ -11931,11 +12015,11 @@ The initialization configurations and relevant APIs available for each client ca
 
 ### Source: `docs/api/type-aliases/LiveSeekConfigType.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.1**](../README.md)
 
-***
+---
 
-[Red5 Pro WebRTC SDK](../globals.md) / LiveSeekConfigType
+[Red5 Web SDK](../globals.md) / LiveSeekConfigType
 
 # Type Alias: LiveSeekConfigType
 
@@ -11949,11 +12033,11 @@ The initialization configurations and relevant APIs available for each client ca
 
 ### Source: `docs/api/type-aliases/LiveSeekOptions.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.1**](../README.md)
 
-***
+---
 
-[Red5 Pro WebRTC SDK](../globals.md) / LiveSeekOptions
+[Red5 Web SDK](../globals.md) / LiveSeekOptions
 
 # Type Alias: LiveSeekOptions
 
@@ -11965,25 +12049,25 @@ The initialization configurations and relevant APIs available for each client ca
 
 > `optional` **baseURL?**: `string`
 
-***
+---
 
 ### fullURL?
 
 > `optional` **fullURL?**: `string`
 
-***
+---
 
 ### hlsElement?
 
 > `optional` **hlsElement?**: `HTMLMediaElement`
 
-***
+---
 
 ### hlsjsRef?
 
 > `optional` **hlsjsRef?**: `any`
 
-***
+---
 
 ### options?
 
@@ -11997,7 +12081,7 @@ The initialization configurations and relevant APIs available for each client ca
 
 > **debug**: `boolean`
 
-***
+---
 
 ### usePlaybackControlsUI?
 
@@ -12005,11 +12089,11 @@ The initialization configurations and relevant APIs available for each client ca
 
 ### Source: `docs/api/type-aliases/MediaConstraintRange.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.1**](../README.md)
 
-***
+---
 
-[Red5 Pro WebRTC SDK](../globals.md) / MediaConstraintRange
+[Red5 Web SDK](../globals.md) / MediaConstraintRange
 
 # Type Alias: MediaConstraintRange
 
@@ -12021,19 +12105,19 @@ The initialization configurations and relevant APIs available for each client ca
 
 > `optional` **exact?**: `number`
 
-***
+---
 
 ### ideal?
 
 > `optional` **ideal?**: `number`
 
-***
+---
 
 ### max?
 
 > `optional` **max?**: `number`
 
-***
+---
 
 ### min?
 
@@ -12041,11 +12125,11 @@ The initialization configurations and relevant APIs available for each client ca
 
 ### Source: `docs/api/type-aliases/MediaConstraints.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.1**](../README.md)
 
-***
+---
 
-[Red5 Pro WebRTC SDK](../globals.md) / MediaConstraints
+[Red5 Web SDK](../globals.md) / MediaConstraints
 
 # Type Alias: MediaConstraints
 
@@ -12057,7 +12141,7 @@ The initialization configurations and relevant APIs available for each client ca
 
 > `optional` **audio?**: `any` \| `boolean`
 
-***
+---
 
 ### video?
 
@@ -12065,11 +12149,11 @@ The initialization configurations and relevant APIs available for each client ca
 
 ### Source: `docs/api/type-aliases/MOQCatalogConfigType.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.1**](../README.md)
 
-***
+---
 
-[Red5 Pro WebRTC SDK](../globals.md) / MOQCatalogConfigType
+[Red5 Web SDK](../globals.md) / MOQCatalogConfigType
 
 # Type Alias: MOQCatalogConfigType
 
@@ -12081,61 +12165,61 @@ The initialization configurations and relevant APIs available for each client ca
 
 > **app**: `string`
 
-***
+---
 
 ### authorization?
 
 > `optional` **authorization?**: `AuthorizationSettings`
 
-***
+---
 
 ### certKey?
 
 > `optional` **certKey?**: `string`
 
-***
+---
 
 ### draftVersion?
 
 > `optional` **draftVersion?**: `DraftVersion`
 
-***
+---
 
 ### endpoint?
 
 > `optional` **endpoint?**: `string`
 
-***
+---
 
 ### host?
 
 > `optional` **host?**: `string`
 
-***
+---
 
 ### moqLogLevel?
 
 > `optional` **moqLogLevel?**: `LogLevel`
 
-***
+---
 
 ### namespace?
 
 > `optional` **namespace?**: `string`
 
-***
+---
 
 ### port
 
 > **port**: `number`
 
-***
+---
 
 ### protocol
 
 > **protocol**: `"ws"` \| `"wss"` \| `"http"` \| `"https"`
 
-***
+---
 
 ### streamName?
 
@@ -12143,11 +12227,11 @@ The initialization configurations and relevant APIs available for each client ca
 
 ### Source: `docs/api/type-aliases/MOQDataChannelConfiguration.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.1**](../README.md)
 
-***
+---
 
-[Red5 Pro WebRTC SDK](../globals.md) / MOQDataChannelConfiguration
+[Red5 Web SDK](../globals.md) / MOQDataChannelConfiguration
 
 # Type Alias: MOQDataChannelConfiguration
 
@@ -12161,7 +12245,7 @@ The initialization configurations and relevant APIs available for each client ca
 
 Sender identity used for namespace + echo filtering.
 
-***
+---
 
 ### keepEcho?
 
@@ -12169,7 +12253,7 @@ Sender identity used for namespace + echo filtering.
 
 Keep self-echoed JSON messages when true.
 
-***
+---
 
 ### name?
 
@@ -12177,7 +12261,7 @@ Keep self-echoed JSON messages when true.
 
 Channel label. Matches WebRTC `dataChannelConfiguration.name`.
 
-***
+---
 
 ### unreliable?
 
@@ -12187,11 +12271,11 @@ Prefer datagram send path for outbound messages.
 
 ### Source: `docs/api/type-aliases/MOQMessageChannelConfigType.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.1**](../README.md)
 
-***
+---
 
-[Red5 Pro WebRTC SDK](../globals.md) / MOQMessageChannelConfigType
+[Red5 Web SDK](../globals.md) / MOQMessageChannelConfigType
 
 # Type Alias: MOQMessageChannelConfigType
 
@@ -12199,11 +12283,11 @@ Prefer datagram send path for outbound messages.
 
 ### Source: `docs/api/type-aliases/MOQPublisherConfigType.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.1**](../README.md)
 
-***
+---
 
-[Red5 Pro WebRTC SDK](../globals.md) / MOQPublisherConfigType
+[Red5 Web SDK](../globals.md) / MOQPublisherConfigType
 
 # Type Alias: MOQPublisherConfigType
 
@@ -12215,37 +12299,37 @@ Prefer datagram send path for outbound messages.
 
 > **app**: `string`
 
-***
+---
 
 ### audioEncoding?
 
 > `optional` **audioEncoding?**: [`PublishAudioEncoder`](../enumerations/PublishAudioEncoder.md)
 
-***
+---
 
 ### authorization?
 
 > `optional` **authorization?**: `AuthorizationSettings`
 
-***
+---
 
 ### bandwidth
 
 > **bandwidth**: [`BandwidthConfig`](BandwidthConfig.md)
 
-***
+---
 
 ### certKey?
 
 > `optional` **certKey?**: `string`
 
-***
+---
 
 ### clearMediaOnUnpublish
 
 > **clearMediaOnUnpublish**: `boolean`
 
-***
+---
 
 ### connectionParams?
 
@@ -12255,61 +12339,61 @@ Prefer datagram send path for outbound messages.
 
 \[`key`: `string`\]: `any`
 
-***
+---
 
 ### draftVersion?
 
 > `optional` **draftVersion?**: `DraftVersion`
 
-***
+---
 
 ### endpoint?
 
 > `optional` **endpoint?**: `string`
 
-***
+---
 
 ### host?
 
 > `optional` **host?**: `string`
 
-***
+---
 
 ### keyFramerate
 
 > **keyFramerate**: `number`
 
-***
+---
 
 ### locVersion?
 
 > `optional` **locVersion?**: `LOCVersion`
 
-***
+---
 
 ### maxAudioQueue?
 
 > `optional` **maxAudioQueue?**: `number`
 
-***
+---
 
 ### maxVideoQueue?
 
 > `optional` **maxVideoQueue?**: `number`
 
-***
+---
 
 ### mediaConstraints
 
 > **mediaConstraints**: [`MediaConstraints`](MediaConstraints.md)
 
-***
+---
 
 ### mediaElementId
 
 > **mediaElementId**: `string`
 
-***
+---
 
 ### messageChannel?
 
@@ -12317,19 +12401,19 @@ Prefer datagram send path for outbound messages.
 
 Optional internally managed data messaging channel.
 
-***
+---
 
 ### moqLogLevel?
 
 > `optional` **moqLogLevel?**: `LogLevel`
 
-***
+---
 
 ### namespace?
 
 > `optional` **namespace?**: `string`
 
-***
+---
 
 ### onGetUserMedia?
 
@@ -12339,19 +12423,19 @@ Optional internally managed data messaging channel.
 
 `Promise`\<`MediaStream`\>
 
-***
+---
 
 ### port
 
 > **port**: `number`
 
-***
+---
 
 ### protocol
 
 > **protocol**: `"ws"` \| `"wss"` \| `"http"` \| `"https"`
 
-***
+---
 
 ### simulcast?
 
@@ -12360,19 +12444,19 @@ Optional internally managed data messaging channel.
 Optional simulcast ladder. Source/captured video is the highest rung;
 lower rungs are generated via OffscreenCanvas + track generators.
 
-***
+---
 
 ### stats?
 
 > `optional` **stats?**: [`StatsConfig`](StatsConfig.md)
 
-***
+---
 
 ### streamName?
 
 > `optional` **streamName?**: `string`
 
-***
+---
 
 ### videoEncoding?
 
@@ -12380,11 +12464,11 @@ lower rungs are generated via OffscreenCanvas + track generators.
 
 ### Source: `docs/api/type-aliases/MOQSubscriberConfigType.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.1**](../README.md)
 
-***
+---
 
-[Red5 Pro WebRTC SDK](../globals.md) / MOQSubscriberConfigType
+[Red5 Web SDK](../globals.md) / MOQSubscriberConfigType
 
 # Type Alias: MOQSubscriberConfigType
 
@@ -12396,37 +12480,37 @@ lower rungs are generated via OffscreenCanvas + track generators.
 
 > **app**: `string`
 
-***
+---
 
 ### authority?
 
 > `optional` **authority?**: `string`
 
-***
+---
 
 ### authorization?
 
 > `optional` **authorization?**: `AuthorizationSettings`
 
-***
+---
 
 ### canvasElementId?
 
 > `optional` **canvasElementId?**: `string`
 
-***
+---
 
 ### catalogBootstrap?
 
 > `optional` **catalogBootstrap?**: `MOQCatalogBootstrap`
 
-***
+---
 
 ### certKey?
 
 > `optional` **certKey?**: `string`
 
-***
+---
 
 ### connectionParams?
 
@@ -12436,67 +12520,67 @@ lower rungs are generated via OffscreenCanvas + track generators.
 
 \[`key`: `string`\]: `any`
 
-***
+---
 
 ### draftVersion?
 
 > `optional` **draftVersion?**: `DraftVersion`
 
-***
+---
 
 ### drmConfig?
 
 > `optional` **drmConfig?**: `DrmConfig`
 
-***
+---
 
 ### endpoint?
 
 > `optional` **endpoint?**: `string`
 
-***
+---
 
 ### gapTimeout?
 
 > `optional` **gapTimeout?**: `number`
 
-***
+---
 
 ### host?
 
 > `optional` **host?**: `string`
 
-***
+---
 
 ### initialVolume?
 
 > `optional` **initialVolume?**: `number`
 
-***
+---
 
 ### lateFrameThreshold?
 
 > `optional` **lateFrameThreshold?**: `number`
 
-***
+---
 
 ### locmafDecoding?
 
 > `optional` **locmafDecoding?**: `"mse"` \| `"frame"`
 
-***
+---
 
 ### mediaElementId
 
 > **mediaElementId**: `string`
 
-***
+---
 
 ### mediaSource?
 
 > `optional` **mediaSource?**: `MediaSourceLike`
 
-***
+---
 
 ### messageChannel?
 
@@ -12504,97 +12588,97 @@ lower rungs are generated via OffscreenCanvas + track generators.
 
 Optional internally managed data messaging channel.
 
-***
+---
 
 ### moqLogLevel?
 
 > `optional` **moqLogLevel?**: `LogLevel`
 
-***
+---
 
 ### mseMediaSourceOptions?
 
 > `optional` **mseMediaSourceOptions?**: `MseMediaSourceOptions`
 
-***
+---
 
 ### muted?
 
 > `optional` **muted?**: `boolean`
 
-***
+---
 
 ### muteOnAutoplayRestriction?
 
 > `optional` **muteOnAutoplayRestriction?**: `boolean`
 
-***
+---
 
 ### namespace?
 
 > `optional` **namespace?**: `string`
 
-***
+---
 
 ### port
 
 > **port**: `number`
 
-***
+---
 
 ### preferSoftwareDecoder?
 
 > `optional` **preferSoftwareDecoder?**: `boolean`
 
-***
+---
 
 ### prefetchCatalog?
 
 > `optional` **prefetchCatalog?**: `boolean`
 
-***
+---
 
 ### protocol
 
 > **protocol**: `"ws"` \| `"wss"` \| `"http"` \| `"https"`
 
-***
+---
 
 ### showControls?
 
 > `optional` **showControls?**: `boolean`
 
-***
+---
 
 ### stats?
 
 > `optional` **stats?**: [`StatsConfig`](StatsConfig.md)
 
-***
+---
 
 ### streamName?
 
 > `optional` **streamName?**: `string`
 
-***
+---
 
 ### subscriptionId?
 
 > `optional` **subscriptionId?**: `string`
 
-***
+---
 
 ### useNativeControls?
 
 > `optional` **useNativeControls?**: `boolean`
 
-***
+---
 
 ### videoAudioElementId?
 
 > `optional` **videoAudioElementId?**: `string`
 
-***
+---
 
 ### warmStart?
 
@@ -12602,11 +12686,11 @@ Optional internally managed data messaging channel.
 
 ### Source: `docs/api/type-aliases/RTCPublisherConfigType.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.1**](../README.md)
 
-***
+---
 
-[Red5 Pro WebRTC SDK](../globals.md) / RTCPublisherConfigType
+[Red5 Web SDK](../globals.md) / RTCPublisherConfigType
 
 # Type Alias: RTCPublisherConfigType
 
@@ -12618,25 +12702,25 @@ Optional internally managed data messaging channel.
 
 > **app**: `string`
 
-***
+---
 
 ### audioEncoding
 
 > **audioEncoding**: [`PublishAudioEncoder`](../enumerations/PublishAudioEncoder.md) \| `undefined`
 
-***
+---
 
 ### bandwidth
 
 > **bandwidth**: [`BandwidthConfig`](BandwidthConfig.md)
 
-***
+---
 
 ### clearMediaOnUnpublish
 
 > **clearMediaOnUnpublish**: `boolean`
 
-***
+---
 
 ### connectionParams?
 
@@ -12646,61 +12730,61 @@ Optional internally managed data messaging channel.
 
 \[`key`: `string`\]: `any`
 
-***
+---
 
 ### dataChannelConfiguration?
 
 > `optional` **dataChannelConfiguration?**: `DataChannelConfig`
 
-***
+---
 
 ### endpoint?
 
 > `optional` **endpoint?**: `string`
 
-***
+---
 
 ### forceVP8
 
 > **forceVP8**: `boolean`
 
-***
+---
 
 ### host?
 
 > `optional` **host?**: `string`
 
-***
+---
 
 ### iceTransport
 
 > **iceTransport**: `IceTransportTypes`
 
-***
+---
 
 ### includeDataChannel
 
 > **includeDataChannel**: `boolean`
 
-***
+---
 
 ### keyFramerate
 
 > **keyFramerate**: `number`
 
-***
+---
 
 ### mediaConstraints
 
 > **mediaConstraints**: [`MediaConstraints`](MediaConstraints.md)
 
-***
+---
 
 ### mediaElementId
 
 > **mediaElementId**: `string`
 
-***
+---
 
 ### onGetUserMedia?
 
@@ -12710,25 +12794,25 @@ Optional internally managed data messaging channel.
 
 `Promise`\<`MediaStream`\>
 
-***
+---
 
 ### optimizationParams?
 
 > `optional` **optimizationParams?**: `OptimizationParams`
 
-***
+---
 
 ### port
 
 > **port**: `number`
 
-***
+---
 
 ### protocol
 
 > **protocol**: `"ws"` \| `"wss"` \| `"http"` \| `"https"`
 
-***
+---
 
 ### proxy?
 
@@ -12742,49 +12826,49 @@ Optional internally managed data messaging channel.
 
 > **version**: `string`
 
-***
+---
 
 ### pubnub?
 
 > `optional` **pubnub?**: `PubnubConfigType`
 
-***
+---
 
 ### reconnect?
 
 > `optional` **reconnect?**: `ReconnectConfig`
 
-***
+---
 
 ### rtcConfiguration
 
 > **rtcConfiguration**: `RTCConfiguration`
 
-***
+---
 
 ### signalingSocketOnly
 
 > **signalingSocketOnly**: `boolean`
 
-***
+---
 
 ### stats?
 
 > `optional` **stats?**: [`StatsConfig`](StatsConfig.md)
 
-***
+---
 
 ### streamMode
 
 > **streamMode**: `PublishModeTypes`
 
-***
+---
 
 ### streamName?
 
 > `optional` **streamName?**: `string`
 
-***
+---
 
 ### videoEncoding
 
@@ -12792,11 +12876,11 @@ Optional internally managed data messaging channel.
 
 ### Source: `docs/api/type-aliases/RTCSubscriberConfigType.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.1**](../README.md)
 
-***
+---
 
-[Red5 Pro WebRTC SDK](../globals.md) / RTCSubscriberConfigType
+[Red5 Web SDK](../globals.md) / RTCSubscriberConfigType
 
 # Type Alias: RTCSubscriberConfigType
 
@@ -12808,25 +12892,25 @@ Optional internally managed data messaging channel.
 
 > **app**: `string`
 
-***
+---
 
 ### audioEncoding?
 
 > `optional` **audioEncoding?**: [`PlaybackAudioEncoder`](../enumerations/PlaybackAudioEncoder.md)
 
-***
+---
 
 ### autoLayoutOrientation
 
 > **autoLayoutOrientation**: `boolean`
 
-***
+---
 
 ### buffer
 
 > **buffer**: `number`
 
-***
+---
 
 ### connectionParams?
 
@@ -12836,73 +12920,73 @@ Optional internally managed data messaging channel.
 
 \[`key`: `string`\]: `any`
 
-***
+---
 
 ### dataChannelConfiguration?
 
 > `optional` **dataChannelConfiguration?**: `DataChannelConfig`
 
-***
+---
 
 ### endpoint?
 
 > `optional` **endpoint?**: `string`
 
-***
+---
 
 ### host?
 
 > `optional` **host?**: `string`
 
-***
+---
 
 ### iceTransport
 
 > **iceTransport**: `IceTransportTypes`
 
-***
+---
 
 ### includeDataChannel
 
 > **includeDataChannel**: `boolean`
 
-***
+---
 
 ### maintainConnectionOnSubscribeErrors
 
 > **maintainConnectionOnSubscribeErrors**: `boolean`
 
-***
+---
 
 ### maintainStreamVariant
 
 > **maintainStreamVariant**: `boolean`
 
-***
+---
 
 ### mediaElementId
 
 > **mediaElementId**: `string`
 
-***
+---
 
 ### muteOnAutoplayRestriction
 
 > **muteOnAutoplayRestriction**: `boolean`
 
-***
+---
 
 ### port
 
 > **port**: `number`
 
-***
+---
 
 ### protocol
 
 > **protocol**: `"ws"` \| `"wss"` \| `"http"` \| `"https"`
 
-***
+---
 
 ### proxy?
 
@@ -12916,49 +13000,49 @@ Optional internally managed data messaging channel.
 
 > **version**: `string`
 
-***
+---
 
 ### pubnub?
 
 > `optional` **pubnub?**: `PubnubConfigType`
 
-***
+---
 
 ### renegotiationPolicy?
 
 > `optional` **renegotiationPolicy?**: `RenegotiationPolicyType`
 
-***
+---
 
 ### rtcConfiguration
 
 > **rtcConfiguration**: `RTCConfiguration`
 
-***
+---
 
 ### signalingSocketOnly
 
 > **signalingSocketOnly**: `boolean`
 
-***
+---
 
 ### stats?
 
 > `optional` **stats?**: [`StatsConfig`](StatsConfig.md)
 
-***
+---
 
 ### streamName?
 
 > `optional` **streamName?**: `string`
 
-***
+---
 
 ### subscriptionId?
 
 > `optional` **subscriptionId?**: `string`
 
-***
+---
 
 ### videoEncoding?
 
@@ -12966,11 +13050,11 @@ Optional internally managed data messaging channel.
 
 ### Source: `docs/api/type-aliases/RTCWhepSubscriberConfigType.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.1**](../README.md)
 
-***
+---
 
-[Red5 Pro WebRTC SDK](../globals.md) / RTCWhepSubscriberConfigType
+[Red5 Web SDK](../globals.md) / RTCWhepSubscriberConfigType
 
 # Type Alias: RTCWhepSubscriberConfigType
 
@@ -12988,11 +13072,11 @@ Optional internally managed data messaging channel.
 
 ### Source: `docs/api/type-aliases/RTCWhipPublisherConfigType.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.1**](../README.md)
 
-***
+---
 
-[Red5 Pro WebRTC SDK](../globals.md) / RTCWhipPublisherConfigType
+[Red5 Web SDK](../globals.md) / RTCWhipPublisherConfigType
 
 # Type Alias: RTCWhipPublisherConfigType
 
@@ -13010,11 +13094,11 @@ Optional internally managed data messaging channel.
 
 ### Source: `docs/api/type-aliases/StatsConfig.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.1**](../README.md)
 
-***
+---
 
-[Red5 Pro WebRTC SDK](../globals.md) / StatsConfig
+[Red5 Web SDK](../globals.md) / StatsConfig
 
 # Type Alias: StatsConfig
 
@@ -13028,19 +13112,19 @@ Configuration for RTC Stats Monitoring.
 
 > `optional` **additionalHeaders?**: `Record`\<`string`, `string`\>
 
-***
+---
 
 ### endpoint
 
 > **endpoint**: `string` \| `undefined` \| `null`
 
-***
+---
 
 ### include?
 
 > `optional` **include?**: `string`[]
 
-***
+---
 
 ### interval?
 
@@ -13048,11 +13132,11 @@ Configuration for RTC Stats Monitoring.
 
 ### Source: `docs/api/type-aliases/VideoConstraints.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.1**](../README.md)
 
-***
+---
 
-[Red5 Pro WebRTC SDK](../globals.md) / VideoConstraints
+[Red5 Web SDK](../globals.md) / VideoConstraints
 
 # Type Alias: VideoConstraints
 
@@ -13064,19 +13148,19 @@ Configuration for RTC Stats Monitoring.
 
 > `optional` **deviceId?**: `string`
 
-***
+---
 
 ### frameRate?
 
 > `optional` **frameRate?**: [`MediaConstraintRange`](MediaConstraintRange.md) \| `number`
 
-***
+---
 
 ### height?
 
 > `optional` **height?**: [`MediaConstraintRange`](MediaConstraintRange.md) \| `number`
 
-***
+---
 
 ### width?
 
@@ -13084,11 +13168,11 @@ Configuration for RTC Stats Monitoring.
 
 ### Source: `docs/api/variables/Capability.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.1**](../README.md)
 
-***
+---
 
-[Red5 Pro WebRTC SDK](../globals.md) / Capability
+[Red5 Web SDK](../globals.md) / Capability
 
 # Variable: Capability
 
@@ -13106,11 +13190,11 @@ Configuration for RTC Stats Monitoring.
 
 ### Source: `docs/api/variables/default.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.1**](../README.md)
 
-***
+---
 
-[Red5 Pro WebRTC SDK](../globals.md) / default
+[Red5 Web SDK](../globals.md) / default
 
 # Variable: default
 
@@ -13186,83 +13270,83 @@ Get the version of the SDK.
 
 ### HLSSubscriber
 
-> **HLSSubscriber**: *typeof* [`HLSSubscriber`](../classes/HLSSubscriber.md)
+> **HLSSubscriber**: _typeof_ [`HLSSubscriber`](../classes/HLSSubscriber.md)
 
 ### LiveSeekClient
 
-> **LiveSeekClient**: *typeof* [`LiveSeekClient`](../classes/LiveSeekClient.md)
+> **LiveSeekClient**: _typeof_ [`LiveSeekClient`](../classes/LiveSeekClient.md)
 
-### LOG\_LEVELS
+### LOG_LEVELS
 
-> **LOG\_LEVELS**: `object` = `LEVELS`
+> **LOG_LEVELS**: `object` = `LEVELS`
 
-#### LOG\_LEVELS.DEBUG
+#### LOG_LEVELS.DEBUG
 
 > `readonly` **DEBUG**: `"debug"` = `'debug'`
 
-#### LOG\_LEVELS.ERROR
+#### LOG_LEVELS.ERROR
 
 > `readonly` **ERROR**: `"error"` = `'error'`
 
-#### LOG\_LEVELS.FATAL
+#### LOG_LEVELS.FATAL
 
 > `readonly` **FATAL**: `"fatal"` = `'fatal'`
 
-#### LOG\_LEVELS.INFO
+#### LOG_LEVELS.INFO
 
 > `readonly` **INFO**: `"info"` = `'info'`
 
-#### LOG\_LEVELS.TRACE
+#### LOG_LEVELS.TRACE
 
 > `readonly` **TRACE**: `"trace"` = `'trace'`
 
-#### LOG\_LEVELS.WARN
+#### LOG_LEVELS.WARN
 
 > `readonly` **WARN**: `"warn"` = `'warn'`
 
 ### MessageChannel
 
-> **MessageChannel**: *typeof* [`MessageChannel`](../classes/MessageChannel.md)
+> **MessageChannel**: _typeof_ [`MessageChannel`](../classes/MessageChannel.md)
 
 ### MessageChannelEvent
 
-> **MessageChannelEvent**: *typeof* [`MessageChannelEvent`](../classes/MessageChannelEvent.md)
+> **MessageChannelEvent**: _typeof_ [`MessageChannelEvent`](../classes/MessageChannelEvent.md)
 
 ### MessageChannelEventTypes
 
-> **MessageChannelEventTypes**: *typeof* [`MessageChannelEventTypes`](../enumerations/MessageChannelEventTypes.md)
+> **MessageChannelEventTypes**: _typeof_ [`MessageChannelEventTypes`](../enumerations/MessageChannelEventTypes.md)
 
 ### MessageTransportStateEvent
 
-> **MessageTransportStateEvent**: *typeof* [`MessageTransportStateEvent`](../classes/MessageTransportStateEvent.md)
+> **MessageTransportStateEvent**: _typeof_ [`MessageTransportStateEvent`](../classes/MessageTransportStateEvent.md)
 
 ### MessageTransportStateEventTypes
 
-> **MessageTransportStateEventTypes**: *typeof* [`MessageTransportStateEventTypes`](../enumerations/MessageTransportStateEventTypes.md)
+> **MessageTransportStateEventTypes**: _typeof_ [`MessageTransportStateEventTypes`](../enumerations/MessageTransportStateEventTypes.md)
 
 ### MOQCatalog
 
-> **MOQCatalog**: *typeof* [`MOQCatalog`](../classes/MOQCatalog.md)
+> **MOQCatalog**: _typeof_ [`MOQCatalog`](../classes/MOQCatalog.md)
 
 ### MOQMessageChannel
 
-> **MOQMessageChannel**: *typeof* [`MOQMessageChannel`](../classes/MOQMessageChannel.md)
+> **MOQMessageChannel**: _typeof_ [`MOQMessageChannel`](../classes/MOQMessageChannel.md)
 
 ### MOQPublisher
 
-> **MOQPublisher**: *typeof* [`MOQPublisher`](../classes/MOQPublisher.md)
+> **MOQPublisher**: _typeof_ [`MOQPublisher`](../classes/MOQPublisher.md)
 
 ### MOQSubscriber
 
-> **MOQSubscriber**: *typeof* [`MOQSubscriber`](../classes/MOQSubscriber.md)
+> **MOQSubscriber**: _typeof_ [`MOQSubscriber`](../classes/MOQSubscriber.md)
 
 ### PlaybackAudioEncoder
 
-> **PlaybackAudioEncoder**: *typeof* [`PlaybackAudioEncoder`](../enumerations/PlaybackAudioEncoder.md)
+> **PlaybackAudioEncoder**: _typeof_ [`PlaybackAudioEncoder`](../enumerations/PlaybackAudioEncoder.md)
 
 ### PlaybackState
 
-> **PlaybackState**: *typeof* [`PlaybackState`](../enumerations/PlaybackState.md)
+> **PlaybackState**: _typeof_ [`PlaybackState`](../enumerations/PlaybackState.md)
 
 ### PlaybackStateReadableMap
 
@@ -13290,43 +13374,43 @@ Get the version of the SDK.
 
 ### PlaybackVideoEncoder
 
-> **PlaybackVideoEncoder**: *typeof* [`PlaybackVideoEncoder`](../enumerations/PlaybackVideoEncoder.md)
+> **PlaybackVideoEncoder**: _typeof_ [`PlaybackVideoEncoder`](../enumerations/PlaybackVideoEncoder.md)
 
 ### PublishAudioEncoder
 
-> **PublishAudioEncoder**: *typeof* [`PublishAudioEncoder`](../enumerations/PublishAudioEncoder.md)
+> **PublishAudioEncoder**: _typeof_ [`PublishAudioEncoder`](../enumerations/PublishAudioEncoder.md)
 
 ### PublisherEvent
 
-> **PublisherEvent**: *typeof* [`PublisherEvent`](../classes/PublisherEvent.md)
+> **PublisherEvent**: _typeof_ [`PublisherEvent`](../classes/PublisherEvent.md)
 
 ### PublisherEventTypes
 
-> **PublisherEventTypes**: *typeof* [`PublisherEventTypes`](../enumerations/PublisherEventTypes.md)
+> **PublisherEventTypes**: _typeof_ [`PublisherEventTypes`](../enumerations/PublisherEventTypes.md)
 
 ### PublishVideoEncoder
 
-> **PublishVideoEncoder**: *typeof* [`PublishVideoEncoder`](../enumerations/PublishVideoEncoder.md)
+> **PublishVideoEncoder**: _typeof_ [`PublishVideoEncoder`](../enumerations/PublishVideoEncoder.md)
 
 ### PubNubClient
 
-> **PubNubClient**: *typeof* [`PubNubClient`](../classes/PubNubClient.md)
+> **PubNubClient**: _typeof_ [`PubNubClient`](../classes/PubNubClient.md)
 
 ### PubNubEvent
 
-> **PubNubEvent**: *typeof* [`PubNubEvent`](../classes/PubNubEvent.md)
+> **PubNubEvent**: _typeof_ [`PubNubEvent`](../classes/PubNubEvent.md)
 
 ### PubNubEventTypes
 
-> **PubNubEventTypes**: *typeof* [`PubNubEventTypes`](../enumerations/PubNubEventTypes.md)
+> **PubNubEventTypes**: _typeof_ [`PubNubEventTypes`](../enumerations/PubNubEventTypes.md)
 
 ### RTCPublisherEventTypes
 
-> **RTCPublisherEventTypes**: *typeof* [`RTCPublisherEventTypes`](../enumerations/RTCPublisherEventTypes.md)
+> **RTCPublisherEventTypes**: _typeof_ [`RTCPublisherEventTypes`](../enumerations/RTCPublisherEventTypes.md)
 
 ### RTCSubscriberEventTypes
 
-> **RTCSubscriberEventTypes**: *typeof* [`RTCSubscriberEventTypes`](../enumerations/RTCSubscriberEventTypes.md)
+> **RTCSubscriberEventTypes**: _typeof_ [`RTCSubscriberEventTypes`](../enumerations/RTCSubscriberEventTypes.md)
 
 ### setLogLevel
 
@@ -13348,15 +13432,15 @@ Get the version of the SDK.
 
 ### StatsEndpointType
 
-> **StatsEndpointType**: *typeof* [`StatsEndpointType`](../enumerations/StatsEndpointType.md)
+> **StatsEndpointType**: _typeof_ [`StatsEndpointType`](../enumerations/StatsEndpointType.md)
 
 ### SubscriberEvent
 
-> **SubscriberEvent**: *typeof* [`SubscriberEvent`](../classes/SubscriberEvent.md)
+> **SubscriberEvent**: _typeof_ [`SubscriberEvent`](../classes/SubscriberEvent.md)
 
 ### SubscriberEventTypes
 
-> **SubscriberEventTypes**: *typeof* [`SubscriberEventTypes`](../enumerations/SubscriberEventTypes.md)
+> **SubscriberEventTypes**: _typeof_ [`SubscriberEventTypes`](../enumerations/SubscriberEventTypes.md)
 
 ### version
 
@@ -13364,23 +13448,23 @@ Get the version of the SDK.
 
 ### WebRTCConnectionEventTypes
 
-> **WebRTCConnectionEventTypes**: *typeof* [`WebRTCConnectionEventTypes`](../enumerations/WebRTCConnectionEventTypes.md)
+> **WebRTCConnectionEventTypes**: _typeof_ [`WebRTCConnectionEventTypes`](../enumerations/WebRTCConnectionEventTypes.md)
 
 ### WHEPClient
 
-> **WHEPClient**: *typeof* [`WHEPClient`](../classes/WHEPClient.md)
+> **WHEPClient**: _typeof_ [`WHEPClient`](../classes/WHEPClient.md)
 
 ### WHIPClient
 
-> **WHIPClient**: *typeof* [`WHIPClient`](../classes/WHIPClient.md)
+> **WHIPClient**: _typeof_ [`WHIPClient`](../classes/WHIPClient.md)
 
 ### Source: `docs/api/variables/defaultHLSSubscriberConfig.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.1**](../README.md)
 
-***
+---
 
-[Red5 Pro WebRTC SDK](../globals.md) / defaultHLSSubscriberConfig
+[Red5 Web SDK](../globals.md) / defaultHLSSubscriberConfig
 
 # Variable: defaultHLSSubscriberConfig
 
@@ -13388,11 +13472,11 @@ Get the version of the SDK.
 
 ### Source: `docs/api/variables/defaultLiveSeekConfig.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.1**](../README.md)
 
-***
+---
 
-[Red5 Pro WebRTC SDK](../globals.md) / defaultLiveSeekConfig
+[Red5 Web SDK](../globals.md) / defaultLiveSeekConfig
 
 # Variable: defaultLiveSeekConfig
 
@@ -13400,11 +13484,11 @@ Get the version of the SDK.
 
 ### Source: `docs/api/variables/defaultMOQCatalogConfig.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.1**](../README.md)
 
-***
+---
 
-[Red5 Pro WebRTC SDK](../globals.md) / defaultMOQCatalogConfig
+[Red5 Web SDK](../globals.md) / defaultMOQCatalogConfig
 
 # Variable: defaultMOQCatalogConfig
 
@@ -13412,11 +13496,11 @@ Get the version of the SDK.
 
 ### Source: `docs/api/variables/defaultMOQDataChannelConfiguration.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.1**](../README.md)
 
-***
+---
 
-[Red5 Pro WebRTC SDK](../globals.md) / defaultMOQDataChannelConfiguration
+[Red5 Web SDK](../globals.md) / defaultMOQDataChannelConfiguration
 
 # Variable: defaultMOQDataChannelConfiguration
 
@@ -13424,11 +13508,11 @@ Get the version of the SDK.
 
 ### Source: `docs/api/variables/defaultMOQMessageChannelConfig.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.1**](../README.md)
 
-***
+---
 
-[Red5 Pro WebRTC SDK](../globals.md) / defaultMOQMessageChannelConfig
+[Red5 Web SDK](../globals.md) / defaultMOQMessageChannelConfig
 
 # Variable: defaultMOQMessageChannelConfig
 
@@ -13436,11 +13520,11 @@ Get the version of the SDK.
 
 ### Source: `docs/api/variables/defaultMOQPublisherConfig.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.1**](../README.md)
 
-***
+---
 
-[Red5 Pro WebRTC SDK](../globals.md) / defaultMOQPublisherConfig
+[Red5 Web SDK](../globals.md) / defaultMOQPublisherConfig
 
 # Variable: defaultMOQPublisherConfig
 
@@ -13448,11 +13532,11 @@ Get the version of the SDK.
 
 ### Source: `docs/api/variables/defaultMOQSubscriberConfig.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.1**](../README.md)
 
-***
+---
 
-[Red5 Pro WebRTC SDK](../globals.md) / defaultMOQSubscriberConfig
+[Red5 Web SDK](../globals.md) / defaultMOQSubscriberConfig
 
 # Variable: defaultMOQSubscriberConfig
 
@@ -13460,11 +13544,11 @@ Get the version of the SDK.
 
 ### Source: `docs/api/variables/defaultStatsConfig.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.1**](../README.md)
 
-***
+---
 
-[Red5 Pro WebRTC SDK](../globals.md) / defaultStatsConfig
+[Red5 Web SDK](../globals.md) / defaultStatsConfig
 
 # Variable: defaultStatsConfig
 
@@ -13472,11 +13556,11 @@ Get the version of the SDK.
 
 ### Source: `docs/api/variables/defaultWhepSubscriberConfig.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.1**](../README.md)
 
-***
+---
 
-[Red5 Pro WebRTC SDK](../globals.md) / defaultWhepSubscriberConfig
+[Red5 Web SDK](../globals.md) / defaultWhepSubscriberConfig
 
 # Variable: defaultWhepSubscriberConfig
 
@@ -13484,11 +13568,11 @@ Get the version of the SDK.
 
 ### Source: `docs/api/variables/defaultWhipPublisherConfig.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.1**](../README.md)
 
-***
+---
 
-[Red5 Pro WebRTC SDK](../globals.md) / defaultWhipPublisherConfig
+[Red5 Web SDK](../globals.md) / defaultWhipPublisherConfig
 
 # Variable: defaultWhipPublisherConfig
 
@@ -13496,15 +13580,15 @@ Get the version of the SDK.
 
 ### Source: `docs/api/variables/LOG_LEVELS.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.1**](../README.md)
 
-***
+---
 
-[Red5 Pro WebRTC SDK](../globals.md) / LOG\_LEVELS
+[Red5 Web SDK](../globals.md) / LOG_LEVELS
 
-# Variable: LOG\_LEVELS
+# Variable: LOG_LEVELS
 
-> `const` **LOG\_LEVELS**: `object`
+> `const` **LOG_LEVELS**: `object`
 
 ## Type Declaration
 
@@ -13534,11 +13618,11 @@ Get the version of the SDK.
 
 ### Source: `docs/api/variables/PlaybackStateReadableMap.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.1**](../README.md)
 
-***
+---
 
-[Red5 Pro WebRTC SDK](../globals.md) / PlaybackStateReadableMap
+[Red5 Web SDK](../globals.md) / PlaybackStateReadableMap
 
 # Variable: PlaybackStateReadableMap
 
@@ -13587,16 +13671,18 @@ This document intends to describe how to use the `HLSSubscriber` client included
 
 > HLS content playback from Red5 is still supported in browser with non-native HLS support by using a 3rd-Party HLS library. We recommend using [HLS.js](https://github.com/video-dev/hls.js/).
 
-* [HLSSubscriber](#hlssubscriber)
-    * [Usage](#usage)
-    * [Init Configuration](#init-configuration)
-    * [Events](#events)
+- [HLSSubscriber](#hlssubscriber)
+  - [Usage](#usage)
+  - [Init Configuration](#init-configuration)
+  - [Events](#events)
 
 # HLSSubscriber
 
 The `HLSSubscriber` available from the SDK provides an easy way to setup HLS playback of a stream from Red5 in a browser that supports native HLS playback (i.e., Mobile and Desktop Safari).
 
 ## Usage
+
+On a script-tag page, load either the full SDK (`red5-web-sdk.min.js`) or the WHIP/WHEP/HLS build (`red5-web-sdk-webrtc.min.js`). Both attach `window.red5websdk`. From npm, `import { HLSSubscriber } from 'red5-web-sdk'` or `'red5-web-sdk/webrtc'`.
 
 The follow example demonstrates the usage of `HLSSubscriber` from the SDK loaded in a browser as a script dependency. The example is easily transferrable to one in which the SDK is loaded as a module - either through NPM dependency - or as a script declaration - using `import`.
 
@@ -13615,14 +13701,14 @@ Because of Cross-Origin policies in browsers, you will not be able to load HLS f
 ```
 
 ```js
-const { HLSSubscriber } = red5prosdk
+const { HLSSubscriber } = red5websdk
 
 const startHLSSubscriber = async () => {
   try {
     const subscriber = new HLSSubscriber()
     await subscriber.init({
-       endpoint: 'https://nfs.myred5-deployment.cloud.red5.net/live/mystream.m3u8',
-       streamName: 'mystream'
+      endpoint: 'https://nfs.myred5-deployment.cloud.red5.net/live/mystream.m3u8',
+      streamName: 'mystream',
     })
     await subscriber.subscribe()
   } catch (error) {
@@ -13646,20 +13732,20 @@ If your app is targeting a standalone self-deployed version of the Red5 Server, 
 ```
 
 ```js
-const { HLSSubscriber } = red5prosdk
+const { HLSSubscriber } = red5websdk
 
 const startHLSSubscriber = async () => {
   try {
     const subscriber = new HLSSubscriber()
-    subscriber.on('*', event => {
-        const { type, data } = event
-        console.log(type, data)
+    subscriber.on('*', (event) => {
+      const { type, data } = event
+      console.log(type, data)
     })
     await subscriber.init({
-       protocol: 'https',
-       port: 443,
-       host: 'my-red5-server.com',
-       streamName: 'mystream'
+      protocol: 'https',
+      port: 443,
+      host: 'my-red5-server.com',
+      streamName: 'mystream',
     })
     await subscriber.subscribe()
   } catch (error) {
@@ -13676,38 +13762,38 @@ startHLSSubscriber()
 
 The following are the available properties that can be defined in the init configuration provided to the `HLSSubscriber` client:
 
-| Property | Required | Default | Description |
-| :--- | :---: | :--- | :--- |
-| protocol | [x] | `https` | The protocol uri that the stream source resides on. |
-| port | [-] | `443` | The port uri that the stream source resides on. |
-| app | [x] | `live` | The webapp name that the stream source resides in. |
-| host | [x] | *None* | The IP or FQDN address that the stream resides on. |
-| streamName | [x] | *None* | The stream name to subscribe to. |
-| endpoint | [-] | `undefined` | The full URL of the `m3u8` file to load, if known. |
-| mediaElementId | [-] | `red5pro-subscriber` | The target `video` or `audio` element `id` attribute which will display the stream. |
-| muteOnAutoplayRestriction | [-] | `true` | Flag to attempt to mute the `video` element when `autoplay` is restricted in the browser. [See documentation on Autoplay Restrictions](../articles/autoplay/autoplay_policy.md) |
-| connectionParams | [-] |  `undefined` | An object of connection parameters to send to the server upon connection request. |
+| Property                  | Required | Default              | Description                                                                                                                                                                     |
+| :------------------------ | :------: | :------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| protocol                  |   [x]    | `https`              | The protocol uri that the stream source resides on.                                                                                                                             |
+| port                      |   [-]    | `443`                | The port uri that the stream source resides on.                                                                                                                                 |
+| app                       |   [x]    | `live`               | The webapp name that the stream source resides in.                                                                                                                              |
+| host                      |   [x]    | _None_               | The IP or FQDN address that the stream resides on.                                                                                                                              |
+| streamName                |   [x]    | _None_               | The stream name to subscribe to.                                                                                                                                                |
+| endpoint                  |   [-]    | `undefined`          | The full URL of the `m3u8` file to load, if known.                                                                                                                              |
+| mediaElementId            |   [-]    | `red5pro-subscriber` | The target `video` or `audio` element `id` attribute which will display the stream.                                                                                             |
+| muteOnAutoplayRestriction |   [-]    | `true`               | Flag to attempt to mute the `video` element when `autoplay` is restricted in the browser. [See documentation on Autoplay Restrictions](../articles/autoplay/autoplay_policy.md) |
+| connectionParams          |   [-]    | `undefined`          | An object of connection parameters to send to the server upon connection request.                                                                                               |
 
 ## Events
 
 The following describe the various events that can be listened for on the `HLSSubscriber` and enumerated on the `SubscriberEventTypes` object:
 
-| Access | Event Type | Meaning |
-| :--- | :--- | :--- |
-| `CONNECT_SUCCESS` | 'Connect.Success' | When the subscriber has established a required remote connection, such as to a WebSocket server. |
-| `CONNECT_FAILURE` | 'Connect.Failure' | When the subscriber has failed to establish a required remote connection for consuming a stream. |
-| `SUBSCRIBE_START` | 'Subscribe.Start' | When the subscriber has started a subscribing to a stream. |
-| `SUBSCRIBE_STOP` | 'Subscribe.Stop' | When the subscriber has successfully closed an active subscription to a stream. |
-| `SUBSCRIBE_METADATA` | 'Subscribe.Metadata' | When metadata is received on the client from the server. |
-| `VIDEO_DIMENSIONS_CHANGE` | 'Subscribe.VideoDimensions.Change' | Invoked when `video` element has loaded metadata and the incoming stream dimensions are available. |
-| `ORIENTATION_CHANGE` | 'Subscribe.Orientation.Change' | Invoked when an orientation change is detected in metadata. Mobile (iOS and Android) broadcasts are sent with an orientation. |
-| `STREAMING_MODE_CHANGE` | 'Subscribe.StreamingMode.Change' | Invoked when the broadcast has "muted" either or both their video and audio tracks. |
-| `VOLUME_CHANGE` | 'Subscribe.Volume.Change' | Invoked when a change to volume is detected during playback. _From 0 to 1._ |
-| `PLAYBACK_TIME_UPDATE` | 'Subscribe.Time.Update' | Invoked when a change in playhead time is detected during playback. _In seconds._ |
-| `PLAYBACK_STATE_CHANGE` | 'Subscribe.Playback.Change' | Invoked when a change in playback state has occured, such as when going from a `Playback.PAUSED` state to `Playback.PLAYING` state. |
-| `FULL_SCREEN_STATE_CHANGE` | 'Subscribe.FullScreen.Change' | Invoked when a change in fullscreen state occurs during playback. |
-| `AUTO_PLAYBACK_FAILURE` | 'Subscribe.Autoplay.Failure' | Invoked when an attempt to `autoplay` on a media element throws a browser exception; typically due to browser security restrictions and their autoplay policies. (WebRTC and HLS, only) [See section on Autoplay Restrictions](../articles/autoplay/autoplay_policy.md) |
-| `AUTO_PLAYBACK_MUTED` | 'Subscribe.Autoplay.Muted' | Invoked when an attempt to `autoplay` on a media element throws a browser exception and is muted based on the `muteOnAutoplayRestriction` config property; typically due to browser security restrictions and their autoplay policies. (WebRTC and HLS, only) [See section on Autoplay Restrictions](../articles/autoplay/autoplay_policy.md) |
+| Access                     | Event Type                         | Meaning                                                                                                                                                                                                                                                                                                                                       |
+| :------------------------- | :--------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `CONNECT_SUCCESS`          | 'Connect.Success'                  | When the subscriber has established a required remote connection, such as to a WebSocket server.                                                                                                                                                                                                                                              |
+| `CONNECT_FAILURE`          | 'Connect.Failure'                  | When the subscriber has failed to establish a required remote connection for consuming a stream.                                                                                                                                                                                                                                              |
+| `SUBSCRIBE_START`          | 'Subscribe.Start'                  | When the subscriber has started a subscribing to a stream.                                                                                                                                                                                                                                                                                    |
+| `SUBSCRIBE_STOP`           | 'Subscribe.Stop'                   | When the subscriber has successfully closed an active subscription to a stream.                                                                                                                                                                                                                                                               |
+| `SUBSCRIBE_METADATA`       | 'Subscribe.Metadata'               | When metadata is received on the client from the server.                                                                                                                                                                                                                                                                                      |
+| `VIDEO_DIMENSIONS_CHANGE`  | 'Subscribe.VideoDimensions.Change' | Invoked when `video` element has loaded metadata and the incoming stream dimensions are available.                                                                                                                                                                                                                                            |
+| `ORIENTATION_CHANGE`       | 'Subscribe.Orientation.Change'     | Invoked when an orientation change is detected in metadata. Mobile (iOS and Android) broadcasts are sent with an orientation.                                                                                                                                                                                                                 |
+| `STREAMING_MODE_CHANGE`    | 'Subscribe.StreamingMode.Change'   | Invoked when the broadcast has "muted" either or both their video and audio tracks.                                                                                                                                                                                                                                                           |
+| `VOLUME_CHANGE`            | 'Subscribe.Volume.Change'          | Invoked when a change to volume is detected during playback. _From 0 to 1._                                                                                                                                                                                                                                                                   |
+| `PLAYBACK_TIME_UPDATE`     | 'Subscribe.Time.Update'            | Invoked when a change in playhead time is detected during playback. _In seconds._                                                                                                                                                                                                                                                             |
+| `PLAYBACK_STATE_CHANGE`    | 'Subscribe.Playback.Change'        | Invoked when a change in playback state has occured, such as when going from a `Playback.PAUSED` state to `Playback.PLAYING` state.                                                                                                                                                                                                           |
+| `FULL_SCREEN_STATE_CHANGE` | 'Subscribe.FullScreen.Change'      | Invoked when a change in fullscreen state occurs during playback.                                                                                                                                                                                                                                                                             |
+| `AUTO_PLAYBACK_FAILURE`    | 'Subscribe.Autoplay.Failure'       | Invoked when an attempt to `autoplay` on a media element throws a browser exception; typically due to browser security restrictions and their autoplay policies. (WebRTC and HLS, only) [See section on Autoplay Restrictions](../articles/autoplay/autoplay_policy.md)                                                                       |
+| `AUTO_PLAYBACK_MUTED`      | 'Subscribe.Autoplay.Muted'         | Invoked when an attempt to `autoplay` on a media element throws a browser exception and is muted based on the `muteOnAutoplayRestriction` config property; typically due to browser security restrictions and their autoplay policies. (WebRTC and HLS, only) [See section on Autoplay Restrictions](../articles/autoplay/autoplay_policy.md) |
 
 ### Listening for Events
 
@@ -13771,14 +13857,16 @@ In most cases, this is common scenario. However, if you would like to maintain a
 
 For MoQ / WebTransport messaging (same send method names, different wire protocol), see [MOQMessageChannel](moq-message-channel.md).
 
-* [Usage](#usage)
-* [Init Configuration](#init-configuration)
-* [Send API](#send-api)
-* [Events](#events)
-* [Statistics](#statistics)
-* [Stream Manager 2.0](#stream-manager-20)
+- [Usage](#usage)
+- [Init Configuration](#init-configuration)
+- [Send API](#send-api)
+- [Events](#events)
+- [Statistics](#statistics)
+- [Stream Manager 2.0](#stream-manager-20)
 
 # Usage
+
+On a script-tag page, load either the full SDK (`red5-web-sdk.min.js`) or the WHIP/WHEP/HLS build (`red5-web-sdk-webrtc.min.js`). Both attach `window.red5websdk`. From npm, `import { MessageChannel } from 'red5-web-sdk'` or `'red5-web-sdk/webrtc'`.
 
 Because `MessageChannel` is a subclass of `WHIPClient` (the media streaming broadcaster), much of the init setup and event structure is similar.
 
@@ -13808,13 +13896,13 @@ Dependening on how you include the SDK into your project, you can access the `Me
 _NPM install_:
 
 ```js
-import { MessageChannel } from 'red5pro-webrtc-sdk'
+import { MessageChannel } from 'red5-web-sdk'
 ```
 
 _Browser, CDN_:
 
 ```js
-const { MessageChannel } = red5prosdk
+const { MessageChannel } = red5websdk
 ```
 
 > For more in-depth information related to usage, please refer to the [WHIPClient](whip-client.md#usage) documentation.
@@ -13825,17 +13913,17 @@ Because `MessageChannel` inherits from `WHIPClient`, its initialization configur
 
 The following properties are respected by the `MessageChannel` client:
 
-| Property | Required | Default | Description |
-| :--- | :---: | :---: | :--- |
-| `host` | [x] | *None* | The IP or address that the WebSocket server resides on. |
-| `streamName` | [x] | *None* | The name of the message channel to use in association. |
-| `protocol` | [x] | `https` | The protocol of the host for the signaling communication. |
-| `port` | [x] | `443` | The port on the host that the Red5 server listens on; `5080` or `443` (insecure or secure, respectively). |
-| `app` | [x] | `live` | The webapp context name that the stream is on. |
-| `endpoint` | [-] | `undefined` | The full URL of the endpoint to stream to. **This is primarily used in Stream Manager 2.0 integration for clients.**
-| `rtcConfiguration` | [-] | _Basic_ | The `RTCConfiguration` to use in setting up `RTCPeerConnection`. [RTCConfiguration](https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/RTCPeerConnection#RTCConfiguration_dictionary)|
-| `dataChannelConfiguration` | [-] | `{name: "red5pro"}` | An object used in configuring a n `RTCDataChannel`. _Only used when `includeDataChannel` is defined as `true`_ |
-| `connectionParams` | [-] | `undefined` | An object of connection parameters to send to the server upon connection request. |
+| Property                   | Required |       Default       | Description                                                                                                                                                                                           |
+| :------------------------- | :------: | :-----------------: | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `host`                     |   [x]    |       _None_        | The IP or address that the WebSocket server resides on.                                                                                                                                               |
+| `streamName`               |   [x]    |       _None_        | The name of the message channel to use in association.                                                                                                                                                |
+| `protocol`                 |   [x]    |       `https`       | The protocol of the host for the signaling communication.                                                                                                                                             |
+| `port`                     |   [x]    |        `443`        | The port on the host that the Red5 server listens on; `5080` or `443` (insecure or secure, respectively).                                                                                             |
+| `app`                      |   [x]    |       `live`        | The webapp context name that the stream is on.                                                                                                                                                        |
+| `endpoint`                 |   [-]    |     `undefined`     | The full URL of the endpoint to stream to. **This is primarily used in Stream Manager 2.0 integration for clients.**                                                                                  |
+| `rtcConfiguration`         |   [-]    |       _Basic_       | The `RTCConfiguration` to use in setting up `RTCPeerConnection`. [RTCConfiguration](https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/RTCPeerConnection#RTCConfiguration_dictionary) |
+| `dataChannelConfiguration` |   [-]    | `{name: "red5pro"}` | An object used in configuring a n `RTCDataChannel`. _Only used when `includeDataChannel` is defined as `true`_                                                                                        |
+| `connectionParams`         |   [-]    |     `undefined`     | An object of connection parameters to send to the server upon connection request.                                                                                                                     |
 
 ## Init Example
 
@@ -13886,14 +13974,14 @@ Because `MessageChannel` inherits from `WHIPClient`, events unrelated to streami
 
 There are a few that are specific to `MessageChannel` that are available and enumerated on the `MessageChannelEventTypes` object:
 
-| Access | Event Type | Meaning |
-| :--- | :--- | :--- |
-| `OPEN` | 'MessageChannel.Open' | When the message channel has successfully opened and available to send and receive messages. |
-| `SEND` | 'MessageChannel.Send' | When the message channel has sent a message along the message channel. _Note: This is not confirmation that the server received the actual message._ |
-| `RECEIVE` | 'MessageChannel.Receive' | When the message channel has received a message. |
-| `CLOSE` | 'MessageChannel.Close' | When the message channel has been closed. |
-| `FAIL` | 'MessageChannel.Fail' | When the message channel has failed to open properly. |
-| `ERROR` | 'MessageChannel.Error' | When an error has occurred in opening or during a message channel session. |
+| Access    | Event Type               | Meaning                                                                                                                                              |
+| :-------- | :----------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `OPEN`    | 'MessageChannel.Open'    | When the message channel has successfully opened and available to send and receive messages.                                                         |
+| `SEND`    | 'MessageChannel.Send'    | When the message channel has sent a message along the message channel. _Note: This is not confirmation that the server received the actual message._ |
+| `RECEIVE` | 'MessageChannel.Receive' | When the message channel has received a message.                                                                                                     |
+| `CLOSE`   | 'MessageChannel.Close'   | When the message channel has been closed.                                                                                                            |
+| `FAIL`    | 'MessageChannel.Fail'    | When the message channel has failed to open properly.                                                                                                |
+| `ERROR`   | 'MessageChannel.Error'   | When an error has occurred in opening or during a message channel session.                                                                           |
 
 > Please visit the [WHIPClient](whip-client.md#events) documentation for more in-depth listing of events.
 
@@ -13911,7 +13999,7 @@ The configuration used for statistics monitoring has the following structure:
   // If provided, it will POST stats to this endpoint.
   // If undefined or `data-channel`, it will post stats to message transport.
   // If null or `event-transport`, it will only emit status events.
-  endpoint: red5prosdk.StatsEndpointType.DATA_CHANNEL,
+  endpoint: red5websdk.StatsEndpointType.DATA_CHANNEL,
   additionalHeaders: undefined,
   interval: 5000, // Interval to poll stats, in milliseconds.
   include: [], // Empty array allows SDK to be judicious about what stats to include.
@@ -13920,9 +14008,9 @@ The configuration used for statistics monitoring has the following structure:
 
 ### endpoint
 
-* If the `endpoint` is defined with a URL, the SDK will attempt to make `POST` requests with a JSON body representing each individual report.
-* If the `endpoint` is set to `data-channel` or `undefined`, the SDK will post metadata with type `stats-report` on the underlying message transport (DataChannel) if available.
-* If the `endpoint` is set to `event-transport` or `null`, the SDK will only emit events with the metadata on the `WebRTC.StatsReport` event.
+- If the `endpoint` is defined with a URL, the SDK will attempt to make `POST` requests with a JSON body representing each individual report.
+- If the `endpoint` is set to `data-channel` or `undefined`, the SDK will post metadata with type `stats-report` on the underlying message transport (DataChannel) if available.
+- If the `endpoint` is set to `event-transport` or `null`, the SDK will only emit events with the metadata on the `WebRTC.StatsReport` event.
 
 ### additionalHeaders
 
@@ -13948,8 +14036,8 @@ include: ['data-channel', 'transport']
 
 To start statistics monitoring, you have a couple of options:
 
-* You can provide a `stats` attribute with the [stats configuration object](#stats-configuration) to the [init configuration](#webrtc-configuration-parameters).
-* You can call `monitorStats` on the publisher client with the optional [stats configuration object](#stats-configuration) parameter.
+- You can provide a `stats` attribute with the [stats configuration object](#stats-configuration) to the [init configuration](#webrtc-configuration-parameters).
+- You can call `monitorStats` on the publisher client with the optional [stats configuration object](#stats-configuration) parameter.
 
 > Additionally, you can stop monitoring by calling `unmonitorStats` on the publisher client.
 
@@ -13999,11 +14087,12 @@ The following is an example of a statistics metadata that is emitted in a `WebRT
   }
 }
 ```
+
 # Stream Manager 2.0
 
 > This section provides information that relate to the release of Stream Manager 2.0 and its integration with WHIP/WHEP clients, and MessageChannel.
 
-The Stream Manager 2.0 simplifies the proxying of web clients to Origin and Edge nodes. As such, an initialization configuration property called `endpoint` was added to the WebRTC SDK. This `endpoint` value should be the full URL path to the proxy endpoint on the Stream Manager as is used as such:
+The Stream Manager 2.0 simplifies the proxying of web clients to Origin and Edge nodes. As such, an initialization configuration property called `endpoint` was added to the Red5 Web SDK. This `endpoint` value should be the full URL path to the proxy endpoint on the Stream Manager as is used as such:
 
 ## WHIP Proxy
 
@@ -14016,11 +14105,11 @@ const config = {
   endpoint,
   streamName,
   connectionParams: {
-    nodeGroup
+    nodeGroup,
   },
   dataChannelConfiguration: {
-    name: 'my-channel'
-  }
+    name: 'my-channel',
+  },
   // additional configurations
 }
 const messageChannel = await new MessageChannel().init(config)
@@ -14059,19 +14148,21 @@ Use it when you want to inspect track metadata without starting full media playb
 
 # Usage
 
+On a script-tag page, load either the full SDK (`red5-web-sdk.min.js`) or the MOQ build (`red5-web-sdk-moq.min.js`). Both attach `window.red5websdk`. From npm, `import { MOQCatalog } from 'red5-web-sdk'` or `'red5-web-sdk/moq'`.
+
 Initialize first, then call either `fetch()` or `subscribe()`.
 
 ```js
-const { MOQCatalog, MOQCatalogEventTypes } = red5prosdk
+const { MOQCatalog, MOQCatalogEventTypes } = red5websdk
 
 const catalog = new MOQCatalog()
-catalog.on('*', event => {
+catalog.on('*', (event) => {
   console.log(event.type, event.data)
 })
 
 await catalog.init({
   endpoint: 'https://relay.example.com:4433',
-  namespace: 'live/mystream'
+  namespace: 'live/mystream',
 })
 ```
 
@@ -14085,19 +14176,19 @@ await catalog.fetch('live/mystream')
 
 `fetch(namespace?, fetchOptions?)` issues a MoQ FETCH for the catalog track. `fetchOptions` is optional:
 
-| Property | Default | Description |
-| :--- | :---: | :--- |
-| `startGroup` | `0` | First group to fetch. |
-| `startObject` | `0` | First object in `startGroup`. |
-| `endGroup` | `0` | Last group to fetch. |
-| `endObject` | `0` | Last object in `endGroup`. |
+| Property      | Default | Description                   |
+| :------------ | :-----: | :---------------------------- |
+| `startGroup`  |   `0`   | First group to fetch.         |
+| `startObject` |   `0`   | First object in `startGroup`. |
+| `endGroup`    |   `0`   | Last group to fetch.          |
+| `endObject`   |   `0`   | Last object in `endGroup`.    |
 
 ```js
 await catalog.fetch('live/mystream', {
   startGroup: 0,
   startObject: 0,
   endGroup: 0,
-  endObject: 0
+  endObject: 0,
 })
 ```
 
@@ -14131,19 +14222,19 @@ await catalog.fetch()
 
 The `init()` call accepts `MOQCatalogConfigType`.
 
-| Property | Required | Default | Description |
-| :--- | :---: | :---: | :--- |
-| `endpoint` | [-] | `undefined` | Full MOQ relay URL. If omitted, SDK uses `protocol://host:port`. |
-| `host` | [x]* | `undefined` | Relay host when `endpoint` is omitted. |
-| `streamName` | [x]* | `undefined` | Stream name used for namespace fallback. |
-| `protocol` | [x] | `https` | Relay protocol (`ws`, `wss`, `http`, `https`). |
-| `port` | [x] | `4433` | Relay port. |
-| `app` | [x] | `live` | App scope used for namespace fallback. |
-| `namespace` | [-] | `app/streamName` | Explicit namespace for fetch/subscribe calls. |
-| `draftVersion` | [-] | `16` | MoQ transport draft version. |
-| `certKey` | [-] | `undefined` | Certificate hash input for WebTransport setup. |
-| `authorization` | [-] | `undefined` | Optional CAT credentials attached to the MoQT connection. See [Authorization](#authorization). |
-| `moqLogLevel` | [-] | `none` | Log level for MOQ internals. |
+| Property        | Required |     Default      | Description                                                                                    |
+| :-------------- | :------: | :--------------: | :--------------------------------------------------------------------------------------------- |
+| `endpoint`      |   [-]    |   `undefined`    | Full MOQ relay URL. If omitted, SDK uses `protocol://host:port`.                               |
+| `host`          |  [x]\*   |   `undefined`    | Relay host when `endpoint` is omitted.                                                         |
+| `streamName`    |  [x]\*   |   `undefined`    | Stream name used for namespace fallback.                                                       |
+| `protocol`      |   [x]    |     `https`      | Relay protocol (`ws`, `wss`, `http`, `https`).                                                 |
+| `port`          |   [x]    |      `4433`      | Relay port.                                                                                    |
+| `app`           |   [x]    |      `live`      | App scope used for namespace fallback.                                                         |
+| `namespace`     |   [-]    | `app/streamName` | Explicit namespace for fetch/subscribe calls.                                                  |
+| `draftVersion`  |   [-]    |       `16`       | MoQ transport draft version.                                                                   |
+| `certKey`       |   [-]    |   `undefined`    | Certificate hash input for WebTransport setup.                                                 |
+| `authorization` |   [-]    |   `undefined`    | Optional CAT credentials attached to the MoQT connection. See [Authorization](#authorization). |
+| `moqLogLevel`   |   [-]    |      `none`      | Log level for MOQ internals.                                                                   |
 
 `*` Required when `endpoint` is not provided.
 
@@ -14151,11 +14242,11 @@ The `init()` call accepts `MOQCatalogConfigType`.
 
 `authorization` supplies CAT tokens when a fetch or subscribe opens the MoQT session. With `enabled: true`, the SDK decodes `token` and passes it to `MoqtConnection.connect()` along with the catalog relay URL. The credential is used only for that connection attempt. It is not stored.
 
-| Field | Description |
-| :--- | :--- |
-| `enabled` | When `false`, or when `authorization` is omitted, no auth attributes are sent. |
-| `profile` | `cat4moq` sends token type `1`. `moqx-compat` sends token type `16`. |
-| `token` | Base64-encoded CAT token. An optional `base64:` prefix is stripped. The decoded token must be at most 32768 bytes. |
+| Field     | Description                                                                                                        |
+| :-------- | :----------------------------------------------------------------------------------------------------------------- |
+| `enabled` | When `false`, or when `authorization` is omitted, no auth attributes are sent.                                     |
+| `profile` | `cat4moq` sends token type `1`. `moqx-compat` sends token type `16`.                                               |
+| `token`   | Base64-encoded CAT token. An optional `base64:` prefix is stripped. The decoded token must be at most 32768 bytes. |
 
 ```js
 authorization: {
@@ -14172,7 +14263,7 @@ Fetch and subscribe fail if `profile` is not `cat4moq` or `moqx-compat`, or if `
 `MOQCatalog` is an event emitter:
 
 ```js
-const onCatalogEvent = event => {
+const onCatalogEvent = (event) => {
   const { type, data } = event
   console.log(type, data)
 }
@@ -14184,30 +14275,30 @@ catalog.off('*', onCatalogEvent)
 
 The following are emitted from `MOQCatalogEventTypes`:
 
-| Access | Event Type | Meaning |
-| :--- | :--- | :--- |
-| `FETCH` | `MOQ.Catalog.Fetch` | One-shot fetch started. |
-| `UNFETCH` | `MOQ.Catalog.Unfetch` | One-shot fetch session closed. |
-| `SUBSCRIBE` | `MOQ.Catalog.Subscribe` | Live catalog subscription started. |
-| `UNSUBSCRIBE` | `MOQ.Catalog.Unsubscribe` | Live catalog subscription stopped. |
-| `CATALOG_RECEIVED` | `MOQ.Catalog.Received` | Parsed catalog delivered. See payload below. |
-| `CATALOG_PARSE_ERROR` | `MOQ.Catalog.Parse.Error` | Catalog payload parse failed. `data.error` is the thrown `Error`. |
-| `MESSAGE` | `MOQ.Catalog.Message` | Other relay control messages. `data.message` is the raw control message. |
-| `FAIL` | `MOQ.Catalog.Fail` | Session or request failure. `data.error` is the error object. |
-| `CLOSE` | `MOQ.Catalog.Close` | Relay/session closed. |
+| Access                | Event Type                | Meaning                                                                  |
+| :-------------------- | :------------------------ | :----------------------------------------------------------------------- |
+| `FETCH`               | `MOQ.Catalog.Fetch`       | One-shot fetch started.                                                  |
+| `UNFETCH`             | `MOQ.Catalog.Unfetch`     | One-shot fetch session closed.                                           |
+| `SUBSCRIBE`           | `MOQ.Catalog.Subscribe`   | Live catalog subscription started.                                       |
+| `UNSUBSCRIBE`         | `MOQ.Catalog.Unsubscribe` | Live catalog subscription stopped.                                       |
+| `CATALOG_RECEIVED`    | `MOQ.Catalog.Received`    | Parsed catalog delivered. See payload below.                             |
+| `CATALOG_PARSE_ERROR` | `MOQ.Catalog.Parse.Error` | Catalog payload parse failed. `data.error` is the thrown `Error`.        |
+| `MESSAGE`             | `MOQ.Catalog.Message`     | Other relay control messages. `data.message` is the raw control message. |
+| `FAIL`                | `MOQ.Catalog.Fail`        | Session or request failure. `data.error` is the error object.            |
+| `CLOSE`               | `MOQ.Catalog.Close`       | Relay/session closed.                                                    |
 
 ### `CATALOG_RECEIVED` payload
 
 `event.data.catalog` is an accumulator result (deltas are applied internally):
 
-| Field | Meaning |
-| :--- | :--- |
-| `mode` | How this object was parsed: `cf01-independent`, `cf01-delta`, `msf-independent`, `msf-delta`, or `empty`. |
-| `rawText` | UTF-8 catalog bytes as text. |
-| `state` | Current catalog after this object: `{ version, tracks, generatedAt? }`. Track metadata lives on `state.tracks`. |
+| Field     | Meaning                                                                                                         |
+| :-------- | :-------------------------------------------------------------------------------------------------------------- |
+| `mode`    | How this object was parsed: `cf01-independent`, `cf01-delta`, `msf-independent`, `msf-delta`, or `empty`.       |
+| `rawText` | UTF-8 catalog bytes as text.                                                                                    |
+| `state`   | Current catalog after this object: `{ version, tracks, generatedAt? }`. Track metadata lives on `state.tracks`. |
 
 ```js
-catalog.on(MOQCatalogEventTypes.CATALOG_RECEIVED, event => {
+catalog.on(MOQCatalogEventTypes.CATALOG_RECEIVED, (event) => {
   const { mode, state } = event.data.catalog
   console.log(mode, state.tracks)
 })
@@ -14241,22 +14332,24 @@ Use it when you want:
 
 `MOQPublisher` and `MOQSubscriber` can also create and tear down a channel for you via `messageChannel` in their init config. This page covers the standalone client and the send/receive contract.
 
-* [Usage](#usage)
-* [Init configuration](#init-configuration)
-* [Send API](#send-api)
-* [Events](#events)
-* [Managed channels](#managed-channels)
-* [Interop with WebRTC MessageChannel](#interop-with-webrtc-messagechannel)
+- [Usage](#usage)
+- [Init configuration](#init-configuration)
+- [Send API](#send-api)
+- [Events](#events)
+- [Managed channels](#managed-channels)
+- [Interop with WebRTC MessageChannel](#interop-with-webrtc-messagechannel)
 
 # Usage
+
+On a script-tag page, load either the full SDK (`red5-web-sdk.min.js`) or the MOQ build (`red5-web-sdk-moq.min.js`). Both attach `window.red5websdk`. From npm, `import { MOQMessageChannel } from 'red5-web-sdk'` or `'red5-web-sdk/moq'`.
 
 Initialize, then `open()`. Listen for events before `open()` so you do not miss `MessageChannel.Open`.
 
 ```js
-const { MOQMessageChannel, MessageChannelEventTypes } = red5prosdk
+const { MOQMessageChannel, MessageChannelEventTypes } = red5websdk
 
 const channel = new MOQMessageChannel()
-channel.on('*', event => {
+channel.on('*', (event) => {
   console.log(event.type, event.data)
 })
 
@@ -14268,8 +14361,8 @@ await channel.init({
     name: 'red5pro',
     clientId: 'publisher-1', // auto-generated by default, if not provided.
     keepEcho: false,
-    unreliable: false
-  }
+    unreliable: false,
+  },
 })
 await channel.open()
 
@@ -14281,22 +14374,19 @@ await channel.close()
 Passing a URL to the constructor runs `init()` and `open()` automatically:
 
 ```js
-const channel = new MOQMessageChannel(
-  'https://relay.example.com:4433/live/mystream',
-  {
-    dataChannelConfiguration: { name: 'red5pro' }
-  }
-)
+const channel = new MOQMessageChannel('https://relay.example.com:4433/live/mystream', {
+  dataChannelConfiguration: { name: 'red5pro' },
+})
 ```
 
 Failures on that auto-start path are reported as `MessageChannel.Fail` / `MessageChannel.Error` (the constructor promise is not awaited).
 
 ## Shared vs sidecar
 
-| Mode | Connection | Typical use |
-| :--- | :--- | :--- |
+| Mode                               | Connection                          | Typical use                                                |
+| :--------------------------------- | :---------------------------------- | :--------------------------------------------------------- |
 | `sidecar` (default for standalone) | New WebTransport + `MoqtConnection` | Messaging without media, or a second session next to media |
-| `shared` | Existing connected `MoqtConnection` | Same MoQT session as a publisher or subscriber |
+| `shared`                           | Existing connected `MoqtConnection` | Same MoQT session as a publisher or subscriber             |
 
 Shared mode requires `moqtConnection` at `init()`, or call `useConnection(connection)` before `open()`:
 
@@ -14308,7 +14398,7 @@ await channel.init({
   moqtConnection: publisher.getConnection(),
   app: 'live',
   streamName: 'mystream',
-  closeProvidedConnection: false
+  closeProvidedConnection: false,
 })
 await channel.open()
 ```
@@ -14331,34 +14421,34 @@ On `open()` the client:
 
 ## Common fields
 
-| Property | Required | Default | Description |
-| :--- | :---: | :---: | :--- |
-| `mode` | [-] | `sidecar` | `'sidecar'` or `'shared'`. |
-| `app` | [x] | `live` | App path; split on `/` for the MoQT namespace prefix. |
-| `streamName` | [-] | `undefined` | Fallback `clientId` when `dataChannelConfiguration.clientId` is omitted. |
-| `draftVersion` | [-] | auto / connection | MoQ transport draft. Datagram send requires **18**. |
-| `connectionParams` | [-] | `{ maxRequestId }` | Extra `MoqtConnection.connect()` options in sidecar mode. CAT credentials use `authorization`, not this object. |
-| `dataChannelConfiguration` | [-] | see below | Channel label and send/receive behavior. |
+| Property                   | Required |      Default       | Description                                                                                                     |
+| :------------------------- | :------: | :----------------: | :-------------------------------------------------------------------------------------------------------------- |
+| `mode`                     |   [-]    |     `sidecar`      | `'sidecar'` or `'shared'`.                                                                                      |
+| `app`                      |   [x]    |       `live`       | App path; split on `/` for the MoQT namespace prefix.                                                           |
+| `streamName`               |   [-]    |    `undefined`     | Fallback `clientId` when `dataChannelConfiguration.clientId` is omitted.                                        |
+| `draftVersion`             |   [-]    | auto / connection  | MoQ transport draft. Datagram send requires **18**.                                                             |
+| `connectionParams`         |   [-]    | `{ maxRequestId }` | Extra `MoqtConnection.connect()` options in sidecar mode. CAT credentials use `authorization`, not this object. |
+| `dataChannelConfiguration` |   [-]    |     see below      | Channel label and send/receive behavior.                                                                        |
 
 ### `dataChannelConfiguration`
 
-| Property | Default | Description |
-| :--- | :---: | :--- |
-| `name` | `red5pro` | Track / channel label. Peers must use the same name. |
-| `clientId` | `streamName` or generated | Publish namespace suffix and echo filter identity. |
-| `keepEcho` | `false` | When `false`, inbound JSON objects with `senderName === clientId` are dropped. |
-| `unreliable` | `false` | When `true`, send via MoQT datagrams (draft **18** only). Otherwise each send is a subgroup object. |
+| Property     |          Default          | Description                                                                                         |
+| :----------- | :-----------------------: | :-------------------------------------------------------------------------------------------------- |
+| `name`       |         `red5pro`         | Track / channel label. Peers must use the same name.                                                |
+| `clientId`   | `streamName` or generated | Publish namespace suffix and echo filter identity.                                                  |
+| `keepEcho`   |          `false`          | When `false`, inbound JSON objects with `senderName === clientId` are dropped.                      |
+| `unreliable` |          `false`          | When `true`, send via MoQT datagrams (draft **18** only). Otherwise each send is a subgroup object. |
 
 ## Sidecar (`mode: 'sidecar'`)
 
-| Property | Required | Default | Description |
-| :--- | :---: | :---: | :--- |
-| `endpoint` | [-] | `protocol://host:port` | Full relay URL. |
-| `host` | [x]* | `undefined` | Relay host when `endpoint` is omitted. |
-| `protocol` | [x] | `https` | `ws` / `wss` map to `http` / `https` for WebTransport. |
-| `port` | [x] | `4433` | Relay port. |
-| `certKey` | [-] | `undefined` | Certificate hash for WebTransport. |
-| `authorization` | [-] | `undefined` | Optional CAT credentials for the sidecar `MoqtConnection.connect()`. See [Authorization](#authorization). |
+| Property        | Required |        Default         | Description                                                                                               |
+| :-------------- | :------: | :--------------------: | :-------------------------------------------------------------------------------------------------------- |
+| `endpoint`      |   [-]    | `protocol://host:port` | Full relay URL.                                                                                           |
+| `host`          |  [x]\*   |      `undefined`       | Relay host when `endpoint` is omitted.                                                                    |
+| `protocol`      |   [x]    |        `https`         | `ws` / `wss` map to `http` / `https` for WebTransport.                                                    |
+| `port`          |   [x]    |         `4433`         | Relay port.                                                                                               |
+| `certKey`       |   [-]    |      `undefined`       | Certificate hash for WebTransport.                                                                        |
+| `authorization` |   [-]    |      `undefined`       | Optional CAT credentials for the sidecar `MoqtConnection.connect()`. See [Authorization](#authorization). |
 
 `*` Required when `endpoint` is not provided.
 
@@ -14366,11 +14456,11 @@ On `open()` the client:
 
 Sidecar mode sends `authorization` on `connect()` with `relayUrl` set to the channel endpoint. Shared mode does not connect again; it uses the session that was already authenticated.
 
-| Field | Description |
-| :--- | :--- |
-| `enabled` | When `false`, or when `authorization` is omitted, no auth attributes are sent. |
-| `profile` | `cat4moq` sends token type `1`. `moqx-compat` sends token type `16`. |
-| `token` | Base64-encoded CAT token. An optional `base64:` prefix is stripped. The decoded token must be at most 32768 bytes. |
+| Field     | Description                                                                                                        |
+| :-------- | :----------------------------------------------------------------------------------------------------------------- |
+| `enabled` | When `false`, or when `authorization` is omitted, no auth attributes are sent.                                     |
+| `profile` | `cat4moq` sends token type `1`. `moqx-compat` sends token type `16`.                                               |
+| `token`   | Base64-encoded CAT token. An optional `base64:` prefix is stripped. The decoded token must be at most 32768 bytes. |
 
 ```js
 authorization: {
@@ -14384,10 +14474,10 @@ authorization: {
 
 ## Shared (`mode: 'shared'`)
 
-| Property | Required | Default | Description |
-| :--- | :---: | :---: | :--- |
-| `moqtConnection` | [x] | — | Already-connected `MoqtConnection`. |
-| `closeProvidedConnection` | [-] | `false` | If `true`, `close()` also closes that connection. |
+| Property                  | Required | Default | Description                                       |
+| :------------------------ | :------: | :-----: | :------------------------------------------------ |
+| `moqtConnection`          |   [x]    |    —    | Already-connected `MoqtConnection`.               |
+| `closeProvidedConnection` |   [-]    | `false` | If `true`, `close()` also closes that connection. |
 
 # Send API
 
@@ -14406,7 +14496,7 @@ Unlike WebRTC `MessageChannel`, this client does **not** automatically add `send
 ```js
 await channel.sendMessage({
   senderName: channel.getOptions().dataChannelConfiguration.clientId,
-  text: 'hello'
+  text: 'hello',
 })
 ```
 
@@ -14425,14 +14515,14 @@ Sends binary data: `Uint8Array`, `ArrayBuffer`, or an `ArrayBufferView`. Incomin
 
 `MOQMessageChannel` uses the same `MessageChannelEventTypes` as WebRTC `MessageChannel`:
 
-| Access | Event Type | Meaning |
-| :--- | :--- | :--- |
-| `OPEN` | `MessageChannel.Open` | Publish OK completed; send is available. Receive is available if hub subscribe succeeded. |
-| `SEND` | `MessageChannel.Send` | Local send accepted by the transport. Not an ack from remote peers. `data` is the JSON object or binary payload. |
-| `RECEIVE` | `MessageChannel.Receive` | Inbound payload. See shape below. |
-| `CLOSE` | `MessageChannel.Close` | Channel closed (local `close()` or session close). |
-| `FAIL` | `MessageChannel.Fail` | `open()` failed. `data.error` is the message. |
-| `ERROR` | `MessageChannel.Error` | Session error, publish reject, send failure, or receive path disabled (`track not found`). |
+| Access    | Event Type               | Meaning                                                                                                          |
+| :-------- | :----------------------- | :--------------------------------------------------------------------------------------------------------------- |
+| `OPEN`    | `MessageChannel.Open`    | Publish OK completed; send is available. Receive is available if hub subscribe succeeded.                        |
+| `SEND`    | `MessageChannel.Send`    | Local send accepted by the transport. Not an ack from remote peers. `data` is the JSON object or binary payload. |
+| `RECEIVE` | `MessageChannel.Receive` | Inbound payload. See shape below.                                                                                |
+| `CLOSE`   | `MessageChannel.Close`   | Channel closed (local `close()` or session close).                                                               |
+| `FAIL`    | `MessageChannel.Fail`    | `open()` failed. `data.error` is the message.                                                                    |
+| `ERROR`   | `MessageChannel.Error`   | Session error, publish reject, send failure, or receive path disabled (`track not found`).                       |
 
 ### `RECEIVE` payload
 
@@ -14449,7 +14539,7 @@ Sends binary data: `Uint8Array`, `ArrayBuffer`, or an `ArrayBufferView`. Incomin
 ```
 
 ```js
-channel.on(MessageChannelEventTypes.RECEIVE, event => {
+channel.on(MessageChannelEventTypes.RECEIVE, (event) => {
   const { data, source } = event.data.message
   console.log(source, data)
 })
@@ -14460,7 +14550,7 @@ channel.on(MessageChannelEventTypes.RECEIVE, event => {
 ```js
 channel.getOptions()
 channel.getConnection() // MoqtConnection while open
-channel.getType()       // 'MOQ_DATA_CHANNEL'
+channel.getType() // 'MOQ_DATA_CHANNEL'
 ```
 
 # Managed channels
@@ -14476,9 +14566,9 @@ await publisher.init({
     mode: 'shared', // or 'sidecar'
     dataChannelConfiguration: {
       name: 'red5pro',
-      keepEcho: false
-    }
-  }
+      keepEcho: false,
+    },
+  },
 })
 await publisher.publish()
 
@@ -14494,16 +14584,16 @@ Managed events are also forwarded as `MOQ.MessageChannel.*` on the publisher/sub
 
 WebRTC messaging is [`MessageChannel`](message-channel.md) (`src/message-channel`): a WHIP-based client over `RTCDataChannel`. `MOQMessageChannel` reuses the **same JavaScript send methods and `MessageChannelEventTypes`**, not the same on-the-wire protocol.
 
-| | WebRTC `MessageChannel` | `MOQMessageChannel` |
-| :--- | :--- | :--- |
-| Transport | `RTCPeerConnection` + `RTCDataChannel` | MoQT over WebTransport |
-| Server path | WHIP / Stream Manager proxy | MoQ relay |
-| Channel id | `dataChannelConfiguration.name` | Same field → MoQT **track name** |
-| Sender identity | Injects `sender_id` (from `streamName`) and `send_timestamp` on `sendMessage` | Does **not** inject fields; use `clientId` + `senderName` in your JSON |
-| Echo | Not filtered in the SDK | Drops JSON with `senderName === clientId` unless `keepEcho: true` |
-| Unreliable | DataChannel `maxRetransmits` / unordered (WHIP config) | MoQT datagrams, draft 18, `unreliable: true` |
-| Standalone vs media | Separate WHIP ingest; media DataChannel dies with the stream | `sidecar` session, or `shared` on the media `MoqtConnection` |
-| `RECEIVE` `data` | WHIP / DataChannel message wrapping | `{ dataChannel, message: { data, source, groupId } }` |
+|                     | WebRTC `MessageChannel`                                                       | `MOQMessageChannel`                                                    |
+| :------------------ | :---------------------------------------------------------------------------- | :--------------------------------------------------------------------- |
+| Transport           | `RTCPeerConnection` + `RTCDataChannel`                                        | MoQT over WebTransport                                                 |
+| Server path         | WHIP / Stream Manager proxy                                                   | MoQ relay                                                              |
+| Channel id          | `dataChannelConfiguration.name`                                               | Same field → MoQT **track name**                                       |
+| Sender identity     | Injects `sender_id` (from `streamName`) and `send_timestamp` on `sendMessage` | Does **not** inject fields; use `clientId` + `senderName` in your JSON |
+| Echo                | Not filtered in the SDK                                                       | Drops JSON with `senderName === clientId` unless `keepEcho: true`      |
+| Unreliable          | DataChannel `maxRetransmits` / unordered (WHIP config)                        | MoQT datagrams, draft 18, `unreliable: true`                           |
+| Standalone vs media | Separate WHIP ingest; media DataChannel dies with the stream                  | `sidecar` session, or `shared` on the media `MoqtConnection`           |
+| `RECEIVE` `data`    | WHIP / DataChannel message wrapping                                           | `{ dataChannel, message: { data, source, groupId } }`                  |
 
 **They do not interoperate on one session.** A browser using WebRTC `MessageChannel` talks to the Red5 WHIP/WHEP data channel; a browser using `MOQMessageChannel` talks to the MoQ `_dc` tracks. A server or app can **bridge** them only by translating payloads.
 
@@ -14538,14 +14628,16 @@ When you want to publish media over Media over QUIC (MoQ), the SDK provides `MOQ
 
 `MOQPublisher` captures media (`getUserMedia` by default, or your own stream), connects to a MOQ relay over WebTransport, publishes a namespace, and serves encoded tracks and catalog data to subscriber requests.
 
-* [Usage](#usage)
-* [Init Configuration](#init-configuration)
-* [Events](#events)
-* [Capture timestamp pins](#capture-timestamp-pins)
-* [Send timing diagnostics](#send-timing-diagnostics)
-* [Statistics](#statistics)
+- [Usage](#usage)
+- [Init Configuration](#init-configuration)
+- [Events](#events)
+- [Capture timestamp pins](#capture-timestamp-pins)
+- [Send timing diagnostics](#send-timing-diagnostics)
+- [Statistics](#statistics)
 
 # Usage
+
+On a script-tag page, load either the full SDK (`red5-web-sdk.min.js`) or the MOQ build (`red5-web-sdk-moq.min.js`). Both attach `window.red5websdk`. From npm, `import { MOQPublisher } from 'red5-web-sdk'` or `'red5-web-sdk/moq'`.
 
 There are two options to start a `MOQPublisher`:
 
@@ -14555,10 +14647,10 @@ There are two options to start a `MOQPublisher`:
 ## Using init() and publish()
 
 ```js
-const { MOQPublisher, PublisherEventTypes, MOQPublisherEventTypes } = red5prosdk
+const { MOQPublisher, PublisherEventTypes, MOQPublisherEventTypes } = red5websdk
 
 const publisher = new MOQPublisher()
-publisher.on('*', event => {
+publisher.on('*', (event) => {
   console.log(event.type, event.data)
 })
 
@@ -14568,16 +14660,16 @@ await publisher.init({
   mediaElementId: 'red5pro-publisher',
   mediaConstraints: {
     audio: true,
-    video: true
+    video: true,
   },
   bandwidth: {
     audio: 56,
-    video: 3000
+    video: 3000,
   },
   // Optional: publish a 3-rung video ladder (source + 2 generated tracks)
   simulcast: {
     enabled: true,
-    rungs: 3
+    rungs: 3,
     // Or explicit variants (index 0 kept as original track; 1..n generated):
     // rungs: [
     //   { width: 1280, height: 720, fps: 60, bitrate: 3000 },
@@ -14591,9 +14683,9 @@ await publisher.init({
     mode: 'shared', // 'shared' reuses publisher connection, 'sidecar' uses separate connection
     dataChannelConfiguration: {
       name: 'red5pro',
-      keepEcho: false
-    }
-  }
+      keepEcho: false,
+    },
+  },
 })
 
 await publisher.publish()
@@ -14616,7 +14708,7 @@ const publisher = new MOQPublisher(
   'https://relay.example.com:4433/live/mystream',
   document.getElementById('red5pro-publisher'),
   {
-    namespace: 'live/mystream'
+    namespace: 'live/mystream',
   }
 )
 ```
@@ -14625,33 +14717,33 @@ const publisher = new MOQPublisher(
 
 The `init()` call accepts `MOQPublisherConfigType`.
 
-| Property | Required | Default | Description |
-| :--- | :---: | :---: | :--- |
-| `endpoint` | [-] | `undefined` | Full MOQ relay URL. If omitted, SDK uses `protocol://host:port`. |
-| `host` | [x]* | `undefined` | Relay host when `endpoint` is omitted. |
-| `streamName` | [x]* | `undefined` | Stream name used for namespace derivation and stats metadata. |
-| `protocol` | [x] | `https` | Relay protocol (`ws`, `wss`, `http`, `https`). |
-| `port` | [x] | `4433` | Relay port. |
-| `app` | [x] | `live` | App scope used in namespace fallback. |
-| `namespace` | [-] | `app/streamName` | MOQ namespace to publish. |
-| `draftVersion` | [-] | auto | MoQ transport draft version. |
-| `certKey` | [-] | `undefined` | Certificate hash input for WebTransport setup. |
-| `authorization` | [-] | `undefined` | Optional CAT credentials attached to the MoQT connection. See [Authorization](#authorization). |
-| `keyFramerate` | [-] | `2000` | Keyframe interval in milliseconds. |
-| `bandwidth` | [-] | `{ audio: 56, video: 750 }` | Target encode bandwidth settings. |
-| `mediaConstraints` | [x] | camera+mic defaults | Constraints for SDK-managed `getUserMedia`. |
-| `onGetUserMedia` | [-] | `undefined` | Optional override to provide your own media stream acquisition. |
-| `videoEncoding` | [-] | `H264` | Preferred video codec (`PublishVideoEncoder`: `H264_BASELINE`, `H264_HIGH`, `H264`, `H265`, `AV1`). The publisher probes `VideoEncoder.isConfigSupported` at the track resolution and frame rate, then falls back (Baseline ↔ High, then H.264 if HEVC/AV1 is requested). AVC level is raised automatically (e.g. 4.0 for 1080p30, 4.2 for 1080p60). If nothing is supported, `ENCODER_ERROR` fires with `terminal: true` and publish fails. |
-| `audioEncoding` | [-] | `OPUS` | Audio codec (`PublishAudioEncoder`). |
-| `mediaElementId` | [-] | `red5pro-publisher` | Preview element id for local media display. |
-| `clearMediaOnUnpublish` | [-] | `true` | Stop preview stream tracks on unpublish. |
-| `maxVideoQueue` | [-] | `120` | Max queued encoded video chunks per track before shed policy. |
-| `maxAudioQueue` | [-] | `240` | Max queued encoded audio chunks per track before shed policy. |
-| `simulcast` | [-] | `{ enabled: false, rungs: 3 }` | Optional simulcast ladder. When `enabled`, `rungs` is either a count (`1..3`) or an explicit `SimulcastVariant[]`. Source/captured video is always the top rung; lower rungs are generated (auto: ½ resolution/bitrate each step, and ½ fps when top FPS ≥ 60). |
-| `messageChannel` | [-] | `{ enabled: false, mode: 'shared' }` | Optional internally managed `MOQMessageChannel`. `mode: 'shared'` reuses publisher's `MoqtConnection`; `mode: 'sidecar'` creates a separate MoQT session for messaging. |
-| `stats` | [-] | `undefined` | Optional stats monitor configuration. |
-| `connectionParams` | [-] | `undefined` | Additional params used for stats metadata and endpoint context. |
-| `moqLogLevel` | [-] | `none` | Log level passed to MOQ components. |
+| Property                | Required |               Default                | Description                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| :---------------------- | :------: | :----------------------------------: | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `endpoint`              |   [-]    |             `undefined`              | Full MOQ relay URL. If omitted, SDK uses `protocol://host:port`.                                                                                                                                                                                                                                                                                                                                                                             |
+| `host`                  |  [x]\*   |             `undefined`              | Relay host when `endpoint` is omitted.                                                                                                                                                                                                                                                                                                                                                                                                       |
+| `streamName`            |  [x]\*   |             `undefined`              | Stream name used for namespace derivation and stats metadata.                                                                                                                                                                                                                                                                                                                                                                                |
+| `protocol`              |   [x]    |               `https`                | Relay protocol (`ws`, `wss`, `http`, `https`).                                                                                                                                                                                                                                                                                                                                                                                               |
+| `port`                  |   [x]    |                `4433`                | Relay port.                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| `app`                   |   [x]    |                `live`                | App scope used in namespace fallback.                                                                                                                                                                                                                                                                                                                                                                                                        |
+| `namespace`             |   [-]    |           `app/streamName`           | MOQ namespace to publish.                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| `draftVersion`          |   [-]    |                 auto                 | MoQ transport draft version.                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| `certKey`               |   [-]    |             `undefined`              | Certificate hash input for WebTransport setup.                                                                                                                                                                                                                                                                                                                                                                                               |
+| `authorization`         |   [-]    |             `undefined`              | Optional CAT credentials attached to the MoQT connection. See [Authorization](#authorization).                                                                                                                                                                                                                                                                                                                                               |
+| `keyFramerate`          |   [-]    |                `2000`                | Keyframe interval in milliseconds.                                                                                                                                                                                                                                                                                                                                                                                                           |
+| `bandwidth`             |   [-]    |     `{ audio: 56, video: 750 }`      | Target encode bandwidth settings.                                                                                                                                                                                                                                                                                                                                                                                                            |
+| `mediaConstraints`      |   [x]    |         camera+mic defaults          | Constraints for SDK-managed `getUserMedia`.                                                                                                                                                                                                                                                                                                                                                                                                  |
+| `onGetUserMedia`        |   [-]    |             `undefined`              | Optional override to provide your own media stream acquisition.                                                                                                                                                                                                                                                                                                                                                                              |
+| `videoEncoding`         |   [-]    |                `H264`                | Preferred video codec (`PublishVideoEncoder`: `H264_BASELINE`, `H264_HIGH`, `H264`, `H265`, `AV1`). The publisher probes `VideoEncoder.isConfigSupported` at the track resolution and frame rate, then falls back (Baseline ↔ High, then H.264 if HEVC/AV1 is requested). AVC level is raised automatically (e.g. 4.0 for 1080p30, 4.2 for 1080p60). If nothing is supported, `ENCODER_ERROR` fires with `terminal: true` and publish fails. |
+| `audioEncoding`         |   [-]    |                `OPUS`                | Audio codec (`PublishAudioEncoder`).                                                                                                                                                                                                                                                                                                                                                                                                         |
+| `mediaElementId`        |   [-]    |         `red5pro-publisher`          | Preview element id for local media display.                                                                                                                                                                                                                                                                                                                                                                                                  |
+| `clearMediaOnUnpublish` |   [-]    |                `true`                | Stop preview stream tracks on unpublish.                                                                                                                                                                                                                                                                                                                                                                                                     |
+| `maxVideoQueue`         |   [-]    |                `120`                 | Max queued encoded video chunks per track before shed policy.                                                                                                                                                                                                                                                                                                                                                                                |
+| `maxAudioQueue`         |   [-]    |                `240`                 | Max queued encoded audio chunks per track before shed policy.                                                                                                                                                                                                                                                                                                                                                                                |
+| `simulcast`             |   [-]    |    `{ enabled: false, rungs: 3 }`    | Optional simulcast ladder. When `enabled`, `rungs` is either a count (`1..3`) or an explicit `SimulcastVariant[]`. Source/captured video is always the top rung; lower rungs are generated (auto: ½ resolution/bitrate each step, and ½ fps when top FPS ≥ 60).                                                                                                                                                                              |
+| `messageChannel`        |   [-]    | `{ enabled: false, mode: 'shared' }` | Optional internally managed `MOQMessageChannel`. `mode: 'shared'` reuses publisher's `MoqtConnection`; `mode: 'sidecar'` creates a separate MoQT session for messaging.                                                                                                                                                                                                                                                                      |
+| `stats`                 |   [-]    |             `undefined`              | Optional stats monitor configuration.                                                                                                                                                                                                                                                                                                                                                                                                        |
+| `connectionParams`      |   [-]    |             `undefined`              | Additional params used for stats metadata and endpoint context.                                                                                                                                                                                                                                                                                                                                                                              |
+| `moqLogLevel`           |   [-]    |                `none`                | Log level passed to MOQ components.                                                                                                                                                                                                                                                                                                                                                                                                          |
 
 `*` Required when `endpoint` is not provided.
 
@@ -14659,11 +14751,11 @@ The `init()` call accepts `MOQPublisherConfigType`.
 
 `authorization` supplies CAT tokens when `publish()` opens the MoQT session. With `enabled: true`, the SDK decodes `token` and passes it to `connect()` along with the publisher relay URL. The credential is used only for that connection attempt. It is not stored and it is not added to viewer links.
 
-| Field | Description |
-| :--- | :--- |
-| `enabled` | When `false`, or when `authorization` is omitted, no auth attributes are sent. |
-| `profile` | `cat4moq` sends token type `1`. `moqx-compat` sends token type `16`. |
-| `token` | Base64-encoded CAT token. An optional `base64:` prefix is stripped. The decoded token must be at most 32768 bytes. |
+| Field     | Description                                                                                                        |
+| :-------- | :----------------------------------------------------------------------------------------------------------------- |
+| `enabled` | When `false`, or when `authorization` is omitted, no auth attributes are sent.                                     |
+| `profile` | `cat4moq` sends token type `1`. `moqx-compat` sends token type `16`.                                               |
+| `token`   | Base64-encoded CAT token. An optional `base64:` prefix is stripped. The decoded token must be at most 32768 bytes. |
 
 ```js
 authorization: {
@@ -14705,7 +14797,7 @@ authorization: {
 `MOQPublisher` is an event emitter. You can subscribe with wildcard (`*`) or by specific event name.
 
 ```js
-const onPublisherEvent = event => {
+const onPublisherEvent = (event) => {
   const { type, publisher, data } = event
   console.log(type, publisher, data)
 }
@@ -14717,38 +14809,38 @@ publisher.off('*', onPublisherEvent)
 
 ### Core publish lifecycle events (`PublisherEventTypes`)
 
-| Access | Event Type | Meaning |
-| :--- | :--- | :--- |
-| `PUBLISH_START` | `Publish.Start` | Publishing has started. |
-| `PUBLISH_FAIL` | `Publish.Fail` | Publishing failed. Payload includes `error` and `terminal` (`true` when setup cannot continue, for example when `MediaStreamTrackProcessor` is unavailable). |
-| `UNPUBLISH_SUCCESS` | `Unpublish.Success` | Unpublish completed. |
+| Access              | Event Type          | Meaning                                                                                                                                                      |
+| :------------------ | :------------------ | :----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `PUBLISH_START`     | `Publish.Start`     | Publishing has started.                                                                                                                                      |
+| `PUBLISH_FAIL`      | `Publish.Fail`      | Publishing failed. Payload includes `error` and `terminal` (`true` when setup cannot continue, for example when `MediaStreamTrackProcessor` is unavailable). |
+| `UNPUBLISH_SUCCESS` | `Unpublish.Success` | Unpublish completed.                                                                                                                                         |
 
 ### MOQ-specific events (`MOQPublisherEventTypes`)
 
-| Access | Event Type | Meaning |
-| :--- | :--- | :--- |
-| `CONSTRAINTS_ACCEPTED` | `MOQ.MediaConstraints.Accepted` | Media constraints accepted. |
-| `CONSTRAINTS_REJECTED` | `MOQ.MediaConstraints.Rejected` | Media constraints rejected. |
-| `MEDIA_STREAM_AVAILABLE` | `MOQ.MediaStream.Available` | Local `MediaStream` became available. |
-| `NAMESPACE_PUBLISHED` | `MOQ.Namespace.Published` | Namespace announce/publish completed. |
-| `CATALOG_PUBLISHED` | `MOQ.Catalog.Published` | Catalog tracks announced to the session, after every encoder has been registered. |
-| `RELAY_SUBSCRIBE` | `MOQ.Relay.Subscribe` | Relay requested a known track subscription. |
-| `RELAY_SUBSCRIBE_FAILED` | `MOQ.Relay.Subscribe.Failed` | Relay requested unknown or rejected track. |
-| `RELAY_MESSAGE` | `MOQ.Relay.Message` | Relay control message received. |
-| `RELAY_ERROR` | `MOQ.Relay.Error` | Relay/session error reported. |
-| `RELAY_CLOSE` | `MOQ.Relay.Close` | Relay/session closed. |
-| `ENCODER_ERROR` | `MOQ.Encoder.Error` | Encoder or capture pipeline error. Payload includes `encoder` (`media` / `video` / `audio` / `catalog`), `error` (message), and `terminal` (`true` when publish setup cannot continue). Missing `MediaStreamTrackProcessor` emits `{ encoder: 'media', code: 'MEDIA_STREAM_TRACK_PROCESSOR_UNAVAILABLE', feature: 'MediaStreamTrackProcessor', terminal: true }` and then `PUBLISH_FAIL`. |
-| `SEND_STATS` | `MOQ.Send.Stats` | Per-track send counters after a media object is published. Payload includes `trackName`, `role`, role-specific counters (`videoFrames`/`keyframeCount` or `audioChunks`), send-timing fields (see **Send timing diagnostics** below), a `tracks` snapshot keyed by track name with the same per-track fields, and capture-pin fields (see **Capture timestamp pins** below). |
-| `TIMESTAMP_PINNED` | `MOQ.Timestamp.Pinned` | Fired once when both audio and video capture clocks have been pinned and the video warm-up has finished. Same pin-field shape as `SEND_STATS`. |
-| `TIMESTAMP_REPINNED` | `MOQ.Timestamp.Repinned` | A capture offset was corrected by ≥100ms after objects of that kind were already sent. Payload adds `track` (`'audio'` / `'video'`) and `correctionMs` to the pin fields. For video, the SDK forces a keyframe so the corrected timeline starts on a new group. |
-| `CAPTURE_COLD_START` | `MOQ.Capture.ColdStart` | Fired once per kind when that kind's first capture sample reached the SDK at least 500ms late, typically a camera waking from idle. The correction is already applied. Payload: `track`, `lateByMs`, `timeToFirstFrameMs`, `beforeFirstSend`, `audioCorrectionMs`, `videoCorrectionMs`. |
-| `MESSAGE_CHANNEL_OPEN` | `MOQ.MessageChannel.Open` | Managed `MOQMessageChannel` opened successfully. |
-| `MESSAGE_CHANNEL_SEND` | `MOQ.MessageChannel.Send` | Managed `MOQMessageChannel` sent a message/data payload. |
-| `MESSAGE_CHANNEL_RECEIVE` | `MOQ.MessageChannel.Receive` | Managed `MOQMessageChannel` received a message/data payload. |
-| `MESSAGE_CHANNEL_CLOSE` | `MOQ.MessageChannel.Close` | Managed `MOQMessageChannel` closed. |
-| `MESSAGE_CHANNEL_FAIL` | `MOQ.MessageChannel.Fail` | Managed `MOQMessageChannel` failed to open. |
-| `MESSAGE_CHANNEL_ERROR` | `MOQ.MessageChannel.Error` | Managed `MOQMessageChannel` reported an error. |
-| `STATS_REPORT` | `MOQ.Stats.Report` | Stats report emitted when monitoring is enabled. |
+| Access                    | Event Type                      | Meaning                                                                                                                                                                                                                                                                                                                                                                                   |
+| :------------------------ | :------------------------------ | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `CONSTRAINTS_ACCEPTED`    | `MOQ.MediaConstraints.Accepted` | Media constraints accepted.                                                                                                                                                                                                                                                                                                                                                               |
+| `CONSTRAINTS_REJECTED`    | `MOQ.MediaConstraints.Rejected` | Media constraints rejected.                                                                                                                                                                                                                                                                                                                                                               |
+| `MEDIA_STREAM_AVAILABLE`  | `MOQ.MediaStream.Available`     | Local `MediaStream` became available.                                                                                                                                                                                                                                                                                                                                                     |
+| `NAMESPACE_PUBLISHED`     | `MOQ.Namespace.Published`       | Namespace announce/publish completed.                                                                                                                                                                                                                                                                                                                                                     |
+| `CATALOG_PUBLISHED`       | `MOQ.Catalog.Published`         | Catalog tracks announced to the session, after every encoder has been registered.                                                                                                                                                                                                                                                                                                         |
+| `RELAY_SUBSCRIBE`         | `MOQ.Relay.Subscribe`           | Relay requested a known track subscription.                                                                                                                                                                                                                                                                                                                                               |
+| `RELAY_SUBSCRIBE_FAILED`  | `MOQ.Relay.Subscribe.Failed`    | Relay requested unknown or rejected track.                                                                                                                                                                                                                                                                                                                                                |
+| `RELAY_MESSAGE`           | `MOQ.Relay.Message`             | Relay control message received.                                                                                                                                                                                                                                                                                                                                                           |
+| `RELAY_ERROR`             | `MOQ.Relay.Error`               | Relay/session error reported.                                                                                                                                                                                                                                                                                                                                                             |
+| `RELAY_CLOSE`             | `MOQ.Relay.Close`               | Relay/session closed.                                                                                                                                                                                                                                                                                                                                                                     |
+| `ENCODER_ERROR`           | `MOQ.Encoder.Error`             | Encoder or capture pipeline error. Payload includes `encoder` (`media` / `video` / `audio` / `catalog`), `error` (message), and `terminal` (`true` when publish setup cannot continue). Missing `MediaStreamTrackProcessor` emits `{ encoder: 'media', code: 'MEDIA_STREAM_TRACK_PROCESSOR_UNAVAILABLE', feature: 'MediaStreamTrackProcessor', terminal: true }` and then `PUBLISH_FAIL`. |
+| `SEND_STATS`              | `MOQ.Send.Stats`                | Per-track send counters after a media object is published. Payload includes `trackName`, `role`, role-specific counters (`videoFrames`/`keyframeCount` or `audioChunks`), send-timing fields (see **Send timing diagnostics** below), a `tracks` snapshot keyed by track name with the same per-track fields, and capture-pin fields (see **Capture timestamp pins** below).              |
+| `TIMESTAMP_PINNED`        | `MOQ.Timestamp.Pinned`          | Fired once when both audio and video capture clocks have been pinned and the video warm-up has finished. Same pin-field shape as `SEND_STATS`.                                                                                                                                                                                                                                            |
+| `TIMESTAMP_REPINNED`      | `MOQ.Timestamp.Repinned`        | A capture offset was corrected by ≥100ms after objects of that kind were already sent. Payload adds `track` (`'audio'` / `'video'`) and `correctionMs` to the pin fields. For video, the SDK forces a keyframe so the corrected timeline starts on a new group.                                                                                                                           |
+| `CAPTURE_COLD_START`      | `MOQ.Capture.ColdStart`         | Fired once per kind when that kind's first capture sample reached the SDK at least 500ms late, typically a camera waking from idle. The correction is already applied. Payload: `track`, `lateByMs`, `timeToFirstFrameMs`, `beforeFirstSend`, `audioCorrectionMs`, `videoCorrectionMs`.                                                                                                   |
+| `MESSAGE_CHANNEL_OPEN`    | `MOQ.MessageChannel.Open`       | Managed `MOQMessageChannel` opened successfully.                                                                                                                                                                                                                                                                                                                                          |
+| `MESSAGE_CHANNEL_SEND`    | `MOQ.MessageChannel.Send`       | Managed `MOQMessageChannel` sent a message/data payload.                                                                                                                                                                                                                                                                                                                                  |
+| `MESSAGE_CHANNEL_RECEIVE` | `MOQ.MessageChannel.Receive`    | Managed `MOQMessageChannel` received a message/data payload.                                                                                                                                                                                                                                                                                                                              |
+| `MESSAGE_CHANNEL_CLOSE`   | `MOQ.MessageChannel.Close`      | Managed `MOQMessageChannel` closed.                                                                                                                                                                                                                                                                                                                                                       |
+| `MESSAGE_CHANNEL_FAIL`    | `MOQ.MessageChannel.Fail`       | Managed `MOQMessageChannel` failed to open.                                                                                                                                                                                                                                                                                                                                               |
+| `MESSAGE_CHANNEL_ERROR`   | `MOQ.MessageChannel.Error`      | Managed `MOQMessageChannel` reported an error.                                                                                                                                                                                                                                                                                                                                            |
+| `STATS_REPORT`            | `MOQ.Stats.Report`              | Stats report emitted when monitoring is enabled.                                                                                                                                                                                                                                                                                                                                          |
 
 Managed MessageChannel events include metadata in `event.data`:
 
@@ -14771,18 +14863,18 @@ Pins, corrections, and the warm-up reset on each `start()`.
 
 `TIMESTAMP_PINNED`, `TIMESTAMP_REPINNED`, and `SEND_STATS` share these fields:
 
-| Field | Meaning |
-| :--- | :--- |
-| `audioPin` / `videoPin` | First capture observation per kind: `{ wallUs, mediaTimestampUs, offsetUs }`, or `null`. |
-| `audioCorrectionMs` / `videoCorrectionMs` | Total amount the offset has been lowered since the first observation. Large values mean the first sample arrived late; the correction is already applied. |
-| `pinSeverity` | Based on the larger correction: `ok` (<200ms), `warn` (≥200ms), `error` (≥1500ms). `null` until a kind has pinned. Describes the capture condition, not remaining A/V error. |
-| `pinSkewMs` | `(videoPin.wallUs − audioPin.wallUs)` in milliseconds: when each kind was first observed. Informational. `null` until both kinds have pinned. |
+| Field                                     | Meaning                                                                                                                                                                      |
+| :---------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `audioPin` / `videoPin`                   | First capture observation per kind: `{ wallUs, mediaTimestampUs, offsetUs }`, or `null`.                                                                                     |
+| `audioCorrectionMs` / `videoCorrectionMs` | Total amount the offset has been lowered since the first observation. Large values mean the first sample arrived late; the correction is already applied.                    |
+| `pinSeverity`                             | Based on the larger correction: `ok` (<200ms), `warn` (≥200ms), `error` (≥1500ms). `null` until a kind has pinned. Describes the capture condition, not remaining A/V error. |
+| `pinSkewMs`                               | `(videoPin.wallUs − audioPin.wallUs)` in milliseconds: when each kind was first observed. Informational. `null` until both kinds have pinned.                                |
 
 ```js
-publisher.on(MOQPublisherEventTypes.TIMESTAMP_PINNED, event => {
+publisher.on(MOQPublisherEventTypes.TIMESTAMP_PINNED, (event) => {
   const { videoCorrectionMs, audioCorrectionMs, pinSeverity } = event.data
 })
-publisher.on(MOQPublisherEventTypes.TIMESTAMP_REPINNED, event => {
+publisher.on(MOQPublisherEventTypes.TIMESTAMP_REPINNED, (event) => {
   const { track, correctionMs } = event.data
 })
 ```
@@ -14791,18 +14883,18 @@ publisher.on(MOQPublisherEventTypes.TIMESTAMP_REPINNED, event => {
 
 `CAPTURE_COLD_START` reports a first sample that reached the SDK late by at least 500ms. The SDK only detects this once a fresher sample arrives to compare against, so video is checked when its warm-up ends, before any video object is sent. Audio is checked whenever its correction first crosses the threshold.
 
-| Field | Meaning |
-| :--- | :--- |
-| `track` | `'video'` or `'audio'`. |
-| `lateByMs` | How late the first sample arrived (the kind's total correction). |
-| `timeToFirstFrameMs` | From capture start to the first sample of that kind. |
-| `beforeFirstSend` | `true` when the correction landed before any object of that kind was sent, so subscribers never saw the bad stamps. |
+| Field                                     | Meaning                                                                                                                                          |
+| :---------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `track`                                   | `'video'` or `'audio'`.                                                                                                                          |
+| `lateByMs`                                | How late the first sample arrived (the kind's total correction).                                                                                 |
+| `timeToFirstFrameMs`                      | From capture start to the first sample of that kind.                                                                                             |
+| `beforeFirstSend`                         | `true` when the correction landed before any object of that kind was sent, so subscribers never saw the bad stamps.                              |
 | `audioCorrectionMs` / `videoCorrectionMs` | Both kinds' corrections at that moment. A large video value with small audio means the stall was in video capture specifically, not a busy page. |
 
-A camera that is only slow to *start* (late but fresh first frame) does not trigger this event; it causes no timestamp error.
+A camera that is only slow to _start_ (late but fresh first frame) does not trigger this event; it causes no timestamp error.
 
 ```js
-publisher.on(MOQPublisherEventTypes.CAPTURE_COLD_START, event => {
+publisher.on(MOQPublisherEventTypes.CAPTURE_COLD_START, (event) => {
   const { track, lateByMs, beforeFirstSend } = event.data
 })
 ```
@@ -14811,12 +14903,12 @@ publisher.on(MOQPublisherEventTypes.CAPTURE_COLD_START, event => {
 
 Each track in `SEND_STATS` (top-level for the emitting track, and in every `tracks` entry) reports:
 
-| Field | Meaning |
-| :--- | :--- |
-| `sendLatencyMs` | Wall clock minus the object's LOC capture timestamp at hand-off to the transport. Covers encode time plus SDK queue wait. `null` before the first send. |
-| `minSendLatencyMs` | Lowest `sendLatencyMs` since `start()`. |
-| `queueDepth` | Objects waiting in the SDK send queue for this track. |
-| `encoderQueueDepth` | Frames waiting inside the WebCodecs encoder (`encodeQueueSize`). |
+| Field               | Meaning                                                                                                                                                 |
+| :------------------ | :------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `sendLatencyMs`     | Wall clock minus the object's LOC capture timestamp at hand-off to the transport. Covers encode time plus SDK queue wait. `null` before the first send. |
+| `minSendLatencyMs`  | Lowest `sendLatencyMs` since `start()`.                                                                                                                 |
+| `queueDepth`        | Objects waiting in the SDK send queue for this track.                                                                                                   |
+| `encoderQueueDepth` | Frames waiting inside the WebCodecs encoder (`encodeQueueSize`).                                                                                        |
 
 Compare audio and video to diagnose A/V offset seen by all subscribers:
 
@@ -14825,20 +14917,37 @@ Compare audio and video to diagnose A/V offset seen by all subscribers:
 - Both near audio: the publisher is not the source; check subscriber-side playback sync.
 
 ```js
-publisher.on(MOQPublisherEventTypes.SEND_STATS, event => {
+publisher.on(MOQPublisherEventTypes.SEND_STATS, (event) => {
   const { trackName, sendLatencyMs, minSendLatencyMs, queueDepth, encoderQueueDepth } = event.data
 })
 ```
 
 # Statistics
 
-`MOQPublisher` supports the same stats pattern as other SDK clients:
+`MOQPublisher` supports the same stats pattern as other SDK clients. The default endpoint is `EVENT_TRANSPORT` (`MOQ.Stats.Report`). To send the same `STATS_REPORT` JSON over the managed MoQ message channel, set `endpoint` to `DATA_CHANNEL` and enable `messageChannel`:
+
+```js
+const { StatsEndpointType } = red5websdk
+
+await publisher.init({
+  endpoint: 'https://relay.example.com:4433',
+  namespace: 'live/mystream',
+  messageChannel: { enabled: true },
+  stats: {
+    interval: 5000,
+    endpoint: StatsEndpointType.DATA_CHANNEL,
+  },
+})
+```
 
 ```js
 publisher.monitorStats({
-  interval: 5000
+  interval: 5000,
+  endpoint: StatsEndpointType.EVENT_TRANSPORT,
 })
 ```
+
+If `DATA_CHANNEL` is requested but `messageChannel.enabled` is not set, the SDK warns once and emits `STATS_REPORT` instead. Reports that arrive before the channel is open are queued until `MOQ.MessageChannel.Open`.
 
 You can also provide `stats` directly in `init()` options to start monitoring automatically once publishing starts.
 
@@ -14864,13 +14973,15 @@ When you want to play MoQ media streams in the browser, the SDK provides `MOQSub
 
 `MOQSubscriber` connects to a MOQ relay, receives catalog updates, chooses an internal render path (LOC/WebCodecs or CMAF/MSE), and provides playback and track-selection APIs.
 
-* [Usage](#usage)
-* [Init Configuration](#init-configuration)
-* [Events](#events)
-* [Playback API](#playback-api)
-* [Statistics](#statistics)
+- [Usage](#usage)
+- [Init Configuration](#init-configuration)
+- [Events](#events)
+- [Playback API](#playback-api)
+- [Statistics](#statistics)
 
 # Usage
+
+On a script-tag page, load either the full SDK (`red5-web-sdk.min.js`) or the MOQ build (`red5-web-sdk-moq.min.js`). Both attach `window.red5websdk`. From npm, `import { MOQSubscriber } from 'red5-web-sdk'` or `'red5-web-sdk/moq'`.
 
 There are two options to start a `MOQSubscriber`:
 
@@ -14880,10 +14991,10 @@ There are two options to start a `MOQSubscriber`:
 ## Using init() and subscribe()
 
 ```js
-const { MOQSubscriber, MOQSubscriberEventTypes } = red5prosdk
+const { MOQSubscriber, MOQSubscriberEventTypes } = red5websdk
 
 const subscriber = new MOQSubscriber()
-subscriber.on('*', event => {
+subscriber.on('*', (event) => {
   console.log(event.type, event.data)
 })
 
@@ -14898,9 +15009,9 @@ await subscriber.init({
     mode: 'shared', // 'shared' reuses subscriber connection, 'sidecar' uses separate connection
     dataChannelConfiguration: {
       name: 'red5pro',
-      keepEcho: false
-    }
-  }
+      keepEcho: false,
+    },
+  },
 })
 
 await subscriber.subscribe()
@@ -14930,37 +15041,37 @@ const subscriber = new MOQSubscriber(
 
 The `init()` call accepts `MOQSubscriberConfigType`.
 
-| Property | Required | Default | Description |
-| :--- | :---: | :---: | :--- |
-| `endpoint` | [-] | `undefined` | Full MOQ relay URL. If omitted, SDK uses `protocol://host:port`. |
-| `host` | [x]* | `undefined` | Relay host when `endpoint` is omitted. |
-| `streamName` | [x]* | `undefined` | Stream name used for namespace derivation. |
-| `namespace` | [-] | `app/streamName` | Namespace to subscribe from. |
-| `protocol` | [x] | `https` | Relay protocol (`ws`, `wss`, `http`, `https`). |
-| `port` | [x] | `4433` | Relay port. |
-| `app` | [x] | `live` | App scope for namespace fallback. |
-| `mediaElementId` | [-] | `red5pro-subscriber` | Target render element id. |
-| `canvasElementId` | [-] | `undefined` | Optional canvas element id used by LOC rendering path. |
-| `videoAudioElementId` | [-] | `undefined` | Optional media element id used by alternate paths. |
-| `draftVersion` | [-] | auto | MoQ transport draft version. |
-| `certKey` | [-] | `undefined` | Certificate hash input for WebTransport setup. |
-| `authorization` | [-] | `undefined` | Optional CAT credentials attached to the MoQT connection. See [Authorization](#authorization). |
-| `lateFrameThreshold` | [-] | `100` | Late frame threshold in ms for playback adaptation. |
-| `gapTimeout` | [-] | `500` | Gap timeout in ms for recovery behavior. |
-| `preferSoftwareDecoder` | [-] | `false` | Prefer software decode over hardware where supported. |
-| `muted` | [-] | `true` | Initial mute state. |
-| `showControls` | [-] | `true` | Enable built-in controls (where applicable). |
-| `initialVolume` | [-] | `1` | Initial playback volume (0..1). |
-| `muteOnAutoplayRestriction` | [-] | `true` | Auto-mute fallback for browser autoplay restrictions. |
-| `stats` | [-] | `undefined` | Optional stats monitor configuration. |
-| `prefetchCatalog` | [-] | `false` | Attempt HTTP catalog prefetch before MOQ playback session starts. |
-| `connectionParams` | [-] | `undefined` | Additional connection parameters passed through options. |
-| `moqLogLevel` | [-] | `none` | Log level passed to MOQ components. |
-| `mediaSource` | [-] | `none` | An instance of a `MediaSourceLike` (from [moq-playa](https://github.com/openmoq/moq-playa)) implementation. _Make sure you know what you are doing, as it carries responsibility for managing buffers and media playout._ |
-| `mseMediaSourceOptions` | [-] | buffer defaults | CMAF/MSE buffer and MediaSource settings. Ignored when `mediaSource` is provided. See [CMAF playback](#cmaf-playback). |
-| `drmConfig` | [-] | `undefined` | EME license settings for encrypted CMAF playback. Overrides `mseMediaSourceOptions.drmConfig`. See [CMAF playback](#cmaf-playback). |
-| `locmafDecoding` | [-] | `mse` | How LOCMAF tracks are consumed: reconstructed CMAF chunks for MSE (`mse`), or coded frames for WebCodecs (`frame`). |
-| `messageChannel` | [-] | `{ enabled: false, mode: 'shared' }` | Optional internally managed `MOQMessageChannel`. `mode: 'shared'` reuses subscriber/player `MoqtConnection`; `mode: 'sidecar'` creates a separate MoQT session for messaging. |
+| Property                    | Required |               Default                | Description                                                                                                                                                                                                               |
+| :-------------------------- | :------: | :----------------------------------: | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `endpoint`                  |   [-]    |             `undefined`              | Full MOQ relay URL. If omitted, SDK uses `protocol://host:port`.                                                                                                                                                          |
+| `host`                      |  [x]\*   |             `undefined`              | Relay host when `endpoint` is omitted.                                                                                                                                                                                    |
+| `streamName`                |  [x]\*   |             `undefined`              | Stream name used for namespace derivation.                                                                                                                                                                                |
+| `namespace`                 |   [-]    |           `app/streamName`           | Namespace to subscribe from.                                                                                                                                                                                              |
+| `protocol`                  |   [x]    |               `https`                | Relay protocol (`ws`, `wss`, `http`, `https`).                                                                                                                                                                            |
+| `port`                      |   [x]    |                `4433`                | Relay port.                                                                                                                                                                                                               |
+| `app`                       |   [x]    |                `live`                | App scope for namespace fallback.                                                                                                                                                                                         |
+| `mediaElementId`            |   [-]    |         `red5pro-subscriber`         | Target render element id.                                                                                                                                                                                                 |
+| `canvasElementId`           |   [-]    |             `undefined`              | Optional canvas element id used by LOC rendering path.                                                                                                                                                                    |
+| `videoAudioElementId`       |   [-]    |             `undefined`              | Optional media element id used by alternate paths.                                                                                                                                                                        |
+| `draftVersion`              |   [-]    |                 auto                 | MoQ transport draft version.                                                                                                                                                                                              |
+| `certKey`                   |   [-]    |             `undefined`              | Certificate hash input for WebTransport setup.                                                                                                                                                                            |
+| `authorization`             |   [-]    |             `undefined`              | Optional CAT credentials attached to the MoQT connection. See [Authorization](#authorization).                                                                                                                            |
+| `lateFrameThreshold`        |   [-]    |                `100`                 | Late frame threshold in ms for playback adaptation.                                                                                                                                                                       |
+| `gapTimeout`                |   [-]    |                `500`                 | Gap timeout in ms for recovery behavior.                                                                                                                                                                                  |
+| `preferSoftwareDecoder`     |   [-]    |               `false`                | Prefer software decode over hardware where supported.                                                                                                                                                                     |
+| `muted`                     |   [-]    |                `true`                | Initial mute state.                                                                                                                                                                                                       |
+| `showControls`              |   [-]    |                `true`                | Enable built-in controls (where applicable).                                                                                                                                                                              |
+| `initialVolume`             |   [-]    |                 `1`                  | Initial playback volume (0..1).                                                                                                                                                                                           |
+| `muteOnAutoplayRestriction` |   [-]    |                `true`                | Auto-mute fallback for browser autoplay restrictions.                                                                                                                                                                     |
+| `stats`                     |   [-]    |             `undefined`              | Optional stats monitor configuration.                                                                                                                                                                                     |
+| `prefetchCatalog`           |   [-]    |               `false`                | Attempt HTTP catalog prefetch before MOQ playback session starts.                                                                                                                                                         |
+| `connectionParams`          |   [-]    |             `undefined`              | Additional connection parameters passed through options.                                                                                                                                                                  |
+| `moqLogLevel`               |   [-]    |                `none`                | Log level passed to MOQ components.                                                                                                                                                                                       |
+| `mediaSource`               |   [-]    |                `none`                | An instance of a `MediaSourceLike` (from [moq-playa](https://github.com/openmoq/moq-playa)) implementation. _Make sure you know what you are doing, as it carries responsibility for managing buffers and media playout._ |
+| `mseMediaSourceOptions`     |   [-]    |           buffer defaults            | CMAF/MSE buffer and MediaSource settings. Ignored when `mediaSource` is provided. See [CMAF playback](#cmaf-playback).                                                                                                    |
+| `drmConfig`                 |   [-]    |             `undefined`              | EME license settings for encrypted CMAF playback. Overrides `mseMediaSourceOptions.drmConfig`. See [CMAF playback](#cmaf-playback).                                                                                       |
+| `locmafDecoding`            |   [-]    |                `mse`                 | How LOCMAF tracks are consumed: reconstructed CMAF chunks for MSE (`mse`), or coded frames for WebCodecs (`frame`).                                                                                                       |
+| `messageChannel`            |   [-]    | `{ enabled: false, mode: 'shared' }` | Optional internally managed `MOQMessageChannel`. `mode: 'shared'` reuses subscriber/player `MoqtConnection`; `mode: 'sidecar'` creates a separate MoQT session for messaging.                                             |
 
 `*` Required when `endpoint` is not provided.
 
@@ -14968,11 +15079,11 @@ The `init()` call accepts `MOQSubscriberConfigType`.
 
 `authorization` supplies CAT tokens when `subscribe()` opens the MoQT session. With `enabled: true`, the SDK decodes `token` and the player passes it to `MoqtConnection.connect()` along with the subscriber relay URL. The credential is used only for that connection attempt, including reconnects on the same session. It is not stored and it is not added to viewer links.
 
-| Field | Description |
-| :--- | :--- |
-| `enabled` | When `false`, or when `authorization` is omitted, no auth attributes are sent. |
-| `profile` | `cat4moq` sends token type `1`. `moqx-compat` sends token type `16`. |
-| `token` | Base64-encoded CAT token. An optional `base64:` prefix is stripped. The decoded token must be at most 32768 bytes. |
+| Field     | Description                                                                                                        |
+| :-------- | :----------------------------------------------------------------------------------------------------------------- |
+| `enabled` | When `false`, or when `authorization` is omitted, no auth attributes are sent.                                     |
+| `profile` | `cat4moq` sends token type `1`. `moqx-compat` sends token type `16`.                                               |
+| `token`   | Base64-encoded CAT token. An optional `base64:` prefix is stripped. The decoded token must be at most 32768 bytes. |
 
 ```js
 authorization: {
@@ -15008,24 +15119,24 @@ SDK default for `mseMediaSourceOptions`:
 }
 ```
 
-| Field | Default | Description |
-| :--- | :--- | :--- |
-| `mseImplementation` | `auto` | Which `MediaSource` to construct. `auto` and `managed` prefer `ManagedMediaSource` when the browser has it (required on iPhone Safari), otherwise standard `MediaSource`. `standard` prefers standard `MediaSource`. If the requested implementation is missing, the other one is used. Playback fails only when the browser has neither. |
-| `mseAttachment` | `auto` | How that `MediaSource` is attached to the element. `auto` uses an object URL for standard `MediaSource` and `srcObject` for `ManagedMediaSource`. `object-url` and `src-object` force that mode and throw if it cannot be used. |
-| `keepBehindSec` | `10` | Seconds of already-played media kept behind `currentTime`. Older buffered data is removed so the browser quota is not filled by history. |
-| `maxAheadSec` | `15` | If the buffer runs farther ahead of `currentTime` than this, playback jumps toward the live edge after startup. `Infinity` disables the jump (VOD or time-shift). |
-| `targetAheadSec` | `2` | Where a live-edge jump lands: the end of the buffered range minus this many seconds. |
-| `gapJumpMs` | `2000` | When the playhead is stuck at the end of a buffered range and the hole ahead is at most 2 seconds, wait this long, then seek just past the hole. `0` disables gap jumps. Must be a finite number `>= 0`. |
-| `stallThresholdMs` | unset | How long playback must be stalled before a stall is reported. Must be a finite number `>= 0` when set. The SDK default leaves this to the MSE media source. |
-| `drmConfig` | `undefined` | Same shape as the top-level `drmConfig` below. The top-level field wins when both are set. |
+| Field               | Default     | Description                                                                                                                                                                                                                                                                                                                               |
+| :------------------ | :---------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `mseImplementation` | `auto`      | Which `MediaSource` to construct. `auto` and `managed` prefer `ManagedMediaSource` when the browser has it (required on iPhone Safari), otherwise standard `MediaSource`. `standard` prefers standard `MediaSource`. If the requested implementation is missing, the other one is used. Playback fails only when the browser has neither. |
+| `mseAttachment`     | `auto`      | How that `MediaSource` is attached to the element. `auto` uses an object URL for standard `MediaSource` and `srcObject` for `ManagedMediaSource`. `object-url` and `src-object` force that mode and throw if it cannot be used.                                                                                                           |
+| `keepBehindSec`     | `10`        | Seconds of already-played media kept behind `currentTime`. Older buffered data is removed so the browser quota is not filled by history.                                                                                                                                                                                                  |
+| `maxAheadSec`       | `15`        | If the buffer runs farther ahead of `currentTime` than this, playback jumps toward the live edge after startup. `Infinity` disables the jump (VOD or time-shift).                                                                                                                                                                         |
+| `targetAheadSec`    | `2`         | Where a live-edge jump lands: the end of the buffered range minus this many seconds.                                                                                                                                                                                                                                                      |
+| `gapJumpMs`         | `2000`      | When the playhead is stuck at the end of a buffered range and the hole ahead is at most 2 seconds, wait this long, then seek just past the hole. `0` disables gap jumps. Must be a finite number `>= 0`.                                                                                                                                  |
+| `stallThresholdMs`  | unset       | How long playback must be stalled before a stall is reported. Must be a finite number `>= 0` when set. The SDK default leaves this to the MSE media source.                                                                                                                                                                               |
+| `drmConfig`         | `undefined` | Same shape as the top-level `drmConfig` below. The top-level field wins when both are set.                                                                                                                                                                                                                                                |
 
 `drmConfig` turns on Encrypted Media Extensions for that playback. The media element receives a `MediaKeys` session, and license challenges are posted to `licenseUrl`.
 
-| Field | Default | Description |
-| :--- | :--- | :--- |
-| `licenseUrl` | required | License server URL. The challenge is sent as a `POST`. |
-| `keySystem` | `com.widevine.alpha` | EME key system passed to `requestMediaKeySystemAccess`. |
-| `serverCertificate` | `undefined` | Optional license-server certificate (`Uint8Array`) given to the CDM. |
+| Field               | Default              | Description                                                          |
+| :------------------ | :------------------- | :------------------------------------------------------------------- |
+| `licenseUrl`        | required             | License server URL. The challenge is sent as a `POST`.               |
+| `keySystem`         | `com.widevine.alpha` | EME key system passed to `requestMediaKeySystemAccess`.              |
+| `serverCertificate` | `undefined`          | Optional license-server certificate (`Uint8Array`) given to the CDM. |
 
 ```js
 await subscriber.init({
@@ -15035,12 +15146,12 @@ await subscriber.init({
     maxAheadSec: 15,
     targetAheadSec: 2,
     keepBehindSec: 10,
-    gapJumpMs: 2000
+    gapJumpMs: 2000,
   },
   drmConfig: {
     licenseUrl: 'https://license.example.com/widevine',
-    keySystem: 'com.widevine.alpha'
-  }
+    keySystem: 'com.widevine.alpha',
+  },
 })
 ```
 
@@ -15062,7 +15173,7 @@ await subscriber.init({
 `MOQSubscriber` is an event emitter. You can subscribe with wildcard (`*`) or by specific event name.
 
 ```js
-const onSubscriberEvent = event => {
+const onSubscriberEvent = (event) => {
   const { type, subscriber, data } = event
   console.log(type, subscriber, data)
 }
@@ -15074,36 +15185,36 @@ subscriber.off('*', onSubscriberEvent)
 
 ### Core subscriber lifecycle (`SubscriberEventTypes`)
 
-| Access | Event Type | Meaning |
-| :--- | :--- | :--- |
-| `CONNECT_SUCCESS` | `Connect.Success` | Session established. |
-| `SUBSCRIBE_START` | `Subscribe.Start` | Playback started. |
-| `SUBSCRIBE_STOP` | `Subscribe.Stop` | Playback stopped/unsubscribed. |
-| `SUBSCRIBE_FAIL` | `Subscribe.Fail` | Subscribe failed. |
+| Access                   | Event Type              | Meaning                                                |
+| :----------------------- | :---------------------- | :----------------------------------------------------- |
+| `CONNECT_SUCCESS`        | `Connect.Success`       | Session established.                                   |
+| `SUBSCRIBE_START`        | `Subscribe.Start`       | Playback started.                                      |
+| `SUBSCRIBE_STOP`         | `Subscribe.Stop`        | Playback stopped/unsubscribed.                         |
+| `SUBSCRIBE_FAIL`         | `Subscribe.Fail`        | Subscribe failed.                                      |
 | `SUBSCRIBE_INVALID_NAME` | `Subscribe.InvalidName` | Invalid stream/namespace during prefetch or subscribe. |
 
 ### MOQ-specific events (`MOQSubscriberEventTypes`)
 
-| Access | Event Type | Meaning |
-| :--- | :--- | :--- |
-| `SESSION_CONNECTING` | `MOQ.Session.Connecting` | Session connect process started. |
-| `SESSION_ESTABLISHED` | `MOQ.Session.Established` | Session connected. |
-| `SESSION_ERROR` | `MOQ.Session.Error` | Session-level error. |
-| `CATALOG_RECEIVED` | `MOQ.Catalog.Received` | Catalog received (prefetch or relay). |
-| `CATALOG_UPDATED` | `MOQ.Catalog.Updated` | Catalog update observed. |
-| `TRACK_SUBSCRIBE` | `MOQ.Track.Subscribe` | Track subscription succeeded. |
-| `TRACK_SUBSCRIBE_FAILED` | `MOQ.Track.Subscribe.Failed` | Track subscription failed. |
-| `TRACK_UNSUBSCRIBE` | `MOQ.Track.Unsubscribe` | Track unsubscribed. |
-| `FIRST_FRAME` | `MOQ.FirstFrame` | First frame rendered. |
-| `STATS_REPORT` | `MOQ.Stats.Report` | Stats report emitted when enabled. |
-| `AUDIO_BLOCKED` | `MOQ.Audio.Blocked` | Browser blocked audio output pending user gesture. |
-| `AUDIO_UNBLOCKED` | `MOQ.Audio.Unblocked` | Audio output resumed after user gesture. |
-| `MESSAGE_CHANNEL_OPEN` | `MOQ.MessageChannel.Open` | Managed `MOQMessageChannel` opened successfully. |
-| `MESSAGE_CHANNEL_SEND` | `MOQ.MessageChannel.Send` | Managed `MOQMessageChannel` sent a message/data payload. |
+| Access                    | Event Type                   | Meaning                                                      |
+| :------------------------ | :--------------------------- | :----------------------------------------------------------- |
+| `SESSION_CONNECTING`      | `MOQ.Session.Connecting`     | Session connect process started.                             |
+| `SESSION_ESTABLISHED`     | `MOQ.Session.Established`    | Session connected.                                           |
+| `SESSION_ERROR`           | `MOQ.Session.Error`          | Session-level error.                                         |
+| `CATALOG_RECEIVED`        | `MOQ.Catalog.Received`       | Catalog received (prefetch or relay).                        |
+| `CATALOG_UPDATED`         | `MOQ.Catalog.Updated`        | Catalog update observed.                                     |
+| `TRACK_SUBSCRIBE`         | `MOQ.Track.Subscribe`        | Track subscription succeeded.                                |
+| `TRACK_SUBSCRIBE_FAILED`  | `MOQ.Track.Subscribe.Failed` | Track subscription failed.                                   |
+| `TRACK_UNSUBSCRIBE`       | `MOQ.Track.Unsubscribe`      | Track unsubscribed.                                          |
+| `FIRST_FRAME`             | `MOQ.FirstFrame`             | First frame rendered.                                        |
+| `STATS_REPORT`            | `MOQ.Stats.Report`           | Stats report emitted when enabled.                           |
+| `AUDIO_BLOCKED`           | `MOQ.Audio.Blocked`          | Browser blocked audio output pending user gesture.           |
+| `AUDIO_UNBLOCKED`         | `MOQ.Audio.Unblocked`        | Audio output resumed after user gesture.                     |
+| `MESSAGE_CHANNEL_OPEN`    | `MOQ.MessageChannel.Open`    | Managed `MOQMessageChannel` opened successfully.             |
+| `MESSAGE_CHANNEL_SEND`    | `MOQ.MessageChannel.Send`    | Managed `MOQMessageChannel` sent a message/data payload.     |
 | `MESSAGE_CHANNEL_RECEIVE` | `MOQ.MessageChannel.Receive` | Managed `MOQMessageChannel` received a message/data payload. |
-| `MESSAGE_CHANNEL_CLOSE` | `MOQ.MessageChannel.Close` | Managed `MOQMessageChannel` closed. |
-| `MESSAGE_CHANNEL_FAIL` | `MOQ.MessageChannel.Fail` | Managed `MOQMessageChannel` failed to open. |
-| `MESSAGE_CHANNEL_ERROR` | `MOQ.MessageChannel.Error` | Managed `MOQMessageChannel` reported an error. |
+| `MESSAGE_CHANNEL_CLOSE`   | `MOQ.MessageChannel.Close`   | Managed `MOQMessageChannel` closed.                          |
+| `MESSAGE_CHANNEL_FAIL`    | `MOQ.MessageChannel.Fail`    | Managed `MOQMessageChannel` failed to open.                  |
+| `MESSAGE_CHANNEL_ERROR`   | `MOQ.MessageChannel.Error`   | Managed `MOQMessageChannel` reported an error.               |
 
 Managed MessageChannel events include metadata in `event.data`:
 
@@ -15141,11 +15252,31 @@ const view = subscriber.getRendererView()
 
 # Statistics
 
+The default endpoint is `EVENT_TRANSPORT` (`MOQ.Stats.Report`). To send the same `STATS_REPORT` JSON over the managed MoQ message channel, set `endpoint` to `DATA_CHANNEL` and enable `messageChannel`:
+
 ```js
-subscriber.monitorStats({
-  interval: 5000
+const { StatsEndpointType } = red5websdk
+
+await subscriber.init({
+  endpoint: 'https://relay.example.com:4433',
+  app: 'live',
+  streamName: 'mystream',
+  messageChannel: { enabled: true },
+  stats: {
+    interval: 5000,
+    endpoint: StatsEndpointType.DATA_CHANNEL,
+  },
 })
 ```
+
+```js
+subscriber.monitorStats({
+  interval: 5000,
+  endpoint: StatsEndpointType.EVENT_TRANSPORT,
+})
+```
+
+If `DATA_CHANNEL` is requested but `messageChannel.enabled` is not set, the SDK warns once and emits `STATS_REPORT` instead. Reports that arrive before the channel is open are queued until `MOQ.MessageChannel.Open`.
 
 You can also provide `stats` in `init()` options to start monitoring automatically after subscription starts.
 
@@ -15155,30 +15286,32 @@ You can also provide `stats` in `init()` options to start monitoring automatical
 
 Our goal at [Red5](https://red5.net) has always been to give developers the tools they need to deliver real-time streaming without complexity, bottlenecks, or hidden limitations. The Red5 integration with [PubNub](https://www.pubnub.com/) represents a major step toward that mission, combining sub-250 ms video streaming with sub-100 ms data delivery to power chat, reactions, synchronized metadata, and other interactive features at global scale.
 
-The intent of this document is to describe the integration points within our HTML SDK in which you can take advantage of PubNub and its services.
+The intent of this document is to describe the integration points within the Red5 Web SDK in which you can take advantage of PubNub and its services.
 
 > Read more about our thoughts and goals regarding PubNub Integration [here](https://www.red5.net/blog/red5-cloud-integrates-pubnub-to-deliver-interactivity-intelligence-global-scalability-for-real-time-streaming/).
 
 # PubNubClient
 
-The Red5 HTML SDK provides a basic `PubNubClient` to establish a connection to PubNub services for message communication. Its interface is very similar to that of the `WHIPClient` and `WHEPClient` provided in the SDK - both of which also provide easy init parameters and hooks for include PubNub intergation.
+The Red5 Web SDK provides a basic `PubNubClient` to establish a connection to PubNub services for message communication. Its interface is very similar to that of the `WHIPClient` and `WHEPClient` provided in the SDK - both of which also provide easy init parameters and hooks for include PubNub intergation.
 
 This document details the use of `PubNubClient` itself and may provide clearer details of the integration with the publisher and subscriber clients.
 
 > To learn more about how to include PubNub integration for a `WHIPClient` and `WHEPClient`, please review [WHIPClient - PubNub](./whip-client.md#pubnub-integration) and [WHEPClient - PubNub](./whep-client.md#pubnub-integration), respectively.
 
-* [Usage](#usage)
-* [Init Configuration](#init-configuration)
-* [Events](#events)
+- [Usage](#usage)
+- [Init Configuration](#init-configuration)
+- [Events](#events)
 
 # Usage
+
+On a script-tag page, load either the full SDK (`red5-web-sdk.min.js`) or the WHIP/WHEP/HLS build (`red5-web-sdk-webrtc.min.js`). Both attach `window.red5websdk`. From npm, `import { PubNubClient } from 'red5-web-sdk'` or `'red5-web-sdk/webrtc'`.
 
 A `PubNubClient` can be used singularly without taking advantage of the streaming capabilities of the `WHIPClient` and `WHEPClient` clients of the SDK.
 
 ```js
-// import { PubNubClient } from red5pro-webrtc-sdk
+// import { PubNubClient } from red5-web-sdk
 // OR, if loaded from CDN
-const { PubNubClient } = red5prosdk
+const { PubNubClient } = red5websdk
 ...
 const config = {
   publishKey: 'pub-c-XXXX',
@@ -15222,18 +15355,18 @@ Request to shut down the PubNub client integration and any channel subscriptions
 
 When using the `init()` call of a `PubNubClient`, the following initialization properties are available:
 
-| Property | Required | Default | Description |
-| :--- | :---: | :---: | :--- |
-| `pubnub` | [x] | `window.PubNub` | Reference to the [PubNub](https://www.npmjs.com/package/pubnub) library to utilize. |
-| `publishKey` | [x] | _None_ | The registered publish key from PubNub. This can be found in your [Red5 Cloud](https://cloud.red5.net) deployment. |
-| `subscribeKey` | [x] | _None_ | The registered subscribe key from PubNub. This can be found in your [Red5 Cloud](https://cloud.red5.net) deployment. |
-| `userId` | [x] | Auto-generated if not provided. | The associated User ID for PubNub. |
-| `roomId` | [x] | `red5` | Default Channel ID to subscribe to in PubNub messaging. |
-| `expiryMinutes` | [-] | `120` | Default expiration of issued token associated with client. |
-| `authToken` | [-] | _None_ | Optional authentication token issues from PubNub - if known. |
-| `cloudEndpoint` | [-] | _None_ | Optional endpoint of Red5 Cloud deployment to attempt access of `authToken` from PubNub system. |
-| `backendUrl` | [-] | _None_ | Optional full URL of service endpoint to access `authToken` from PubNub system. [See documentation on deploying your own service.](https://www.red5.net/docs/red5-cloud/development/sdks/backend-sdk/) |
-| `logLevel` | [-] | `trace` | The default log level of the PubNub client. |
+| Property        | Required |             Default             | Description                                                                                                                                                                                            |
+| :-------------- | :------: | :-----------------------------: | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pubnub`        |   [x]    |         `window.PubNub`         | Reference to the [PubNub](https://www.npmjs.com/package/pubnub) library to utilize.                                                                                                                    |
+| `publishKey`    |   [x]    |             _None_              | The registered publish key from PubNub. This can be found in your [Red5 Cloud](https://cloud.red5.net) deployment.                                                                                     |
+| `subscribeKey`  |   [x]    |             _None_              | The registered subscribe key from PubNub. This can be found in your [Red5 Cloud](https://cloud.red5.net) deployment.                                                                                   |
+| `userId`        |   [x]    | Auto-generated if not provided. | The associated User ID for PubNub.                                                                                                                                                                     |
+| `roomId`        |   [x]    |             `red5`              | Default Channel ID to subscribe to in PubNub messaging.                                                                                                                                                |
+| `expiryMinutes` |   [-]    |              `120`              | Default expiration of issued token associated with client.                                                                                                                                             |
+| `authToken`     |   [-]    |             _None_              | Optional authentication token issues from PubNub - if known.                                                                                                                                           |
+| `cloudEndpoint` |   [-]    |             _None_              | Optional endpoint of Red5 Cloud deployment to attempt access of `authToken` from PubNub system.                                                                                                        |
+| `backendUrl`    |   [-]    |             _None_              | Optional full URL of service endpoint to access `authToken` from PubNub system. [See documentation on deploying your own service.](https://www.red5.net/docs/red5-cloud/development/sdks/backend-sdk/) |
+| `logLevel`      |   [-]    |             `trace`             | The default log level of the PubNub client.                                                                                                                                                            |
 
 ## Authentication
 
@@ -15251,28 +15384,27 @@ If the `authToken` is not known or your [Red5 Cloud](https://cloud.red5.net) dep
 
 To learn more about the Backend SDKs and authentication token generation, [please refer to the documentation](https://www.red5.net/docs/red5-cloud/development/sdks/backend-sdk/).
 
-
 > This init configuration is also the same used when enabling PubNub integration for WHIP/WHEP Clients. View documentation related to [WHIPClient](./whip-client.md#pubnub-integration) and [WHEPClient](./whep-client.md#pubnub-integration).
 
 # Events
 
 The following events are dispatched by the `PubNubClient` and enumerated on the `PubNubEventTypes` object:
 
-| Access | Event Type | Meaning |
-| :--- | :--- | :--- |
-| `CONNECTED` | 'PubNub.Connected' | Dispatched when the PubNub client has successfully connected to the PubNub service. |
-| `DISCONNECTED` | 'PubNub.Disconnected' | Dispatched when the PubNub client has disconnected from the PubNub service. |
-| `SUBSCRIBE_SUCCESS` | 'PubNub.Subscribe.Success' | Dispatched when a channel subscription request has completed successfully. The `data` property contains details about the subscription. |
-| `SUBSCRIBE_FAILURE` | 'PubNub.Subscribe.Failure' | Dispatched when a channel subscription request has failed. The `data` property contains error information. |
-| `UNSUBSCRIBE_SUCCESS` | 'PubNub.Unsubscribe.Success' | Dispatched when a channel unsubscribe request has completed successfully. The `data` property contains details about the unsubscription. |
-| `UNSUBSCRIBE_FAILURE` | 'PubNub.Unsubscribe.Failure' | Dispatched when a channel unsubscribe request has failed. The `data` property contains error information. |
-| `MESSAGE_RECEIVED` | 'PubNub.Message.Received' | Dispatched when a message is received on a subscribed channel. The `data` property contains the message payload. |
-| `MESSAGE_SEND_SUCCESS` | 'PubNub.Message.Send.Success' | Dispatched when a message has been successfully published to a channel. The `data` property contains confirmation details. |
-| `MESSAGE_SEND_FAILURE` | 'PubNub.Message.Send.Failure' | Dispatched when a message publish request has failed. The `data` property contains error information. |
-| `AUTH_TOKEN_GENERATED` | 'PubNub.AuthToken.Generated' | Dispatched when an authentication token has been successfully generated. The `data` property contains the token information. |
-| `AUTH_TOKEN_GENERATION_ERROR` | 'PubNub.AuthToken.Generation.Error' | Dispatched when authentication token generation has failed. The `data` property contains error information. |
-| `STATUS` | 'PubNub.Status' | Dispatched on general status notification. The `data` property contains the status. |
-| `ERROR` | 'PubNub.Error' | Dispatched when a general error occurs in the PubNub client. The `data` property contains error details. |
+| Access                        | Event Type                          | Meaning                                                                                                                                  |
+| :---------------------------- | :---------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------- |
+| `CONNECTED`                   | 'PubNub.Connected'                  | Dispatched when the PubNub client has successfully connected to the PubNub service.                                                      |
+| `DISCONNECTED`                | 'PubNub.Disconnected'               | Dispatched when the PubNub client has disconnected from the PubNub service.                                                              |
+| `SUBSCRIBE_SUCCESS`           | 'PubNub.Subscribe.Success'          | Dispatched when a channel subscription request has completed successfully. The `data` property contains details about the subscription.  |
+| `SUBSCRIBE_FAILURE`           | 'PubNub.Subscribe.Failure'          | Dispatched when a channel subscription request has failed. The `data` property contains error information.                               |
+| `UNSUBSCRIBE_SUCCESS`         | 'PubNub.Unsubscribe.Success'        | Dispatched when a channel unsubscribe request has completed successfully. The `data` property contains details about the unsubscription. |
+| `UNSUBSCRIBE_FAILURE`         | 'PubNub.Unsubscribe.Failure'        | Dispatched when a channel unsubscribe request has failed. The `data` property contains error information.                                |
+| `MESSAGE_RECEIVED`            | 'PubNub.Message.Received'           | Dispatched when a message is received on a subscribed channel. The `data` property contains the message payload.                         |
+| `MESSAGE_SEND_SUCCESS`        | 'PubNub.Message.Send.Success'       | Dispatched when a message has been successfully published to a channel. The `data` property contains confirmation details.               |
+| `MESSAGE_SEND_FAILURE`        | 'PubNub.Message.Send.Failure'       | Dispatched when a message publish request has failed. The `data` property contains error information.                                    |
+| `AUTH_TOKEN_GENERATED`        | 'PubNub.AuthToken.Generated'        | Dispatched when an authentication token has been successfully generated. The `data` property contains the token information.             |
+| `AUTH_TOKEN_GENERATION_ERROR` | 'PubNub.AuthToken.Generation.Error' | Dispatched when authentication token generation has failed. The `data` property contains error information.                              |
+| `STATUS`                      | 'PubNub.Status'                     | Dispatched on general status notification. The `data` property contains the status.                                                      |
+| `ERROR`                       | 'PubNub.Error'                      | Dispatched when a general error occurs in the PubNub client. The `data` property contains error details.                                 |
 
 ### Source: `docs/whep-client.md`
 
@@ -15297,16 +15429,18 @@ The `WHEPClient` - under the hood - is based on the [WebRTC-HTTP egress](https:/
 
 This provides a standardized - and _blazingly fast_ - way to establish and playback a live stream using WebRTC.
 
-* [Usage](#usage)
-* [Init Configuration](#init-configuration)
-* [Events](#events)
-* [Statistics](#statistics)
-* [Renegotiation Policy](#renegotiation-policy)
-* [Live Seek](#live-seek)
-* [Stream Manager 2.0](#stream-manager-20)
-* [PubNub Integration](#pubnub-integration)
+- [Usage](#usage)
+- [Init Configuration](#init-configuration)
+- [Events](#events)
+- [Statistics](#statistics)
+- [Renegotiation Policy](#renegotiation-policy)
+- [Live Seek](#live-seek)
+- [Stream Manager 2.0](#stream-manager-20)
+- [PubNub Integration](#pubnub-integration)
 
 # Usage
+
+On a script-tag page, load either the full SDK (`red5-web-sdk.min.js`) or the WHIP/WHEP/HLS build (`red5-web-sdk-webrtc.min.js`). Both attach `window.red5websdk`. From npm, `import { WHEPClient } from 'red5-web-sdk'` or `'red5-web-sdk/webrtc'`.
 
 There are two options to initiate a `WHEPClient`:
 
@@ -15378,30 +15512,30 @@ try {
 
 When using the `init()` call of a `WHEPClient` - or, alternatively, when using a **WHEP** endpoint with additional options in the constructor - the following initialization properties are available:
 
-| Property | Required | Default | Description |
-| :--- | :---: | :--- | :--- |
-| `host` | [x] | *None* | The IP or address that the WebSocket server resides on. |
-| `streamName` | [x] | *None* | The name of the stream to subscribe to. |
-| `protocol` | [x] | `https` | The protocol of the host for the signaling communication. |
-| `port` | [x] | `443` | The port on the host that the Red5 server listens on; `5080` or `443` (insecure or secure, respectively). |
-| `app` | [x] | `live` | The webapp context name that the stream is on. |
-| `endpoint` | [-] | `undefined` | The full URL of the endpoint to stream to. **This is primarily used in Stream Manager 2.0 integration for clients.**
-| `mediaElementId` | [-] | `red5pro-subscriber` | The target `video` or `audio` element `id` attribute which will display the stream. |
-| `rtcConfiguration` | [-] | _Basic_ | The `RTCConfiguration` to use in setting up `RTCPeerConnection`. [RTCConfiguration](https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/RTCPeerConnection#RTCConfiguration_dictionary)|
-| `includeDataChannel` | [-] | `true` | Flag to open a datachannel for messaging between server and client once connection is established.
-| `dataChannelConfiguration` | [-] | `{name: "red5pro"}` | An object used in configuring a n `RTCDataChannel`. _Only used when `includeDataChannel` is defined as `true`_ |
-| `iceTransport` | [-] | `UDP` | The transport type to use in ICE negotiation. Either `UDP` or `TCP` |
-| `subscriptionId` | [x] | auto-generated | A unique string representing the requesting client. |
-| `connectionParams` | [-] | `undefined` | An object of additional connection parameters to send to the server upon connection request. |
-| `videoEncoding` | [-] | *None* | Specifies target video encoder. |
-| `audioEncoding` | [-] | *None* | Specifies target audio encoder. |
-| `muteOnAutoplayRestriction` | [-] | `true` | Flag to attempt to mute the `video` element when `autoplay` is restricted in the browser. [See section on Autoplay Restrictions](../articles/autoplay/autoplay_policy.md) |
-| `buffer` | [-] | `0` | Request to set a buffer - in seconds - for playback.
-| `maintainStreamVariant` | [-] | `false` | Flag to instruct the server - when utilizing transcoding - to not switch subscriber stream variants when network conditions change. By setting this to `true`, when you request to playback a stream that is transcoded, the server will not deliver a variant of higher or lower quality dependending on current network conditions. |
-| `stats` | [-] | *None* | Configuration object to enable stats reporting. See [Stats Reporting](#statistics) for more information. |
-| `liveSeek` | [-] | *None* | Configuration object to enable live seek capability. See [Live Seek](#live-seek) for more information. |
-| `renegotiationPolicy` | [-] | *None* | Configuration object for renegotiation of ICE. See [Renegotiation Policy](#renegotiation-policy) for more information. |
-| `pubnub` | [-] | *None* | Configuration object for PubNub integration. See [PubNub Integration](#pubnub-integration) for more information. |
+| Property                    | Required | Default              | Description                                                                                                                                                                                                                                                                                                                           |
+| :-------------------------- | :------: | :------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `host`                      |   [x]    | _None_               | The IP or address that the WebSocket server resides on.                                                                                                                                                                                                                                                                               |
+| `streamName`                |   [x]    | _None_               | The name of the stream to subscribe to.                                                                                                                                                                                                                                                                                               |
+| `protocol`                  |   [x]    | `https`              | The protocol of the host for the signaling communication.                                                                                                                                                                                                                                                                             |
+| `port`                      |   [x]    | `443`                | The port on the host that the Red5 server listens on; `5080` or `443` (insecure or secure, respectively).                                                                                                                                                                                                                             |
+| `app`                       |   [x]    | `live`               | The webapp context name that the stream is on.                                                                                                                                                                                                                                                                                        |
+| `endpoint`                  |   [-]    | `undefined`          | The full URL of the endpoint to stream to. **This is primarily used in Stream Manager 2.0 integration for clients.**                                                                                                                                                                                                                  |
+| `mediaElementId`            |   [-]    | `red5pro-subscriber` | The target `video` or `audio` element `id` attribute which will display the stream.                                                                                                                                                                                                                                                   |
+| `rtcConfiguration`          |   [-]    | _Basic_              | The `RTCConfiguration` to use in setting up `RTCPeerConnection`. [RTCConfiguration](https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/RTCPeerConnection#RTCConfiguration_dictionary)                                                                                                                                 |
+| `includeDataChannel`        |   [-]    | `true`               | Flag to open a datachannel for messaging between server and client once connection is established.                                                                                                                                                                                                                                    |
+| `dataChannelConfiguration`  |   [-]    | `{name: "red5pro"}`  | An object used in configuring a n `RTCDataChannel`. _Only used when `includeDataChannel` is defined as `true`_                                                                                                                                                                                                                        |
+| `iceTransport`              |   [-]    | `UDP`                | The transport type to use in ICE negotiation. Either `UDP` or `TCP`                                                                                                                                                                                                                                                                   |
+| `subscriptionId`            |   [x]    | auto-generated       | A unique string representing the requesting client.                                                                                                                                                                                                                                                                                   |
+| `connectionParams`          |   [-]    | `undefined`          | An object of additional connection parameters to send to the server upon connection request.                                                                                                                                                                                                                                          |
+| `videoEncoding`             |   [-]    | _None_               | Specifies target video encoder.                                                                                                                                                                                                                                                                                                       |
+| `audioEncoding`             |   [-]    | _None_               | Specifies target audio encoder.                                                                                                                                                                                                                                                                                                       |
+| `muteOnAutoplayRestriction` |   [-]    | `true`               | Flag to attempt to mute the `video` element when `autoplay` is restricted in the browser. [See section on Autoplay Restrictions](../articles/autoplay/autoplay_policy.md)                                                                                                                                                             |
+| `buffer`                    |   [-]    | `0`                  | Request to set a buffer - in seconds - for playback.                                                                                                                                                                                                                                                                                  |
+| `maintainStreamVariant`     |   [-]    | `false`              | Flag to instruct the server - when utilizing transcoding - to not switch subscriber stream variants when network conditions change. By setting this to `true`, when you request to playback a stream that is transcoded, the server will not deliver a variant of higher or lower quality dependending on current network conditions. |
+| `stats`                     |   [-]    | _None_               | Configuration object to enable stats reporting. See [Stats Reporting](#statistics) for more information.                                                                                                                                                                                                                              |
+| `liveSeek`                  |   [-]    | _None_               | Configuration object to enable live seek capability. See [Live Seek](#live-seek) for more information.                                                                                                                                                                                                                                |
+| `renegotiationPolicy`       |   [-]    | _None_               | Configuration object for renegotiation of ICE. See [Renegotiation Policy](#renegotiation-policy) for more information.                                                                                                                                                                                                                |
+| `pubnub`                    |   [-]    | _None_               | Configuration object for PubNub integration. See [PubNub Integration](#pubnub-integration) for more information.                                                                                                                                                                                                                      |
 
 # Events
 
@@ -15435,54 +15569,54 @@ The following sections of this document describe the event types that can also b
 
 You can also listen to events individually. The following describe the various events that can be listened for on the `WHEPClient` and enumerated on the `SubscriberEventTypes` object:
 
-| Access | Event Type | Meaning |
-| :--- | :--- | :--- |
-| `CONNECT_SUCCESS` | 'Connect.Success' | When the subscriber has established a required remote connection, such as to a WebSocket server. |
-| `CONNECT_FAILURE` | 'Connect.Failure' | When the subscriber has failed to establish a required remote connection for consuming a stream. |
-| `RECONNECT_START` | 'Reconnect.Start' | Signal when attempt on reconnect has begun. This is used in conjunction with the `renegotiationPolicy` of the `init()` configuration. |
-| `RECONNECT_FAILURE` | 'Reconnect.Failure' | Signal when attempt on reconnect has failed. |
-| `SUBSCRIBE_START` | 'Subscribe.Start' | When the subscriber has started a subscribing to a stream. |
-| `SUBSCRIBE_STOP` | 'Subscribe.Stop' | When the subscriber has successfully closed an active subscription to a stream. |
-| `SUBSCRIBE_METADATA` | 'Subscribe.Metadata' | When metadata is received on the client from the server. |
-| `VIDEO_DIMENSIONS_CHANGE` | 'Subscribe.VideoDimensions.Change' | Invoked when `video` element has loaded metadata and the incoming stream dimensions are available. |
-| `ORIENTATION_CHANGE` | 'Subscribe.Orientation.Change' | Invoked when an orientation change is detected in metadata. Mobile (iOS and Android) broadcasts are sent with an orientation. |
-| `STREAMING_MODE_CHANGE` | 'Subscribe.StreamingMode.Change' | Invoked when the broadcast has "muted" either or both their video and audio tracks. |
-| `VOLUME_CHANGE` | 'Subscribe.Volume.Change' | Invoked when a change to volume is detected during playback. _From 0 to 1._ |
-| `PLAYBACK_TIME_UPDATE` | 'Subscribe.Time.Update' | Invoked when a change in playhead time is detected during playback. _In seconds._ |
-| `PLAYBACK_STATE_CHANGE` | 'Subscribe.Playback.Change' | Invoked when a change in playback state has occured, such as when going from a `Playback.PAUSED` state to `Playback.PLAYING` state. |
-| `FULL_SCREEN_STATE_CHANGE` | 'Subscribe.FullScreen.Change' | Invoked when a change in fullscreen state occurs during playback. |
-| `AUTO_PLAYBACK_FAILURE` | 'Subscribe.Autoplay.Failure' | Invoked when an attempt to `autoplay` on a media element throws a browser exception; typically due to browser security restrictions and their autoplay policies. (WebRTC and HLS, only) [See section on Autoplay Restrictions](../articles/autoplay/autoplay_policy.md) |
-| `AUTO_PLAYBACK_MUTED` | 'Subscribe.Autoplay.Muted' | Invoked when an attempt to `autoplay` on a media element throws a browser exception and is muted based on the `muteOnAutoplayRestriction` config property; typically due to browser security restrictions and their autoplay policies. (WebRTC and HLS, only) [See section on Autoplay Restrictions](../articles/autoplay/autoplay_policy.md) |
+| Access                     | Event Type                         | Meaning                                                                                                                                                                                                                                                                                                                                       |
+| :------------------------- | :--------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `CONNECT_SUCCESS`          | 'Connect.Success'                  | When the subscriber has established a required remote connection, such as to a WebSocket server.                                                                                                                                                                                                                                              |
+| `CONNECT_FAILURE`          | 'Connect.Failure'                  | When the subscriber has failed to establish a required remote connection for consuming a stream.                                                                                                                                                                                                                                              |
+| `RECONNECT_START`          | 'Reconnect.Start'                  | Signal when attempt on reconnect has begun. This is used in conjunction with the `renegotiationPolicy` of the `init()` configuration.                                                                                                                                                                                                         |
+| `RECONNECT_FAILURE`        | 'Reconnect.Failure'                | Signal when attempt on reconnect has failed.                                                                                                                                                                                                                                                                                                  |
+| `SUBSCRIBE_START`          | 'Subscribe.Start'                  | When the subscriber has started a subscribing to a stream.                                                                                                                                                                                                                                                                                    |
+| `SUBSCRIBE_STOP`           | 'Subscribe.Stop'                   | When the subscriber has successfully closed an active subscription to a stream.                                                                                                                                                                                                                                                               |
+| `SUBSCRIBE_METADATA`       | 'Subscribe.Metadata'               | When metadata is received on the client from the server.                                                                                                                                                                                                                                                                                      |
+| `VIDEO_DIMENSIONS_CHANGE`  | 'Subscribe.VideoDimensions.Change' | Invoked when `video` element has loaded metadata and the incoming stream dimensions are available.                                                                                                                                                                                                                                            |
+| `ORIENTATION_CHANGE`       | 'Subscribe.Orientation.Change'     | Invoked when an orientation change is detected in metadata. Mobile (iOS and Android) broadcasts are sent with an orientation.                                                                                                                                                                                                                 |
+| `STREAMING_MODE_CHANGE`    | 'Subscribe.StreamingMode.Change'   | Invoked when the broadcast has "muted" either or both their video and audio tracks.                                                                                                                                                                                                                                                           |
+| `VOLUME_CHANGE`            | 'Subscribe.Volume.Change'          | Invoked when a change to volume is detected during playback. _From 0 to 1._                                                                                                                                                                                                                                                                   |
+| `PLAYBACK_TIME_UPDATE`     | 'Subscribe.Time.Update'            | Invoked when a change in playhead time is detected during playback. _In seconds._                                                                                                                                                                                                                                                             |
+| `PLAYBACK_STATE_CHANGE`    | 'Subscribe.Playback.Change'        | Invoked when a change in playback state has occured, such as when going from a `Playback.PAUSED` state to `Playback.PLAYING` state.                                                                                                                                                                                                           |
+| `FULL_SCREEN_STATE_CHANGE` | 'Subscribe.FullScreen.Change'      | Invoked when a change in fullscreen state occurs during playback.                                                                                                                                                                                                                                                                             |
+| `AUTO_PLAYBACK_FAILURE`    | 'Subscribe.Autoplay.Failure'       | Invoked when an attempt to `autoplay` on a media element throws a browser exception; typically due to browser security restrictions and their autoplay policies. (WebRTC and HLS, only) [See section on Autoplay Restrictions](../articles/autoplay/autoplay_policy.md)                                                                       |
+| `AUTO_PLAYBACK_MUTED`      | 'Subscribe.Autoplay.Muted'         | Invoked when an attempt to `autoplay` on a media element throws a browser exception and is muted based on the `muteOnAutoplayRestriction` config property; typically due to browser security restrictions and their autoplay policies. (WebRTC and HLS, only) [See section on Autoplay Restrictions](../articles/autoplay/autoplay_policy.md) |
 
 In addition to the above events, the following events are also dispatched from a `WHEPClient` and are defined on the `RTCSubscriberEventTypes` enum:
 
-| Access | Event Type | Meaning |
-| :--- | :--- | :--- |
-| `PEER_CONNECTION_AVAILABLE` | 'WebRTC.PeerConnection.Available' | When the negotation process has produced a valid `PeerConnection`. |
-| `OFFER_START` | 'WebRTC.Offer.Start' | When the subscriber requests to start an offer on the `PeerConnection`. |
-| `OFFER_END` | 'WebRTC.Offer.End' | When the subscriber has received a `SessionDescription` from a requested offer over the `PeerConnection`. |
-| `ANSWER_START` | 'WebRTC.Answer.Start' | When the subscriber requests to send an answer on the `PeerConnection`. |
-| `ANSWER_END` | 'WebRTC.Answer.End' | When the subscriber has received an answer (in form of a `MediaStream`) over the `PeerConnection`. |
-| `CANDIDATE_CREATE` | 'WebRTC.Candidate.Create' | When the subscriber requests to send a candidate on the `PeerConnection`. |
-| `CANDIDATE_RECEIVE` | 'WebRTC.Candidate.Receive' | When the subscriber has received a candidate over the `PeerConnection`. |
-| `ICE_TRICKLE_COMPLETE` | 'WebRTC.IceTrickle.Complete' | When the negotaiton process (a.k.a. trickle) has completed and the subscriber will attempt at consuming a stream. |
-| `ON_ADD_STREAM` | 'WebRTC.Add.Stream' | When a `MediaStream` object has become available for playback. |
-| `TRACK_ADDED` | 'WebRTC.PeerConnection.OnTrack' | When a MediaTrack has become available on the underlying `RTCPeerConnection`. |
-| `DATA_CHANNEL_AVAILABLE` | 'WebRTC.DataChannel.Available' |  the underlying `RTCDataChannel` is available when `includeDataChannel` configuration is used. |
-| `DATA_CHANNEL_OPEN` | 'WebRTC.DataChannel.Open' | When the underlying `RTCDataChannel` is opened when `signalingServerOnly` configuration is used.
-| `DATA_CHANNEL_CLOSE` | 'WebRTC.DataChannel.Close' | When the underlying `RTCDataChannel` is closed when `includeDataChannel` configuration is used. |
-| `DATA_CHANNEL_ERROR` | 'WebRTC.DataChannel.Error' | When an error has occurred within the underlying `RTCDataChannel` when `includeDataChannel` configuration is used. |
-| `DATA_CHANNEL_MESSAGE` | 'WebRTC.DataChannel.Message' | When a message has been delivered over the underlying `RTCDataChannel` when `includeDataChannel` configuration is used. |
-| `HOST_ENDPOINT_CHANGED` | 'WebRTC.Endpoint.Changed' | Notification when the endpoint on which to signal and stream from has been asigned. |
-| `SUBSCRIBE_STREAM_SWITCH` | 'WebRTC.Subscribe.StreamSwitch' | Notification when request to switch stream on the connection is completed. |
-| `STATS_REPORT` | 'WebRTC.Stats.Report' | Notification of a statistics report generated from the stream connection. _Statistics are only reported based on the availability of `stats` on the init configuration or after calling [monitorStats](#statistics)._
-| `LIVE_SEEK_UNSUPPORTED` | 'WebRTC.LiveSeek.Unsupported' | When `liveSeek` is specified but the browser does not support th integration of HLS.JS for Live VOD playback. |
-| `LIVE_SEEK_ENABLED` | 'WebRTC.LiveSeek.Enabled' | When `liveSeek` is used to playback Live VOD and the HLS video has been loaded and available to seek. |
-| `LIVE_SEEK_DISABLED` | 'WebRTC.LiveSeek.Disabled' | When `liveSeek` is used to playback Live VOD and HLS video has not been loaded nor available to seek. |
-| `LIVE_SEEK_ERROR` | 'WebRTC.LiveSeek.Error' | When `liveSeek` is used to playback Live VOD and HLS video and an error in playback has occurred. Inspect the `error` attribute on the event for more details. |
-| `LIVE_SEEK_LOADING` | 'WebRTC.LiveSeek.FragmentLoading' | When `liveSeek` is used to playback Live VOD and HLS video in currently loading a fragment during seeking. |
-| `LIVE_SEEK_LOADED` | 'WebRTC.LiveSeek.FragmentLoaded' | When `liveSeek` is used to playback Live VOD and HLS video has completed loading a fragment during seeking. |
-| `LIVE_SEEK_CHANGE` | 'WebRTC.LiveSeek.Change' | When `liveSeek` is used, this event notifies on a change of state going from "live" to "vod" and vice versa. |
+| Access                      | Event Type                        | Meaning                                                                                                                                                                                                               |
+| :-------------------------- | :-------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `PEER_CONNECTION_AVAILABLE` | 'WebRTC.PeerConnection.Available' | When the negotation process has produced a valid `PeerConnection`.                                                                                                                                                    |
+| `OFFER_START`               | 'WebRTC.Offer.Start'              | When the subscriber requests to start an offer on the `PeerConnection`.                                                                                                                                               |
+| `OFFER_END`                 | 'WebRTC.Offer.End'                | When the subscriber has received a `SessionDescription` from a requested offer over the `PeerConnection`.                                                                                                             |
+| `ANSWER_START`              | 'WebRTC.Answer.Start'             | When the subscriber requests to send an answer on the `PeerConnection`.                                                                                                                                               |
+| `ANSWER_END`                | 'WebRTC.Answer.End'               | When the subscriber has received an answer (in form of a `MediaStream`) over the `PeerConnection`.                                                                                                                    |
+| `CANDIDATE_CREATE`          | 'WebRTC.Candidate.Create'         | When the subscriber requests to send a candidate on the `PeerConnection`.                                                                                                                                             |
+| `CANDIDATE_RECEIVE`         | 'WebRTC.Candidate.Receive'        | When the subscriber has received a candidate over the `PeerConnection`.                                                                                                                                               |
+| `ICE_TRICKLE_COMPLETE`      | 'WebRTC.IceTrickle.Complete'      | When the negotaiton process (a.k.a. trickle) has completed and the subscriber will attempt at consuming a stream.                                                                                                     |
+| `ON_ADD_STREAM`             | 'WebRTC.Add.Stream'               | When a `MediaStream` object has become available for playback.                                                                                                                                                        |
+| `TRACK_ADDED`               | 'WebRTC.PeerConnection.OnTrack'   | When a MediaTrack has become available on the underlying `RTCPeerConnection`.                                                                                                                                         |
+| `DATA_CHANNEL_AVAILABLE`    | 'WebRTC.DataChannel.Available'    | the underlying `RTCDataChannel` is available when `includeDataChannel` configuration is used.                                                                                                                         |
+| `DATA_CHANNEL_OPEN`         | 'WebRTC.DataChannel.Open'         | When the underlying `RTCDataChannel` is opened when `signalingServerOnly` configuration is used.                                                                                                                      |
+| `DATA_CHANNEL_CLOSE`        | 'WebRTC.DataChannel.Close'        | When the underlying `RTCDataChannel` is closed when `includeDataChannel` configuration is used.                                                                                                                       |
+| `DATA_CHANNEL_ERROR`        | 'WebRTC.DataChannel.Error'        | When an error has occurred within the underlying `RTCDataChannel` when `includeDataChannel` configuration is used.                                                                                                    |
+| `DATA_CHANNEL_MESSAGE`      | 'WebRTC.DataChannel.Message'      | When a message has been delivered over the underlying `RTCDataChannel` when `includeDataChannel` configuration is used.                                                                                               |
+| `HOST_ENDPOINT_CHANGED`     | 'WebRTC.Endpoint.Changed'         | Notification when the endpoint on which to signal and stream from has been asigned.                                                                                                                                   |
+| `SUBSCRIBE_STREAM_SWITCH`   | 'WebRTC.Subscribe.StreamSwitch'   | Notification when request to switch stream on the connection is completed.                                                                                                                                            |
+| `STATS_REPORT`              | 'WebRTC.Stats.Report'             | Notification of a statistics report generated from the stream connection. _Statistics are only reported based on the availability of `stats` on the init configuration or after calling [monitorStats](#statistics)._ |
+| `LIVE_SEEK_UNSUPPORTED`     | 'WebRTC.LiveSeek.Unsupported'     | When `liveSeek` is specified but the browser does not support th integration of HLS.JS for Live VOD playback.                                                                                                         |
+| `LIVE_SEEK_ENABLED`         | 'WebRTC.LiveSeek.Enabled'         | When `liveSeek` is used to playback Live VOD and the HLS video has been loaded and available to seek.                                                                                                                 |
+| `LIVE_SEEK_DISABLED`        | 'WebRTC.LiveSeek.Disabled'        | When `liveSeek` is used to playback Live VOD and HLS video has not been loaded nor available to seek.                                                                                                                 |
+| `LIVE_SEEK_ERROR`           | 'WebRTC.LiveSeek.Error'           | When `liveSeek` is used to playback Live VOD and HLS video and an error in playback has occurred. Inspect the `error` attribute on the event for more details.                                                        |
+| `LIVE_SEEK_LOADING`         | 'WebRTC.LiveSeek.FragmentLoading' | When `liveSeek` is used to playback Live VOD and HLS video in currently loading a fragment during seeking.                                                                                                            |
+| `LIVE_SEEK_LOADED`          | 'WebRTC.LiveSeek.FragmentLoaded'  | When `liveSeek` is used to playback Live VOD and HLS video has completed loading a fragment during seeking.                                                                                                           |
+| `LIVE_SEEK_CHANGE`          | 'WebRTC.LiveSeek.Change'          | When `liveSeek` is used, this event notifies on a change of state going from "live" to "vod" and vice versa.                                                                                                          |
 
 Additionally, the following events are related to ICE connection monitoring when integrating with Statistics:
 | Access | Event Type | Meaning |
@@ -15506,7 +15640,7 @@ The configuration used for statistics monitoring has the following structure:
   // If provided, it will POST stats to this endpoint.
   // If undefined or `data-channel`, it will post stats to message transport.
   // If null or `event-transport`, it will only emit status events.
-  endpoint: red5prosdk.StatsEndpointType.DATA_CHANNEL,
+  endpoint: red5websdk.StatsEndpointType.DATA_CHANNEL,
   additionalHeaders: undefined,
   interval: 5000, // Interval to poll stats, in milliseconds.
   include: [], // Empty array allows SDK to be judicious about what stats to include.
@@ -15515,9 +15649,9 @@ The configuration used for statistics monitoring has the following structure:
 
 ### endpoint
 
-* If the `endpoint` is defined with a URL, the SDK will attempt to make `POST` requests with a JSON body representing each individual report.
-* If the `endpoint` is set to `data-channel` or `undefined`, the SDK will post metadata with type `stats-report` on the underlying message transport (DataChannel) if available.
-* If the `endpoint` is set to `event-transport` or `null`, the SDK will only emit events with the metadata on the `WebRTC.StatsReport` event.
+- If the `endpoint` is defined with a URL, the SDK will attempt to make `POST` requests with a JSON body representing each individual report.
+- If the `endpoint` is set to `data-channel` or `undefined`, the SDK will post metadata with type `stats-report` on the underlying message transport (DataChannel) if available.
+- If the `endpoint` is set to `event-transport` or `null`, the SDK will only emit events with the metadata on the `WebRTC.StatsReport` event.
 
 ### additionalHeaders
 
@@ -15543,8 +15677,8 @@ include: ['inbound-rtp', 'transport']
 
 To start statistics monitoring, you have a couple of options:
 
-* You can provide a `stats` attribute with the [stats configuration object](#stats-configuration) to the [init configuration](#webrtc-configuration-parameters).
-* You can call `monitorStats` on the subscriber client with the optional [stats configuration object](#stats-configuration) parameter.
+- You can provide a `stats` attribute with the [stats configuration object](#stats-configuration) to the [init configuration](#webrtc-configuration-parameters).
+- You can call `monitorStats` on the subscriber client with the optional [stats configuration object](#stats-configuration) parameter.
 
 > Additionally, you can stop monitoring by calling `unmonitorStats` on the subscriber client.
 
@@ -15624,12 +15758,12 @@ type RenegotiationPolicyType = {
 
 The following `type` values are:
 
-| Name | Meaning |
-| :--- | :--- |
-| `regression` | When the ICE status has changed from a previously designated `success`. This will not always occur during ICE negotiation failures. |
-| `timeout` | When it has been determined (in conjunction with the `iceTimeoutInterval`), that too much time has elapsed since the start of the negotiation process in order for it to conclude successfully. |
-| `disconnect` | When the peer connection has decided to disconnect after a failure of ICE negotiation. |
-| `excessive-rtt` | Then the round-trip time determined through statistics is considered excessive (anything over `600ms` is considered severe.)
+| Name            | Meaning                                                                                                                                                                                         |
+| :-------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `regression`    | When the ICE status has changed from a previously designated `success`. This will not always occur during ICE negotiation failures.                                                             |
+| `timeout`       | When it has been determined (in conjunction with the `iceTimeoutInterval`), that too much time has elapsed since the start of the negotiation process in order for it to conclude successfully. |
+| `disconnect`    | When the peer connection has decided to disconnect after a failure of ICE negotiation.                                                                                                          |
+| `excessive-rtt` | Then the round-trip time determined through statistics is considered excessive (anything over `600ms` is considered severe.)                                                                    |
 
 Typically, these will be executed in the order defined in the table above, however it should be noted that sometimes a `regression` may not occur in poor connection scenarios. If the process were to fail, both `timeout` and `disconnect` will occur.
 
@@ -15725,7 +15859,7 @@ The `liveSeek` configuration object has the following signature:
 
 > This section provides information that relate to the release of Stream Manager 2.0 and its integration with WHIP/WHEP clients.
 
-The Stream Manager 2.0 simplifies the proxying of web clients to Origin and Edge nodes. As such, an initialization configuration property called `endpoint` was added to the WebRTC SDK. This `endpoint` value should be the full URL path to the proxy endpoint on the Stream Manager as is used as such:
+The Stream Manager 2.0 simplifies the proxying of web clients to Origin and Edge nodes. As such, an initialization configuration property called `endpoint` was added to the Red5 Web SDK. This `endpoint` value should be the full URL path to the proxy endpoint on the Stream Manager as is used as such:
 
 ## WHIP Proxy
 
@@ -15738,7 +15872,7 @@ const config = {
   endpoint,
   streamName,
   connectionParams: {
-    nodeGroup
+    nodeGroup,
   },
   // additional configurations
 }
@@ -15758,7 +15892,7 @@ const config = {
   endpoint,
   streamName,
   connectionParams: {
-    nodeGroup
+    nodeGroup,
   },
   // additional configurations
 }
@@ -15769,8 +15903,8 @@ await subscriber.subscribe()
 
 There are a few things to note here:
 
-* The difference of `/whip` and `/whep` in the URI for the endpoint calls between `WHIPClient` and `WHEPClient`, respecively.
-* The requirement of a `nodeGroup` connection parameter that is the target nodegroup within your Stream Manager deployment on which you want to proxy the WHIP/WHEP client(s).
+- The difference of `/whip` and `/whep` in the URI for the endpoint calls between `WHIPClient` and `WHEPClient`, respecively.
+- The requirement of a `nodeGroup` connection parameter that is the target nodegroup within your Stream Manager deployment on which you want to proxy the WHIP/WHEP client(s).
 
 # PubNub Integration
 
@@ -15782,18 +15916,18 @@ While the SDK provides a way to [utilize PubNub integration](./pubnub-client.md)
 
 Exposed on the [init configuration](#init-configuration) is the `pubnub` attribute. The following `pubnub` object configuration attributes are supported:
 
-| Property | Required | Default | Description |
-| :--- | :---: | :---: | :--- |
-| `pubnub` | [x] | `window.PubNub` | Reference to the [PubNub](https://www.npmjs.com/package/pubnub) library to utilize. |
-| `publishKey` | [x] | _None_ | The registered publish key from PubNub. This can be found in your [Red5 Cloud](https://cloud.red5.net) deployment. |
-| `subscribeKey` | [x] | _None_ | The registered subscribe key from PubNub. This can be found in your [Red5 Cloud](https://cloud.red5.net) deployment. |
-| `userId` | [x] | Auto-generated if not provided. | The associated User ID for PubNub. |
-| `roomId` | [x] | `red5` | Default Channel ID to subscribe to in PubNub messaging. |
-| `expiryMinutes` | [-] | `120` | Default expiration of issued token associated with client. |
-| `authToken` | [-] | _None_ | Optional authentication token issues from PubNub - if known. |
-| `cloudEndpoint` | [-] | _None_ | Optional endpoint of Red5 Cloud deployment to attempt access of `authToken` from PubNub system. |
-| `backendUrl` | [-] | _None_ | Optional full URL of service endpoint to access `authToken` from PubNub system. [See documentation on deploying your own service.](https://www.red5.net/docs/red5-cloud/development/sdks/backend-sdk/) |
-| `logLevel` | [-] | `trace` | The default log level of the PubNub client. |
+| Property        | Required |             Default             | Description                                                                                                                                                                                            |
+| :-------------- | :------: | :-----------------------------: | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pubnub`        |   [x]    |         `window.PubNub`         | Reference to the [PubNub](https://www.npmjs.com/package/pubnub) library to utilize.                                                                                                                    |
+| `publishKey`    |   [x]    |             _None_              | The registered publish key from PubNub. This can be found in your [Red5 Cloud](https://cloud.red5.net) deployment.                                                                                     |
+| `subscribeKey`  |   [x]    |             _None_              | The registered subscribe key from PubNub. This can be found in your [Red5 Cloud](https://cloud.red5.net) deployment.                                                                                   |
+| `userId`        |   [x]    | Auto-generated if not provided. | The associated User ID for PubNub.                                                                                                                                                                     |
+| `roomId`        |   [x]    |             `red5`              | Default Channel ID to subscribe to in PubNub messaging.                                                                                                                                                |
+| `expiryMinutes` |   [-]    |              `120`              | Default expiration of issued token associated with client.                                                                                                                                             |
+| `authToken`     |   [-]    |             _None_              | Optional authentication token issues from PubNub - if known.                                                                                                                                           |
+| `cloudEndpoint` |   [-]    |             _None_              | Optional endpoint of Red5 Cloud deployment to attempt access of `authToken` from PubNub system.                                                                                                        |
+| `backendUrl`    |   [-]    |             _None_              | Optional full URL of service endpoint to access `authToken` from PubNub system. [See documentation on deploying your own service.](https://www.red5.net/docs/red5-cloud/development/sdks/backend-sdk/) |
+| `logLevel`      |   [-]    |             `trace`             | The default log level of the PubNub client.                                                                                                                                                            |
 
 ## Authentication
 
@@ -15831,21 +15965,21 @@ Request to publish a message on the target channel.
 
 The following events are dispatched by the underlying pubnub integration and bubbled out through the `WHEPClient` and enumerated on the `PubNubEventTypes` object:
 
-| Access | Event Type | Meaning |
-| :--- | :--- | :--- |
-| `CONNECTED` | 'PubNub.Connected' | Dispatched when the PubNub client has successfully connected to the PubNub service. |
-| `DISCONNECTED` | 'PubNub.Disconnected' | Dispatched when the PubNub client has disconnected from the PubNub service. |
-| `SUBSCRIBE_SUCCESS` | 'PubNub.Subscribe.Success' | Dispatched when a channel subscription request has completed successfully. The `data` property contains details about the subscription. |
-| `SUBSCRIBE_FAILURE` | 'PubNub.Subscribe.Failure' | Dispatched when a channel subscription request has failed. The `data` property contains error information. |
-| `UNSUBSCRIBE_SUCCESS` | 'PubNub.Unsubscribe.Success' | Dispatched when a channel unsubscribe request has completed successfully. The `data` property contains details about the unsubscription. |
-| `UNSUBSCRIBE_FAILURE` | 'PubNub.Unsubscribe.Failure' | Dispatched when a channel unsubscribe request has failed. The `data` property contains error information. |
-| `MESSAGE_RECEIVED` | 'PubNub.Message.Received' | Dispatched when a message is received on a subscribed channel. The `data` property contains the message payload. |
-| `MESSAGE_SEND_SUCCESS` | 'PubNub.Message.Send.Success' | Dispatched when a message has been successfully published to a channel. The `data` property contains confirmation details. |
-| `MESSAGE_SEND_FAILURE` | 'PubNub.Message.Send.Failure' | Dispatched when a message publish request has failed. The `data` property contains error information. |
-| `AUTH_TOKEN_GENERATED` | 'PubNub.AuthToken.Generated' | Dispatched when an authentication token has been successfully generated. The `data` property contains the token information. |
-| `AUTH_TOKEN_GENERATION_ERROR` | 'PubNub.AuthToken.Generation.Error' | Dispatched when authentication token generation has failed. The `data` property contains error information. |
-| `STATUS` | 'PubNub.Status' | Dispatched on general status notification. The `data` property contains the status. |
-| `ERROR` | 'PubNub.Error' | Dispatched when a general error occurs in the PubNub client. The `data` property contains error details. |
+| Access                        | Event Type                          | Meaning                                                                                                                                  |
+| :---------------------------- | :---------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------- |
+| `CONNECTED`                   | 'PubNub.Connected'                  | Dispatched when the PubNub client has successfully connected to the PubNub service.                                                      |
+| `DISCONNECTED`                | 'PubNub.Disconnected'               | Dispatched when the PubNub client has disconnected from the PubNub service.                                                              |
+| `SUBSCRIBE_SUCCESS`           | 'PubNub.Subscribe.Success'          | Dispatched when a channel subscription request has completed successfully. The `data` property contains details about the subscription.  |
+| `SUBSCRIBE_FAILURE`           | 'PubNub.Subscribe.Failure'          | Dispatched when a channel subscription request has failed. The `data` property contains error information.                               |
+| `UNSUBSCRIBE_SUCCESS`         | 'PubNub.Unsubscribe.Success'        | Dispatched when a channel unsubscribe request has completed successfully. The `data` property contains details about the unsubscription. |
+| `UNSUBSCRIBE_FAILURE`         | 'PubNub.Unsubscribe.Failure'        | Dispatched when a channel unsubscribe request has failed. The `data` property contains error information.                                |
+| `MESSAGE_RECEIVED`            | 'PubNub.Message.Received'           | Dispatched when a message is received on a subscribed channel. The `data` property contains the message payload.                         |
+| `MESSAGE_SEND_SUCCESS`        | 'PubNub.Message.Send.Success'       | Dispatched when a message has been successfully published to a channel. The `data` property contains confirmation details.               |
+| `MESSAGE_SEND_FAILURE`        | 'PubNub.Message.Send.Failure'       | Dispatched when a message publish request has failed. The `data` property contains error information.                                    |
+| `AUTH_TOKEN_GENERATED`        | 'PubNub.AuthToken.Generated'        | Dispatched when an authentication token has been successfully generated. The `data` property contains the token information.             |
+| `AUTH_TOKEN_GENERATION_ERROR` | 'PubNub.AuthToken.Generation.Error' | Dispatched when authentication token generation has failed. The `data` property contains error information.                              |
+| `STATUS`                      | 'PubNub.Status'                     | Dispatched on general status notification. The `data` property contains the status.                                                      |
+| `ERROR`                       | 'PubNub.Error'                      | Dispatched when a general error occurs in the PubNub client. The `data` property contains error details.                                 |
 
 ### Source: `docs/whip-client.md`
 
@@ -15870,15 +16004,17 @@ The `WHIPClient` - under the hood - is based on the [WebRTC-HTTP ingestion](http
 
 This provides a standardized - and _blazingly fast_ - way to establish and broadcast a live stream using WebRTC.
 
-* [Usage](#usage)
-* [Init Configuration](#init-configuration)
-* [Events](#events)
-* [Reconnect](#reconnect)
-* [Statistics](#statistics)
-* [Stream Manager 2.0](#stream-manager-20)
-* [PubNub Integration](#pubnub-integration)
+- [Usage](#usage)
+- [Init Configuration](#init-configuration)
+- [Events](#events)
+- [Reconnect](#reconnect)
+- [Statistics](#statistics)
+- [Stream Manager 2.0](#stream-manager-20)
+- [PubNub Integration](#pubnub-integration)
 
 # Usage
+
+On a script-tag page, load either the full SDK (`red5-web-sdk.min.js`) or the WHIP/WHEP/HLS build (`red5-web-sdk-webrtc.min.js`). Both attach `window.red5websdk`. From npm, `import { WHIPClient } from 'red5-web-sdk'` or `'red5-web-sdk/webrtc'`.
 
 There are two options to initiate a `WHIPClient`:
 
@@ -15950,36 +16086,36 @@ try {
 
 When using the `init()` call of a `WHIPClient` - or, alternatively, when using a **WHIP** endpoint with additional options in the constructor - the following initialization properties are available:
 
-| Property | Required | Default | Description |
-| :--- | :---: | :---: | :--- |
-| `host` | [x] | *None* | The IP or address that the WebSocket server resides on. |
-| `streamName` | [x] | *None* | The name of the stream to subscribe to. |
-| `protocol` | [x] | `https` | The protocol of the host for the signaling communication. |
-| `port` | [x] | `443` | The port on the host that the Red5 server listens on; `5080` or `443` (insecure or secure, respectively). |
-| `app` | [x] | `live` | The webapp context name that the stream is on. |
-| `endpoint` | [-] | `undefined` | The full URL of the endpoint to stream to. **This is primarily used in Stream Manager 2.0 integration for clients.**
-| `streamMode` | [x] | `live` | The mode to broadcast; `live`, `record` or `append`. |
-| `keyFramerate` | [-] | `3000` | The framerate (in milliseconds) between sending key frames in broadcast. |
-| `mediaElementId` | [-] | `red5pro-publisher` | The target `video` or `audio` element `id` attribute which will display the preview media. |
-| `rtcConfiguration` | [-] | _Basic_ | The `RTCConfiguration` to use in setting up `RTCPeerConnection`. [RTCConfiguration](https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/RTCPeerConnection#RTCConfiguration_dictionary)|
-| `includeDataChannel` | [-] | `true` | Flag to open a datachannel for messaging between server and client once connection is established.
-| `dataChannelConfiguration` | [-] | `{name: "red5pro"}` | An object used in configuring a n `RTCDataChannel`. _Only used when `includeDataChannel` is defined as `true`_ |
-| `iceTransport` | [-] | `UDP` | The transport type to use in ICE negotiation. Either `UDP` or `TCP` |
-| `bandwidth` | [-] |`{audio: 56, video: 750}` | A configuration object to setup bandwidth setting in publisher. |
-| `connectionParams` | [-] | `undefined` | An object of connection parameters to send to the server upon connection request. |
-| `mediaConstraints` | [x] | [see below](#using-mediaconstraints-and-ongetusermedia) | A object representative of the [Media Constraints](https://developer.mozilla.org/en-US/docs/Web/API/MediaStreamConstraints) to use while setting up the Media (via `getUserMedia` internally to the SDK). |
-| `onGetUserMedia` | [-] | [see below](#using-mediaconstraints-and-ongetusermedia) | An override method for performing your own `getUserMedia` request. Expected return is a `Promise` |
-| `videoEncoding` | [-] | `undefined` | `PublishVideoEncoder` enum: `VP8` | `H264` | `H265` | `AV1` . |
-| `audioEncoding` | [-] | `undefined` | `PublishAudioEncoder` enum. |
-| `offerSDPResolution` | [-] | `false` | Request to send the initial resolution on the SDP offer in an attribute line with the following format: `a=framesize:${width}-${height}` |
-| `stats` | [-] | *None* | Configuration object to enable stats reporting. See [Stats Reporting](#statistics) for more information. |
-| `reconnect` | [-] | *None* | Configuration object to enable auto re-connect on lost connection, due to such things as change in network. See [Reconnect](#reconnect) for more information. |
-| `optimizationParams` | [-] | *None* | Properties that can be assign on encodings and delivery of the published stream. See [OptimizationParams](#optimization-params) for more information. |
-| `pubnub` | [-] | *None* | Configuration object for PubNub integration. See [PubNub Integration](#pubnub-integration) for more information. |
+| Property                   | Required |                         Default                         | Description                                                                                                                                                                                               |
+| :------------------------- | :------: | :-----------------------------------------------------: | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ | ------ | ------- |
+| `host`                     |   [x]    |                         _None_                          | The IP or address that the WebSocket server resides on.                                                                                                                                                   |
+| `streamName`               |   [x]    |                         _None_                          | The name of the stream to subscribe to.                                                                                                                                                                   |
+| `protocol`                 |   [x]    |                         `https`                         | The protocol of the host for the signaling communication.                                                                                                                                                 |
+| `port`                     |   [x]    |                          `443`                          | The port on the host that the Red5 server listens on; `5080` or `443` (insecure or secure, respectively).                                                                                                 |
+| `app`                      |   [x]    |                         `live`                          | The webapp context name that the stream is on.                                                                                                                                                            |
+| `endpoint`                 |   [-]    |                       `undefined`                       | The full URL of the endpoint to stream to. **This is primarily used in Stream Manager 2.0 integration for clients.**                                                                                      |
+| `streamMode`               |   [x]    |                         `live`                          | The mode to broadcast; `live`, `record` or `append`.                                                                                                                                                      |
+| `keyFramerate`             |   [-]    |                         `3000`                          | The framerate (in milliseconds) between sending key frames in broadcast.                                                                                                                                  |
+| `mediaElementId`           |   [-]    |                   `red5pro-publisher`                   | The target `video` or `audio` element `id` attribute which will display the preview media.                                                                                                                |
+| `rtcConfiguration`         |   [-]    |                         _Basic_                         | The `RTCConfiguration` to use in setting up `RTCPeerConnection`. [RTCConfiguration](https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/RTCPeerConnection#RTCConfiguration_dictionary)     |
+| `includeDataChannel`       |   [-]    |                         `true`                          | Flag to open a datachannel for messaging between server and client once connection is established.                                                                                                        |
+| `dataChannelConfiguration` |   [-]    |                   `{name: "red5pro"}`                   | An object used in configuring a n `RTCDataChannel`. _Only used when `includeDataChannel` is defined as `true`_                                                                                            |
+| `iceTransport`             |   [-]    |                          `UDP`                          | The transport type to use in ICE negotiation. Either `UDP` or `TCP`                                                                                                                                       |
+| `bandwidth`                |   [-]    |                `{audio: 56, video: 750}`                | A configuration object to setup bandwidth setting in publisher.                                                                                                                                           |
+| `connectionParams`         |   [-]    |                       `undefined`                       | An object of connection parameters to send to the server upon connection request.                                                                                                                         |
+| `mediaConstraints`         |   [x]    | [see below](#using-mediaconstraints-and-ongetusermedia) | A object representative of the [Media Constraints](https://developer.mozilla.org/en-US/docs/Web/API/MediaStreamConstraints) to use while setting up the Media (via `getUserMedia` internally to the SDK). |
+| `onGetUserMedia`           |   [-]    | [see below](#using-mediaconstraints-and-ongetusermedia) | An override method for performing your own `getUserMedia` request. Expected return is a `Promise`                                                                                                         |
+| `videoEncoding`            |   [-]    |                       `undefined`                       | `PublishVideoEncoder` enum: `VP8`                                                                                                                                                                         | `H264` | `H265` | `AV1` . |
+| `audioEncoding`            |   [-]    |                       `undefined`                       | `PublishAudioEncoder` enum.                                                                                                                                                                               |
+| `offerSDPResolution`       |   [-]    |                         `false`                         | Request to send the initial resolution on the SDP offer in an attribute line with the following format: `a=framesize:${width}-${height}`                                                                  |
+| `stats`                    |   [-]    |                         _None_                          | Configuration object to enable stats reporting. See [Stats Reporting](#statistics) for more information.                                                                                                  |
+| `reconnect`                |   [-]    |                         _None_                          | Configuration object to enable auto re-connect on lost connection, due to such things as change in network. See [Reconnect](#reconnect) for more information.                                             |
+| `optimizationParams`       |   [-]    |                         _None_                          | Properties that can be assign on encodings and delivery of the published stream. See [OptimizationParams](#optimization-params) for more information.                                                     |
+| `pubnub`                   |   [-]    |                         _None_                          | Configuration object for PubNub integration. See [PubNub Integration](#pubnub-integration) for more information.                                                                                          |
 
 ## Using MediaConstraints and onGetUserMedia
 
-The Red5 HTML SDK will handle the `getUserMedia` requirements internally to set up your Camera and/or Microphone for a broadcast. As such, you can provide the [Media Constraint](https://developer.mozilla.org/en-US/docs/Web/API/MediaStreamConstraints) object to be used on the `init` configuration:
+The Red5 Web SDK will handle the `getUserMedia` requirements internally to set up your Camera and/or Microphone for a broadcast. As such, you can provide the [Media Constraint](https://developer.mozilla.org/en-US/docs/Web/API/MediaStreamConstraints) object to be used on the `init` configuration:
 
 ```js
 const config = {
@@ -15990,18 +16126,18 @@ const config = {
     video: {
       width: {
         min: 640,
-        max: 1280
+        max: 1280,
       },
       height: {
         min: 360,
-        max: 720
+        max: 720,
       },
       frameRate: {
         min: 15,
-        max: 60
-      }
-    }
-  }
+        max: 60,
+      },
+    },
+  },
 }
 
 const publisher = new WHIPClient()
@@ -16009,7 +16145,7 @@ await publisher.init(config)
 await publisher.publish()
 ```
 
-Internally, the Red5 HTML SDK will use the provided *Media Constraint* to test if the resolutions requested are supported by the browser. If not, it will find the nearest supported lower neighbor based on the originally provided area dimension(s) of the resolutions.
+Internally, the Red5 Web SDK will use the provided _Media Constraint_ to test if the resolutions requested are supported by the browser. If not, it will find the nearest supported lower neighbor based on the originally provided area dimension(s) of the resolutions.
 
 > If you would like to bypass the internal determination of resolution, you can use the `onGetUserMedia` override of the configuration properties.
 
@@ -16025,19 +16161,19 @@ const config = {
       video: {
         width: {
           min: 640,
-          max: 1280
+          max: 1280,
         },
         height: {
           min: 360,
-          max: 720
+          max: 720,
         },
         frameRate: {
           min: 15,
-          max: 60
-        }
-      }
+          max: 60,
+        },
+      },
     })
-  }
+  },
 }
 
 const publisher = new WHIPClient()
@@ -16045,16 +16181,16 @@ await publisher.init(config)
 await publisher.publish()
 ```
 
-The `onGetUserMedia` method - when defined on the configuration provide to a WebRTC-based Publisher - will override the internal call to `getUserMedia` in the Red5 HTML SDK.
+The `onGetUserMedia` method - when defined on the configuration provide to a WebRTC-based Publisher - will override the internal call to `getUserMedia` in the Red5 Web SDK.
 
 You can provide your own logic on how `getUserMedia` is invoked and a [Media Stream](https://developer.mozilla.org/en-US/docs/Web/API/MediaStream) attained by setting the `onGetUserMedia` attribute to a method that conforms to the following guidelines:
 
-* No input arguments are provided to `onGetUserMedia`.
-* It is *expected* that a `Promise` object is returned.
-* A `MediaStream` object must be provided in the resolve of the `Promise`.
-* The error provided in the reject of the `Promise` is optional, but recommended as a `String`.
+- No input arguments are provided to `onGetUserMedia`.
+- It is _expected_ that a `Promise` object is returned.
+- A `MediaStream` object must be provided in the resolve of the `Promise`.
+- The error provided in the reject of the `Promise` is optional, but recommended as a `String`.
 
-Be aware that overriding `onGetUserMedia` you are losing the logic from the Red5 HTML SDK that attempts to pick the optimal resolution supported by your browser. **Use with descretion.**
+Be aware that overriding `onGetUserMedia` you are losing the logic from the Red5 Web SDK that attempts to pick the optimal resolution supported by your browser. **Use with descretion.**
 
 > To read more about `getUserMedia` please read the following document from Mozilla Developer Network: [https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia](https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia)
 
@@ -16090,46 +16226,46 @@ The following sections of this document describe the event types that can also b
 
 You can also listen to events individually. The following describe the various events that can be listened for on the `WHIPClient` and enumerated on the `PublisherEventTypes` object:
 
-| Access | Event Type | Meaning |
-| :--- | :--- | :--- |
-| `CONNECT_SUCCESS` | 'Connect.Success' | When the publisher has established a required remote connection, such as to a WebSocket or RTMP-based server. |
-| `CONNECT_FAILURE` | 'Connect.Failure' | When the publisher has failed to establish a required remote connection for streaming. |
-| `PUBLISH_START` | 'Publish.Start' | When the publisher has started a broadcast stream. |
-| `PUBLISH_FAIL` | 'Publish.Fail' | When the publisher has failed to start a broadcast stream. |
-| `PUBLISH_INVALID_NAME` | 'Publish.InvalidName' | When the publisher is rejected from starting a broadcast stream because the `streamName` provided is already in use. |
-| `UNPUBLISH_SUCCESS` | 'Unpublish.Success' | When the publisher has successfully closed an active broadcast stream. |
-| `PUBLISH_METADATA` | 'Publish.Metadata' | When the publisher receives metadata from the server. |
-| `PUBLISH_STATUS` | 'Publish.Status' | When a status event of the publisher has been receieved from the server. |
-| `PUBLISH_AVAILABLE` | 'Publish.Available' | When the publisher stream has become available on the origin server to be consumed. This will follow the connection setup and `Publish.Start` event. |
-| `PUBLISH_INSUFFICIENT_BANDWIDTH` | 'Publish.InsufficientBW' | When the current broadcast session is experiencing insufficient bandwidth conditions. |
-| `PUBLISH_RECOVERING_BANDWIDTH` | 'Publish.RecoveringBW' | Then the current broadcast has updated information related to bandwidth condition recovery. |
-| `PUBLISH_SUFFICIENT_BANDWIDTH` | 'Publish.SufficientBW' | When the current broadcast session has sufficient bandwidth conditions from previously experiencing network issues. |
-| `CONNECTION_CLOSED` | 'Publisher.Connection.Closed' | Invoked when a close to the connection is detected. |
-| `DIMENSION_CHANGE` | 'Publisher.Video.DimensionChange' | Notification when the Camera resolution has been set or change. |
-| `STATISTICS_ENDPOINT_CHANGE` | 'Publisher.StatisticsEndpoint.Change' | Notification that the server has signaled a change in endpoint to deliver WebRTC Statistics based on RTCStatsReports. _Statistics are only reported after calling [monitorStats](#statistics)._ |
-| `RECONNECT_START` | 'Reconnect.Start' | Notification when a reconnection sequence has started. Requires `reconnect` initialization property to be enabled. |
-| `RECONNECT_FAILURE` | 'Reconnect.Failure' | Notification when a reconnection sequence has failed. Requires `reconnect` initialization property to be enabled. |
-| `RECONNECT_SUCCESS` | 'Reconnect.Success' | Notification when a reconnection sequence has been successful. Requires `reconnect` initialization property to be enabled.|
+| Access                           | Event Type                            | Meaning                                                                                                                                                                                         |
+| :------------------------------- | :------------------------------------ | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `CONNECT_SUCCESS`                | 'Connect.Success'                     | When the publisher has established a required remote connection, such as to a WebSocket or RTMP-based server.                                                                                   |
+| `CONNECT_FAILURE`                | 'Connect.Failure'                     | When the publisher has failed to establish a required remote connection for streaming.                                                                                                          |
+| `PUBLISH_START`                  | 'Publish.Start'                       | When the publisher has started a broadcast stream.                                                                                                                                              |
+| `PUBLISH_FAIL`                   | 'Publish.Fail'                        | When the publisher has failed to start a broadcast stream.                                                                                                                                      |
+| `PUBLISH_INVALID_NAME`           | 'Publish.InvalidName'                 | When the publisher is rejected from starting a broadcast stream because the `streamName` provided is already in use.                                                                            |
+| `UNPUBLISH_SUCCESS`              | 'Unpublish.Success'                   | When the publisher has successfully closed an active broadcast stream.                                                                                                                          |
+| `PUBLISH_METADATA`               | 'Publish.Metadata'                    | When the publisher receives metadata from the server.                                                                                                                                           |
+| `PUBLISH_STATUS`                 | 'Publish.Status'                      | When a status event of the publisher has been receieved from the server.                                                                                                                        |
+| `PUBLISH_AVAILABLE`              | 'Publish.Available'                   | When the publisher stream has become available on the origin server to be consumed. This will follow the connection setup and `Publish.Start` event.                                            |
+| `PUBLISH_INSUFFICIENT_BANDWIDTH` | 'Publish.InsufficientBW'              | When the current broadcast session is experiencing insufficient bandwidth conditions.                                                                                                           |
+| `PUBLISH_RECOVERING_BANDWIDTH`   | 'Publish.RecoveringBW'                | Then the current broadcast has updated information related to bandwidth condition recovery.                                                                                                     |
+| `PUBLISH_SUFFICIENT_BANDWIDTH`   | 'Publish.SufficientBW'                | When the current broadcast session has sufficient bandwidth conditions from previously experiencing network issues.                                                                             |
+| `CONNECTION_CLOSED`              | 'Publisher.Connection.Closed'         | Invoked when a close to the connection is detected.                                                                                                                                             |
+| `DIMENSION_CHANGE`               | 'Publisher.Video.DimensionChange'     | Notification when the Camera resolution has been set or change.                                                                                                                                 |
+| `STATISTICS_ENDPOINT_CHANGE`     | 'Publisher.StatisticsEndpoint.Change' | Notification that the server has signaled a change in endpoint to deliver WebRTC Statistics based on RTCStatsReports. _Statistics are only reported after calling [monitorStats](#statistics)._ |
+| `RECONNECT_START`                | 'Reconnect.Start'                     | Notification when a reconnection sequence has started. Requires `reconnect` initialization property to be enabled.                                                                              |
+| `RECONNECT_FAILURE`              | 'Reconnect.Failure'                   | Notification when a reconnection sequence has failed. Requires `reconnect` initialization property to be enabled.                                                                               |
+| `RECONNECT_SUCCESS`              | 'Reconnect.Success'                   | Notification when a reconnection sequence has been successful. Requires `reconnect` initialization property to be enabled.                                                                      |
 
 In addition to the above events, the following events are also dispatched from a `WHIPClient` and are defined on the `RTCPublisherEventTypes` enum:
 
-| Access | Event Type | Meaning |
-| :--- | :--- | :--- |
-| `CONSTRAINTS_ACCEPTED` | 'WebRTC.MediaConstraints.Accepted' | When constraints have been accepted from the internal request to `getUserMedia`. The `data` property of this event contains a `requested` object detailing the constraints used in the `getUserMedia` request and an `accepted` object which is the current constraint settings for the media. |
-| `CONSTRAINTS_REJECTED` | 'WebRTC.MediaConstraints.Rejected' | Then constraints have been rejected from the internal request to `getUserMedia`. The `data` property of this event contains a `constraints` object detailing the constraints that were used and rejected from `getUserMedia`. |
-| `MEDIA_STREAM_AVAILABLE` | 'WebRTC.MediaStream.Available' | When the negotation process has returned a `MediaStream` object to use. |
-| `PEER_CONNECTION_AVAILABLE` | 'WebRTC.PeerConnection.Available' | When the negotation process has produced a valid `PeerConnection`. |
-| `OFFER_START` | 'WebRTC.Offer.Start' | When the publisher requests to send an offer using a `SessionDescription` on the `PeerConnection`. |
-| `OFFER_END` | 'WebRTC.Offer.End' | When the publisher has received an answer from the `SDP` offer on the `PeerConnection`. |
-| `CANDIDATE_CREATE` | 'WebRTC.Candidate.Create' | When the publisher requests to send a candidate on the `PeerConnection`. |
-| `CANDIDATE_RECEIVE` | 'WebRTC.Candidate.Receive' | When the publisher has received a candidate over the `PeerConnection`. |
-| `ICE_TRICKLE_COMPLETE` | 'WebRTC.IceTrickle.Complete' | When the negotaiton process (a.k.a. trickle) has completed and the publisher will attempt at opening a broadcast stream. |
-| `DATA_CHANNEL_AVAILABLE` | 'WebRTC.DataChannel.Available' |  the underlying `RTCDataChannel` is available when `signalingSocketOnly` configuration is used. |
-| `DATA_CHANNEL_OPEN` | 'WebRTC.DataChannel.Open' | When the underlying `RTCDataChannel` is opened when `signalingSocketOnly` configuration is used.
-| `DATA_CHANNEL_CLOSE` | 'WebRTC.DataChannel.Close' | When the underlying `RTCDataChannel` is closed when `signalingSocketOnly` configuration is used. |
-| `DATA_CHANNEL_ERROR` | 'WebRTC.DataChannel.Error' | When an error has occurred within the underlying `RTCDataChannel` when `signalingSocketOnly` configuration is used. |
-| `DATA_CHANNEL_MESSAGE` | 'WebRTC.DataChannel.Message' | When a message has been delivered over the underlying `RTCDataChannel` when `signalingSocketOnly` configuration is used. |
-| `STATS_REPORT` | 'WebRTC.Stats.Report' | An RTCStatsReport has been captured by the WebRTC client based on configurations from calling [monitorStats](#statistics). |
+| Access                      | Event Type                         | Meaning                                                                                                                                                                                                                                                                                        |
+| :-------------------------- | :--------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `CONSTRAINTS_ACCEPTED`      | 'WebRTC.MediaConstraints.Accepted' | When constraints have been accepted from the internal request to `getUserMedia`. The `data` property of this event contains a `requested` object detailing the constraints used in the `getUserMedia` request and an `accepted` object which is the current constraint settings for the media. |
+| `CONSTRAINTS_REJECTED`      | 'WebRTC.MediaConstraints.Rejected' | Then constraints have been rejected from the internal request to `getUserMedia`. The `data` property of this event contains a `constraints` object detailing the constraints that were used and rejected from `getUserMedia`.                                                                  |
+| `MEDIA_STREAM_AVAILABLE`    | 'WebRTC.MediaStream.Available'     | When the negotation process has returned a `MediaStream` object to use.                                                                                                                                                                                                                        |
+| `PEER_CONNECTION_AVAILABLE` | 'WebRTC.PeerConnection.Available'  | When the negotation process has produced a valid `PeerConnection`.                                                                                                                                                                                                                             |
+| `OFFER_START`               | 'WebRTC.Offer.Start'               | When the publisher requests to send an offer using a `SessionDescription` on the `PeerConnection`.                                                                                                                                                                                             |
+| `OFFER_END`                 | 'WebRTC.Offer.End'                 | When the publisher has received an answer from the `SDP` offer on the `PeerConnection`.                                                                                                                                                                                                        |
+| `CANDIDATE_CREATE`          | 'WebRTC.Candidate.Create'          | When the publisher requests to send a candidate on the `PeerConnection`.                                                                                                                                                                                                                       |
+| `CANDIDATE_RECEIVE`         | 'WebRTC.Candidate.Receive'         | When the publisher has received a candidate over the `PeerConnection`.                                                                                                                                                                                                                         |
+| `ICE_TRICKLE_COMPLETE`      | 'WebRTC.IceTrickle.Complete'       | When the negotaiton process (a.k.a. trickle) has completed and the publisher will attempt at opening a broadcast stream.                                                                                                                                                                       |
+| `DATA_CHANNEL_AVAILABLE`    | 'WebRTC.DataChannel.Available'     | the underlying `RTCDataChannel` is available when `signalingSocketOnly` configuration is used.                                                                                                                                                                                                 |
+| `DATA_CHANNEL_OPEN`         | 'WebRTC.DataChannel.Open'          | When the underlying `RTCDataChannel` is opened when `signalingSocketOnly` configuration is used.                                                                                                                                                                                               |
+| `DATA_CHANNEL_CLOSE`        | 'WebRTC.DataChannel.Close'         | When the underlying `RTCDataChannel` is closed when `signalingSocketOnly` configuration is used.                                                                                                                                                                                               |
+| `DATA_CHANNEL_ERROR`        | 'WebRTC.DataChannel.Error'         | When an error has occurred within the underlying `RTCDataChannel` when `signalingSocketOnly` configuration is used.                                                                                                                                                                            |
+| `DATA_CHANNEL_MESSAGE`      | 'WebRTC.DataChannel.Message'       | When a message has been delivered over the underlying `RTCDataChannel` when `signalingSocketOnly` configuration is used.                                                                                                                                                                       |
+| `STATS_REPORT`              | 'WebRTC.Stats.Report'              | An RTCStatsReport has been captured by the WebRTC client based on configurations from calling [monitorStats](#statistics).                                                                                                                                                                     |
 
 # Reconnect
 
@@ -16198,7 +16334,7 @@ The configuration used for statistics monitoring has the following structure:
   // If provided, it will POST stats to this endpoint.
   // If undefined or `data-channel`, it will post stats to message transport.
   // If null or `event-transport`, it will only emit status events.
-  endpoint: red5prosdk.StatsEndpointType.DATA_CHANNEL,
+  endpoint: red5websdk.StatsEndpointType.DATA_CHANNEL,
   additionalHeaders: undefined,
   interval: 5000, // Interval to poll stats, in milliseconds.
   include: [], // Empty array allows SDK to be judicious about what stats to include.
@@ -16207,9 +16343,9 @@ The configuration used for statistics monitoring has the following structure:
 
 ### endpoint
 
-* If the `endpoint` is defined with a URL, the SDK will attempt to make `POST` requests with a JSON body representing each individual report.
-* If the `endpoint` is set to `data-channel` or `undefined`, the SDK will post metadata with type `stats-report` on the underlying message transport (DataChannel) if available.
-* If the `endpoint` is set to `event-transport` or `null`, the SDK will only emit events with the metadata on the `WebRTC.StatsReport` event.
+- If the `endpoint` is defined with a URL, the SDK will attempt to make `POST` requests with a JSON body representing each individual report.
+- If the `endpoint` is set to `data-channel` or `undefined`, the SDK will post metadata with type `stats-report` on the underlying message transport (DataChannel) if available.
+- If the `endpoint` is set to `event-transport` or `null`, the SDK will only emit events with the metadata on the `WebRTC.StatsReport` event.
 
 ### additionalHeaders
 
@@ -16235,8 +16371,8 @@ include: ['outbound-rtp', 'transport']
 
 To start statistics monitoring, you have a couple of options:
 
-* You can provide a `stats` attribute with the [stats configuration object](#stats-configuration) to the [init configuration](#webrtc-configuration-parameters).
-* You can call `monitorStats` on the publisher client with the optional [stats configuration object](#stats-configuration) parameter.
+- You can provide a `stats` attribute with the [stats configuration object](#stats-configuration) to the [init configuration](#webrtc-configuration-parameters).
+- You can call `monitorStats` on the publisher client with the optional [stats configuration object](#stats-configuration) parameter.
 
 > Additionally, you can stop monitoring by calling `unmonitorStats` on the publisher client.
 
@@ -16305,7 +16441,7 @@ The following is an example of a statistics metadata that is emitted in a `WebRT
 
 > This section provides information that relate to the release of Stream Manager 2.0 and its integration with WHIP/WHEP clients.
 
-The Stream Manager 2.0 simplifies the proxying of web clients to Origin and Edge nodes. As such, an initialization configuration property called `endpoint` was added to the WebRTC SDK. This `endpoint` value should be the full URL path to the proxy endpoint on the Stream Manager as is used as such:
+The Stream Manager 2.0 simplifies the proxying of web clients to Origin and Edge nodes. As such, an initialization configuration property called `endpoint` was added to the Red5 Web SDK. This `endpoint` value should be the full URL path to the proxy endpoint on the Stream Manager as is used as such:
 
 ## WHIP Proxy
 
@@ -16318,7 +16454,7 @@ const config = {
   endpoint,
   streamName,
   connectionParams: {
-    nodeGroup
+    nodeGroup,
   },
   // additional configurations
 }
@@ -16338,7 +16474,7 @@ const config = {
   endpoint,
   streamName,
   connectionParams: {
-    nodeGroup
+    nodeGroup,
   },
   // additional configurations
 }
@@ -16349,8 +16485,8 @@ await subscriber.subscribe()
 
 There are a few things to note here:
 
-* The difference of `/whip` and `/whep` in the URI for the endpoint calls between `WHIPClient` and `WHEPClient`, respecively.
-* The requirement of a `nodeGroup` connection parameter that is the target nodegroup within your Stream Manager deployment on which you want to proxy the WHIP/WHEP client(s).
+- The difference of `/whip` and `/whep` in the URI for the endpoint calls between `WHIPClient` and `WHEPClient`, respecively.
+- The requirement of a `nodeGroup` connection parameter that is the target nodegroup within your Stream Manager deployment on which you want to proxy the WHIP/WHEP client(s).
 
 # PubNub Integration
 
@@ -16362,18 +16498,18 @@ While the SDK provides a way to [utilize PubNub integration](./pubnub-client.md)
 
 Exposed on the [init configuration](#init-configuration) is the `pubnub` attribute. The following `pubnub` object configuration attributes are supported:
 
-| Property | Required | Default | Description |
-| :--- | :---: | :---: | :--- |
-| `pubnub` | [x] | `window.PubNub` | Reference to the [PubNub](https://www.npmjs.com/package/pubnub) library to utilize. |
-| `publishKey` | [x] | _None_ | The registered publish key from PubNub. This can be found in your [Red5 Cloud](https://cloud.red5.net) deployment. |
-| `subscribeKey` | [x] | _None_ | The registered subscribe key from PubNub. This can be found in your [Red5 Cloud](https://cloud.red5.net) deployment. |
-| `userId` | [x] | Auto-generated if not provided. | The associated User ID for PubNub. |
-| `roomId` | [x] | `red5` | Default Channel ID to subscribe to in PubNub messaging. |
-| `expiryMinutes` | [-] | `120` | Default expiration of issued token associated with client. |
-| `authToken` | [-] | _None_ | Optional authentication token issues from PubNub - if known. |
-| `cloudEndpoint` | [-] | _None_ | Optional endpoint of Red5 Cloud deployment to attempt access of `authToken` from PubNub system. |
-| `backendUrl` | [-] | _None_ | Optional full URL of service endpoint to access `authToken` from PubNub system. [See documentation on deploying your own service.](https://www.red5.net/docs/red5-cloud/development/sdks/backend-sdk/) |
-| `logLevel` | [-] | `trace` | The default log level of the PubNub client. |
+| Property        | Required |             Default             | Description                                                                                                                                                                                            |
+| :-------------- | :------: | :-----------------------------: | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pubnub`        |   [x]    |         `window.PubNub`         | Reference to the [PubNub](https://www.npmjs.com/package/pubnub) library to utilize.                                                                                                                    |
+| `publishKey`    |   [x]    |             _None_              | The registered publish key from PubNub. This can be found in your [Red5 Cloud](https://cloud.red5.net) deployment.                                                                                     |
+| `subscribeKey`  |   [x]    |             _None_              | The registered subscribe key from PubNub. This can be found in your [Red5 Cloud](https://cloud.red5.net) deployment.                                                                                   |
+| `userId`        |   [x]    | Auto-generated if not provided. | The associated User ID for PubNub.                                                                                                                                                                     |
+| `roomId`        |   [x]    |             `red5`              | Default Channel ID to subscribe to in PubNub messaging.                                                                                                                                                |
+| `expiryMinutes` |   [-]    |              `120`              | Default expiration of issued token associated with client.                                                                                                                                             |
+| `authToken`     |   [-]    |             _None_              | Optional authentication token issues from PubNub - if known.                                                                                                                                           |
+| `cloudEndpoint` |   [-]    |             _None_              | Optional endpoint of Red5 Cloud deployment to attempt access of `authToken` from PubNub system.                                                                                                        |
+| `backendUrl`    |   [-]    |             _None_              | Optional full URL of service endpoint to access `authToken` from PubNub system. [See documentation on deploying your own service.](https://www.red5.net/docs/red5-cloud/development/sdks/backend-sdk/) |
+| `logLevel`      |   [-]    |             `trace`             | The default log level of the PubNub client.                                                                                                                                                            |
 
 ## Authentication
 
@@ -16411,21 +16547,21 @@ Request to publish a message on the target channel.
 
 The following events are dispatched by the underlying pubnub integration and bubbled out through the `WHIPClient` and enumerated on the `PubNubEventTypes` object:
 
-| Access | Event Type | Meaning |
-| :--- | :--- | :--- |
-| `CONNECTED` | 'PubNub.Connected' | Dispatched when the PubNub client has successfully connected to the PubNub service. |
-| `DISCONNECTED` | 'PubNub.Disconnected' | Dispatched when the PubNub client has disconnected from the PubNub service. |
-| `SUBSCRIBE_SUCCESS` | 'PubNub.Subscribe.Success' | Dispatched when a channel subscription request has completed successfully. The `data` property contains details about the subscription. |
-| `SUBSCRIBE_FAILURE` | 'PubNub.Subscribe.Failure' | Dispatched when a channel subscription request has failed. The `data` property contains error information. |
-| `UNSUBSCRIBE_SUCCESS` | 'PubNub.Unsubscribe.Success' | Dispatched when a channel unsubscribe request has completed successfully. The `data` property contains details about the unsubscription. |
-| `UNSUBSCRIBE_FAILURE` | 'PubNub.Unsubscribe.Failure' | Dispatched when a channel unsubscribe request has failed. The `data` property contains error information. |
-| `MESSAGE_RECEIVED` | 'PubNub.Message.Received' | Dispatched when a message is received on a subscribed channel. The `data` property contains the message payload. |
-| `MESSAGE_SEND_SUCCESS` | 'PubNub.Message.Send.Success' | Dispatched when a message has been successfully published to a channel. The `data` property contains confirmation details. |
-| `MESSAGE_SEND_FAILURE` | 'PubNub.Message.Send.Failure' | Dispatched when a message publish request has failed. The `data` property contains error information. |
-| `AUTH_TOKEN_GENERATED` | 'PubNub.AuthToken.Generated' | Dispatched when an authentication token has been successfully generated. The `data` property contains the token information. |
-| `AUTH_TOKEN_GENERATION_ERROR` | 'PubNub.AuthToken.Generation.Error' | Dispatched when authentication token generation has failed. The `data` property contains error information. |
-| `STATUS` | 'PubNub.Status' | Dispatched on general status notification. The `data` property contains the status. |
-| `ERROR` | 'PubNub.Error' | Dispatched when a general error occurs in the PubNub client. The `data` property contains error details. |
+| Access                        | Event Type                          | Meaning                                                                                                                                  |
+| :---------------------------- | :---------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------- |
+| `CONNECTED`                   | 'PubNub.Connected'                  | Dispatched when the PubNub client has successfully connected to the PubNub service.                                                      |
+| `DISCONNECTED`                | 'PubNub.Disconnected'               | Dispatched when the PubNub client has disconnected from the PubNub service.                                                              |
+| `SUBSCRIBE_SUCCESS`           | 'PubNub.Subscribe.Success'          | Dispatched when a channel subscription request has completed successfully. The `data` property contains details about the subscription.  |
+| `SUBSCRIBE_FAILURE`           | 'PubNub.Subscribe.Failure'          | Dispatched when a channel subscription request has failed. The `data` property contains error information.                               |
+| `UNSUBSCRIBE_SUCCESS`         | 'PubNub.Unsubscribe.Success'        | Dispatched when a channel unsubscribe request has completed successfully. The `data` property contains details about the unsubscription. |
+| `UNSUBSCRIBE_FAILURE`         | 'PubNub.Unsubscribe.Failure'        | Dispatched when a channel unsubscribe request has failed. The `data` property contains error information.                                |
+| `MESSAGE_RECEIVED`            | 'PubNub.Message.Received'           | Dispatched when a message is received on a subscribed channel. The `data` property contains the message payload.                         |
+| `MESSAGE_SEND_SUCCESS`        | 'PubNub.Message.Send.Success'       | Dispatched when a message has been successfully published to a channel. The `data` property contains confirmation details.               |
+| `MESSAGE_SEND_FAILURE`        | 'PubNub.Message.Send.Failure'       | Dispatched when a message publish request has failed. The `data` property contains error information.                                    |
+| `AUTH_TOKEN_GENERATED`        | 'PubNub.AuthToken.Generated'        | Dispatched when an authentication token has been successfully generated. The `data` property contains the token information.             |
+| `AUTH_TOKEN_GENERATION_ERROR` | 'PubNub.AuthToken.Generation.Error' | Dispatched when authentication token generation has failed. The `data` property contains error information.                              |
+| `STATUS`                      | 'PubNub.Status'                     | Dispatched on general status notification. The `data` property contains the status.                                                      |
+| `ERROR`                       | 'PubNub.Error'                      | Dispatched when a general error occurs in the PubNub client. The `data` property contains error details.                                 |
 
 ### Source: `MIGRATION_GUIDE.md`
 
@@ -16440,10 +16576,11 @@ The following events are dispatched by the underlying pubnub integration and bub
 
 ---
 
-# Red5 HTML SDK Migration Guide
+# Red5 Web SDK Migration Guide
 
 This documentation serves as a guide in migrating client-side code where a breaking change to the API has been made in a distribution.
 
+- [16.x to 17.0.0](#migrating-from-16x-to-1700)
 - [14.x to 15.0.0](#migrating-from-14x-to-1500)
 - [13.x to 14.0.0](#migrating-from-13x-to-1400)
 - [12.x to 13.0.0](#migrating-from-12x-to-1300)
@@ -16454,6 +16591,57 @@ This documentation serves as a guide in migrating client-side code where a break
 - [5.0.0 to 5.4.0](#migrating-from-500-to-540)
 - [4.0.0 to 5.0.0](#migrating-from-400-to-500)
 - [3.5.0 to 4.0.0](#migrating-from-350-to-400)
+
+# Migrating from `16.x` to `17.0.0`
+
+**ALERT: Breaking Changes**
+
+The `17.0.0` release renames the published browser SDK from **Red5 Pro HTML SDK** / **Red5 Pro WebRTC SDK** (`red5pro-webrtc-sdk`) to **Red5 Web SDK** (`red5-web-sdk`). Client APIs (`WHIPClient`, `WHEPClient`, MOQ clients, events) are unchanged. Historical sections below (15.0.0, 8.0.0, …) still describe those past releases and are not rewritten.
+
+## Package and module specifier
+
+```sh
+# before
+npm install red5pro-webrtc-sdk
+# after
+npm install red5-web-sdk
+```
+
+```js
+// before
+import { WHIPClient, MOQPublisher } from 'red5pro-webrtc-sdk'
+// after
+import { WHIPClient, MOQPublisher } from 'red5-web-sdk'
+```
+
+## Script tag and CDN
+
+Bundle filenames change in the same major:
+
+```html
+<!-- before -->
+<script src="https://cdn.jsdelivr.net/npm/red5pro-webrtc-sdk@latest/red5-web-sdk-webrtc.min.js"></script>
+<!-- after -->
+<script src="https://cdn.jsdelivr.net/npm/red5-web-sdk@latest/red5-web-sdk.min.js"></script>
+```
+
+UMD / IIFE pages: change the `src` URL. **`17.x` assigns both globals to the same object** (`red5prosdk === red5websdk`), so existing `const { WHIPClient } = red5prosdk` and `(window.red5prosdk)` keep working. New samples use `red5websdk`.
+
+Optional focused files (same global; load only one script per page):
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/red5-web-sdk@latest/red5-web-sdk-webrtc.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/red5-web-sdk@latest/red5-web-sdk-moq.min.js"></script>
+```
+
+```js
+import { WHIPClient } from 'red5-web-sdk/webrtc'
+import { MOQPublisher } from 'red5-web-sdk/moq'
+```
+
+## Unchanged
+
+Default `mediaElementId` values (`red5pro-publisher`, `red5pro-subscriber`), `red5pro-media.css` / `red5pro-media-*` classes, and event type strings are not renamed.
 
 # Migrating from `14.x` to `15.0.0`
 
@@ -16476,10 +16664,10 @@ For example, if you were previously establishing a publisher as such:
 ```js
 const config = {
   host: 'myred5.cloud',
-  streamName: 'mystream'
+  streamName: 'mystream',
 }
 const publisher = new RTCPublisher()
-publisher.on('*', event => console.log(event))
+publisher.on('*', (event) => console.log(event))
 await publisher.init(config)
 await publisher.publish()
 ```
@@ -16489,10 +16677,10 @@ You can simply swap over to using the `WHEPClient` like so:
 ```js
 const config = {
   host: 'myred5.cloud',
-  streamName: 'mystream'
+  streamName: 'mystream',
 }
 const publisher = new WHIPClient()
-publisher.on('*', event => console.log(event))
+publisher.on('*', (event) => console.log(event))
 await publisher.init(config)
 await publisher.publish()
 ```
@@ -16511,8 +16699,8 @@ The `endpoint` init config param is to be used in tandem with a `nodeGroup` conn
 
 More Information related to this configuration is detailed in the following documents:
 
-* [WHIPClient](docs/whip-client.md#stream-manager-20)
-* [WHEPClient](docs/whep-client.md#stream-manager-20)
+- [WHIPClient](docs/whip-client.md#stream-manager-20)
+- [WHEPClient](docs/whep-client.md#stream-manager-20)
 
 > [NOTE] SharedObject support has been removed in 13.0.0
 
@@ -16565,13 +16753,13 @@ While currently not open source, the SDK build has been published to NPM to allo
 ## Install as `script` in HTML page
 
 ```
-<script src="https://unpkg.com/red5pro-webrtc-sdk@latest/red5pro-sdk.min.js"></script>
+<script src="https://unpkg.com/red5pro-webrtc-sdk@latest/red5-web-sdk-webrtc.min.js"></script>
 ```
 
 ... or if you know the version:
 
 ```
-<script src="https://unpkg.com/red5pro-webrtc-sdk@8.0.0/red5pro-sdk.min.js"></script>
+<script src="https://unpkg.com/red5pro-webrtc-sdk@8.0.0/red5-web-sdk-webrtc.min.js"></script>
 ```
 
 ## Install using `npm` or `yarn` for you browser-based projects
@@ -16947,7 +17135,7 @@ In the `3.5.0` version of the Red5 Pro HTML SDK, a view was required in order to
 <html>
   <head>
     <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
-    <script src="lib/red5pro/red5pro-sdk.min.js"></script>
+    <script src="lib/red5pro/red5-web-sdk-webrtc.min.js"></script>
   <head>
   <body>
     <video id="red5pro-publisher" muted></video>
@@ -16993,7 +17181,7 @@ The requirement for creating a view and attaching either the **Publisher** or **
 <html>
   <head>
     <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
-    <script src="lib/red5pro/red5pro-sdk.min.js"></script>
+    <script src="lib/red5pro/red5-web-sdk-webrtc.min.js"></script>
   <head>
   <body>
     <video id="red5pro-publisher" muted></video>
@@ -17036,7 +17224,7 @@ By defining the `id` attribute of the target [HTMLMediaElement](https://develope
 <html>
   <head>
     <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
-    <script src="lib/red5pro/red5pro-sdk.min.js"></script>
+    <script src="lib/red5pro/red5-web-sdk-webrtc.min.js"></script>
   <head>
   <body>
     <video id="red5pro-publisher" muted></video>
@@ -17104,7 +17292,7 @@ In the `3.5.0` version of the SDK, subscription request and playback where bundl
 <html>
   <head>
     <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
-    <script src="lib/red5pro/red5pro-sdk.min.js"></script>
+    <script src="lib/red5pro/red5-web-sdk-webrtc.min.js"></script>
   <head>
   <body>
     <video id="red5pro-subscriber" controls></video>
@@ -17138,7 +17326,7 @@ In the `4.0.0` version of the SDK, subscription request is made by invoking `sub
 <html>
   <head>
     <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
-    <script src="lib/red5pro/red5pro-sdk.min.js"></script>
+    <script src="lib/red5pro/red5-web-sdk-webrtc.min.js"></script>
   <head>
   <body>
     <video id="red5pro-subscriber" controls></video>
@@ -17177,7 +17365,7 @@ In the `3.5.0` version of the SDK, unsubscription request and stop of playback w
 <html>
   <head>
     <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
-    <script src="lib/red5pro/red5pro-sdk.min.js"></script>
+    <script src="lib/red5pro/red5-web-sdk-webrtc.min.js"></script>
   <head>
   <body>
     <video id="red5pro-subscriber" controls></video>
@@ -17224,7 +17412,7 @@ In the `4.0.0` version of the SDK, unsubscription request is made by invoking `u
 <html>
   <head>
     <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
-    <script src="lib/red5pro/red5pro-sdk.min.js"></script>
+    <script src="lib/red5pro/red5-web-sdk-webrtc.min.js"></script>
   <head>
   <body>
     <video id="red5pro-subscriber" controls></video>
@@ -17276,7 +17464,7 @@ In the `3.5.0` version of the SDK, subscription request and playback where bundl
 <html>
   <head>
     <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
-    <script src="lib/red5pro/red5pro-sdk.min.js"></script>
+    <script src="lib/red5pro/red5-web-sdk-webrtc.min.js"></script>
   <head>
   <body>
     <video id="red5pro-subscriber" controls></video>
@@ -17310,7 +17498,7 @@ In the `4.0.0` version of the SDK, a separation of subscription and playback is 
 <html>
   <head>
     <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
-    <script src="lib/red5pro/red5pro-sdk.min.js"></script>
+    <script src="lib/red5pro/red5-web-sdk-webrtc.min.js"></script>
   <head>
   <body>
     <video id="red5pro-subscriber" controls autoplay></video>
@@ -17437,18 +17625,18 @@ This example demonstrates the use of [VideoJS](http://videojs.com/) for live and
 
 ---
 
-# Red5 HTML SDK
+# Red5 Web SDK
 
-> The **Red5 HTML SDK** allows you to integrate live streaming video into your desktop and mobile browser.
+> The **Red5 Web SDK** allows you to integrate live streaming video into your desktop and mobile browser.
 
-* [Important Notices](#important-notices)
-* [Installation](#installation)
-* [Quick Start](#quick-start)
-* [Usage](#usage)
+- [Important Notices](#important-notices)
+- [Installation](#installation)
+- [Quick Start](#quick-start)
+- [Usage](#usage)
 
 # Important Notices
 
-With the `15.0.0` release of the **Red5 HTML SDK**, we have complete overhaul of its development and focus. We have decided to focus solely on **WISH** (WebRTC Ingest Signaling over HTTPS) and dropped WebSocket support previously used for signaling phase.
+With the `15.0.0` release of the **Red5 Web SDK**, we have complete overhaul of its development and focus. We have decided to focus solely on **WISH** (WebRTC Ingest Signaling over HTTPS) and dropped WebSocket support previously used for signaling phase.
 
 As such, the publishing and subscribing logic within the SDK are provided from the `WHIPClient` and `WHEPClient`, respectively.
 
@@ -17456,36 +17644,60 @@ Not only does this free up resources consumed by WebSockets on the Red5 Server d
 
 # Installation
 
+The default build is the **full** SDK (WHIP/WHEP/HLS and MOQ). If you only need one protocol, load the matching focused file instead. All three attach `window.red5websdk` (and alias `window.red5prosdk` on `17.x`). Load **one** script per page; a second file overwrites the global.
+
 ## As Script Dependency in HTML page
 
-```html
-<script src="https://cdn.jsdelivr.net/npm/red5pro-webrtc-sdk@latest/red5pro-sdk.min.js"></script>
-```
-
-... Or if you know the version:
+Full SDK:
 
 ```html
-<script src=https://cdn.jsdelivr.net/npm/red5pro-webrtc-sdk@15.0.0/red5pro-sdk.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/red5-web-sdk@latest/red5-web-sdk.min.js"></script>
 ```
+
+WHIP/WHEP/HLS only:
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/red5-web-sdk@latest/red5-web-sdk-webrtc.min.js"></script>
+```
+
+MOQ only:
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/red5-web-sdk@latest/red5-web-sdk-moq.min.js"></script>
+```
+
+... Or pin a version:
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/red5-web-sdk@15.0.0/red5-web-sdk.min.js"></script>
+```
+
+Playback UI styles ship in the release drop as `red5pro-media.css` (WHIP/WHEP/HLS) and `red5-moq-media.css` (MOQ).
 
 ## Using `npm` or `yarn` for you browser-based projects
 
 ```sh
-npm install --save red5pro-webrtc-sdk
+npm install --save red5-web-sdk
 ```
 
 ```sh
-yarn install red5pro-webrtc-sdk
+yarn install red5-web-sdk
+```
+
+```js
+import { WHIPClient, WHEPClient } from 'red5-web-sdk'
+import { WHIPClient } from 'red5-web-sdk/webrtc'
+import { MOQPublisher } from 'red5-web-sdk/moq'
 ```
 
 # Quick Start
 
-All members exposed on the otherwise global `window.red5prosdk` if loading as a script on an HTML page are importable from the `red5pro-webrtc-sdk` module:
+All members exposed on the otherwise global `window.red5websdk` if loading as a script on an HTML page are importable from the `red5-web-sdk` module:
 
 _index.js_
 
 ```js
-import { WHIPClient, WHEPClient } from 'red5pro-webrtc-sdk'
+import { WHIPClient, WHEPClient } from 'red5-web-sdk'
 ```
 
 ## Quick Start - Standalone Server Deployment
@@ -17509,14 +17721,14 @@ You can sign up and download the Red5 Server to manage your own deployment at [h
     <div>
       <video id="red5pro-subscriber" width="640" height="480" controls autoplay playsinline></video>
     </div>
-    <!-- Red5 HTML SDK -->
-    <script src="https://cdn.jsdelivr.net/npm/red5pro-webrtc-sdk@latest/red5pro-sdk.min.js"></script>
+    <!-- Red5 Web SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/red5-web-sdk@latest/red5-web-sdk.min.js"></script>
     <!-- Create Pub/Sub -->
     <script>
-      ((red5prosdk) => {
+      ((red5websdk) => {
         'use strict'
 
-        const { WHIPClient, WHEPClient, PublisherEventTypes } = red5prosdk
+        const { WHIPClient, WHEPClient, PublisherEventTypes } = red5websdk
 
         const publisher = new WHIPClient()
         const subscriber = new WHEPClient()
@@ -17549,7 +17761,7 @@ You can sign up and download the Red5 Server to manage your own deployment at [h
         // Start Publisher first ->
         publish()
 
-      }(window.red5prosdk))
+      }(window.red5websdk))
     </script>
   </body>
 </html>
@@ -17580,19 +17792,19 @@ The Red5 Cloud deployment utilizes a Stream Manager for autoscaling. With the St
     <div>
       <video id="red5pro-subscriber" width="640" height="480" controls autoplay playsinline></video>
     </div>
-    <!-- Red5 HTML SDK -->
-    <script src="https://cdn.jsdelivr.net/npm/red5pro-webrtc-sdk@latest/red5pro-sdk.min.js"></script>
+    <!-- Red5 Web SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/red5-web-sdk@latest/red5-web-sdk.min.js"></script>
     <!-- Create Pub/Sub -->
     <script>
       <script>
-      ((red5prosdk) => {
+      ((red5websdk) => {
         'use strict'
 
         const host = 'my-deployment.cloud.red5.net'
         const nodeGroup = 'my-node-group'
         const streamName = 'my-stream-name'
 
-        const { WHIPClient, WHEPClient, PublisherEventTypes } = red5prosdk
+        const { WHIPClient, WHEPClient, PublisherEventTypes } = red5websdk
         const publisher = new WHIPClient()
         const subscriber = new WHEPClient()
 
@@ -17632,7 +17844,7 @@ The Red5 Cloud deployment utilizes a Stream Manager for autoscaling. With the St
         // Start Publisher first ->
         publish()
 
-      }(window.red5prosdk))
+      }(window.red5websdk))
     </script>
   </body>
 </html>
@@ -17644,11 +17856,10 @@ The [WHIPClient](docs/whip-client.md) and [WHEPClient](docs/whep-client.md) - al
 
 The initialization configurations and relevant APIs available for each client can be found in their respective documentation found in this repo:
 
-* [WHIPClient](docs/whip-client.md)
-* [WHEPClient](docs/whep-client.md)
-* [HLSSubscriber](docs/hls-subscriber.md)
-* [MOQPublisher](docs/moq-publisher.md)
-* [MOQSubscriber](docs/moq-subscriber.md)
-* [MOQCatalog](docs/moq-catalog.md)
-* [MOQMessageChannel](docs/moq-message-channel.md)
-
+- [WHIPClient](docs/whip-client.md)
+- [WHEPClient](docs/whep-client.md)
+- [HLSSubscriber](docs/hls-subscriber.md)
+- [MOQPublisher](docs/moq-publisher.md)
+- [MOQSubscriber](docs/moq-subscriber.md)
+- [MOQCatalog](docs/moq-catalog.md)
+- [MOQMessageChannel](docs/moq-message-channel.md)

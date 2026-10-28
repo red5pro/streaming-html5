@@ -2,13 +2,13 @@
 
 Our goal at [Red5](https://red5.net) has always been to give developers the tools they need to deliver real-time streaming without complexity, bottlenecks, or hidden limitations. The Red5 integration with [PubNub](https://www.pubnub.com/) represents a major step toward that mission, combining sub-250 ms video streaming with sub-100 ms data delivery to power chat, reactions, synchronized metadata, and other interactive features at global scale.
 
-The intent of this document is to describe the integration points within our HTML SDK in which you can take advantage of PubNub and its services.
+The intent of this document is to describe the integration points within the Red5 Web SDK in which you can take advantage of PubNub and its services.
 
 > Read more about our thoughts and goals regarding PubNub Integration [here](https://www.red5.net/blog/red5-cloud-integrates-pubnub-to-deliver-interactivity-intelligence-global-scalability-for-real-time-streaming/).
 
 # PubNubClient
 
-The Red5 HTML SDK provides a basic `PubNubClient` to establish a connection to PubNub services for message communication. Its interface is very similar to that of the `WHIPClient` and `WHEPClient` provided in the SDK - both of which also provide easy init parameters and hooks for include PubNub intergation.
+The Red5 Web SDK provides a basic `PubNubClient` to establish a connection to PubNub services for message communication. Its interface is very similar to that of the `WHIPClient` and `WHEPClient` provided in the SDK - both of which also provide easy init parameters and hooks for include PubNub intergation.
 
 This document details the use of `PubNubClient` itself and may provide clearer details of the integration with the publisher and subscriber clients.
 
@@ -20,12 +20,14 @@ This document details the use of `PubNubClient` itself and may provide clearer d
 
 # Usage
 
+On a script-tag page, load either the full SDK (`red5-web-sdk.min.js`) or the WHIP/WHEP/HLS build (`red5-web-sdk-webrtc.min.js`). Both attach `window.red5websdk`. From npm, `import { PubNubClient } from 'red5-web-sdk'` or `'red5-web-sdk/webrtc'`.
+
 A `PubNubClient` can be used singularly without taking advantage of the streaming capabilities of the `WHIPClient` and `WHEPClient` clients of the SDK.
 
 ```js
-// import { PubNubClient } from red5pro-webrtc-sdk
+// import { PubNubClient } from red5-web-sdk
 // OR, if loaded from CDN
-const { PubNubClient } = red5prosdk
+const { PubNubClient } = red5websdk
 ...
 const config = {
   publishKey: 'pub-c-XXXX',

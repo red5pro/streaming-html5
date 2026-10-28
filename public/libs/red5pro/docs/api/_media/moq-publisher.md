@@ -27,6 +27,8 @@ When you want to publish media over Media over QUIC (MoQ), the SDK provides `MOQ
 
 # Usage
 
+On a script-tag page, load either the full SDK (`red5-web-sdk.min.js`) or the MOQ build (`red5-web-sdk-moq.min.js`). Both attach `window.red5websdk`. From npm, `import { MOQPublisher } from 'red5-web-sdk'` or `'red5-web-sdk/moq'`.
+
 There are two options to start a `MOQPublisher`:
 
 1. Construct with a MOQ URL (auto init and publish).
@@ -35,7 +37,7 @@ There are two options to start a `MOQPublisher`:
 ## Using init() and publish()
 
 ```js
-const { MOQPublisher, PublisherEventTypes, MOQPublisherEventTypes } = red5prosdk
+const { MOQPublisher, PublisherEventTypes, MOQPublisherEventTypes } = red5websdk
 
 const publisher = new MOQPublisher()
 publisher.on('*', event => {
@@ -312,12 +314,29 @@ publisher.on(MOQPublisherEventTypes.SEND_STATS, event => {
 
 # Statistics
 
-`MOQPublisher` supports the same stats pattern as other SDK clients:
+`MOQPublisher` supports the same stats pattern as other SDK clients. The default endpoint is `EVENT_TRANSPORT` (`MOQ.Stats.Report`). To send the same `STATS_REPORT` JSON over the managed MoQ message channel, set `endpoint` to `DATA_CHANNEL` and enable `messageChannel`:
+
+```js
+const { StatsEndpointType } = red5websdk
+
+await publisher.init({
+  endpoint: 'https://relay.example.com:4433',
+  namespace: 'live/mystream',
+  messageChannel: { enabled: true },
+  stats: {
+    interval: 5000,
+    endpoint: StatsEndpointType.DATA_CHANNEL
+  }
+})
+```
 
 ```js
 publisher.monitorStats({
-  interval: 5000
+  interval: 5000,
+  endpoint: StatsEndpointType.EVENT_TRANSPORT
 })
 ```
+
+If `DATA_CHANNEL` is requested but `messageChannel.enabled` is not set, the SDK warns once and emits `STATS_REPORT` instead. Reports that arrive before the channel is open are queued until `MOQ.MessageChannel.Open`.
 
 You can also provide `stats` directly in `init()` options to start monitoring automatically once publishing starts.

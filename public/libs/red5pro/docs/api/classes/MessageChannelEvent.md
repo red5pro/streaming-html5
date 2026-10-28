@@ -1,12 +1,12 @@
-[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.1**](../README.md)
 
 ***
 
-[Red5 Pro WebRTC SDK](../globals.md) / MessageChannelEvent
+[Red5 Web SDK](../globals.md) / MessageChannelEvent
 
 # Class: MessageChannelEvent
 
-Event for a MessageChannel within the Red5 Pro WebRTC SDK.
+Event for a MessageChannel within the Red5 Web SDK.
 
 ## Extends
 

@@ -33,13 +33,16 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. -->
     <link rel="stylesheet" href="/style/pages/whip-castlabs.css" />
     <script src="https://jan-ivar.github.io/polyfills/mediastreamtrackprocessor.js"></script>
     <script src="https://jan-ivar.github.io/polyfills/mediastreamtrackgenerator.js"></script>
-    <script src="/libs/red5pro/red5pro-sdk.min.js"></script>
+    <script src="/libs/red5pro/red5-web-sdk-webrtc.min.js"></script>
   </head>
   <body>
     <r5-header></r5-header>
 
     <main class="page">
-      <nav class="breadcrumb"><a class="breadcrumb__home" href="/">Home</a><span class="breadcrumb__sep" aria-hidden="true">/</span> castLabs DRM Publisher</nav>
+      <nav class="breadcrumb">
+        <a class="breadcrumb__home" href="/">Home</a
+        ><span class="breadcrumb__sep" aria-hidden="true">/</span> castLabs DRM Publisher
+      </nav>
 
       <h1 class="page__heading">castLabs Publisher</h1>
       <p class="page__description">
@@ -153,17 +156,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. -->
           </div>
 
           <div class="media-stage">
-
             <video id="publisher-video" autoplay playsinline muted controls></video>
 
             <span class="live-pill is-hidden" id="live-pill" aria-live="polite">
-
               <span class="live-pill__dot" aria-hidden="true"></span>
 
               Live
-
             </span>
-
           </div>
           <div class="publish-config-section" id="publish-config-section">
             <r5-publish-mode id="publish-mode"></r5-publish-mode>
@@ -191,7 +190,21 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. -->
       <div class="log-panel">
         <div class="log-panel__header">
           <h2 class="log-panel__title">Log</h2>
-          <button type="button" class="btn btn--ghost log-panel__clear" id="log-clear-btn" aria-label="Clear log" title="Clear log"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"></path><path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M10 11v6"></path><path d="M14 11v6"></path></svg></button>
+          <button
+            type="button"
+            class="btn btn--ghost log-panel__clear"
+            id="log-clear-btn"
+            aria-label="Clear log"
+            title="Clear log"
+          >
+            <svg class="i" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M3 6h18"></path>
+              <path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"></path>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path>
+              <path d="M10 11v6"></path>
+              <path d="M14 11v6"></path>
+            </svg>
+          </button>
         </div>
         <div class="log" id="log"></div>
       </div>

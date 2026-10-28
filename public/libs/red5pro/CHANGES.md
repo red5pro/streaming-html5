@@ -1,5 +1,15 @@
 # Changes
 
+## 17.0.0
+
+**ALERT: Breaking Changes**
+
+- feat: Rename published SDK to **Red5 Web SDK** (`red5-web-sdk`). Previous npm name: `red5pro-webrtc-sdk`.
+- feat: UMD global `red5websdk`; `17.x` also sets `window.red5prosdk` to the same object for script-tag compatibility.
+- feat: Bundle files `red5-web-sdk.min.js` / `red5-web-sdk.esm.min.js` (replacing `red5pro-sdk*.js`).
+- feat: Focused CDN/npm builds `red5-web-sdk-webrtc` and `red5-web-sdk-moq` (same `red5websdk` global). Import `red5-web-sdk/webrtc` or `red5-web-sdk/moq`. Load one script per page.
+- Default `mediaElementId` values, `red5pro-media.css`, and event strings are unchanged.
+
 ## 16.3.0
 
 - fix: MOQ Catalog subscribe+fetch (Todd Anderson).

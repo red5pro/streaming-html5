@@ -1,12 +1,12 @@
-[**Red5 Pro WebRTC SDK v16.4.0-beta.2**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.1**](../README.md)
 
 ***
 
-[Red5 Pro WebRTC SDK](../globals.md) / PlaybackController
+[Red5 Web SDK](../globals.md) / PlaybackController
 
 # Abstract Class: PlaybackController
 
-Base class for a PlaybackController within the Red5 Pro WebRTC SDK.
+Base class for a PlaybackController within the Red5 Web SDK.
 A PlaybackController is responsible for managing the playback and state of a media element.
 
 ## Extends
