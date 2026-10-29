@@ -232,7 +232,7 @@ export default class CustomControls {
     else void this.player.requestFullscreen()
   }
 
-  private seek(t: number): void {
+  private seek(offsetFromWindowStart: number): void {
     // Seeking means the viewer wants to watch: clear an earlier pause so playback resumes.
     this.userPaused = false
     const range = timeline()
@@ -241,11 +241,14 @@ export default class CustomControls {
       this.log('Cannot seek yet: the HLS recording has not loaded', 'error')
       return
     }
-    if (range.end - t <= LIVE_SNAP_SECS) {
+    const windowSecs = range.end - range.start
+    const offset = Math.max(0, Math.min(windowSecs, offsetFromWindowStart))
+    if (windowSecs - offset <= LIVE_SNAP_SECS) {
       this.log('Seek to live')
       this.subscriber.seekTo?.(1)
       return
     }
+    const t = range.start + offset
     // LiveSeekClient seeks to a fraction of the HLS element's duration.
     if (!Number.isFinite(media.duration) || media.duration <= 0) {
       this.log(`Cannot seek: HLS duration is ${media.duration}`, 'error')
@@ -253,7 +256,7 @@ export default class CustomControls {
     }
     const fraction = Math.min(t / media.duration, 0.999)
     this.log(
-      `Seek to ${formatClock(t - range.start)} of ${formatClock(range.end - range.start)} ` +
+      `Seek to ${formatClock(offset)} of ${formatClock(windowSecs)} ` +
         `(HLS ${t.toFixed(1)}s of ${media.duration.toFixed(1)}s, readyState ${media.readyState})`
     )
     this.subscriber.seekTo?.(fraction)
@@ -284,12 +287,18 @@ export default class CustomControls {
       return
     }
     this.scrubber.disabled = false
-    this.scrubber.min = String(range.start)
-    this.scrubber.max = String(range.end)
-    if (!this.scrubbing) this.scrubber.value = String(live ? range.end : media.currentTime)
-
-    const position = Number(this.scrubber.value)
     const windowSecs = range.end - range.start
+    // Scrubber uses 0 … recording length; only max grows as the live edge advances.
+    this.scrubber.min = '0'
+    this.scrubber.max = String(windowSecs)
+    if (!this.scrubbing) {
+      const absolute = live ? range.end : media.currentTime
+      const offset = Math.max(0, Math.min(windowSecs, absolute - range.start))
+      this.scrubber.value = String(offset)
+    }
+
+    const offset = Number(this.scrubber.value)
+    const position = range.start + offset
     const wall = live && !this.scrubbing ? null : wallTimeAt(position, range.fragments)
     if (live && !this.scrubbing) {
       this.timeDisplay.textContent = lengthLabel ? `LIVE / ${lengthLabel}` : 'LIVE'
@@ -297,7 +306,7 @@ export default class CustomControls {
       const elapsed = Math.max(0, (wall - this.broadcastStartTime) / 1000)
       this.timeDisplay.textContent = `${formatClock(elapsed)} / ${lengthLabel ?? formatClock(windowSecs)}`
     } else {
-      this.timeDisplay.textContent = `${formatClock(position - range.start)} / ${
+      this.timeDisplay.textContent = `${formatClock(offset)} / ${
         lengthLabel ?? formatClock(windowSecs)
       }`
     }
