@@ -48,6 +48,10 @@ interface Timeline {
 const TICK_MS = 250
 // A seek this close to the live edge returns to live WebRTC instead.
 const LIVE_SNAP_SECS = 3
+// hls.js live/event playlists treat currentTime 0 as "unset" and load at the live edge
+// (`Setting startPosition to -1 next load`), which stalls playback at the beginning.
+const START_SNAP_SECS = 0.1
+const HLS_STALL_TICKS = 8
 
 function formatClock(secs: number): string {
   const total = Math.max(0, Math.floor(secs))
@@ -105,6 +109,8 @@ export default class CustomControls {
   private resuming = false
   private resumeFailed = false
   private broadcastStartTime: number | null = null
+  private lastHlsTime = -1
+  private hlsStallTicks = 0
 
   constructor(subscriber: LiveSeekPlaybackClient, log: ExampleLogger['log']) {
     this.subscriber = subscriber
@@ -192,14 +198,11 @@ export default class CustomControls {
    * HLS was playing. Restart whichever video is on screen unless the viewer paused it.
    */
   private keepPlaying(media: HTMLMediaElement): void {
-    if (
-      this.userPaused ||
-      this.scrubbing ||
-      this.resuming ||
-      !media.paused ||
-      media.readyState === 0
-    )
-      return
+    if (this.userPaused || this.scrubbing || this.resuming) return
+    const hlsMedia = getHls()?.media
+    if (media === hlsMedia) this.recoverStalledHls(media)
+    if (!media.paused) return
+    if (media.readyState === 0 && media !== hlsMedia) return
     this.resuming = true
     const source = media === this.webrtcVideo ? 'WebRTC' : 'HLS'
     media
@@ -218,6 +221,39 @@ export default class CustomControls {
       })
   }
 
+  /**
+   * After a seek to the playlist start, hls.js may keep refreshing the live playlist while the
+   * playhead sits at 0 with no buffer. Nudge to the first media time and start loading there.
+   */
+  private recoverStalledHls(media: HTMLMediaElement): void {
+    const advanced = this.lastHlsTime >= 0 && media.currentTime - this.lastHlsTime > 0.05
+    this.lastHlsTime = media.currentTime
+    if (this.scrubbing || this.userPaused || advanced || media.ended) {
+      this.hlsStallTicks = 0
+      return
+    }
+    const waitingAtStart = media.currentTime < START_SNAP_SECS
+    const stalled = media.paused || media.readyState < HTMLMediaElement.HAVE_FUTURE_DATA
+    if (!waitingAtStart && !stalled) {
+      this.hlsStallTicks = 0
+      return
+    }
+    this.hlsStallTicks += 1
+    if (this.hlsStallTicks < HLS_STALL_TICKS) return
+    this.hlsStallTicks = 0
+    this.kickHlsPlayback(media, 'stalled HLS playback')
+  }
+
+  private kickHlsPlayback(media: HTMLMediaElement, reason: string): void {
+    const range = timeline()
+    const hls = getHls()
+    const t = Math.max(media.currentTime, range?.start ?? 0, START_SNAP_SECS)
+    this.log(`Kicking HLS playback (${reason}) at ${t.toFixed(2)}s`)
+    hls?.startLoad?.(t)
+    if (Number.isFinite(t)) media.currentTime = t
+    media.play().catch((error) => this.log(`HLS play failed: ${String(error)}`, 'error'))
+  }
+
   private toggleMute(): void {
     const media = this.activeMedia()
     if (media.muted) {
@@ -232,7 +268,7 @@ export default class CustomControls {
     else void this.player.requestFullscreen()
   }
 
-  private seek(t: number): void {
+  private seek(offsetFromWindowStart: number): void {
     // Seeking means the viewer wants to watch: clear an earlier pause so playback resumes.
     this.userPaused = false
     const range = timeline()
@@ -241,11 +277,14 @@ export default class CustomControls {
       this.log('Cannot seek yet: the HLS recording has not loaded', 'error')
       return
     }
-    if (range.end - t <= LIVE_SNAP_SECS) {
+    const windowSecs = range.end - range.start
+    const offset = Math.max(0, Math.min(windowSecs, offsetFromWindowStart))
+    if (windowSecs - offset <= LIVE_SNAP_SECS) {
       this.log('Seek to live')
       this.subscriber.seekTo?.(1)
       return
     }
+    const t = Math.max(range.start + START_SNAP_SECS, range.start + offset)
     // LiveSeekClient seeks to a fraction of the HLS element's duration.
     if (!Number.isFinite(media.duration) || media.duration <= 0) {
       this.log(`Cannot seek: HLS duration is ${media.duration}`, 'error')
@@ -253,10 +292,14 @@ export default class CustomControls {
     }
     const fraction = Math.min(t / media.duration, 0.999)
     this.log(
-      `Seek to ${formatClock(t - range.start)} of ${formatClock(range.end - range.start)} ` +
+      `Seek to ${formatClock(offset)} of ${formatClock(windowSecs)} ` +
         `(HLS ${t.toFixed(1)}s of ${media.duration.toFixed(1)}s, readyState ${media.readyState})`
     )
+    this.hlsStallTicks = 0
+    this.lastHlsTime = -1
     this.subscriber.seekTo?.(fraction)
+    getHls()?.startLoad?.(t)
+    media.play().catch((error) => this.log(`HLS play failed after seek: ${String(error)}`, 'error'))
   }
 
   private render(): void {
@@ -284,12 +327,18 @@ export default class CustomControls {
       return
     }
     this.scrubber.disabled = false
-    this.scrubber.min = String(range.start)
-    this.scrubber.max = String(range.end)
-    if (!this.scrubbing) this.scrubber.value = String(live ? range.end : media.currentTime)
-
-    const position = Number(this.scrubber.value)
     const windowSecs = range.end - range.start
+    // Scrubber uses 0 … recording length; only max grows as the live edge advances.
+    this.scrubber.min = '0'
+    this.scrubber.max = String(windowSecs)
+    if (!this.scrubbing) {
+      const absolute = live ? range.end : media.currentTime
+      const offset = Math.max(0, Math.min(windowSecs, absolute - range.start))
+      this.scrubber.value = String(offset)
+    }
+
+    const offset = Number(this.scrubber.value)
+    const position = range.start + offset
     const wall = live && !this.scrubbing ? null : wallTimeAt(position, range.fragments)
     if (live && !this.scrubbing) {
       this.timeDisplay.textContent = lengthLabel ? `LIVE / ${lengthLabel}` : 'LIVE'
@@ -297,7 +346,7 @@ export default class CustomControls {
       const elapsed = Math.max(0, (wall - this.broadcastStartTime) / 1000)
       this.timeDisplay.textContent = `${formatClock(elapsed)} / ${lengthLabel ?? formatClock(windowSecs)}`
     } else {
-      this.timeDisplay.textContent = `${formatClock(position - range.start)} / ${
+      this.timeDisplay.textContent = `${formatClock(offset)} / ${
         lengthLabel ?? formatClock(windowSecs)
       }`
     }
