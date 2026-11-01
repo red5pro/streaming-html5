@@ -56,6 +56,7 @@ export interface HlsLike {
   on: (event: string, handler: (event: string, data: HlsErrorData) => void) => void
   media: HTMLMediaElement | null
   recoverMediaError(): void
+  startLoad?: (startPosition?: number) => void
   playingDate: Date | null
   currentLevel: number
   levels: { details?: { fragments: HlsFragment[] } }[]
