@@ -70,6 +70,11 @@ function timeline(): Timeline | null {
   const fragments = level?.details?.fragments
   if (!fragments?.length) return null
   const last = fragments[fragments.length - 1]
+  console.log('[HLS] timeline', {
+    start: fragments[0].start,
+    end: last.start + last.duration,
+    fragments,
+  })
   return { start: fragments[0].start, end: last.start + last.duration, fragments }
 }
 
@@ -340,15 +345,12 @@ export default class CustomControls {
     const offset = Number(this.scrubber.value)
     const position = range.start + offset
     const wall = live && !this.scrubbing ? null : wallTimeAt(position, range.fragments)
+    // Live total is publisher uptime (startTime). While on HLS, both sides are playlist
+    // media time so a cold-start gap after publish still shows 0:00 at the first segment.
     if (live && !this.scrubbing) {
       this.timeDisplay.textContent = lengthLabel ? `LIVE / ${lengthLabel}` : 'LIVE'
-    } else if (this.broadcastStartTime !== null && wall != null) {
-      const elapsed = Math.max(0, (wall - this.broadcastStartTime) / 1000)
-      this.timeDisplay.textContent = `${formatClock(elapsed)} / ${lengthLabel ?? formatClock(windowSecs)}`
     } else {
-      this.timeDisplay.textContent = `${formatClock(offset)} / ${
-        lengthLabel ?? formatClock(windowSecs)
-      }`
+      this.timeDisplay.textContent = `${formatClock(offset)} / ${formatClock(windowSecs)}`
     }
     this.wallDisplay.textContent =
       wall == null ? '' : `${new Date(wall).toISOString().slice(11, 19)} UTC`
