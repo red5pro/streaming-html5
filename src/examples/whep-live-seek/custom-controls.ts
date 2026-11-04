@@ -70,11 +70,6 @@ function timeline(): Timeline | null {
   const fragments = level?.details?.fragments
   if (!fragments?.length) return null
   const last = fragments[fragments.length - 1]
-  console.log('[HLS] timeline', {
-    start: fragments[0].start,
-    end: last.start + last.duration,
-    fragments,
-  })
   return { start: fragments[0].start, end: last.start + last.duration, fragments }
 }
 
