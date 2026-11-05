@@ -1,8 +1,8 @@
 # LLM Docs Index
 
 - project: red5pro-html-sdk-ts
-- version: 16.4.0-beta.3
-- generated_at: 2026-10-21T14:39:07.974Z
+- version: 16.4.0-beta.5
+- generated_at: 2026-11-05T13:57:32.012Z
 
 ## Included Markdown Files
 
