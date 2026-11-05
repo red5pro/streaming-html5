@@ -1,4 +1,4 @@
-[**Red5 Pro WebRTC SDK v16.4.0-beta.3**](../README.md)
+[**Red5 Pro WebRTC SDK v16.4.0-beta.5**](../README.md)
 
 ***
 
@@ -36,15 +36,7 @@
 
 ### options?
 
-> `optional` **options?**: `object`
-
-#### backBufferLength
-
-> **backBufferLength**: `number`
-
-#### debug
-
-> **debug**: `boolean`
+> `optional` **options?**: `Record`\<`string`, `unknown`\>
 
 ***
 

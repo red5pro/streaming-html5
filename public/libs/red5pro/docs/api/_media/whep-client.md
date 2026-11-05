@@ -442,6 +442,8 @@ The `liveSeek` configuration object has the following signature:
 
 - Options to provide to HLS.JS instance directly. _Please refer to [their documentation](https://github.com/video-dev/hls.js/blob/master/docs/API.md#fine-tuning)_.
 - Example: `{ debug: false, backBufferLength: 0 }`
+- The SDK merges longer fragment/manifest timeouts and larger buffer targets before your object so DVR seeks still load when the live window is far from the viewer (high RTT to the HLS origin). Values you pass win.
+- A DVR seek is committed when the scrubber is released, not on every thumb move, so in-flight TS requests are not aborted. Playback waits until a short forward buffer exists at the seek point. Non-fatal hls.js stall and abort errors are not surfaced as `LIVE_SEEK_ERROR`.
 
 # Stream Manager 2.0
 
