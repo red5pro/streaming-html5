@@ -1,5 +1,9 @@
 # Changes
 
+## 16.4.0
+
+- feat: `postEmptyOffer` option for WHEP init config to not send SDP in request offer.
+
 ## 16.3.0
 
 - fix: MOQ Catalog subscribe+fetch (Todd Anderson).
