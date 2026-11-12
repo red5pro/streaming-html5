@@ -1,8 +1,8 @@
 # LLM Docs Index
 
 - project: red5pro-html-sdk-ts
-- version: 16.2.0-beta.2
-- generated_at: 2026-09-18T19:46:07.791Z
+- version: 16.3.0-beta.4
+- generated_at: 2026-09-24T14:49:41.315Z
 
 ## Included Markdown Files
 
@@ -23,6 +23,7 @@
 - docs/api/classes/MessageChannelEvent.md
 - docs/api/classes/MessageTransportStateEvent.md
 - docs/api/classes/MOQCatalog.md
+- docs/api/classes/MOQMessageChannel.md
 - docs/api/classes/MOQPublisher.md
 - docs/api/classes/MOQSubscriber.md
 - docs/api/classes/PlaybackController.md
@@ -61,6 +62,11 @@
 - docs/api/type-aliases/LiveSeekOptions.md
 - docs/api/type-aliases/MediaConstraintRange.md
 - docs/api/type-aliases/MediaConstraints.md
+- docs/api/type-aliases/MOQCatalogConfigType.md
+- docs/api/type-aliases/MOQDataChannelConfiguration.md
+- docs/api/type-aliases/MOQMessageChannelConfigType.md
+- docs/api/type-aliases/MOQPublisherConfigType.md
+- docs/api/type-aliases/MOQSubscriberConfigType.md
 - docs/api/type-aliases/RTCPublisherConfigType.md
 - docs/api/type-aliases/RTCSubscriberConfigType.md
 - docs/api/type-aliases/RTCWhepSubscriberConfigType.md
@@ -71,6 +77,11 @@
 - docs/api/variables/default.md
 - docs/api/variables/defaultHLSSubscriberConfig.md
 - docs/api/variables/defaultLiveSeekConfig.md
+- docs/api/variables/defaultMOQCatalogConfig.md
+- docs/api/variables/defaultMOQDataChannelConfiguration.md
+- docs/api/variables/defaultMOQMessageChannelConfig.md
+- docs/api/variables/defaultMOQPublisherConfig.md
+- docs/api/variables/defaultMOQSubscriberConfig.md
 - docs/api/variables/defaultStatsConfig.md
 - docs/api/variables/defaultWhepSubscriberConfig.md
 - docs/api/variables/defaultWhipPublisherConfig.md

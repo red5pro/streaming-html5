@@ -1,4 +1,4 @@
-[**Red5 Pro WebRTC SDK v16.2.0-beta.2**](../README.md)
+[**Red5 Pro WebRTC SDK v16.3.0-beta.4**](../README.md)
 
 ***
 
@@ -30,7 +30,7 @@ Base class for an Event Emitter.
 
 ##### additionalOptions?
 
-`MOQPublisherConfigType`
+[`MOQPublisherConfigType`](../type-aliases/MOQPublisherConfigType.md)
 
 ##### stream?
 
@@ -66,13 +66,33 @@ Base class for an Event Emitter.
 
 ***
 
-### getOptions()
+### getConnection()
 
-> **getOptions**(): `MOQPublisherConfigType`
+> **getConnection**(): `MoqtConnection` \| `undefined`
 
 #### Returns
 
-`MOQPublisherConfigType`
+`MoqtConnection` \| `undefined`
+
+***
+
+### getMessageChannel()
+
+> **getMessageChannel**(): [`MOQMessageChannel`](MOQMessageChannel.md) \| `undefined`
+
+#### Returns
+
+[`MOQMessageChannel`](MOQMessageChannel.md) \| `undefined`
+
+***
+
+### getOptions()
+
+> **getOptions**(): [`MOQPublisherConfigType`](../type-aliases/MOQPublisherConfigType.md)
+
+#### Returns
+
+[`MOQPublisherConfigType`](../type-aliases/MOQPublisherConfigType.md)
 
 ***
 
@@ -94,7 +114,7 @@ Base class for an Event Emitter.
 
 ##### options
 
-`MOQPublisherConfigType`
+[`MOQPublisherConfigType`](../type-aliases/MOQPublisherConfigType.md)
 
 #### Returns
 
@@ -110,7 +130,7 @@ Base class for an Event Emitter.
 
 ##### options
 
-`MOQPublisherConfigType`
+[`MOQPublisherConfigType`](../type-aliases/MOQPublisherConfigType.md)
 
 ##### stream?
 

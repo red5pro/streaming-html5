@@ -1,8 +1,8 @@
 # Red5 Pro HTML SDK - LLM Reference
 
 - project: red5pro-html-sdk-ts
-- version: 16.2.0-beta.2
-- generated_at: 2026-09-18T19:46:07.792Z
+- version: 16.3.0-beta.4
+- generated_at: 2026-09-24T14:49:41.315Z
 
 ## Included Files
 
@@ -23,6 +23,7 @@
 - docs/api/classes/MessageChannelEvent.md
 - docs/api/classes/MessageTransportStateEvent.md
 - docs/api/classes/MOQCatalog.md
+- docs/api/classes/MOQMessageChannel.md
 - docs/api/classes/MOQPublisher.md
 - docs/api/classes/MOQSubscriber.md
 - docs/api/classes/PlaybackController.md
@@ -61,6 +62,11 @@
 - docs/api/type-aliases/LiveSeekOptions.md
 - docs/api/type-aliases/MediaConstraintRange.md
 - docs/api/type-aliases/MediaConstraints.md
+- docs/api/type-aliases/MOQCatalogConfigType.md
+- docs/api/type-aliases/MOQDataChannelConfiguration.md
+- docs/api/type-aliases/MOQMessageChannelConfigType.md
+- docs/api/type-aliases/MOQPublisherConfigType.md
+- docs/api/type-aliases/MOQSubscriberConfigType.md
 - docs/api/type-aliases/RTCPublisherConfigType.md
 - docs/api/type-aliases/RTCSubscriberConfigType.md
 - docs/api/type-aliases/RTCWhepSubscriberConfigType.md
@@ -71,6 +77,11 @@
 - docs/api/variables/default.md
 - docs/api/variables/defaultHLSSubscriberConfig.md
 - docs/api/variables/defaultLiveSeekConfig.md
+- docs/api/variables/defaultMOQCatalogConfig.md
+- docs/api/variables/defaultMOQDataChannelConfiguration.md
+- docs/api/variables/defaultMOQMessageChannelConfig.md
+- docs/api/variables/defaultMOQPublisherConfig.md
+- docs/api/variables/defaultMOQSubscriberConfig.md
 - docs/api/variables/defaultStatsConfig.md
 - docs/api/variables/defaultWhepSubscriberConfig.md
 - docs/api/variables/defaultWhipPublisherConfig.md
@@ -1047,6 +1058,8 @@ When you want to publish media over Media over QUIC (MoQ), the SDK provides `MOQ
 * [Usage](#usage)
 * [Init Configuration](#init-configuration)
 * [Events](#events)
+* [Capture timestamp pins](#capture-timestamp-pins)
+* [Send timing diagnostics](#send-timing-diagnostics)
 * [Statistics](#statistics)
 
 # Usage
@@ -1088,6 +1101,15 @@ await publisher.init({
     //   { width: 640, height: 360, fps: 30, bitrate: 1500 },
     //   { width: 320, height: 180, fps: 15, bitrate: 750 }
     // ]
+  },
+  // Optional: internally managed MOQMessageChannel
+  messageChannel: {
+    enabled: true,
+    mode: 'shared', // 'shared' reuses publisher connection, 'sidecar' uses separate connection
+    dataChannelConfiguration: {
+      name: 'red5pro',
+      keepEcho: false
+    }
   }
 })
 
@@ -1099,6 +1121,8 @@ To stop publishing:
 ```js
 await publisher.unpublish()
 ```
+
+`unpublish()` retires the current publish generation immediately and aborts any in-flight WebTransport handshake / `connect()`, so Stop does not wait for a hung relay connection. The in-flight `publish()` promise rejects without a `Publish.Fail` event; teardown still emits `Unpublish.Success`.
 
 ## Constructing with URL
 
@@ -1140,6 +1164,7 @@ The `init()` call accepts `MOQPublisherConfigType`.
 | `maxVideoQueue` | [-] | `120` | Max queued encoded video chunks per track before shed policy. |
 | `maxAudioQueue` | [-] | `240` | Max queued encoded audio chunks per track before shed policy. |
 | `simulcast` | [-] | `{ enabled: false, rungs: 3 }` | Optional simulcast ladder. When `enabled`, `rungs` is either a count (`1..3`) or an explicit `SimulcastVariant[]`. Source/captured video is always the top rung; lower rungs are generated (auto: ½ resolution/bitrate each step, and ½ fps when top FPS ≥ 60). |
+| `messageChannel` | [-] | `{ enabled: false, mode: 'shared' }` | Optional internally managed `MOQMessageChannel`. `mode: 'shared'` reuses publisher's `MoqtConnection`; `mode: 'sidecar'` creates a separate MoQT session for messaging. |
 | `stats` | [-] | `undefined` | Optional stats monitor configuration. |
 | `connectionParams` | [-] | `undefined` | Additional params used for stats metadata and endpoint context. |
 | `moqtLogLevel` | [-] | `none` | Log level passed to MOQ components. |
@@ -1156,6 +1181,19 @@ The `init()` call accepts `MOQPublisherConfigType`.
 - Lower rungs are produced with `OffscreenCanvas` + `MediaStreamTrackGenerator` and published as additional catalog video tracks (`video-0`, `video-1`, …).
 - Additional non-ladder video tracks already present on the input stream (for example screenshare) are preserved after the ladder tracks.
 - Requires Chromium insertable-streams APIs (`MediaStreamTrackProcessor` / `MediaStreamTrackGenerator`).
+
+### Managed MessageChannel notes
+
+- `messageChannel.enabled: true` makes `MOQPublisher` create/manage a channel during `publish()` and close it during `unpublish()`.
+- `mode: 'shared'`:
+  - reuses the active publisher `MoqtConnection`
+  - useful to keep media + messaging on one transport/session
+  - supports troubleshooting same-connection behavior under load
+- `mode: 'sidecar'`:
+  - creates a second `MoqtConnection` only for messaging
+  - helps isolate transport contention from media publishing
+- `messageChannel.dataChannelConfiguration` supports the same semantics as standalone `MOQMessageChannel` (for example `name`, `clientId`, `keepEcho`, `unreliable`).
+- In `sidecar` mode, messaging endpoint fields may be overridden under `messageChannel` (`endpoint`, `host`, `protocol`, `port`, `certKey`, `draftVersion`, `connectionParams`, `app`, `streamName`); otherwise publisher values are used.
 
 # Events
 
@@ -1177,7 +1215,7 @@ publisher.off('*', onPublisherEvent)
 | Access | Event Type | Meaning |
 | :--- | :--- | :--- |
 | `PUBLISH_START` | `Publish.Start` | Publishing has started. |
-| `PUBLISH_FAIL` | `Publish.Fail` | Publishing failed. |
+| `PUBLISH_FAIL` | `Publish.Fail` | Publishing failed. Payload includes `error` and `terminal` (`true` when setup cannot continue, for example when `MediaStreamTrackProcessor` is unavailable). |
 | `UNPUBLISH_SUCCESS` | `Unpublish.Success` | Unpublish completed. |
 
 ### MOQ-specific events (`MOQPublisherEventTypes`)
@@ -1188,14 +1226,104 @@ publisher.off('*', onPublisherEvent)
 | `CONSTRAINTS_REJECTED` | `MOQ.MediaConstraints.Rejected` | Media constraints rejected. |
 | `MEDIA_STREAM_AVAILABLE` | `MOQ.MediaStream.Available` | Local `MediaStream` became available. |
 | `NAMESPACE_PUBLISHED` | `MOQ.Namespace.Published` | Namespace announce/publish completed. |
+| `CATALOG_PUBLISHED` | `MOQ.Catalog.Published` | Catalog tracks announced to the session. |
 | `RELAY_SUBSCRIBE` | `MOQ.Relay.Subscribe` | Relay requested a known track subscription. |
 | `RELAY_SUBSCRIBE_FAILED` | `MOQ.Relay.Subscribe.Failed` | Relay requested unknown or rejected track. |
 | `RELAY_MESSAGE` | `MOQ.Relay.Message` | Relay control message received. |
 | `RELAY_ERROR` | `MOQ.Relay.Error` | Relay/session error reported. |
 | `RELAY_CLOSE` | `MOQ.Relay.Close` | Relay/session closed. |
-| `ENCODER_ERROR` | `MOQ.Encoder.Error` | Encoder or capture pipeline error. |
-| `SEND_STATS` | `MOQ.Send.Stats` | Per-track send counters after a media object is published. Payload includes `trackName`, `role`, role-specific counters (`videoFrames`/`keyframeCount` or `audioChunks`), and a `tracks` snapshot keyed by track name with the same role-specific shape. |
+| `ENCODER_ERROR` | `MOQ.Encoder.Error` | Encoder or capture pipeline error. Payload includes `encoder` (`media` / `video` / `audio` / `catalog`), `error` (message), and `terminal` (`true` when publish setup cannot continue). Missing `MediaStreamTrackProcessor` emits `{ encoder: 'media', code: 'MEDIA_STREAM_TRACK_PROCESSOR_UNAVAILABLE', feature: 'MediaStreamTrackProcessor', terminal: true }` and then `PUBLISH_FAIL`. |
+| `SEND_STATS` | `MOQ.Send.Stats` | Per-track send counters after a media object is published. Payload includes `trackName`, `role`, role-specific counters (`videoFrames`/`keyframeCount` or `audioChunks`), send-timing fields (see **Send timing diagnostics** below), a `tracks` snapshot keyed by track name with the same per-track fields, and capture-pin fields (see **Capture timestamp pins** below). |
+| `TIMESTAMP_PINNED` | `MOQ.Timestamp.Pinned` | Fired once when both audio and video capture clocks have been pinned and the video warm-up has finished. Same pin-field shape as `SEND_STATS`. |
+| `TIMESTAMP_REPINNED` | `MOQ.Timestamp.Repinned` | A capture offset was corrected by ≥100ms after objects of that kind were already sent. Payload adds `track` (`'audio'` / `'video'`) and `correctionMs` to the pin fields. For video, the SDK forces a keyframe so the corrected timeline starts on a new group. |
+| `CAPTURE_COLD_START` | `MOQ.Capture.ColdStart` | Fired once per kind when that kind's first capture sample reached the SDK at least 500ms late, typically a camera waking from idle. The correction is already applied. Payload: `track`, `lateByMs`, `timeToFirstFrameMs`, `beforeFirstSend`, `audioCorrectionMs`, `videoCorrectionMs`. |
+| `MESSAGE_CHANNEL_OPEN` | `MOQ.MessageChannel.Open` | Managed `MOQMessageChannel` opened successfully. |
+| `MESSAGE_CHANNEL_SEND` | `MOQ.MessageChannel.Send` | Managed `MOQMessageChannel` sent a message/data payload. |
+| `MESSAGE_CHANNEL_RECEIVE` | `MOQ.MessageChannel.Receive` | Managed `MOQMessageChannel` received a message/data payload. |
+| `MESSAGE_CHANNEL_CLOSE` | `MOQ.MessageChannel.Close` | Managed `MOQMessageChannel` closed. |
+| `MESSAGE_CHANNEL_FAIL` | `MOQ.MessageChannel.Fail` | Managed `MOQMessageChannel` failed to open. |
+| `MESSAGE_CHANNEL_ERROR` | `MOQ.MessageChannel.Error` | Managed `MOQMessageChannel` reported an error. |
 | `STATS_REPORT` | `MOQ.Stats.Report` | Stats report emitted when monitoring is enabled. |
+
+Managed MessageChannel events include metadata in `event.data`:
+
+- `transport`: `'moq'`
+- `mode`: `'shared' | 'sidecar'`
+- `label`: configured channel label (`dataChannelConfiguration.name`)
+- `streamName`: configured stream name used by the managed channel
+- `configuredClientId`: configured sender identity if provided
+- `event`: original underlying `MessageChannel` event payload
+
+### Capture timestamp pins
+
+LOC capture timestamps are Unix-epoch microseconds. Each media kind (audio, video) maps its WebCodecs timestamps to wall clock with its own offset, because browsers often use different timestamp bases for audio and video.
+
+The first capture observation of a kind sets that offset. Every later capture observation can only **lower** it: the SDK keeps the smallest `wall − timestamp` it has seen. A sample that reaches the SDK late (for example, the first frame from a camera that was idle) would otherwise push that kind's stamps ahead of real time for the whole broadcast, and subscribers would hold that kind back by the same amount.
+
+When the stream has video, the first 5 video frames are observed but not encoded. This warm-up lets the offset settle before any video object is stamped, and the first encoded frame is a keyframe. If a correction of 100ms or more happens after objects of that kind were sent, the SDK emits `TIMESTAMP_REPINNED` and, for video, forces a keyframe.
+
+Pins, corrections, and the warm-up reset on each `start()`.
+
+`TIMESTAMP_PINNED`, `TIMESTAMP_REPINNED`, and `SEND_STATS` share these fields:
+
+| Field | Meaning |
+| :--- | :--- |
+| `audioPin` / `videoPin` | First capture observation per kind: `{ wallUs, mediaTimestampUs, offsetUs }`, or `null`. |
+| `audioCorrectionMs` / `videoCorrectionMs` | Total amount the offset has been lowered since the first observation. Large values mean the first sample arrived late; the correction is already applied. |
+| `pinSeverity` | Based on the larger correction: `ok` (<200ms), `warn` (≥200ms), `error` (≥1500ms). `null` until a kind has pinned. Describes the capture condition, not remaining A/V error. |
+| `pinSkewMs` | `(videoPin.wallUs − audioPin.wallUs)` in milliseconds: when each kind was first observed. Informational. `null` until both kinds have pinned. |
+
+```js
+publisher.on(MOQPublisherEventTypes.TIMESTAMP_PINNED, event => {
+  const { videoCorrectionMs, audioCorrectionMs, pinSeverity } = event.data
+})
+publisher.on(MOQPublisherEventTypes.TIMESTAMP_REPINNED, event => {
+  const { track, correctionMs } = event.data
+})
+```
+
+#### Cold capture start
+
+`CAPTURE_COLD_START` reports a first sample that reached the SDK late by at least 500ms. The SDK only detects this once a fresher sample arrives to compare against, so video is checked when its warm-up ends, before any video object is sent. Audio is checked whenever its correction first crosses the threshold.
+
+| Field | Meaning |
+| :--- | :--- |
+| `track` | `'video'` or `'audio'`. |
+| `lateByMs` | How late the first sample arrived (the kind's total correction). |
+| `timeToFirstFrameMs` | From capture start to the first sample of that kind. |
+| `beforeFirstSend` | `true` when the correction landed before any object of that kind was sent, so subscribers never saw the bad stamps. |
+| `audioCorrectionMs` / `videoCorrectionMs` | Both kinds' corrections at that moment. A large video value with small audio means the stall was in video capture specifically, not a busy page. |
+
+A camera that is only slow to *start* (late but fresh first frame) does not trigger this event; it causes no timestamp error.
+
+```js
+publisher.on(MOQPublisherEventTypes.CAPTURE_COLD_START, event => {
+  const { track, lateByMs, beforeFirstSend } = event.data
+})
+```
+
+### Send timing diagnostics
+
+Each track in `SEND_STATS` (top-level for the emitting track, and in every `tracks` entry) reports:
+
+| Field | Meaning |
+| :--- | :--- |
+| `sendLatencyMs` | Wall clock minus the object's LOC capture timestamp at hand-off to the transport. Covers encode time plus SDK queue wait. `null` before the first send. |
+| `minSendLatencyMs` | Lowest `sendLatencyMs` since `start()`. |
+| `queueDepth` | Objects waiting in the SDK send queue for this track. |
+| `encoderQueueDepth` | Frames waiting inside the WebCodecs encoder (`encodeQueueSize`). |
+
+Compare audio and video to diagnose A/V offset seen by all subscribers:
+
+- Video `sendLatencyMs` well **below zero**: video capture timestamps are ahead of real time. The SDK corrects late first samples automatically (see **Capture timestamp pins**), so a value that stays negative after the first few seconds is unexpected and worth reporting. `minSendLatencyMs` keeps the lowest value since `start()`, so it can stay negative after a `TIMESTAMP_REPINNED` correction.
+- Video `sendLatencyMs` **seconds above** audio: video is delivered late even though its stamps are correct. A high `queueDepth` points at transport backpressure; a high `encoderQueueDepth` points at a slow encoder.
+- Both near audio: the publisher is not the source; check subscriber-side playback sync.
+
+```js
+publisher.on(MOQPublisherEventTypes.SEND_STATS, event => {
+  const { trackName, sendLatencyMs, minSendLatencyMs, queueDepth, encoderQueueDepth } = event.data
+})
+```
 
 # Statistics
 
@@ -1257,7 +1385,16 @@ await subscriber.init({
   endpoint: 'https://relay.example.com:4433',
   namespace: 'live/mystream',
   mediaElementId: 'red5pro-subscriber',
-  prefetchCatalog: false
+  prefetchCatalog: false,
+  // Optional: internally managed MOQMessageChannel
+  messageChannel: {
+    enabled: true,
+    mode: 'shared', // 'shared' reuses subscriber connection, 'sidecar' uses separate connection
+    dataChannelConfiguration: {
+      name: 'red5pro',
+      keepEcho: false
+    }
+  }
 })
 
 await subscriber.subscribe()
@@ -1268,6 +1405,8 @@ To stop:
 ```js
 await subscriber.unsubscribe()
 ```
+
+`unsubscribe()` aborts any in-flight WebTransport handshake / `MoqtPlayer.load()` immediately, so Stop does not wait for a hung relay connection. An in-flight `subscribe()` promise rejects without `Subscribe.Fail`; teardown still emits `Subscribe.Stop` when the stop was user-initiated.
 
 ## Constructing with URL
 
@@ -1312,8 +1451,23 @@ The `init()` call accepts `MOQSubscriberConfigType`.
 | `moqtLogLevel` | [-] | `none` | Log level passed to MOQ components. |
 | `mediaSource` | [-] | `none` | An instance of a `MediaSourceLike` (from [moq-playa](https://github.com/openmoq/moq-playa)) implementation. _Make sure you know what you are doing, as it carries responsibility for managing buffers and media playout._ |
 | `mseMediaSourceOptions` | [-] | `undefined` | The desired `MseMediaSourceOptions` to apply when the video package format is received as `CMAF/CMSF`. Ignored when `mediaSource` is provided. |
+| `locmafDecoding` | [-] | `mse` | How LOCMAF tracks are consumed: reconstructed CMAF chunks for MSE (`mse`), or coded frames for WebCodecs (`frame`). |
+| `messageChannel` | [-] | `{ enabled: false, mode: 'shared' }` | Optional internally managed `MOQMessageChannel`. `mode: 'shared'` reuses subscriber/player `MoqtConnection`; `mode: 'sidecar'` creates a separate MoQT session for messaging. |
 
 `*` Required when `endpoint` is not provided.
+
+### Managed MessageChannel notes
+
+- `messageChannel.enabled: true` makes `MOQSubscriber` create/manage a channel during `subscribe()` and close it during `unsubscribe()`.
+- `mode: 'shared'`:
+  - reuses the active subscriber/player `MoqtConnection`
+  - keeps media + messaging on one transport/session
+  - useful for same-connection troubleshooting
+- `mode: 'sidecar'`:
+  - creates a second `MoqtConnection` only for messaging
+  - helps isolate transport contention from media playback
+- `messageChannel.dataChannelConfiguration` supports the same semantics as standalone `MOQMessageChannel` (for example `name`, `clientId`, `keepEcho`, `unreliable`).
+- In `sidecar` mode, messaging endpoint fields may be overridden under `messageChannel` (`endpoint`, `host`, `protocol`, `port`, `certKey`, `draftVersion`, `connectionParams`, `app`, `streamName`); otherwise subscriber values are used.
 
 # Events
 
@@ -1356,6 +1510,21 @@ subscriber.off('*', onSubscriberEvent)
 | `STATS_REPORT` | `MOQ.Stats.Report` | Stats report emitted when enabled. |
 | `AUDIO_BLOCKED` | `MOQ.Audio.Blocked` | Browser blocked audio output pending user gesture. |
 | `AUDIO_UNBLOCKED` | `MOQ.Audio.Unblocked` | Audio output resumed after user gesture. |
+| `MESSAGE_CHANNEL_OPEN` | `MOQ.MessageChannel.Open` | Managed `MOQMessageChannel` opened successfully. |
+| `MESSAGE_CHANNEL_SEND` | `MOQ.MessageChannel.Send` | Managed `MOQMessageChannel` sent a message/data payload. |
+| `MESSAGE_CHANNEL_RECEIVE` | `MOQ.MessageChannel.Receive` | Managed `MOQMessageChannel` received a message/data payload. |
+| `MESSAGE_CHANNEL_CLOSE` | `MOQ.MessageChannel.Close` | Managed `MOQMessageChannel` closed. |
+| `MESSAGE_CHANNEL_FAIL` | `MOQ.MessageChannel.Fail` | Managed `MOQMessageChannel` failed to open. |
+| `MESSAGE_CHANNEL_ERROR` | `MOQ.MessageChannel.Error` | Managed `MOQMessageChannel` reported an error. |
+
+Managed MessageChannel events include metadata in `event.data`:
+
+- `transport`: `'moq'`
+- `mode`: `'shared' | 'sidecar'`
+- `label`: configured channel label (`dataChannelConfiguration.name`)
+- `streamName`: configured stream name used by the managed channel
+- `configuredClientId`: configured sender identity if provided
+- `event`: original underlying `MessageChannel` event payload
 
 # Playback API
 
@@ -1378,6 +1547,7 @@ You can access internals for advanced integrations:
 ```js
 const options = subscriber.getOptions()
 const player = subscriber.getPlayer()
+const messageChannel = subscriber.getMessageChannel()
 const view = subscriber.getRendererView()
 ```
 
@@ -2670,7 +2840,7 @@ The following events are dispatched by the underlying pubnub integration and bub
 
 ### Source: `docs/api/classes/Event.md`
 
-[**Red5 Pro WebRTC SDK v16.2.0-beta.2**](../README.md)
+[**Red5 Pro WebRTC SDK v16.3.0-beta.4**](../README.md)
 
 ***
 
@@ -2738,7 +2908,7 @@ Get the type of event.
 
 ### Source: `docs/api/classes/EventEmitter.md`
 
-[**Red5 Pro WebRTC SDK v16.2.0-beta.2**](../README.md)
+[**Red5 Pro WebRTC SDK v16.3.0-beta.4**](../README.md)
 
 ***
 
@@ -2756,6 +2926,7 @@ Base class for an Event Emitter.
 - [`PubNubClient`](PubNubClient.md)
 - [`MOQSubscriber`](MOQSubscriber.md)
 - [`MOQPublisher`](MOQPublisher.md)
+- [`MOQMessageChannel`](MOQMessageChannel.md)
 - [`MOQCatalog`](MOQCatalog.md)
 
 ## Implements
@@ -2848,7 +3019,7 @@ Dispatch an event to be handled by any assigned callbacks.
 
 ### Source: `docs/api/classes/HLSSubscriber.md`
 
-[**Red5 Pro WebRTC SDK v16.2.0-beta.2**](../README.md)
+[**Red5 Pro WebRTC SDK v16.3.0-beta.4**](../README.md)
 
 ***
 
@@ -3252,7 +3423,7 @@ Unsubscribe from the HLS stream.
 
 ### Source: `docs/api/classes/LiveSeekClient.md`
 
-[**Red5 Pro WebRTC SDK v16.2.0-beta.2**](../README.md)
+[**Red5 Pro WebRTC SDK v16.3.0-beta.4**](../README.md)
 
 ***
 
@@ -4120,7 +4291,7 @@ The channel to unsubscribe from.
 
 ### Source: `docs/api/classes/MessageChannel.md`
 
-[**Red5 Pro WebRTC SDK v16.2.0-beta.2**](../README.md)
+[**Red5 Pro WebRTC SDK v16.3.0-beta.4**](../README.md)
 
 ***
 
@@ -4873,7 +5044,7 @@ The optimization parameters to update.
 
 ### Source: `docs/api/classes/MessageChannelEvent.md`
 
-[**Red5 Pro WebRTC SDK v16.2.0-beta.2**](../README.md)
+[**Red5 Pro WebRTC SDK v16.3.0-beta.4**](../README.md)
 
 ***
 
@@ -4975,7 +5146,7 @@ Get the type of event.
 
 ### Source: `docs/api/classes/MessageTransportStateEvent.md`
 
-[**Red5 Pro WebRTC SDK v16.2.0-beta.2**](../README.md)
+[**Red5 Pro WebRTC SDK v16.3.0-beta.4**](../README.md)
 
 ***
 
@@ -5077,7 +5248,7 @@ Get the type of event.
 
 ### Source: `docs/api/classes/MOQCatalog.md`
 
-[**Red5 Pro WebRTC SDK v16.2.0-beta.2**](../README.md)
+[**Red5 Pro WebRTC SDK v16.3.0-beta.4**](../README.md)
 
 ***
 
@@ -5105,7 +5276,7 @@ Base class for an Event Emitter.
 
 ##### additionalOptions?
 
-`MOQCatalogConfigType`
+[`MOQCatalogConfigType`](../type-aliases/MOQCatalogConfigType.md)
 
 #### Returns
 
@@ -5125,7 +5296,7 @@ Base class for an Event Emitter.
 
 ##### options
 
-`MOQCatalogConfigType`
+[`MOQCatalogConfigType`](../type-aliases/MOQCatalogConfigType.md)
 
 #### Returns
 
@@ -5169,11 +5340,11 @@ Base class for an Event Emitter.
 
 ### getOptions()
 
-> **getOptions**(): `MOQCatalogConfigType`
+> **getOptions**(): [`MOQCatalogConfigType`](../type-aliases/MOQCatalogConfigType.md)
 
 #### Returns
 
-`MOQCatalogConfigType`
+[`MOQCatalogConfigType`](../type-aliases/MOQCatalogConfigType.md)
 
 ***
 
@@ -5185,7 +5356,7 @@ Base class for an Event Emitter.
 
 ##### options
 
-`MOQCatalogConfigType`
+[`MOQCatalogConfigType`](../type-aliases/MOQCatalogConfigType.md)
 
 #### Returns
 
@@ -5301,9 +5472,264 @@ Dispatch an event to be handled by any assigned callbacks.
 
 `Promise`\<`void`\>
 
+### Source: `docs/api/classes/MOQMessageChannel.md`
+
+[**Red5 Pro WebRTC SDK v16.3.0-beta.4**](../README.md)
+
+***
+
+[Red5 Pro WebRTC SDK](../globals.md) / MOQMessageChannel
+
+# Class: MOQMessageChannel
+
+Base class for an Event Emitter.
+
+## Extends
+
+- [`EventEmitter`](EventEmitter.md)
+
+## Constructors
+
+### Constructor
+
+> **new MOQMessageChannel**(`url?`, `additionalOptions?`): `MOQMessageChannel`
+
+#### Parameters
+
+##### url?
+
+`string`
+
+##### additionalOptions?
+
+[`MOQMessageChannelConfigType`](../type-aliases/MOQMessageChannelConfigType.md)
+
+#### Returns
+
+`MOQMessageChannel`
+
+#### Overrides
+
+[`EventEmitter`](EventEmitter.md).[`constructor`](EventEmitter.md#constructor)
+
+## Methods
+
+### close()
+
+> **close**(): `Promise`\<`void`\>
+
+#### Returns
+
+`Promise`\<`void`\>
+
+***
+
+### getConnection()
+
+> **getConnection**(): `MoqtConnection` \| `undefined`
+
+#### Returns
+
+`MoqtConnection` \| `undefined`
+
+***
+
+### getOptions()
+
+> **getOptions**(): [`MOQMessageChannelConfigType`](../type-aliases/MOQMessageChannelConfigType.md)
+
+#### Returns
+
+[`MOQMessageChannelConfigType`](../type-aliases/MOQMessageChannelConfigType.md)
+
+***
+
+### getType()
+
+> **getType**(): `string`
+
+#### Returns
+
+`string`
+
+***
+
+### init()
+
+> **init**(`options`): `Promise`\<`MOQMessageChannel`\>
+
+#### Parameters
+
+##### options
+
+[`MOQMessageChannelConfigType`](../type-aliases/MOQMessageChannelConfigType.md)
+
+#### Returns
+
+`Promise`\<`MOQMessageChannel`\>
+
+***
+
+### off()
+
+> **off**(`type`, `fn`): `void`
+
+Remove a callback handler for an event type.
+
+#### Parameters
+
+##### type
+
+`string`
+
+##### fn
+
+(`event`) => `void`
+
+#### Returns
+
+`void`
+
+#### Inherited from
+
+[`EventEmitter`](EventEmitter.md).[`off`](EventEmitter.md#off)
+
+***
+
+### on()
+
+> **on**(`type`, `fn`): `void`
+
+Assign a callback handler to an event type.
+
+#### Parameters
+
+##### type
+
+`string`
+
+##### fn
+
+(`event`) => `void`
+
+#### Returns
+
+`void`
+
+#### Inherited from
+
+[`EventEmitter`](EventEmitter.md).[`on`](EventEmitter.md#on)
+
+***
+
+### open()
+
+> **open**(): `Promise`\<`MOQMessageChannel`\>
+
+#### Returns
+
+`Promise`\<`MOQMessageChannel`\>
+
+***
+
+### send()
+
+> **send**(`methodName`, `data`): `Promise`\<`boolean`\>
+
+#### Parameters
+
+##### methodName
+
+`string`
+
+##### data
+
+`any`
+
+#### Returns
+
+`Promise`\<`boolean`\>
+
+***
+
+### sendData()
+
+> **sendData**(`data`): `Promise`\<`boolean`\>
+
+#### Parameters
+
+##### data
+
+`any`
+
+#### Returns
+
+`Promise`\<`boolean`\>
+
+***
+
+### sendMessage()
+
+> **sendMessage**(`message`): `Promise`\<`boolean`\>
+
+#### Parameters
+
+##### message
+
+`any`
+
+#### Returns
+
+`Promise`\<`boolean`\>
+
+***
+
+### trigger()
+
+> **trigger**(`event`): `void`
+
+Dispatch an event to be handled by any assigned callbacks.
+
+#### Parameters
+
+##### event
+
+[`Event`](Event.md)
+
+#### Returns
+
+`void`
+
+#### Inherited from
+
+[`EventEmitter`](EventEmitter.md).[`trigger`](EventEmitter.md#trigger)
+
+***
+
+### useConnection()
+
+> **useConnection**(`moqtConnection`, `closeProvidedConnection?`): `MOQMessageChannel`
+
+Provide an existing connection to reuse for channel messaging.
+Call before `open()`.
+
+#### Parameters
+
+##### moqtConnection
+
+`MoqtConnection`
+
+##### closeProvidedConnection?
+
+`boolean` = `false`
+
+#### Returns
+
+`MOQMessageChannel`
+
 ### Source: `docs/api/classes/MOQPublisher.md`
 
-[**Red5 Pro WebRTC SDK v16.2.0-beta.2**](../README.md)
+[**Red5 Pro WebRTC SDK v16.3.0-beta.4**](../README.md)
 
 ***
 
@@ -5335,7 +5761,7 @@ Base class for an Event Emitter.
 
 ##### additionalOptions?
 
-`MOQPublisherConfigType`
+[`MOQPublisherConfigType`](../type-aliases/MOQPublisherConfigType.md)
 
 ##### stream?
 
@@ -5371,13 +5797,33 @@ Base class for an Event Emitter.
 
 ***
 
-### getOptions()
+### getConnection()
 
-> **getOptions**(): `MOQPublisherConfigType`
+> **getConnection**(): `MoqtConnection` \| `undefined`
 
 #### Returns
 
-`MOQPublisherConfigType`
+`MoqtConnection` \| `undefined`
+
+***
+
+### getMessageChannel()
+
+> **getMessageChannel**(): [`MOQMessageChannel`](MOQMessageChannel.md) \| `undefined`
+
+#### Returns
+
+[`MOQMessageChannel`](MOQMessageChannel.md) \| `undefined`
+
+***
+
+### getOptions()
+
+> **getOptions**(): [`MOQPublisherConfigType`](../type-aliases/MOQPublisherConfigType.md)
+
+#### Returns
+
+[`MOQPublisherConfigType`](../type-aliases/MOQPublisherConfigType.md)
 
 ***
 
@@ -5399,7 +5845,7 @@ Base class for an Event Emitter.
 
 ##### options
 
-`MOQPublisherConfigType`
+[`MOQPublisherConfigType`](../type-aliases/MOQPublisherConfigType.md)
 
 #### Returns
 
@@ -5415,7 +5861,7 @@ Base class for an Event Emitter.
 
 ##### options
 
-`MOQPublisherConfigType`
+[`MOQPublisherConfigType`](../type-aliases/MOQPublisherConfigType.md)
 
 ##### stream?
 
@@ -5585,7 +6031,7 @@ Dispatch an event to be handled by any assigned callbacks.
 
 ### Source: `docs/api/classes/MOQSubscriber.md`
 
-[**Red5 Pro WebRTC SDK v16.2.0-beta.2**](../README.md)
+[**Red5 Pro WebRTC SDK v16.3.0-beta.4**](../README.md)
 
 ***
 
@@ -5617,7 +6063,7 @@ Base class for an Event Emitter.
 
 ##### additionalOptions?
 
-`MOQSubscriberConfigType`
+[`MOQSubscriberConfigType`](../type-aliases/MOQSubscriberConfigType.md)
 
 #### Returns
 
@@ -5649,13 +6095,33 @@ Base class for an Event Emitter.
 
 ***
 
-### getOptions()
+### getConnection()
 
-> **getOptions**(): `MOQSubscriberConfigType`
+> **getConnection**(): `MoqtConnection` \| `undefined`
 
 #### Returns
 
-`MOQSubscriberConfigType`
+`MoqtConnection` \| `undefined`
+
+***
+
+### getMessageChannel()
+
+> **getMessageChannel**(): [`MOQMessageChannel`](MOQMessageChannel.md) \| `undefined`
+
+#### Returns
+
+[`MOQMessageChannel`](MOQMessageChannel.md) \| `undefined`
+
+***
+
+### getOptions()
+
+> **getOptions**(): [`MOQSubscriberConfigType`](../type-aliases/MOQSubscriberConfigType.md)
+
+#### Returns
+
+[`MOQSubscriberConfigType`](../type-aliases/MOQSubscriberConfigType.md)
 
 ***
 
@@ -5697,7 +6163,7 @@ Base class for an Event Emitter.
 
 ##### options
 
-`MOQSubscriberConfigType`
+[`MOQSubscriberConfigType`](../type-aliases/MOQSubscriberConfigType.md)
 
 #### Returns
 
@@ -5713,7 +6179,7 @@ Base class for an Event Emitter.
 
 ##### options
 
-`MOQSubscriberConfigType`
+[`MOQSubscriberConfigType`](../type-aliases/MOQSubscriberConfigType.md)
 
 ##### audioCtx
 
@@ -6018,7 +6484,7 @@ Dispatch an event to be handled by any assigned callbacks.
 
 ### Source: `docs/api/classes/PlaybackController.md`
 
-[**Red5 Pro WebRTC SDK v16.2.0-beta.2**](../README.md)
+[**Red5 Pro WebRTC SDK v16.3.0-beta.4**](../README.md)
 
 ***
 
@@ -6347,7 +6813,7 @@ Unmute the media element.
 
 ### Source: `docs/api/classes/PlaybackControls.md`
 
-[**Red5 Pro WebRTC SDK v16.2.0-beta.2**](../README.md)
+[**Red5 Pro WebRTC SDK v16.3.0-beta.4**](../README.md)
 
 ***
 
@@ -6644,7 +7110,7 @@ The event to trigger.
 
 ### Source: `docs/api/classes/PublisherEvent.md`
 
-[**Red5 Pro WebRTC SDK v16.2.0-beta.2**](../README.md)
+[**Red5 Pro WebRTC SDK v16.3.0-beta.4**](../README.md)
 
 ***
 
@@ -6746,7 +7212,7 @@ Get the type of event.
 
 ### Source: `docs/api/classes/PubNubClient.md`
 
-[**Red5 Pro WebRTC SDK v16.2.0-beta.2**](../README.md)
+[**Red5 Pro WebRTC SDK v16.3.0-beta.4**](../README.md)
 
 ***
 
@@ -6966,7 +7432,7 @@ Dispatch an event to be handled by any assigned callbacks.
 
 ### Source: `docs/api/classes/PubNubEvent.md`
 
-[**Red5 Pro WebRTC SDK v16.2.0-beta.2**](../README.md)
+[**Red5 Pro WebRTC SDK v16.3.0-beta.4**](../README.md)
 
 ***
 
@@ -7068,7 +7534,7 @@ Get the type of event.
 
 ### Source: `docs/api/classes/SourceHandler.md`
 
-[**Red5 Pro WebRTC SDK v16.2.0-beta.2**](../README.md)
+[**Red5 Pro WebRTC SDK v16.3.0-beta.4**](../README.md)
 
 ***
 
@@ -7503,7 +7969,7 @@ Unpublish the media element.
 
 ### Source: `docs/api/classes/SourceHandlerImpl.md`
 
-[**Red5 Pro WebRTC SDK v16.2.0-beta.2**](../README.md)
+[**Red5 Pro WebRTC SDK v16.3.0-beta.4**](../README.md)
 
 ***
 
@@ -7917,7 +8383,7 @@ Unpublish the media element.
 
 ### Source: `docs/api/classes/SubscriberEvent.md`
 
-[**Red5 Pro WebRTC SDK v16.2.0-beta.2**](../README.md)
+[**Red5 Pro WebRTC SDK v16.3.0-beta.4**](../README.md)
 
 ***
 
@@ -8019,7 +8485,7 @@ Get the type of event.
 
 ### Source: `docs/api/classes/WHEPClient.md`
 
-[**Red5 Pro WebRTC SDK v16.2.0-beta.2**](../README.md)
+[**Red5 Pro WebRTC SDK v16.3.0-beta.4**](../README.md)
 
 ***
 
@@ -8786,7 +9252,7 @@ The channel to unsubscribe from.
 
 ### Source: `docs/api/classes/WHIPClient.md`
 
-[**Red5 Pro WebRTC SDK v16.2.0-beta.2**](../README.md)
+[**Red5 Pro WebRTC SDK v16.3.0-beta.4**](../README.md)
 
 ***
 
@@ -9392,7 +9858,7 @@ The optimization parameters to update.
 
 ### Source: `docs/api/enumerations/MessageChannelEventTypes.md`
 
-[**Red5 Pro WebRTC SDK v16.2.0-beta.2**](../README.md)
+[**Red5 Pro WebRTC SDK v16.3.0-beta.4**](../README.md)
 
 ***
 
@@ -9438,7 +9904,7 @@ The optimization parameters to update.
 
 ### Source: `docs/api/enumerations/MessageTransportStateEventTypes.md`
 
-[**Red5 Pro WebRTC SDK v16.2.0-beta.2**](../README.md)
+[**Red5 Pro WebRTC SDK v16.3.0-beta.4**](../README.md)
 
 ***
 
@@ -9472,7 +9938,7 @@ The optimization parameters to update.
 
 ### Source: `docs/api/enumerations/PlaybackAudioEncoder.md`
 
-[**Red5 Pro WebRTC SDK v16.2.0-beta.2**](../README.md)
+[**Red5 Pro WebRTC SDK v16.3.0-beta.4**](../README.md)
 
 ***
 
@@ -9494,7 +9960,7 @@ The optimization parameters to update.
 
 ### Source: `docs/api/enumerations/PlaybackState.md`
 
-[**Red5 Pro WebRTC SDK v16.2.0-beta.2**](../README.md)
+[**Red5 Pro WebRTC SDK v16.3.0-beta.4**](../README.md)
 
 ***
 
@@ -9534,7 +10000,7 @@ The optimization parameters to update.
 
 ### Source: `docs/api/enumerations/PlaybackVideoEncoder.md`
 
-[**Red5 Pro WebRTC SDK v16.2.0-beta.2**](../README.md)
+[**Red5 Pro WebRTC SDK v16.3.0-beta.4**](../README.md)
 
 ***
 
@@ -9574,7 +10040,7 @@ The optimization parameters to update.
 
 ### Source: `docs/api/enumerations/PublishAudioEncoder.md`
 
-[**Red5 Pro WebRTC SDK v16.2.0-beta.2**](../README.md)
+[**Red5 Pro WebRTC SDK v16.3.0-beta.4**](../README.md)
 
 ***
 
@@ -9592,7 +10058,7 @@ Enumeration of Audio Encoder types to request for Broadcast.
 
 ### Source: `docs/api/enumerations/PublisherEventTypes.md`
 
-[**Red5 Pro WebRTC SDK v16.2.0-beta.2**](../README.md)
+[**Red5 Pro WebRTC SDK v16.3.0-beta.4**](../README.md)
 
 ***
 
@@ -9716,7 +10182,7 @@ Enumeration of Audio Encoder types to request for Broadcast.
 
 ### Source: `docs/api/enumerations/PublishVideoEncoder.md`
 
-[**Red5 Pro WebRTC SDK v16.2.0-beta.2**](../README.md)
+[**Red5 Pro WebRTC SDK v16.3.0-beta.4**](../README.md)
 
 ***
 
@@ -9752,7 +10218,7 @@ Enumeration of Video Encoder types to request for Broadcast.
 
 ### Source: `docs/api/enumerations/PubNubEventTypes.md`
 
-[**Red5 Pro WebRTC SDK v16.2.0-beta.2**](../README.md)
+[**Red5 Pro WebRTC SDK v16.3.0-beta.4**](../README.md)
 
 ***
 
@@ -9840,7 +10306,7 @@ Enumeration of Video Encoder types to request for Broadcast.
 
 ### Source: `docs/api/enumerations/RTCPublisherEventTypes.md`
 
-[**Red5 Pro WebRTC SDK v16.2.0-beta.2**](../README.md)
+[**Red5 Pro WebRTC SDK v16.3.0-beta.4**](../README.md)
 
 ***
 
@@ -9982,7 +10448,7 @@ Enumeration of Video Encoder types to request for Broadcast.
 
 ### Source: `docs/api/enumerations/RTCSubscriberEventTypes.md`
 
-[**Red5 Pro WebRTC SDK v16.2.0-beta.2**](../README.md)
+[**Red5 Pro WebRTC SDK v16.3.0-beta.4**](../README.md)
 
 ***
 
@@ -10124,7 +10590,7 @@ Enumeration of Video Encoder types to request for Broadcast.
 
 ### Source: `docs/api/enumerations/StatsEndpointType.md`
 
-[**Red5 Pro WebRTC SDK v16.2.0-beta.2**](../README.md)
+[**Red5 Pro WebRTC SDK v16.3.0-beta.4**](../README.md)
 
 ***
 
@@ -10152,7 +10618,7 @@ Enumeration of Video Encoder types to request for Broadcast.
 
 ### Source: `docs/api/enumerations/SubscriberEventTypes.md`
 
-[**Red5 Pro WebRTC SDK v16.2.0-beta.2**](../README.md)
+[**Red5 Pro WebRTC SDK v16.3.0-beta.4**](../README.md)
 
 ***
 
@@ -10324,7 +10790,7 @@ Enumeration of Video Encoder types to request for Broadcast.
 
 ### Source: `docs/api/enumerations/WebRTCConnectionEventTypes.md`
 
-[**Red5 Pro WebRTC SDK v16.2.0-beta.2**](../README.md)
+[**Red5 Pro WebRTC SDK v16.3.0-beta.4**](../README.md)
 
 ***
 
@@ -10358,7 +10824,7 @@ Enumeration of Video Encoder types to request for Broadcast.
 
 ### Source: `docs/api/functions/getRecordedLogs.md`
 
-[**Red5 Pro WebRTC SDK v16.2.0-beta.2**](../README.md)
+[**Red5 Pro WebRTC SDK v16.3.0-beta.4**](../README.md)
 
 ***
 
@@ -10378,7 +10844,7 @@ Array of recorded log messages.
 
 ### Source: `docs/api/functions/getVersion.md`
 
-[**Red5 Pro WebRTC SDK v16.2.0-beta.2**](../README.md)
+[**Red5 Pro WebRTC SDK v16.3.0-beta.4**](../README.md)
 
 ***
 
@@ -10396,7 +10862,7 @@ Get the version of the SDK.
 
 ### Source: `docs/api/functions/setLogLevel.md`
 
-[**Red5 Pro WebRTC SDK v16.2.0-beta.2**](../README.md)
+[**Red5 Pro WebRTC SDK v16.3.0-beta.4**](../README.md)
 
 ***
 
@@ -10422,11 +10888,11 @@ Get the version of the SDK.
 
 ### Source: `docs/api/globals.md`
 
-[**Red5 Pro WebRTC SDK v16.2.0-beta.2**](README.md)
+[**Red5 Pro WebRTC SDK v16.3.0-beta.4**](README.md)
 
 ***
 
-# Red5 Pro WebRTC SDK v16.2.0-beta.2
+# Red5 Pro WebRTC SDK v16.3.0-beta.4
 
 Red5 Pro WebRTC SDK
 
@@ -10457,6 +10923,7 @@ Red5 Pro WebRTC SDK
 - [MessageChannelEvent](classes/MessageChannelEvent.md)
 - [MessageTransportStateEvent](classes/MessageTransportStateEvent.md)
 - [MOQCatalog](classes/MOQCatalog.md)
+- [MOQMessageChannel](classes/MOQMessageChannel.md)
 - [MOQPublisher](classes/MOQPublisher.md)
 - [MOQSubscriber](classes/MOQSubscriber.md)
 - [PlaybackController](classes/PlaybackController.md)
@@ -10482,6 +10949,11 @@ Red5 Pro WebRTC SDK
 - [LiveSeekOptions](type-aliases/LiveSeekOptions.md)
 - [MediaConstraintRange](type-aliases/MediaConstraintRange.md)
 - [MediaConstraints](type-aliases/MediaConstraints.md)
+- [MOQCatalogConfigType](type-aliases/MOQCatalogConfigType.md)
+- [MOQDataChannelConfiguration](type-aliases/MOQDataChannelConfiguration.md)
+- [MOQMessageChannelConfigType](type-aliases/MOQMessageChannelConfigType.md)
+- [MOQPublisherConfigType](type-aliases/MOQPublisherConfigType.md)
+- [MOQSubscriberConfigType](type-aliases/MOQSubscriberConfigType.md)
 - [RTCPublisherConfigType](type-aliases/RTCPublisherConfigType.md)
 - [RTCSubscriberConfigType](type-aliases/RTCSubscriberConfigType.md)
 - [RTCWhepSubscriberConfigType](type-aliases/RTCWhepSubscriberConfigType.md)
@@ -10495,6 +10967,11 @@ Red5 Pro WebRTC SDK
 - [default](variables/default.md)
 - [defaultHLSSubscriberConfig](variables/defaultHLSSubscriberConfig.md)
 - [defaultLiveSeekConfig](variables/defaultLiveSeekConfig.md)
+- [defaultMOQCatalogConfig](variables/defaultMOQCatalogConfig.md)
+- [defaultMOQDataChannelConfiguration](variables/defaultMOQDataChannelConfiguration.md)
+- [defaultMOQMessageChannelConfig](variables/defaultMOQMessageChannelConfig.md)
+- [defaultMOQPublisherConfig](variables/defaultMOQPublisherConfig.md)
+- [defaultMOQSubscriberConfig](variables/defaultMOQSubscriberConfig.md)
 - [defaultStatsConfig](variables/defaultStatsConfig.md)
 - [defaultWhepSubscriberConfig](variables/defaultWhepSubscriberConfig.md)
 - [defaultWhipPublisherConfig](variables/defaultWhipPublisherConfig.md)
@@ -10509,7 +10986,7 @@ Red5 Pro WebRTC SDK
 
 ### Source: `docs/api/interfaces/EventEmitterInterface.md`
 
-[**Red5 Pro WebRTC SDK v16.2.0-beta.2**](../README.md)
+[**Red5 Pro WebRTC SDK v16.3.0-beta.4**](../README.md)
 
 ***
 
@@ -10583,7 +11060,7 @@ Dispatch an event to be handled by any assigned callbacks.
 
 ### Source: `docs/api/README.md`
 
-**Red5 Pro WebRTC SDK v16.2.0-beta.2**
+**Red5 Pro WebRTC SDK v16.3.0-beta.4**
 
 ***
 
@@ -10819,7 +11296,7 @@ The initialization configurations and relevant APIs available for each client ca
 
 ### Source: `docs/api/type-aliases/BandwidthConfig.md`
 
-[**Red5 Pro WebRTC SDK v16.2.0-beta.2**](../README.md)
+[**Red5 Pro WebRTC SDK v16.3.0-beta.4**](../README.md)
 
 ***
 
@@ -10843,7 +11320,7 @@ The initialization configurations and relevant APIs available for each client ca
 
 ### Source: `docs/api/type-aliases/HLSSubscriberConfigType.md`
 
-[**Red5 Pro WebRTC SDK v16.2.0-beta.2**](../README.md)
+[**Red5 Pro WebRTC SDK v16.3.0-beta.4**](../README.md)
 
 ***
 
@@ -10913,7 +11390,7 @@ The initialization configurations and relevant APIs available for each client ca
 
 ### Source: `docs/api/type-aliases/LiveSeekConfigType.md`
 
-[**Red5 Pro WebRTC SDK v16.2.0-beta.2**](../README.md)
+[**Red5 Pro WebRTC SDK v16.3.0-beta.4**](../README.md)
 
 ***
 
@@ -10931,7 +11408,7 @@ The initialization configurations and relevant APIs available for each client ca
 
 ### Source: `docs/api/type-aliases/LiveSeekOptions.md`
 
-[**Red5 Pro WebRTC SDK v16.2.0-beta.2**](../README.md)
+[**Red5 Pro WebRTC SDK v16.3.0-beta.4**](../README.md)
 
 ***
 
@@ -10987,7 +11464,7 @@ The initialization configurations and relevant APIs available for each client ca
 
 ### Source: `docs/api/type-aliases/MediaConstraintRange.md`
 
-[**Red5 Pro WebRTC SDK v16.2.0-beta.2**](../README.md)
+[**Red5 Pro WebRTC SDK v16.3.0-beta.4**](../README.md)
 
 ***
 
@@ -11023,7 +11500,7 @@ The initialization configurations and relevant APIs available for each client ca
 
 ### Source: `docs/api/type-aliases/MediaConstraints.md`
 
-[**Red5 Pro WebRTC SDK v16.2.0-beta.2**](../README.md)
+[**Red5 Pro WebRTC SDK v16.3.0-beta.4**](../README.md)
 
 ***
 
@@ -11045,9 +11522,522 @@ The initialization configurations and relevant APIs available for each client ca
 
 > `optional` **video?**: [`VideoConstraints`](VideoConstraints.md) \| `boolean`
 
+### Source: `docs/api/type-aliases/MOQCatalogConfigType.md`
+
+[**Red5 Pro WebRTC SDK v16.3.0-beta.4**](../README.md)
+
+***
+
+[Red5 Pro WebRTC SDK](../globals.md) / MOQCatalogConfigType
+
+# Type Alias: MOQCatalogConfigType
+
+> **MOQCatalogConfigType** = `object`
+
+## Properties
+
+### app
+
+> **app**: `string`
+
+***
+
+### certKey?
+
+> `optional` **certKey?**: `string`
+
+***
+
+### draftVersion?
+
+> `optional` **draftVersion?**: `DraftVersion`
+
+***
+
+### endpoint?
+
+> `optional` **endpoint?**: `string`
+
+***
+
+### host?
+
+> `optional` **host?**: `string`
+
+***
+
+### moqtLogLevel?
+
+> `optional` **moqtLogLevel?**: `LogLevel`
+
+***
+
+### namespace?
+
+> `optional` **namespace?**: `string`
+
+***
+
+### port
+
+> **port**: `number`
+
+***
+
+### protocol
+
+> **protocol**: `"ws"` \| `"wss"` \| `"http"` \| `"https"`
+
+***
+
+### streamName?
+
+> `optional` **streamName?**: `string`
+
+### Source: `docs/api/type-aliases/MOQDataChannelConfiguration.md`
+
+[**Red5 Pro WebRTC SDK v16.3.0-beta.4**](../README.md)
+
+***
+
+[Red5 Pro WebRTC SDK](../globals.md) / MOQDataChannelConfiguration
+
+# Type Alias: MOQDataChannelConfiguration
+
+> **MOQDataChannelConfiguration** = `object`
+
+## Properties
+
+### clientId?
+
+> `optional` **clientId?**: `string`
+
+Sender identity used for namespace + echo filtering.
+
+***
+
+### keepEcho?
+
+> `optional` **keepEcho?**: `boolean`
+
+Keep self-echoed JSON messages when true.
+
+***
+
+### name?
+
+> `optional` **name?**: `string`
+
+Channel label. Matches WebRTC `dataChannelConfiguration.name`.
+
+***
+
+### unreliable?
+
+> `optional` **unreliable?**: `boolean`
+
+Prefer datagram send path for outbound messages.
+
+### Source: `docs/api/type-aliases/MOQMessageChannelConfigType.md`
+
+[**Red5 Pro WebRTC SDK v16.3.0-beta.4**](../README.md)
+
+***
+
+[Red5 Pro WebRTC SDK](../globals.md) / MOQMessageChannelConfigType
+
+# Type Alias: MOQMessageChannelConfigType
+
+> **MOQMessageChannelConfigType** = `MOQMessageChannelSharedConfig` \| `MOQMessageChannelSidecarConfig`
+
+### Source: `docs/api/type-aliases/MOQPublisherConfigType.md`
+
+[**Red5 Pro WebRTC SDK v16.3.0-beta.4**](../README.md)
+
+***
+
+[Red5 Pro WebRTC SDK](../globals.md) / MOQPublisherConfigType
+
+# Type Alias: MOQPublisherConfigType
+
+> **MOQPublisherConfigType** = `object`
+
+## Properties
+
+### app
+
+> **app**: `string`
+
+***
+
+### audioEncoding?
+
+> `optional` **audioEncoding?**: [`PublishAudioEncoder`](../enumerations/PublishAudioEncoder.md)
+
+***
+
+### bandwidth
+
+> **bandwidth**: [`BandwidthConfig`](BandwidthConfig.md)
+
+***
+
+### certKey?
+
+> `optional` **certKey?**: `string`
+
+***
+
+### clearMediaOnUnpublish
+
+> **clearMediaOnUnpublish**: `boolean`
+
+***
+
+### connectionParams?
+
+> `optional` **connectionParams?**: `object`
+
+#### Index Signature
+
+\[`key`: `string`\]: `any`
+
+***
+
+### draftVersion?
+
+> `optional` **draftVersion?**: `DraftVersion`
+
+***
+
+### endpoint?
+
+> `optional` **endpoint?**: `string`
+
+***
+
+### host?
+
+> `optional` **host?**: `string`
+
+***
+
+### keyFramerate
+
+> **keyFramerate**: `number`
+
+***
+
+### locVersion?
+
+> `optional` **locVersion?**: `LOCVersion`
+
+***
+
+### maxAudioQueue?
+
+> `optional` **maxAudioQueue?**: `number`
+
+***
+
+### maxVideoQueue?
+
+> `optional` **maxVideoQueue?**: `number`
+
+***
+
+### mediaConstraints
+
+> **mediaConstraints**: [`MediaConstraints`](MediaConstraints.md)
+
+***
+
+### mediaElementId
+
+> **mediaElementId**: `string`
+
+***
+
+### messageChannel?
+
+> `optional` **messageChannel?**: `MOQPublisherMessageChannelConfig`
+
+Optional internally managed data messaging channel.
+
+***
+
+### moqtLogLevel?
+
+> `optional` **moqtLogLevel?**: `LogLevel`
+
+***
+
+### namespace?
+
+> `optional` **namespace?**: `string`
+
+***
+
+### onGetUserMedia?
+
+> `optional` **onGetUserMedia?**: () => `Promise`\<`MediaStream`\>
+
+#### Returns
+
+`Promise`\<`MediaStream`\>
+
+***
+
+### port
+
+> **port**: `number`
+
+***
+
+### protocol
+
+> **protocol**: `"ws"` \| `"wss"` \| `"http"` \| `"https"`
+
+***
+
+### simulcast?
+
+> `optional` **simulcast?**: `MOQPublisherSimulcastConfig`
+
+Optional simulcast ladder. Source/captured video is the highest rung;
+lower rungs are generated via OffscreenCanvas + track generators.
+
+***
+
+### stats?
+
+> `optional` **stats?**: [`StatsConfig`](StatsConfig.md)
+
+***
+
+### streamName?
+
+> `optional` **streamName?**: `string`
+
+***
+
+### videoEncoding?
+
+> `optional` **videoEncoding?**: [`PublishVideoEncoder`](../enumerations/PublishVideoEncoder.md)
+
+### Source: `docs/api/type-aliases/MOQSubscriberConfigType.md`
+
+[**Red5 Pro WebRTC SDK v16.3.0-beta.4**](../README.md)
+
+***
+
+[Red5 Pro WebRTC SDK](../globals.md) / MOQSubscriberConfigType
+
+# Type Alias: MOQSubscriberConfigType
+
+> **MOQSubscriberConfigType** = `object`
+
+## Properties
+
+### app
+
+> **app**: `string`
+
+***
+
+### authority?
+
+> `optional` **authority?**: `string`
+
+***
+
+### canvasElementId?
+
+> `optional` **canvasElementId?**: `string`
+
+***
+
+### catalogBootstrap?
+
+> `optional` **catalogBootstrap?**: `MOQCatalogBootstrap`
+
+***
+
+### certKey?
+
+> `optional` **certKey?**: `string`
+
+***
+
+### connectionParams?
+
+> `optional` **connectionParams?**: `object`
+
+#### Index Signature
+
+\[`key`: `string`\]: `any`
+
+***
+
+### draftVersion?
+
+> `optional` **draftVersion?**: `DraftVersion`
+
+***
+
+### endpoint?
+
+> `optional` **endpoint?**: `string`
+
+***
+
+### gapTimeout?
+
+> `optional` **gapTimeout?**: `number`
+
+***
+
+### host?
+
+> `optional` **host?**: `string`
+
+***
+
+### initialVolume?
+
+> `optional` **initialVolume?**: `number`
+
+***
+
+### lateFrameThreshold?
+
+> `optional` **lateFrameThreshold?**: `number`
+
+***
+
+### locmafDecoding?
+
+> `optional` **locmafDecoding?**: `"mse"` \| `"frame"`
+
+***
+
+### mediaElementId
+
+> **mediaElementId**: `string`
+
+***
+
+### mediaSource?
+
+> `optional` **mediaSource?**: `MediaSourceLike`
+
+***
+
+### messageChannel?
+
+> `optional` **messageChannel?**: `MOQSubscriberMessageChannelConfig`
+
+Optional internally managed data messaging channel.
+
+***
+
+### moqtLogLevel?
+
+> `optional` **moqtLogLevel?**: `LogLevel`
+
+***
+
+### mseMediaSourceOptions?
+
+> `optional` **mseMediaSourceOptions?**: `MseMediaSourceOptions`
+
+***
+
+### muted?
+
+> `optional` **muted?**: `boolean`
+
+***
+
+### muteOnAutoplayRestriction?
+
+> `optional` **muteOnAutoplayRestriction?**: `boolean`
+
+***
+
+### namespace?
+
+> `optional` **namespace?**: `string`
+
+***
+
+### port
+
+> **port**: `number`
+
+***
+
+### preferSoftwareDecoder?
+
+> `optional` **preferSoftwareDecoder?**: `boolean`
+
+***
+
+### prefetchCatalog?
+
+> `optional` **prefetchCatalog?**: `boolean`
+
+***
+
+### protocol
+
+> **protocol**: `"ws"` \| `"wss"` \| `"http"` \| `"https"`
+
+***
+
+### showControls?
+
+> `optional` **showControls?**: `boolean`
+
+***
+
+### stats?
+
+> `optional` **stats?**: [`StatsConfig`](StatsConfig.md)
+
+***
+
+### streamName?
+
+> `optional` **streamName?**: `string`
+
+***
+
+### subscriptionId?
+
+> `optional` **subscriptionId?**: `string`
+
+***
+
+### useNativeControls?
+
+> `optional` **useNativeControls?**: `boolean`
+
+***
+
+### videoAudioElementId?
+
+> `optional` **videoAudioElementId?**: `string`
+
+***
+
+### warmStart?
+
+> `optional` **warmStart?**: `boolean`
+
 ### Source: `docs/api/type-aliases/RTCPublisherConfigType.md`
 
-[**Red5 Pro WebRTC SDK v16.2.0-beta.2**](../README.md)
+[**Red5 Pro WebRTC SDK v16.3.0-beta.4**](../README.md)
 
 ***
 
@@ -11237,7 +12227,7 @@ The initialization configurations and relevant APIs available for each client ca
 
 ### Source: `docs/api/type-aliases/RTCSubscriberConfigType.md`
 
-[**Red5 Pro WebRTC SDK v16.2.0-beta.2**](../README.md)
+[**Red5 Pro WebRTC SDK v16.3.0-beta.4**](../README.md)
 
 ***
 
@@ -11411,7 +12401,7 @@ The initialization configurations and relevant APIs available for each client ca
 
 ### Source: `docs/api/type-aliases/RTCWhepSubscriberConfigType.md`
 
-[**Red5 Pro WebRTC SDK v16.2.0-beta.2**](../README.md)
+[**Red5 Pro WebRTC SDK v16.3.0-beta.4**](../README.md)
 
 ***
 
@@ -11433,7 +12423,7 @@ The initialization configurations and relevant APIs available for each client ca
 
 ### Source: `docs/api/type-aliases/RTCWhipPublisherConfigType.md`
 
-[**Red5 Pro WebRTC SDK v16.2.0-beta.2**](../README.md)
+[**Red5 Pro WebRTC SDK v16.3.0-beta.4**](../README.md)
 
 ***
 
@@ -11455,7 +12445,7 @@ The initialization configurations and relevant APIs available for each client ca
 
 ### Source: `docs/api/type-aliases/StatsConfig.md`
 
-[**Red5 Pro WebRTC SDK v16.2.0-beta.2**](../README.md)
+[**Red5 Pro WebRTC SDK v16.3.0-beta.4**](../README.md)
 
 ***
 
@@ -11493,7 +12483,7 @@ Configuration for RTC Stats Monitoring.
 
 ### Source: `docs/api/type-aliases/VideoConstraints.md`
 
-[**Red5 Pro WebRTC SDK v16.2.0-beta.2**](../README.md)
+[**Red5 Pro WebRTC SDK v16.3.0-beta.4**](../README.md)
 
 ***
 
@@ -11529,7 +12519,7 @@ Configuration for RTC Stats Monitoring.
 
 ### Source: `docs/api/variables/Capability.md`
 
-[**Red5 Pro WebRTC SDK v16.2.0-beta.2**](../README.md)
+[**Red5 Pro WebRTC SDK v16.3.0-beta.4**](../README.md)
 
 ***
 
@@ -11551,7 +12541,7 @@ Configuration for RTC Stats Monitoring.
 
 ### Source: `docs/api/variables/default.md`
 
-[**Red5 Pro WebRTC SDK v16.2.0-beta.2**](../README.md)
+[**Red5 Pro WebRTC SDK v16.3.0-beta.4**](../README.md)
 
 ***
 
@@ -11574,6 +12564,26 @@ Configuration for RTC Stats Monitoring.
 #### Capability.stream
 
 > `readonly` **stream**: `3` = `3`
+
+### defaultMOQCatalogConfig
+
+> **defaultMOQCatalogConfig**: [`MOQCatalogConfigType`](../type-aliases/MOQCatalogConfigType.md)
+
+### defaultMOQDataChannelConfiguration
+
+> **defaultMOQDataChannelConfiguration**: `Required`\<`Pick`\<[`MOQDataChannelConfiguration`](../type-aliases/MOQDataChannelConfiguration.md), `"name"` \| `"keepEcho"` \| `"unreliable"`\>\>
+
+### defaultMOQMessageChannelConfig
+
+> **defaultMOQMessageChannelConfig**: [`MOQMessageChannelConfigType`](../type-aliases/MOQMessageChannelConfigType.md)
+
+### defaultMOQPublisherConfig
+
+> **defaultMOQPublisherConfig**: [`MOQPublisherConfigType`](../type-aliases/MOQPublisherConfigType.md)
+
+### defaultMOQSubscriberConfig
+
+> **defaultMOQSubscriberConfig**: [`MOQSubscriberConfigType`](../type-aliases/MOQSubscriberConfigType.md)
 
 ### defaultStatsConfig
 
@@ -11668,6 +12678,10 @@ Get the version of the SDK.
 ### MOQCatalog
 
 > **MOQCatalog**: *typeof* [`MOQCatalog`](../classes/MOQCatalog.md)
+
+### MOQMessageChannel
+
+> **MOQMessageChannel**: *typeof* [`MOQMessageChannel`](../classes/MOQMessageChannel.md)
 
 ### MOQPublisher
 
@@ -11797,7 +12811,7 @@ Get the version of the SDK.
 
 ### Source: `docs/api/variables/defaultHLSSubscriberConfig.md`
 
-[**Red5 Pro WebRTC SDK v16.2.0-beta.2**](../README.md)
+[**Red5 Pro WebRTC SDK v16.3.0-beta.4**](../README.md)
 
 ***
 
@@ -11809,7 +12823,7 @@ Get the version of the SDK.
 
 ### Source: `docs/api/variables/defaultLiveSeekConfig.md`
 
-[**Red5 Pro WebRTC SDK v16.2.0-beta.2**](../README.md)
+[**Red5 Pro WebRTC SDK v16.3.0-beta.4**](../README.md)
 
 ***
 
@@ -11819,9 +12833,69 @@ Get the version of the SDK.
 
 > `const` **defaultLiveSeekConfig**: [`LiveSeekConfigType`](../type-aliases/LiveSeekConfigType.md)
 
+### Source: `docs/api/variables/defaultMOQCatalogConfig.md`
+
+[**Red5 Pro WebRTC SDK v16.3.0-beta.4**](../README.md)
+
+***
+
+[Red5 Pro WebRTC SDK](../globals.md) / defaultMOQCatalogConfig
+
+# Variable: defaultMOQCatalogConfig
+
+> `const` **defaultMOQCatalogConfig**: [`MOQCatalogConfigType`](../type-aliases/MOQCatalogConfigType.md)
+
+### Source: `docs/api/variables/defaultMOQDataChannelConfiguration.md`
+
+[**Red5 Pro WebRTC SDK v16.3.0-beta.4**](../README.md)
+
+***
+
+[Red5 Pro WebRTC SDK](../globals.md) / defaultMOQDataChannelConfiguration
+
+# Variable: defaultMOQDataChannelConfiguration
+
+> `const` **defaultMOQDataChannelConfiguration**: `Required`\<`Pick`\<[`MOQDataChannelConfiguration`](../type-aliases/MOQDataChannelConfiguration.md), `"name"` \| `"keepEcho"` \| `"unreliable"`\>\>
+
+### Source: `docs/api/variables/defaultMOQMessageChannelConfig.md`
+
+[**Red5 Pro WebRTC SDK v16.3.0-beta.4**](../README.md)
+
+***
+
+[Red5 Pro WebRTC SDK](../globals.md) / defaultMOQMessageChannelConfig
+
+# Variable: defaultMOQMessageChannelConfig
+
+> `const` **defaultMOQMessageChannelConfig**: [`MOQMessageChannelConfigType`](../type-aliases/MOQMessageChannelConfigType.md)
+
+### Source: `docs/api/variables/defaultMOQPublisherConfig.md`
+
+[**Red5 Pro WebRTC SDK v16.3.0-beta.4**](../README.md)
+
+***
+
+[Red5 Pro WebRTC SDK](../globals.md) / defaultMOQPublisherConfig
+
+# Variable: defaultMOQPublisherConfig
+
+> `const` **defaultMOQPublisherConfig**: [`MOQPublisherConfigType`](../type-aliases/MOQPublisherConfigType.md)
+
+### Source: `docs/api/variables/defaultMOQSubscriberConfig.md`
+
+[**Red5 Pro WebRTC SDK v16.3.0-beta.4**](../README.md)
+
+***
+
+[Red5 Pro WebRTC SDK](../globals.md) / defaultMOQSubscriberConfig
+
+# Variable: defaultMOQSubscriberConfig
+
+> `const` **defaultMOQSubscriberConfig**: [`MOQSubscriberConfigType`](../type-aliases/MOQSubscriberConfigType.md)
+
 ### Source: `docs/api/variables/defaultStatsConfig.md`
 
-[**Red5 Pro WebRTC SDK v16.2.0-beta.2**](../README.md)
+[**Red5 Pro WebRTC SDK v16.3.0-beta.4**](../README.md)
 
 ***
 
@@ -11833,7 +12907,7 @@ Get the version of the SDK.
 
 ### Source: `docs/api/variables/defaultWhepSubscriberConfig.md`
 
-[**Red5 Pro WebRTC SDK v16.2.0-beta.2**](../README.md)
+[**Red5 Pro WebRTC SDK v16.3.0-beta.4**](../README.md)
 
 ***
 
@@ -11845,7 +12919,7 @@ Get the version of the SDK.
 
 ### Source: `docs/api/variables/defaultWhipPublisherConfig.md`
 
-[**Red5 Pro WebRTC SDK v16.2.0-beta.2**](../README.md)
+[**Red5 Pro WebRTC SDK v16.3.0-beta.4**](../README.md)
 
 ***
 
@@ -11857,7 +12931,7 @@ Get the version of the SDK.
 
 ### Source: `docs/api/variables/LOG_LEVELS.md`
 
-[**Red5 Pro WebRTC SDK v16.2.0-beta.2**](../README.md)
+[**Red5 Pro WebRTC SDK v16.3.0-beta.4**](../README.md)
 
 ***
 
@@ -11895,7 +12969,7 @@ Get the version of the SDK.
 
 ### Source: `docs/api/variables/PlaybackStateReadableMap.md`
 
-[**Red5 Pro WebRTC SDK v16.2.0-beta.2**](../README.md)
+[**Red5 Pro WebRTC SDK v16.3.0-beta.4**](../README.md)
 
 ***
 
@@ -12530,6 +13604,8 @@ When you want to publish media over Media over QUIC (MoQ), the SDK provides `MOQ
 * [Usage](#usage)
 * [Init Configuration](#init-configuration)
 * [Events](#events)
+* [Capture timestamp pins](#capture-timestamp-pins)
+* [Send timing diagnostics](#send-timing-diagnostics)
 * [Statistics](#statistics)
 
 # Usage
@@ -12571,6 +13647,15 @@ await publisher.init({
     //   { width: 640, height: 360, fps: 30, bitrate: 1500 },
     //   { width: 320, height: 180, fps: 15, bitrate: 750 }
     // ]
+  },
+  // Optional: internally managed MOQMessageChannel
+  messageChannel: {
+    enabled: true,
+    mode: 'shared', // 'shared' reuses publisher connection, 'sidecar' uses separate connection
+    dataChannelConfiguration: {
+      name: 'red5pro',
+      keepEcho: false
+    }
   }
 })
 
@@ -12582,6 +13667,8 @@ To stop publishing:
 ```js
 await publisher.unpublish()
 ```
+
+`unpublish()` retires the current publish generation immediately and aborts any in-flight WebTransport handshake / `connect()`, so Stop does not wait for a hung relay connection. The in-flight `publish()` promise rejects without a `Publish.Fail` event; teardown still emits `Unpublish.Success`.
 
 ## Constructing with URL
 
@@ -12623,6 +13710,7 @@ The `init()` call accepts `MOQPublisherConfigType`.
 | `maxVideoQueue` | [-] | `120` | Max queued encoded video chunks per track before shed policy. |
 | `maxAudioQueue` | [-] | `240` | Max queued encoded audio chunks per track before shed policy. |
 | `simulcast` | [-] | `{ enabled: false, rungs: 3 }` | Optional simulcast ladder. When `enabled`, `rungs` is either a count (`1..3`) or an explicit `SimulcastVariant[]`. Source/captured video is always the top rung; lower rungs are generated (auto: ½ resolution/bitrate each step, and ½ fps when top FPS ≥ 60). |
+| `messageChannel` | [-] | `{ enabled: false, mode: 'shared' }` | Optional internally managed `MOQMessageChannel`. `mode: 'shared'` reuses publisher's `MoqtConnection`; `mode: 'sidecar'` creates a separate MoQT session for messaging. |
 | `stats` | [-] | `undefined` | Optional stats monitor configuration. |
 | `connectionParams` | [-] | `undefined` | Additional params used for stats metadata and endpoint context. |
 | `moqtLogLevel` | [-] | `none` | Log level passed to MOQ components. |
@@ -12639,6 +13727,19 @@ The `init()` call accepts `MOQPublisherConfigType`.
 - Lower rungs are produced with `OffscreenCanvas` + `MediaStreamTrackGenerator` and published as additional catalog video tracks (`video-0`, `video-1`, …).
 - Additional non-ladder video tracks already present on the input stream (for example screenshare) are preserved after the ladder tracks.
 - Requires Chromium insertable-streams APIs (`MediaStreamTrackProcessor` / `MediaStreamTrackGenerator`).
+
+### Managed MessageChannel notes
+
+- `messageChannel.enabled: true` makes `MOQPublisher` create/manage a channel during `publish()` and close it during `unpublish()`.
+- `mode: 'shared'`:
+  - reuses the active publisher `MoqtConnection`
+  - useful to keep media + messaging on one transport/session
+  - supports troubleshooting same-connection behavior under load
+- `mode: 'sidecar'`:
+  - creates a second `MoqtConnection` only for messaging
+  - helps isolate transport contention from media publishing
+- `messageChannel.dataChannelConfiguration` supports the same semantics as standalone `MOQMessageChannel` (for example `name`, `clientId`, `keepEcho`, `unreliable`).
+- In `sidecar` mode, messaging endpoint fields may be overridden under `messageChannel` (`endpoint`, `host`, `protocol`, `port`, `certKey`, `draftVersion`, `connectionParams`, `app`, `streamName`); otherwise publisher values are used.
 
 # Events
 
@@ -12660,7 +13761,7 @@ publisher.off('*', onPublisherEvent)
 | Access | Event Type | Meaning |
 | :--- | :--- | :--- |
 | `PUBLISH_START` | `Publish.Start` | Publishing has started. |
-| `PUBLISH_FAIL` | `Publish.Fail` | Publishing failed. |
+| `PUBLISH_FAIL` | `Publish.Fail` | Publishing failed. Payload includes `error` and `terminal` (`true` when setup cannot continue, for example when `MediaStreamTrackProcessor` is unavailable). |
 | `UNPUBLISH_SUCCESS` | `Unpublish.Success` | Unpublish completed. |
 
 ### MOQ-specific events (`MOQPublisherEventTypes`)
@@ -12671,14 +13772,104 @@ publisher.off('*', onPublisherEvent)
 | `CONSTRAINTS_REJECTED` | `MOQ.MediaConstraints.Rejected` | Media constraints rejected. |
 | `MEDIA_STREAM_AVAILABLE` | `MOQ.MediaStream.Available` | Local `MediaStream` became available. |
 | `NAMESPACE_PUBLISHED` | `MOQ.Namespace.Published` | Namespace announce/publish completed. |
+| `CATALOG_PUBLISHED` | `MOQ.Catalog.Published` | Catalog tracks announced to the session. |
 | `RELAY_SUBSCRIBE` | `MOQ.Relay.Subscribe` | Relay requested a known track subscription. |
 | `RELAY_SUBSCRIBE_FAILED` | `MOQ.Relay.Subscribe.Failed` | Relay requested unknown or rejected track. |
 | `RELAY_MESSAGE` | `MOQ.Relay.Message` | Relay control message received. |
 | `RELAY_ERROR` | `MOQ.Relay.Error` | Relay/session error reported. |
 | `RELAY_CLOSE` | `MOQ.Relay.Close` | Relay/session closed. |
-| `ENCODER_ERROR` | `MOQ.Encoder.Error` | Encoder or capture pipeline error. |
-| `SEND_STATS` | `MOQ.Send.Stats` | Per-track send counters after a media object is published. Payload includes `trackName`, `role`, role-specific counters (`videoFrames`/`keyframeCount` or `audioChunks`), and a `tracks` snapshot keyed by track name with the same role-specific shape. |
+| `ENCODER_ERROR` | `MOQ.Encoder.Error` | Encoder or capture pipeline error. Payload includes `encoder` (`media` / `video` / `audio` / `catalog`), `error` (message), and `terminal` (`true` when publish setup cannot continue). Missing `MediaStreamTrackProcessor` emits `{ encoder: 'media', code: 'MEDIA_STREAM_TRACK_PROCESSOR_UNAVAILABLE', feature: 'MediaStreamTrackProcessor', terminal: true }` and then `PUBLISH_FAIL`. |
+| `SEND_STATS` | `MOQ.Send.Stats` | Per-track send counters after a media object is published. Payload includes `trackName`, `role`, role-specific counters (`videoFrames`/`keyframeCount` or `audioChunks`), send-timing fields (see **Send timing diagnostics** below), a `tracks` snapshot keyed by track name with the same per-track fields, and capture-pin fields (see **Capture timestamp pins** below). |
+| `TIMESTAMP_PINNED` | `MOQ.Timestamp.Pinned` | Fired once when both audio and video capture clocks have been pinned and the video warm-up has finished. Same pin-field shape as `SEND_STATS`. |
+| `TIMESTAMP_REPINNED` | `MOQ.Timestamp.Repinned` | A capture offset was corrected by ≥100ms after objects of that kind were already sent. Payload adds `track` (`'audio'` / `'video'`) and `correctionMs` to the pin fields. For video, the SDK forces a keyframe so the corrected timeline starts on a new group. |
+| `CAPTURE_COLD_START` | `MOQ.Capture.ColdStart` | Fired once per kind when that kind's first capture sample reached the SDK at least 500ms late, typically a camera waking from idle. The correction is already applied. Payload: `track`, `lateByMs`, `timeToFirstFrameMs`, `beforeFirstSend`, `audioCorrectionMs`, `videoCorrectionMs`. |
+| `MESSAGE_CHANNEL_OPEN` | `MOQ.MessageChannel.Open` | Managed `MOQMessageChannel` opened successfully. |
+| `MESSAGE_CHANNEL_SEND` | `MOQ.MessageChannel.Send` | Managed `MOQMessageChannel` sent a message/data payload. |
+| `MESSAGE_CHANNEL_RECEIVE` | `MOQ.MessageChannel.Receive` | Managed `MOQMessageChannel` received a message/data payload. |
+| `MESSAGE_CHANNEL_CLOSE` | `MOQ.MessageChannel.Close` | Managed `MOQMessageChannel` closed. |
+| `MESSAGE_CHANNEL_FAIL` | `MOQ.MessageChannel.Fail` | Managed `MOQMessageChannel` failed to open. |
+| `MESSAGE_CHANNEL_ERROR` | `MOQ.MessageChannel.Error` | Managed `MOQMessageChannel` reported an error. |
 | `STATS_REPORT` | `MOQ.Stats.Report` | Stats report emitted when monitoring is enabled. |
+
+Managed MessageChannel events include metadata in `event.data`:
+
+- `transport`: `'moq'`
+- `mode`: `'shared' | 'sidecar'`
+- `label`: configured channel label (`dataChannelConfiguration.name`)
+- `streamName`: configured stream name used by the managed channel
+- `configuredClientId`: configured sender identity if provided
+- `event`: original underlying `MessageChannel` event payload
+
+### Capture timestamp pins
+
+LOC capture timestamps are Unix-epoch microseconds. Each media kind (audio, video) maps its WebCodecs timestamps to wall clock with its own offset, because browsers often use different timestamp bases for audio and video.
+
+The first capture observation of a kind sets that offset. Every later capture observation can only **lower** it: the SDK keeps the smallest `wall − timestamp` it has seen. A sample that reaches the SDK late (for example, the first frame from a camera that was idle) would otherwise push that kind's stamps ahead of real time for the whole broadcast, and subscribers would hold that kind back by the same amount.
+
+When the stream has video, the first 5 video frames are observed but not encoded. This warm-up lets the offset settle before any video object is stamped, and the first encoded frame is a keyframe. If a correction of 100ms or more happens after objects of that kind were sent, the SDK emits `TIMESTAMP_REPINNED` and, for video, forces a keyframe.
+
+Pins, corrections, and the warm-up reset on each `start()`.
+
+`TIMESTAMP_PINNED`, `TIMESTAMP_REPINNED`, and `SEND_STATS` share these fields:
+
+| Field | Meaning |
+| :--- | :--- |
+| `audioPin` / `videoPin` | First capture observation per kind: `{ wallUs, mediaTimestampUs, offsetUs }`, or `null`. |
+| `audioCorrectionMs` / `videoCorrectionMs` | Total amount the offset has been lowered since the first observation. Large values mean the first sample arrived late; the correction is already applied. |
+| `pinSeverity` | Based on the larger correction: `ok` (<200ms), `warn` (≥200ms), `error` (≥1500ms). `null` until a kind has pinned. Describes the capture condition, not remaining A/V error. |
+| `pinSkewMs` | `(videoPin.wallUs − audioPin.wallUs)` in milliseconds: when each kind was first observed. Informational. `null` until both kinds have pinned. |
+
+```js
+publisher.on(MOQPublisherEventTypes.TIMESTAMP_PINNED, event => {
+  const { videoCorrectionMs, audioCorrectionMs, pinSeverity } = event.data
+})
+publisher.on(MOQPublisherEventTypes.TIMESTAMP_REPINNED, event => {
+  const { track, correctionMs } = event.data
+})
+```
+
+#### Cold capture start
+
+`CAPTURE_COLD_START` reports a first sample that reached the SDK late by at least 500ms. The SDK only detects this once a fresher sample arrives to compare against, so video is checked when its warm-up ends, before any video object is sent. Audio is checked whenever its correction first crosses the threshold.
+
+| Field | Meaning |
+| :--- | :--- |
+| `track` | `'video'` or `'audio'`. |
+| `lateByMs` | How late the first sample arrived (the kind's total correction). |
+| `timeToFirstFrameMs` | From capture start to the first sample of that kind. |
+| `beforeFirstSend` | `true` when the correction landed before any object of that kind was sent, so subscribers never saw the bad stamps. |
+| `audioCorrectionMs` / `videoCorrectionMs` | Both kinds' corrections at that moment. A large video value with small audio means the stall was in video capture specifically, not a busy page. |
+
+A camera that is only slow to *start* (late but fresh first frame) does not trigger this event; it causes no timestamp error.
+
+```js
+publisher.on(MOQPublisherEventTypes.CAPTURE_COLD_START, event => {
+  const { track, lateByMs, beforeFirstSend } = event.data
+})
+```
+
+### Send timing diagnostics
+
+Each track in `SEND_STATS` (top-level for the emitting track, and in every `tracks` entry) reports:
+
+| Field | Meaning |
+| :--- | :--- |
+| `sendLatencyMs` | Wall clock minus the object's LOC capture timestamp at hand-off to the transport. Covers encode time plus SDK queue wait. `null` before the first send. |
+| `minSendLatencyMs` | Lowest `sendLatencyMs` since `start()`. |
+| `queueDepth` | Objects waiting in the SDK send queue for this track. |
+| `encoderQueueDepth` | Frames waiting inside the WebCodecs encoder (`encodeQueueSize`). |
+
+Compare audio and video to diagnose A/V offset seen by all subscribers:
+
+- Video `sendLatencyMs` well **below zero**: video capture timestamps are ahead of real time. The SDK corrects late first samples automatically (see **Capture timestamp pins**), so a value that stays negative after the first few seconds is unexpected and worth reporting. `minSendLatencyMs` keeps the lowest value since `start()`, so it can stay negative after a `TIMESTAMP_REPINNED` correction.
+- Video `sendLatencyMs` **seconds above** audio: video is delivered late even though its stamps are correct. A high `queueDepth` points at transport backpressure; a high `encoderQueueDepth` points at a slow encoder.
+- Both near audio: the publisher is not the source; check subscriber-side playback sync.
+
+```js
+publisher.on(MOQPublisherEventTypes.SEND_STATS, event => {
+  const { trackName, sendLatencyMs, minSendLatencyMs, queueDepth, encoderQueueDepth } = event.data
+})
+```
 
 # Statistics
 
@@ -12740,7 +13931,16 @@ await subscriber.init({
   endpoint: 'https://relay.example.com:4433',
   namespace: 'live/mystream',
   mediaElementId: 'red5pro-subscriber',
-  prefetchCatalog: false
+  prefetchCatalog: false,
+  // Optional: internally managed MOQMessageChannel
+  messageChannel: {
+    enabled: true,
+    mode: 'shared', // 'shared' reuses subscriber connection, 'sidecar' uses separate connection
+    dataChannelConfiguration: {
+      name: 'red5pro',
+      keepEcho: false
+    }
+  }
 })
 
 await subscriber.subscribe()
@@ -12751,6 +13951,8 @@ To stop:
 ```js
 await subscriber.unsubscribe()
 ```
+
+`unsubscribe()` aborts any in-flight WebTransport handshake / `MoqtPlayer.load()` immediately, so Stop does not wait for a hung relay connection. An in-flight `subscribe()` promise rejects without `Subscribe.Fail`; teardown still emits `Subscribe.Stop` when the stop was user-initiated.
 
 ## Constructing with URL
 
@@ -12795,8 +13997,23 @@ The `init()` call accepts `MOQSubscriberConfigType`.
 | `moqtLogLevel` | [-] | `none` | Log level passed to MOQ components. |
 | `mediaSource` | [-] | `none` | An instance of a `MediaSourceLike` (from [moq-playa](https://github.com/openmoq/moq-playa)) implementation. _Make sure you know what you are doing, as it carries responsibility for managing buffers and media playout._ |
 | `mseMediaSourceOptions` | [-] | `undefined` | The desired `MseMediaSourceOptions` to apply when the video package format is received as `CMAF/CMSF`. Ignored when `mediaSource` is provided. |
+| `locmafDecoding` | [-] | `mse` | How LOCMAF tracks are consumed: reconstructed CMAF chunks for MSE (`mse`), or coded frames for WebCodecs (`frame`). |
+| `messageChannel` | [-] | `{ enabled: false, mode: 'shared' }` | Optional internally managed `MOQMessageChannel`. `mode: 'shared'` reuses subscriber/player `MoqtConnection`; `mode: 'sidecar'` creates a separate MoQT session for messaging. |
 
 `*` Required when `endpoint` is not provided.
+
+### Managed MessageChannel notes
+
+- `messageChannel.enabled: true` makes `MOQSubscriber` create/manage a channel during `subscribe()` and close it during `unsubscribe()`.
+- `mode: 'shared'`:
+  - reuses the active subscriber/player `MoqtConnection`
+  - keeps media + messaging on one transport/session
+  - useful for same-connection troubleshooting
+- `mode: 'sidecar'`:
+  - creates a second `MoqtConnection` only for messaging
+  - helps isolate transport contention from media playback
+- `messageChannel.dataChannelConfiguration` supports the same semantics as standalone `MOQMessageChannel` (for example `name`, `clientId`, `keepEcho`, `unreliable`).
+- In `sidecar` mode, messaging endpoint fields may be overridden under `messageChannel` (`endpoint`, `host`, `protocol`, `port`, `certKey`, `draftVersion`, `connectionParams`, `app`, `streamName`); otherwise subscriber values are used.
 
 # Events
 
@@ -12839,6 +14056,21 @@ subscriber.off('*', onSubscriberEvent)
 | `STATS_REPORT` | `MOQ.Stats.Report` | Stats report emitted when enabled. |
 | `AUDIO_BLOCKED` | `MOQ.Audio.Blocked` | Browser blocked audio output pending user gesture. |
 | `AUDIO_UNBLOCKED` | `MOQ.Audio.Unblocked` | Audio output resumed after user gesture. |
+| `MESSAGE_CHANNEL_OPEN` | `MOQ.MessageChannel.Open` | Managed `MOQMessageChannel` opened successfully. |
+| `MESSAGE_CHANNEL_SEND` | `MOQ.MessageChannel.Send` | Managed `MOQMessageChannel` sent a message/data payload. |
+| `MESSAGE_CHANNEL_RECEIVE` | `MOQ.MessageChannel.Receive` | Managed `MOQMessageChannel` received a message/data payload. |
+| `MESSAGE_CHANNEL_CLOSE` | `MOQ.MessageChannel.Close` | Managed `MOQMessageChannel` closed. |
+| `MESSAGE_CHANNEL_FAIL` | `MOQ.MessageChannel.Fail` | Managed `MOQMessageChannel` failed to open. |
+| `MESSAGE_CHANNEL_ERROR` | `MOQ.MessageChannel.Error` | Managed `MOQMessageChannel` reported an error. |
+
+Managed MessageChannel events include metadata in `event.data`:
+
+- `transport`: `'moq'`
+- `mode`: `'shared' | 'sidecar'`
+- `label`: configured channel label (`dataChannelConfiguration.name`)
+- `streamName`: configured stream name used by the managed channel
+- `configuredClientId`: configured sender identity if provided
+- `event`: original underlying `MessageChannel` event payload
 
 # Playback API
 
@@ -12861,6 +14093,7 @@ You can access internals for advanced integrations:
 ```js
 const options = subscriber.getOptions()
 const player = subscriber.getPlayer()
+const messageChannel = subscriber.getMessageChannel()
 const view = subscriber.getRendererView()
 ```
 

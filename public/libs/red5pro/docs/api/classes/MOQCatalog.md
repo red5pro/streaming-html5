@@ -1,4 +1,4 @@
-[**Red5 Pro WebRTC SDK v16.2.0-beta.2**](../README.md)
+[**Red5 Pro WebRTC SDK v16.3.0-beta.4**](../README.md)
 
 ***
 
@@ -26,7 +26,7 @@ Base class for an Event Emitter.
 
 ##### additionalOptions?
 
-`MOQCatalogConfigType`
+[`MOQCatalogConfigType`](../type-aliases/MOQCatalogConfigType.md)
 
 #### Returns
 
@@ -46,7 +46,7 @@ Base class for an Event Emitter.
 
 ##### options
 
-`MOQCatalogConfigType`
+[`MOQCatalogConfigType`](../type-aliases/MOQCatalogConfigType.md)
 
 #### Returns
 
@@ -90,11 +90,11 @@ Base class for an Event Emitter.
 
 ### getOptions()
 
-> **getOptions**(): `MOQCatalogConfigType`
+> **getOptions**(): [`MOQCatalogConfigType`](../type-aliases/MOQCatalogConfigType.md)
 
 #### Returns
 
-`MOQCatalogConfigType`
+[`MOQCatalogConfigType`](../type-aliases/MOQCatalogConfigType.md)
 
 ***
 
@@ -106,7 +106,7 @@ Base class for an Event Emitter.
 
 ##### options
 
-`MOQCatalogConfigType`
+[`MOQCatalogConfigType`](../type-aliases/MOQCatalogConfigType.md)
 
 #### Returns
 
