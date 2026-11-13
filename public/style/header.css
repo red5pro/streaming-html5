@@ -26,6 +26,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 :host {
   display: block;
+  /* Header chrome is always dark, regardless of the page theme. */
+  color-scheme: dark;
   position: sticky;
   z-index: 100;
   --bg: #0c0c0c;
