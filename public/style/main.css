@@ -47,6 +47,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 }
 
 :root {
+  /* Opt out of browser-forced dark modes (Android Chrome Auto Dark, Samsung Internet),
+     which otherwise recolor the light theme and the always-dark header. */
+  color-scheme: only light;
   --bg: #ffffff;
   --bg-secondary: #f5f5f5;
   --bg-card: #ffffff;

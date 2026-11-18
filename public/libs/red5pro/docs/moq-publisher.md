@@ -89,6 +89,8 @@ await publisher.unpublish()
 
 `unpublish()` retires the current publish generation immediately and aborts any in-flight WebTransport handshake / `connect()`, so Stop does not wait for a hung relay connection. The in-flight `publish()` promise rejects without a `Publish.Fail` event; teardown still emits `Unpublish.Success`.
 
+Each accepted catalog, video, and audio subscription reports the largest object handed to the relay. A subscriber `REQUEST_UPDATE` reads that location. The head stays empty until the first object for that request. A replacement subscription starts empty, including while an older subgroup open is still in flight. `unpublish()` stops reporting heads for the retired session.
+
 ## Constructing with URL
 
 Passing a URL to the constructor triggers internal init + publish automatically.
@@ -125,6 +127,7 @@ The `init()` call accepts `MOQPublisherConfigType`.
 | `onGetUserMedia` | [-] | `undefined` | Optional override to provide your own media stream acquisition. |
 | `videoEncoding` | [-] | `H264` | Preferred video codec (`PublishVideoEncoder`: `H264_BASELINE`, `H264_HIGH`, `H264`, `H265`, `AV1`). The publisher probes `VideoEncoder.isConfigSupported` at the track resolution and frame rate, then falls back (Baseline ↔ High, then H.264 if HEVC/AV1 is requested). AVC level is raised automatically (e.g. 4.0 for 1080p30, 4.2 for 1080p60). If nothing is supported, `ENCODER_ERROR` fires with `terminal: true` and publish fails. |
 | `audioEncoding` | [-] | `OPUS` | Audio codec (`PublishAudioEncoder`). |
+| `locVersion` | [-] | `4` | LOC packaging draft to emit on media objects (`1`, `4`, or `5`). Version `5` adds the LOC Codec String on every video and audio object, using that track's catalog codec. Versions `1` and `4` omit it. Simulcast rungs each carry their own codec string. |
 | `mediaElementId` | [-] | `red5pro-publisher` | Preview element id for local media display. |
 | `clearMediaOnUnpublish` | [-] | `true` | Stop preview stream tracks on unpublish. |
 | `maxVideoQueue` | [-] | `120` | Max queued encoded video chunks per track before shed policy. |

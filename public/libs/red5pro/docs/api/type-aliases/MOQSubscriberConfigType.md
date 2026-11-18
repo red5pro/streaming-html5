@@ -1,4 +1,4 @@
-[**Red5 Web SDK v17.0.0-beta.1**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.2**](../README.md)
 
 ***
 
@@ -13,6 +13,15 @@
 ### app
 
 > **app**: `string`
+
+***
+
+### audioLanguages?
+
+> `optional` **audioLanguages?**: readonly `string`[]
+
+Ordered basic language ranges for automatic audio choice in the chosen scope.
+Omitted: catalog order.
 
 ***
 
@@ -175,6 +184,15 @@ Optional internally managed data messaging channel.
 ### protocol
 
 > **protocol**: `"ws"` \| `"wss"` \| `"http"` \| `"https"`
+
+***
+
+### selection?
+
+> `optional` **selection?**: `SelectionConfig`
+
+Tune-in presentation. Omitted fields use the player default.
+`renderGroup: null` is the unassigned pool, not an omitted field.
 
 ***
 

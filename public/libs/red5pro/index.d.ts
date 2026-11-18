@@ -27,11 +27,12 @@ export { LiveSeekConfigType, LiveSeekOptions, defaultLiveSeekConfig } from 'conf
 import { PubnubConfigType } from 'configuration/pubnub';
 import { PublisherEventTypes, SubscriberEventTypes, RTCPublisherEventTypes, RTCSubscriberEventTypes, MessageTransportStateEventTypes, MessageChannelEventTypes, WebRTCConnectionEventTypes } from 'event/event-types';
 export { MessageChannelEventTypes, MessageTransportStateEventTypes, PublisherEventTypes, RTCPublisherEventTypes, RTCSubscriberEventTypes, SubscriberEventTypes, WebRTCConnectionEventTypes } from 'event/event-types';
-import { MOQDataChannelConfiguration, MOQMessageChannelConfigType, MOQSubscriberConfigType, MOQPublisherConfigType, MOQCatalogConfigType, MOQSubscriber, MOQPublisher, MOQMessageChannel, MOQCatalog } from 'moq';
-export { MOQCatalog, MOQCatalogConfigType, MOQDataChannelConfiguration, MOQMessageChannel, MOQMessageChannelConfigType, MOQPublisher, MOQPublisherConfigType, MOQSubscriber, MOQSubscriberConfigType, defaultMOQCatalogConfig, defaultMOQDataChannelConfiguration, defaultMOQMessageChannelConfig, defaultMOQPublisherConfig, defaultMOQSubscriberConfig } from 'moq';
+import { MOQDataChannelConfiguration, MOQMessageChannelConfigType, MOQSubscriberConfigType, MOQPublisherConfigType, MOQCatalogConfigType, MOQSubscriber, MOQPublisher, MOQMessageChannel, MOQCatalog, MOQSubscriberEventTypes } from 'moq';
+export { MOQCatalog, MOQCatalogConfigType, MOQDataChannelConfiguration, MOQMessageChannel, MOQMessageChannelConfigType, MOQPublisher, MOQPublisherConfigType, MOQSubscriber, MOQSubscriberConfigType, MOQSubscriberEventTypes, defaultMOQCatalogConfig, defaultMOQDataChannelConfiguration, defaultMOQMessageChannelConfig, defaultMOQPublisherConfig, defaultMOQSubscriberConfig } from 'moq';
 export { default as Capability } from 'types/capabilities';
 import { PubNubEventTypes } from 'event/pubnub';
 export { PubNubEventTypes } from 'event/pubnub';
+import { SelectionConfig, SelectableTrack, TrackRefConfig } from '@openmoq/player';
 import { Logger } from 'browser-bunyan';
 
 declare const LEVELS: {
@@ -1346,6 +1347,41 @@ declare class EventEmitter implements EventEmitterInterface {
     trigger(event: Event$1): void;
 }
 
+/**
+ * One program, view, or audio language the catalog model offers.
+ * `selection` names that choice. Applying it is a later retune, not a rendition switch.
+ */
+interface MOQPresentationChoice {
+    readonly key: string;
+    readonly label: string;
+    readonly active: boolean;
+    readonly selection: SelectionConfig;
+    readonly language?: string;
+}
+/** A rendition inside the adopted view. `reference` is the in-session video identity. */
+interface MOQPresentationVideo {
+    readonly track: SelectableTrack;
+    readonly active: boolean;
+    readonly reference: TrackRefConfig;
+}
+/**
+ * Programs, views, renditions, and audio languages derived from the player model.
+ * Grouping stays in the player; this only names what that model already offers.
+ */
+interface MOQPresentation {
+    readonly programs: readonly MOQPresentationChoice[];
+    readonly views: readonly MOQPresentationChoice[];
+    readonly videos: readonly MOQPresentationVideo[];
+    readonly audio: readonly MOQPresentationChoice[];
+    readonly adoptedVideo: SelectableTrack | null;
+    readonly adoptedAudio: SelectableTrack | null;
+    /**
+     * `false` when the adopted scope offers no video.
+     * `undefined` when no scope is adopted yet.
+     */
+    readonly hasVideo: boolean | undefined;
+}
+
 declare const _default: {
     version: string;
     LOG_LEVELS: {
@@ -1408,7 +1444,8 @@ declare const _default: {
     MOQPublisher: typeof MOQPublisher;
     MOQMessageChannel: typeof MOQMessageChannel;
     MOQCatalog: typeof MOQCatalog;
+    MOQSubscriberEventTypes: typeof MOQSubscriberEventTypes;
 };
 
 export { EventEmitter, HLSSubscriber, LEVELS as LOG_LEVELS, LiveSeekClient, MessageChannel, PlaybackController, PlaybackControls, PubNubClient, SourceHandler, SourceHandlerImpl, WHEPClient, WHIPClient, _default as default, getLogger, getRecordedLogs, getVersion, setLogLevel };
-export type { EventEmitterInterface };
+export type { EventEmitterInterface, MOQPresentation, MOQPresentationChoice, MOQPresentationVideo };

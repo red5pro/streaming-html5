@@ -116,9 +116,29 @@ The `init()` call accepts `MOQSubscriberConfigType`.
 | `mseMediaSourceOptions` | [-] | buffer defaults | CMAF/MSE buffer and MediaSource settings. Ignored when `mediaSource` is provided. See [CMAF playback](#cmaf-playback). |
 | `drmConfig` | [-] | `undefined` | EME license settings for encrypted CMAF playback. Overrides `mseMediaSourceOptions.drmConfig`. See [CMAF playback](#cmaf-playback). |
 | `locmafDecoding` | [-] | `mse` | How LOCMAF tracks are consumed: reconstructed CMAF chunks for MSE (`mse`), or coded frames for WebCodecs (`frame`). |
+| `selection` | [-] | `undefined` | Presentation chosen at subscribe. See [Tune-in selection](#tune-in-selection). |
+| `audioLanguages` | [-] | `undefined` | Ordered language ranges for automatic audio choice. Omitted: catalog order. |
 | `messageChannel` | [-] | `{ enabled: false, mode: 'shared' }` | Optional internally managed `MOQMessageChannel`. `mode: 'shared'` reuses subscriber/player `MoqtConnection`; `mode: 'sidecar'` creates a separate MoQT session for messaging. |
 
 `*` Required when `endpoint` is not provided.
+
+### Tune-in selection
+
+`selection` and `audioLanguages` are copied onto the player when `subscribe()` starts. They choose the first presentation. They do not change a session that is already playing.
+
+Leave `selection` unset to use the player's catalog defaults. A field you set is exact: the player reports it when the catalog cannot satisfy it, and does not substitute another scope or track. `renderGroup: null` selects tracks that declare no render group. `renderGroup: 0` is render group zero.
+
+`audioLanguages` is an ordered list of basic language ranges, such as `['en', 'es']`. Exact tags are preferred over regional variants. When nothing matches, the player keeps the scope's default audio. Omit the field for catalog order.
+
+```js
+await subscriber.init({
+  endpoint: 'https://relay.example:4433',
+  app: 'live',
+  streamName: 'cam',
+  selection: { renderGroup: null, videoAltGroup: 1 },
+  audioLanguages: ['en', 'es']
+})
+```
 
 ### Authorization
 
@@ -247,6 +267,7 @@ subscriber.off('*', onSubscriberEvent)
 | `SESSION_ERROR` | `MOQ.Session.Error` | Session-level error. |
 | `CATALOG_RECEIVED` | `MOQ.Catalog.Received` | Catalog received (prefetch or relay). |
 | `CATALOG_UPDATED` | `MOQ.Catalog.Updated` | Catalog update observed. |
+| `SELECTION_CHANGED` | `MOQ.Selection.Changed` | Adopted program, view, rendition, or audio choice changed. |
 | `TRACK_SUBSCRIBE` | `MOQ.Track.Subscribe` | Track subscription succeeded. |
 | `TRACK_SUBSCRIBE_FAILED` | `MOQ.Track.Subscribe.Failed` | Track subscription failed. |
 | `TRACK_UNSUBSCRIBE` | `MOQ.Track.Unsubscribe` | Track unsubscribed. |
@@ -260,6 +281,27 @@ subscriber.off('*', onSubscriberEvent)
 | `MESSAGE_CHANNEL_CLOSE` | `MOQ.MessageChannel.Close` | Managed `MOQMessageChannel` closed. |
 | `MESSAGE_CHANNEL_FAIL` | `MOQ.MessageChannel.Fail` | Managed `MOQMessageChannel` failed to open. |
 | `MESSAGE_CHANNEL_ERROR` | `MOQ.MessageChannel.Error` | Managed `MOQMessageChannel` reported an error. |
+
+### Catalog selection
+
+`CATALOG_RECEIVED`, `CATALOG_UPDATED`, and `SELECTION_CHANGED` add two fields beside the existing catalog payload. `CATALOG_RECEIVED` still includes `availableVideoTracks` and `availableAudioTracks`.
+
+- `catalogSelection` is the player model: scopes (declared render groups, then the unassigned pool), the alternate sets inside each scope, and tracks the player excluded. It is `null` when the catalog could not be modeled.
+- `presentation` names that model for an application. `programs` are scopes. `views` are the video alternate sets in the adopted scope. `videos` are the renditions the player can switch among inside the adopted view, each with a `reference` of `{ name, namespace }`. `audio` lists the adopted scope's audio choices. `adoptedVideo` and `adoptedAudio` are the tracks currently selected, or `null`. `hasVideo` is `false` for an audio-only scope and `undefined` until a scope is adopted.
+
+Each program, view, and audio entry includes `selection`, the config that names that choice. A rendition switch uses `videos[].reference` and stays on the current session. `selection` is not applied by this event.
+
+`SELECTION_CHANGED` also includes `selection` (the player's adopted snapshot) and `catalog` (a defensive copy, or `null`).
+
+Until a scope is adopted, `presentation.programs` lists every scope and `views`, `videos`, and `audio` are empty.
+
+```js
+subscriber.on(MOQSubscriberEventTypes.SELECTION_CHANGED, event => {
+  const { presentation } = event.data
+  console.log(presentation.programs, presentation.views, presentation.audio)
+  console.log(presentation.adoptedVideo, presentation.videos)
+})
+```
 
 Managed MessageChannel events include metadata in `event.data`:
 
@@ -283,8 +325,22 @@ await subscriber.mute()
 await subscriber.unmute()
 await subscriber.setVolume(0.5)
 await subscriber.resumeAudio() // call from user gesture if audio is blocked
-await subscriber.selectVideoTrack('video')
+await subscriber.selectVideoTrack('video-1')
+await subscriber.selectVideoTrack({ name: 'video-1', namespace: ['live/cam'] })
+await subscriber.selectVideoTrack('video-1', true) // resume automatic quality
+await subscriber.selectPresentation({ renderGroup: 1, videoAltGroup: 2 })
+await subscriber.selectAudioTrack('audio-1')
 ```
+
+`selectVideoTrack` switches rendition inside the view already playing. It does not change program or view. A track in another alternate group is rejected by the player, and that error is returned as-is.
+
+The first argument is a track name, or `{ name, namespace }` when the same name exists in more than one namespace. `namespace` may be the catalog text or the wire field tuple. It is passed through unchanged.
+
+A successful manual switch leaves automatic quality off. The second argument defaults to `false`. Pass `true` to resume automatic quality after the switch.
+
+`selectPresentation` stops the current session and subscribes again with that selection. `renderGroup: null` still selects the unassigned pool. One change runs at a time. Passing the active program, view, or audio choice returns without a restart. Teardown and startup each have a 15 second limit. If startup fails, the new attempt is stopped and the previous `selection` is restored.
+
+`selectAudioTrack` resolves one audio choice in the current presentation and calls `selectPresentation`. The current program and view stay in that choice. A name shared by two audio tracks is rejected. The optional second argument is ignored. An audio-only presentation resolves when audio is accepted and playback is playing. `Subscribe.Start` is still emitted only for a rendered video frame.
 
 You can access internals for advanced integrations:
 

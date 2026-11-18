@@ -1,4 +1,4 @@
-[**Red5 Web SDK v17.0.0-beta.1**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.2**](../README.md)
 
 ***
 
@@ -36,15 +36,7 @@
 
 ### options?
 
-> `optional` **options?**: `object`
-
-#### backBufferLength
-
-> **backBufferLength**: `number`
-
-#### debug
-
-> **debug**: `boolean`
+> `optional` **options?**: `Record`\<`string`, `unknown`\>
 
 ***
 

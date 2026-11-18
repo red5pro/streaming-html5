@@ -340,3 +340,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   font-weight: 500;
   color: var(--text);
 }
+
+/* live seek */
+.red5pro-hls-vod {
+  height: unset !important;
+  aspect-ratio: 16 / 9 !important;
+}

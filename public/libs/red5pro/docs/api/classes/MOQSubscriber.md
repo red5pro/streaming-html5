@@ -1,4 +1,4 @@
-[**Red5 Web SDK v17.0.0-beta.1**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.2**](../README.md)
 
 ***
 
@@ -104,11 +104,11 @@ Base class for an Event Emitter.
 
 ### getRendererView()
 
-> **getRendererView**(): `HTMLVideoElement` \| `HTMLCanvasElement` \| `undefined`
+> **getRendererView**(): `HTMLCanvasElement` \| `HTMLVideoElement` \| `undefined`
 
 #### Returns
 
-`HTMLVideoElement` \| `HTMLCanvasElement` \| `undefined`
+`HTMLCanvasElement` \| `HTMLVideoElement` \| `undefined`
 
 ***
 
@@ -283,6 +283,9 @@ Call from a click/tap/keydown handler when `MOQ.Audio.Blocked` fires.
 
 > **selectAudioTrack**(`trackName`, `autoQualityResume?`): `Promise`\<`void`\>
 
+Retune to one audio choice in the current presentation.
+The second argument is accepted for compatibility and is not applied.
+
 #### Parameters
 
 ##### trackName
@@ -299,19 +302,44 @@ Call from a click/tap/keydown handler when `MOQ.Audio.Blocked` fires.
 
 ***
 
-### selectVideoTrack()
+### selectPresentation()
 
-> **selectVideoTrack**(`trackName`, `autoQualityResume?`): `Promise`\<`void`\>
+> **selectPresentation**(`selection`): `Promise`\<`void`\>
+
+Stop the session and subscribe again with `selection`.
+One change runs at a time. The current program, view, or audio choice
+returns without a restart. A failed start restores the previous selection.
 
 #### Parameters
 
-##### trackName
+##### selection
 
-`string`
+`SelectionConfig`
+
+#### Returns
+
+`Promise`\<`void`\>
+
+***
+
+### selectVideoTrack()
+
+> **selectVideoTrack**(`track`, `autoQualityResume?`): `Promise`\<`void`\>
+
+Switch rendition inside the current view. A different view or program
+is rejected by the player and is not retuned here.
+
+A manual switch leaves automatic quality off. Pass `true` to resume it.
+
+#### Parameters
+
+##### track
+
+`string` \| `TrackRefConfig`
 
 ##### autoQualityResume?
 
-`boolean` = `true`
+`boolean` = `false`
 
 #### Returns
 
@@ -381,7 +409,13 @@ Call from a click/tap/keydown handler when `MOQ.Audio.Blocked` fires.
 
 ### subscribe()
 
-> **subscribe**(): `Promise`\<`MOQSubscriber`\>
+> **subscribe**(`onPlayer?`): `Promise`\<`MOQSubscriber`\>
+
+#### Parameters
+
+##### onPlayer?
+
+(`player`) => `void`
 
 #### Returns
 
@@ -433,7 +467,7 @@ Dispatch an event to be handled by any assigned callbacks.
 
 ### unsubscribe()
 
-> **unsubscribe**(`_internal?`, `clearCatalog?`): `Promise`\<`MOQSubscriber`\>
+> **unsubscribe**(`_internal?`, `clearCatalog?`, `callerStop?`): `Promise`\<`MOQSubscriber`\>
 
 #### Parameters
 
@@ -444,6 +478,10 @@ Dispatch an event to be handled by any assigned callbacks.
 ##### clearCatalog?
 
 `boolean` = `false`
+
+##### callerStop?
+
+`boolean` = `true`
 
 #### Returns
 

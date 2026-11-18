@@ -1,4 +1,4 @@
-[**Red5 Web SDK v17.0.0-beta.1**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.2**](../README.md)
 
 ***
 
@@ -147,6 +147,10 @@ Get the version of the SDK.
 ### MOQSubscriber
 
 > **MOQSubscriber**: *typeof* [`MOQSubscriber`](../classes/MOQSubscriber.md)
+
+### MOQSubscriberEventTypes
+
+> **MOQSubscriberEventTypes**: *typeof* [`MOQSubscriberEventTypes`](../enumerations/MOQSubscriberEventTypes.md)
 
 ### PlaybackAudioEncoder
 

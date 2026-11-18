@@ -1,4 +1,4 @@
-**Red5 Web SDK v17.0.0-beta.1**
+**Red5 Web SDK v17.0.0-beta.2**
 
 ***
 
@@ -29,6 +29,24 @@
 * [Usage](#usage)
 
 # Important Notices
+
+## 17.0.0 Release
+
+The `17.0.0` release publishes the browser SDK as **Red5 Web SDK** (`red5-web-sdk`). The previous npm package **`red5pro-webrtc-sdk` is deprecated**; install and import `red5-web-sdk` instead. CDN filenames change from `red5pro-sdk*.js` to `red5-web-sdk*.js`. Script tags attach `window.red5websdk`. On `17.x`, `window.red5prosdk` is the same object so existing IIFEs keep working. See the [Migration Guide](_media/MIGRATION_GUIDE.md#migrating-from-16x-to-1700) for the full rename.
+
+The product is no longer WebRTC-only. In addition to WHIP/WHEP, HLS, and Live Seek, the SDK ships first-class **Media over QUIC (MOQ)** clients: `MOQPublisher`, `MOQSubscriber`, `MOQCatalog`, and `MOQMessageChannel`.
+
+`17.0.0` also ships **targeted bundles** next to the monolith. All three use the same `red5websdk` global. Load **one** script per page.
+
+| Build | Script / npm | Clients |
+| :--- | :--- | :--- |
+| Full (monolith) | `red5-web-sdk.min.js` / `red5-web-sdk` | WHIP, WHEP, HLS, Live Seek, PubNub, MOQ |
+| WHIP/WHEP/HLS | `red5-web-sdk-webrtc.min.js` / `red5-web-sdk/webrtc` | WHIP, WHEP, HLS, Live Seek, PubNub |
+| MOQ | `red5-web-sdk-moq.min.js` / `red5-web-sdk/moq` | MOQ publisher, subscriber, catalog, message channel |
+
+Client APIs, event names, default `mediaElementId` values, and `red5pro-media.css` class names are unchanged.
+
+## 15.0.0 Release
 
 With the `15.0.0` release of the **Red5 Web SDK**, we have complete overhaul of its development and focus. We have decided to focus solely on **WISH** (WebRTC Ingest Signaling over HTTPS) and dropped WebSocket support previously used for signaling phase.
 

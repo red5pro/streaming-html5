@@ -53,7 +53,7 @@ Bundle filenames change in the same major:
 
 ```html
 <!-- before -->
-<script src="https://cdn.jsdelivr.net/npm/red5pro-webrtc-sdk@latest/red5-web-sdk-webrtc.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/red5pro-webrtc-sdk@latest/red5pro-sdk.min.js"></script>
 <!-- after -->
 <script src="https://cdn.jsdelivr.net/npm/red5-web-sdk@latest/red5-web-sdk.min.js"></script>
 ```
@@ -97,10 +97,10 @@ For example, if you were previously establishing a publisher as such:
 ```js
 const config = {
   host: 'myred5.cloud',
-  streamName: 'mystream',
+  streamName: 'mystream'
 }
 const publisher = new RTCPublisher()
-publisher.on('*', (event) => console.log(event))
+publisher.on('*', event => console.log(event))
 await publisher.init(config)
 await publisher.publish()
 ```
@@ -110,10 +110,10 @@ You can simply swap over to using the `WHEPClient` like so:
 ```js
 const config = {
   host: 'myred5.cloud',
-  streamName: 'mystream',
+  streamName: 'mystream'
 }
 const publisher = new WHIPClient()
-publisher.on('*', (event) => console.log(event))
+publisher.on('*', event => console.log(event))
 await publisher.init(config)
 await publisher.publish()
 ```
@@ -132,8 +132,8 @@ The `endpoint` init config param is to be used in tandem with a `nodeGroup` conn
 
 More Information related to this configuration is detailed in the following documents:
 
-- [WHIPClient](docs/whip-client.md#stream-manager-20)
-- [WHEPClient](docs/whep-client.md#stream-manager-20)
+* [WHIPClient](docs/whip-client.md#stream-manager-20)
+* [WHEPClient](docs/whep-client.md#stream-manager-20)
 
 > [NOTE] SharedObject support has been removed in 13.0.0
 
@@ -186,13 +186,13 @@ While currently not open source, the SDK build has been published to NPM to allo
 ## Install as `script` in HTML page
 
 ```
-<script src="https://unpkg.com/red5pro-webrtc-sdk@latest/red5-web-sdk-webrtc.min.js"></script>
+<script src="https://unpkg.com/red5pro-webrtc-sdk@latest/red5pro-sdk.min.js"></script>
 ```
 
 ... or if you know the version:
 
 ```
-<script src="https://unpkg.com/red5pro-webrtc-sdk@8.0.0/red5-web-sdk-webrtc.min.js"></script>
+<script src="https://unpkg.com/red5pro-webrtc-sdk@8.0.0/red5pro-sdk.min.js"></script>
 ```
 
 ## Install using `npm` or `yarn` for you browser-based projects
@@ -568,7 +568,7 @@ In the `3.5.0` version of the Red5 Pro HTML SDK, a view was required in order to
 <html>
   <head>
     <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
-    <script src="lib/red5pro/red5-web-sdk-webrtc.min.js"></script>
+    <script src="lib/red5pro/red5pro-sdk.min.js"></script>
   <head>
   <body>
     <video id="red5pro-publisher" muted></video>
@@ -614,7 +614,7 @@ The requirement for creating a view and attaching either the **Publisher** or **
 <html>
   <head>
     <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
-    <script src="lib/red5pro/red5-web-sdk-webrtc.min.js"></script>
+    <script src="lib/red5pro/red5pro-sdk.min.js"></script>
   <head>
   <body>
     <video id="red5pro-publisher" muted></video>
@@ -657,7 +657,7 @@ By defining the `id` attribute of the target [HTMLMediaElement](https://develope
 <html>
   <head>
     <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
-    <script src="lib/red5pro/red5-web-sdk-webrtc.min.js"></script>
+    <script src="lib/red5pro/red5pro-sdk.min.js"></script>
   <head>
   <body>
     <video id="red5pro-publisher" muted></video>
@@ -725,7 +725,7 @@ In the `3.5.0` version of the SDK, subscription request and playback where bundl
 <html>
   <head>
     <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
-    <script src="lib/red5pro/red5-web-sdk-webrtc.min.js"></script>
+    <script src="lib/red5pro/red5pro-sdk.min.js"></script>
   <head>
   <body>
     <video id="red5pro-subscriber" controls></video>
@@ -759,7 +759,7 @@ In the `4.0.0` version of the SDK, subscription request is made by invoking `sub
 <html>
   <head>
     <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
-    <script src="lib/red5pro/red5-web-sdk-webrtc.min.js"></script>
+    <script src="lib/red5pro/red5pro-sdk.min.js"></script>
   <head>
   <body>
     <video id="red5pro-subscriber" controls></video>
@@ -798,7 +798,7 @@ In the `3.5.0` version of the SDK, unsubscription request and stop of playback w
 <html>
   <head>
     <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
-    <script src="lib/red5pro/red5-web-sdk-webrtc.min.js"></script>
+    <script src="lib/red5pro/red5pro-sdk.min.js"></script>
   <head>
   <body>
     <video id="red5pro-subscriber" controls></video>
@@ -845,7 +845,7 @@ In the `4.0.0` version of the SDK, unsubscription request is made by invoking `u
 <html>
   <head>
     <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
-    <script src="lib/red5pro/red5-web-sdk-webrtc.min.js"></script>
+    <script src="lib/red5pro/red5pro-sdk.min.js"></script>
   <head>
   <body>
     <video id="red5pro-subscriber" controls></video>
@@ -897,7 +897,7 @@ In the `3.5.0` version of the SDK, subscription request and playback where bundl
 <html>
   <head>
     <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
-    <script src="lib/red5pro/red5-web-sdk-webrtc.min.js"></script>
+    <script src="lib/red5pro/red5pro-sdk.min.js"></script>
   <head>
   <body>
     <video id="red5pro-subscriber" controls></video>
@@ -931,7 +931,7 @@ In the `4.0.0` version of the SDK, a separation of subscription and playback is 
 <html>
   <head>
     <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
-    <script src="lib/red5pro/red5-web-sdk-webrtc.min.js"></script>
+    <script src="lib/red5pro/red5pro-sdk.min.js"></script>
   <head>
   <body>
     <video id="red5pro-subscriber" controls autoplay></video>

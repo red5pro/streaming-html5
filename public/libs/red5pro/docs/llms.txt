@@ -1,14 +1,15 @@
 # LLM Docs Index
 
 - project: red5-web-sdk
-- version: 17.0.0-beta.1
-- generated_at: 2026-10-28T20:07:42.412Z
+- version: 17.0.0-beta.2
+- generated_at: 2026-11-18T21:28:13.398Z
 
 ## Included Markdown Files
 
 - CHANGES.md
 - docs/api/_media/hls-subscriber.md
 - docs/api/_media/message-channel.md
+- docs/api/_media/MIGRATION_GUIDE.md
 - docs/api/_media/moq-catalog.md
 - docs/api/_media/moq-message-channel.md
 - docs/api/_media/moq-publisher.md
@@ -39,6 +40,7 @@
 - docs/api/classes/WHIPClient.md
 - docs/api/enumerations/MessageChannelEventTypes.md
 - docs/api/enumerations/MessageTransportStateEventTypes.md
+- docs/api/enumerations/MOQSubscriberEventTypes.md
 - docs/api/enumerations/PlaybackAudioEncoder.md
 - docs/api/enumerations/PlaybackState.md
 - docs/api/enumerations/PlaybackVideoEncoder.md
@@ -56,6 +58,9 @@
 - docs/api/functions/setLogLevel.md
 - docs/api/globals.md
 - docs/api/interfaces/EventEmitterInterface.md
+- docs/api/interfaces/MOQPresentation.md
+- docs/api/interfaces/MOQPresentationChoice.md
+- docs/api/interfaces/MOQPresentationVideo.md
 - docs/api/README.md
 - docs/api/type-aliases/BandwidthConfig.md
 - docs/api/type-aliases/HLSSubscriberConfigType.md
