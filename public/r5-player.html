@@ -21,7 +21,7 @@ NOT  LIMITED  TO  THE  WARRANTIES  OF  MERCHANTABILITY, FITNESS  FOR  A  PARTICU
 NONINFRINGEMENT.   IN  NO  EVENT  SHALL INFRARED5, INC. BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
 WHETHER IN  AN  ACTION  OF  CONTRACT,  TORT  OR  OTHERWISE,  ARISING  FROM,  OUT  OF  OR  IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. -->
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -29,11 +29,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. -->
     <meta name="robots" content="noindex, nofollow" />
     <title>Red5 Player</title>
     <script src="//webrtchacks.github.io/adapter/adapter-latest.js"></script>
-    <script src="lib/red5pro/red5pro-sdk.min.js"></script>
+    <script src="lib/red5pro/red5-web-sdk-webrtc.min.js"></script>
     <style>
       :root {
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
-          Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;
+        font-family:
+          -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Ubuntu, Cantarell,
+          'Helvetica Neue', sans-serif;
         line-height: 1.5;
         font-weight: 400;
         height: 100%;
@@ -78,7 +79,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. -->
         flex-basis: 0;
       }
 
-      .red5pro-publisher, .red5pro-subscriber {
+      .red5pro-publisher,
+      .red5pro-subscriber {
         width: 100%;
         height: 100%;
       }
@@ -88,90 +90,103 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. -->
       }
     </style>
     <script>
-        ;(function () {
-          console.log('------- USAGE --------')
-          console.log('')
-          console.log(
-            'This page is designed to establish a Red5 Player using query params. You can provide query params in the URL in order to configure the player.'
-          )
-          console.log('The following query params are available:')
-          console.log(
-            '%c [host] ' +
-              '%c       : hostname or IP. Default: `window.location.hostname`',
-            'background: #222; color: #ebefd0',
-            'background: #fff; color: #222'
-          )
-          console.log('')
-          console.log(
-            '%c [app] ' + '%c       : app context. Default: `live`',
-            'background: #222; color: #ebefd0',
-            'background: #fff; color: #222'
-          )
-          console.log('')
-          console.log(
-            '%c [stream_name] ' + '%c       : The name of the stream to pub/sub. Default: `mystream`',
-            'background: #222; color: #ebefd0',
-            'background: #fff; color: #222'
-          )
-          console.log('')
-          console.log(
-            '%c [api_version] ' + '%c       : The version of the Stream Manager 2.0 API. Default: `v1`',
-            'background: #222; color: #ebefd0',
-            'background: #fff; color: #222'
-          )
-          console.log('')
-          console.log(
-            '%c [node_group] ' + '%c       : The name of the node group to target if using Stream Manager 2.0. Default: `default`',
-            'background: #222; color: #ebefd0',
-            'background: #fff; color: #222'
-          )
-          console.log('')
-          console.log(
-            '%c [rta_user] ' + '%c       : Username for RoundTrip Authentication if using. Default: `undefined`',
-            'background: #222; color: #ebefd0',
-            'background: #fff; color: #222'
-          )
-          console.log('')
-          console.log(
-            '%c [rta_pass] ' + '%c       : Password for RoundTrip Authentication if using. Default: `undefined`',
-            'background: #222; color: #ebefd0',
-            'background: #fff; color: #222'
-          )
-          console.log('')
-          console.log(
-            '%c [rta_token] ' + '%c       : Token for RoundTrip Authentication if using. Default: `undefined`',
-            'background: #222; color: #ebefd0',
-            'background: #fff; color: #222'
-          )
-          console.log('')
-          console.log(
-            '%c [standalone] ' + '%c       : Flag to indicate that the streaming is requested on a standalone deployment - not Stream Manager 2.0. Default: `false`',
-            'background: #222; color: #ebefd0',
-            'background: #fff; color: #222'
-          )
-          console.log('')
-          console.log(
-            '%c [mode] ' + '%c       : Mode to display. Either `pubsub`, `pub` or `sub`. Default: `pubsub`',
-            'background: #222; color: #ebefd0',
-            'background: #fff; color: #222'
-          )
-          console.log('')
-          console.log(
-            '%c [object_fit] ' + '%c       : Object fit style to assign to the video elements. https://developer.mozilla.org/en-US/docs/Web/CSS/object-fit',
-            'background: #222; color: #ebefd0',
-            'background: #fff; color: #222'
-          )
-        })()
+      ;(function () {
+        console.log('------- USAGE --------')
+        console.log('')
+        console.log(
+          'This page is designed to establish a Red5 Player using query params. You can provide query params in the URL in order to configure the player.'
+        )
+        console.log('The following query params are available:')
+        console.log(
+          '%c [host] ' + '%c       : hostname or IP. Default: `window.location.hostname`',
+          'background: #222; color: #ebefd0',
+          'background: #fff; color: #222'
+        )
+        console.log('')
+        console.log(
+          '%c [app] ' + '%c       : app context. Default: `live`',
+          'background: #222; color: #ebefd0',
+          'background: #fff; color: #222'
+        )
+        console.log('')
+        console.log(
+          '%c [stream_name] ' + '%c       : The name of the stream to pub/sub. Default: `mystream`',
+          'background: #222; color: #ebefd0',
+          'background: #fff; color: #222'
+        )
+        console.log('')
+        console.log(
+          '%c [api_version] ' +
+            '%c       : The version of the Stream Manager 2.0 API. Default: `v1`',
+          'background: #222; color: #ebefd0',
+          'background: #fff; color: #222'
+        )
+        console.log('')
+        console.log(
+          '%c [node_group] ' +
+            '%c       : The name of the node group to target if using Stream Manager 2.0. Default: `default`',
+          'background: #222; color: #ebefd0',
+          'background: #fff; color: #222'
+        )
+        console.log('')
+        console.log(
+          '%c [rta_user] ' +
+            '%c       : Username for RoundTrip Authentication if using. Default: `undefined`',
+          'background: #222; color: #ebefd0',
+          'background: #fff; color: #222'
+        )
+        console.log('')
+        console.log(
+          '%c [rta_pass] ' +
+            '%c       : Password for RoundTrip Authentication if using. Default: `undefined`',
+          'background: #222; color: #ebefd0',
+          'background: #fff; color: #222'
+        )
+        console.log('')
+        console.log(
+          '%c [rta_token] ' +
+            '%c       : Token for RoundTrip Authentication if using. Default: `undefined`',
+          'background: #222; color: #ebefd0',
+          'background: #fff; color: #222'
+        )
+        console.log('')
+        console.log(
+          '%c [standalone] ' +
+            '%c       : Flag to indicate that the streaming is requested on a standalone deployment - not Stream Manager 2.0. Default: `false`',
+          'background: #222; color: #ebefd0',
+          'background: #fff; color: #222'
+        )
+        console.log('')
+        console.log(
+          '%c [mode] ' +
+            '%c       : Mode to display. Either `pubsub`, `pub` or `sub`. Default: `pubsub`',
+          'background: #222; color: #ebefd0',
+          'background: #fff; color: #222'
+        )
+        console.log('')
+        console.log(
+          '%c [object_fit] ' +
+            '%c       : Object fit style to assign to the video elements. https://developer.mozilla.org/en-US/docs/Web/CSS/object-fit',
+          'background: #222; color: #ebefd0',
+          'background: #fff; color: #222'
+        )
+      })()
     </script>
   </head>
   <body>
     <div class="app">
-        <div class="video-container publish-container hidden">
-            <video id="red5pro-publisher" class="red5pro-publisher" autoplay playsinline muted></video>
-        </div>
-        <div class="video-container subscribe-container hidden">
-            <video id="red5pro-subscriber" class="red5pro-subscriber" autoplay playsinline controls></video>
-        </div>
+      <div class="video-container publish-container hidden">
+        <video id="red5pro-publisher" class="red5pro-publisher" autoplay playsinline muted></video>
+      </div>
+      <div class="video-container subscribe-container hidden">
+        <video
+          id="red5pro-subscriber"
+          class="red5pro-subscriber"
+          autoplay
+          playsinline
+          controls
+        ></video>
+      </div>
     </div>
     <script>
       ;((window, red5) => {
@@ -203,7 +218,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. -->
         let subscriber
         const { WHIPClient, WHEPClient } = red5
 
-        const configureAuth = params => {
+        const configureAuth = (params) => {
           if (rtaUser && rtaPass) {
             params.user = rtaUser
             params.password = rtaPass
@@ -220,7 +235,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. -->
               host,
               app,
               streamName,
-              connectionParams: configureAuth({})
+              connectionParams: configureAuth({}),
             }
           }
           // Else, Stream Manager 2.0 integration.
@@ -228,17 +243,17 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. -->
             endpoint: `https://${host}/as/${apiVersion}/proxy/${client}/${app}/${streamName}`,
             streamName,
             connectionParams: configureAuth({
-              nodeGroup
-            })
+              nodeGroup,
+            }),
           }
         }
 
-        const onPublisherEvent = event => {
+        const onPublisherEvent = (event) => {
           const { type } = event
           console.log('[Publisher]', type)
         }
 
-        const onSubscriberEvent = event => {
+        const onSubscriberEvent = (event) => {
           const { type } = event
           if (type === 'Subscribe.Time.Update') {
             return
@@ -300,7 +315,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. -->
         }
 
         const start = async () => {
-          document.querySelectorAll('video').forEach(video => {
+          document.querySelectorAll('video').forEach((video) => {
             video.style.objectFit = objectFit
           })
 

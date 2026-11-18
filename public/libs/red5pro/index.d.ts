@@ -4,7 +4,6 @@ export { PlaybackAudioEncoder, PlaybackState, PlaybackStateReadableMap, Playback
 import * as browser_bunyan_lib from 'browser-bunyan/lib';
 import { PublishVideoEncoder, PublishAudioEncoder } from 'types/publisher';
 export { PublishAudioEncoder, PublishVideoEncoder } from 'types/publisher';
-import { Logger } from 'browser-bunyan';
 import EventEmitter$1 from 'core/event-emitter';
 import { RTCWhipPublisherConfigType, OptimizationParams } from 'configuration/publisher';
 export { BandwidthConfig, MediaConstraintRange, MediaConstraints, RTCPublisherConfigType, RTCWhipPublisherConfigType, VideoConstraints, defaultWhipPublisherConfig } from 'configuration/publisher';
@@ -28,11 +27,13 @@ export { LiveSeekConfigType, LiveSeekOptions, defaultLiveSeekConfig } from 'conf
 import { PubnubConfigType } from 'configuration/pubnub';
 import { PublisherEventTypes, SubscriberEventTypes, RTCPublisherEventTypes, RTCSubscriberEventTypes, MessageTransportStateEventTypes, MessageChannelEventTypes, WebRTCConnectionEventTypes } from 'event/event-types';
 export { MessageChannelEventTypes, MessageTransportStateEventTypes, PublisherEventTypes, RTCPublisherEventTypes, RTCSubscriberEventTypes, SubscriberEventTypes, WebRTCConnectionEventTypes } from 'event/event-types';
-import { MOQDataChannelConfiguration, MOQMessageChannelConfigType, MOQSubscriberConfigType, MOQPublisherConfigType, MOQCatalogConfigType, MOQSubscriber, MOQPublisher, MOQMessageChannel, MOQCatalog } from 'moq';
-export { MOQCatalog, MOQCatalogConfigType, MOQDataChannelConfiguration, MOQMessageChannel, MOQMessageChannelConfigType, MOQPublisher, MOQPublisherConfigType, MOQSubscriber, MOQSubscriberConfigType, defaultMOQCatalogConfig, defaultMOQDataChannelConfiguration, defaultMOQMessageChannelConfig, defaultMOQPublisherConfig, defaultMOQSubscriberConfig } from 'moq';
+import { MOQDataChannelConfiguration, MOQMessageChannelConfigType, MOQSubscriberConfigType, MOQPublisherConfigType, MOQCatalogConfigType, MOQSubscriber, MOQPublisher, MOQMessageChannel, MOQCatalog, MOQSubscriberEventTypes } from 'moq';
+export { MOQCatalog, MOQCatalogConfigType, MOQDataChannelConfiguration, MOQMessageChannel, MOQMessageChannelConfigType, MOQPublisher, MOQPublisherConfigType, MOQSubscriber, MOQSubscriberConfigType, MOQSubscriberEventTypes, defaultMOQCatalogConfig, defaultMOQDataChannelConfiguration, defaultMOQMessageChannelConfig, defaultMOQPublisherConfig, defaultMOQSubscriberConfig } from 'moq';
 export { default as Capability } from 'types/capabilities';
 import { PubNubEventTypes } from 'event/pubnub';
 export { PubNubEventTypes } from 'event/pubnub';
+import { SelectionConfig, SelectableTrack, TrackRefConfig } from '@openmoq/player';
+import { Logger } from 'browser-bunyan';
 
 declare const LEVELS: {
     readonly TRACE: "trace";
@@ -56,6 +57,17 @@ declare const getLogger: () => Logger;
  * @return {string[]} Array of recorded log messages.
  */
 declare const getRecordedLogs: () => string[];
+
+/**
+ * Shared SDK runtime: version, logger init, and log-level API.
+ * Used by the monolith, webrtc, and moq entries so each bundle initializes once.
+ */
+
+declare const setLogLevel: (level: string, record?: boolean) => void;
+/**
+ * Get the version of the SDK.
+ */
+declare const getVersion: () => string;
 
 /**
  * WHIP-based Publisher.
@@ -336,7 +348,7 @@ declare class WHIPClient extends EventEmitter$1 {
 }
 
 /**
- * Base class for a PlaybackControls within the Red5 Pro WebRTC SDK.
+ * Base class for a PlaybackControls within the Red5 Web SDK.
  * A PlaybackControls is responsible for managing the playback and state of an HTML media element through UI controls.
  */
 declare abstract class PlaybackControls extends EventEmitter$1 {
@@ -448,7 +460,7 @@ declare abstract class PlaybackControls extends EventEmitter$1 {
 }
 
 /**
- * Base class for a PlaybackController within the Red5 Pro WebRTC SDK.
+ * Base class for a PlaybackController within the Red5 Web SDK.
  * A PlaybackController is responsible for managing the playback and state of a media element.
  */
 declare abstract class PlaybackController extends EventEmitter$1 {
@@ -544,7 +556,7 @@ declare abstract class PlaybackController extends EventEmitter$1 {
     off(event: string, fn: (...args: any[]) => void): void;
 }
 /**
- * Base class for a SourceHandler within the Red5 Pro WebRTC SDK.
+ * Base class for a SourceHandler within the Red5 Web SDK.
  * A SourceHandler is responsible for managing the MediaStream source of a media element.
  */
 declare abstract class SourceHandler extends PlaybackController {
@@ -1335,11 +1347,40 @@ declare class EventEmitter implements EventEmitterInterface {
     trigger(event: Event$1): void;
 }
 
-declare const setLogLevel: (level: string, record?: boolean) => void;
 /**
- * Get the version of the SDK.
+ * One program, view, or audio language the catalog model offers.
+ * `selection` names that choice. Applying it is a later retune, not a rendition switch.
  */
-declare const getVersion: () => string;
+interface MOQPresentationChoice {
+    readonly key: string;
+    readonly label: string;
+    readonly active: boolean;
+    readonly selection: SelectionConfig;
+    readonly language?: string;
+}
+/** A rendition inside the adopted view. `reference` is the in-session video identity. */
+interface MOQPresentationVideo {
+    readonly track: SelectableTrack;
+    readonly active: boolean;
+    readonly reference: TrackRefConfig;
+}
+/**
+ * Programs, views, renditions, and audio languages derived from the player model.
+ * Grouping stays in the player; this only names what that model already offers.
+ */
+interface MOQPresentation {
+    readonly programs: readonly MOQPresentationChoice[];
+    readonly views: readonly MOQPresentationChoice[];
+    readonly videos: readonly MOQPresentationVideo[];
+    readonly audio: readonly MOQPresentationChoice[];
+    readonly adoptedVideo: SelectableTrack | null;
+    readonly adoptedAudio: SelectableTrack | null;
+    /**
+     * `false` when the adopted scope offers no video.
+     * `undefined` when no scope is adopted yet.
+     */
+    readonly hasVideo: boolean | undefined;
+}
 
 declare const _default: {
     version: string;
@@ -1403,7 +1444,8 @@ declare const _default: {
     MOQPublisher: typeof MOQPublisher;
     MOQMessageChannel: typeof MOQMessageChannel;
     MOQCatalog: typeof MOQCatalog;
+    MOQSubscriberEventTypes: typeof MOQSubscriberEventTypes;
 };
 
 export { EventEmitter, HLSSubscriber, LEVELS as LOG_LEVELS, LiveSeekClient, MessageChannel, PlaybackController, PlaybackControls, PubNubClient, SourceHandler, SourceHandlerImpl, WHEPClient, WHIPClient, _default as default, getLogger, getRecordedLogs, getVersion, setLogLevel };
-export type { EventEmitterInterface };
+export type { EventEmitterInterface, MOQPresentation, MOQPresentationChoice, MOQPresentationVideo };

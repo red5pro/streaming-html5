@@ -1,8 +1,8 @@
-[**Red5 Pro WebRTC SDK v16.4.0-beta.6**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.2**](../README.md)
 
 ***
 
-[Red5 Pro WebRTC SDK](../globals.md) / default
+[Red5 Web SDK](../globals.md) / default
 
 # Variable: default
 
@@ -147,6 +147,10 @@ Get the version of the SDK.
 ### MOQSubscriber
 
 > **MOQSubscriber**: *typeof* [`MOQSubscriber`](../classes/MOQSubscriber.md)
+
+### MOQSubscriberEventTypes
+
+> **MOQSubscriberEventTypes**: *typeof* [`MOQSubscriberEventTypes`](../enumerations/MOQSubscriberEventTypes.md)
 
 ### PlaybackAudioEncoder
 

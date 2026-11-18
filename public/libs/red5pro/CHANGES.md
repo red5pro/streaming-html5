@@ -1,15 +1,29 @@
 # Changes
 
+## 17.0.0
+
+**ALERT: Breaking Changes**
+
+- feat: Rename published SDK to **Red5 Web SDK** (`red5-web-sdk`). Previous npm name: `red5pro-webrtc-sdk`.
+- feat: UMD global `red5websdk`; `17.x` also sets `window.red5prosdk` to the same object for script-tag compatibility.
+- feat: Bundle files `red5-web-sdk.min.js` / `red5-web-sdk.esm.min.js` (replacing `red5pro-sdk*.js`).
+- feat: Focused CDN/npm builds `red5-web-sdk-webrtc` and `red5-web-sdk-moq` (same `red5websdk` global). Import `red5-web-sdk/webrtc` or `red5-web-sdk/moq`. Load one script per page.
+- Default `mediaElementId` values, `red5pro-media.css`, and event strings are unchanged.
+
+
 ## 16.4.0
 
-- feat: `postEmptyOffer` option for WHEP init config to not send SDP in request offer.
+- playa: 0.7.0
+- feat: LOC-05 Codec String on MOQ publisher media objects (Todd Anderson).
+- feat: MOQ publisher reports the largest delivered object for each accepted subscription (Todd Anderson).
+- feat: `postEmptyOffer` option for WHEP init config to not send SDP in request offer (Todd Anderson).
 
 ## 16.3.0
 
 - fix: MOQ Catalog subscribe+fetch (Todd Anderson).
 - feat: MOQ Message Channel (Todd Anderson).
 - feat: LOC-04 MOQ Broadcast support (Todd Anderson).
-- feat: LOCMAF package recognistion for MOQ Subscriber MSE playback (Todd Anderson).
+- feat: LOCMAF package recognition for MOQ Subscriber MSE playback (Todd Anderson).
 
 ## 16.1.0
 

@@ -33,10 +33,12 @@ Use it when you want:
 
 # Usage
 
+On a script-tag page, load either the full SDK (`red5-web-sdk.min.js`) or the MOQ build (`red5-web-sdk-moq.min.js`). Both attach `window.red5websdk`. From npm, `import { MOQMessageChannel } from 'red5-web-sdk'` or `'red5-web-sdk/moq'`.
+
 Initialize, then `open()`. Listen for events before `open()` so you do not miss `MessageChannel.Open`.
 
 ```js
-const { MOQMessageChannel, MessageChannelEventTypes } = red5prosdk
+const { MOQMessageChannel, MessageChannelEventTypes } = red5websdk
 
 const channel = new MOQMessageChannel()
 channel.on('*', event => {

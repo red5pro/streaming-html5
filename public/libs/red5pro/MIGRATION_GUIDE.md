@@ -9,10 +9,11 @@
 
 ---
 
-# Red5 HTML SDK Migration Guide
+# Red5 Web SDK Migration Guide
 
 This documentation serves as a guide in migrating client-side code where a breaking change to the API has been made in a distribution.
 
+- [16.x to 17.0.0](#migrating-from-16x-to-1700)
 - [14.x to 15.0.0](#migrating-from-14x-to-1500)
 - [13.x to 14.0.0](#migrating-from-13x-to-1400)
 - [12.x to 13.0.0](#migrating-from-12x-to-1300)
@@ -23,6 +24,57 @@ This documentation serves as a guide in migrating client-side code where a break
 - [5.0.0 to 5.4.0](#migrating-from-500-to-540)
 - [4.0.0 to 5.0.0](#migrating-from-400-to-500)
 - [3.5.0 to 4.0.0](#migrating-from-350-to-400)
+
+# Migrating from `16.x` to `17.0.0`
+
+**ALERT: Breaking Changes**
+
+The `17.0.0` release renames the published browser SDK from **Red5 Pro HTML SDK** / **Red5 Pro WebRTC SDK** (`red5pro-webrtc-sdk`) to **Red5 Web SDK** (`red5-web-sdk`). Client APIs (`WHIPClient`, `WHEPClient`, MOQ clients, events) are unchanged. Historical sections below (15.0.0, 8.0.0, …) still describe those past releases and are not rewritten.
+
+## Package and module specifier
+
+```sh
+# before
+npm install red5pro-webrtc-sdk
+# after
+npm install red5-web-sdk
+```
+
+```js
+// before
+import { WHIPClient, MOQPublisher } from 'red5pro-webrtc-sdk'
+// after
+import { WHIPClient, MOQPublisher } from 'red5-web-sdk'
+```
+
+## Script tag and CDN
+
+Bundle filenames change in the same major:
+
+```html
+<!-- before -->
+<script src="https://cdn.jsdelivr.net/npm/red5pro-webrtc-sdk@latest/red5pro-sdk.min.js"></script>
+<!-- after -->
+<script src="https://cdn.jsdelivr.net/npm/red5-web-sdk@latest/red5-web-sdk.min.js"></script>
+```
+
+UMD / IIFE pages: change the `src` URL. **`17.x` assigns both globals to the same object** (`red5prosdk === red5websdk`), so existing `const { WHIPClient } = red5prosdk` and `(window.red5prosdk)` keep working. New samples use `red5websdk`.
+
+Optional focused files (same global; load only one script per page):
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/red5-web-sdk@latest/red5-web-sdk-webrtc.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/red5-web-sdk@latest/red5-web-sdk-moq.min.js"></script>
+```
+
+```js
+import { WHIPClient } from 'red5-web-sdk/webrtc'
+import { MOQPublisher } from 'red5-web-sdk/moq'
+```
+
+## Unchanged
+
+Default `mediaElementId` values (`red5pro-publisher`, `red5pro-subscriber`), `red5pro-media.css` / `red5pro-media-*` classes, and event type strings are not renamed.
 
 # Migrating from `14.x` to `15.0.0`
 

@@ -1,4 +1,4 @@
-**Red5 Pro WebRTC SDK v16.4.0-beta.6**
+**Red5 Web SDK v17.0.0-beta.2**
 
 ***
 
@@ -19,9 +19,9 @@
 
 ---
 
-# Red5 HTML SDK
+# Red5 Web SDK
 
-> The **Red5 HTML SDK** allows you to integrate live streaming video into your desktop and mobile browser.
+> The **Red5 Web SDK** allows you to integrate live streaming video into your desktop and mobile browser.
 
 * [Important Notices](#important-notices)
 * [Installation](#installation)
@@ -30,7 +30,25 @@
 
 # Important Notices
 
-With the `15.0.0` release of the **Red5 HTML SDK**, we have complete overhaul of its development and focus. We have decided to focus solely on **WISH** (WebRTC Ingest Signaling over HTTPS) and dropped WebSocket support previously used for signaling phase.
+## 17.0.0 Release
+
+The `17.0.0` release publishes the browser SDK as **Red5 Web SDK** (`red5-web-sdk`). The previous npm package **`red5pro-webrtc-sdk` is deprecated**; install and import `red5-web-sdk` instead. CDN filenames change from `red5pro-sdk*.js` to `red5-web-sdk*.js`. Script tags attach `window.red5websdk`. On `17.x`, `window.red5prosdk` is the same object so existing IIFEs keep working. See the [Migration Guide](_media/MIGRATION_GUIDE.md#migrating-from-16x-to-1700) for the full rename.
+
+The product is no longer WebRTC-only. In addition to WHIP/WHEP, HLS, and Live Seek, the SDK ships first-class **Media over QUIC (MOQ)** clients: `MOQPublisher`, `MOQSubscriber`, `MOQCatalog`, and `MOQMessageChannel`.
+
+`17.0.0` also ships **targeted bundles** next to the monolith. All three use the same `red5websdk` global. Load **one** script per page.
+
+| Build | Script / npm | Clients |
+| :--- | :--- | :--- |
+| Full (monolith) | `red5-web-sdk.min.js` / `red5-web-sdk` | WHIP, WHEP, HLS, Live Seek, PubNub, MOQ |
+| WHIP/WHEP/HLS | `red5-web-sdk-webrtc.min.js` / `red5-web-sdk/webrtc` | WHIP, WHEP, HLS, Live Seek, PubNub |
+| MOQ | `red5-web-sdk-moq.min.js` / `red5-web-sdk/moq` | MOQ publisher, subscriber, catalog, message channel |
+
+Client APIs, event names, default `mediaElementId` values, and `red5pro-media.css` class names are unchanged.
+
+## 15.0.0 Release
+
+With the `15.0.0` release of the **Red5 Web SDK**, we have complete overhaul of its development and focus. We have decided to focus solely on **WISH** (WebRTC Ingest Signaling over HTTPS) and dropped WebSocket support previously used for signaling phase.
 
 As such, the publishing and subscribing logic within the SDK are provided from the `WHIPClient` and `WHEPClient`, respectively.
 
@@ -38,36 +56,60 @@ Not only does this free up resources consumed by WebSockets on the Red5 Server d
 
 # Installation
 
+The default build is the **full** SDK (WHIP/WHEP/HLS and MOQ). If you only need one protocol, load the matching focused file instead. All three attach `window.red5websdk` (and alias `window.red5prosdk` on `17.x`). Load **one** script per page; a second file overwrites the global.
+
 ## As Script Dependency in HTML page
 
-```html
-<script src="https://cdn.jsdelivr.net/npm/red5pro-webrtc-sdk@latest/red5pro-sdk.min.js"></script>
-```
-
-... Or if you know the version:
+Full SDK:
 
 ```html
-<script src=https://cdn.jsdelivr.net/npm/red5pro-webrtc-sdk@15.0.0/red5pro-sdk.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/red5-web-sdk@latest/red5-web-sdk.min.js"></script>
 ```
+
+WHIP/WHEP/HLS only:
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/red5-web-sdk@latest/red5-web-sdk-webrtc.min.js"></script>
+```
+
+MOQ only:
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/red5-web-sdk@latest/red5-web-sdk-moq.min.js"></script>
+```
+
+... Or pin a version:
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/red5-web-sdk@15.0.0/red5-web-sdk.min.js"></script>
+```
+
+Playback UI styles ship in the release drop as `red5pro-media.css` (WHIP/WHEP/HLS) and `red5-moq-media.css` (MOQ).
 
 ## Using `npm` or `yarn` for you browser-based projects
 
 ```sh
-npm install --save red5pro-webrtc-sdk
+npm install --save red5-web-sdk
 ```
 
 ```sh
-yarn install red5pro-webrtc-sdk
+yarn install red5-web-sdk
+```
+
+```js
+import { WHIPClient, WHEPClient } from 'red5-web-sdk'
+import { WHIPClient } from 'red5-web-sdk/webrtc'
+import { MOQPublisher } from 'red5-web-sdk/moq'
 ```
 
 # Quick Start
 
-All members exposed on the otherwise global `window.red5prosdk` if loading as a script on an HTML page are importable from the `red5pro-webrtc-sdk` module:
+All members exposed on the otherwise global `window.red5websdk` if loading as a script on an HTML page are importable from the `red5-web-sdk` module:
 
 _index.js_
 
 ```js
-import { WHIPClient, WHEPClient } from 'red5pro-webrtc-sdk'
+import { WHIPClient, WHEPClient } from 'red5-web-sdk'
 ```
 
 ## Quick Start - Standalone Server Deployment
@@ -91,14 +133,14 @@ You can sign up and download the Red5 Server to manage your own deployment at [h
     <div>
       <video id="red5pro-subscriber" width="640" height="480" controls autoplay playsinline></video>
     </div>
-    <!-- Red5 HTML SDK -->
-    <script src="https://cdn.jsdelivr.net/npm/red5pro-webrtc-sdk@latest/red5pro-sdk.min.js"></script>
+    <!-- Red5 Web SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/red5-web-sdk@latest/red5-web-sdk.min.js"></script>
     <!-- Create Pub/Sub -->
     <script>
-      ((red5prosdk) => {
+      ((red5websdk) => {
         'use strict'
 
-        const { WHIPClient, WHEPClient, PublisherEventTypes } = red5prosdk
+        const { WHIPClient, WHEPClient, PublisherEventTypes } = red5websdk
 
         const publisher = new WHIPClient()
         const subscriber = new WHEPClient()
@@ -131,7 +173,7 @@ You can sign up and download the Red5 Server to manage your own deployment at [h
         // Start Publisher first ->
         publish()
 
-      }(window.red5prosdk))
+      }(window.red5websdk))
     </script>
   </body>
 </html>
@@ -162,19 +204,19 @@ The Red5 Cloud deployment utilizes a Stream Manager for autoscaling. With the St
     <div>
       <video id="red5pro-subscriber" width="640" height="480" controls autoplay playsinline></video>
     </div>
-    <!-- Red5 HTML SDK -->
-    <script src="https://cdn.jsdelivr.net/npm/red5pro-webrtc-sdk@latest/red5pro-sdk.min.js"></script>
+    <!-- Red5 Web SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/red5-web-sdk@latest/red5-web-sdk.min.js"></script>
     <!-- Create Pub/Sub -->
     <script>
       <script>
-      ((red5prosdk) => {
+      ((red5websdk) => {
         'use strict'
 
         const host = 'my-deployment.cloud.red5.net'
         const nodeGroup = 'my-node-group'
         const streamName = 'my-stream-name'
 
-        const { WHIPClient, WHEPClient, PublisherEventTypes } = red5prosdk
+        const { WHIPClient, WHEPClient, PublisherEventTypes } = red5websdk
         const publisher = new WHIPClient()
         const subscriber = new WHEPClient()
 
@@ -214,7 +256,7 @@ The Red5 Cloud deployment utilizes a Stream Manager for autoscaling. With the St
         // Start Publisher first ->
         publish()
 
-      }(window.red5prosdk))
+      }(window.red5websdk))
     </script>
   </body>
 </html>

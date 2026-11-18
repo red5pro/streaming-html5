@@ -28,6 +28,8 @@ The `HLSSubscriber` available from the SDK provides an easy way to setup HLS pla
 
 ## Usage
 
+On a script-tag page, load either the full SDK (`red5-web-sdk.min.js`) or the WHIP/WHEP/HLS build (`red5-web-sdk-webrtc.min.js`). Both attach `window.red5websdk`. From npm, `import { HLSSubscriber } from 'red5-web-sdk'` or `'red5-web-sdk/webrtc'`.
+
 The follow example demonstrates the usage of `HLSSubscriber` from the SDK loaded in a browser as a script dependency. The example is easily transferrable to one in which the SDK is loaded as a module - either through NPM dependency - or as a script declaration - using `import`.
 
 ### Cloud Red5 Server
@@ -45,7 +47,7 @@ Because of Cross-Origin policies in browsers, you will not be able to load HLS f
 ```
 
 ```js
-const { HLSSubscriber } = red5prosdk
+const { HLSSubscriber } = red5websdk
 
 const startHLSSubscriber = async () => {
   try {
@@ -76,7 +78,7 @@ If your app is targeting a standalone self-deployed version of the Red5 Server, 
 ```
 
 ```js
-const { HLSSubscriber } = red5prosdk
+const { HLSSubscriber } = red5websdk
 
 const startHLSSubscriber = async () => {
   try {

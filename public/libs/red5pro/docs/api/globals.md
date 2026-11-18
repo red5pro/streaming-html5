@@ -1,15 +1,16 @@
-[**Red5 Pro WebRTC SDK v16.4.0-beta.6**](README.md)
+[**Red5 Web SDK v17.0.0-beta.2**](README.md)
 
 ***
 
-# Red5 Pro WebRTC SDK v16.4.0-beta.6
+# Red5 Web SDK v17.0.0-beta.2
 
-Red5 Pro WebRTC SDK
+Red5 Web SDK
 
 ## Enumerations
 
 - [MessageChannelEventTypes](enumerations/MessageChannelEventTypes.md)
 - [MessageTransportStateEventTypes](enumerations/MessageTransportStateEventTypes.md)
+- [MOQSubscriberEventTypes](enumerations/MOQSubscriberEventTypes.md)
 - [PlaybackAudioEncoder](enumerations/PlaybackAudioEncoder.md)
 - [PlaybackState](enumerations/PlaybackState.md)
 - [PlaybackVideoEncoder](enumerations/PlaybackVideoEncoder.md)
@@ -50,6 +51,9 @@ Red5 Pro WebRTC SDK
 ## Interfaces
 
 - [EventEmitterInterface](interfaces/EventEmitterInterface.md)
+- [MOQPresentation](interfaces/MOQPresentation.md)
+- [MOQPresentationChoice](interfaces/MOQPresentationChoice.md)
+- [MOQPresentationVideo](interfaces/MOQPresentationVideo.md)
 
 ## Type Aliases
 

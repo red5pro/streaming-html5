@@ -1,14 +1,15 @@
-# Red5 Pro HTML SDK - LLM Reference
+# Red5 Web SDK - LLM Reference
 
-- project: red5pro-html-sdk-ts
-- version: 16.4.0-beta.6
-- generated_at: 2026-11-05T17:37:09.455Z
+- project: red5-web-sdk
+- version: 17.0.0-beta.2
+- generated_at: 2026-11-18T21:28:13.398Z
 
 ## Included Files
 
 - CHANGES.md
 - docs/api/_media/hls-subscriber.md
 - docs/api/_media/message-channel.md
+- docs/api/_media/MIGRATION_GUIDE.md
 - docs/api/_media/moq-catalog.md
 - docs/api/_media/moq-message-channel.md
 - docs/api/_media/moq-publisher.md
@@ -39,6 +40,7 @@
 - docs/api/classes/WHIPClient.md
 - docs/api/enumerations/MessageChannelEventTypes.md
 - docs/api/enumerations/MessageTransportStateEventTypes.md
+- docs/api/enumerations/MOQSubscriberEventTypes.md
 - docs/api/enumerations/PlaybackAudioEncoder.md
 - docs/api/enumerations/PlaybackState.md
 - docs/api/enumerations/PlaybackVideoEncoder.md
@@ -56,6 +58,9 @@
 - docs/api/functions/setLogLevel.md
 - docs/api/globals.md
 - docs/api/interfaces/EventEmitterInterface.md
+- docs/api/interfaces/MOQPresentation.md
+- docs/api/interfaces/MOQPresentationChoice.md
+- docs/api/interfaces/MOQPresentationVideo.md
 - docs/api/README.md
 - docs/api/type-aliases/BandwidthConfig.md
 - docs/api/type-aliases/HLSSubscriberConfigType.md
@@ -106,16 +111,30 @@
 
 # Changes
 
+## 17.0.0
+
+**ALERT: Breaking Changes**
+
+- feat: Rename published SDK to **Red5 Web SDK** (`red5-web-sdk`). Previous npm name: `red5pro-webrtc-sdk`.
+- feat: UMD global `red5websdk`; `17.x` also sets `window.red5prosdk` to the same object for script-tag compatibility.
+- feat: Bundle files `red5-web-sdk.min.js` / `red5-web-sdk.esm.min.js` (replacing `red5pro-sdk*.js`).
+- feat: Focused CDN/npm builds `red5-web-sdk-webrtc` and `red5-web-sdk-moq` (same `red5websdk` global). Import `red5-web-sdk/webrtc` or `red5-web-sdk/moq`. Load one script per page.
+- Default `mediaElementId` values, `red5pro-media.css`, and event strings are unchanged.
+
+
 ## 16.4.0
 
-- feat: `postEmptyOffer` option for WHEP init config to not send SDP in request offer.
+- playa: 0.7.0
+- feat: LOC-05 Codec String on MOQ publisher media objects (Todd Anderson).
+- feat: MOQ publisher reports the largest delivered object for each accepted subscription (Todd Anderson).
+- feat: `postEmptyOffer` option for WHEP init config to not send SDP in request offer (Todd Anderson).
 
 ## 16.3.0
 
 - fix: MOQ Catalog subscribe+fetch (Todd Anderson).
 - feat: MOQ Message Channel (Todd Anderson).
 - feat: LOC-04 MOQ Broadcast support (Todd Anderson).
-- feat: LOCMAF package recognistion for MOQ Subscriber MSE playback (Todd Anderson).
+- feat: LOCMAF package recognition for MOQ Subscriber MSE playback (Todd Anderson).
 
 ## 16.1.0
 
@@ -500,6 +519,8 @@ The `HLSSubscriber` available from the SDK provides an easy way to setup HLS pla
 
 ## Usage
 
+On a script-tag page, load either the full SDK (`red5-web-sdk.min.js`) or the WHIP/WHEP/HLS build (`red5-web-sdk-webrtc.min.js`). Both attach `window.red5websdk`. From npm, `import { HLSSubscriber } from 'red5-web-sdk'` or `'red5-web-sdk/webrtc'`.
+
 The follow example demonstrates the usage of `HLSSubscriber` from the SDK loaded in a browser as a script dependency. The example is easily transferrable to one in which the SDK is loaded as a module - either through NPM dependency - or as a script declaration - using `import`.
 
 ### Cloud Red5 Server
@@ -517,7 +538,7 @@ Because of Cross-Origin policies in browsers, you will not be able to load HLS f
 ```
 
 ```js
-const { HLSSubscriber } = red5prosdk
+const { HLSSubscriber } = red5websdk
 
 const startHLSSubscriber = async () => {
   try {
@@ -548,7 +569,7 @@ If your app is targeting a standalone self-deployed version of the Red5 Server, 
 ```
 
 ```js
-const { HLSSubscriber } = red5prosdk
+const { HLSSubscriber } = red5websdk
 
 const startHLSSubscriber = async () => {
   try {
@@ -682,6 +703,8 @@ For MoQ / WebTransport messaging (same send method names, different wire protoco
 
 # Usage
 
+On a script-tag page, load either the full SDK (`red5-web-sdk.min.js`) or the WHIP/WHEP/HLS build (`red5-web-sdk-webrtc.min.js`). Both attach `window.red5websdk`. From npm, `import { MessageChannel } from 'red5-web-sdk'` or `'red5-web-sdk/webrtc'`.
+
 Because `MessageChannel` is a subclass of `WHIPClient` (the media streaming broadcaster), much of the init setup and event structure is similar.
 
 To create and use a `MessageChannel` client:
@@ -710,13 +733,13 @@ Dependening on how you include the SDK into your project, you can access the `Me
 _NPM install_:
 
 ```js
-import { MessageChannel } from 'red5pro-webrtc-sdk'
+import { MessageChannel } from 'red5-web-sdk'
 ```
 
 _Browser, CDN_:
 
 ```js
-const { MessageChannel } = red5prosdk
+const { MessageChannel } = red5websdk
 ```
 
 > For more in-depth information related to usage, please refer to the [WHIPClient](whip-client.md#usage) documentation.
@@ -813,7 +836,7 @@ The configuration used for statistics monitoring has the following structure:
   // If provided, it will POST stats to this endpoint.
   // If undefined or `data-channel`, it will post stats to message transport.
   // If null or `event-transport`, it will only emit status events.
-  endpoint: red5prosdk.StatsEndpointType.DATA_CHANNEL,
+  endpoint: red5websdk.StatsEndpointType.DATA_CHANNEL,
   additionalHeaders: undefined,
   interval: 5000, // Interval to poll stats, in milliseconds.
   include: [], // Empty array allows SDK to be judicious about what stats to include.
@@ -905,7 +928,7 @@ The following is an example of a statistics metadata that is emitted in a `WebRT
 
 > This section provides information that relate to the release of Stream Manager 2.0 and its integration with WHIP/WHEP clients, and MessageChannel.
 
-The Stream Manager 2.0 simplifies the proxying of web clients to Origin and Edge nodes. As such, an initialization configuration property called `endpoint` was added to the WebRTC SDK. This `endpoint` value should be the full URL path to the proxy endpoint on the Stream Manager as is used as such:
+The Stream Manager 2.0 simplifies the proxying of web clients to Origin and Edge nodes. As such, an initialization configuration property called `endpoint` was added to the Red5 Web SDK. This `endpoint` value should be the full URL path to the proxy endpoint on the Stream Manager as is used as such:
 
 ## WHIP Proxy
 
@@ -929,6 +952,1049 @@ const messageChannel = await new MessageChannel().init(config)
 messageChannel.on('*', (event) => console.log(event))
 await messageChannel.open()
 ```
+
+### Source: `docs/api/_media/MIGRATION_GUIDE.md`
+
+<h3 align="center">
+  <img src="assets/Red5_Truetime_black.png" alt="Red5 Pro Logo" height="65" />
+</h3>
+<p align="center">
+  <a href="README.md">Quick Start</a> &bull;
+  <a href="docs/whip-client.md">Publishing</a> &bull;
+  <a href="docs/whep-client.md">Subscribing</a>
+</p>
+
+---
+
+# Red5 Web SDK Migration Guide
+
+This documentation serves as a guide in migrating client-side code where a breaking change to the API has been made in a distribution.
+
+- [16.x to 17.0.0](#migrating-from-16x-to-1700)
+- [14.x to 15.0.0](#migrating-from-14x-to-1500)
+- [13.x to 14.0.0](#migrating-from-13x-to-1400)
+- [12.x to 13.0.0](#migrating-from-12x-to-1300)
+- [10.x to 11.0.0](#migrating-from-10x-to-1100)
+- [8.0.0 to 9.1.0](#migrating-from-800-to-910)
+- [7.2.0 to 8.0.0](#migrating-from-720-to-800)
+- [5.4.0 to 5.5.0](#migrating-from-540-to-550)
+- [5.0.0 to 5.4.0](#migrating-from-500-to-540)
+- [4.0.0 to 5.0.0](#migrating-from-400-to-500)
+- [3.5.0 to 4.0.0](#migrating-from-350-to-400)
+
+# Migrating from `16.x` to `17.0.0`
+
+**ALERT: Breaking Changes**
+
+The `17.0.0` release renames the published browser SDK from **Red5 Pro HTML SDK** / **Red5 Pro WebRTC SDK** (`red5pro-webrtc-sdk`) to **Red5 Web SDK** (`red5-web-sdk`). Client APIs (`WHIPClient`, `WHEPClient`, MOQ clients, events) are unchanged. Historical sections below (15.0.0, 8.0.0, …) still describe those past releases and are not rewritten.
+
+## Package and module specifier
+
+```sh
+# before
+npm install red5pro-webrtc-sdk
+# after
+npm install red5-web-sdk
+```
+
+```js
+// before
+import { WHIPClient, MOQPublisher } from 'red5pro-webrtc-sdk'
+// after
+import { WHIPClient, MOQPublisher } from 'red5-web-sdk'
+```
+
+## Script tag and CDN
+
+Bundle filenames change in the same major:
+
+```html
+<!-- before -->
+<script src="https://cdn.jsdelivr.net/npm/red5pro-webrtc-sdk@latest/red5pro-sdk.min.js"></script>
+<!-- after -->
+<script src="https://cdn.jsdelivr.net/npm/red5-web-sdk@latest/red5-web-sdk.min.js"></script>
+```
+
+UMD / IIFE pages: change the `src` URL. **`17.x` assigns both globals to the same object** (`red5prosdk === red5websdk`), so existing `const { WHIPClient } = red5prosdk` and `(window.red5prosdk)` keep working. New samples use `red5websdk`.
+
+Optional focused files (same global; load only one script per page):
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/red5-web-sdk@latest/red5-web-sdk-webrtc.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/red5-web-sdk@latest/red5-web-sdk-moq.min.js"></script>
+```
+
+```js
+import { WHIPClient } from 'red5-web-sdk/webrtc'
+import { MOQPublisher } from 'red5-web-sdk/moq'
+```
+
+## Unchanged
+
+Default `mediaElementId` values (`red5pro-publisher`, `red5pro-subscriber`), `red5pro-media.css` / `red5pro-media-*` classes, and event type strings are not renamed.
+
+# Migrating from `14.x` to `15.0.0`
+
+**ALERT: Breaking Changes**
+
+The `15.0.0` release of the Red5 HTML SDK is a complete rewrite of the SDK! Developed in TypeScript from the ground-up, we eliminated a lot of cruft and APIs that had become obsolete and deprecated over the years.
+
+With the slimming-down approach to the SDK also came the major breaking change of removing the WebSocket based clients: `RTCPublisher` and `RTCSubscriber`. As such, the clients introduced in the `11.0.0` release of the SDK are now the main actors and should be exclusively used: `WHIPClient` and `WHEPClient`.
+
+The [WebRTC-HTTP ingestion](https://www.ietf.org/archive/id/draft-ietf-wish-whip-01.html)(WHIP) and [WebRTC-HTTP egress](https://www.ietf.org/archive/id/draft-murillo-whep-00.html)(WHEP) protocols provide the ability to negotation and establish a connection using HTTP/S requests. This removes the requirement for a WebSocket, which historically has been used for the role of negotiation and connection.
+
+> Not only that, but their connection times are blazingly fast!
+
+If you have already been using the `WHIPClient` and `WHEPClient` from the Red5 HTML SDK, you shouldn't find any hiccups and will not need to update anything - simply enjoy the benefits of a slimmer SDK and the inclusion of types!
+
+If you have been using the WebSocket-based `RTCPublisher` and `RTCSubscriber` clients, we have hopefully made it painless enough to simply swap out that instantiation with their corresponding WHIP/WHEP client - the initialization and API is all the same.
+
+For example, if you were previously establishing a publisher as such:
+
+```js
+const config = {
+  host: 'myred5.cloud',
+  streamName: 'mystream'
+}
+const publisher = new RTCPublisher()
+publisher.on('*', event => console.log(event))
+await publisher.init(config)
+await publisher.publish()
+```
+
+You can simply swap over to using the `WHEPClient` like so:
+
+```js
+const config = {
+  host: 'myred5.cloud',
+  streamName: 'mystream'
+}
+const publisher = new WHIPClient()
+publisher.on('*', event => console.log(event))
+await publisher.init(config)
+await publisher.publish()
+```
+
+> The same is true for moving from `RTCSubscriber` to `WHEPClient`!
+
+# Migrating from `13.x` to `14.0.0`
+
+Though the version number shows a major change, it was more to be in line with the semver of the Red5 Pro Server release. _No breaking changes._
+
+# Migrating from `12.x` to `13.0.0`
+
+The SDK release of `13.0.0` has additional configuration requirements when integrating with Stream Manager 2.0 deployments. This release sees the introduction of the `endpoint` initialization configuration on which you provide the full URL path to the Stream Manager 2.0 proxy. The proxy will handle directing the clients to the target Origin and Edge nodes.
+
+The `endpoint` init config param is to be used in tandem with a `nodeGroup` connection parameter specifying the name of the target Node Group within the Stream Manager dpeloyment that you intend to target.
+
+More Information related to this configuration is detailed in the following documents:
+
+* [WHIPClient](docs/whip-client.md#stream-manager-20)
+* [WHEPClient](docs/whep-client.md#stream-manager-20)
+
+> [NOTE] SharedObject support has been removed in 13.0.0
+
+# Migrating from `10.x` to `11.0.0`
+
+The SDK release of `11.0.0` provides the capability of utilizing the [WHIP](https://www.ietf.org/archive/id/draft-ietf-wish-whip-01.html) and [WHEP](https://www.ietf.org/archive/id/draft-murillo-whep-00.html) protocols newly introduced on the `11.0.0` release of the Red5 Pro Server!
+
+The [WebRTC-HTTP ingestion](https://www.ietf.org/archive/id/draft-ietf-wish-whip-01.html)(WHIP) and [WebRTC-HTTP egress](https://www.ietf.org/archive/id/draft-murillo-whep-00.html)(WHEP) protocols provide the ability to negotation and establish a connection using HTTP/S requests. This removes the requirement for a WebSocket, which historically has been used for the role of negotiation and connection.
+
+> Read more about [WHIPClient](docs/whip-client.md) and [WHEPClient](docs/whep-client.md).
+
+# Migrating from `8.0.0` to `9.1.0`
+
+No major bug fixes were introduced in `9.1.0`. The biggest update to `9.1.0` was the introduction of the `sendLog` API for `RTCPublisher` and `RTCSubscriber`.
+
+The `sendLog` API allows you - the developer - to send messages to the server while connected with a `RTCPublisher` or `RTCSubscriber` instance.
+
+The message signature for `sendLog` on both the `RTCPublisher` and `RTCSubscriber` is:
+
+```sh
+sendLog( <String>level, <String>message )
+```
+
+Valid `level` values are:
+
+- `TRACE`
+- `INFO`
+- `DEBUG`
+- `WARN`
+- `ERROR`
+
+Example (after already establishing an `RTCPublisher` session):
+
+```javascript
+rtcPublisher.sendLog('INFO', 'hello world')
+```
+
+or
+
+```javascript
+rtcPublisher.sendLog('INFO', JSON.stringify({ hello: 'world' }))
+```
+
+# Important Note About `8.0.0` Release
+
+**Red5 HTML SDK has been published on NPM!**
+
+While currently not open source, the SDK build has been published to NPM to allow you to integrate into your projects with greater ease and dependency management.
+
+## Install as `script` in HTML page
+
+```
+<script src="https://unpkg.com/red5pro-webrtc-sdk@latest/red5pro-sdk.min.js"></script>
+```
+
+... or if you know the version:
+
+```
+<script src="https://unpkg.com/red5pro-webrtc-sdk@8.0.0/red5pro-sdk.min.js"></script>
+```
+
+## Install using `npm` or `yarn` for you browser-based projects
+
+```
+npm install --save-dev red5pro-webrtc-sdk
+```
+
+```
+yarn install --dev red5pro-webrtc-sdk
+```
+
+### Usage
+
+All members exposed on the otherwise global `window.red5prosdk` if loading as a script on an HTML page are importable from the `red5pro-webrtc-sdk` module:
+
+_publisher-example.js_
+
+```
+import { RTCPublisher } from 'red5pro-webrtc-sdk'
+```
+
+# Migrating from `7.2.0` to `8.0.0`
+
+The `8.0.0` release of the Red5 Pro HTML SDK includes the ability for WebRTC based clients - `RTCPublisher` and `RTCSubscriber` - to use WebSockets only for signaling purposes. Once they have finished their negotiation process and have begun broadcasting or consuming a stream, repsectively, they will open a `RTCDataChannel` connection and close the underlying `WebSocket` used for signaling.
+
+The benefit of closing the `WebSocket` and switching to a `RTCDataChannel` after signaling is complete is cutting down on the number of open socket connections to the server; in a Stream Manager Proxy scenario, this can be a significant benefit as the Proxy is no longer needed to keep alive while the stream is being delivered to the Origin(s) or from the Edge(s).
+
+## Configuration
+
+The initialization configuration object for the `RTCPublisher` and `RTCSubscriber` have the following attribute that flags whether to use the `WebSocket` only as a signaling connection:
+
+- `signalingSocketOnly`
+
+If `true`, the `RTCPublisher` and `RTCSubscriber` will use a `WebSocket` to establish an `RTCPeerConnection` and once established, will switch over to using a `RTCDataChannel` to do any event handling and futher communication with the server. _It is set to `true`, by default._
+
+> Further communication could be calling the Mute API for `RTCPublisher` and Standby API for `RTCSubscriber`.
+
+By setting `signalingSocketOnly` to `true` the switch works seemlessly under the hood, allowing you - as a developer - to not care about how to switch the message transport layers explicitly.
+
+An additional initialization configuration is also available as it relates to the switch to `RTCDataChannel` after signalling is complete:
+
+- `dataChannelConfiguration`
+
+By default, the `dataChannelConfiguration` has the following structure and declaration:
+
+```js
+dataChannelConfiguration = {
+  name: 'red5pro',
+}
+```
+
+The `name` value will be used in the underlying `RTCDataChannel` created from the `RTCPeerConnection`.
+
+> It should be noted that any `Red5ProSharedObject` instances created using an underlying connection through a `RTCPublisher` or `RTCSubscriber` will be switched over to using `RTCDataChannel` for communication.
+
+## Access
+
+Once the `RTCDataChannel` has been switched to from the `WebSocket`, you can access the instance from `RTCPublisher` and `RTCSubsciber` by calling the following:
+
+```js
+;+getDataChannel()
+```
+
+The will return the actual underlying `RTCDataChannel` instance used in communication.
+
+## Events
+
+The following events have been added to the `RTCPublisher` and `RTCSubscriber` that can be listened to:
+
+| `DATA_CHANNEL_AVAILABLE` | 'WebRTC.DataChannel.Available' | the underlying `RTCDataChannel` is available when `signalingSocketOnly` configuration is used. |
+| `DATA_CHANNEL_OPEN` | 'WebRTC.DataChannel.Open' | When the underlying `RTCDataChannel` is opened when `signalingSocketOnly` configuration is used.
+| `DATA_CHANNEL_CLOSE` | 'WebRTC.DataChannel.Close' | When the underlying `RTCDataChannel` is closed when `signalingSocketOnly` configuration is used. |
+| `DATA_CHANNEL_ERROR` | 'WebRTC.DataChannel.Error' | When an error has occurred within the underlying `RTCDataChannel` when `signalingSocketOnly` configuration is used. |
+| `DATA_CHANNEL_MESSAGE` | 'WebRTC.DataChannel.Message' | When a message has been delivered over the underlying `RTCDataChannel` when `signalingSocketOnly` configuration is used. |
+
+---
+
+# Migrating from `5.4.0` to `5.5.0`
+
+The `5.5.0` release of the Red5 Pro HTML SDK including some modifications to `SharedObjects` to allow for "decoupling" the managament and communication API from the underlying connections for Publishers and Subscribers. In the `5.5.0` release, `SharedObjects` can now be used by themselves without requiring an already established connection to the server.
+
+- The `SharedObject` API has been decoupled from requiring previously established stream clients (Publisher and/or Subscriber).
+  - By decoupling the previous _requirement_ to use a established stream client, `SharedObjects` can now be used with establishing a `WebSocket` connection and providing that as the connection to communicate over `SharedObjects`.
+  - The Red5 Pro HTML SDK provides a `Red5ProSharedObjectSocket` class to serve as a proxy to an underlying `WebSocket` and convenience in communicating to and from the Red5 Pro Server when using `SharedObjects`.
+  - The `SharedObject` API can still be employed using a stream client connection as was possible in previous SDK versions.
+
+Additionally, notification support for latest browser vendor restictions on the `autoplay` policy have been included.
+
+- Utilize the `muteOnAutoplayRestriction` initialization configuration property for Subscriber clients in order to attempt auto-muting of subscribers to allow - at least - video auto-playback when browsers enforce the muted autoplay policy.
+- Listen for events related to `autoplay` restictions in order to provide a better User Experience for your customers.
+- Please refer to the `Autoplay Restictions` section from the _Subscriber_ documentation.
+
+# Migrating from `5.0.0` to `5.4.0`
+
+The `5.4.0` release of the Red5 Pro HTML SDK saw some minor changes related to WebRTC clients, and in particular how WebSoskcet and RTCPeerConnections are made:
+
+- The default ports used for WebSocket connection change from `8081` and `8083` (insecure and secure, respectively) to `5080` and `443` (insecure and secure, respectively.
+  - WebSocket communication with the Red5 Pro Server will now be made over the same port for HTTP/S.
+  - To support backward compatiibilty for webapps out in the wild, the HTML SDK will recognize previously defaulted values and silently change the values to new default values.
+- The `iceServers` configuration property has been deprecated in favor of the new `rtcConfiguration` configuration property.
+  - [Refer to section: RTCConfiguration](#rtcconfiguration)
+
+## RTCConfiguration
+
+Prior to the `5.4.0` release of the Red5 Pro HTML SDK, configuration of underlying `RTCPeerConnection`s for both publisher and subscriber clients was constructed "under the hood". The only property exposed on the initialization configuration was the `iceServers` property.
+
+Using the `iceServers` configuration property, developers could deine the set of ICE endpoints desired in the peer negotiation process.
+
+The `iceServers` configuration property has been deprecated in favor of the newly introduced `rtcConfiguration` property, exposing to developers more control over the `RTCConfiguration` used when establishing `RTCPeerConnection`s for both publisher and subscriber clients.
+
+The `rtcConfiguration` is an object that directly correlates to the `RTCConfiguration` object that is handed to a `RTCPeerConnection` upon instantiation:
+
+[https://developer.mozilla.org/en-US/docs/Web/API/RTCConfiguration](https://developer.mozilla.org/en-US/docs/Web/API/RTCConfiguration)
+
+### RTCConfiguration Example
+
+Previously, developers would define the desired ICE endpoints for negotiation using the `iceServers` initialization configuration property:
+
+```js
+const config = {
+  host: 'myserver.com',
+  protocol: 'wss',
+  port: 443,
+  app: 'live',
+  streamName: 'mystream',
+  iceServers: [{ urls: 'stun:stun2.l.google.com:19302' }],
+}
+var publisher = new red5prosdk.RTCPublisher()
+publisher
+  .init(config)
+  .then(() => {
+    publisher.publish()
+  })
+  .catch((error) => {
+    // handle error.
+  })
+```
+
+With the introduction of the `rtcConfiguration` initialization configuration property, developers can still define the desired `iceServers` but as a nested attribute in the `rtcConfiguration` map:
+
+```js
+const config = {
+  host: 'myserver.com',
+  protocol: 'wss',
+  port: 443,
+  app: 'live',
+  streamName: 'mystream',
+  rtcConfiguration: {
+    iceServers: [{ urls: 'stun:stun2.l.google.com:19302' }],
+    iceCandidatePoolSize: 2,
+    bundlePolicy: 'max-bundle',
+  },
+}
+var publisher = new red5prosdk.RTCPublisher()
+publisher
+  .init(config)
+  .then(() => {
+    publisher.publish()
+  })
+  .catch((error) => {
+    // handle error.
+  })
+```
+
+> The `rtcConfiguration` is an object that directly correlates to the `RTCConfiguration` object that is handed to a `RTCPeerConnection` upon instantiation: [https://developer.mozilla.org/en-US/docs/Web/API/RTCConfiguration](https://developer.mozilla.org/en-US/docs/Web/API/RTCConfiguration)
+
+# Migrating from `4.0.0` to `5.0.0`
+
+The `5.0.0` release of the Red5 Pro HTML SDK mainly focused on internal bug fixes and compliancy changes to match updates to the Red5 Pro Server v5.0.0 release.
+
+To see updates that may cause possible issues in integration with your webapp(s), please refer to the _CHANGES_ documentation distributed with the Red5 Pro HTML SDK available from your [Red5 Pro Account](https://account.red5.net/).
+
+# Migrating from `3.5.0` to `4.0.0`
+
+The `4.0.0` release of the Red5 Pro HTML SDK saw some major changes in the following features:
+
+- Internalizing the `getUserMedia` request in order to simplify the intialization-to-broadcast sequence of **Publishers**.
+  - While the default process of accessing a stream through the `getUserMedia` API of the browser has been internalized to the SDK, we have also exposed a way to override this default to allow developers to specifically handle this process as per requirements.
+  - [Refer to section: Internalizing gUM Requests](#internalizing-gum-requests)
+- Removal of explicitly defining and assigning views for **Publishers** and **Subscribers**.
+  - The process of associating a view display to either a **Publisher** or a **Subscriber** has been internalized with access to DOM elements using a default `mediaElementId` configuration property.
+  - This change simplifies the creation and initialization process for both **Publishers** and **Subscribers**.
+  - While the default process of associating a view to a broadcast or subscriber session is based on a `mediaElementId` configuration property, developers are able to define which `video` or `audio` DOM element they prefer to use as the display by providing its `id` attribute value.
+  - [Refer to section: Removal of View Attachment](#removal-of-view-attachment)
+- Introduction of Red5 Pro HTML SDK Playback Controls.
+  - In response to numerous requests regarding playback controls across the several **Subscriber** platforms we support, we have exposed an API for playback control and provide default UI elements and styles.
+  - This allows for consistent cross-browser look-and-feel of playback controls across all playback formats: WebRTC, Flash, and HLS.
+  - The Red5 Pro HTML SDK Playback Controls UI is completely customizable in styling to meet the branding requirements for developers.
+  - By exposing a playback API, we allow developers to create their own custom controls - not relying on the Red5 Pro HTML SDK Playback Controls UI - to meet their own product requirements.
+  - [Refer to section: Red5 Pro HTML SDK Playback Controls](#red5-pro-html-sdk-playback-controls)
+- Change in **Subscriber** API from `play()` to `subscribe()` as request to start playback.
+  - This change is in keeping the Red5 PRo HTML SDK Playback Controls API in-line with consistent method names that properly describe their intent - e.g., `play`, `pause`, `resume`, etc.
+  - The method change to `subscribe` also keeps consistent method naming convention for **Publishers** and **Subscribers**, as the method name to request publishing for **Publishers** is `publish`.
+  - [Refer to section: Subscriber API Changes](#subscriber-api-changes)
+- Change in **Subscriber** API from `stop()` to `unsubscribe()` as request to cancel current playback.
+  - This change is in keeping the Red5 PRo HTML SDK Playback Controls API in-line with consistent method names that properly describe their intent - e.g., `play`, `pause`, `resume`, etc.
+  - The method change to `unsubscribe` also keeps consistent method naming convention for **Publishers** and **Subscribers**, as the method name to request cancel of publishing for **Publishers** is `unpublish`.
+  - [Refer to section: Subscriber API Changes](#subscriber-api-changes)
+- Removal of auto-play from **Subscriber** functionality.
+  - In previous versions of the Red5 Pro HTML SDK, all **Subscriber** types (WebRTC, Flash, and HLS) would begin playback automatically upon successful connection and subscription to a broadcast stream. This functionality has been removed.
+  - Instead, the node properties of the [HTMLMediaElement](https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement) (e.g., `<video>` and `<audio>`) should be used to dictate that `autoplay` is requested.
+  - The three [HTMLMediaElement](https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement) node properties that the Red5 Pro HTML SDK recognizes in establishing a subscription session are:
+    - `muted` - in order to mute the audio upon initial playback.
+    - `autoplay` - in order to automatically start playing the stream upon successful subscription.
+    - `controls` - as discusses in [Red5 Pro HTML SDK Playback Controls](#red5-pro-html-sdk-playback-controls).
+  - [Refer to section: Subscriber API Changes](#subscriber-api-changes)
+- Removal of [VideoJS](http://videojs.com/) support in Flash/RTMP and HLS clients.
+  - The integration with [VideoJS](http://videojs.com/) was originally intended to allow for easy failover to Flash if HLS was not supported. As the Red5 Pro HTML SDK started to support its own failover logic, the integration became unnecessary.
+  - [Refer to section: Removal of VideoJS](#removal-of-videojs)
+
+# Internalizing gUM Requests
+
+> This change affects the WebRTC-based Publisher instances.
+
+- [Defining mediaConstraints](#defining-mediaconstraints)
+- [Overriding Default Request](#overriding-default-request)
+
+The `getUserMedia` (a.k.a. `gUM`) requests in pre-`4.0.0` versions of the SDK were externalized for WebRTC-based **Publishers**. This meant that developers had an intermediary step between initializing a **Publisher** and requesting to start publishing that involved requesting the `MediaStream` from the browser by invoking `getUserMedia`.
+
+While this step allowed developers to specify the desired `MediaConstraints`, the requirement of fulfilling the request and handing the resulting `MediaStream` over to the preview display and **Publisher** seemed an unnecessary and cumbersome step in starting a broadcast session.
+
+Starting in the `4.0.0` version of the Red5 Pro HTML SDK, the `gUM` request is internalized and uses the `mediaConstraint` property of the initialization configuration. It is suggested that the structure of this property - provided by developers upon initialization request of a **Publisher** instance - follow the structure of [MediaStreamConstraints](https://developer.mozilla.org/en-US/docs/Web/API/MediaStreamConstraints).
+
+The default `MediaConstraint` used - if not provided on the `mediaConstraint` initialization configuration - is:
+
+```js
+{
+  "audio": true,
+  "video": {
+    "width": {
+      "exact": 640
+    },
+    "height": {
+      "exact": 480
+    }
+  }
+}
+```
+
+## Defining mediaConstraints
+
+The following sections show the code required to start a broadcast session between `3.5.0` and `4.0.0` using media constraints:
+
+### MediaConstraints in 3.5.0 SDK
+
+The `getUserMedia` request was required as an intermediary step prior to broadcasting:
+
+```js
+;(function (red5prosdk) {
+  'use strict'
+
+  var configuration = {} // not defined for clarity in this example.
+
+  var publisher = new red5prosdk.Red5ProPublisher()
+  var view = new red5prosdk.PublisherView()
+  view.attachPublisher(publisher)
+
+  publisher.init(configuration).then(function (selectedPublisher) {
+    // externalized request for MediaStream using gUM.
+    if (selectedPublisher.getType().toLowerCase() === 'rtc') {
+      navigator.mediaDevices
+        .getUserMedia({
+          audio: true,
+          video: {
+            width: 640,
+            height: 480,
+          },
+        })
+        .then(function (mediaStream) {
+          view.preview(mediaStream)
+          selectedPublisher.attachStream(mediaStream)
+          selectedPublisher.publish()
+        })
+    } else {
+      selectedPublisher.publish()
+    }
+  })
+})(window.red5prosdk)
+```
+
+### MediaConstraints in 4.0.0 SDK
+
+The `getUserMedia` request is internalized and executed using the `mediaConstraints` property of the initialization configuration.
+
+```js
+;(function (red5prosdk) {
+  'use strict'
+
+  var configuration = {} // not defined for clarity in this example.
+
+  var publisher = new red5prosdk.Red5ProPublisher()
+  // Using the new init config attribute.
+  configuration.mediaContraints = {
+    audio: true,
+    video: {
+      width: 640,
+      height: 480,
+    },
+  }
+
+  publisher.init(configuration).then(function (selectedPublisher) {
+    selectedPublisher.publish()
+  })
+})(window.red5prosdk)
+```
+
+## Override Default Request
+
+While the `getUserMedia` request has been internalized by default, the Red5 Pro HTML SDK also allows developers to override that default behavior if they wish to explicitly access and provide the `MediaSteam` instance for WebRTC-based publishers to use.
+
+The `4.0.0` SDK release exposes a `onGetUserMedia` initialization configuration property that can be used to override the internalized `gUM` request.
+
+If the `onGetUserMedia` initialization configuration property is set, that method will be invoked and the initialization sequence will be halted until its expected return `Promise` is resolved or rejected.
+
+> The `onGetUserMedia` property expects no arguments and requires a `Promise` to be returned. The `resolve` payload of the `Promise` is expected to be a `MediaStream` instance.
+
+The following example utilizes the `onGetUserMedia` override to request the `MediaStream` directly from the `MediaDevices` of `navigator`:
+
+```js
+;(function (red5prosdk) {
+  'use strict'
+
+  var configuration = {} // not defined for clarity in this example.
+
+  var publisher = new red5prosdk.Red5ProPublisher()
+  // Using the onGetUserMedia override.
+  configuration.onGetUserMedia = function () {
+    // navigator.mediaDevices.getUserMedia returns a Promise.
+    return navigator.mediaDevices.getUserMedia({
+      audio: true,
+      video: {
+        width: 640,
+        height: 480,
+      },
+    })
+  }
+
+  publisher.init(configuration).then(function (selectedPublisher) {
+    selectedPublisher.publish()
+  })
+})(window.red5prosdk)
+```
+
+# Removal of View Attachment
+
+> This change affects all **Publisher** and **Subscriber** types.
+
+- [Defining mediaElementId](#defining-mediaelementid)
+- [Using the default mediaElementId](#using-the-default-mediaelementid)
+
+In the `3.5.0` version of the Red5 Pro HTML SDK, developers were required to define a `PublisherView` or a `PlaybackView` for **Publishers** and **Subscribers**, respectively, if the stream was to be shown in a target DOM element. This requirement has been removed.
+
+In its replacement is a new initialization configuration property: `mediaElementId`. This property is the `id` attribute value of the target DOM element that should display the broadcast preview or playback stream for **Publishers** and **Subscribers**, respectively.
+
+A default value is used in the SDK, if one is not provided on the initialization configuration. The default `mediaElementId` for **Publishers** and **Subscribers** is:
+
+| Type       | mediaElementId       |
+| :--------- | :------------------- |
+| Publisher  | `red5pro-publisher`  |
+| Subscriber | `red5pro-subscriber` |
+
+## Defining mediaElementId
+
+The following sections show the code required to have a DOM element display the broadcast and subscription streams:
+
+### Element `id` usage in 3.5.0 SDK
+
+In the `3.5.0` version of the Red5 Pro HTML SDK, a view was required in order to display the broadcast and subscription streams.
+
+```html
+<!doctype html>
+<html>
+  <head>
+    <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
+    <script src="lib/red5pro/red5pro-sdk.min.js"></script>
+  <head>
+  <body>
+    <video id="red5pro-publisher" muted></video>
+    <video id="red5pro-subscriber" controls></video>
+    <script>
+        (function (red5prosdk) {
+          'use strict';
+
+          var pubConfiguration = {}; // not defined for clarity in this example.
+          var subConfiguration = {}; // not defined for clarity in this example.
+
+          var publisher = new red5prosdk.Red5ProPublisher();
+          var subscriber = new red5prosdk.Red5ProSubscriber();
+
+          var publisherView = new red5prosdk.PublisherView('red5pro-publisher');
+          var subscriberView = new red5prosdk.PlaybackView('red5pro-publisher');
+
+          publisherView.attachPublisher(publisherView);
+          subsceiberView.attachSubscriber(subscriberView);
+
+          publisher.init(pubConfiguration)
+            .then(function (selectedPublisher) {
+              publisher.publish();
+            });
+
+          subscriber.init(subConfiguration)
+            .then(function (selectedSubscriber) {
+              subscriber.play();
+            });
+
+        })(window.red5prosdk);
+    </script>
+  </body>
+</html>
+```
+
+### Element `id` usage in 4.0.0 SDK
+
+The requirement for creating a view and attaching either the **Publisher** or **Subscriber** instance has been removed. Instead, a `mediaElementId` property on the initialization configuration is recognized and used in establishing playback in a DOM element:
+
+```html
+<!doctype html>
+<html>
+  <head>
+    <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
+    <script src="lib/red5pro/red5pro-sdk.min.js"></script>
+  <head>
+  <body>
+    <video id="red5pro-publisher" muted></video>
+    <video id="red5pro-subscriber" controls autoplay></video>
+    <script>
+        (function (red5prosdk) {
+          'use strict';
+
+          var pubConfiguration = {}; // not defined for clarity in this example.
+          var subConfiguration = {}; // not defined for clarity in this example.
+
+          publisher.mediaElementId = 'red5pro-publisher';
+          subscriber.mediaElementId = 'red5pro-subscriber';
+
+          var publisher = new red5prosdk.Red5ProPublisher();
+          var subscriber = new red5prosdk.Red5ProSubscriber();
+
+          publisher.init(pubConfiguration)
+            .then(function (selectedPublisher) {
+              publisher.publish();
+            });
+
+          subscriber.init(subConfiguration)
+            .then(function (selectedSubscriber) {
+              subscriber.subscribe();
+            });
+
+        })(window.red5prosdk);
+    </script>
+  </body>
+</html>
+```
+
+## Using the default mediaElementId
+
+By defining the `id` attribute of the target [HTMLMediaElement](https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement) with the default values for **Publishers** and **Subscribers** - `red5pro-publisher` and `red5pro-subscriber`, respectively - then, the `mediaElementId` property does not have to be provided on the initialization configuration object:
+
+```html
+<!doctype html>
+<html>
+  <head>
+    <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
+    <script src="lib/red5pro/red5pro-sdk.min.js"></script>
+  <head>
+  <body>
+    <video id="red5pro-publisher" muted></video>
+    <video id="red5pro-subscriber" controls autoplay></video>
+    <script>
+        (function (red5prosdk) {
+          'use strict';
+
+          var pubConfiguration = {}; // not defined for clarity in this example.
+          var subConfiguration = {}; // not defined for clarity in this example.
+
+          var publisher = new red5prosdk.Red5ProPublisher();
+          var subscriber = new red5prosdk.Red5ProSubscriber();
+
+          publisher.init(pubConfiguration)
+            .then(function (selectedPublisher) {
+              publisher.publish();
+            });
+
+          subscriber.init(subConfiguration)
+            .then(function (selectedSubscriber) {
+              subscriber.subscribe();
+            });
+
+        })(window.red5prosdk);
+    </script>
+  </body>
+</html>
+```
+
+# Red5 Pro HTML SDK Playback Controls
+
+> This change affects all **Subscriber** types.
+
+In response to numerous requests, we have unified the playback controls of the various **Subscriber** types - WebRTC, Flash and HLS.
+
+This feature provides consistent cross-browser, cross-player UI and functionality and is customizable to allow for branding.
+
+The Playback Controls are "turned on" by declaring a `controls` property and the class assignment of `red5pro-media` on the target [HTMLMediaElement](https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement). If either of these are not present on the element, the default behaviour of the browser is utilized.
+
+> Please refer to the [Playback Controls Document](playbackcontrols.md) for more information on this feature.
+
+# Subscriber API Changes
+
+> This change affects all **Subscriber** types.
+
+Several API changes have been made for **Subscribers** in the `4.0.0` version of the Red5 Pro HTML SDK. In particular, the method names for requesting to start and stop a subscription have been changed in accordance to the nomenclature of the API for [Red5 Pro HTML SDK Playback Controls](#red5-pro-html-sdk-playback-controls) and the automatic playback of streams has been removed and made dependent on DOM element attributes.
+
+You can find more information about these changes in the following sections:
+
+- [Start Subscription API Change](#start-subscription-api-change)
+- [Stop Subscription API Change](#stop-subscription-api-change)
+- [Autoplay Change](#autoplay-change)
+
+## Start Subscription API Change
+
+In the `3.5.0` version of the Red5 Pro HTML SDK, the request to start subscription and playback was made by invoking the API call of `play()`. The `4.0.0` version of the SDK introduces the custom [Playback Controls](#red5-pro-html-sdk-playback-controls), and with it, an API to control the playback of a stream. As such, the request to start playback was moved to the `play` method of the Playback Controls API, and the request to start subscription was changed to `subscribe`.
+
+### Subscription start in 3.5.0 SDK
+
+In the `3.5.0` version of the SDK, subscription request and playback where bundled together in the `play()` invocation on a **Subscriber**:
+
+```html
+<!doctype html>
+<html>
+  <head>
+    <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
+    <script src="lib/red5pro/red5pro-sdk.min.js"></script>
+  <head>
+  <body>
+    <video id="red5pro-subscriber" controls></video>
+    <script>
+        (function (red5prosdk) {
+          'use strict';
+
+          var configuration = {}; // not defined for clarity in this example.
+
+          var subscriber = new red5prosdk.Red5ProSubscriber();
+          var view = new red5prosdk.PlaybackView('red5pro-subscriber');
+          view.attachSubscriber(subscriber);
+
+          subscriber.init(configuration)
+            .then(function (selectedSubscriber) {
+              selectedSubscriber.play();
+            });
+
+        })(window.red5prosdk);
+    </script>
+  </body>
+</html>
+```
+
+### Subscription start in 4.0.0 SDK
+
+In the `4.0.0` version of the SDK, subscription request is made by invoking `subscribe()` and playback is delegated to the Red5 Pro HTML SDK Playback Controls and element attributes:
+
+```html
+<!doctype html>
+<html>
+  <head>
+    <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
+    <script src="lib/red5pro/red5pro-sdk.min.js"></script>
+  <head>
+  <body>
+    <video id="red5pro-subscriber" controls></video>
+    <script>
+        (function (red5prosdk) {
+          'use strict';
+
+          var configuration = {}; // not defined for clarity in this example.
+
+          var subscriber = new red5prosdk.Red5ProSubscriber();
+
+          subscriber.init(configuration)
+            .then(function (selectedSubscriber) {
+              selectedSubscriber.subscribe();
+            })
+            .then(function (selectedSubscriber) {
+              selectedSubscriber.play();
+            });
+
+        })(window.red5prosdk);
+    </script>
+  </body>
+</html>
+```
+
+## Stop Subscription API Change
+
+In the `3.5.0` version of the Red5 Pro HTML SDK, the requests to stop subscription and playback were made by invoking the API call of `stop()`. The `4.0.0` version of the SDK introduces the custom [Playback Controls](#red5-pro-html-sdk-playback-controls), and with it, an API to control the playback of a stream. As such, the request to stop playback was moved to the `stop` method of the Playback Controls API, and the request to stop subscription was changed to `unsubscribe`.
+
+### Subscription stop in 3.5.0 SDK
+
+In the `3.5.0` version of the SDK, unsubscription request and stop of playback where bundled together in the `stop()` invocation on a **Subscriber**:
+
+```html
+<!doctype html>
+<html>
+  <head>
+    <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
+    <script src="lib/red5pro/red5pro-sdk.min.js"></script>
+  <head>
+  <body>
+    <video id="red5pro-subscriber" controls></video>
+    <button id="unsubscribe-button">unsubscribe</button>
+    <script>
+        (function (red5prosdk) {
+          'use strict';
+
+          var configuration = {}; // not defined for clarity in this example.
+
+          var targetSubscriber;  // holds reference to determined subscriber instance.
+
+          var subscriber = new red5prosdk.Red5ProSubscriber();
+          var view = new red5prosdk.PlaybackView('red5pro-subscriber');
+          view.attachSubscriber(subscriber);
+
+          subscriber.init(configuration)
+            .then(function (selectedSubscriber) {
+              targetSubscriber = selectedSubscriber;
+              targetSubscriber.play();
+            });
+
+          var stopSubscription = function () {
+            targetSubscriber.stop()
+              .then(function () {
+                // successful stop and unsubscribe of playback.
+              });
+          }
+          document.getElementById('unsubscribe-button')
+            .addEventListener('click', stopSubscription);
+
+        })(window.red5prosdk);
+    </script>
+  </body>
+</html>
+```
+
+### Subscription stop in 4.0.0 SDK
+
+In the `4.0.0` version of the SDK, unsubscription request is made by invoking `unsubscribe()` and request to stop playback is delegated to the Red5 Pro HTML SDK Playback Controls API:
+
+```html
+<!doctype html>
+<html>
+  <head>
+    <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
+    <script src="lib/red5pro/red5pro-sdk.min.js"></script>
+  <head>
+  <body>
+    <video id="red5pro-subscriber" controls></video>
+    <button id="unsubscribe-button">unsubscribe</button>
+    <script>
+        (function (red5prosdk) {
+          'use strict';
+
+          var configuration = {}; // not defined for clarity in this example.
+
+          var targetSubscriber;  // holds reference to determined subscriber instance.
+
+          var subscriber = new red5prosdk.Red5ProSubscriber();
+
+          subscriber.init(configuration)
+            .then(function (selectedSubscriber) {
+              targetSubscriber = selectedSubscriber;
+              targetSubscriber.play();
+            });
+
+          var stopSubscription = function () {
+            targetSubscriber.stop()
+              .then(targetSubscriber.unsubscribe)
+              .then(function () {
+                // successful stop and unsubscribe of playback.
+              });
+          }
+          document.getElementById('unsubscribe-button')
+            .addEventListener('click', stopSubscription);
+
+        })(window.red5prosdk);
+    </script>
+  </body>
+</html>
+```
+
+## Autoplay Change
+
+In the `3.5.0` version of the Red5 Pro HTML SDK, playback started automatically in the bundle of subscription request and playback from the `play` method incocation. Essentially, a request to connect and subscribe to a stream was a request to start playback immediately once the stream is received.
+
+In the `4.0.0` version, the separation of subscription request and playback od stream has been introduced. Instead, the auto-playback feature can be turned on by defining the `autoplay` attribute on the target [HTMLMediaElement](https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement).
+
+### Autoplay capability in 3.5.0 SDK
+
+In the `3.5.0` version of the SDK, subscription request and playback where bundled together in the `play()` invocation on a **Subscriber**, which resulted in auto-playback of the stream upon successful subscription:
+
+```html
+<!doctype html>
+<html>
+  <head>
+    <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
+    <script src="lib/red5pro/red5pro-sdk.min.js"></script>
+  <head>
+  <body>
+    <video id="red5pro-subscriber" controls></video>
+    <script>
+        (function (red5prosdk) {
+          'use strict';
+
+          var configuration = {}; // not defined for clarity in this example.
+
+          var subscriber = new red5prosdk.Red5ProSubscriber();
+          var view = new red5prosdk.PlaybackView('red5pro-subscriber');
+          view.attachSubscriber(subscriber);
+
+          subscriber.init(configuration)
+            .then(function (selectedSubscriber) {
+              selectedSubscriber.play();
+            });
+
+        })(window.red5prosdk);
+    </script>
+  </body>
+</html>
+```
+
+### Autoplay capability in 4.0.0 SDK
+
+In the `4.0.0` version of the SDK, a separation of subscription and playback is introduced. Auto-playback is possible through defining the `autoplay` attribute on the target **HTMLMediaElement**:
+
+```html
+<!doctype html>
+<html>
+  <head>
+    <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
+    <script src="lib/red5pro/red5pro-sdk.min.js"></script>
+  <head>
+  <body>
+    <video id="red5pro-subscriber" controls autoplay></video>
+    <script>
+        (function (red5prosdk) {
+          'use strict';
+
+          var configuration = {}; // not defined for clarity in this example.
+
+          var subscriber = new red5prosdk.Red5ProSubscriber();
+
+          subscriber.init(configuration)
+            .then(function (selectedSubscriber) {
+              selectedSubscriber.subscribe();
+            });
+
+        })(window.red5prosdk);
+    </script>
+  </body>
+</html>
+```
+
+# Removal of VideoJS
+
+In the `3.5.0` version of the Red5 Pro HTML SDK, the option to utilize the [VideoJS](http://videojs.com/) as a HLS/Flash failover was provided.
+
+Additionally, if **VideoJS** was used, it provided custom playback controls. With the release of version `4.0.0`, we have provided the ability to display and customize playback controls. _[Refer to section: Red5 Pro HTML SDK Playback Controls](#red5-pro-html-sdk-playback-controls)_.
+
+For these reasons, the inclusion of [VideoJS](http://videojs.com/) as a dependency in HLS failover and playback controls has been removed.
+
+However, it does not mean that you are not permitted to use _VideoJS_ for playback. It is entirely possible and detailed in the following example. Do note that if you use _VideoJS_ for playback, you are not encorporating the Red5 Pro HTML SDK and will not benefit from all that brings - such as: stream message communication, Shared Objects, etc.
+
+## Using VideoJS for Playback
+
+Playback of a stream being broadcast to a Red5 Pro Server is possible using [VideoJS](http://videojs.com/). All that is required is knowledge of the stream endpoint URL to provide:
+
+```html
+<!doctype html>
+<html>
+  <head>
+    <title>Red5 Pro HTML SDK - Playback</title>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width">
+    <link href="//vjs.zencdn.net/5.19/video-js.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/video.js/dist/video.js"></script>
+    <script src="https://unpkg.com/videojs-contrib-hls/dist/videojs-contrib-hls.js"></script>
+    <script src="https://unpkg.com/videojs-flash/dist/videojs-flash.js"></script>
+    <style>
+      #my-player {
+        width: 640px;
+        height: 480px;
+      }
+    </style>
+  </head>
+  <body>
+        <video
+            id="my-player"
+            class="video-js"
+            controls
+            data-setup='{}'>
+          <!--FLV files. -->
+          <source src="http://localhost:5080/live/mystream.flv" type="video/flv"></source>
+          <!-- HLS (m3u8) files. -->
+          <source src="http://localhost:5080/live/mystream.m3u8" type="application/x-mpegURL"></source>
+          <p class="vjs-no-js">
+            To view this video please enable JavaScript, and consider upgrading to a
+            web browser that
+            <a href="http://videojs.com/html5-video-support/" target="_blank">
+              supports HTML5 video
+            </a>
+          </p>
+        </video>
+        <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
+        <script>
+          (function (window, VideoJS) {
+            'use strict';
+            var videoElement = document.getElementById('my-player');
+            var v;
+            function getVJS() {
+              return v;
+            }
+            v = new VideoJS(videoElement, {
+              techOrder: ['html5', 'flash']
+            }, function () {
+              // success.
+            });
+          })(window, window.videojs);
+        </script>
+  </body>
+</html>
+```
+
+In this example, if you are broadcasting a stream called `mystream` on a Red5 Pro Server served from `localhost`, the base URI for the stream endpoint would be:
+
+```text
+http://localhost:5080/live/mystream
+```
+
+The file extension will change for each `source` based on the container mime type you want to display: either HLS (`m3u8`) or Flash (`flv`). The required _VideoJS_ library dependencies are loaded and a new `VideoJS` object created to start request of stream and playback.
+
+This example demonstrates the use of [VideoJS](http://videojs.com/) for live and VOD stream playback from Red5 Pro Server. Please note that the Red5 Pro HTML SDK is not used at all in this example. As such, WebRTC playback is not supported and various other features provided by the SDK are not available; the purpose of this example was to demonstrate how to still use _VideoJS_ for playback if that is your current requirement, as it has been removed from the Red5 Pro HTML SDK.
+
+## More Information
+
+> Please refer to the [VideoJS](http://videojs.com/) documentation for further information.
 
 ### Source: `docs/api/_media/moq-catalog.md`
 
@@ -961,10 +2027,12 @@ Use it when you want to inspect track metadata without starting full media playb
 
 # Usage
 
+On a script-tag page, load either the full SDK (`red5-web-sdk.min.js`) or the MOQ build (`red5-web-sdk-moq.min.js`). Both attach `window.red5websdk`. From npm, `import { MOQCatalog } from 'red5-web-sdk'` or `'red5-web-sdk/moq'`.
+
 Initialize first, then call either `fetch()` or `subscribe()`.
 
 ```js
-const { MOQCatalog, MOQCatalogEventTypes } = red5prosdk
+const { MOQCatalog, MOQCatalogEventTypes } = red5websdk
 
 const catalog = new MOQCatalog()
 catalog.on('*', event => {
@@ -1152,10 +2220,12 @@ Use it when you want:
 
 # Usage
 
+On a script-tag page, load either the full SDK (`red5-web-sdk.min.js`) or the MOQ build (`red5-web-sdk-moq.min.js`). Both attach `window.red5websdk`. From npm, `import { MOQMessageChannel } from 'red5-web-sdk'` or `'red5-web-sdk/moq'`.
+
 Initialize, then `open()`. Listen for events before `open()` so you do not miss `MessageChannel.Open`.
 
 ```js
-const { MOQMessageChannel, MessageChannelEventTypes } = red5prosdk
+const { MOQMessageChannel, MessageChannelEventTypes } = red5websdk
 
 const channel = new MOQMessageChannel()
 channel.on('*', event => {
@@ -1449,6 +2519,8 @@ When you want to publish media over Media over QUIC (MoQ), the SDK provides `MOQ
 
 # Usage
 
+On a script-tag page, load either the full SDK (`red5-web-sdk.min.js`) or the MOQ build (`red5-web-sdk-moq.min.js`). Both attach `window.red5websdk`. From npm, `import { MOQPublisher } from 'red5-web-sdk'` or `'red5-web-sdk/moq'`.
+
 There are two options to start a `MOQPublisher`:
 
 1. Construct with a MOQ URL (auto init and publish).
@@ -1457,7 +2529,7 @@ There are two options to start a `MOQPublisher`:
 ## Using init() and publish()
 
 ```js
-const { MOQPublisher, PublisherEventTypes, MOQPublisherEventTypes } = red5prosdk
+const { MOQPublisher, PublisherEventTypes, MOQPublisherEventTypes } = red5websdk
 
 const publisher = new MOQPublisher()
 publisher.on('*', event => {
@@ -1509,6 +2581,8 @@ await publisher.unpublish()
 
 `unpublish()` retires the current publish generation immediately and aborts any in-flight WebTransport handshake / `connect()`, so Stop does not wait for a hung relay connection. The in-flight `publish()` promise rejects without a `Publish.Fail` event; teardown still emits `Unpublish.Success`.
 
+Each accepted catalog, video, and audio subscription reports the largest object handed to the relay. A subscriber `REQUEST_UPDATE` reads that location. The head stays empty until the first object for that request. A replacement subscription starts empty, including while an older subgroup open is still in flight. `unpublish()` stops reporting heads for the retired session.
+
 ## Constructing with URL
 
 Passing a URL to the constructor triggers internal init + publish automatically.
@@ -1545,6 +2619,7 @@ The `init()` call accepts `MOQPublisherConfigType`.
 | `onGetUserMedia` | [-] | `undefined` | Optional override to provide your own media stream acquisition. |
 | `videoEncoding` | [-] | `H264` | Preferred video codec (`PublishVideoEncoder`: `H264_BASELINE`, `H264_HIGH`, `H264`, `H265`, `AV1`). The publisher probes `VideoEncoder.isConfigSupported` at the track resolution and frame rate, then falls back (Baseline ↔ High, then H.264 if HEVC/AV1 is requested). AVC level is raised automatically (e.g. 4.0 for 1080p30, 4.2 for 1080p60). If nothing is supported, `ENCODER_ERROR` fires with `terminal: true` and publish fails. |
 | `audioEncoding` | [-] | `OPUS` | Audio codec (`PublishAudioEncoder`). |
+| `locVersion` | [-] | `4` | LOC packaging draft to emit on media objects (`1`, `4`, or `5`). Version `5` adds the LOC Codec String on every video and audio object, using that track's catalog codec. Versions `1` and `4` omit it. Simulcast rungs each carry their own codec string. |
 | `mediaElementId` | [-] | `red5pro-publisher` | Preview element id for local media display. |
 | `clearMediaOnUnpublish` | [-] | `true` | Stop preview stream tracks on unpublish. |
 | `maxVideoQueue` | [-] | `120` | Max queued encoded video chunks per track before shed policy. |
@@ -1734,13 +2809,30 @@ publisher.on(MOQPublisherEventTypes.SEND_STATS, event => {
 
 # Statistics
 
-`MOQPublisher` supports the same stats pattern as other SDK clients:
+`MOQPublisher` supports the same stats pattern as other SDK clients. The default endpoint is `EVENT_TRANSPORT` (`MOQ.Stats.Report`). To send the same `STATS_REPORT` JSON over the managed MoQ message channel, set `endpoint` to `DATA_CHANNEL` and enable `messageChannel`:
+
+```js
+const { StatsEndpointType } = red5websdk
+
+await publisher.init({
+  endpoint: 'https://relay.example.com:4433',
+  namespace: 'live/mystream',
+  messageChannel: { enabled: true },
+  stats: {
+    interval: 5000,
+    endpoint: StatsEndpointType.DATA_CHANNEL
+  }
+})
+```
 
 ```js
 publisher.monitorStats({
-  interval: 5000
+  interval: 5000,
+  endpoint: StatsEndpointType.EVENT_TRANSPORT
 })
 ```
+
+If `DATA_CHANNEL` is requested but `messageChannel.enabled` is not set, the SDK warns once and emits `STATS_REPORT` instead. Reports that arrive before the channel is open are queued until `MOQ.MessageChannel.Open`.
 
 You can also provide `stats` directly in `init()` options to start monitoring automatically once publishing starts.
 
@@ -1774,6 +2866,8 @@ When you want to play MoQ media streams in the browser, the SDK provides `MOQSub
 
 # Usage
 
+On a script-tag page, load either the full SDK (`red5-web-sdk.min.js`) or the MOQ build (`red5-web-sdk-moq.min.js`). Both attach `window.red5websdk`. From npm, `import { MOQSubscriber } from 'red5-web-sdk'` or `'red5-web-sdk/moq'`.
+
 There are two options to start a `MOQSubscriber`:
 
 1. Construct with a MOQ URL (auto init and subscribe).
@@ -1782,7 +2876,7 @@ There are two options to start a `MOQSubscriber`:
 ## Using init() and subscribe()
 
 ```js
-const { MOQSubscriber, MOQSubscriberEventTypes } = red5prosdk
+const { MOQSubscriber, MOQSubscriberEventTypes } = red5websdk
 
 const subscriber = new MOQSubscriber()
 subscriber.on('*', event => {
@@ -1862,9 +2956,29 @@ The `init()` call accepts `MOQSubscriberConfigType`.
 | `mseMediaSourceOptions` | [-] | buffer defaults | CMAF/MSE buffer and MediaSource settings. Ignored when `mediaSource` is provided. See [CMAF playback](#cmaf-playback). |
 | `drmConfig` | [-] | `undefined` | EME license settings for encrypted CMAF playback. Overrides `mseMediaSourceOptions.drmConfig`. See [CMAF playback](#cmaf-playback). |
 | `locmafDecoding` | [-] | `mse` | How LOCMAF tracks are consumed: reconstructed CMAF chunks for MSE (`mse`), or coded frames for WebCodecs (`frame`). |
+| `selection` | [-] | `undefined` | Presentation chosen at subscribe. See [Tune-in selection](#tune-in-selection). |
+| `audioLanguages` | [-] | `undefined` | Ordered language ranges for automatic audio choice. Omitted: catalog order. |
 | `messageChannel` | [-] | `{ enabled: false, mode: 'shared' }` | Optional internally managed `MOQMessageChannel`. `mode: 'shared'` reuses subscriber/player `MoqtConnection`; `mode: 'sidecar'` creates a separate MoQT session for messaging. |
 
 `*` Required when `endpoint` is not provided.
+
+### Tune-in selection
+
+`selection` and `audioLanguages` are copied onto the player when `subscribe()` starts. They choose the first presentation. They do not change a session that is already playing.
+
+Leave `selection` unset to use the player's catalog defaults. A field you set is exact: the player reports it when the catalog cannot satisfy it, and does not substitute another scope or track. `renderGroup: null` selects tracks that declare no render group. `renderGroup: 0` is render group zero.
+
+`audioLanguages` is an ordered list of basic language ranges, such as `['en', 'es']`. Exact tags are preferred over regional variants. When nothing matches, the player keeps the scope's default audio. Omit the field for catalog order.
+
+```js
+await subscriber.init({
+  endpoint: 'https://relay.example:4433',
+  app: 'live',
+  streamName: 'cam',
+  selection: { renderGroup: null, videoAltGroup: 1 },
+  audioLanguages: ['en', 'es']
+})
+```
 
 ### Authorization
 
@@ -1993,6 +3107,7 @@ subscriber.off('*', onSubscriberEvent)
 | `SESSION_ERROR` | `MOQ.Session.Error` | Session-level error. |
 | `CATALOG_RECEIVED` | `MOQ.Catalog.Received` | Catalog received (prefetch or relay). |
 | `CATALOG_UPDATED` | `MOQ.Catalog.Updated` | Catalog update observed. |
+| `SELECTION_CHANGED` | `MOQ.Selection.Changed` | Adopted program, view, rendition, or audio choice changed. |
 | `TRACK_SUBSCRIBE` | `MOQ.Track.Subscribe` | Track subscription succeeded. |
 | `TRACK_SUBSCRIBE_FAILED` | `MOQ.Track.Subscribe.Failed` | Track subscription failed. |
 | `TRACK_UNSUBSCRIBE` | `MOQ.Track.Unsubscribe` | Track unsubscribed. |
@@ -2006,6 +3121,27 @@ subscriber.off('*', onSubscriberEvent)
 | `MESSAGE_CHANNEL_CLOSE` | `MOQ.MessageChannel.Close` | Managed `MOQMessageChannel` closed. |
 | `MESSAGE_CHANNEL_FAIL` | `MOQ.MessageChannel.Fail` | Managed `MOQMessageChannel` failed to open. |
 | `MESSAGE_CHANNEL_ERROR` | `MOQ.MessageChannel.Error` | Managed `MOQMessageChannel` reported an error. |
+
+### Catalog selection
+
+`CATALOG_RECEIVED`, `CATALOG_UPDATED`, and `SELECTION_CHANGED` add two fields beside the existing catalog payload. `CATALOG_RECEIVED` still includes `availableVideoTracks` and `availableAudioTracks`.
+
+- `catalogSelection` is the player model: scopes (declared render groups, then the unassigned pool), the alternate sets inside each scope, and tracks the player excluded. It is `null` when the catalog could not be modeled.
+- `presentation` names that model for an application. `programs` are scopes. `views` are the video alternate sets in the adopted scope. `videos` are the renditions the player can switch among inside the adopted view, each with a `reference` of `{ name, namespace }`. `audio` lists the adopted scope's audio choices. `adoptedVideo` and `adoptedAudio` are the tracks currently selected, or `null`. `hasVideo` is `false` for an audio-only scope and `undefined` until a scope is adopted.
+
+Each program, view, and audio entry includes `selection`, the config that names that choice. A rendition switch uses `videos[].reference` and stays on the current session. `selection` is not applied by this event.
+
+`SELECTION_CHANGED` also includes `selection` (the player's adopted snapshot) and `catalog` (a defensive copy, or `null`).
+
+Until a scope is adopted, `presentation.programs` lists every scope and `views`, `videos`, and `audio` are empty.
+
+```js
+subscriber.on(MOQSubscriberEventTypes.SELECTION_CHANGED, event => {
+  const { presentation } = event.data
+  console.log(presentation.programs, presentation.views, presentation.audio)
+  console.log(presentation.adoptedVideo, presentation.videos)
+})
+```
 
 Managed MessageChannel events include metadata in `event.data`:
 
@@ -2029,8 +3165,22 @@ await subscriber.mute()
 await subscriber.unmute()
 await subscriber.setVolume(0.5)
 await subscriber.resumeAudio() // call from user gesture if audio is blocked
-await subscriber.selectVideoTrack('video')
+await subscriber.selectVideoTrack('video-1')
+await subscriber.selectVideoTrack({ name: 'video-1', namespace: ['live/cam'] })
+await subscriber.selectVideoTrack('video-1', true) // resume automatic quality
+await subscriber.selectPresentation({ renderGroup: 1, videoAltGroup: 2 })
+await subscriber.selectAudioTrack('audio-1')
 ```
+
+`selectVideoTrack` switches rendition inside the view already playing. It does not change program or view. A track in another alternate group is rejected by the player, and that error is returned as-is.
+
+The first argument is a track name, or `{ name, namespace }` when the same name exists in more than one namespace. `namespace` may be the catalog text or the wire field tuple. It is passed through unchanged.
+
+A successful manual switch leaves automatic quality off. The second argument defaults to `false`. Pass `true` to resume automatic quality after the switch.
+
+`selectPresentation` stops the current session and subscribes again with that selection. `renderGroup: null` still selects the unassigned pool. One change runs at a time. Passing the active program, view, or audio choice returns without a restart. Teardown and startup each have a 15 second limit. If startup fails, the new attempt is stopped and the previous `selection` is restored.
+
+`selectAudioTrack` resolves one audio choice in the current presentation and calls `selectPresentation`. The current program and view stay in that choice. A name shared by two audio tracks is rejected. The optional second argument is ignored. An audio-only presentation resolves when audio is accepted and playback is playing. `Subscribe.Start` is still emitted only for a rendered video frame.
 
 You can access internals for advanced integrations:
 
@@ -2043,11 +3193,31 @@ const view = subscriber.getRendererView()
 
 # Statistics
 
+The default endpoint is `EVENT_TRANSPORT` (`MOQ.Stats.Report`). To send the same `STATS_REPORT` JSON over the managed MoQ message channel, set `endpoint` to `DATA_CHANNEL` and enable `messageChannel`:
+
 ```js
-subscriber.monitorStats({
-  interval: 5000
+const { StatsEndpointType } = red5websdk
+
+await subscriber.init({
+  endpoint: 'https://relay.example.com:4433',
+  app: 'live',
+  streamName: 'mystream',
+  messageChannel: { enabled: true },
+  stats: {
+    interval: 5000,
+    endpoint: StatsEndpointType.DATA_CHANNEL
+  }
 })
 ```
+
+```js
+subscriber.monitorStats({
+  interval: 5000,
+  endpoint: StatsEndpointType.EVENT_TRANSPORT
+})
+```
+
+If `DATA_CHANNEL` is requested but `messageChannel.enabled` is not set, the SDK warns once and emits `STATS_REPORT` instead. Reports that arrive before the channel is open are queued until `MOQ.MessageChannel.Open`.
 
 You can also provide `stats` in `init()` options to start monitoring automatically after subscription starts.
 
@@ -2057,13 +3227,13 @@ You can also provide `stats` in `init()` options to start monitoring automatical
 
 Our goal at [Red5](https://red5.net) has always been to give developers the tools they need to deliver real-time streaming without complexity, bottlenecks, or hidden limitations. The Red5 integration with [PubNub](https://www.pubnub.com/) represents a major step toward that mission, combining sub-250 ms video streaming with sub-100 ms data delivery to power chat, reactions, synchronized metadata, and other interactive features at global scale.
 
-The intent of this document is to describe the integration points within our HTML SDK in which you can take advantage of PubNub and its services.
+The intent of this document is to describe the integration points within the Red5 Web SDK in which you can take advantage of PubNub and its services.
 
 > Read more about our thoughts and goals regarding PubNub Integration [here](https://www.red5.net/blog/red5-cloud-integrates-pubnub-to-deliver-interactivity-intelligence-global-scalability-for-real-time-streaming/).
 
 # PubNubClient
 
-The Red5 HTML SDK provides a basic `PubNubClient` to establish a connection to PubNub services for message communication. Its interface is very similar to that of the `WHIPClient` and `WHEPClient` provided in the SDK - both of which also provide easy init parameters and hooks for include PubNub intergation.
+The Red5 Web SDK provides a basic `PubNubClient` to establish a connection to PubNub services for message communication. Its interface is very similar to that of the `WHIPClient` and `WHEPClient` provided in the SDK - both of which also provide easy init parameters and hooks for include PubNub intergation.
 
 This document details the use of `PubNubClient` itself and may provide clearer details of the integration with the publisher and subscriber clients.
 
@@ -2075,12 +3245,14 @@ This document details the use of `PubNubClient` itself and may provide clearer d
 
 # Usage
 
+On a script-tag page, load either the full SDK (`red5-web-sdk.min.js`) or the WHIP/WHEP/HLS build (`red5-web-sdk-webrtc.min.js`). Both attach `window.red5websdk`. From npm, `import { PubNubClient } from 'red5-web-sdk'` or `'red5-web-sdk/webrtc'`.
+
 A `PubNubClient` can be used singularly without taking advantage of the streaming capabilities of the `WHIPClient` and `WHEPClient` clients of the SDK.
 
 ```js
-// import { PubNubClient } from red5pro-webrtc-sdk
+// import { PubNubClient } from red5-web-sdk
 // OR, if loaded from CDN
-const { PubNubClient } = red5prosdk
+const { PubNubClient } = red5websdk
 ...
 const config = {
   publishKey: 'pub-c-XXXX',
@@ -2209,6 +3381,8 @@ This provides a standardized - and _blazingly fast_ - way to establish and playb
 * [PubNub Integration](#pubnub-integration)
 
 # Usage
+
+On a script-tag page, load either the full SDK (`red5-web-sdk.min.js`) or the WHIP/WHEP/HLS build (`red5-web-sdk-webrtc.min.js`). Both attach `window.red5websdk`. From npm, `import { WHEPClient } from 'red5-web-sdk'` or `'red5-web-sdk/webrtc'`.
 
 There are two options to initiate a `WHEPClient`:
 
@@ -2408,7 +3582,7 @@ The configuration used for statistics monitoring has the following structure:
   // If provided, it will POST stats to this endpoint.
   // If undefined or `data-channel`, it will post stats to message transport.
   // If null or `event-transport`, it will only emit status events.
-  endpoint: red5prosdk.StatsEndpointType.DATA_CHANNEL,
+  endpoint: red5websdk.StatsEndpointType.DATA_CHANNEL,
   additionalHeaders: undefined,
   interval: 5000, // Interval to poll stats, in milliseconds.
   include: [], // Empty array allows SDK to be judicious about what stats to include.
@@ -2629,7 +3803,7 @@ The `liveSeek` configuration object has the following signature:
 
 > This section provides information that relate to the release of Stream Manager 2.0 and its integration with WHIP/WHEP clients.
 
-The Stream Manager 2.0 simplifies the proxying of web clients to Origin and Edge nodes. As such, an initialization configuration property called `endpoint` was added to the WebRTC SDK. This `endpoint` value should be the full URL path to the proxy endpoint on the Stream Manager as is used as such:
+The Stream Manager 2.0 simplifies the proxying of web clients to Origin and Edge nodes. As such, an initialization configuration property called `endpoint` was added to the Red5 Web SDK. This `endpoint` value should be the full URL path to the proxy endpoint on the Stream Manager as is used as such:
 
 ## WHIP Proxy
 
@@ -2784,6 +3958,8 @@ This provides a standardized - and _blazingly fast_ - way to establish and broad
 
 # Usage
 
+On a script-tag page, load either the full SDK (`red5-web-sdk.min.js`) or the WHIP/WHEP/HLS build (`red5-web-sdk-webrtc.min.js`). Both attach `window.red5websdk`. From npm, `import { WHIPClient } from 'red5-web-sdk'` or `'red5-web-sdk/webrtc'`.
+
 There are two options to initiate a `WHIPClient`:
 
 1. From instantiation with a full WHIP endpoint URL (if known).
@@ -2883,7 +4059,7 @@ When using the `init()` call of a `WHIPClient` - or, alternatively, when using a
 
 ## Using MediaConstraints and onGetUserMedia
 
-The Red5 HTML SDK will handle the `getUserMedia` requirements internally to set up your Camera and/or Microphone for a broadcast. As such, you can provide the [Media Constraint](https://developer.mozilla.org/en-US/docs/Web/API/MediaStreamConstraints) object to be used on the `init` configuration:
+The Red5 Web SDK will handle the `getUserMedia` requirements internally to set up your Camera and/or Microphone for a broadcast. As such, you can provide the [Media Constraint](https://developer.mozilla.org/en-US/docs/Web/API/MediaStreamConstraints) object to be used on the `init` configuration:
 
 ```js
 const config = {
@@ -2913,7 +4089,7 @@ await publisher.init(config)
 await publisher.publish()
 ```
 
-Internally, the Red5 HTML SDK will use the provided *Media Constraint* to test if the resolutions requested are supported by the browser. If not, it will find the nearest supported lower neighbor based on the originally provided area dimension(s) of the resolutions.
+Internally, the Red5 Web SDK will use the provided *Media Constraint* to test if the resolutions requested are supported by the browser. If not, it will find the nearest supported lower neighbor based on the originally provided area dimension(s) of the resolutions.
 
 > If you would like to bypass the internal determination of resolution, you can use the `onGetUserMedia` override of the configuration properties.
 
@@ -2949,7 +4125,7 @@ await publisher.init(config)
 await publisher.publish()
 ```
 
-The `onGetUserMedia` method - when defined on the configuration provide to a WebRTC-based Publisher - will override the internal call to `getUserMedia` in the Red5 HTML SDK.
+The `onGetUserMedia` method - when defined on the configuration provide to a WebRTC-based Publisher - will override the internal call to `getUserMedia` in the Red5 Web SDK.
 
 You can provide your own logic on how `getUserMedia` is invoked and a [Media Stream](https://developer.mozilla.org/en-US/docs/Web/API/MediaStream) attained by setting the `onGetUserMedia` attribute to a method that conforms to the following guidelines:
 
@@ -2958,7 +4134,7 @@ You can provide your own logic on how `getUserMedia` is invoked and a [Media Str
 * A `MediaStream` object must be provided in the resolve of the `Promise`.
 * The error provided in the reject of the `Promise` is optional, but recommended as a `String`.
 
-Be aware that overriding `onGetUserMedia` you are losing the logic from the Red5 HTML SDK that attempts to pick the optimal resolution supported by your browser. **Use with descretion.**
+Be aware that overriding `onGetUserMedia` you are losing the logic from the Red5 Web SDK that attempts to pick the optimal resolution supported by your browser. **Use with descretion.**
 
 > To read more about `getUserMedia` please read the following document from Mozilla Developer Network: [https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia](https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia)
 
@@ -3102,7 +4278,7 @@ The configuration used for statistics monitoring has the following structure:
   // If provided, it will POST stats to this endpoint.
   // If undefined or `data-channel`, it will post stats to message transport.
   // If null or `event-transport`, it will only emit status events.
-  endpoint: red5prosdk.StatsEndpointType.DATA_CHANNEL,
+  endpoint: red5websdk.StatsEndpointType.DATA_CHANNEL,
   additionalHeaders: undefined,
   interval: 5000, // Interval to poll stats, in milliseconds.
   include: [], // Empty array allows SDK to be judicious about what stats to include.
@@ -3209,7 +4385,7 @@ The following is an example of a statistics metadata that is emitted in a `WebRT
 
 > This section provides information that relate to the release of Stream Manager 2.0 and its integration with WHIP/WHEP clients.
 
-The Stream Manager 2.0 simplifies the proxying of web clients to Origin and Edge nodes. As such, an initialization configuration property called `endpoint` was added to the WebRTC SDK. This `endpoint` value should be the full URL path to the proxy endpoint on the Stream Manager as is used as such:
+The Stream Manager 2.0 simplifies the proxying of web clients to Origin and Edge nodes. As such, an initialization configuration property called `endpoint` was added to the Red5 Web SDK. This `endpoint` value should be the full URL path to the proxy endpoint on the Stream Manager as is used as such:
 
 ## WHIP Proxy
 
@@ -3333,15 +4509,15 @@ The following events are dispatched by the underlying pubnub integration and bub
 
 ### Source: `docs/api/classes/Event.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.6**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.2**](../README.md)
 
 ***
 
-[Red5 Pro WebRTC SDK](../globals.md) / Event
+[Red5 Web SDK](../globals.md) / Event
 
 # Class: Event
 
-Base class for an Event within the Red5 Pro WebRTC SDK.
+Base class for an Event within the Red5 Web SDK.
 
 ## Extended by
 
@@ -3401,11 +4577,11 @@ Get the type of event.
 
 ### Source: `docs/api/classes/EventEmitter.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.6**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.2**](../README.md)
 
 ***
 
-[Red5 Pro WebRTC SDK](../globals.md) / EventEmitter
+[Red5 Web SDK](../globals.md) / EventEmitter
 
 # Class: EventEmitter
 
@@ -3512,11 +4688,11 @@ Dispatch an event to be handled by any assigned callbacks.
 
 ### Source: `docs/api/classes/HLSSubscriber.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.6**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.2**](../README.md)
 
 ***
 
-[Red5 Pro WebRTC SDK](../globals.md) / HLSSubscriber
+[Red5 Web SDK](../globals.md) / HLSSubscriber
 
 # Class: HLSSubscriber
 
@@ -3916,11 +5092,11 @@ Unsubscribe from the HLS stream.
 
 ### Source: `docs/api/classes/LiveSeekClient.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.6**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.2**](../README.md)
 
 ***
 
-[Red5 Pro WebRTC SDK](../globals.md) / LiveSeekClient
+[Red5 Web SDK](../globals.md) / LiveSeekClient
 
 # Class: LiveSeekClient
 
@@ -4784,11 +5960,11 @@ The channel to unsubscribe from.
 
 ### Source: `docs/api/classes/MessageChannel.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.6**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.2**](../README.md)
 
 ***
 
-[Red5 Pro WebRTC SDK](../globals.md) / MessageChannel
+[Red5 Web SDK](../globals.md) / MessageChannel
 
 # Class: MessageChannel
 
@@ -5537,15 +6713,15 @@ The optimization parameters to update.
 
 ### Source: `docs/api/classes/MessageChannelEvent.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.6**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.2**](../README.md)
 
 ***
 
-[Red5 Pro WebRTC SDK](../globals.md) / MessageChannelEvent
+[Red5 Web SDK](../globals.md) / MessageChannelEvent
 
 # Class: MessageChannelEvent
 
-Event for a MessageChannel within the Red5 Pro WebRTC SDK.
+Event for a MessageChannel within the Red5 Web SDK.
 
 ## Extends
 
@@ -5639,15 +6815,15 @@ Get the type of event.
 
 ### Source: `docs/api/classes/MessageTransportStateEvent.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.6**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.2**](../README.md)
 
 ***
 
-[Red5 Pro WebRTC SDK](../globals.md) / MessageTransportStateEvent
+[Red5 Web SDK](../globals.md) / MessageTransportStateEvent
 
 # Class: MessageTransportStateEvent
 
-Event for a Message Transport (e.g., RTCDataChannel) State within the Red5 Pro WebRTC SDK.
+Event for a Message Transport (e.g., RTCDataChannel) State within the Red5 Web SDK.
 
 ## Extends
 
@@ -5741,11 +6917,11 @@ Get the type of event.
 
 ### Source: `docs/api/classes/MOQCatalog.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.6**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.2**](../README.md)
 
 ***
 
-[Red5 Pro WebRTC SDK](../globals.md) / MOQCatalog
+[Red5 Web SDK](../globals.md) / MOQCatalog
 
 # Class: MOQCatalog
 
@@ -5967,11 +7143,11 @@ Dispatch an event to be handled by any assigned callbacks.
 
 ### Source: `docs/api/classes/MOQMessageChannel.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.6**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.2**](../README.md)
 
 ***
 
-[Red5 Pro WebRTC SDK](../globals.md) / MOQMessageChannel
+[Red5 Web SDK](../globals.md) / MOQMessageChannel
 
 # Class: MOQMessageChannel
 
@@ -6222,11 +7398,11 @@ Call before `open()`.
 
 ### Source: `docs/api/classes/MOQPublisher.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.6**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.2**](../README.md)
 
 ***
 
-[Red5 Pro WebRTC SDK](../globals.md) / MOQPublisher
+[Red5 Web SDK](../globals.md) / MOQPublisher
 
 # Class: MOQPublisher
 
@@ -6524,11 +7700,11 @@ Dispatch an event to be handled by any assigned callbacks.
 
 ### Source: `docs/api/classes/MOQSubscriber.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.6**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.2**](../README.md)
 
 ***
 
-[Red5 Pro WebRTC SDK](../globals.md) / MOQSubscriber
+[Red5 Web SDK](../globals.md) / MOQSubscriber
 
 # Class: MOQSubscriber
 
@@ -6630,11 +7806,11 @@ Base class for an Event Emitter.
 
 ### getRendererView()
 
-> **getRendererView**(): `HTMLVideoElement` \| `HTMLCanvasElement` \| `undefined`
+> **getRendererView**(): `HTMLCanvasElement` \| `HTMLVideoElement` \| `undefined`
 
 #### Returns
 
-`HTMLVideoElement` \| `HTMLCanvasElement` \| `undefined`
+`HTMLCanvasElement` \| `HTMLVideoElement` \| `undefined`
 
 ***
 
@@ -6809,6 +7985,9 @@ Call from a click/tap/keydown handler when `MOQ.Audio.Blocked` fires.
 
 > **selectAudioTrack**(`trackName`, `autoQualityResume?`): `Promise`\<`void`\>
 
+Retune to one audio choice in the current presentation.
+The second argument is accepted for compatibility and is not applied.
+
 #### Parameters
 
 ##### trackName
@@ -6825,19 +8004,44 @@ Call from a click/tap/keydown handler when `MOQ.Audio.Blocked` fires.
 
 ***
 
-### selectVideoTrack()
+### selectPresentation()
 
-> **selectVideoTrack**(`trackName`, `autoQualityResume?`): `Promise`\<`void`\>
+> **selectPresentation**(`selection`): `Promise`\<`void`\>
+
+Stop the session and subscribe again with `selection`.
+One change runs at a time. The current program, view, or audio choice
+returns without a restart. A failed start restores the previous selection.
 
 #### Parameters
 
-##### trackName
+##### selection
 
-`string`
+`SelectionConfig`
+
+#### Returns
+
+`Promise`\<`void`\>
+
+***
+
+### selectVideoTrack()
+
+> **selectVideoTrack**(`track`, `autoQualityResume?`): `Promise`\<`void`\>
+
+Switch rendition inside the current view. A different view or program
+is rejected by the player and is not retuned here.
+
+A manual switch leaves automatic quality off. Pass `true` to resume it.
+
+#### Parameters
+
+##### track
+
+`string` \| `TrackRefConfig`
 
 ##### autoQualityResume?
 
-`boolean` = `true`
+`boolean` = `false`
 
 #### Returns
 
@@ -6907,7 +8111,13 @@ Call from a click/tap/keydown handler when `MOQ.Audio.Blocked` fires.
 
 ### subscribe()
 
-> **subscribe**(): `Promise`\<`MOQSubscriber`\>
+> **subscribe**(`onPlayer?`): `Promise`\<`MOQSubscriber`\>
+
+#### Parameters
+
+##### onPlayer?
+
+(`player`) => `void`
 
 #### Returns
 
@@ -6959,7 +8169,7 @@ Dispatch an event to be handled by any assigned callbacks.
 
 ### unsubscribe()
 
-> **unsubscribe**(`_internal?`, `clearCatalog?`): `Promise`\<`MOQSubscriber`\>
+> **unsubscribe**(`_internal?`, `clearCatalog?`, `callerStop?`): `Promise`\<`MOQSubscriber`\>
 
 #### Parameters
 
@@ -6971,21 +8181,25 @@ Dispatch an event to be handled by any assigned callbacks.
 
 `boolean` = `false`
 
+##### callerStop?
+
+`boolean` = `true`
+
 #### Returns
 
 `Promise`\<`MOQSubscriber`\>
 
 ### Source: `docs/api/classes/PlaybackController.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.6**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.2**](../README.md)
 
 ***
 
-[Red5 Pro WebRTC SDK](../globals.md) / PlaybackController
+[Red5 Web SDK](../globals.md) / PlaybackController
 
 # Abstract Class: PlaybackController
 
-Base class for a PlaybackController within the Red5 Pro WebRTC SDK.
+Base class for a PlaybackController within the Red5 Web SDK.
 A PlaybackController is responsible for managing the playback and state of a media element.
 
 ## Extends
@@ -7306,15 +8520,15 @@ Unmute the media element.
 
 ### Source: `docs/api/classes/PlaybackControls.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.6**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.2**](../README.md)
 
 ***
 
-[Red5 Pro WebRTC SDK](../globals.md) / PlaybackControls
+[Red5 Web SDK](../globals.md) / PlaybackControls
 
 # Abstract Class: PlaybackControls
 
-Base class for a PlaybackControls within the Red5 Pro WebRTC SDK.
+Base class for a PlaybackControls within the Red5 Web SDK.
 A PlaybackControls is responsible for managing the playback and state of an HTML media element through UI controls.
 
 ## Extends
@@ -7643,15 +8857,15 @@ The event to trigger.
 
 ### Source: `docs/api/classes/PublisherEvent.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.6**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.2**](../README.md)
 
 ***
 
-[Red5 Pro WebRTC SDK](../globals.md) / PublisherEvent
+[Red5 Web SDK](../globals.md) / PublisherEvent
 
 # Class: PublisherEvent
 
-Event for a Publisher within the Red5 Pro WebRTC SDK.
+Event for a Publisher within the Red5 Web SDK.
 
 ## Extends
 
@@ -7745,11 +8959,11 @@ Get the type of event.
 
 ### Source: `docs/api/classes/PubNubClient.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.6**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.2**](../README.md)
 
 ***
 
-[Red5 Pro WebRTC SDK](../globals.md) / PubNubClient
+[Red5 Web SDK](../globals.md) / PubNubClient
 
 # Class: PubNubClient
 
@@ -7965,15 +9179,15 @@ Dispatch an event to be handled by any assigned callbacks.
 
 ### Source: `docs/api/classes/PubNubEvent.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.6**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.2**](../README.md)
 
 ***
 
-[Red5 Pro WebRTC SDK](../globals.md) / PubNubEvent
+[Red5 Web SDK](../globals.md) / PubNubEvent
 
 # Class: PubNubEvent
 
-Event for a PubNub within the Red5 Pro WebRTC SDK.
+Event for a PubNub within the Red5 Web SDK.
 
 ## Extends
 
@@ -8067,15 +9281,15 @@ Get the type of event.
 
 ### Source: `docs/api/classes/SourceHandler.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.6**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.2**](../README.md)
 
 ***
 
-[Red5 Pro WebRTC SDK](../globals.md) / SourceHandler
+[Red5 Web SDK](../globals.md) / SourceHandler
 
 # Abstract Class: SourceHandler
 
-Base class for a SourceHandler within the Red5 Pro WebRTC SDK.
+Base class for a SourceHandler within the Red5 Web SDK.
 A SourceHandler is responsible for managing the MediaStream source of a media element.
 
 ## Extends
@@ -8502,11 +9716,11 @@ Unpublish the media element.
 
 ### Source: `docs/api/classes/SourceHandlerImpl.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.6**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.2**](../README.md)
 
 ***
 
-[Red5 Pro WebRTC SDK](../globals.md) / SourceHandlerImpl
+[Red5 Web SDK](../globals.md) / SourceHandlerImpl
 
 # Class: SourceHandlerImpl
 
@@ -8916,15 +10130,15 @@ Unpublish the media element.
 
 ### Source: `docs/api/classes/SubscriberEvent.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.6**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.2**](../README.md)
 
 ***
 
-[Red5 Pro WebRTC SDK](../globals.md) / SubscriberEvent
+[Red5 Web SDK](../globals.md) / SubscriberEvent
 
 # Class: SubscriberEvent
 
-Event for a Subscriber within the Red5 Pro WebRTC SDK.
+Event for a Subscriber within the Red5 Web SDK.
 
 ## Extends
 
@@ -9018,11 +10232,11 @@ Get the type of event.
 
 ### Source: `docs/api/classes/WHEPClient.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.6**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.2**](../README.md)
 
 ***
 
-[Red5 Pro WebRTC SDK](../globals.md) / WHEPClient
+[Red5 Web SDK](../globals.md) / WHEPClient
 
 # Class: WHEPClient
 
@@ -9785,11 +10999,11 @@ The channel to unsubscribe from.
 
 ### Source: `docs/api/classes/WHIPClient.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.6**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.2**](../README.md)
 
 ***
 
-[Red5 Pro WebRTC SDK](../globals.md) / WHIPClient
+[Red5 Web SDK](../globals.md) / WHIPClient
 
 # Class: WHIPClient
 
@@ -10391,11 +11605,11 @@ The optimization parameters to update.
 
 ### Source: `docs/api/enumerations/MessageChannelEventTypes.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.6**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.2**](../README.md)
 
 ***
 
-[Red5 Pro WebRTC SDK](../globals.md) / MessageChannelEventTypes
+[Red5 Web SDK](../globals.md) / MessageChannelEventTypes
 
 # Enumeration: MessageChannelEventTypes
 
@@ -10437,11 +11651,11 @@ The optimization parameters to update.
 
 ### Source: `docs/api/enumerations/MessageTransportStateEventTypes.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.6**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.2**](../README.md)
 
 ***
 
-[Red5 Pro WebRTC SDK](../globals.md) / MessageTransportStateEventTypes
+[Red5 Web SDK](../globals.md) / MessageTransportStateEventTypes
 
 # Enumeration: MessageTransportStateEventTypes
 
@@ -10469,13 +11683,279 @@ The optimization parameters to update.
 
 > **OPEN**: `"MessageTransport.Open"`
 
-### Source: `docs/api/enumerations/PlaybackAudioEncoder.md`
+### Source: `docs/api/enumerations/MOQSubscriberEventTypes.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.6**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.2**](../README.md)
 
 ***
 
-[Red5 Pro WebRTC SDK](../globals.md) / PlaybackAudioEncoder
+[Red5 Web SDK](../globals.md) / MOQSubscriberEventTypes
+
+# Enumeration: MOQSubscriberEventTypes
+
+## Enumeration Members
+
+### AUDIO\_BLOCKED
+
+> **AUDIO\_BLOCKED**: `"MOQ.Audio.Blocked"`
+
+***
+
+### AUDIO\_UNBLOCKED
+
+> **AUDIO\_UNBLOCKED**: `"MOQ.Audio.Unblocked"`
+
+***
+
+### CATALOG\_RECEIVED
+
+> **CATALOG\_RECEIVED**: `"MOQ.Catalog.Received"`
+
+***
+
+### CATALOG\_UPDATED
+
+> **CATALOG\_UPDATED**: `"MOQ.Catalog.Updated"`
+
+***
+
+### CATCH\_UP\_CHANGED
+
+> **CATCH\_UP\_CHANGED**: `"MOQ.CatchUp.Changed"`
+
+***
+
+### ERROR
+
+> **ERROR**: `"MOQ.Error"`
+
+***
+
+### EVENT\_TIMELINE
+
+> **EVENT\_TIMELINE**: `"MOQ.Event.Timeline"`
+
+***
+
+### FIRST\_FRAME
+
+> **FIRST\_FRAME**: `"MOQ.FirstFrame"`
+
+***
+
+### GAP\_DETECTED
+
+> **GAP\_DETECTED**: `"MOQ.Gap.Detected"`
+
+***
+
+### GAP\_JUMP
+
+> **GAP\_JUMP**: `"MOQ.Gap.Jump"`
+
+***
+
+### KEYFRAME\_WAITING
+
+> **KEYFRAME\_WAITING**: `"MOQ.Keyframe.Waiting"`
+
+***
+
+### MEDIA\_OBJECT
+
+> **MEDIA\_OBJECT**: `"MOQ.Media.Object"`
+
+***
+
+### MESSAGE\_CHANNEL\_CLOSE
+
+> **MESSAGE\_CHANNEL\_CLOSE**: `"MOQ.MessageChannel.Close"`
+
+***
+
+### MESSAGE\_CHANNEL\_ERROR
+
+> **MESSAGE\_CHANNEL\_ERROR**: `"MOQ.MessageChannel.Error"`
+
+***
+
+### MESSAGE\_CHANNEL\_FAIL
+
+> **MESSAGE\_CHANNEL\_FAIL**: `"MOQ.MessageChannel.Fail"`
+
+***
+
+### MESSAGE\_CHANNEL\_OPEN
+
+> **MESSAGE\_CHANNEL\_OPEN**: `"MOQ.MessageChannel.Open"`
+
+***
+
+### MESSAGE\_CHANNEL\_RECEIVE
+
+> **MESSAGE\_CHANNEL\_RECEIVE**: `"MOQ.MessageChannel.Receive"`
+
+***
+
+### MESSAGE\_CHANNEL\_SEND
+
+> **MESSAGE\_CHANNEL\_SEND**: `"MOQ.MessageChannel.Send"`
+
+***
+
+### NAMESPACE\_DISCOVERED
+
+> **NAMESPACE\_DISCOVERED**: `"MOQ.Namespace.Discovered"`
+
+***
+
+### NAMESPACE\_DONE
+
+> **NAMESPACE\_DONE**: `"MOQ.Namespace.Done"`
+
+***
+
+### QUALITY\_SWITCHED
+
+> **QUALITY\_SWITCHED**: `"MOQ.Quality.Switched"`
+
+***
+
+### RECOVERY\_ACTION
+
+> **RECOVERY\_ACTION**: `"MOQ.Recovery.Action"`
+
+***
+
+### SAP\_EVENT
+
+> **SAP\_EVENT**: `"MOQ.SAP.Event"`
+
+***
+
+### SELECTION\_CHANGED
+
+> **SELECTION\_CHANGED**: `"MOQ.Selection.Changed"`
+
+Adopted program, view, rendition, or audio choice changed.
+
+***
+
+### SESSION\_CLOSED
+
+> **SESSION\_CLOSED**: `"MOQ.Session.Closed"`
+
+***
+
+### SESSION\_CONNECTING
+
+> **SESSION\_CONNECTING**: `"MOQ.Session.Connecting"`
+
+***
+
+### SESSION\_ERROR
+
+> **SESSION\_ERROR**: `"MOQ.Session.Error"`
+
+***
+
+### SESSION\_ESTABLISHED
+
+> **SESSION\_ESTABLISHED**: `"MOQ.Session.Established"`
+
+***
+
+### SESSION\_GOAWAY
+
+> **SESSION\_GOAWAY**: `"MOQ.Session.GoAway"`
+
+***
+
+### SKIP\_FORWARD
+
+> **SKIP\_FORWARD**: `"MOQ.Skip.Forward"`
+
+***
+
+### SOURCE\_HANDLER\_ACTIVATED
+
+> **SOURCE\_HANDLER\_ACTIVATED**: `"MOQ.SourceHandler.Activated"`
+
+Fired when this handler's first PlayerConfig factory runs (path selected).
+
+***
+
+### STALL
+
+> **STALL**: `"MOQ.Stall"`
+
+***
+
+### STALL\_RECOVERED
+
+> **STALL\_RECOVERED**: `"MOQ.Stall.Recovered"`
+
+***
+
+### STATE\_CHANGED
+
+> **STATE\_CHANGED**: `"MOQ.State.Changed"`
+
+***
+
+### STATS\_REPORT
+
+> **STATS\_REPORT**: `"MOQ.Stats.Report"`
+
+***
+
+### SUBSCRIBE\_UNPUBLISHED
+
+> **SUBSCRIBE\_UNPUBLISHED**: `"MOQ.Subscribe.Unpublished"`
+
+***
+
+### SYNC\_DRIFT
+
+> **SYNC\_DRIFT**: `"MOQ.Sync.Drift"`
+
+***
+
+### SYNC\_SKEW
+
+> **SYNC\_SKEW**: `"MOQ.Sync.Skew"`
+
+***
+
+### TRACK\_ENDED
+
+> **TRACK\_ENDED**: `"MOQ.Track.Ended"`
+
+***
+
+### TRACK\_SUBSCRIBE
+
+> **TRACK\_SUBSCRIBE**: `"MOQ.Track.Subscribe"`
+
+***
+
+### TRACK\_SUBSCRIBE\_FAILED
+
+> **TRACK\_SUBSCRIBE\_FAILED**: `"MOQ.Track.Subscribe.Failed"`
+
+***
+
+### TRACK\_UNSUBSCRIBE
+
+> **TRACK\_UNSUBSCRIBE**: `"MOQ.Track.Unsubscribe"`
+
+### Source: `docs/api/enumerations/PlaybackAudioEncoder.md`
+
+[**Red5 Web SDK v17.0.0-beta.2**](../README.md)
+
+***
+
+[Red5 Web SDK](../globals.md) / PlaybackAudioEncoder
 
 # Enumeration: PlaybackAudioEncoder
 
@@ -10493,11 +11973,11 @@ The optimization parameters to update.
 
 ### Source: `docs/api/enumerations/PlaybackState.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.6**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.2**](../README.md)
 
 ***
 
-[Red5 Pro WebRTC SDK](../globals.md) / PlaybackState
+[Red5 Web SDK](../globals.md) / PlaybackState
 
 # Enumeration: PlaybackState
 
@@ -10533,11 +12013,11 @@ The optimization parameters to update.
 
 ### Source: `docs/api/enumerations/PlaybackVideoEncoder.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.6**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.2**](../README.md)
 
 ***
 
-[Red5 Pro WebRTC SDK](../globals.md) / PlaybackVideoEncoder
+[Red5 Web SDK](../globals.md) / PlaybackVideoEncoder
 
 # Enumeration: PlaybackVideoEncoder
 
@@ -10579,11 +12059,11 @@ The optimization parameters to update.
 
 ### Source: `docs/api/enumerations/PublishAudioEncoder.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.6**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.2**](../README.md)
 
 ***
 
-[Red5 Pro WebRTC SDK](../globals.md) / PublishAudioEncoder
+[Red5 Web SDK](../globals.md) / PublishAudioEncoder
 
 # Enumeration: PublishAudioEncoder
 
@@ -10597,11 +12077,11 @@ Enumeration of Audio Encoder types to request for Broadcast.
 
 ### Source: `docs/api/enumerations/PublisherEventTypes.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.6**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.2**](../README.md)
 
 ***
 
-[Red5 Pro WebRTC SDK](../globals.md) / PublisherEventTypes
+[Red5 Web SDK](../globals.md) / PublisherEventTypes
 
 # Enumeration: PublisherEventTypes
 
@@ -10721,11 +12201,11 @@ Enumeration of Audio Encoder types to request for Broadcast.
 
 ### Source: `docs/api/enumerations/PublishVideoEncoder.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.6**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.2**](../README.md)
 
 ***
 
-[Red5 Pro WebRTC SDK](../globals.md) / PublishVideoEncoder
+[Red5 Web SDK](../globals.md) / PublishVideoEncoder
 
 # Enumeration: PublishVideoEncoder
 
@@ -10775,11 +12255,11 @@ Enumeration of Video Encoder types to request for Broadcast.
 
 ### Source: `docs/api/enumerations/PubNubEventTypes.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.6**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.2**](../README.md)
 
 ***
 
-[Red5 Pro WebRTC SDK](../globals.md) / PubNubEventTypes
+[Red5 Web SDK](../globals.md) / PubNubEventTypes
 
 # Enumeration: PubNubEventTypes
 
@@ -10863,11 +12343,11 @@ Enumeration of Video Encoder types to request for Broadcast.
 
 ### Source: `docs/api/enumerations/RTCPublisherEventTypes.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.6**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.2**](../README.md)
 
 ***
 
-[Red5 Pro WebRTC SDK](../globals.md) / RTCPublisherEventTypes
+[Red5 Web SDK](../globals.md) / RTCPublisherEventTypes
 
 # Enumeration: RTCPublisherEventTypes
 
@@ -10999,11 +12479,11 @@ Enumeration of Video Encoder types to request for Broadcast.
 
 ### Source: `docs/api/enumerations/RTCSubscriberEventTypes.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.6**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.2**](../README.md)
 
 ***
 
-[Red5 Pro WebRTC SDK](../globals.md) / RTCSubscriberEventTypes
+[Red5 Web SDK](../globals.md) / RTCSubscriberEventTypes
 
 # Enumeration: RTCSubscriberEventTypes
 
@@ -11135,11 +12615,11 @@ Enumeration of Video Encoder types to request for Broadcast.
 
 ### Source: `docs/api/enumerations/StatsEndpointType.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.6**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.2**](../README.md)
 
 ***
 
-[Red5 Pro WebRTC SDK](../globals.md) / StatsEndpointType
+[Red5 Web SDK](../globals.md) / StatsEndpointType
 
 # Enumeration: StatsEndpointType
 
@@ -11163,11 +12643,11 @@ Enumeration of Video Encoder types to request for Broadcast.
 
 ### Source: `docs/api/enumerations/SubscriberEventTypes.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.6**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.2**](../README.md)
 
 ***
 
-[Red5 Pro WebRTC SDK](../globals.md) / SubscriberEventTypes
+[Red5 Web SDK](../globals.md) / SubscriberEventTypes
 
 # Enumeration: SubscriberEventTypes
 
@@ -11335,11 +12815,11 @@ Enumeration of Video Encoder types to request for Broadcast.
 
 ### Source: `docs/api/enumerations/WebRTCConnectionEventTypes.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.6**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.2**](../README.md)
 
 ***
 
-[Red5 Pro WebRTC SDK](../globals.md) / WebRTCConnectionEventTypes
+[Red5 Web SDK](../globals.md) / WebRTCConnectionEventTypes
 
 # Enumeration: WebRTCConnectionEventTypes
 
@@ -11369,11 +12849,11 @@ Enumeration of Video Encoder types to request for Broadcast.
 
 ### Source: `docs/api/functions/getRecordedLogs.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.6**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.2**](../README.md)
 
 ***
 
-[Red5 Pro WebRTC SDK](../globals.md) / getRecordedLogs
+[Red5 Web SDK](../globals.md) / getRecordedLogs
 
 # Function: getRecordedLogs()
 
@@ -11389,11 +12869,11 @@ Array of recorded log messages.
 
 ### Source: `docs/api/functions/getVersion.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.6**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.2**](../README.md)
 
 ***
 
-[Red5 Pro WebRTC SDK](../globals.md) / getVersion
+[Red5 Web SDK](../globals.md) / getVersion
 
 # Function: getVersion()
 
@@ -11407,11 +12887,11 @@ Get the version of the SDK.
 
 ### Source: `docs/api/functions/setLogLevel.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.6**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.2**](../README.md)
 
 ***
 
-[Red5 Pro WebRTC SDK](../globals.md) / setLogLevel
+[Red5 Web SDK](../globals.md) / setLogLevel
 
 # Function: setLogLevel()
 
@@ -11433,18 +12913,19 @@ Get the version of the SDK.
 
 ### Source: `docs/api/globals.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.6**](README.md)
+[**Red5 Web SDK v17.0.0-beta.2**](README.md)
 
 ***
 
-# Red5 Pro WebRTC SDK v16.4.0-beta.6
+# Red5 Web SDK v17.0.0-beta.2
 
-Red5 Pro WebRTC SDK
+Red5 Web SDK
 
 ## Enumerations
 
 - [MessageChannelEventTypes](enumerations/MessageChannelEventTypes.md)
 - [MessageTransportStateEventTypes](enumerations/MessageTransportStateEventTypes.md)
+- [MOQSubscriberEventTypes](enumerations/MOQSubscriberEventTypes.md)
 - [PlaybackAudioEncoder](enumerations/PlaybackAudioEncoder.md)
 - [PlaybackState](enumerations/PlaybackState.md)
 - [PlaybackVideoEncoder](enumerations/PlaybackVideoEncoder.md)
@@ -11485,6 +12966,9 @@ Red5 Pro WebRTC SDK
 ## Interfaces
 
 - [EventEmitterInterface](interfaces/EventEmitterInterface.md)
+- [MOQPresentation](interfaces/MOQPresentation.md)
+- [MOQPresentationChoice](interfaces/MOQPresentationChoice.md)
+- [MOQPresentationVideo](interfaces/MOQPresentationVideo.md)
 
 ## Type Aliases
 
@@ -11531,11 +13015,11 @@ Red5 Pro WebRTC SDK
 
 ### Source: `docs/api/interfaces/EventEmitterInterface.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.6**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.2**](../README.md)
 
 ***
 
-[Red5 Pro WebRTC SDK](../globals.md) / EventEmitterInterface
+[Red5 Web SDK](../globals.md) / EventEmitterInterface
 
 # Interface: EventEmitterInterface
 
@@ -11603,9 +13087,140 @@ Dispatch an event to be handled by any assigned callbacks.
 
 `void`
 
+### Source: `docs/api/interfaces/MOQPresentation.md`
+
+[**Red5 Web SDK v17.0.0-beta.2**](../README.md)
+
+***
+
+[Red5 Web SDK](../globals.md) / MOQPresentation
+
+# Interface: MOQPresentation
+
+Programs, views, renditions, and audio languages derived from the player model.
+Grouping stays in the player; this only names what that model already offers.
+
+## Properties
+
+### adoptedAudio
+
+> `readonly` **adoptedAudio**: `SelectableTrack` \| `null`
+
+***
+
+### adoptedVideo
+
+> `readonly` **adoptedVideo**: `SelectableTrack` \| `null`
+
+***
+
+### audio
+
+> `readonly` **audio**: readonly [`MOQPresentationChoice`](MOQPresentationChoice.md)[]
+
+***
+
+### hasVideo
+
+> `readonly` **hasVideo**: `boolean` \| `undefined`
+
+`false` when the adopted scope offers no video.
+`undefined` when no scope is adopted yet.
+
+***
+
+### programs
+
+> `readonly` **programs**: readonly [`MOQPresentationChoice`](MOQPresentationChoice.md)[]
+
+***
+
+### videos
+
+> `readonly` **videos**: readonly [`MOQPresentationVideo`](MOQPresentationVideo.md)[]
+
+***
+
+### views
+
+> `readonly` **views**: readonly [`MOQPresentationChoice`](MOQPresentationChoice.md)[]
+
+### Source: `docs/api/interfaces/MOQPresentationChoice.md`
+
+[**Red5 Web SDK v17.0.0-beta.2**](../README.md)
+
+***
+
+[Red5 Web SDK](../globals.md) / MOQPresentationChoice
+
+# Interface: MOQPresentationChoice
+
+One program, view, or audio language the catalog model offers.
+`selection` names that choice. Applying it is a later retune, not a rendition switch.
+
+## Properties
+
+### active
+
+> `readonly` **active**: `boolean`
+
+***
+
+### key
+
+> `readonly` **key**: `string`
+
+***
+
+### label
+
+> `readonly` **label**: `string`
+
+***
+
+### language?
+
+> `readonly` `optional` **language?**: `string`
+
+***
+
+### selection
+
+> `readonly` **selection**: `SelectionConfig`
+
+### Source: `docs/api/interfaces/MOQPresentationVideo.md`
+
+[**Red5 Web SDK v17.0.0-beta.2**](../README.md)
+
+***
+
+[Red5 Web SDK](../globals.md) / MOQPresentationVideo
+
+# Interface: MOQPresentationVideo
+
+A rendition inside the adopted view. `reference` is the in-session video identity.
+
+## Properties
+
+### active
+
+> `readonly` **active**: `boolean`
+
+***
+
+### reference
+
+> `readonly` **reference**: `TrackRefConfig`
+
+***
+
+### track
+
+> `readonly` **track**: `SelectableTrack`
+
 ### Source: `docs/api/README.md`
 
-**Red5 Pro WebRTC SDK v16.4.0-beta.6**
+**Red5 Web SDK v17.0.0-beta.2**
 
 ***
 
@@ -11626,9 +13241,9 @@ Dispatch an event to be handled by any assigned callbacks.
 
 ---
 
-# Red5 HTML SDK
+# Red5 Web SDK
 
-> The **Red5 HTML SDK** allows you to integrate live streaming video into your desktop and mobile browser.
+> The **Red5 Web SDK** allows you to integrate live streaming video into your desktop and mobile browser.
 
 * [Important Notices](#important-notices)
 * [Installation](#installation)
@@ -11637,7 +13252,25 @@ Dispatch an event to be handled by any assigned callbacks.
 
 # Important Notices
 
-With the `15.0.0` release of the **Red5 HTML SDK**, we have complete overhaul of its development and focus. We have decided to focus solely on **WISH** (WebRTC Ingest Signaling over HTTPS) and dropped WebSocket support previously used for signaling phase.
+## 17.0.0 Release
+
+The `17.0.0` release publishes the browser SDK as **Red5 Web SDK** (`red5-web-sdk`). The previous npm package **`red5pro-webrtc-sdk` is deprecated**; install and import `red5-web-sdk` instead. CDN filenames change from `red5pro-sdk*.js` to `red5-web-sdk*.js`. Script tags attach `window.red5websdk`. On `17.x`, `window.red5prosdk` is the same object so existing IIFEs keep working. See the [Migration Guide](_media/MIGRATION_GUIDE.md#migrating-from-16x-to-1700) for the full rename.
+
+The product is no longer WebRTC-only. In addition to WHIP/WHEP, HLS, and Live Seek, the SDK ships first-class **Media over QUIC (MOQ)** clients: `MOQPublisher`, `MOQSubscriber`, `MOQCatalog`, and `MOQMessageChannel`.
+
+`17.0.0` also ships **targeted bundles** next to the monolith. All three use the same `red5websdk` global. Load **one** script per page.
+
+| Build | Script / npm | Clients |
+| :--- | :--- | :--- |
+| Full (monolith) | `red5-web-sdk.min.js` / `red5-web-sdk` | WHIP, WHEP, HLS, Live Seek, PubNub, MOQ |
+| WHIP/WHEP/HLS | `red5-web-sdk-webrtc.min.js` / `red5-web-sdk/webrtc` | WHIP, WHEP, HLS, Live Seek, PubNub |
+| MOQ | `red5-web-sdk-moq.min.js` / `red5-web-sdk/moq` | MOQ publisher, subscriber, catalog, message channel |
+
+Client APIs, event names, default `mediaElementId` values, and `red5pro-media.css` class names are unchanged.
+
+## 15.0.0 Release
+
+With the `15.0.0` release of the **Red5 Web SDK**, we have complete overhaul of its development and focus. We have decided to focus solely on **WISH** (WebRTC Ingest Signaling over HTTPS) and dropped WebSocket support previously used for signaling phase.
 
 As such, the publishing and subscribing logic within the SDK are provided from the `WHIPClient` and `WHEPClient`, respectively.
 
@@ -11645,36 +13278,60 @@ Not only does this free up resources consumed by WebSockets on the Red5 Server d
 
 # Installation
 
+The default build is the **full** SDK (WHIP/WHEP/HLS and MOQ). If you only need one protocol, load the matching focused file instead. All three attach `window.red5websdk` (and alias `window.red5prosdk` on `17.x`). Load **one** script per page; a second file overwrites the global.
+
 ## As Script Dependency in HTML page
 
-```html
-<script src="https://cdn.jsdelivr.net/npm/red5pro-webrtc-sdk@latest/red5pro-sdk.min.js"></script>
-```
-
-... Or if you know the version:
+Full SDK:
 
 ```html
-<script src=https://cdn.jsdelivr.net/npm/red5pro-webrtc-sdk@15.0.0/red5pro-sdk.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/red5-web-sdk@latest/red5-web-sdk.min.js"></script>
 ```
+
+WHIP/WHEP/HLS only:
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/red5-web-sdk@latest/red5-web-sdk-webrtc.min.js"></script>
+```
+
+MOQ only:
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/red5-web-sdk@latest/red5-web-sdk-moq.min.js"></script>
+```
+
+... Or pin a version:
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/red5-web-sdk@15.0.0/red5-web-sdk.min.js"></script>
+```
+
+Playback UI styles ship in the release drop as `red5pro-media.css` (WHIP/WHEP/HLS) and `red5-moq-media.css` (MOQ).
 
 ## Using `npm` or `yarn` for you browser-based projects
 
 ```sh
-npm install --save red5pro-webrtc-sdk
+npm install --save red5-web-sdk
 ```
 
 ```sh
-yarn install red5pro-webrtc-sdk
+yarn install red5-web-sdk
+```
+
+```js
+import { WHIPClient, WHEPClient } from 'red5-web-sdk'
+import { WHIPClient } from 'red5-web-sdk/webrtc'
+import { MOQPublisher } from 'red5-web-sdk/moq'
 ```
 
 # Quick Start
 
-All members exposed on the otherwise global `window.red5prosdk` if loading as a script on an HTML page are importable from the `red5pro-webrtc-sdk` module:
+All members exposed on the otherwise global `window.red5websdk` if loading as a script on an HTML page are importable from the `red5-web-sdk` module:
 
 _index.js_
 
 ```js
-import { WHIPClient, WHEPClient } from 'red5pro-webrtc-sdk'
+import { WHIPClient, WHEPClient } from 'red5-web-sdk'
 ```
 
 ## Quick Start - Standalone Server Deployment
@@ -11698,14 +13355,14 @@ You can sign up and download the Red5 Server to manage your own deployment at [h
     <div>
       <video id="red5pro-subscriber" width="640" height="480" controls autoplay playsinline></video>
     </div>
-    <!-- Red5 HTML SDK -->
-    <script src="https://cdn.jsdelivr.net/npm/red5pro-webrtc-sdk@latest/red5pro-sdk.min.js"></script>
+    <!-- Red5 Web SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/red5-web-sdk@latest/red5-web-sdk.min.js"></script>
     <!-- Create Pub/Sub -->
     <script>
-      ((red5prosdk) => {
+      ((red5websdk) => {
         'use strict'
 
-        const { WHIPClient, WHEPClient, PublisherEventTypes } = red5prosdk
+        const { WHIPClient, WHEPClient, PublisherEventTypes } = red5websdk
 
         const publisher = new WHIPClient()
         const subscriber = new WHEPClient()
@@ -11738,7 +13395,7 @@ You can sign up and download the Red5 Server to manage your own deployment at [h
         // Start Publisher first ->
         publish()
 
-      }(window.red5prosdk))
+      }(window.red5websdk))
     </script>
   </body>
 </html>
@@ -11769,19 +13426,19 @@ The Red5 Cloud deployment utilizes a Stream Manager for autoscaling. With the St
     <div>
       <video id="red5pro-subscriber" width="640" height="480" controls autoplay playsinline></video>
     </div>
-    <!-- Red5 HTML SDK -->
-    <script src="https://cdn.jsdelivr.net/npm/red5pro-webrtc-sdk@latest/red5pro-sdk.min.js"></script>
+    <!-- Red5 Web SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/red5-web-sdk@latest/red5-web-sdk.min.js"></script>
     <!-- Create Pub/Sub -->
     <script>
       <script>
-      ((red5prosdk) => {
+      ((red5websdk) => {
         'use strict'
 
         const host = 'my-deployment.cloud.red5.net'
         const nodeGroup = 'my-node-group'
         const streamName = 'my-stream-name'
 
-        const { WHIPClient, WHEPClient, PublisherEventTypes } = red5prosdk
+        const { WHIPClient, WHEPClient, PublisherEventTypes } = red5websdk
         const publisher = new WHIPClient()
         const subscriber = new WHEPClient()
 
@@ -11821,7 +13478,7 @@ The Red5 Cloud deployment utilizes a Stream Manager for autoscaling. With the St
         // Start Publisher first ->
         publish()
 
-      }(window.red5prosdk))
+      }(window.red5websdk))
     </script>
   </body>
 </html>
@@ -11843,11 +13500,11 @@ The initialization configurations and relevant APIs available for each client ca
 
 ### Source: `docs/api/type-aliases/BandwidthConfig.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.6**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.2**](../README.md)
 
 ***
 
-[Red5 Pro WebRTC SDK](../globals.md) / BandwidthConfig
+[Red5 Web SDK](../globals.md) / BandwidthConfig
 
 # Type Alias: BandwidthConfig
 
@@ -11867,11 +13524,11 @@ The initialization configurations and relevant APIs available for each client ca
 
 ### Source: `docs/api/type-aliases/HLSSubscriberConfigType.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.6**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.2**](../README.md)
 
 ***
 
-[Red5 Pro WebRTC SDK](../globals.md) / HLSSubscriberConfigType
+[Red5 Web SDK](../globals.md) / HLSSubscriberConfigType
 
 # Type Alias: HLSSubscriberConfigType
 
@@ -11937,11 +13594,11 @@ The initialization configurations and relevant APIs available for each client ca
 
 ### Source: `docs/api/type-aliases/LiveSeekConfigType.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.6**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.2**](../README.md)
 
 ***
 
-[Red5 Pro WebRTC SDK](../globals.md) / LiveSeekConfigType
+[Red5 Web SDK](../globals.md) / LiveSeekConfigType
 
 # Type Alias: LiveSeekConfigType
 
@@ -11955,11 +13612,11 @@ The initialization configurations and relevant APIs available for each client ca
 
 ### Source: `docs/api/type-aliases/LiveSeekOptions.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.6**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.2**](../README.md)
 
 ***
 
-[Red5 Pro WebRTC SDK](../globals.md) / LiveSeekOptions
+[Red5 Web SDK](../globals.md) / LiveSeekOptions
 
 # Type Alias: LiveSeekOptions
 
@@ -12003,11 +13660,11 @@ The initialization configurations and relevant APIs available for each client ca
 
 ### Source: `docs/api/type-aliases/MediaConstraintRange.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.6**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.2**](../README.md)
 
 ***
 
-[Red5 Pro WebRTC SDK](../globals.md) / MediaConstraintRange
+[Red5 Web SDK](../globals.md) / MediaConstraintRange
 
 # Type Alias: MediaConstraintRange
 
@@ -12039,11 +13696,11 @@ The initialization configurations and relevant APIs available for each client ca
 
 ### Source: `docs/api/type-aliases/MediaConstraints.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.6**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.2**](../README.md)
 
 ***
 
-[Red5 Pro WebRTC SDK](../globals.md) / MediaConstraints
+[Red5 Web SDK](../globals.md) / MediaConstraints
 
 # Type Alias: MediaConstraints
 
@@ -12063,11 +13720,11 @@ The initialization configurations and relevant APIs available for each client ca
 
 ### Source: `docs/api/type-aliases/MOQCatalogConfigType.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.6**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.2**](../README.md)
 
 ***
 
-[Red5 Pro WebRTC SDK](../globals.md) / MOQCatalogConfigType
+[Red5 Web SDK](../globals.md) / MOQCatalogConfigType
 
 # Type Alias: MOQCatalogConfigType
 
@@ -12141,11 +13798,11 @@ The initialization configurations and relevant APIs available for each client ca
 
 ### Source: `docs/api/type-aliases/MOQDataChannelConfiguration.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.6**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.2**](../README.md)
 
 ***
 
-[Red5 Pro WebRTC SDK](../globals.md) / MOQDataChannelConfiguration
+[Red5 Web SDK](../globals.md) / MOQDataChannelConfiguration
 
 # Type Alias: MOQDataChannelConfiguration
 
@@ -12185,11 +13842,11 @@ Prefer datagram send path for outbound messages.
 
 ### Source: `docs/api/type-aliases/MOQMessageChannelConfigType.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.6**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.2**](../README.md)
 
 ***
 
-[Red5 Pro WebRTC SDK](../globals.md) / MOQMessageChannelConfigType
+[Red5 Web SDK](../globals.md) / MOQMessageChannelConfigType
 
 # Type Alias: MOQMessageChannelConfigType
 
@@ -12197,11 +13854,11 @@ Prefer datagram send path for outbound messages.
 
 ### Source: `docs/api/type-aliases/MOQPublisherConfigType.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.6**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.2**](../README.md)
 
 ***
 
-[Red5 Pro WebRTC SDK](../globals.md) / MOQPublisherConfigType
+[Red5 Web SDK](../globals.md) / MOQPublisherConfigType
 
 # Type Alias: MOQPublisherConfigType
 
@@ -12378,11 +14035,11 @@ lower rungs are generated via OffscreenCanvas + track generators.
 
 ### Source: `docs/api/type-aliases/MOQSubscriberConfigType.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.6**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.2**](../README.md)
 
 ***
 
-[Red5 Pro WebRTC SDK](../globals.md) / MOQSubscriberConfigType
+[Red5 Web SDK](../globals.md) / MOQSubscriberConfigType
 
 # Type Alias: MOQSubscriberConfigType
 
@@ -12393,6 +14050,15 @@ lower rungs are generated via OffscreenCanvas + track generators.
 ### app
 
 > **app**: `string`
+
+***
+
+### audioLanguages?
+
+> `optional` **audioLanguages?**: readonly `string`[]
+
+Ordered basic language ranges for automatic audio choice in the chosen scope.
+Omitted: catalog order.
 
 ***
 
@@ -12558,6 +14224,15 @@ Optional internally managed data messaging channel.
 
 ***
 
+### selection?
+
+> `optional` **selection?**: `SelectionConfig`
+
+Tune-in presentation. Omitted fields use the player default.
+`renderGroup: null` is the unassigned pool, not an omitted field.
+
+***
+
 ### showControls?
 
 > `optional` **showControls?**: `boolean`
@@ -12600,11 +14275,11 @@ Optional internally managed data messaging channel.
 
 ### Source: `docs/api/type-aliases/RTCPublisherConfigType.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.6**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.2**](../README.md)
 
 ***
 
-[Red5 Pro WebRTC SDK](../globals.md) / RTCPublisherConfigType
+[Red5 Web SDK](../globals.md) / RTCPublisherConfigType
 
 # Type Alias: RTCPublisherConfigType
 
@@ -12790,11 +14465,11 @@ Optional internally managed data messaging channel.
 
 ### Source: `docs/api/type-aliases/RTCSubscriberConfigType.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.6**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.2**](../README.md)
 
 ***
 
-[Red5 Pro WebRTC SDK](../globals.md) / RTCSubscriberConfigType
+[Red5 Web SDK](../globals.md) / RTCSubscriberConfigType
 
 # Type Alias: RTCSubscriberConfigType
 
@@ -12964,11 +14639,11 @@ Optional internally managed data messaging channel.
 
 ### Source: `docs/api/type-aliases/RTCWhepSubscriberConfigType.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.6**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.2**](../README.md)
 
 ***
 
-[Red5 Pro WebRTC SDK](../globals.md) / RTCWhepSubscriberConfigType
+[Red5 Web SDK](../globals.md) / RTCWhepSubscriberConfigType
 
 # Type Alias: RTCWhepSubscriberConfigType
 
@@ -12986,11 +14661,11 @@ Optional internally managed data messaging channel.
 
 ### Source: `docs/api/type-aliases/RTCWhipPublisherConfigType.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.6**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.2**](../README.md)
 
 ***
 
-[Red5 Pro WebRTC SDK](../globals.md) / RTCWhipPublisherConfigType
+[Red5 Web SDK](../globals.md) / RTCWhipPublisherConfigType
 
 # Type Alias: RTCWhipPublisherConfigType
 
@@ -13008,11 +14683,11 @@ Optional internally managed data messaging channel.
 
 ### Source: `docs/api/type-aliases/StatsConfig.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.6**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.2**](../README.md)
 
 ***
 
-[Red5 Pro WebRTC SDK](../globals.md) / StatsConfig
+[Red5 Web SDK](../globals.md) / StatsConfig
 
 # Type Alias: StatsConfig
 
@@ -13046,11 +14721,11 @@ Configuration for RTC Stats Monitoring.
 
 ### Source: `docs/api/type-aliases/VideoConstraints.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.6**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.2**](../README.md)
 
 ***
 
-[Red5 Pro WebRTC SDK](../globals.md) / VideoConstraints
+[Red5 Web SDK](../globals.md) / VideoConstraints
 
 # Type Alias: VideoConstraints
 
@@ -13082,11 +14757,11 @@ Configuration for RTC Stats Monitoring.
 
 ### Source: `docs/api/variables/Capability.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.6**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.2**](../README.md)
 
 ***
 
-[Red5 Pro WebRTC SDK](../globals.md) / Capability
+[Red5 Web SDK](../globals.md) / Capability
 
 # Variable: Capability
 
@@ -13104,11 +14779,11 @@ Configuration for RTC Stats Monitoring.
 
 ### Source: `docs/api/variables/default.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.6**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.2**](../README.md)
 
 ***
 
-[Red5 Pro WebRTC SDK](../globals.md) / default
+[Red5 Web SDK](../globals.md) / default
 
 # Variable: default
 
@@ -13254,6 +14929,10 @@ Get the version of the SDK.
 
 > **MOQSubscriber**: *typeof* [`MOQSubscriber`](../classes/MOQSubscriber.md)
 
+### MOQSubscriberEventTypes
+
+> **MOQSubscriberEventTypes**: *typeof* [`MOQSubscriberEventTypes`](../enumerations/MOQSubscriberEventTypes.md)
+
 ### PlaybackAudioEncoder
 
 > **PlaybackAudioEncoder**: *typeof* [`PlaybackAudioEncoder`](../enumerations/PlaybackAudioEncoder.md)
@@ -13374,11 +15053,11 @@ Get the version of the SDK.
 
 ### Source: `docs/api/variables/defaultHLSSubscriberConfig.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.6**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.2**](../README.md)
 
 ***
 
-[Red5 Pro WebRTC SDK](../globals.md) / defaultHLSSubscriberConfig
+[Red5 Web SDK](../globals.md) / defaultHLSSubscriberConfig
 
 # Variable: defaultHLSSubscriberConfig
 
@@ -13386,11 +15065,11 @@ Get the version of the SDK.
 
 ### Source: `docs/api/variables/defaultLiveSeekConfig.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.6**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.2**](../README.md)
 
 ***
 
-[Red5 Pro WebRTC SDK](../globals.md) / defaultLiveSeekConfig
+[Red5 Web SDK](../globals.md) / defaultLiveSeekConfig
 
 # Variable: defaultLiveSeekConfig
 
@@ -13398,11 +15077,11 @@ Get the version of the SDK.
 
 ### Source: `docs/api/variables/defaultMOQCatalogConfig.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.6**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.2**](../README.md)
 
 ***
 
-[Red5 Pro WebRTC SDK](../globals.md) / defaultMOQCatalogConfig
+[Red5 Web SDK](../globals.md) / defaultMOQCatalogConfig
 
 # Variable: defaultMOQCatalogConfig
 
@@ -13410,11 +15089,11 @@ Get the version of the SDK.
 
 ### Source: `docs/api/variables/defaultMOQDataChannelConfiguration.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.6**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.2**](../README.md)
 
 ***
 
-[Red5 Pro WebRTC SDK](../globals.md) / defaultMOQDataChannelConfiguration
+[Red5 Web SDK](../globals.md) / defaultMOQDataChannelConfiguration
 
 # Variable: defaultMOQDataChannelConfiguration
 
@@ -13422,11 +15101,11 @@ Get the version of the SDK.
 
 ### Source: `docs/api/variables/defaultMOQMessageChannelConfig.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.6**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.2**](../README.md)
 
 ***
 
-[Red5 Pro WebRTC SDK](../globals.md) / defaultMOQMessageChannelConfig
+[Red5 Web SDK](../globals.md) / defaultMOQMessageChannelConfig
 
 # Variable: defaultMOQMessageChannelConfig
 
@@ -13434,11 +15113,11 @@ Get the version of the SDK.
 
 ### Source: `docs/api/variables/defaultMOQPublisherConfig.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.6**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.2**](../README.md)
 
 ***
 
-[Red5 Pro WebRTC SDK](../globals.md) / defaultMOQPublisherConfig
+[Red5 Web SDK](../globals.md) / defaultMOQPublisherConfig
 
 # Variable: defaultMOQPublisherConfig
 
@@ -13446,11 +15125,11 @@ Get the version of the SDK.
 
 ### Source: `docs/api/variables/defaultMOQSubscriberConfig.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.6**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.2**](../README.md)
 
 ***
 
-[Red5 Pro WebRTC SDK](../globals.md) / defaultMOQSubscriberConfig
+[Red5 Web SDK](../globals.md) / defaultMOQSubscriberConfig
 
 # Variable: defaultMOQSubscriberConfig
 
@@ -13458,11 +15137,11 @@ Get the version of the SDK.
 
 ### Source: `docs/api/variables/defaultStatsConfig.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.6**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.2**](../README.md)
 
 ***
 
-[Red5 Pro WebRTC SDK](../globals.md) / defaultStatsConfig
+[Red5 Web SDK](../globals.md) / defaultStatsConfig
 
 # Variable: defaultStatsConfig
 
@@ -13470,11 +15149,11 @@ Get the version of the SDK.
 
 ### Source: `docs/api/variables/defaultWhepSubscriberConfig.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.6**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.2**](../README.md)
 
 ***
 
-[Red5 Pro WebRTC SDK](../globals.md) / defaultWhepSubscriberConfig
+[Red5 Web SDK](../globals.md) / defaultWhepSubscriberConfig
 
 # Variable: defaultWhepSubscriberConfig
 
@@ -13482,11 +15161,11 @@ Get the version of the SDK.
 
 ### Source: `docs/api/variables/defaultWhipPublisherConfig.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.6**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.2**](../README.md)
 
 ***
 
-[Red5 Pro WebRTC SDK](../globals.md) / defaultWhipPublisherConfig
+[Red5 Web SDK](../globals.md) / defaultWhipPublisherConfig
 
 # Variable: defaultWhipPublisherConfig
 
@@ -13494,11 +15173,11 @@ Get the version of the SDK.
 
 ### Source: `docs/api/variables/LOG_LEVELS.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.6**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.2**](../README.md)
 
 ***
 
-[Red5 Pro WebRTC SDK](../globals.md) / LOG\_LEVELS
+[Red5 Web SDK](../globals.md) / LOG\_LEVELS
 
 # Variable: LOG\_LEVELS
 
@@ -13532,11 +15211,11 @@ Get the version of the SDK.
 
 ### Source: `docs/api/variables/PlaybackStateReadableMap.md`
 
-[**Red5 Pro WebRTC SDK v16.4.0-beta.6**](../README.md)
+[**Red5 Web SDK v17.0.0-beta.2**](../README.md)
 
 ***
 
-[Red5 Pro WebRTC SDK](../globals.md) / PlaybackStateReadableMap
+[Red5 Web SDK](../globals.md) / PlaybackStateReadableMap
 
 # Variable: PlaybackStateReadableMap
 
@@ -13596,6 +15275,8 @@ The `HLSSubscriber` available from the SDK provides an easy way to setup HLS pla
 
 ## Usage
 
+On a script-tag page, load either the full SDK (`red5-web-sdk.min.js`) or the WHIP/WHEP/HLS build (`red5-web-sdk-webrtc.min.js`). Both attach `window.red5websdk`. From npm, `import { HLSSubscriber } from 'red5-web-sdk'` or `'red5-web-sdk/webrtc'`.
+
 The follow example demonstrates the usage of `HLSSubscriber` from the SDK loaded in a browser as a script dependency. The example is easily transferrable to one in which the SDK is loaded as a module - either through NPM dependency - or as a script declaration - using `import`.
 
 ### Cloud Red5 Server
@@ -13613,7 +15294,7 @@ Because of Cross-Origin policies in browsers, you will not be able to load HLS f
 ```
 
 ```js
-const { HLSSubscriber } = red5prosdk
+const { HLSSubscriber } = red5websdk
 
 const startHLSSubscriber = async () => {
   try {
@@ -13644,7 +15325,7 @@ If your app is targeting a standalone self-deployed version of the Red5 Server, 
 ```
 
 ```js
-const { HLSSubscriber } = red5prosdk
+const { HLSSubscriber } = red5websdk
 
 const startHLSSubscriber = async () => {
   try {
@@ -13778,6 +15459,8 @@ For MoQ / WebTransport messaging (same send method names, different wire protoco
 
 # Usage
 
+On a script-tag page, load either the full SDK (`red5-web-sdk.min.js`) or the WHIP/WHEP/HLS build (`red5-web-sdk-webrtc.min.js`). Both attach `window.red5websdk`. From npm, `import { MessageChannel } from 'red5-web-sdk'` or `'red5-web-sdk/webrtc'`.
+
 Because `MessageChannel` is a subclass of `WHIPClient` (the media streaming broadcaster), much of the init setup and event structure is similar.
 
 To create and use a `MessageChannel` client:
@@ -13806,13 +15489,13 @@ Dependening on how you include the SDK into your project, you can access the `Me
 _NPM install_:
 
 ```js
-import { MessageChannel } from 'red5pro-webrtc-sdk'
+import { MessageChannel } from 'red5-web-sdk'
 ```
 
 _Browser, CDN_:
 
 ```js
-const { MessageChannel } = red5prosdk
+const { MessageChannel } = red5websdk
 ```
 
 > For more in-depth information related to usage, please refer to the [WHIPClient](whip-client.md#usage) documentation.
@@ -13909,7 +15592,7 @@ The configuration used for statistics monitoring has the following structure:
   // If provided, it will POST stats to this endpoint.
   // If undefined or `data-channel`, it will post stats to message transport.
   // If null or `event-transport`, it will only emit status events.
-  endpoint: red5prosdk.StatsEndpointType.DATA_CHANNEL,
+  endpoint: red5websdk.StatsEndpointType.DATA_CHANNEL,
   additionalHeaders: undefined,
   interval: 5000, // Interval to poll stats, in milliseconds.
   include: [], // Empty array allows SDK to be judicious about what stats to include.
@@ -14001,7 +15684,7 @@ The following is an example of a statistics metadata that is emitted in a `WebRT
 
 > This section provides information that relate to the release of Stream Manager 2.0 and its integration with WHIP/WHEP clients, and MessageChannel.
 
-The Stream Manager 2.0 simplifies the proxying of web clients to Origin and Edge nodes. As such, an initialization configuration property called `endpoint` was added to the WebRTC SDK. This `endpoint` value should be the full URL path to the proxy endpoint on the Stream Manager as is used as such:
+The Stream Manager 2.0 simplifies the proxying of web clients to Origin and Edge nodes. As such, an initialization configuration property called `endpoint` was added to the Red5 Web SDK. This `endpoint` value should be the full URL path to the proxy endpoint on the Stream Manager as is used as such:
 
 ## WHIP Proxy
 
@@ -14057,10 +15740,12 @@ Use it when you want to inspect track metadata without starting full media playb
 
 # Usage
 
+On a script-tag page, load either the full SDK (`red5-web-sdk.min.js`) or the MOQ build (`red5-web-sdk-moq.min.js`). Both attach `window.red5websdk`. From npm, `import { MOQCatalog } from 'red5-web-sdk'` or `'red5-web-sdk/moq'`.
+
 Initialize first, then call either `fetch()` or `subscribe()`.
 
 ```js
-const { MOQCatalog, MOQCatalogEventTypes } = red5prosdk
+const { MOQCatalog, MOQCatalogEventTypes } = red5websdk
 
 const catalog = new MOQCatalog()
 catalog.on('*', event => {
@@ -14248,10 +15933,12 @@ Use it when you want:
 
 # Usage
 
+On a script-tag page, load either the full SDK (`red5-web-sdk.min.js`) or the MOQ build (`red5-web-sdk-moq.min.js`). Both attach `window.red5websdk`. From npm, `import { MOQMessageChannel } from 'red5-web-sdk'` or `'red5-web-sdk/moq'`.
+
 Initialize, then `open()`. Listen for events before `open()` so you do not miss `MessageChannel.Open`.
 
 ```js
-const { MOQMessageChannel, MessageChannelEventTypes } = red5prosdk
+const { MOQMessageChannel, MessageChannelEventTypes } = red5websdk
 
 const channel = new MOQMessageChannel()
 channel.on('*', event => {
@@ -14545,6 +16232,8 @@ When you want to publish media over Media over QUIC (MoQ), the SDK provides `MOQ
 
 # Usage
 
+On a script-tag page, load either the full SDK (`red5-web-sdk.min.js`) or the MOQ build (`red5-web-sdk-moq.min.js`). Both attach `window.red5websdk`. From npm, `import { MOQPublisher } from 'red5-web-sdk'` or `'red5-web-sdk/moq'`.
+
 There are two options to start a `MOQPublisher`:
 
 1. Construct with a MOQ URL (auto init and publish).
@@ -14553,7 +16242,7 @@ There are two options to start a `MOQPublisher`:
 ## Using init() and publish()
 
 ```js
-const { MOQPublisher, PublisherEventTypes, MOQPublisherEventTypes } = red5prosdk
+const { MOQPublisher, PublisherEventTypes, MOQPublisherEventTypes } = red5websdk
 
 const publisher = new MOQPublisher()
 publisher.on('*', event => {
@@ -14605,6 +16294,8 @@ await publisher.unpublish()
 
 `unpublish()` retires the current publish generation immediately and aborts any in-flight WebTransport handshake / `connect()`, so Stop does not wait for a hung relay connection. The in-flight `publish()` promise rejects without a `Publish.Fail` event; teardown still emits `Unpublish.Success`.
 
+Each accepted catalog, video, and audio subscription reports the largest object handed to the relay. A subscriber `REQUEST_UPDATE` reads that location. The head stays empty until the first object for that request. A replacement subscription starts empty, including while an older subgroup open is still in flight. `unpublish()` stops reporting heads for the retired session.
+
 ## Constructing with URL
 
 Passing a URL to the constructor triggers internal init + publish automatically.
@@ -14641,6 +16332,7 @@ The `init()` call accepts `MOQPublisherConfigType`.
 | `onGetUserMedia` | [-] | `undefined` | Optional override to provide your own media stream acquisition. |
 | `videoEncoding` | [-] | `H264` | Preferred video codec (`PublishVideoEncoder`: `H264_BASELINE`, `H264_HIGH`, `H264`, `H265`, `AV1`). The publisher probes `VideoEncoder.isConfigSupported` at the track resolution and frame rate, then falls back (Baseline ↔ High, then H.264 if HEVC/AV1 is requested). AVC level is raised automatically (e.g. 4.0 for 1080p30, 4.2 for 1080p60). If nothing is supported, `ENCODER_ERROR` fires with `terminal: true` and publish fails. |
 | `audioEncoding` | [-] | `OPUS` | Audio codec (`PublishAudioEncoder`). |
+| `locVersion` | [-] | `4` | LOC packaging draft to emit on media objects (`1`, `4`, or `5`). Version `5` adds the LOC Codec String on every video and audio object, using that track's catalog codec. Versions `1` and `4` omit it. Simulcast rungs each carry their own codec string. |
 | `mediaElementId` | [-] | `red5pro-publisher` | Preview element id for local media display. |
 | `clearMediaOnUnpublish` | [-] | `true` | Stop preview stream tracks on unpublish. |
 | `maxVideoQueue` | [-] | `120` | Max queued encoded video chunks per track before shed policy. |
@@ -14830,13 +16522,30 @@ publisher.on(MOQPublisherEventTypes.SEND_STATS, event => {
 
 # Statistics
 
-`MOQPublisher` supports the same stats pattern as other SDK clients:
+`MOQPublisher` supports the same stats pattern as other SDK clients. The default endpoint is `EVENT_TRANSPORT` (`MOQ.Stats.Report`). To send the same `STATS_REPORT` JSON over the managed MoQ message channel, set `endpoint` to `DATA_CHANNEL` and enable `messageChannel`:
+
+```js
+const { StatsEndpointType } = red5websdk
+
+await publisher.init({
+  endpoint: 'https://relay.example.com:4433',
+  namespace: 'live/mystream',
+  messageChannel: { enabled: true },
+  stats: {
+    interval: 5000,
+    endpoint: StatsEndpointType.DATA_CHANNEL
+  }
+})
+```
 
 ```js
 publisher.monitorStats({
-  interval: 5000
+  interval: 5000,
+  endpoint: StatsEndpointType.EVENT_TRANSPORT
 })
 ```
+
+If `DATA_CHANNEL` is requested but `messageChannel.enabled` is not set, the SDK warns once and emits `STATS_REPORT` instead. Reports that arrive before the channel is open are queued until `MOQ.MessageChannel.Open`.
 
 You can also provide `stats` directly in `init()` options to start monitoring automatically once publishing starts.
 
@@ -14870,6 +16579,8 @@ When you want to play MoQ media streams in the browser, the SDK provides `MOQSub
 
 # Usage
 
+On a script-tag page, load either the full SDK (`red5-web-sdk.min.js`) or the MOQ build (`red5-web-sdk-moq.min.js`). Both attach `window.red5websdk`. From npm, `import { MOQSubscriber } from 'red5-web-sdk'` or `'red5-web-sdk/moq'`.
+
 There are two options to start a `MOQSubscriber`:
 
 1. Construct with a MOQ URL (auto init and subscribe).
@@ -14878,7 +16589,7 @@ There are two options to start a `MOQSubscriber`:
 ## Using init() and subscribe()
 
 ```js
-const { MOQSubscriber, MOQSubscriberEventTypes } = red5prosdk
+const { MOQSubscriber, MOQSubscriberEventTypes } = red5websdk
 
 const subscriber = new MOQSubscriber()
 subscriber.on('*', event => {
@@ -14958,9 +16669,29 @@ The `init()` call accepts `MOQSubscriberConfigType`.
 | `mseMediaSourceOptions` | [-] | buffer defaults | CMAF/MSE buffer and MediaSource settings. Ignored when `mediaSource` is provided. See [CMAF playback](#cmaf-playback). |
 | `drmConfig` | [-] | `undefined` | EME license settings for encrypted CMAF playback. Overrides `mseMediaSourceOptions.drmConfig`. See [CMAF playback](#cmaf-playback). |
 | `locmafDecoding` | [-] | `mse` | How LOCMAF tracks are consumed: reconstructed CMAF chunks for MSE (`mse`), or coded frames for WebCodecs (`frame`). |
+| `selection` | [-] | `undefined` | Presentation chosen at subscribe. See [Tune-in selection](#tune-in-selection). |
+| `audioLanguages` | [-] | `undefined` | Ordered language ranges for automatic audio choice. Omitted: catalog order. |
 | `messageChannel` | [-] | `{ enabled: false, mode: 'shared' }` | Optional internally managed `MOQMessageChannel`. `mode: 'shared'` reuses subscriber/player `MoqtConnection`; `mode: 'sidecar'` creates a separate MoQT session for messaging. |
 
 `*` Required when `endpoint` is not provided.
+
+### Tune-in selection
+
+`selection` and `audioLanguages` are copied onto the player when `subscribe()` starts. They choose the first presentation. They do not change a session that is already playing.
+
+Leave `selection` unset to use the player's catalog defaults. A field you set is exact: the player reports it when the catalog cannot satisfy it, and does not substitute another scope or track. `renderGroup: null` selects tracks that declare no render group. `renderGroup: 0` is render group zero.
+
+`audioLanguages` is an ordered list of basic language ranges, such as `['en', 'es']`. Exact tags are preferred over regional variants. When nothing matches, the player keeps the scope's default audio. Omit the field for catalog order.
+
+```js
+await subscriber.init({
+  endpoint: 'https://relay.example:4433',
+  app: 'live',
+  streamName: 'cam',
+  selection: { renderGroup: null, videoAltGroup: 1 },
+  audioLanguages: ['en', 'es']
+})
+```
 
 ### Authorization
 
@@ -15089,6 +16820,7 @@ subscriber.off('*', onSubscriberEvent)
 | `SESSION_ERROR` | `MOQ.Session.Error` | Session-level error. |
 | `CATALOG_RECEIVED` | `MOQ.Catalog.Received` | Catalog received (prefetch or relay). |
 | `CATALOG_UPDATED` | `MOQ.Catalog.Updated` | Catalog update observed. |
+| `SELECTION_CHANGED` | `MOQ.Selection.Changed` | Adopted program, view, rendition, or audio choice changed. |
 | `TRACK_SUBSCRIBE` | `MOQ.Track.Subscribe` | Track subscription succeeded. |
 | `TRACK_SUBSCRIBE_FAILED` | `MOQ.Track.Subscribe.Failed` | Track subscription failed. |
 | `TRACK_UNSUBSCRIBE` | `MOQ.Track.Unsubscribe` | Track unsubscribed. |
@@ -15102,6 +16834,27 @@ subscriber.off('*', onSubscriberEvent)
 | `MESSAGE_CHANNEL_CLOSE` | `MOQ.MessageChannel.Close` | Managed `MOQMessageChannel` closed. |
 | `MESSAGE_CHANNEL_FAIL` | `MOQ.MessageChannel.Fail` | Managed `MOQMessageChannel` failed to open. |
 | `MESSAGE_CHANNEL_ERROR` | `MOQ.MessageChannel.Error` | Managed `MOQMessageChannel` reported an error. |
+
+### Catalog selection
+
+`CATALOG_RECEIVED`, `CATALOG_UPDATED`, and `SELECTION_CHANGED` add two fields beside the existing catalog payload. `CATALOG_RECEIVED` still includes `availableVideoTracks` and `availableAudioTracks`.
+
+- `catalogSelection` is the player model: scopes (declared render groups, then the unassigned pool), the alternate sets inside each scope, and tracks the player excluded. It is `null` when the catalog could not be modeled.
+- `presentation` names that model for an application. `programs` are scopes. `views` are the video alternate sets in the adopted scope. `videos` are the renditions the player can switch among inside the adopted view, each with a `reference` of `{ name, namespace }`. `audio` lists the adopted scope's audio choices. `adoptedVideo` and `adoptedAudio` are the tracks currently selected, or `null`. `hasVideo` is `false` for an audio-only scope and `undefined` until a scope is adopted.
+
+Each program, view, and audio entry includes `selection`, the config that names that choice. A rendition switch uses `videos[].reference` and stays on the current session. `selection` is not applied by this event.
+
+`SELECTION_CHANGED` also includes `selection` (the player's adopted snapshot) and `catalog` (a defensive copy, or `null`).
+
+Until a scope is adopted, `presentation.programs` lists every scope and `views`, `videos`, and `audio` are empty.
+
+```js
+subscriber.on(MOQSubscriberEventTypes.SELECTION_CHANGED, event => {
+  const { presentation } = event.data
+  console.log(presentation.programs, presentation.views, presentation.audio)
+  console.log(presentation.adoptedVideo, presentation.videos)
+})
+```
 
 Managed MessageChannel events include metadata in `event.data`:
 
@@ -15125,8 +16878,22 @@ await subscriber.mute()
 await subscriber.unmute()
 await subscriber.setVolume(0.5)
 await subscriber.resumeAudio() // call from user gesture if audio is blocked
-await subscriber.selectVideoTrack('video')
+await subscriber.selectVideoTrack('video-1')
+await subscriber.selectVideoTrack({ name: 'video-1', namespace: ['live/cam'] })
+await subscriber.selectVideoTrack('video-1', true) // resume automatic quality
+await subscriber.selectPresentation({ renderGroup: 1, videoAltGroup: 2 })
+await subscriber.selectAudioTrack('audio-1')
 ```
+
+`selectVideoTrack` switches rendition inside the view already playing. It does not change program or view. A track in another alternate group is rejected by the player, and that error is returned as-is.
+
+The first argument is a track name, or `{ name, namespace }` when the same name exists in more than one namespace. `namespace` may be the catalog text or the wire field tuple. It is passed through unchanged.
+
+A successful manual switch leaves automatic quality off. The second argument defaults to `false`. Pass `true` to resume automatic quality after the switch.
+
+`selectPresentation` stops the current session and subscribes again with that selection. `renderGroup: null` still selects the unassigned pool. One change runs at a time. Passing the active program, view, or audio choice returns without a restart. Teardown and startup each have a 15 second limit. If startup fails, the new attempt is stopped and the previous `selection` is restored.
+
+`selectAudioTrack` resolves one audio choice in the current presentation and calls `selectPresentation`. The current program and view stay in that choice. A name shared by two audio tracks is rejected. The optional second argument is ignored. An audio-only presentation resolves when audio is accepted and playback is playing. `Subscribe.Start` is still emitted only for a rendered video frame.
 
 You can access internals for advanced integrations:
 
@@ -15139,11 +16906,31 @@ const view = subscriber.getRendererView()
 
 # Statistics
 
+The default endpoint is `EVENT_TRANSPORT` (`MOQ.Stats.Report`). To send the same `STATS_REPORT` JSON over the managed MoQ message channel, set `endpoint` to `DATA_CHANNEL` and enable `messageChannel`:
+
 ```js
-subscriber.monitorStats({
-  interval: 5000
+const { StatsEndpointType } = red5websdk
+
+await subscriber.init({
+  endpoint: 'https://relay.example.com:4433',
+  app: 'live',
+  streamName: 'mystream',
+  messageChannel: { enabled: true },
+  stats: {
+    interval: 5000,
+    endpoint: StatsEndpointType.DATA_CHANNEL
+  }
 })
 ```
+
+```js
+subscriber.monitorStats({
+  interval: 5000,
+  endpoint: StatsEndpointType.EVENT_TRANSPORT
+})
+```
+
+If `DATA_CHANNEL` is requested but `messageChannel.enabled` is not set, the SDK warns once and emits `STATS_REPORT` instead. Reports that arrive before the channel is open are queued until `MOQ.MessageChannel.Open`.
 
 You can also provide `stats` in `init()` options to start monitoring automatically after subscription starts.
 
@@ -15153,13 +16940,13 @@ You can also provide `stats` in `init()` options to start monitoring automatical
 
 Our goal at [Red5](https://red5.net) has always been to give developers the tools they need to deliver real-time streaming without complexity, bottlenecks, or hidden limitations. The Red5 integration with [PubNub](https://www.pubnub.com/) represents a major step toward that mission, combining sub-250 ms video streaming with sub-100 ms data delivery to power chat, reactions, synchronized metadata, and other interactive features at global scale.
 
-The intent of this document is to describe the integration points within our HTML SDK in which you can take advantage of PubNub and its services.
+The intent of this document is to describe the integration points within the Red5 Web SDK in which you can take advantage of PubNub and its services.
 
 > Read more about our thoughts and goals regarding PubNub Integration [here](https://www.red5.net/blog/red5-cloud-integrates-pubnub-to-deliver-interactivity-intelligence-global-scalability-for-real-time-streaming/).
 
 # PubNubClient
 
-The Red5 HTML SDK provides a basic `PubNubClient` to establish a connection to PubNub services for message communication. Its interface is very similar to that of the `WHIPClient` and `WHEPClient` provided in the SDK - both of which also provide easy init parameters and hooks for include PubNub intergation.
+The Red5 Web SDK provides a basic `PubNubClient` to establish a connection to PubNub services for message communication. Its interface is very similar to that of the `WHIPClient` and `WHEPClient` provided in the SDK - both of which also provide easy init parameters and hooks for include PubNub intergation.
 
 This document details the use of `PubNubClient` itself and may provide clearer details of the integration with the publisher and subscriber clients.
 
@@ -15171,12 +16958,14 @@ This document details the use of `PubNubClient` itself and may provide clearer d
 
 # Usage
 
+On a script-tag page, load either the full SDK (`red5-web-sdk.min.js`) or the WHIP/WHEP/HLS build (`red5-web-sdk-webrtc.min.js`). Both attach `window.red5websdk`. From npm, `import { PubNubClient } from 'red5-web-sdk'` or `'red5-web-sdk/webrtc'`.
+
 A `PubNubClient` can be used singularly without taking advantage of the streaming capabilities of the `WHIPClient` and `WHEPClient` clients of the SDK.
 
 ```js
-// import { PubNubClient } from red5pro-webrtc-sdk
+// import { PubNubClient } from red5-web-sdk
 // OR, if loaded from CDN
-const { PubNubClient } = red5prosdk
+const { PubNubClient } = red5websdk
 ...
 const config = {
   publishKey: 'pub-c-XXXX',
@@ -15305,6 +17094,8 @@ This provides a standardized - and _blazingly fast_ - way to establish and playb
 * [PubNub Integration](#pubnub-integration)
 
 # Usage
+
+On a script-tag page, load either the full SDK (`red5-web-sdk.min.js`) or the WHIP/WHEP/HLS build (`red5-web-sdk-webrtc.min.js`). Both attach `window.red5websdk`. From npm, `import { WHEPClient } from 'red5-web-sdk'` or `'red5-web-sdk/webrtc'`.
 
 There are two options to initiate a `WHEPClient`:
 
@@ -15504,7 +17295,7 @@ The configuration used for statistics monitoring has the following structure:
   // If provided, it will POST stats to this endpoint.
   // If undefined or `data-channel`, it will post stats to message transport.
   // If null or `event-transport`, it will only emit status events.
-  endpoint: red5prosdk.StatsEndpointType.DATA_CHANNEL,
+  endpoint: red5websdk.StatsEndpointType.DATA_CHANNEL,
   additionalHeaders: undefined,
   interval: 5000, // Interval to poll stats, in milliseconds.
   include: [], // Empty array allows SDK to be judicious about what stats to include.
@@ -15725,7 +17516,7 @@ The `liveSeek` configuration object has the following signature:
 
 > This section provides information that relate to the release of Stream Manager 2.0 and its integration with WHIP/WHEP clients.
 
-The Stream Manager 2.0 simplifies the proxying of web clients to Origin and Edge nodes. As such, an initialization configuration property called `endpoint` was added to the WebRTC SDK. This `endpoint` value should be the full URL path to the proxy endpoint on the Stream Manager as is used as such:
+The Stream Manager 2.0 simplifies the proxying of web clients to Origin and Edge nodes. As such, an initialization configuration property called `endpoint` was added to the Red5 Web SDK. This `endpoint` value should be the full URL path to the proxy endpoint on the Stream Manager as is used as such:
 
 ## WHIP Proxy
 
@@ -15880,6 +17671,8 @@ This provides a standardized - and _blazingly fast_ - way to establish and broad
 
 # Usage
 
+On a script-tag page, load either the full SDK (`red5-web-sdk.min.js`) or the WHIP/WHEP/HLS build (`red5-web-sdk-webrtc.min.js`). Both attach `window.red5websdk`. From npm, `import { WHIPClient } from 'red5-web-sdk'` or `'red5-web-sdk/webrtc'`.
+
 There are two options to initiate a `WHIPClient`:
 
 1. From instantiation with a full WHIP endpoint URL (if known).
@@ -15979,7 +17772,7 @@ When using the `init()` call of a `WHIPClient` - or, alternatively, when using a
 
 ## Using MediaConstraints and onGetUserMedia
 
-The Red5 HTML SDK will handle the `getUserMedia` requirements internally to set up your Camera and/or Microphone for a broadcast. As such, you can provide the [Media Constraint](https://developer.mozilla.org/en-US/docs/Web/API/MediaStreamConstraints) object to be used on the `init` configuration:
+The Red5 Web SDK will handle the `getUserMedia` requirements internally to set up your Camera and/or Microphone for a broadcast. As such, you can provide the [Media Constraint](https://developer.mozilla.org/en-US/docs/Web/API/MediaStreamConstraints) object to be used on the `init` configuration:
 
 ```js
 const config = {
@@ -16009,7 +17802,7 @@ await publisher.init(config)
 await publisher.publish()
 ```
 
-Internally, the Red5 HTML SDK will use the provided *Media Constraint* to test if the resolutions requested are supported by the browser. If not, it will find the nearest supported lower neighbor based on the originally provided area dimension(s) of the resolutions.
+Internally, the Red5 Web SDK will use the provided *Media Constraint* to test if the resolutions requested are supported by the browser. If not, it will find the nearest supported lower neighbor based on the originally provided area dimension(s) of the resolutions.
 
 > If you would like to bypass the internal determination of resolution, you can use the `onGetUserMedia` override of the configuration properties.
 
@@ -16045,7 +17838,7 @@ await publisher.init(config)
 await publisher.publish()
 ```
 
-The `onGetUserMedia` method - when defined on the configuration provide to a WebRTC-based Publisher - will override the internal call to `getUserMedia` in the Red5 HTML SDK.
+The `onGetUserMedia` method - when defined on the configuration provide to a WebRTC-based Publisher - will override the internal call to `getUserMedia` in the Red5 Web SDK.
 
 You can provide your own logic on how `getUserMedia` is invoked and a [Media Stream](https://developer.mozilla.org/en-US/docs/Web/API/MediaStream) attained by setting the `onGetUserMedia` attribute to a method that conforms to the following guidelines:
 
@@ -16054,7 +17847,7 @@ You can provide your own logic on how `getUserMedia` is invoked and a [Media Str
 * A `MediaStream` object must be provided in the resolve of the `Promise`.
 * The error provided in the reject of the `Promise` is optional, but recommended as a `String`.
 
-Be aware that overriding `onGetUserMedia` you are losing the logic from the Red5 HTML SDK that attempts to pick the optimal resolution supported by your browser. **Use with descretion.**
+Be aware that overriding `onGetUserMedia` you are losing the logic from the Red5 Web SDK that attempts to pick the optimal resolution supported by your browser. **Use with descretion.**
 
 > To read more about `getUserMedia` please read the following document from Mozilla Developer Network: [https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia](https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia)
 
@@ -16198,7 +17991,7 @@ The configuration used for statistics monitoring has the following structure:
   // If provided, it will POST stats to this endpoint.
   // If undefined or `data-channel`, it will post stats to message transport.
   // If null or `event-transport`, it will only emit status events.
-  endpoint: red5prosdk.StatsEndpointType.DATA_CHANNEL,
+  endpoint: red5websdk.StatsEndpointType.DATA_CHANNEL,
   additionalHeaders: undefined,
   interval: 5000, // Interval to poll stats, in milliseconds.
   include: [], // Empty array allows SDK to be judicious about what stats to include.
@@ -16305,7 +18098,7 @@ The following is an example of a statistics metadata that is emitted in a `WebRT
 
 > This section provides information that relate to the release of Stream Manager 2.0 and its integration with WHIP/WHEP clients.
 
-The Stream Manager 2.0 simplifies the proxying of web clients to Origin and Edge nodes. As such, an initialization configuration property called `endpoint` was added to the WebRTC SDK. This `endpoint` value should be the full URL path to the proxy endpoint on the Stream Manager as is used as such:
+The Stream Manager 2.0 simplifies the proxying of web clients to Origin and Edge nodes. As such, an initialization configuration property called `endpoint` was added to the Red5 Web SDK. This `endpoint` value should be the full URL path to the proxy endpoint on the Stream Manager as is used as such:
 
 ## WHIP Proxy
 
@@ -16440,10 +18233,11 @@ The following events are dispatched by the underlying pubnub integration and bub
 
 ---
 
-# Red5 HTML SDK Migration Guide
+# Red5 Web SDK Migration Guide
 
 This documentation serves as a guide in migrating client-side code where a breaking change to the API has been made in a distribution.
 
+- [16.x to 17.0.0](#migrating-from-16x-to-1700)
 - [14.x to 15.0.0](#migrating-from-14x-to-1500)
 - [13.x to 14.0.0](#migrating-from-13x-to-1400)
 - [12.x to 13.0.0](#migrating-from-12x-to-1300)
@@ -16454,6 +18248,57 @@ This documentation serves as a guide in migrating client-side code where a break
 - [5.0.0 to 5.4.0](#migrating-from-500-to-540)
 - [4.0.0 to 5.0.0](#migrating-from-400-to-500)
 - [3.5.0 to 4.0.0](#migrating-from-350-to-400)
+
+# Migrating from `16.x` to `17.0.0`
+
+**ALERT: Breaking Changes**
+
+The `17.0.0` release renames the published browser SDK from **Red5 Pro HTML SDK** / **Red5 Pro WebRTC SDK** (`red5pro-webrtc-sdk`) to **Red5 Web SDK** (`red5-web-sdk`). Client APIs (`WHIPClient`, `WHEPClient`, MOQ clients, events) are unchanged. Historical sections below (15.0.0, 8.0.0, …) still describe those past releases and are not rewritten.
+
+## Package and module specifier
+
+```sh
+# before
+npm install red5pro-webrtc-sdk
+# after
+npm install red5-web-sdk
+```
+
+```js
+// before
+import { WHIPClient, MOQPublisher } from 'red5pro-webrtc-sdk'
+// after
+import { WHIPClient, MOQPublisher } from 'red5-web-sdk'
+```
+
+## Script tag and CDN
+
+Bundle filenames change in the same major:
+
+```html
+<!-- before -->
+<script src="https://cdn.jsdelivr.net/npm/red5pro-webrtc-sdk@latest/red5pro-sdk.min.js"></script>
+<!-- after -->
+<script src="https://cdn.jsdelivr.net/npm/red5-web-sdk@latest/red5-web-sdk.min.js"></script>
+```
+
+UMD / IIFE pages: change the `src` URL. **`17.x` assigns both globals to the same object** (`red5prosdk === red5websdk`), so existing `const { WHIPClient } = red5prosdk` and `(window.red5prosdk)` keep working. New samples use `red5websdk`.
+
+Optional focused files (same global; load only one script per page):
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/red5-web-sdk@latest/red5-web-sdk-webrtc.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/red5-web-sdk@latest/red5-web-sdk-moq.min.js"></script>
+```
+
+```js
+import { WHIPClient } from 'red5-web-sdk/webrtc'
+import { MOQPublisher } from 'red5-web-sdk/moq'
+```
+
+## Unchanged
+
+Default `mediaElementId` values (`red5pro-publisher`, `red5pro-subscriber`), `red5pro-media.css` / `red5pro-media-*` classes, and event type strings are not renamed.
 
 # Migrating from `14.x` to `15.0.0`
 
@@ -17437,9 +19282,9 @@ This example demonstrates the use of [VideoJS](http://videojs.com/) for live and
 
 ---
 
-# Red5 HTML SDK
+# Red5 Web SDK
 
-> The **Red5 HTML SDK** allows you to integrate live streaming video into your desktop and mobile browser.
+> The **Red5 Web SDK** allows you to integrate live streaming video into your desktop and mobile browser.
 
 * [Important Notices](#important-notices)
 * [Installation](#installation)
@@ -17448,7 +19293,25 @@ This example demonstrates the use of [VideoJS](http://videojs.com/) for live and
 
 # Important Notices
 
-With the `15.0.0` release of the **Red5 HTML SDK**, we have complete overhaul of its development and focus. We have decided to focus solely on **WISH** (WebRTC Ingest Signaling over HTTPS) and dropped WebSocket support previously used for signaling phase.
+## 17.0.0 Release
+
+The `17.0.0` release publishes the browser SDK as **Red5 Web SDK** (`red5-web-sdk`). The previous npm package **`red5pro-webrtc-sdk` is deprecated**; install and import `red5-web-sdk` instead. CDN filenames change from `red5pro-sdk*.js` to `red5-web-sdk*.js`. Script tags attach `window.red5websdk`. On `17.x`, `window.red5prosdk` is the same object so existing IIFEs keep working. See the [Migration Guide](MIGRATION_GUIDE.md#migrating-from-16x-to-1700) for the full rename.
+
+The product is no longer WebRTC-only. In addition to WHIP/WHEP, HLS, and Live Seek, the SDK ships first-class **Media over QUIC (MOQ)** clients: `MOQPublisher`, `MOQSubscriber`, `MOQCatalog`, and `MOQMessageChannel`.
+
+`17.0.0` also ships **targeted bundles** next to the monolith. All three use the same `red5websdk` global. Load **one** script per page.
+
+| Build | Script / npm | Clients |
+| :--- | :--- | :--- |
+| Full (monolith) | `red5-web-sdk.min.js` / `red5-web-sdk` | WHIP, WHEP, HLS, Live Seek, PubNub, MOQ |
+| WHIP/WHEP/HLS | `red5-web-sdk-webrtc.min.js` / `red5-web-sdk/webrtc` | WHIP, WHEP, HLS, Live Seek, PubNub |
+| MOQ | `red5-web-sdk-moq.min.js` / `red5-web-sdk/moq` | MOQ publisher, subscriber, catalog, message channel |
+
+Client APIs, event names, default `mediaElementId` values, and `red5pro-media.css` class names are unchanged.
+
+## 15.0.0 Release
+
+With the `15.0.0` release of the **Red5 Web SDK**, we have complete overhaul of its development and focus. We have decided to focus solely on **WISH** (WebRTC Ingest Signaling over HTTPS) and dropped WebSocket support previously used for signaling phase.
 
 As such, the publishing and subscribing logic within the SDK are provided from the `WHIPClient` and `WHEPClient`, respectively.
 
@@ -17456,36 +19319,60 @@ Not only does this free up resources consumed by WebSockets on the Red5 Server d
 
 # Installation
 
+The default build is the **full** SDK (WHIP/WHEP/HLS and MOQ). If you only need one protocol, load the matching focused file instead. All three attach `window.red5websdk` (and alias `window.red5prosdk` on `17.x`). Load **one** script per page; a second file overwrites the global.
+
 ## As Script Dependency in HTML page
 
-```html
-<script src="https://cdn.jsdelivr.net/npm/red5pro-webrtc-sdk@latest/red5pro-sdk.min.js"></script>
-```
-
-... Or if you know the version:
+Full SDK:
 
 ```html
-<script src=https://cdn.jsdelivr.net/npm/red5pro-webrtc-sdk@15.0.0/red5pro-sdk.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/red5-web-sdk@latest/red5-web-sdk.min.js"></script>
 ```
+
+WHIP/WHEP/HLS only:
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/red5-web-sdk@latest/red5-web-sdk-webrtc.min.js"></script>
+```
+
+MOQ only:
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/red5-web-sdk@latest/red5-web-sdk-moq.min.js"></script>
+```
+
+... Or pin a version:
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/red5-web-sdk@15.0.0/red5-web-sdk.min.js"></script>
+```
+
+Playback UI styles ship in the release drop as `red5pro-media.css` (WHIP/WHEP/HLS) and `red5-moq-media.css` (MOQ).
 
 ## Using `npm` or `yarn` for you browser-based projects
 
 ```sh
-npm install --save red5pro-webrtc-sdk
+npm install --save red5-web-sdk
 ```
 
 ```sh
-yarn install red5pro-webrtc-sdk
+yarn install red5-web-sdk
+```
+
+```js
+import { WHIPClient, WHEPClient } from 'red5-web-sdk'
+import { WHIPClient } from 'red5-web-sdk/webrtc'
+import { MOQPublisher } from 'red5-web-sdk/moq'
 ```
 
 # Quick Start
 
-All members exposed on the otherwise global `window.red5prosdk` if loading as a script on an HTML page are importable from the `red5pro-webrtc-sdk` module:
+All members exposed on the otherwise global `window.red5websdk` if loading as a script on an HTML page are importable from the `red5-web-sdk` module:
 
 _index.js_
 
 ```js
-import { WHIPClient, WHEPClient } from 'red5pro-webrtc-sdk'
+import { WHIPClient, WHEPClient } from 'red5-web-sdk'
 ```
 
 ## Quick Start - Standalone Server Deployment
@@ -17509,14 +19396,14 @@ You can sign up and download the Red5 Server to manage your own deployment at [h
     <div>
       <video id="red5pro-subscriber" width="640" height="480" controls autoplay playsinline></video>
     </div>
-    <!-- Red5 HTML SDK -->
-    <script src="https://cdn.jsdelivr.net/npm/red5pro-webrtc-sdk@latest/red5pro-sdk.min.js"></script>
+    <!-- Red5 Web SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/red5-web-sdk@latest/red5-web-sdk.min.js"></script>
     <!-- Create Pub/Sub -->
     <script>
-      ((red5prosdk) => {
+      ((red5websdk) => {
         'use strict'
 
-        const { WHIPClient, WHEPClient, PublisherEventTypes } = red5prosdk
+        const { WHIPClient, WHEPClient, PublisherEventTypes } = red5websdk
 
         const publisher = new WHIPClient()
         const subscriber = new WHEPClient()
@@ -17549,7 +19436,7 @@ You can sign up and download the Red5 Server to manage your own deployment at [h
         // Start Publisher first ->
         publish()
 
-      }(window.red5prosdk))
+      }(window.red5websdk))
     </script>
   </body>
 </html>
@@ -17580,19 +19467,19 @@ The Red5 Cloud deployment utilizes a Stream Manager for autoscaling. With the St
     <div>
       <video id="red5pro-subscriber" width="640" height="480" controls autoplay playsinline></video>
     </div>
-    <!-- Red5 HTML SDK -->
-    <script src="https://cdn.jsdelivr.net/npm/red5pro-webrtc-sdk@latest/red5pro-sdk.min.js"></script>
+    <!-- Red5 Web SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/red5-web-sdk@latest/red5-web-sdk.min.js"></script>
     <!-- Create Pub/Sub -->
     <script>
       <script>
-      ((red5prosdk) => {
+      ((red5websdk) => {
         'use strict'
 
         const host = 'my-deployment.cloud.red5.net'
         const nodeGroup = 'my-node-group'
         const streamName = 'my-stream-name'
 
-        const { WHIPClient, WHEPClient, PublisherEventTypes } = red5prosdk
+        const { WHIPClient, WHEPClient, PublisherEventTypes } = red5websdk
         const publisher = new WHIPClient()
         const subscriber = new WHEPClient()
 
@@ -17632,7 +19519,7 @@ The Red5 Cloud deployment utilizes a Stream Manager for autoscaling. With the St
         // Start Publisher first ->
         publish()
 
-      }(window.red5prosdk))
+      }(window.red5websdk))
     </script>
   </body>
 </html>

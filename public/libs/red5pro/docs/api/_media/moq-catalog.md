@@ -27,10 +27,12 @@ Use it when you want to inspect track metadata without starting full media playb
 
 # Usage
 
+On a script-tag page, load either the full SDK (`red5-web-sdk.min.js`) or the MOQ build (`red5-web-sdk-moq.min.js`). Both attach `window.red5websdk`. From npm, `import { MOQCatalog } from 'red5-web-sdk'` or `'red5-web-sdk/moq'`.
+
 Initialize first, then call either `fetch()` or `subscribe()`.
 
 ```js
-const { MOQCatalog, MOQCatalogEventTypes } = red5prosdk
+const { MOQCatalog, MOQCatalogEventTypes } = red5websdk
 
 const catalog = new MOQCatalog()
 catalog.on('*', event => {
