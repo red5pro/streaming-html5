@@ -1,0 +1,15 @@
+# WHEP Redundant Subscriber
+
+Connect to the same stream on multiple Stream Manager edges. Play one subscription and use the SDK's server-signaled standby controls on the others. Promote an already-established PeerConnection after active transport failure or five seconds without decoded video; the threshold is configurable. Restore missing standby connections using current subscribe routing.
+
+Open this example from the testbed landing page. Enable Stream Manager in Settings and configure the host, NodeGroup, app, and stream name. Existing `sm`, `ng`, `host`, `app`, `streamName`, and `theme` query parameters are supported. Player is the default view: Start/Stop, audio authorization, one visible video, and automatic switching under the covers. Initial playback is locally muted.
+
+Diagnostics shows the same subscriptions side by side with endpoint counters, manual Promote buttons, advanced routing settings, logs, and Export observations. Configure the endpoint count, optional SubGroup preference, and strict routing there before starting. Changing tabs preserves the subscriber session, PeerConnections, video elements, MediaStreams, and active selection. The tabs support arrow keys and Home/End. Player hides standby elements but keeps their connections alive.
+
+Requires at least two eligible edges carrying the stream. For origin redundancy, publish the same unprovisioned stream on two origins and attach both edges to both origins. Redundant edge subscriptions and redundant upstream sources are separate failure paths. This page does not provision streams or change topology.
+
+The page uses the repository's bundled SDK, shared settings, theme, and ICE configuration. Administrative credentials are not required by this example. Requested standby is distinguished from observed RTP silence and control-channel readiness. Audio/video counters and first-progress timings are observations, not guarantees of seamless playback. Optional red/blue video markers and 1 kHz/2 kHz tones support automated source identification.
+
+Run `npm run test:redundant-subscriber`, `npm run build`, `npm run lint`, and `npm run check:license-headers`. The built entry is `dist/src/examples/whep-redundant/index.html`; deployments that mount the testbed at `/red5/` expose it at `/red5/src/examples/whep-redundant/index.html`. Build and deploy the testbed assets; no Stream Manager backend or node-plugin rebuild is required for page changes.
+
+The Java integration tests in the sibling `red5pro-plugins` repository serve this built output on loopback. They default to the sibling `streaming-html5/dist` directory, overridable with `multiOrigin.webRtcDist`, and exercise Player mode with identity-preserving tab checks. Separate controls cover sustained active playback, healthy-edge standby promotion, and edge failure; the latter cases require sustained active decoding first. Automated audio analysis keeps playback muted and launches Chrome with `--mute-audio`. Live standby survival, cleanup/accounting, and clean origin-video switching require integration validation; local unit checks alone do not establish these results.

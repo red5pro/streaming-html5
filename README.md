@@ -82,6 +82,7 @@ These links point to each example directory root under `src/examples/`.
 - [whep-remote-call](src/examples/whep-remote-call/)
 - [whep-renegotiation](src/examples/whep-renegotiation/)
 - [whep-standby](src/examples/whep-standby/)
+- [whep-redundant](src/examples/whep-redundant/)
 - [whep-switch-streams](src/examples/whep-switch-streams/)
 - [rtc-subscriber](src/examples/rtc-subscriber/)
 

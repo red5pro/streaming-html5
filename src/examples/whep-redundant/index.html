@@ -1,0 +1,123 @@
+<!-- Copyright © 2015 Infrared5, Inc. All rights reserved.
+
+The accompanying code comprising examples for use solely in conjunction with Red5 Pro (the "Example Code")
+is  licensed  to  you  by  Infrared5  Inc.  in  consideration  of  your  agreement  to  the  following
+license terms  and  conditions.  Access,  use,  modification,  or  redistribution  of  the  accompanying
+code  constitutes your acceptance of the following license terms and conditions.
+
+Permission is hereby granted, free of charge, to you to use the Example Code and associated documentation
+files (collectively, the "Software") without restriction, including without limitation the rights to use,
+copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit
+persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The Software shall be used solely in conjunction with Red5 Pro. Red5 Pro is licensed under a separate end
+user  license  agreement  (the  "EULA"),  which  must  be  executed  with  Infrared5,  Inc.
+An  example  of  the EULA can be found on our website at: https://account.red5.net/assets/LICENSE.txt.
+
+The above copyright notice and this license shall be included in all copies or portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,  INCLUDING  BUT
+NOT  LIMITED  TO  THE  WARRANTIES  OF  MERCHANTABILITY, FITNESS  FOR  A  PARTICULAR  PURPOSE  AND
+NONINFRINGEMENT.   IN  NO  EVENT  SHALL INFRARED5, INC. BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+WHETHER IN  AN  ACTION  OF  CONTRACT,  TORT  OR  OTHERWISE,  ARISING  FROM,  OUT  OF  OR  IN CONNECTION
+WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. -->
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Redundant WebRTC subscriber</title>
+    <link rel="stylesheet" href="/style/main.css" />
+    <link rel="stylesheet" href="/style/pages/example.css" />
+    <link rel="stylesheet" href="/style/pages/whep-redundant.css" />
+    <script src="/libs/red5pro/red5pro-sdk.min.js"></script>
+  </head>
+  <body>
+    <r5-header></r5-header>
+    <main class="page redundant-page" data-view="player">
+      <nav class="breadcrumb">
+        <a class="breadcrumb__home" href="/">Home</a
+        ><span class="breadcrumb__sep" aria-hidden="true">/</span> WHEP Redundant Subscriber
+      </nav>
+      <h1 class="page__heading">WHEP Redundant Subscriber</h1>
+      <p>
+        One player with automatic switching. Open Diagnostics to inspect the redundant connections.
+      </p>
+      <div class="view-tabs" role="tablist" aria-label="Subscriber view">
+        <button
+          id="player-tab"
+          type="button"
+          role="tab"
+          data-view="player"
+          aria-selected="true"
+          aria-controls="subscriber-view"
+        >
+          Player
+        </button>
+        <button
+          id="diagnostics-tab"
+          type="button"
+          role="tab"
+          data-view="diagnostics"
+          aria-selected="false"
+          aria-controls="subscriber-view"
+          tabindex="-1"
+        >
+          Diagnostics
+        </button>
+      </div>
+      <section id="subscriber-view" role="tabpanel" aria-labelledby="player-tab">
+        <p class="connection-info diagnostic-only" id="connection-info"></p>
+        <form id="redundancy-settings">
+          <fieldset class="diagnostic-only redundancy-options">
+            <legend>Redundancy settings</legend>
+            <label>SubGroup preference <input name="subGroup" /></label>
+            <label
+              >Endpoints <input name="endpoints" type="number" min="2" max="8" value="2" required
+            /></label>
+            <label
+              >Media silence (seconds)
+              <input name="silenceSeconds" type="number" min="1" value="5" required
+            /></label>
+            <label><input name="strict" type="checkbox" checked /> Strict routing</label>
+          </fieldset>
+          <div class="actions">
+            <button class="btn btn--secondary" id="start">Start</button
+            ><button class="btn btn--secondary" id="stop" type="button" disabled>Stop</button
+            ><button class="btn btn--secondary" id="audio" type="button">Enable active audio</button
+            ><button class="btn btn--secondary player-only" id="switch-edge" type="button" disabled>
+              Switch edge
+            </button>
+            <button class="btn btn--secondary diagnostic-only" id="export" type="button">
+              Export observations
+            </button>
+          </div>
+        </form>
+        <p id="status" role="status">Stopped</p>
+        <p id="active-edge" aria-live="polite">Active edge: —</p>
+        <p id="active-stream-path" aria-live="polite">Stream path: —</p>
+        <div id="player-placeholder">Start playback</div>
+        <section id="peers" aria-label="Subscriptions"></section>
+        <div class="log-panel diagnostic-only">
+          <div class="log-panel__header">
+            <h2 class="log-panel__title">Log</h2>
+            <button
+              type="button"
+              class="btn btn--ghost log-panel__clear"
+              id="log-clear-btn"
+              aria-label="Clear log"
+              title="Clear log"
+            >
+              <svg class="i" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M3 6h18M8 6V4h8v2M19 6v14H5V6M10 11v6M14 11v6"></path>
+              </svg>
+            </button>
+          </div>
+          <div class="log" id="log"></div>
+        </div>
+      </section>
+    </main>
+    <script type="module" src="./index.ts"></script>
+  </body>
+</html>

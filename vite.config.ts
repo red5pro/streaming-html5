@@ -206,6 +206,7 @@ export default defineConfig(({ command }) => ({
         'whep-reconnect': resolve(__dirname, 'src/examples/whep-reconnect/index.html'),
         'whep-renegotiation': resolve(__dirname, 'src/examples/whep-renegotiation/index.html'),
         'whep-standby': resolve(__dirname, 'src/examples/whep-standby/index.html'),
+        'whep-redundant': resolve(__dirname, 'src/examples/whep-redundant/index.html'),
         'whep-switch-streams': resolve(__dirname, 'src/examples/whep-switch-streams/index.html'),
         'whep-manual-stream': resolve(__dirname, 'src/examples/whep-manual-stream/index.html'),
         'whep-codec-preference': resolve(

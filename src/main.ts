@@ -292,6 +292,13 @@ const examples: ExampleSection[] = [
         href: './src/examples/whep-standby/index.html',
       },
       {
+        title: 'WHEP Redundant Subscriber',
+        description:
+          'Connect to multiple Stream Manager edges, keep alternate connections in standby, and promote an existing connection when the active edge fails.',
+        tag: 'Subscribe, Standby, Stream Manager, Failover',
+        href: './src/examples/whep-redundant/index.html',
+      },
+      {
         title: 'WHEP Switch Streams',
         description:
           'WHEPClient subscribe with callServer switchStreams to change playback to another stream path on the existing connection.',
